@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="SaleOrderScreen" owl="1">
+        <div class="SaleOrderScreen clientlist-screen screen h-100 bg-100 overflow-auto"
+             t-ref="root">
+            <div class="rightpane h-100">
+                <div class="d-flex flex-column h-100">
+
+                    <!-- Header -->
+                    <div class="control-panel d-flex justify-content-between align-items-center m-1 p-2 gap-2">
+                        <div class="d-flex align-items-center gap-3">
+                            <button class="btn btn-lg btn-secondary" t-on-click="back">
+                                <i class="fa fa-angle-double-left me-1"/>
+                                Back
+                            </button>
+                            <span class="fw-bold fs-5">Click &amp; Collect Orders</span>
+                        </div>
+                    </div>
+
+                    <!-- Loading -->
+                    <t t-if="state.loading">
+                        <div class="d-flex align-items-center justify-content-center p-5 text-muted">
+                            <i class="fa fa-spinner fa-spin fa-2x me-3"/>
+                            <span>Loading orders...</span>
+                        </div>
+                    </t>
+
+                    <!-- Error -->
+                    <t t-elif="state.error">
+                        <div class="d-flex flex-column align-items-center justify-content-center p-5">
+                            <i class="fa fa-exclamation-triangle fa-3x mb-3 text-danger"/>
+                            <p class="text-danger"><t t-esc="state.error"/></p>
+                        </div>
+                    </t>
+
+                    <!-- Table -->
+                    <t t-else="">
+                        <div class="orders overflow-y-auto flex-grow-1">
+
+                            <div class="header-row d-flex text-bg-700 fw-bolder border-bottom">
+                                <div class="col-2 p-2">Sale Order</div>
+                                <div class="col-2 p-2">Customer</div>
+                                <div class="col-4 p-2">Product</div>
+                                <div class="col-1 p-2 text-center">Qty</div>
+                                <div class="col-1 p-2 text-center">Status</div>
+                                <div class="col-2 p-2 text-center">Action</div>
+                            </div>
+
+                            <!-- Empty state -->
+                            <t t-if="state.lines.length === 0">
+                                <div class="d-flex flex-column align-items-center justify-content-center p-5 text-muted">
+                                    <i class="fa fa-check-circle fa-3x mb-3 text-success"/>
+                                    <p class="fs-5">No pending Click &amp; Collect orders</p>
+                                </div>
+                            </t>
+
+                            <!--
+                                line.id       → number  (used as t-key)
+                                line.idStr    → string  (used in data-id and confirming lookup)
+                                All other fields are pre-normalised plain strings.
+                                state.confirming is a plain object — OWL tracks it reactively.
+                            -->
+                            <t t-foreach="state.lines" t-as="line" t-key="line.id">
+                                <div class="order-list body-row d-flex border-bottom align-items-center">
+
+                                    <div class="col-2 p-2 fw-semibold">
+                                        <t t-esc="line.order_id"/>
+                                    </div>
+
+                                    <div class="col-2 p-2">
+                                        <t t-esc="line.partner_id"/>
+                                    </div>
+
+                                    <div class="col-4 p-2">
+                                        <t t-esc="line.product_id"/>
+                                    </div>
+
+                                    <div class="col-1 p-2 text-center">
+                                        <t t-esc="line.product_uom_quantity"/>
+                                    </div>
+
+                                    <div class="col-1 p-2 text-center">
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    </div>
+
+                                    <div class="col-2 p-2 text-center">
+                                        <!-- confirming lookup uses idStr — same type as the key stored in confirming{} -->
+                                        <t t-if="state.confirming[line.idStr]">
+                                            <button class="btn btn-sm btn-secondary" disabled="1">
+                                                <i class="fa fa-spinner fa-spin me-1"/>
+                                                Wait...
+                                            </button>
+                                        </t>
+                                        <t t-else="">
+                                            <button t-att-data-id="line.idStr"
+                                                    class="btn btn-sm btn-primary"
+                                                    t-on-click="onClick">
+                                                <i class="fa fa-check me-1"/>
+                                                Confirm
+                                            </button>
+                                        </t>
+                                    </div>
+
+                                </div>
+                            </t>
+
+                        </div>
+                    </t>
+
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

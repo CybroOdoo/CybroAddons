@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--View customization for the 'Leave Request' form.-->
+    <record id="hr_leave_view_form" model="ir.ui.view">
+        <field name="name">hr.leave.view.form.inherit.hr.vacation.mngmt</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_approve']" position="before">
+                <field name="flight_ticket_ids" invisible="1"/>
+                <button type="object" icon="fa-pencil-square-o"
+                        name="action_view_flight_ticket"
+                        string="Flight Ticket" class="oe_stat_button"
+                        groups="hr_holidays.group_hr_holidays_manager"
+                        invisible="not flight_ticket_ids"
+                />
+            </xpath>
+             <xpath expr="//header/button[@name='action_approve']" position="before">
+                 <button string="Book Flight Ticket" name="action_book_ticket"
+                        type="object"
+                            groups="hr_holidays.group_hr_holidays_manager"
+                        class="oe_highlight"
+                       invisible="state != 'validate' or flight_ticket_ids"
+                 />
+             </xpath>
+            <field name="name" position="after">
+                <field name="remaining_leaves"
+                       invisible="state in ['validate', 'refuse']"
+                       readonly="1"
+                       groups="hr_holidays.group_hr_holidays_user,hr_holidays.group_hr_holidays_manager"/>
+                <field name="flight_ticket_ids" invisible="1"/>
+            </field>
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page string="Pending Works">
+                        <field name="pending_task_ids" widget="one2many_list"
+                               readonly=" state  in ['validate', 'validate1','refuse']">
+                            <list editable="bottom">
+                                <field name="name"/>
+                                <field name="project_id"/>
+                                <field name="description"/>
+                                <field name="leave_id" invisible="1"/>
+                                <field name="dept_id" invisible="1"/>
+                            </list>
+                        </field>
+                    </page>
+                    <page string="Overlapping Leaves"
+                          invisible="state in ['validate', 'refuse'] or overlapping_leaves_ids == []"
+                          groups="hr_holidays.group_hr_holidays_manager,hr_holidays.group_hr_holidays_user">
+                        <field name="overlapping_leaves_ids"/>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+</odoo>

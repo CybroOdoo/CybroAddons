@@ -1,0 +1,672 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Customizes the 'My Home' page in the portal to include links to view documents and document requests. -->
+    <template id="portal_my_home_document"
+              name="Show Documents" customize_show="True"
+              inherit_id="portal.portal_my_home" priority="20">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Documents</t>
+                <t t-set="url" t-value="'/my/documents'"/>
+                <t t-set="placeholder_count" t-value="'document_count'"/>
+            </t>
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Document Requests</t>
+                <t t-set="url" t-value="'/my/document_request'"/>
+                <t t-set="placeholder_count" t-value="'request_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- template for the portal page for displaying user documents -->
+    <template id="portal_my_documents" name="My Documents">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Documents</t>
+            </t>
+            <div id="document_portal">
+                <span id="docs_upload_form" class="modal fade">
+                    <div class="modal-dialog modal-content"
+                         style="border:none; height:fit-content; max-width:700px; margin-top:2%;">
+                        <div class="modal-body" id="pop_html">
+                            <form action="/website/documents" method="post"
+                                  enctype="multipart/form-data"
+                                  class="oe_import">
+                                <input type="hidden" name="csrf_token"
+                                       t-att-value="csrf_token"/>
+                                <div class="row form-group"
+                                     style="padding:8px">
+                                    <div class="align-middle"
+                                         style="margin:0 auto; width:80%;">
+                                        <input type="file" name="file"
+                                               class="form-control"
+                                               required="1"/>
+                                    </div>
+                                </div>
+                                <div class="form-group row"
+                                     style="padding:8px">
+                                    <div class="align-middle"
+                                         style="margin:0 auto; width:80%;">
+                                        <span style="font-size:13px; color:#8f8888;">
+                                            Choose Workspace*
+                                        </span>
+                                        <select class="form-control product"
+                                                id="workspace" name="workspace"
+                                                default="None"
+                                                style="color:#8879B0; font-size:16px; border:1px solid #8879B0; text-align: center;">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row"
+                                     style="padding:5px">
+                                    <div class="align-middle"
+                                         style="margin:0 auto; width:80%;">
+                                        <textarea rows="6" cols="40"
+                                                  class="form-control"
+                                                  id="return_reason"
+                                                  name="reason"
+                                                  placeholder="Description"
+                                                  style="padding:5px; border:1px solid #8879B0;"/>
+                                        <button id="submit"
+                                                type="submit"
+                                                class="btn btn-secondary"
+                                                style="width:200px; margin-top:10px; margin-left:25%; background-color:#59CE8F; border:none; padding:8px; font-size:16px;">
+                                            Upload
+                                        </button>
+                                        <span id="o_website_form_result"/>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </span>
+                <t t-if="not document_ids">
+                    <p>There are currently no Documents for your account.</p>
+                </t>
+                <t t-if="document_ids">
+                    <table class="table rounded mb-0 cy-white o_portal_my_doc_table">
+                        <thead>
+                            <tr class="active">
+                                <th class="text-start">Document Name</th>
+                                <th class="text-end">User Name</th>
+                                <th class="text-end">Create Date</th>
+                                <th class="text-end">Related User</th>
+                                <th class="text-end">Download</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="count" t-value="0"/>
+                            <t t-foreach="extensions" t-as="extension">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-start" colspan="5"
+                                            style="text-transform: uppercase;">
+                                            <t t-esc="extension"/>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <t t-foreach="document_ids[count]" t-as="docs">
+                                    <tr>
+                                        <td class="text-start">
+                                            <t t-esc="docs.name"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-esc="docs.user_id.name"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-esc="docs.date"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-esc="docs.partner_id.name"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-if="extension == 'url'">
+                                                <t t-if="docs.is_locked">
+                                                    <span class="fa fa-lock text-danger" title="Locked"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <a class="btn btn-outline-primary fa fa-expand"
+                                                       t-att-href="docs.content_url"
+                                                       target="_blank">
+                                                    </a>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-if="docs.is_locked">
+                                                    <span class="fa fa-lock text-danger" title="Locked"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <a class="btn btn-outline-primary fa fa-download"
+                                                       t-attf-href="/web/content/#{docs.attachment_id.id}?download=true&amp;access_token="
+                                                       target="_blank"/>
+                                                </t>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-set="count" t-value="count+1"/>
+                            </t>
+                        </tbody>
+                    </table>
+                    <div class="toast"
+                         style="position:absolute;top:62px;right:10px;">
+                        <div class="toast-header">
+                            Link Copied to Clipboard
+                            <button type="button" class="btn-close"
+                                    data-bs-dismiss="toast"/>
+                        </div>
+                        <div class="toast-body text-primary">
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- portal menu for documents breadcrumbs -->
+    <template id="portal_my_home_menu_doc" name="Portal layout : doc menu"
+              inherit_id="portal.portal_breadcrumbs" priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'document'">
+                <a t-if="document" t-attf-href="/my/documents">/ Documents</a>
+                <t t-else="">/ Documents</t>
+            </li>
+            <li t-if="document" class="breadcrumb-item active">
+                / <t t-esc="name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- portal page for displaying document details -->
+    <template id="portal_my_document_view" name="Document Portal Template"
+              inherit_id="portal.portal_sidebar" primary="True">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <div class="row mt16 o_portal_sale_sidebar">
+                <t t-call="portal.portal_record_sidebar">
+                    <t t-set="classes" t-value="'col-lg-auto d-print-none'"/>
+                    <t t-set="title">
+                        <h4 class="mb-0"><t t-esc="workspace_id"/></h4>
+                    </t>
+                    <t t-set="entries">
+                        <ul class="list-group list-group-flush flex-wrap flex-row flex-lg-column">
+                            <li class="list-group-item d-grid align-content-start">
+                                <p align="center"><t t-esc="date"/></p>
+                            </li>
+                            <li class="list-group-item d-grid align-content-start">
+                                <t t-if="extension == 'url'">
+                                    <a class="btn btn-primary fa fa-download" t-att-href="content_url" target="_blank">
+                                        Open Url
+                                    </a>
+                                </t>
+                                <t t-else="">
+                                    <t t-if="is_locked">
+                                        <button class="btn btn-danger w-100" disabled="1">
+                                            <i class="fa fa-lock me-1"/> Locked
+                                        </button>
+                                    </t>
+                                    <t t-else="">
+                                        <a class="btn btn-primary fa fa-download" t-attf-href="/web/content/#{attachment_id}?download=true" target="_blank">
+                                            Download
+                                        </a>
+                                    </t>
+                                </t>
+                            </li>
+                            <li class="list-group-item d-grid align-content-start">
+                                <div class="small mb-1"><strong class="text-muted">Owner</strong></div>
+                                <div class="row flex-nowrap">
+                                    <div class="col flex-grow-0 pe-2">
+                                        <img class="rounded-circle mr4 float-start o_portal_contact_img"
+                                             t-att-src="image_data_uri(owner.avatar_1024)" alt="Contact"/>
+                                    </div>
+                                    <div class="col ps-0" style="min-width: 150px">
+                                        <span t-esc="owner" t-options='{"widget": "contact", "fields": ["name", "phone"], "no_marker": True}'/>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </t>
+                </t>
+                <div id="document_content" class="col-12 col-lg justify-content-end">
+                    <div t-attf-class="card #{'pb-5' if report_type == 'html' else ''}" id="portal_doc_content">
+                        <div t-call="enhanced_document_management.doc_content_preview"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- document content preview -->
+    <template id="doc_content_preview" name="Document Portal Content">
+        <div id="introduction" t-attf-class="pb-2 pt-3 #{'card-header cy-white' if report_type == 'html' else ''}" style="height:700px;">
+            <h2><t t-esc="name"/></h2>
+            <t t-if="extension == 'url'">
+                <iframe width="100%" height="100%" t-att-src="preview" frameborder="0"/>
+            </t>
+        </div>
+    </template>
+
+    <!-- document share preview -->
+    <template id="document_share_preview">
+        <t t-call="website.layout">
+            <t t-set="title">Document Share Preview</t>
+                <div class="oe_structure" style="width: 90%; margin: auto;
+                    margin-top: 25px; margin-bottom:25px;" >
+                    <div class="row">
+                        <t t-foreach="context" t-as="document">
+                            <div class="col col-md-3">
+                                <a t-att-href="document['doc_url']">
+                            <div class="card" style="max-width: 540px;">
+                              <div class="row g-0">
+                                <div class="col-md-2" style="display: flex;
+                                justify-content: center; align-items: center;">
+                                <t t-if="document['doc_extension'] == 'jpg'">
+                                  <img src="/enhanced_document_management/static/images/img.gif"
+                                       class="img-fluid rounded-start"
+                                       style="width: 43px;" alt="..."/>
+                                </t>
+                                <t t-if="document['doc_extension'] == 'png'">
+                                  <img src="/enhanced_document_management/static/images/img.gif"
+                                       class="img-fluid rounded-start"
+                                       style="width: 43px;" alt="..."/>
+                                </t>
+                                <t t-if="document['doc_extension'] == 'docx'">
+                                  <img src="/enhanced_document_management/static/images/doc.png"
+                                       class="img-fluid rounded-start"
+                                       style="width: 43px;" alt="..."/>
+                                </t>
+                                <t t-if="document['doc_extension'] == 'csv'">
+                                  <img src="/enhanced_document_management/static/images/csv.png"
+                                       class="img-fluid rounded-start"
+                                       style="width: 43px;" alt="..."/>
+                                </t>
+                                <t t-if="document['doc_extension'] == 'pdf'">
+                                  <img src="/enhanced_document_management/static/images/pdf.png"
+                                       class="img-fluid rounded-start"
+                                       style="width: 43px;" alt="..."/>
+                                </t>
+                                <t t-if="document['doc_extension'] == 'txt'">
+                                  <img src="/enhanced_document_management/static/images/text.png"
+                                       class="img-fluid rounded-start" alt="..."/>
+                                </t>
+                                <t t-if="document['doc_extension'] == 'url'">
+                                  <img src="/enhanced_document_management/static/images/url.gif"
+                                       class="img-fluid rounded-start"
+                                       style="width: 43px;" alt="..."/>
+                                </t>
+                                <t t-if="document['doc_extension'] == 'xls'">
+                                  <img src="/enhanced_document_management/static/images/xls.png"
+                                       class="img-fluid rounded-start"
+                                       style="width: 43px;" alt="..."/>
+                                </t>
+                                <t t-if="document['doc_extension'] == 'xlsx'">
+                                  <img src="/enhanced_document_management/static/images/xls.png"
+                                       class="img-fluid rounded-start"
+                                       style="width: 43px;" alt="..."/>
+                                </t>
+                                </div>
+                                <div class="col-md-8">
+                                  <div class="card-body">
+                                    <h5 class="card-title"><t t-esc="document['doc_name']"/></h5>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <t t-esc="document['doc_date']"/>
+                                        </small></p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            </a>
+                            </div>
+                    </t>
+                    </div>
+                </div>
+        </t>
+    </template>
+    <!-- portal menu for document requests -->
+    <template id="portal_my_home_menu_req" name="Portal layout : Req menu"
+              inherit_id="portal.portal_breadcrumbs" priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'document_requests'">
+                <a t-if="document_requests" t-attf-href="/my/documents">/
+                    Upload Request
+                </a>
+                <t t-else="">/ Upload Request</t>
+            </li>
+            <li t-if="document_requests" class="breadcrumb-item active">
+                / <t t-esc="name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- portal layout for document requests -->
+    <template id="portal_my_document_request" name="Document Request">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Document Requests</t>
+            </t>
+            <div id="document_portal">
+                <span id="req_reject_form" class="modal fade">
+                    <div class="modal-dialog modal-content"
+                         style="border:none; height:fit-content; max-width:700px; margin-top:2%;">
+                        <div class="modal-body" id="pop_html">
+                            <form action="/website/documents_request_reject" method="post" class="oe_import">
+                                <div class="row form-group" style="padding:8px">
+                                    <div class="align-middle" style="margin:0 auto; width:80%;">
+                                        <input type="hidden" name="csrf_token" t-att-value="csrf_token"/>
+                                        <input type="hidden" name="req_id" id="req_id"/>
+                                        <label for="reason">Reason</label>
+                                        <textarea name="reason" class="form-control"/>
+                                        <button id="submit" type="submit" class="btn btn-secondary" style="width:200px; margin-top:10px; margin-left:25%; background-color:#59CE8F; border:none; padding:8px; font-size:16px;">
+                                            Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </span>
+                <span id="req_upload_form" class="modal fade">
+                    <div class="modal-dialog modal-content" style="border:none; height:fit-content; max-width:700px; margin-top:2%;">
+                        <div class="modal-body" id="pop_html">
+                            <form action="/website/documents_request" method="post" enctype="multipart/form-data" class="oe_import">
+                                <input type="hidden" name="csrf_token" t-att-value="csrf_token"/>
+                                <div class="row form-group" style="padding:8px">
+                                    <div class="align-middle" style="margin:0 auto; width:80%;">
+                                        <input type="file" name="file" class="form-control" required="1"/>
+                                    </div>
+                                </div>
+                                <div class="form-group row" style="padding:8px">
+                                    <div class="align-middle" style="margin:0 auto; width:80%;">
+                                        <input type="hidden" name="workspace" id="workspace_id"/>
+                                        <input type="hidden" name="requested_by_id" id="requested_by_id"/>
+                                        <input type="hidden" name="rec_id" id="rec_id"/>
+                                        <input type="text" name="workspace_id" id="workspace" readonly="1" class="form-control"/>
+                                    </div>
+                                </div>
+                                <div class="form-group row" style="padding:5px">
+                                    <div class="align-middle" style="margin:0 auto; width:80%;">
+                                        <textarea rows="6" cols="40" class="form-control" id="return_reason" name="reason" placeholder="Description" style="padding:5px; border:1px solid #8879B0;"/>
+                                        <button id="submit" type="submit" class="btn btn-secondary" style="width:200px; margin-top:10px; margin-left:25%; background-color:#59CE8F; border:none; padding:8px; font-size:16px;">
+                                            Upload
+                                        </button>
+                                        <span id="o_website_form_result"/>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </span>
+                <table class="table rounded mb-0 cy-white o_portal_my_doc_table">
+                    <thead>
+                        <tr class="active">
+                            <th class="text-start">Request Date</th>
+                            <th class="text-end">Requested By</th>
+                            <th class="text-end">Document Needed</th>
+                            <th class="text-end">Workspace</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="requests" t-as="req">
+                            <tr>
+                                <td class="text-start"><t t-esc="req['date']"/></td>
+                                <td class="text-end"><t t-esc="req['requested_by_id'][1]"/></td>
+                                <td class="text-end"><t t-esc="req['needed_doc']"/></td>
+                                <td class="text-end"><t t-esc="req['workspace_id'][1]"/></td>
+                                <td class="text-end">
+                                    <button class="btn btn-outline-primary fa fa-upload re-upload"
+                                            t-att-data-id="req['id']"
+                                            t-att-data-workspace_id="req['workspace_id'][0]"
+                                            t-att-data-workspace="req['workspace_id'][1]"
+                                            t-att-data-requested_by_id="req['requested_by_id'][0]"/>
+                                    <button class="btn btn-outline-danger fa fa-minus-circle re-reject"
+                                            t-att-data-id="req['id']"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <!-- navigation bar for document requests -->
+    <template id="document_req_nav">
+        <div class="document_req_nav mb-4 border-bottom pb-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <ul class="nav nav-pills mb-2 mb-md-0">
+                    <li class="nav-item">
+                        <a t-attf-class="nav-link #{'active' if active_tab == 'my' else ''}" href="/document_request">
+                            <i class="fa fa-user-circle me-1"/> My Requests
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a t-attf-class="nav-link #{'active' if active_tab == 'all' else ''}" href="/document_request/all">
+                            <i class="fa fa-list me-1"/> All
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a t-attf-class="nav-link #{'active' if active_tab == 'new' else ''}" href="/document_request/draft">
+                            <i class="fa fa-plus-square me-1"/> Draft
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a t-attf-class="nav-link #{'active' if active_tab == 'approval' else ''}" href="/document_request/document_approval">
+                            <i class="fa fa-check-circle me-1"/> Approval
+                        </a>
+                    </li>
+                </ul>
+                <a href="/document_request/new" class="btn btn-primary d-flex align-items-center">
+                    <i class="fa fa-plus me-2"/> Create New Request
+                </a>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template for displaying document requests in main portal -->
+    <template id="document_request_template" name="Document Template Requests">
+        <t t-call="website.layout">
+            <div class="container py-4">
+                <t t-call="enhanced_document_management.document_req_nav"/>
+                <t t-if="document_req_count == 0">
+                    <t t-call="enhanced_document_management.no_request_template"/>
+                </t>
+                <t t-else="">
+                    <div class="row mt-4">
+                        <t t-foreach="document_requests" t-as="document_request">
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100 shadow-sm border-0 border-top border-primary border-4 rounded-3 hover-shadow">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title text-truncate mb-0" style="font-weight: 600;">
+                                                <a t-attf-href="/document_request/details/request/{{document_request.id}}" class="text-decoration-none text-dark">
+                                                    <t t-esc="document_request.document_id.name"/>
+                                                </a>
+                                            </h5>
+                                            <span t-attf-class="badge rounded-pill {{ 'bg-success' if document_request.state == 'approved' else 'bg-warning text-dark' if document_request.state == 'document_approval' else 'bg-primary' }} border-0">
+                                                <t t-if="document_request.state == 'new'">New</t>
+                                                <t t-elif="document_request.state == 'document_approval'">Document Approval</t>
+                                                <t t-elif="document_request.state == 'approved'">Approved</t>
+                                            </span>
+                                        </div>
+                                        <div class="text-muted small">
+                                            <div class="mb-2 d-flex align-items-center">
+                                                <div class="bg-light rounded-circle p-2 me-2" style="width: 32px; height: 32px; display: flex; justify-content: center; align-items: center;">
+                                                    <i class="fa fa-user-tie text-primary"/>
+                                                </div>
+                                                <div>
+                                                    <div class="text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Manager</div>
+                                                    <div class="text-dark"><t t-esc="document_request.manager_id.name or 'N/A'"/></div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-0 d-flex align-items-center">
+                                                <div class="bg-light rounded-circle p-2 me-2" style="width: 32px; height: 32px; display: flex; justify-content: center; align-items: center;">
+                                                    <i class="fa fa-calendar-alt text-primary"/>
+                                                </div>
+                                                <div>
+                                                    <div class="text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Requested Date</div>
+                                                    <div class="text-dark"><t t-esc="document_request.requested_date"/></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                                        <a t-attf-href="/document_request/details/request/{{document_request.id}}" class="btn btn-outline-primary btn-sm w-100 rounded-pill">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- Template for no requests -->
+    <template id="no_request_template">
+        <div class="container py-5 text-center">
+            <div class="row justify-content-center">
+                <div class="col-md-6 border rounded-3 p-5 bg-white shadow-sm">
+                    <h3 class="fw-bold mb-3">No Requests Found</h3>
+                    <p class="text-muted mb-4">You haven't made any document requests in this category yet. Click below to start a new request.</p>
+                    <a href="/document_request/new" class="btn btn-primary btn-lg px-4 rounded-pill">
+                        <i class="fa fa-plus me-2"/>New Request
+                    </a>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Portal form for new request -->
+    <template id="document_request_form">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <form action="/document_request/submit" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div class="row justify-content-center">
+                        <div class="col-md-8 col-lg-7">
+                            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                                <div class="card-header bg-primary text-white text-center py-4 border-0">
+                                    <h3 class="mb-0 fw-bold">New Document Request</h3>
+                                    <p class="mb-0 opacity-75 small">Submit a request for a new document template</p>
+                                </div>
+                                <div class="card-body p-5 bg-white">
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold text-dark mb-2">Select Document Template <span class="text-danger">*</span></label>
+                                        <div class="input-group input-group-lg">
+                                            <span class="input-group-text bg-light border-end-0 text-primary"><i class="fa fa-file-alt"/></span>
+                                            <select name="document_request_template_id" class="form-select border-start-0 ps-0" required="1" style="font-size: 1rem;">
+                                                <option value="" disabled="1" selected="1">Choose a template...</option>
+                                                <t t-foreach="templates or []" t-as="template">
+                                                    <option t-att-value="template.id"><t t-esc="template.name"/></option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                        <div class="form-text mt-3 text-muted">
+                                            <i class="fa fa-info-circle me-1 small"/> Your request will be automatically routed to the designated manager for approval.
+                                        </div>
+                                    </div>
+                                    <hr class="my-4 opacity-25"/>
+                                    <div class="d-grid gap-3">
+                                        <button class="btn btn-primary btn-lg py-3 fw-bold rounded-3 shadow-sm hover-shadow" type="submit">
+                                            <i class="fa fa-paper-plane me-2"/>Submit Request
+                                        </button>
+                                        <a href="/document_request" class="btn btn-link text-muted text-decoration-none">Cancel and Go Back</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </t>
+    </template>
+
+    <!-- Confirmation template -->
+    <template id="document_request_submit_template">
+        <t t-call="portal.portal_layout">
+            <div class="jumbotron text-center mt-5">
+                <h1 class="display-3">Thank You!</h1>
+                <p class="lead">Your request has been successfully submitted.</p>
+            </div>
+        </t>
+    </template>
+    <!-- This template customizes the portal view to include a menu entry for "Document Requests". -->
+    <template id="portal_document_request" name="Document Requests"
+              customize_show="True" inherit_id="portal.portal_my_home"
+              priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Document Template Requests</t>
+                <t t-set="url" t-value="'/document_request'"/>
+                <t t-set="placeholder_count" t-value="'doc_req_count'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <!-- Document Request Details -->
+    <template id="document_request_details" name="Document Request Details">
+        <t t-call="portal.portal_layout">
+            <div class="container py-5">
+                <t t-call="enhanced_document_management.document_req_nav"/>
+                <div class="card mt-4 o_portal_card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">
+                            Details: <t t-esc="document_request.document_id.name"/>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Request Sequence:</strong>
+                                <span class="ms-2"><t t-esc="document_request.display_name"/></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Status:</strong>
+                                <span class="ms-2 badge bg-info"><t t-esc="document_request.state"/></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Employee:</strong>
+                                <span class="ms-2"><t t-esc="document_request.employee_id.name"/></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Manager:</strong>
+                                <span class="ms-2"><t t-esc="document_request.manager_id.name"/></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Requested Date:</strong>
+                                <span class="ms-2"><t t-esc="document_request.requested_date"/></span>
+                            </div>
+                        </div>
+                        <t t-if="document_request.template">
+                            <hr class="mt-4 mb-4"/>
+                            <h4 class="mb-3">Template Content</h4>
+                            <div class="border p-3 rounded bg-light">
+                                <t t-out="document_request.template"/>
+                            </div>
+                        </t>
+                        <t t-if="document_request.stamp">
+                            <hr class="mt-4 mb-4"/>
+                            <h4 class="mb-3">Stamp Approval</h4>
+                            <div class="mt-3">
+                                <img class="img-fluid border p-1 rounded" t-attf-src="data:image/*;base64,{{document_request.stamp}}" style="max-width: 200px;"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <a href="/document_request" class="btn btn-secondary">
+                            <i class="fa fa-arrow-left me-1"/> Back to Requests
+                        </a>
+                        <t t-if="document_request.state == 'approved'">
+                            <a t-attf-href="/document_request/download/{{document_request.id}}" class="btn btn-success">
+                                <i class="fa fa-download me-1"/> Download Document
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

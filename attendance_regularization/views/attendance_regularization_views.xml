@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- View definition for displaying Attendance Regular records in a list view -->
+    <record id="attendance_regular_view_tree" model="ir.ui.view">
+        <field name="name">attendance.regular.view.list</field>
+        <field name="model">attendance.regular</field>
+        <field name="priority" eval="8"/>
+        <field name="arch" type="xml">
+            <list string="Attendance Regularization">
+                <field name="employee_id"/>
+                <field name="reg_category"/>
+                <field name="from_date"/>
+                <field name="reg_reason"/>
+                <field name="to_date"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'" decoration-success="state == 'approved'" decoration-primary="state == 'requested'" decoration-warning="state == 'reject'"/>
+            </list>
+        </field>
+    </record>
+    <!-- View definition for approving Attendance Regular records in a form view -->
+    <record id="attendance_regular_approve_view_form" model="ir.ui.view">
+        <field name="name">attend.regular.approve.view.form</field>
+        <field name="model">attendance.regular</field>
+        <field name="arch" type="xml">
+            <form string="Regularization" duplicate="0">
+                <header>
+                    <button name="action_submit" string="Submit"
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve" type="object"
+                            string="Approve" class="oe_highlight"
+                            groups="hr_attendance.group_hr_attendance_manager"
+                            invisible="state != 'requested'"/>
+                    <button name="action_reject" type="object"
+                            string="Reject" class="oe_highlight"
+                            groups="hr_attendance.group_hr_attendance_manager"
+                            invisible="state != 'requested'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,requested,approved"/>
+                </header>
+                <sheet>
+                    <group col="4" colspan="4">
+                        <field name="reg_category"
+                               readonly="state == 'approved'"/>
+                        <field name="from_date"
+                               readonly="state == 'approved'"/>
+                        <field name="reg_reason"
+                               readonly="state == 'approved'"/>
+                        <field name="to_date"
+                               readonly="state == 'approved'"/>
+                        <field name="employee_id"
+                               readonly="state == 'approved'"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Action definition for navigating to the Attendance Regular records -->
+    <record id="attendance_regular_action" model="ir.actions.act_window">
+        <field name="name">Attendance Regularization</field>
+        <field name="res_model">attendance.regular</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="oe_view_no_content_create">Create New Request
+            </p>
+        </field>
+    </record>
+    <!-- Action definition for approving Attendance Regular records -->
+    <record id="attendance_regular_approve_action" model="ir.actions.act_window">
+        <field name="name">Attendance Regularization Approval</field>
+        <field name="res_model">attendance.regular</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">
+            [('state','!=','approved'),('state','!=','reject')]
+        </field>
+        <field name="help" type="html">
+            <p class="oe_view_no_content_create">Create new Record
+            </p>
+        </field>
+    </record>
+    <!-- Menu item for Attendance Regularization in the HR Attendance menu -->
+    <menuitem id="attendance_regular_menu_root"
+              name="Attendance Regularization"
+              parent="hr_attendance.menu_hr_attendance_root"
+              groups="base.group_user"/>
+    <!-- Submenu item for Attendance Regularization -->
+    <menuitem id="attendance_regular_menu_regularization"
+              name="Attendance Regularization"
+              parent="attendance_regular_menu_root"
+              sequence="15" groups="base.group_user"
+              action="attendance_regular_action"/>
+    <!-- Menu item for approving Attendance Regularization records -->
+    <menuitem id="attendance_regular_menu_approval"
+              name="Regularization Approval"
+              parent="attendance_regular_menu_root"
+              sequence="10"
+              action="attendance_regular_approve_action"
+              groups="hr_attendance.group_hr_attendance_manager"/>
+</odoo>

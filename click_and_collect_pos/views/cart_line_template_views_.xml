@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherited Template and Added New TD -->
+    <template id="click_and_collect" name="Click And Collect"
+              inherit_id="website_sale.cart_lines_price">
+    <xpath expr="//h6[@name='website_sale_cart_line_price']" position="after">
+            <div class="text-center oe_inline click_and_collect_td">
+                <input type="checkbox" name="click_and_collect"
+                       id='is_click_and_collect'
+                       t-att-checked="line.is_click_and_collect"
+                       class="form-check-input clickandecollect"
+                       t-att-data-id="line.id"  t-on-click="onClickClickAndCollect"/>
+                        <div t-attf-class="text-center click_and_collect_td oe_session #{not line.is_click_and_collect and 'd-none' or ''}">
+                <t t-set="get_pos_session"
+                   t-value="request.env['pos.config'].sudo().search([])"/>
+                <select class="form-select session_values"
+                        name="pos_session" t-att-data-line-id="line.id">
+                    <option value="select">Select</option>
+                    <option t-foreach="get_pos_session" t-as="session"
+                            t-att-value="session.id"
+                            t-att-selected="line.pos_config_id and line.pos_config_id.id == session.id"
+                            t-key="session.id">
+                        <t t-esc="session.name"/>,
+                        <t t-esc="session.street"/>,
+                        <t t-esc="session.city"/>,
+                        <t t-esc="session.state_id.name"/>
+                    </option>
+                </select>
+            </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
