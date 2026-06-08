@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="Orderline" t-inherit="point_of_sale.Orderline"
+       t-inherit-mode="extension" owl="1">
+
+        <xpath expr="//ul[hasclass('info-list')]" position="inside">
+
+            <!-- Hide everything inside this condition while printing receipt -->
+            <span class="orderline-laundry"
+                  t-if="pos.config.orderline_washing_type">
+
+                <!-- Icon shown when washingType exists -->
+                <i t-on-click.prevent.stop="()=> this.click(line)" t-if="line.washingTypeName and pos.getOrder().getScreenData().name !== 'ReceiptScreen'"
+                   class="oe_link_icon fa fa-user oe_icon oe_green text-success"
+                   role="img"/>
+
+                <!-- Icon shown when no washingType exists -->
+                <i t-on-click.prevent.stop="()=> this.click(line)" t-if="!line.washingTypeName and pos.getOrder().getScreenData().name !== 'ReceiptScreen'"
+                   class="oe_link_icon fa fa-user-plus oe_icon oe_red text-danger"
+                   role="img"/>
+
+
+                <!-- Show washing type text -->
+                <t t-if="line.washingTypeName">
+                    <t t-esc="line.washing_type_id.name"/>
+                </t>
+
+                <!-- Remove icon -->
+                <i t-on-click="()=> this.remove_laundry(line)"
+               t-if="line.washingTypeName and pos.getOrder().getScreenData().name !== 'ReceiptScreen'"
+               class="oe_link_icon fa fa-remove oe_icon oe_red text-danger"
+               role="img"/>
+                </span>
+
+        </xpath>
+
+        <!-- Product image -->
+        <xpath expr="//div[hasclass('product-name')]/span" position="before">
+            <span class="orderline-product-img">
+                <img t-attf-src="/web/image?model=product.product&amp;field=image_128&amp;id={{ line.product_id.id }}&amp;unique=1"
+                     style="padding: 5px; height: 55px;"/>
+            </span>
+        </xpath>
+
+
+    </t>
+
+        <t t-name="point_of_sale.WashingButton" t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension">
+        <xpath expr="//t[@t-if='props.showRemainingButtons']/div/button[hasclass('o_pricelist_button')]" position="after">
+        <button class="control-button btn btn-light rounded-0 fw-bolder"
+                t-on-click="() => this.onWashingClick()" t-if="pos.config.orderline_washing_type">
+            <i class="fa fa-shopping-basket" role="img" aria-label="Laundry Service" title="Laundry Service"/>
+            <span/>
+            <span>Laundry Service</span>
+        </button>
+        </xpath>
+        </t>
+
+</templates>

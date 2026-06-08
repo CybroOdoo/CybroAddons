@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- List View -->
+    <record id="event_management_view_list" model="ir.ui.view">
+        <field name="name">event.management.view.list</field>
+        <field name="model">event.management</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="type_of_event_id"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+    <!-- Kanban view -->
+    <record id="event_management_view_kanban" model="ir.ui.view">
+        <field name="name">event.management.view.kanban</field>
+        <field name="model">event.management</field>
+        <field name="arch" type="xml">
+            <kanban quick_create="false">
+                <field name="type_of_event_id"/>
+                <templates>
+    <t t-name="card" class="flex-row">
+        <div class="oe_kanban_global_click o_kanban_record" style="margin-left: 8px; margin-right: -8px; border:none;">
+
+            <!-- IMAGE ASIDE -->
+            <aside class="o_kanban_aside_full">
+                <div class="o_kanban_image_fill position-relative w-100" style="margin-top: 10px !important;">
+                    <field name="event_type_image"
+                           widget="image"
+                           class="h-100"
+                           options="{'img_class': 'object-fit-cover'}"/>
+                </div>
+            </aside>
+
+            <!-- CONTENT -->
+            <main class="ps-2 ps-md-0 text-center w-100">
+                <div class="mb-1" style="margin-top: 10px !important;">
+                    <strong class="o_kanban_record_title">
+                        <field name="name"/>
+                    </strong>
+                </div>
+            </main>
+
+        </div>
+    </t>
+</templates>
+
+            </kanban>
+        </field>
+    </record>
+    <!-- Form view -->
+    <record id="event_management_view_form" model="ir.ui.view">
+        <field name="name">event.management.view.form</field>
+        <field name="model">event.management</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_event_confirm" string="Confirm"
+                            type="object" class="oe_highlight"
+                            invisible="state not in ['draft']"/>
+                    <button name="action_event_invoice_create"
+                            string="Create Invoice" type="object"
+                            class="oe_highlight"
+                            invisible="state not in ['invoice', 'confirm'] or (pending_invoice == False) "/>
+                    <button name="action_event_cancel" string="Cancel"
+                            type="object"
+                            invisible="state not in ['draft']"/>
+                    <button name="action_event_close" string="Close"
+                            type="object"
+                            invisible="state not in ['invoice']"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirm,invoice,close"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice_event"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                invisible="state not in ['invoice', 'close']">
+                            <field name="invoice_count" widget="statinfo"
+                                   string="Invoices"/>
+                        </button>
+                        <button name="action_view_catering_service"
+                                type="object" class="oe_stat_button"
+                                invisible="catering_on == False" help="Catering">
+                            <div class="fa fa-cutlery" title="catering"
+                                 style="font-size:21px;padding-left:8px;padding-right:5px;color:#7C7BAD;"/>
+                            <div class="o_stat_info"
+                                 style="position: static;padding-left:10px;font-size:12px;font-weight:300;color:#d60000;">
+                                <div style="font-weight:600;font-size:13px">
+                                    <field name="catering_pending"/>
+                                </div>
+                                <span class="o_stat_info">Pending</span>
+                            </div>
+                            <div class="o_stat_info"
+                                 style="padding-left:10px;font-size:12px;font-weight:300;color:#569220;">
+                                <div style="font-weight:600;font-size:13px">
+                                    <field name="catering_done"/>
+                                </div>
+                                <span class="o_stat_info">Done</span>
+                            </div>
+                        </button>
+                    </div>
+                    <h1 class="mt0">
+                        <field name="name" readonly="1"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="type_of_event_id"
+                                        readonly="state not in ('draft')"/>
+                            <field name="partner_id"
+                                   readonly="state not in ('draft')"/>
+                            <field name="catering_on" invisible="1"/>
+                            <field name="reference" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="date"
+                                   readonly="state not in ('draft')"/>
+                            <field name="start_date"
+                                   readonly="state not in ('draft')"/>
+                            <field name="end_date"
+                                   readonly="state not in ('draft')"/>
+                            <field name="company_id"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="pending_invoice" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Service Lines">
+                            <field name="service_line_ids" mode="list"
+                                   readonly="state not in ('draft')">
+                                <list string="Service Lines List"
+                                      editable="bottom">
+                                    <field name="service"/>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="state" readonly="1"/>
+                                    <field name="invoiced" readonly="1"/>
+                                    <field name="currency_id"
+                                           invisible="1"/>
+                                    <field name="related_product_id"
+                                           invisible="1"/>
+                                    <field name="amount" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right"
+                                   colspan="2" name="event_total">
+                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                    <label for="price_subtotal"/>
+                                </div>
+                                <field name="price_subtotal" nolabel="1"
+                                       class="oe_subtotal_footer_separator"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                            </group>
+                            <field name="note" class="oe_inline"
+                                   placeholder="Setup default terms and conditions in your company settings."
+                                   readonly="state not in ('draft')"/>
+                            <div class="oe_clear"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Search view -->
+    <record id="event_management_view_search" model="ir.ui.view">
+        <field name="name">event.management.view.search</field>
+        <field name="model">event.management</field>
+        <field name="arch" type="xml">
+            <search string="Event Management">
+                <field name="reference"/>
+                <field name="type_of_event_id"/>
+                <field name="partner_id"/>
+                <field name="service_line_ids"/>
+                <group>
+                    <filter string="Event Type" name="group_by_event"
+                            domain="[]"
+                            context="{'group_by':'type_of_event_id'}"/>
+                    <filter string="State" name="group_by_state" domain="[]"
+                            context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Calendar view -->
+    <record id="event_management_view_calender" model="ir.ui.view">
+        <field name="name">event.management.view.calendar</field>
+        <field name="model">event.management</field>
+        <field name="arch" type="xml">
+            <calendar string="Event Orders" date_start="start_date"
+                      date_stop="end_date" color="type_of_event_id">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+    <!-- Graph view -->
+    <record id="event_management_view_graph" model="ir.ui.view">
+        <field name="name">event.management.view.graph</field>
+        <field name="model">event.management</field>
+        <field name="arch" type="xml">
+            <graph string="Event Orders">
+                <field name="partner_id"/>
+                <field name="type_of_event_id"/>
+                <field name="price_subtotal" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    <!-- Window action -->
+    <record id="event_management_action"
+            model="ir.actions.act_window">
+        <field name="name">Event Management</field>
+        <field name="res_model">event.management</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">kanban,list,form,calendar,graph</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to add an event order.
+            </p>
+            <p>
+                Here you can create and manage your events.
+            </p>
+        </field>
+    </record>
+    <!-- Menu items -->
+    <menuitem id="event_management_menu_root" name="Event Management"
+              web_icon="event_management,static/description/icon.png"/>
+
+    <menuitem id="event_management_menu" name="Event Management"
+              parent="event_management_menu_root"
+              sequence="5"/>
+
+    <menuitem id="event_management_action_menu" name="Event Management"
+              parent="event_management_menu"
+              action="event_management_action"
+              sequence="4"/>
+</odoo>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--    Inherited the Order Receipt for dding laundry details-->
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('pos-receipt')]/div"  position="before">
+            <t t-if="order.partner_id">
+            <t t-if="order.partner_id.name">
+                <t t-esc="order.partner_id.name"/>
+            </t>
+            <br/>
+            <t t-if="order.partner_id.street">
+                <t t-esc="order.partner_id.street"/>
+            </t>
+            <br/>
+            <t t-if="order.partner_id.state_id">
+                <t t-esc="order.partner_id.state_id[1]"/>
+            </t>
+            <br/>
+            <t t-if="order.partner_id.country_id">
+                <t t-esc="order.partner_id.country_id[1]"/>
+            </t>
+            </t>
+        </xpath>
+    </t>
+    <t t-inherit="point_of_sale.ReceiptHeader" t-inherit-mode="extension" owl="1">
+        <xpath expr="//img[hasclass('pos-receipt-logo')]" position="replace"/>
+        <xpath expr="//div[hasclass('pos-receipt-customer')]" position="replace"/>
+        <xpath expr="//div[hasclass('pos-receipt-contact')]" position="replace">
+           <span class="pos-receipt-center-align">
+               <h2 >Laundry Service</h2>
+              <div> <t t-esc="props.order.company.name"/></div>
+               <div t-if="order.getCashierName()" class="cashier">
+                <div>------------------------------------------</div>
+                <div>Laundry Person <t t-esc="order.getCashierName()" /></div>
+            </div>
+           </span>
+        </xpath>
+    </t>
+</templates>
