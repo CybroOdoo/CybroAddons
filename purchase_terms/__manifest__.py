@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-################################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Swaraj R (odoo@cybrosys.com)
+#
+#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -18,11 +19,10 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-################################################################################
-
+#############################################################################
 {
     'name': 'Purchase Default Terms and Conditions',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'summary': """This module allows businesses to define and apply default terms 
                and conditions to their purchase orders.""",
     'description': """The Purchase Default Terms and Conditions module enables 
