@@ -1,10 +1,14 @@
+.. image:: https://img.shields.io/badge/license-OPL--1-red.svg
+    :target: https://www.odoo.com/documentation/19.0/legal/licenses.html#odoo-apps
+    :alt: License: OPL-1
+
 Account Report Send By Mail
 ===========================
 Create account report based on user requirements and send it by mail
 
 Configuration
 =============
-* No additional configurations needed
+* configure 'Outgoing Mail Servers'.
 
 Company
 -------
@@ -12,12 +16,15 @@ Company
 
 License
 -------
-GNU Affero General Public License, Version 3 (AGPL v3).
-(https://www.gnu.org/licenses/agpl-3.0-standalone.html)
+Odoo Proprietary License v1.0 (OPL-1)
+(https://www.odoo.com/documentation/user/19.0/legal/licenses/licenses.html)
 
 Credits
 -------
-* Developer: (V19) Swaraj R, odoo@cybrosys.com
+* Developer: (V17) Swathy K S,
+            (V18) Busthana Shirin
+            (V19) Aleena K
+            Contact: odoo@cybrosys.com
 
 Contacts
 --------
@@ -34,9 +41,9 @@ Maintainer
    :target: https://cybrosys.com
 
 This module is maintained by Cybrosys Technologies.
+
 For support and more information, please visit `Our Website <https://cybrosys.com/>`__
 
 Further information
 ===================
 HTML Description: `<static/description/index.html>`__
-
