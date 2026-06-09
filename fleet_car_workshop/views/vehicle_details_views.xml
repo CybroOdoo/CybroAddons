@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    View for model vehicle details -->
+    <record id="vehicle_details_view_form" model="ir.ui.view">
+        <field name="name">vehicle.details.view.form</field>
+        <field name="model">vehicle.details</field>
+        <field name="arch" type="xml">
+            <form string="Vehicle">
+                <header>
+                    <field name="state" widget="statusbar"
+                           options="{'clickable': '1'}"/>
+                </header>
+                <sheet string="Vehicle">
+                    <div class="oe_button_box" name="button_box"
+                         groups="base.group_user">
+                        <button class="oe_stat_button"
+                                icon="fa-tasks"
+                                name="%(fleet_car_workshop.car_workshop_action)d"
+                                type="action">
+                            <field string="Tasks" name="task_count"
+                                   widget="statinfo"/>
+                        </button>
+                        <button class="oe_stat_button"
+                                name="attachment_tree_views" type="object"
+                                icon="fa-files-o">
+                            <field string="Documents" name="doc_count"
+                                   widget="statinfo"/>
+                        </button>
+                    </div>
+                    <field name="image_128" widget='image' class="oe_avatar"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="vehicle_id"
+                                   placeholder="Vehicle Name"/>
+                        </h1>
+                        <div name="options_active" class="oe_edit_only">
+                            <group>
+                                <field name="partner_id" string="Customer"/>
+                            </group>
+                            <div>
+                                <label for="is_archive" class="oe_inline"/>
+                                <field name="is_archive" class="oe_inline"/>
+                            </div>
+                        </div>
+                    </div>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="vehicle_details_view_search" model="ir.ui.view">
+        <field name="name">vehicle.details.view.search</field>
+        <field name="model">vehicle.details</field>
+        <field name="arch" type="xml">
+            <search string="Search Vehicle">
+                <field name="vehicle_id" string="Vehicle Name"/>
+                <filter string="Open" name="Current"
+                        domain="[('state', '=','open')]"/>
+                <filter string="Pending" name="Pending"
+                        domain="[('state', '=','pending')]"/>
+                <separator/>
+                <separator/>
+                <filter string="Archived" name="inactive"
+                        domain="[('active','=',False)]"/>
+                <field name="partner_id" string="Contact"
+                       filter_domain="[('partner_id', 'child_of', self)]"/>
+                <group>
+                    <filter string="Contact" name="Partner"
+                            context="{'group_by':'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="vehicle_details_view_kanban" model="ir.ui.view">
+        <field name="name">vehicle.details.view.kanban</field>
+        <field name="model">vehicle.details</field>
+        <field name="arch" type="xml">
+            <kanban class="oe_background_grey o_kanban_dashboard o_project_kanban">
+                <field name="vehicle_id"/>
+                <field name="color"/>
+                <field name="task_count"/>
+                <field name="task_ids"/>
+                <field name="doc_count"/>
+                <field name="image_128"/>
+                <field name="partner_id"/>
+                <field name="id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_module_vignette">
+                            <div t-attf-class="#{!selection_mode ?(record.color.raw_value) : ''} oe_kanban_global_click">
+                                <div class="o_project_kanban_main">
+                                    <t t-if="record.id">
+                                        <field name="vehicle_id"
+                                               widget="image"
+                                               options="{'preview_image': 'avatar_128'}"
+                                               class="float-start me-2"/>
+                                    </t>
+                                    <div class="o_kanban_primary_left">
+                                        <div class="oe_kanban_details">
+                                            <div class="o_primary">
+                                                <span>
+                                                    <t t-esc="record.vehicle_id.value"/>
+                                                </span>
+                                            </div>
+                                            <p/>
+                                            <p class="oe_module_name">
+                                                <field name="partner_id"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                    </div>
+                                    <div>
+                                        <button name="%(fleet_car_workshop.car_workshop_action)d"
+                                                type="action"
+                                                class="btn btn-sm btn-primary float-end">
+                                            <span class="o_value">
+                                                <t t-esc="record.task_count.value"/>
+                                            </span>
+                                            <span class="o_label">Tasks</span>
+                                        </button>
+                                    </div>
+                                    <button t-if="record.doc_count.raw_value"
+                                            class="btn btn-secondary btn-sm"
+                                            name="attachment_tree_views"
+                                            type="object">
+                                        <span class="o_value">
+                                            <t t-esc="record.doc_count.value"/>
+                                        </span>
+                                        <span class="o_label">Documents</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <record id="vehicle_details_view_tree" model="ir.ui.view">
+        <field name="name">vehicle.details.view.list</field>
+        <field name="model">vehicle.details</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state in ('draft','pending')"
+                  decoration-muted="state in ('close','cancelled')"
+                  string="Vehicles">
+                <field name="vehicle_id" string="Vehicle Name"/>
+                <field name="partner_id" string="Contact"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+    <record id="vehicle_details_action_dashboard" model="ir.actions.act_window">
+        <field name="name">Vehicles</field>
+        <field name="res_model">vehicle.details</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="search_view_id" ref="vehicle_details_view_search"/>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Create a new vehicle.
+            </p>
+            <p>
+                Manage vehicles, track workshop activities, plan works, and monitor
+                customer vehicle records.
+            </p>
+        </field>
+    </record>
+    <record id="vehicle_details_action" model="ir.actions.act_window">
+        <field name="name">Vehicles</field>
+        <field name="res_model">vehicle.details</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="vehicle_details_view_search"/>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Create a new vehicle.
+            </p>
+        </field>
+    </record>
+    <menuitem id="vehicles_details_menu_dashboard" name="Dashboard"
+              parent="car_workshop_menu_root"
+              sequence="1"
+              action="vehicle_details_action_dashboard"/>
+    <menuitem id="vehicle_details_menu" name="Vehicles"
+              action="vehicle_details_action"
+              parent="car_workshop_menu_config"/>
+</odoo>
