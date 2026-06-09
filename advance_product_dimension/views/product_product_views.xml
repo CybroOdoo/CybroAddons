@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This view inherits the product.product form view and adds fields to manage dimensional pricing, including options
+ to use dimensional values and input active, minimum, and maximum dimensions. -->
+<odoo>
+    <record id="product_product_view_form_inherit_advance_product_dimension" model="ir.ui.view">
+        <field name="name">product.product.view.form.inherit.advance.product.dimension</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+             <xpath expr="//field[@name='detailed_type']" position="after">
+                <field name="price_calculation_based_on"/>
+            </xpath>
+            <xpath expr="//field[@name='additional_product_tag_ids']" position="after">
+                <field name="use_dimensional_values" invisible="price_calculation_based_on != 'based_on_dimension'"/>
+            </xpath>
+            <xpath expr="//page[@name='general_information']" position="inside">
+                <group string="Relevant Dimensions" invisible="not use_dimensional_values">
+                    <field name="uom_prompt_id" string="UOM Prompt" required="price_calculation_based_on == 'based_on_dimension'"/>
+                </group>
+                <separator/>
+                <group col="3" class="container" invisible="not use_dimensional_values">
+                    <!-- Active Group -->
+                    <group string="ACTIVE">
+                        <field name="length"/>
+                        <field name="width"/>
+                        <field name="height"/>
+                    </group>
+                    <!-- Minimum Group -->
+                    <group string="MINIMUM">
+                        <field name="min_length" nolabel="1" colspan="2"/>
+                        <field name="min_width" nolabel="1" colspan="2"/>
+                        <field name="min_height" nolabel="1" colspan="2"/>
+                    </group>
+                    <!-- Maximum Group -->
+                    <group string="MAXIMUM">
+                        <field name="max_length" nolabel="1" colspan="2"/>
+                        <field name="max_width" nolabel="1" colspan="2"/>
+                        <field name="max_height" nolabel="1" colspan="2"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
