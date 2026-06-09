@@ -189,15 +189,16 @@ class BudgetLines(models.Model):
                         theo_amt = line.planned_amount / max(1, total_days) * days_over
             line.theoretical_amount = theo_amt
 
+    @api.depends('theoretical_amount', 'practical_amount')
     def _compute_percentage(self):
         for line in self:
             theoretical = line.theoretical_amount or 0.0
             practical = line.practical_amount or 0.0
 
             if theoretical != 0:
-                percentage = (practical / theoretical) * 100
+                percentage = (abs(practical) / abs(theoretical)) * 100
             else:
                 percentage = 0.0
 
-            line.percentage = max(0.0, min(100.0, percentage))
+            line.percentage = max(0.0, percentage)
 
