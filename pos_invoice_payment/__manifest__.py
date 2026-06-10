@@ -20,7 +20,7 @@
 ################################################################################
 {
     "name": "POS Invoice Register Payment",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Point of Sale",
     "summary": "Create payment and register payment for invoice in pos",
     "description": "This module will help you create payments in customer list"
