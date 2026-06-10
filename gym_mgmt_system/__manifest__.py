@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'GYM Management System',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Industries',
     'summary': 'GYM Management System For Managing '
                'Membership, Member, Workout Plan, etc',

@@ -81,15 +81,16 @@ class MeasurementHistory(models.Model):
     @api.depends('weight', 'height', 'gender', 'age')
     def _compute_bmi_bmr(self):
         """Based on weight and height ,calculate the bmi and bmr"""
-        self.bmi = self.bmr = 0
-        if self.weight and self.height:
-            self.bmi = (self.weight / self.height / self.height) * 10000
-            if self.gender == "male":
-                self.bmr = 66.47 + (13.75 * self.weight) + \
-                           (5.003 * self.height) - (6.755 * self.age)
-            if self.gender == "female":
-                self.bmr = 655.1 + (9.563 * self.weight) + \
-                           (1.85 * self.height) - (6.755 * self.age)
-        else:
-            self.bmi = 1
-            self.bmr = 1
+        for rec in self:
+            rec.bmi = rec.bmr = 0
+            if rec.weight and rec.height:
+                rec.bmi = (rec.weight / rec.height / rec.height) * 10000
+                if rec.gender == "male":
+                    rec.bmr = 66.47 + (13.75 * rec.weight) + \
+                               (5.003 * rec.height) - (6.755 * rec.age)
+                if rec.gender == "female":
+                    rec.bmr = 655.1 + (9.563 * rec.weight) + \
+                               (1.85 * rec.height) - (6.755 * rec.age)
+            else:
+                rec.bmi = 1
+                rec.bmr = 1
