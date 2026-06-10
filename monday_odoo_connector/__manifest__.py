@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Monday.com Odoo Connector",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Productivity',
     'summary': """Provides opportunity to connect with your Monday.com account"
     from Odoo.""",

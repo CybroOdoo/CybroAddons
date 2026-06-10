@@ -30,7 +30,7 @@ class MondayConnector(models.TransientModel):
     _rec_name = 'credential_id'
 
     credential_id = fields.Many2one('monday.credential',
-                                    required="True",
+                                    required=True,
                                     string="Monday Credentials",
                                     help="Select the credential for connecting"
                                          " with Monday.com")
