@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Double Validation of Invoice and Bill',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Accounting',
     'summary': "Double Validation of Invoice and Bill that exceeds an amount "
                "limit",
