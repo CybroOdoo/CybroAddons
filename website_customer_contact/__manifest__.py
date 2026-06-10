@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Website Customer Contact",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Website',
     'summary': """Create and manage contacts and addresses from the website.""",
     'description': """This module enables the creation and management of contacts and addresses directly 
