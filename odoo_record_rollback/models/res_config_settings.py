@@ -34,11 +34,10 @@ class ResConfigSettings(models.TransientModel):
 
     def set_values(self):
         """Setting the value for Many2many field in the configuration"""
-        res = super(ResConfigSettings, self).set_values()
+        super(ResConfigSettings, self).set_values()
         self.env['ir.config_parameter'].sudo().set_param(
             'odoo_record_rollback.res_rollback_model_ids',
-            self.res_rollback_model_ids.ids)
-        return res
+            str(self.res_rollback_model_ids.ids))
 
     @api.model
     def get_values(self):
@@ -46,7 +45,11 @@ class ResConfigSettings(models.TransientModel):
         res = super(ResConfigSettings, self).get_values()
         com_contacts = self.env['ir.config_parameter'].sudo().get_param(
             'odoo_record_rollback.res_rollback_model_ids')
-        res.update(res_rollback_model_ids=[(6, 0,
-                                            literal_eval(com_contacts))
-                                           ]if com_contacts else False)
+        if com_contacts:
+            try:
+                res.update(res_rollback_model_ids=[(6, 0, literal_eval(com_contacts))])
+            except Exception:
+                res.update(res_rollback_model_ids=[(6, 0, [])])
+        else:
+            res.update(res_rollback_model_ids=[(6, 0, [])])
         return res

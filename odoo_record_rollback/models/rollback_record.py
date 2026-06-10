@@ -19,7 +19,7 @@
 #
 #############################################################################
 import json
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class RollBackRecord(models.Model):
@@ -52,9 +52,16 @@ class RollBackRecord(models.Model):
             'tag': 'reload'
         }
 
+    @api.model
     def get_models(self):
         """To get the model added in the settings"""
-        many2many_field_ids = self.env['res.config.settings'].create({
-        }).res_rollback_model_ids.ids
-        return [x.model for x in self.env['ir.model'].browse(
-            many2many_field_ids)]
+        com_contacts = self.env['ir.config_parameter'].sudo().get_param(
+            'odoo_record_rollback.res_rollback_model_ids')
+        if com_contacts:
+            from ast import literal_eval
+            try:
+                model_ids = literal_eval(com_contacts)
+                return [x.model for x in self.env['ir.model'].browse(model_ids)]
+            except Exception:
+                pass
+        return []

@@ -29,12 +29,35 @@ class Base(models.AbstractModel):
     def write(self, vals):
         """Creates record when a write function called from any of the base
          models, and store it in rollback model"""
-        for rec in self:
-            if self._name != 'ir.module.module':
-                self.env['rollback.record'].create({
-                    'res_model': self._name,
-                    'record': rec.id,
-                    'history': json.dumps(vals, indent=4, sort_keys=True,
-                                          default=str)
-                })
+        _excluded_models = {
+            'ir.module.module',
+            'rollback.record',
+            'res.config.settings',
+            'ir.config_parameter',
+        }
+        if self._name not in _excluded_models:
+            rollback_models = self.env['rollback.record'].get_models()
+            if self._name in rollback_models:
+                for rec in self:
+                    fields_to_read = [field for field in vals.keys() if field in rec._fields]
+                    if fields_to_read:
+                        old_values = {}
+                        for field in fields_to_read:
+                            field_obj = rec._fields[field]
+                            if field_obj.type == 'many2one':
+                                old_values[field] = rec[field].id or False
+                            elif field_obj.type in ('many2many', 'one2many'):
+                                old_values[field] = [(6, 0, rec[field].ids)]
+                            else:
+                                val = rec[field]
+                                if field_obj.type in ('date', 'datetime') and val:
+                                    old_values[field] = str(val)
+                                else:
+                                    old_values[field] = val
+                        self.env['rollback.record'].create({
+                            'res_model': self._name,
+                            'record': rec.id,
+                            'history': json.dumps(old_values, indent=4, sort_keys=True,
+                                                  default=str)
+                        })
         return super(Base, self).write(vals)

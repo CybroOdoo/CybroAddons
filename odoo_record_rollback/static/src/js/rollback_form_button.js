@@ -3,7 +3,7 @@ import { patch } from "@web/core/utils/patch";
 import { FormController } from "@web/views/form/form_controller";
 import { useService } from "@web/core/utils/hooks";
 import { rpc } from "@web/core/network/rpc";
-import {onRendered,useState} from "@odoo/owl";
+import { onWillStart, useState } from "@odoo/owl";
 
 patch(FormController.prototype, {
      // Patched the form controller to control the rollback button in every record.
@@ -13,22 +13,19 @@ patch(FormController.prototype, {
            this.values = useState({
                  val: []
            })
-           onRendered(async() => {
-            var self = this
-            const data = await rpc('/web/dataset/call_kw', {
-            model: 'rollback.record',
-            method: 'get_models',
-            args: [[this.props.resModel]],
-             kwargs: {},
-           }).then(result => {
-                const val = result;
-                self.values.val = val;
-                })
-        });
+           onWillStart(async () => {
+               const result = await rpc('/web/dataset/call_kw', {
+                   model: 'rollback.record',
+                   method: 'get_models',
+                   args: [],
+                   kwargs: {},
+               });
+               this.values.val = result;
+           });
         },
         rollbackButtonClicked(){
         //  To show the history of edited record
-            const resId = this.model.config.resId
+            const resId = this.model.root.resId
             const resModel = this.props.resModel
             this.action.doAction({
                 type: 'ir.actions.act_window',
