@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Sale Order Invoice Linker',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Extra Tools',
     'summary': 'This module designed to provide users with the ability to '
                'manually link invoices to specific sales orders',
