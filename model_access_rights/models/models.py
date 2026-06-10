@@ -326,5 +326,5 @@ def unlink(self):
 
     return True
 
-    BaseModel._create = _create
-    BaseModel.unlink = unlink
+BaseModel._create = _create
+BaseModel.unlink = unlink

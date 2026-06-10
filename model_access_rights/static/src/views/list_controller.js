@@ -5,6 +5,7 @@
 import { ListController } from '@web/views/list/list_controller';
 import { patch } from "@web/core/utils/patch";
 import { user } from "@web/core/user";
+import { registry } from "@web/core/registry";
 const { onWillStart } = owl;
 
 patch(ListController.prototype, {
@@ -102,3 +103,43 @@ patch(ListController.prototype, {
         return result;
     }
 });
+
+const exportAllItem = registry.category("cogMenu").get("export-all-menu");
+if (exportAllItem) {
+    const originalIsDisplayed = exportAllItem.isDisplayed;
+    exportAllItem.isDisplayed = async (env) => {
+        const displayed = await originalIsDisplayed(env);
+        if (!displayed) {
+            return false;
+        }
+
+        try {
+            const resModel = env.model && env.model.root && env.model.root.resModel;
+            if (!resModel) {
+                return true;
+            }
+            const result = await env.services.orm.silent.call(
+                "access.right",
+                "hide_buttons",
+            );
+            for (let i = 0; i < result.length; i++) {
+                if (resModel === result[i].model && result[i].is_export) {
+                    if (result[i].restriction_type === "group") {
+                        const group = result[i].module + "." + result[i].group_name;
+                        if (await user.hasGroup(group) && !user.isAdmin) {
+                            return false;
+                        }
+                    } else {
+                        if (user.userId === result[i].user[0] && !user.isAdmin) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error checking export restriction for export-all-menu:", e);
+        }
+        return true;
+    };
+}
+
