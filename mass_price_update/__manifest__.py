@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Mass Price Update',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Warehouse',
     'summary': """Update the sales price and the cost of any product by 
      percentage""",
