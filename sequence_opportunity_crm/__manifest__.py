@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Unique Sequence Number In CRM Opportunity',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Sales',
     'summary': 'Automatic sequence generation for CRM opportunities',
     'description': """This module adds automatic sequence numbers to CRM opportunities.
