@@ -30,19 +30,20 @@ class ResPartner(models.Model):
                             readonly=True, default='/')
 
     @api.model_create_multi
-    def create(self, values):
+    def create(self, vals_list):
         """ Super create function for generating sequence """
-        res = super(ResPartner, self).create(values)
+        res = super(ResPartner, self).create(vals_list)
         company = self.env.company.sudo()
-        if res.customer_rank > 0 and res.unique_id == '/':
-            if company.next_code:
-                res.unique_id = company.next_code
-                res.name = '[' + str(company.next_code) + ']' + str(
-                    res.name)
-                company.write({'next_code': company.next_code + 1})
-            else:
-                res.unique_id = company.customer_code
-                res.name = '[' + str(company.customer_code) + ']' + str(
-                    res.name)
-                company.write({'next_code': company.customer_code + 1})
+        for record in res:
+            if record.customer_rank > 0 and record.unique_id == '/':
+                if company.next_code:
+                    record.unique_id = company.next_code
+                    record.name = '[' + str(company.next_code) + ']' + str(
+                        record.name)
+                    company.write({'next_code': company.next_code + 1})
+                else:
+                    record.unique_id = company.customer_code
+                    record.name = '[' + str(company.customer_code) + ']' + str(
+                        record.name)
+                    company.write({'next_code': company.customer_code + 1})
         return res

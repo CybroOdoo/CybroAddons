@@ -19,25 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-{
-    'name': 'Customer Sequence',
-    'version': '19.0.1.0.1',
-    'category': 'Sales',
-    'summary': """Customer code for Partners.""",
-    'description': """This module provides a unique customer code to each
-     customer upon creation.""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['sale_management'],
-    'data': [
-        'views/res_company_views.xml',
-        'views/res_partner_views.xml',
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install ': False,
-    'application': False
-}
+from . import test_customer_sequence
