@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'POS Auto Lot Selection',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Point of Sale',
     'summary': """Automatic lot selection in POS """,
     'description': """This module helps to Auto select Lot/Serial numbers for
