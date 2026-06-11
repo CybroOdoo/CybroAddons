@@ -247,7 +247,10 @@ class ProductExpiryDashboard extends Component {
             Domain.push(["expiration_date", "<", today]);
         }
         else if (days === 0) {
-            Domain.push(["expiration_date", "=", today]);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            Domain.push(["expiration_date", ">=", today]);
+            Domain.push(["expiration_date", "<", tomorrow]);
         }
         else {
             const from = new Date(today);

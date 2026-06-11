@@ -4,7 +4,7 @@
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: PRATHYUNNAN R (odoo@cybrosys.com)
+#    Author: Cybrosys Techno Solutions (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -209,7 +209,8 @@ class StockLot(models.Model):
                     fields.Date.to_date(
                         record.expiration_date) - fields.Date.today()).days > 0
             for location in record.quant_ids if
-            location.inventory_quantity_auto_apply > 0}
+            location.inventory_quantity_auto_apply > 0 and
+            location.location_id.usage == 'internal'}
         nearby_expiry_location = {product: sum(
             data['count'] for lot, data in location_dict.items() if
             data['location'] == product) for product in set(
@@ -228,7 +229,8 @@ class StockLot(models.Model):
                     fields.Date.to_date(
                         record.expiration_date) - fields.Date.today()).days > 0
             for location in record.quant_ids if
-            location.inventory_quantity_auto_apply > 0}
+            location.inventory_quantity_auto_apply > 0 and
+            location.location_id.usage == 'internal'}
         nearby_expiry_warehouse = {product: sum(
             data['count'] for lot, data in warehouse_dict.items() if
             data['warehouse'] == product) for product in set(
