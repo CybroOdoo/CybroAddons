@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Design2 -->
+        <record id="pos_receipt_design2" model="pos.receipt">
+            <field name="name">Design 2</field>
+            <field name="design_receipt"><![CDATA[
+            <div class="pos-receipt custom-pos-receipt" >
+
+                <!-- HEADER -->
+                            <div class="receipt-header no-drop-zone" style="text-align:center; padding:10px 0;">
+                            <t t-if="env.services.pos.config.logo">
+                                <img t-att-src="'data:image/png;base64,' + env.services.pos.config.logo"
+                                     style="max-width:120px; margin-bottom:5px;"/>
+                            </t>
+                            <div style="font-size:18px; font-weight:700; margin-top:6px;">
+                                [[ company.name ]]
+                            </div>
+                            <div style="font-size:13px; margin-top:4px;">
+                                <div>Phone: <span class="placeholder-span">[[ company.phone ]]</span></div>
+                                <div>Email: <span class="placeholder-span">[[ company.email ]]</span></div>
+                                <div>Website: <span class="placeholder-span">[[ company.website ]]</span></div>
+                            </div>
+                        </div>
+                <!-- ORDER LINES SECTION -->
+                <div style="margin-top:15px;" class="no-drop-zone">
+                    <div style="font-weight:700; border-bottom:1px solid #000; padding-bottom:5px;">
+                        Order Details
+                </div>
+
+                    <table class="receipt-table" style="width:100%; border-collapse:collapse; margin-top:6px; font-size:14px;">
+                    <thead class="no-drop-zone">
+                        <tr class="receipt-header-dropzone" style="border-bottom:2px solid #000;">
+                            <th style="width:45%; text-align:left; font-size:12px; padding:13px;">Product</th>
+                            <th style="width:15%; text-align:center; font-size:12px; padding:13px;">Qty</th>
+                            <th style="width:20%; text-align:right; font-size:12px; padding:13px;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-if="props.orderlines and props.orderlines.length">
+                            <tr t-foreach="props.orderlines" t-as="orderline" t-key="orderline_index"
+                                style="border-bottom:1px dotted #ccc;">
+                                <t t-log="['dhhhhhhhhhhssss', props.data]"/>
+                                <t t-log="['dhhhhhhhhhhssss', props.data.pos_qr_code]"/>
+
+                                <td style="padding:4px; width:45%; word-break:break-word; vertical-align:top;">
+                                    <t t-esc="orderline.productName"/>
+                                </td>
+                                <td style="padding:4px; text-align:center; width:15%; vertical-align:top;">
+                                    <t t-esc="orderline.qty"/>
+                                </td>
+                                <td style="padding:4px; text-align:right; width:20%; vertical-align:top;">
+                                    <t t-esc="orderline.price"/>
+                                </td>
+                                
+                                <!-- Dynamic column values -->
+                                <td t-foreach="Object.values(orderline._dynamicValues || {})"
+                                    t-as="value"
+                                    t-key="value_index"
+                                    style="text-align:center; vertical-align:top; padding:4px; white-space:nowrap;">
+                                    <t t-esc="value || ''"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+                </div>
+                        <!-- TOTAL SEassets_printCTION BOX -->
+                        <div style="margin-top:18px; padding:10px; border:2px dashed #555; border-radius:6px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                <span style="font-weight:600;">Subtotal</span>
+                                    <span class="placeholder-span">[[ receipt.total_without_tax ]]</span>
+                            </div>
+
+                            <div style="display:flex; justify-content:space-between; font-size:18px; font-weight:700;">
+                                <span>Total</span>
+                                <span class="placeholder-span">[[ receipt.amount_total ]]</span>
+                            </div>
+                        </div>
+                        <div class="receipt-qr-wrapper">
+                                <div class="receipt-qr-template"
+                                     style="display:none;">
+                                        <t t-if="props.receipt.custom_qr_image">
+                                            <img t-att-src="'data:image/png;base64,' + props.receipt.custom_qr_image"
+                                                 style="width:120px; height:120px; margin:10px auto; display:block;"/>
+                                        </t>
+                                </div>
+                         </div>
+
+                <!-- RECEIPT INFO -->
+                <div style="text-align:center; margin-top:20px; font-size:14px;">
+                    <div><t t-esc="props.receipt.name"/></div>
+                    <div><t t-esc="props.receipt.date"/></div>
+                </div>
+
+                <!-- QR AREA -->
+
+                <div class="qrArea"
+                     style="display:flex; justify-content:center; margin:25px 0;">
+                    <!-- JS QR goes here -->
+                </div>
+
+                <!-- FOOTER -->
+                <div style="text-align:center; font-size:14px; margin-top:10px;">
+                    Thank you for shopping with us!
+                </div>
+
+        </div>]]></field>
+        </record>
+    </data>
+</odoo>

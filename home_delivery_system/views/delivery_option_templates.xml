@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--The delivery template for delivery person-->
+    <data>
+        <template id="website_delivery_option" name="My Jobs">
+            <t t-call="website.layout">
+                <form style="background-color:gainsboro;width:70%;">
+                    <table class="table">
+                        <t t-foreach="delivery_order" t-as="order">
+                            <thead>
+                                <tr style="text-align:center;">
+                                    <th>
+                                        <h3>
+                                            <b>
+                                                <t t-esc="order['order']"/>
+                                            </b>
+                                        </h3>
+                                    </th>
+                                </tr>
+                                <tr></tr>
+                                <tr>
+                                    <th>Customer Name</th>
+                                    <th>Order Source</th>
+                                    <th>Customer Phone</th>
+                                    <th>Payment Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <t t-esc="order['customer']"/>
+                                    </td>
+                                    <td>
+                                        <span>Web</span>
+                                    </td>
+                                    <td>
+                                        <t t-esc="order['phone']"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="order['payment']"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </t>
+                    </table>
+                    <br/>
+                    <h3 align="left">
+                        <b>Product Details</b>
+                    </h3>
+                    <br/>
+                    <br/>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="col-8">Product Name</th>
+                                <th class="col-4">Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="product" t-as="pro">
+                                <tr>
+                                    <td>
+                                        <t t-esc="pro['product']"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="pro['qty']"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <div class="row">
+                        <div class="col-9">
+                            <span>
+                                <b>Customer Address</b>
+                            </span>
+                            <br/>
+                            <t t-esc="order['customer']"/>
+                            <br/>
+                            <t t-esc="order['address']"/>
+                            <br/>
+                            <t t-esc="order['street']"/>
+                            <br/>
+                            <t t-esc="order['country']"/>
+                            <br/>
+                            <t t-esc="order['city']"/>
+                            <br/>
+                            <t t-esc="order['zip']"/>
+                        </div>
+                        <div class="col-3">
+                            <span>
+                                <h5>
+                                    <b>Amount Total</b>
+                                </h5>
+                            </span>
+                            <t t-esc="pro['total']"/>
+                        </div>
+                    </div>
+                </form>
+                <div style="position: absolute;right: 430px;top: 100px;"
+                     class="payment_process">
+                    <a t-attf-href="/shop/payment?order_id={{order['id']}}">
+                        <input type="button" value="Pay Now" style="width:100%;"
+                               class="payment_submit_button"/>
+                    </a>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <input type="button" value="Issue" style="width:100%;"
+                           data-bs-toggle="modal"
+                           data-bs-target="#myModal"/>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <a href="/my_jobs">
+                        <input type="button" t-attf-href="/my_jobs" value="Back"
+                               style="width:100%;"/>
+                    </a>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <div id="myModal" class="modal fade" role="dialog">
+                        <div class="modal-dialog">
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+
+                                    <h4 class="modal-title">Please Text Your
+                                        Issue
+                                    </h4>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="/delivery/issue"
+                                          method="post">
+                                        <input type="hidden" name="csrf_token"
+                                               t-att-value="request.csrf_token()"/>
+                                        <textarea name="message"
+                                                  t-att-value="message"
+                                                  class="form-control"
+                                                  placeholder="Explain your note"/>
+                                        <input type="hidden" name="id"
+                                               t-att-value="order['id']"
+                                               class="form-control"
+                                               placeholder="Explain your note"/>
+                                        <div class="modal-footer">
+                                            <button type="button"
+                                                    class="btn btn-default"
+                                                    data-bs-dismiss="modal">
+                                                Cancel
+                                            </button>
+                                            <button type="submit"
+                                                    class="btn btn-default">
+                                                Submit
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+    </data>
+</odoo>

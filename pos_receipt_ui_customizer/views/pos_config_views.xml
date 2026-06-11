@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Inherit POS Configuration Form to add Custom Receipt settings -->
+    <record id="pos_config_view_form" model="ir.ui.view">
+        <field name="name">pos.config.view.form.inherit.custom.receipts.for.pos</field>
+        <field name="model">pos.config</field>
+
+        <!-- Extend the default POS configuration form -->
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+
+        <field name="arch" type="xml">
+
+            <!-- Insert Custom Receipt configuration after the 'Other Devices' section -->
+            <xpath expr="//setting[@id='other_devices']" position="after">
+
+                <!-- Custom Receipt Setting -->
+                <setting
+                    title="Customize the POS receipts"
+                    string="Custom Receipt"
+                    help="Use custom receipt designs">
+
+                    <field name="is_custom_receipt"/>
+                    <div class="content-group mt16">
+
+                        <field name="receipt_design_id"
+                               options="{'no_open': True}">
+                            <condition invisible="not is_custom_receipt"/>
+                        </field>
+
+                        <button string="Open Receipt Editor"
+                                type="object"
+                                name="action_open_receipt_editor"
+                                class="btn btn-primary mt-2">
+                                <i class="fa fa-pencil-square-o me-1"/>
+
+                            <condition invisible="not receipt_design_id"/>
+                        </button>
+
+                    </div>
+
+                </setting>
+
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

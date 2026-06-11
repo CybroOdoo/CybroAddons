@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_pdf_attachment_list" model="ir.ui.view">
+        <field name="name">ir.attachment.pdf.list</field>
+        <field name="model">ir.attachment</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <tree string="All PDFs" create="false" edit="false">
+                <field name="name" string="Name"/>
+                <field name="company_id" string="Company"/>
+                <field name="create_uid" string="Created by"/>
+                <field name="create_date" string="Created on"/>
+                <button name="action_download_pdf"
+                        string="Download"
+                        type="object"
+                        icon="fa-download"
+                        title="Download PDF"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="action_pdf_attachments" model="ir.actions.act_window">
+        <field name="name">All PDFs</field>
+        <field name="res_model">ir.attachment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('mimetype','=','application/pdf'), ('is_background_pdf', '=', True)]</field>
+        <field name="view_id" ref="view_pdf_attachment_list"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_pdf_attachment_list')})]"/>
+    </record>
+    <menuitem id="menu_pdf_root"
+              name="PDF Lazy Generator"
+              sequence="10"/>
+
+    <menuitem id="menu_all_pdfs"
+              name="Background Generated PDF"
+              parent="menu_pdf_root"
+              action="action_pdf_attachments"/>
+</odoo>

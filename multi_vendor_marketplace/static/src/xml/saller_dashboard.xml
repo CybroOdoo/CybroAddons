@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<template>
+    <!--
+    Seller Dashboard Template
+    This template displays a multivendor marketplace dashboard with cards showing the
+    status of products, sellers, orders, payments, and stock. Each card includes icons
+    and status indicators (Pending, Approved, Rejected), with hover effects for emphasis.
+    Styling includes CSS for layout and transitions.
+    -->
+    <t t-name="multi_vendor_marketplace.SellerDashBoard">
+        <section class="dashboard_main_section" id="main_section_manager">
+            <style>
+                .dashboard_main_section {
+                    width: 100%;
+                    height: 100%;
+                    overflow-x: hidden;
+                    overflow-y: auto;
+                    padding: 2rem;
+                    background-color: #f8f9fa;
+                }
+                .dashboard_grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 2rem;
+                    max-width: 1400px;
+                    margin: 2rem auto;
+                    justify-content: center;
+                }
+                .dashboard_card {
+                    background: #ffffff;
+                    border-radius: 12px;
+                    border: none;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    display: flex;
+                    flex-direction: column;
+                    padding: 1.5rem;
+                    min-height: 400px;
+                }
+                .dashboard_card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+                }
+                .card_title {
+                    color: #243c64;
+                    font-weight: 600;
+                    font-size: 1.25rem;
+                    margin-bottom: 2rem;
+                    text-align: center;
+                }
+                .card_icon_container {
+                    flex-grow: 1;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 2rem;
+                    color: #243c64;
+                }
+                .card_icon_container i {
+                    font-size: 5rem;
+                    opacity: 0.9;
+                }
+                .status_container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.75rem;
+                }
+                .status_btn {
+                    height: 40px;
+                    border-radius: 6px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    cursor: pointer;
+                    transition: opacity 0.2s ease;
+                    font-weight: 500;
+                    text-decoration: none;
+                }
+                .status_btn:hover {
+                    opacity: 0.85;
+                }
+                .bg_pending { background-color: #8756d1; }
+                .bg_approved { background-color: #04c765; }
+                .bg_rejected { background-color: #c71b04; }
+                .bg_shipped { background-color: #fa770c; }
+            </style>
+
+            <div class="dashboard_grid">
+                <!-- MarketPlace Product -->
+                <div class="dashboard_card">
+                    <h5 class="card_title">MarketPlace Product</h5>
+                    <div class="card_icon_container">
+                        <i class="fa fa-tags"/>
+                    </div>
+                    <div class="status_container">
+                        <div class="status_btn bg_pending" t-on-click="onProductPendingClick">
+                            <span t-esc="dashboardData.pending" class="me-1"/> Pending
+                        </div>
+                        <div class="status_btn bg_approved" t-on-click="onProductApprovedClick">
+                            <span t-esc="dashboardData.approved" class="me-1"/> Approved
+                        </div>
+                        <div class="status_btn bg_rejected" t-on-click="onProductRejectedClick">
+                            <span t-esc="dashboardData.rejected" class="me-1"/> Rejected
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MarketPlace Sellers -->
+                <div t-if="dashboardData.user_type != false" class="dashboard_card">
+                    <h5 class="card_title">MarketPlace Sellers</h5>
+                    <div class="card_icon_container">
+                        <i class="fa fa-users"/>
+                    </div>
+                    <div class="status_container">
+                        <div class="status_btn bg_pending" t-on-click="onSellerPendingClick">
+                            <span t-esc="dashboardData.seller_pending" class="me-1"/> Pending
+                        </div>
+                        <div class="status_btn bg_approved" t-on-click="onSellerApprovedClick">
+                            <span t-esc="dashboardData.seller_approved" class="me-1"/> Approved
+                        </div>
+                        <div class="status_btn bg_rejected" t-on-click="onSellerRejectedClick">
+                            <span t-esc="dashboardData.seller_rejected" class="me-1"/> Rejected
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MarketPlace Orders -->
+                <div class="dashboard_card">
+                    <h5 class="card_title">MarketPlace Orders</h5>
+                    <div class="card_icon_container">
+                        <i class="fa fa-shopping-cart"/>
+                    </div>
+                    <div class="status_container">
+                        <div class="status_btn bg_pending" t-on-click="onOrderPendingClick">
+                            <span t-esc="dashboardData.order_pending" class="me-1"/> Pending
+                        </div>
+                        <div class="status_btn bg_approved" t-on-click="onOrderApprovedClick">
+                            <span t-esc="dashboardData.order_approved" class="me-1"/> Approved
+                        </div>
+                        <div class="status_btn bg_shipped" t-on-click="onOrderShippedClick">
+                            <span t-esc="dashboardData.order_shipped" class="me-1"/> Shipped
+                        </div>
+                        <div class="status_btn bg_rejected" t-on-click="onOrderCancelClick">
+                            <span t-esc="dashboardData.order_cancel" class="me-1"/> Cancelled
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MarketPlace Payments -->
+                <div class="dashboard_card">
+                    <h5 class="card_title">MarketPlace Payments</h5>
+                    <div class="card_icon_container">
+                        <i class="fa fa-money"/>
+                    </div>
+                    <div class="status_container">
+                        <div class="status_btn bg_pending" t-on-click="onPaymentPendingClick">
+                            <span t-esc="dashboardData.payment_pending" class="me-1"/> Pending
+                        </div>
+                        <div class="status_btn bg_approved" t-on-click="onPaymentApprovedClick">
+                            <span t-esc="dashboardData.payment_approved" class="me-1"/> Approved
+                        </div>
+                        <div class="status_btn bg_rejected" t-on-click="onPaymentRejectedClick">
+                            <span t-esc="dashboardData.payment_rejected" class="me-1"/> Rejected
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marketplace stock -->
+                <div class="dashboard_card">
+                    <h5 class="card_title">Marketplace Stock</h5>
+                    <div class="card_icon_container">
+                        <i class="fa fa-truck"/>
+                    </div>
+                    <div class="status_container">
+                        <div class="status_btn bg_pending" t-on-click="onInvReqPendingClick">
+                            <span t-esc="dashboardData.inventory_pending" class="me-1"/> Pending
+                        </div>
+                        <div class="status_btn bg_approved" t-on-click="onInvReqApprovedClick">
+                            <span t-esc="dashboardData.inventory_approved" class="me-1"/> Approved
+                        </div>
+                        <div class="status_btn bg_rejected" t-on-click="onInvReqRejectedClick">
+                            <span t-esc="dashboardData.inventory_rejected" class="me-1"/> Rejected
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </t>
+</template>

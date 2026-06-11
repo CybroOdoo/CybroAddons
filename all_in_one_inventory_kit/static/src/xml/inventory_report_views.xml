@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Inventory report template -->
+<templates>
+    <t t-name="InventoryReport">
+        <div>
+            <div>
+                <center>
+                    <h1 style="margin: 20px;">Inventory Report</h1>
+                </center>
+            </div>
+            <div>
+                <t t-call="InventoryFilterView"/>
+            </div>
+            <div>
+                <t t-call="InventoryReportTable"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="InventoryFilterView">
+        <div style="display: flex; margin-right: 10px; margin-left: 10px;justify-content:space-between">
+            <div class="sub_container_left"
+                 style="width: 285px; margin-left: 36px;">
+                <div class="row report_print">
+                    <button type="button" class="btn btn-primary" id="pdf"
+                            t-on-click="printPdf"
+                            style="top: 0px; height: 42px; color: white; background-color: #7c7bad; border-color: #7c7bad; width: 127px; margin-right:4px;">
+                        Print (PDF)
+                    </button>
+                    <button type="button" class="btn btn-primary" id="xlsx"
+                            t-on-click="print_xlsx"
+                            style="top: 0px; height: 42px; color: white; background-color: #7c7bad; border-color: #7c7bad; width: 127px;">
+                        Export (XLSX)
+                    </button>
+                </div>
+            </div>
+            <div style="margin-bottom: 40px;display: flex; margin-right:10px;">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle time_range_pr"
+                            type="button" id="date_chose"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            style="height:33px;width:150px;align-items:center;display:flex;">
+                        <span class="fa fa-calendar" title="Dates" role="img"
+                              aria-label="Dates"
+                              style="display:block;margin-right:5px;"/>
+                        Date Range
+                    </button>
+                    <div class="dropdown-menu my_custom_dropdown" role="menu"
+                         aria-labelledby="date_chose">
+                        <div class="form-group">
+                            <label class="" for="date_from">Start Date :</label>
+                            <div class="input-group date" id="date_from"
+                                 data-target-input="nearest">
+                                <input type="date" name="date_from"
+                                       t-ref="date_from"
+                                       class="form-control datetimepicker-input"
+                                       data-target="#date_from"
+                                       t-att-name="prefix"/>
+                                <div class="input-group-append"
+                                     data-target="#date_from"
+                                     data-toggle="datetimepicker"
+                                     style="pointer-events: none;">
+                                </div>
+                            </div>
+                            <label class="" for="date_to">End Date :</label>
+                            <div class="input-group date" id="date_to"
+                                 data-target-input="nearest">
+                                <input type="date" name="date_to"
+                                       t-ref="date_to"
+                                       class="form-control datetimepicker-input"
+                                       data-target="#date_to"
+                                       t-att-name="prefix"/>
+                                <div class="input-group-append"
+                                     data-target="#date_to"
+                                     data-toggle="datetimepicker"
+                                     style="pointer-events: none;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="search-Result-Selection search"
+                     style="display:flex;">
+                    <div class="dropdown"
+                         style="border=2px;width:100%;margin-right:10px;border-radius:5px;">
+                        <a class="btn btn-secondary dropdown-togglereport-type"
+                           href="#" role="button" id="dropdownMenuLink"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="fa fa-book"/>
+                            <span class="low_case">Report Type :</span>
+                        </a>
+                        <select id="selection" t-ref="order_by"
+                                class="dropdown-menu report_type"
+                                name="states[]">
+                            <div role="separator" class="dropdown-divider"/>
+                            <option value="report_by_transfers" selected="">
+                                Report By Transfers
+                            </option>
+                            <option value="report_by_categories">Report By
+                                Categories
+                            </option>
+                            <option value="report_by_warehouse">Report By
+                                Warehouse
+                            </option>
+                            <option value="report_by_location">Report By
+                                Location
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="apply_filter">
+                    <button type="button" id="apply_filter"
+                            class="btn btn-primary" t-on-click="applyFilter">
+                        Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+    <t t-name="InventoryReportTable">
+        <t t-if="state.order_by == 'report_by_transfers'">
+            <div id="order_transfer">
+                <div class="table_main_view">
+                    <table cellspacing="0" width="100%">
+                        <tr class="table_pr_head">
+                            <th>Reference</th>
+                            <th class="mon_fld">Scheduled Date</th>
+                            <th class="mon_fld">Source Document</th>
+                            <th class="mon_fld">Company</th>
+                            <th class="mon_fld">Delivery Address</th>
+                            <th class="mon_fld">State</th>
+                        </tr>
+                        <tbody>
+                            <t t-foreach="state.order_line" t-as="report_val" t-key="report_val_index">
+                                <tr style="border: 1.5px solid black;"
+                                    class="pr-line"
+                                    t-att-data-account-id="report_val['id']"
+                                    t-attf-data-target=".a{{report_val['id']}}">
+                                    <td>
+                                        <center>
+                                            <t t-if="report_val['id']">
+                                                <div class="">
+                                                    <a data-toggle="dropdown"
+                                                       href="#"
+                                                       id="table_toggle_btn"
+                                                       data-bs-toggle="dropdown"
+                                                       aria-expanded="false">
+                                                        <span class="caret"/>
+                                                        <span>
+                                                            <t t-if="report_val['name'] and report_val['name']['en_US']">
+                                                                <t t-esc="report_val['name']['en_US']"/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <t t-esc="report_val['name']"/>
+                                                            </t>
+                                                        </span>
+                                                    </a>
+                                                    <ul class="dropdown-menu"
+                                                        role="menu"
+                                                        aria-labelledby="table_toggle_btn">
+                                                        <li style="margin: 3px;">
+                                                            <a class="view_transfer_order" t-on-click="button_view_order"
+                                                               tabindex="-1"
+                                                               href="#"
+                                                               t-att-id="report_val['id']">
+                                                                View Transfer
+                                                                Order
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </t>
+                                        </center>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['scheduled_date']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['origin']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['company']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['partner']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['state']"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <div class="inventory_canvas" style="margin-top: 30px;">
+                        <canvas id="canvaspie" height="500px"
+                                width="150px"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+        <t t-if="state.order_by == 'report_by_categories'">
+            <div>
+                <div class="table_main_view">
+                    <table cellspacing="0" width="100%">
+                        <thead>
+                            <tr class="table_pr_head">
+                                <th>Category</th>
+                                <th class="mon_fld">Product Name</th>
+                                <th class="mon_fld">Create Date</th>
+                                <th class="mon_fld">Product Cost</th>
+                                <th class="mon_fld">On Hand Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.order_line" t-as="report_val" t-key="report_val_index">
+                                <tr style="border: 1.5px solid black;"
+                                    class="pr-line"
+                                    data-toggle="collapse"
+                                    t-att-data-account-id="report_val['id']"
+                                    t-attf-data-target=".a{{report_val['id']}}">
+                                    <td style="border: 0px solid black;text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['category']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-if="report_val['name'] and report_val['name']['en_US']">
+                                                <t t-esc="report_val['name']['en_US']"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="report_val['name']"/>
+                                            </t>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['create_date']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['value_float']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['quantity']"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </t>
+        <!--Report for Warehouse-->
+        <t t-if="state.order_by == 'report_by_warehouse'">
+            <div>
+                <div class="table_main_view">
+                    <table cellspacing="0" width="100%">
+                        <thead>
+                            <tr class="table_pr_head">
+                                <th>Warehouse</th>
+                                <th class="mon_fld">Date</th>
+                                <th class="mon_fld">Company</th>
+                                <th class="mon_fld">Location</th>
+                                <th class="mon_fld">Route</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.order_line" t-as="report_val" t-key="report_val_index">
+                                <tr style="border: 1.5px solid black;"
+                                    class="pr-line"
+                                    data-toggle="collapse"
+                                    t-att-data-account-id="report_val['id']"
+                                    t-attf-data-target=".a{{report_val['id']}}">
+                                    <td style="border: 0px solid black;text-align:center;">
+                                        <span>
+                                            <t t-if="report_val['name'] and report_val['name']['en_US']">
+                                                <t t-esc="report_val['name']['en_US']"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="report_val['name']"/>
+                                            </t>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['write_date']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['company']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['location']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-if="report_val['route'] and report_val['route']['en_US']">
+                                                <t t-esc="report_val['route']['en_US']"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="report_val['route']"/>
+                                            </t>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </t>
+        <!--Report for Locations-->
+        <t  t-if="state.order_by == 'report_by_location'">
+            <div>
+                <div class="table_main_view">
+                    <table cellspacing="0" width="100%">
+                        <thead>
+                            <tr class="table_pr_head">
+                                <th>Location</th>
+                                <th class="mon_fld">Location Type</th>
+                                <th class="mon_fld">Create Date</th>
+                                <th class="mon_fld">Company</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.order_line" t-as="report_val" t-key="report_val_index">
+                                <tr style="border: 1.5px solid black;"
+                                    class="pr-line"
+                                    data-toggle="collapse"
+                                    t-att-data-account-id="report_val['id']"
+                                    t-attf-data-target=".a{{report_val['id']}}">
+                                    <td style="border: 0px solid black;text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['complete_name']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['location_type']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['create_date']"/>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>
+                                            <t t-esc="report_val['company']"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </t>
+    </t>
+</templates>

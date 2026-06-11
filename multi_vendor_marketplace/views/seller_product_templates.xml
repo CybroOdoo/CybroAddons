@@ -1,0 +1,886 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Template for seller products-->
+    <template id="seller_product">
+        <t t-call="website.layout">
+            <style>
+                .seller_tabs_container {
+                    background: #f8f9fa;
+                    border-radius: 12px;
+                    border: none;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+                    padding: 2rem;
+                    min-height: 600px;
+                }
+                .product_grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                    gap: 1.5rem;
+                    padding: 1.5rem;
+                }
+                .product_card {
+                    background: white;
+                    border-radius: 12px;
+                    border: 1px solid rgba(0,0,0,0.05);
+                    padding: 1.5rem;
+                    text-align: center;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    height: 100%;
+                    text-decoration: none !important;
+                }
+                .product_card:hover {
+                    transform: scale(1.05) translateY(-5px);
+                    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+                    z-index: 10;
+                    border-color: #3BD3F4;
+                }
+                .product_img_box {
+                    width: 100%;
+                    aspect-ratio: 1/1;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 1rem;
+                    overflow: hidden;
+                    border-radius: 8px;
+                }
+                .product_img_box img {
+                    max-width: 100%;
+                    max-height: 100%;
+                    object-fit: contain;
+                }
+                .product_name {
+                    font-weight: 600;
+                    color: #243c64;
+                    margin-top: auto;
+                    font-size: 1rem;
+                }
+                #bla {
+                    padding: 0;
+                    width: 100%;
+                }
+                .tab-content, .tab-pane {
+                    overflow: visible !important;
+                }
+                .rating_review_container {
+                    display: flex;
+                    gap: 2rem;
+                    flex-wrap: wrap;
+                    padding: 1rem;
+                }
+                .rating_card {
+                    flex: 1;
+                    min-width: 350px;
+                    background: white;
+                    border-radius: 12px;
+                    padding: 2rem;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+                    border: 1px solid rgba(0,0,0,0.05);
+                }
+            </style>
+            <div class="container my-5">
+                <center>
+                    <t t-foreach="res_users" t-as="user">
+                        <input type="hidden" id="seller"
+                               t-att-value="user.id"/>
+                        <input type="hidden" id="customer"
+                               t-att-value="cr_user.partner_id.id"/>
+                        <div class="card p-4 shadow-sm border-0" style="border-radius: 16px; background: white;">
+                            <div class="row align-items-center g-4">
+                                <div class="col-auto">
+                                    <div class="seller_avatar_box shadow-sm" style="width: 150px; height: 150px; border-radius: 12px; overflow: hidden; background: #f8f9fa;">
+                                        <t t-if="user.image_1920">
+                                            <img t-att-src="image_data_uri(user.image_1920)" style="width: 100%; height: 100%; object-fit: cover;" alt="Seller"/>
+                                        </t>
+                                        <t t-else="">
+                                            <img src="/multi_vendor_marketplace/static/src/img/user.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Seller"/>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <h2 class="fw-bold mb-2" style="color: #243c64;" t-esc="user.name"/>
+                                    <t t-if="config.get('seller_addr')">
+                                        <div class="text-muted mb-3">
+                                            <t t-if="user.tz">
+                                                <i class="fa fa-map-marker me-2"/>
+                                                <t t-esc="user.tz"/>
+                                            </t>
+                                        </div>
+                                    </t>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <t t-if="config.get('prod_count')">
+                                            <span class="badge rounded-pill px-3 py-2" style="background: #eef2ff; color: #4f46e5; font-size: 0.9rem;">
+                                                <i class="fa fa-cube me-2"/>
+                                                <t t-out="prod_count"/> Products
+                                            </span>
+                                        </t>
+                                        <t t-if="config.get('sale_count')">
+                                            <span class="badge rounded-pill px-3 py-2" style="background: #ecfdf5; color: #059669; font-size: 0.9rem;">
+                                                <i class="fa fa-shopping-bag me-2"/>
+                                                <t t-out="sale_count"/> Sales
+                                            </span>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-auto text-md-end mt-4 mt-md-0 border-top pt-3 border-md-top-0 pt-md-0">
+                                    <div class="small text-muted mb-2">
+                                        <t t-if="config.get('seller_since')">
+                                            <t t-set="since" t-value="request.env['res.partner'].browse(request.env.user.partner_id.id).create_date"/>
+                                            <span>Selling since </span>
+                                            <span class="fw-bold"><t t-esc="since.strftime('%Y-%m-%d')"/></span>
+                                        </t>
+                                    </div>
+                                    <t t-if="config.get('contact_seller_button')">
+                                        <a href="/contactus" class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                                            <i class="fa fa-envelope me-2"/>Contact Seller
+                                        </a>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+                        <div class="seller_tabs_container mt-4">
+                            <div class="s_tabs_main">
+                                <div class="s_tabs_nav mb-3"
+                                     style="margin: 20px;">
+                                    <ul class="nav nav-pills" role="tablist">
+                                        <li class="nav-item">
+                                            <a class="nav-link active"
+                                               id="all_product1"
+                                               data-bs-toggle="tab"
+                                               href="#all_product2"
+                                               role="tab"
+                                               aria-controls="all_product2"
+                                               aria-selected="true">All Product
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link"
+                                               id="recently_add_product1"
+                                               data-bs-toggle="tab"
+                                               href="#recently_add_product2"
+                                               role="tab"
+                                               aria-controls="recently_add_product2"
+                                               aria-selected="false">Recently
+                                                Added Products
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link"
+                                               id="nav_tabs_link_3"
+                                               data-bs-toggle="tab"
+                                               href="#nav_tabs_content_3"
+                                               role="tab"
+                                               aria-controls="nav_tabs_content_3"
+                                               aria-selected="false">Rating
+                                                &amp; Reviews
+                                            </a>
+                                        </li>
+                                        <t t-if="config.get('ret_policy')==True">
+                                            <li class="nav-item">
+                                                <a class="nav-link"
+                                                   id="return_policy1"
+                                                   data-bs-toggle="tab"
+                                                   href="#return_policy2"
+                                                   role="tab"
+                                                   aria-controls="return_policy2"
+                                                   aria-selected="false">Return
+                                                    Policy
+                                                </a>
+                                            </li>
+                                        </t>
+                                        <t t-if="config.get('ship_policy')==True">
+                                            <li class="nav-item">
+                                                <a class="nav-link"
+                                                   id="shipping_policy1"
+                                                   data-bs-toggle="tab"
+                                                   href="#shipping_policy2"
+                                                   role="tab"
+                                                   aria-controls="shipping_policy2"
+                                                   aria-selected="false">
+                                                    Shipping
+                                                    Policy
+                                                </a>
+                                            </li>
+                                        </t>
+                                        <li class="nav-item">
+                                            <a class="nav-link"
+                                               id="seller_contact1"
+                                               data-bs-toggle="tab"
+                                               href="#seller_contact2"
+                                               role="tab"
+                                               aria-controls="seller_contact2"
+                                               aria-selected="false">Seller
+                                                Contact
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div id="bla"
+                                     class="s_tabs_content tab-content">
+                                    <div class="tab-pane fade show active"
+                                         id="all_product2"
+                                         role="tabpanel"
+                                         aria-labelledby="all_product1">
+                                        <div class="oe_structure oe_empty">
+                                            <section class="s_text_block">
+                                                <div class="product_grid">
+                                                    <t t-if="product">
+                                                        <t t-foreach="product" t-as="data">
+                                                            <a class="product_card prod_redirect" t-att-href="'/shop/'+str(data.name)+'-'+str(data.id)">
+                                                                <div class="product_img_box">
+                                                                    <t t-if="data.image_1920">
+                                                                        <img t-att-src="image_data_uri(data.image_1920)" alt="Product"/>
+                                                                    </t>
+                                                                    <t t-else="">
+                                                                        <img src="/multi_vendor_marketplace/static/src/img/product.png" alt="Product"/>
+                                                                    </t>
+                                                                </div>
+                                                                <div class="product_name">
+                                                                    <t t-esc="data.name"/>
+                                                                </div>
+                                                            </a>
+                                                        </t>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <div class="col-12 text-center text-muted">No Products Available</div>
+                                                    </t>
+                                                </div>
+                                            </section>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade"
+                                         id="recently_add_product2"
+                                         role="tabpanel"
+                                         aria-labelledby="recently_add_product1">
+                                        <div class="oe_structure oe_empty">
+                                            <section class="s_text_block">
+                                                <div class="product_grid">
+                                                    <t t-if="recently_add_product">
+                                                        <t t-foreach="recently_add_product" t-as="data">
+                                                            <a class="product_card" t-att-href="'/shop/'+str(data.name)+'-'+str(data.id)">
+                                                                <div class="product_img_box">
+                                                                    <t t-if="data.image_1920">
+                                                                        <img t-att-src="image_data_uri(data.image_1920)" alt="Product"/>
+                                                                    </t>
+                                                                    <t t-else="">
+                                                                        <img src="/multi_vendor_marketplace/static/src/img/product.png" alt="Product"/>
+                                                                    </t>
+                                                                </div>
+                                                                <div class="product_name">
+                                                                    <t t-esc="data.name"/>
+                                                                </div>
+                                                            </a>
+                                                        </t>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <div class="col-12 text-center text-muted">No Recently Added Products</div>
+                                                    </t>
+                                                </div>
+                                            </section>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade"
+                                         id="return_policy2"
+                                         role="tabpanel"
+                                         aria-labelledby="return_policy1">
+                                        <div class="oe_structure oe_empty">
+                                            <section class="s_text_block">
+                                                <div class="container s_allow_columns">
+                                                    <t t-foreach="res_users"
+                                                       t-as="user">
+                                                        <t t-if="user.return_policy">
+                                                            <t t-esc="user.return_policy"/>
+                                                        </t>
+                                                        <t t-else="">
+                                                            No Return Policy
+                                                        </t>
+                                                    </t>
+                                                </div>
+                                            </section>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade"
+                                         id="shipping_policy2"
+                                         role="tabpanel"
+                                         aria-labelledby="shipping_policy1">
+                                        <div class="oe_structure oe_empty">
+                                            <section class="s_text_block">
+                                                <div class="container s_allow_columns">
+                                                    <t t-foreach="res_users"
+                                                       t-as="user">
+                                                        <t t-if="user.shipping_policy">
+                                                            <t t-esc="user.shipping_policy"/>
+                                                        </t>
+                                                        <t t-else="">
+                                                            No Shipping Policy
+                                                        </t>
+                                                    </t>
+                                                </div>
+                                            </section>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade"
+                                         id="seller_contact2"
+                                         role="tabpanel"
+                                         aria-labelledby="seller_contact1">
+                                        <div class="oe_structure oe_empty">
+                                            <section class="s_text_block">
+                                                <div class="container s_allow_columns">
+                                                    <t t-foreach="res_users"
+                                                       t-as="user">
+                                                        <t t-if="user.phone">
+                                                            <div>
+                                                                <div style="position: absolute;">
+                                                                    <i class="fa fa-phone icon-large"/>
+                                                                    Phone:
+                                                                    <t t-esc="user.phone"/>
+                                                                </div>
+                                                                <div style="position: absolute;margin-top: 30px;">
+                                                                    <i class="fa fa-mobile-phone"
+                                                                       style="font-size:24px"/>
+                                                                    Mobile:
+                                                                    <t t-esc="user.mobile"/>
+                                                                </div>
+                                                                <div style="position: absolute;margin-top: 60px;">
+                                                                    <i class="fa fa-envelope"
+                                                                       style="font-size:15px"/>
+                                                                    Email:
+                                                                    <t t-esc="user.email"/>
+                                                                </div>
+                                                            </div>
+                                                        </t>
+                                                        <t t-else="">
+                                                            No Details
+                                                        </t>
+                                                    </t>
+                                                </div>
+                                            </section>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade"
+                                         id="nav_tabs_content_3"
+                                         role="tabpanel"
+                                         aria-labelledby="nav_tabs_link_3">
+                                        <div class="rating_review_container">
+                                            <div class="rating_card">
+                                            <h3>
+                                                <b>Average Review
+                                                    &amp;
+                                                    Recommendation
+                                                </b>
+                                            </h3>
+                                            <div class="">
+                                                <div class="o_portal_chatter_header">
+
+                                                    <div class="row o_website_rating_card_container justify-content-center">
+                                                        <div class="col-lg-5">
+                                                            <p class="text-center">
+                                                                <strong>
+                                                                    Average
+                                                                </strong>
+                                                            </p>
+                                                            <div class="o_website_rating_avg text-center">
+                                                                <h1>
+                                                                    <span>
+                                                                        <t t-esc="avg"/>
+                                                                    </span>
+                                                                </h1>
+
+                                                                <div class="o_website_rating_static"
+                                                                     style=""
+                                                                     aria-label="4 stars on 5"
+                                                                     title="4 stars on 5">
+                                                                    <t t-if="average == 1">
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                    </t>
+                                                                    <t t-elif="average &gt;1 and average &lt; 2">
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-half-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                    </t>
+                                                                    <t t-elif="average ==2">
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                    </t>
+                                                                    <t t-elif="average &gt;2 and average &lt; 3">
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-half-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                    </t>
+                                                                    <t t-elif="average ==3">
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                    </t>
+                                                                    <t t-elif="average &gt; 3 and average &lt; 4">
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-half-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                    </t>
+                                                                    <t t-elif="average ==4">
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                    </t>
+                                                                    <t t-elif="average &gt;4 and average &lt;5">
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-half-o"
+                                                                           role="img"/>
+                                                                    </t>
+                                                                    <t t-elif="average==5">
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star"
+                                                                           role="img"/>
+                                                                    </t>
+                                                                    <t t-else="">
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                        <i class="fa fa-star-o"
+                                                                           role="img"/>
+                                                                    </t>
+                                                                </div>
+                                                                <div class="o_message_counter">
+                                                                    <span class="fa fa-comments"/>
+                                                                    <span class="o_message_count">
+                                                                        2
+                                                                    </span>
+                                                                    comments
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-7">
+                                                            <p>
+                                                                <strong>
+                                                                    Details
+                                                                </strong>
+                                                            </p>
+                                                            <table class="o_website_rating_table ">
+                                                                <tbody>
+                                                                    <tr class="o_website_rating_table_row "
+                                                                        data-star="5">
+                                                                        <td class="o_website_rating_table_star_num text-nowrap"
+                                                                            data-star="5">
+                                                                            5
+                                                                            stars
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_progress">
+                                                                            <div class="progress">
+                                                                                <div class="progress-bar o_rating_progressbar"
+                                                                                     role="progressbar"
+                                                                                     t-att-aria-valuenow="0"
+                                                                                     aria-valuemin="0"
+                                                                                     aria-valuemax="100"
+                                                                                     t-att-style="'width:' + five + '%;' ">
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_percent">
+                                                                            <strong>
+                                                                                <t t-esc="five"/>
+                                                                                %
+                                                                            </strong>
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_reset">
+                                                                            <button class="btn btn-link o_website_rating_selection_reset invisible"
+                                                                                    data-star="5">
+                                                                                <i class="fa fa-times d-block"
+                                                                                   role="img"
+                                                                                   aria-label="Remove Selection"/>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr class="o_website_rating_table_row "
+                                                                        data-star="4">
+                                                                        <td class="o_website_rating_table_star_num text-nowrap"
+                                                                            data-star="4">
+                                                                            4
+                                                                            stars
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_progress">
+                                                                            <div class="progress">
+                                                                                <div class="progress-bar o_rating_progressbar"
+                                                                                     role="progressbar"
+                                                                                     t-att-aria-valuenow="0"
+                                                                                     aria-valuemin="0"
+                                                                                     aria-valuemax="100"
+                                                                                     t-att-style="'width:' + four + '%;' ">
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_percent">
+                                                                            <strong>
+                                                                                <t t-esc="four"/>
+                                                                                %
+                                                                            </strong>
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_reset">
+                                                                            <button class="btn btn-link o_website_rating_selection_reset invisible"
+                                                                                    data-star="4">
+                                                                                <i class="fa fa-times d-block"
+                                                                                   role="img"
+                                                                                   aria-label="Remove Selection"/>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr class="o_website_rating_table_row "
+                                                                        data-star="3">
+                                                                        <td class="o_website_rating_table_star_num text-nowrap"
+                                                                            data-star="3">
+                                                                            3
+                                                                            stars
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_progress">
+                                                                            <div class="progress">
+                                                                                <div class="progress-bar o_rating_progressbar"
+                                                                                     role="progressbar"
+                                                                                     t-att-aria-valuenow="0"
+                                                                                     aria-valuemin="0"
+                                                                                     aria-valuemax="100"
+                                                                                     t-att-style="'width:' + three + '%;' ">
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_percent">
+                                                                            <strong>
+                                                                                <t t-esc="three"/>
+                                                                                %
+                                                                            </strong>
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_reset">
+                                                                            <button class="btn btn-link o_website_rating_selection_reset invisible"
+                                                                                    data-star="3">
+                                                                                <i class="fa fa-times d-block"
+                                                                                   role="img"
+                                                                                   aria-label="Remove Selection"/>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr class="o_website_rating_table_row "
+                                                                        data-star="2">
+                                                                        <td class="o_website_rating_table_star_num text-nowrap"
+                                                                            data-star="2">
+                                                                            2
+                                                                            stars
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_progress">
+                                                                            <div class="progress">
+                                                                                <div class="progress-bar o_rating_progressbar"
+                                                                                     role="progressbar"
+                                                                                     t-att-aria-valuenow="0"
+                                                                                     aria-valuemin="0"
+                                                                                     aria-valuemax="100"
+                                                                                     t-att-style="'width:' + two + '%;' ">
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_percent">
+                                                                            <strong>
+                                                                                <t t-esc="two"/>
+                                                                                %
+                                                                            </strong>
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_reset">
+                                                                            <button class="btn btn-link o_website_rating_selection_reset invisible"
+                                                                                    data-star="2">
+                                                                                <i class="fa fa-times d-block"
+                                                                                   role="img"
+                                                                                   aria-label="Remove Selection"/>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr class="o_website_rating_table_row "
+                                                                        data-star="1">
+                                                                        <td class="o_website_rating_table_star_num text-nowrap"
+                                                                            data-star="1">
+                                                                            1
+                                                                            stars
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_progress">
+                                                                            <div class="progress">
+                                                                                <div class="progress-bar o_rating_progressbar"
+                                                                                     role="progressbar"
+                                                                                     t-att-aria-valuenow="0"
+                                                                                     aria-valuemin="0"
+                                                                                     aria-valuemax="100"
+                                                                                     t-att-style="'width:' + one + '%;' ">
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_percent">
+                                                                            <strong>
+                                                                                <t t-esc="one"/>
+                                                                                %
+                                                                            </strong>
+                                                                        </td>
+                                                                        <td class="o_website_rating_table_reset">
+                                                                            <button class="btn btn-link o_website_rating_selection_reset invisible"
+                                                                                    data-star="1">
+                                                                                <i class="fa fa-times d-block"
+                                                                                   role="img"
+                                                                                   aria-label="Remove Selection"/>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        <hr/>
+                                                        <div>
+                                                            Do you want to
+                                                            recommend this
+                                                            seller? Please
+                                                            click on your
+                                                            choice below
+                                                            <a disabled="True"
+                                                               id="post_yes"
+                                                               class="btn btn-primary mt8 a-submit">
+                                                                Yes
+                                                            </a>
+                                                            <a disabled="True"
+                                                               id="post_no"
+                                                               class="btn btn-primary mt8 a-submit">
+                                                                No
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="o_portal_chatter_composer"/>
+                                            </div>
+                                        </div>
+                                            </div>
+                                            <div class="rating_card">
+                                            <h4>
+                                                <b>Write Review
+                                                </b>
+                                            </h4>
+                                            <div class="">
+                                                <div class="o_portal_chatter_header">
+                                                    <div class="row o_website_rating_card_container justify-content-center">
+                                                        <div class="col-lg-5">
+                                                            <div class="starRating"
+                                                                 id="star">
+                                                                <div>
+                                                                    <div>
+                                                                        <div>
+                                                                            <div>
+                                                                                <input class="starRating"
+                                                                                       id="rating11"
+                                                                                       type="radio"
+                                                                                       name="rating"
+                                                                                       value="1"
+                                                                                       checked="checked">
+                                                                                    <label for="rating11">
+                                                                                        <span>
+                                                                                            1
+                                                                                        </span>
+                                                                                    </label>
+                                                                                </input>
+                                                                            </div>
+                                                                            <input id="rating12"
+                                                                                   type="radio"
+                                                                                   name="rating"
+                                                                                   value="2">
+                                                                                <label for="rating12">
+                                                                                    <span>
+                                                                                        2
+                                                                                    </span>
+                                                                                </label>
+                                                                            </input>
+                                                                        </div>
+                                                                        <input id="rating13"
+                                                                               type="radio"
+                                                                               name="rating"
+                                                                               value="3">
+                                                                            <label for="rating13">
+                                                                                <span>
+                                                                                    3
+                                                                                </span>
+                                                                            </label>
+                                                                        </input>
+                                                                    </div>
+                                                                    <input id="rating14"
+                                                                           type="radio"
+                                                                           name="rating"
+                                                                           value="4">
+                                                                        <label for="rating14">
+                                                                            <span>
+                                                                                4
+                                                                            </span>
+                                                                        </label>
+                                                                    </input>
+                                                                </div>
+                                                                <input id="rating15"
+                                                                       type="radio"
+                                                                       name="rating15"
+                                                                       value="5">
+                                                                    <label for="rating15">
+                                                                    </label>
+                                                                </input>
+                                                            </div>
+                                                        </div>
+                                                        <div class="o_portal_chatter_composer_body mb32">
+                                                            <label>Your
+                                                                Review
+                                                            </label>
+                                                            <textarea id="msg"
+                                                                      rows="4"
+                                                                      name="message"
+                                                                      class="form-control mb-3"
+                                                                      placeholder="Write a message..."
+                                                                      required="required"/>
+                                                            <div class="o_portal_chatter_attachments mt-3"/>
+                                                            <t t-set="rate"
+                                                               t-value="request.env['seller.review'].sudo().search([('seller_id','=',user.id),('customer_id','=',cr_user.partner_id.id)])"/>
+                                                            <t t-if="rate">
+                                                                <a disabled="True"
+                                                                   id="post"
+                                                                   class="btn btn-primary mt8 a-submit">
+                                                                    Edit
+                                                                    Your
+                                                                    Review
+                                                                </a>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <a disabled="True"
+                                                                   id="post"
+                                                                   class="btn btn-primary mt8 a-submit">
+                                                                    Post
+                                                                    Your
+                                                                    Review
+                                                                </a>
+                                                            </t>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="o_portal_chatter_composer"/>
+                                            </div>
+                                        </div>
+                                        <div class="mt-5">
+                                            <t t-set="show_review" t-value="request.env['ir.config_parameter'].sudo().get_param('multi_vendor_marketplace.show_seller_review')"/>
+                                            <t t-if="show_review">
+                                                <h4 class="fw-bold mb-4" style="color: #243c64;">Customer Reviews</h4>
+                                                <div class="row g-4">
+                                                    <t t-foreach="review" t-as="review">
+                                                        <div class="col-lg-6">
+                                                            <div class="card h-100 p-3 shadow-sm border-0" style="border-radius: 12px; background: white;">
+                                                                <div class="d-flex align-items-start gap-3">
+                                                                    <div class="flex-shrink-0">
+                                                                        <div style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; background: #f8f9fa;">
+                                                                            <t t-if="review.customer_id.image_1920">
+                                                                                <img t-att-src="image_data_uri(review.customer_id.image_1920)" style="width: 100%; height: 100%; object-fit: cover;" alt="Customer"/>
+                                                                            </t>
+                                                                            <t t-else="">
+                                                                                <img src="/multi_vendor_marketplace/static/src/img/user.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Customer"/>
+                                                                            </t>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="flex-grow-1">
+                                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                            <h6 class="fw-bold mb-0" t-esc="review.customer_id.name"/>
+                                                                        </div>
+                                                                        <div class="o_website_rating_static mb-2" style="font-size: 0.85rem; color: #ffc107;">
+                                                                            <t t-foreach="range(5)" t-as="i">
+                                                                                <i t-attf-class="fa #{'fa-star' if review.rating > i else 'fa-star-o'}" role="img"/>
+                                                                            </t>
+                                                                        </div>
+                                                                        <p class="text-muted small mb-0" style="line-height: 1.5; max-height: 60px; overflow-y: auto;">
+                                                                            <t t-esc="review.message"/>
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                                <t t-if="not review">
+                                                    <div class="text-center text-muted py-5">No reviews yet.</div>
+                                                </t>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </center>
+            </div>
+        </t>
+    </template>
+</odoo>

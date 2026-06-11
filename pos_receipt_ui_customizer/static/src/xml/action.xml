@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="custom_receipt_for_pos.client_layout_customisation_template">
+
+        <div class="vh-100 overflow-auto bg-muted">
+            <div class="o_pos_receipt_layout_client_action p-4">
+                <div class="container-class">
+                    <!-- Editor Panel -->
+                    <div class="editor_panel d-flex flex-column gap-3">
+                        <!-- Font Style -->
+                        <div class="editor_panel_section">
+                            <h5 class="d-flex align-items-center gap-2">
+                                <i class="fa fa-font"/>
+                                Select Font Style
+                            </h5>
+                            <select t-model="state.fontStyle" t-on-change="onFontChange" class="form-select">
+                                <option value="Arial">Arial</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Inter">Inter</option>
+                                <option value="system-ui">system-ui</option>
+                                <option value="monospace">monospace</option>
+                            </select>
+                        </div>
+
+                        <!-- Logo -->
+                        <div class="editor_panel_section">
+                            <h5 class="d-flex align-items-center gap-2">
+                                <i class="fa fa-image"/>
+                                Change Your Logo
+                            </h5>
+                            <button class="btn btn-outline-primary" t-on-click="triggerImageUpload">
+                                Select Logo
+                            </button>
+                            <input type="file" id="imageUpload" accept="image/*" style="display:none"
+                                   t-on-change="insertImage"/>
+                        </div>
+
+
+                        <!-- Full Receipt QR -->
+                        <div class="editor_panel_section">
+                            <div class="form-check mb-2">
+                                <input type="checkbox"
+                                       class="form-check-input"
+                                       t-model="state.enableQr"
+                                       t-on-change="onToggleReceiptQr"
+                                       id="enableQr"/>
+                                <label class="form-check-label" for="enableQr">
+                                    Full Receipt QR
+                                </label>
+                            </div>
+
+                            <!-- Receipt QR Controls (only shown when enabled) -->
+                            <div t-if="state.enableQr" class="mt-2">
+                                <!-- Receipt QR Size -->
+                                <div class="mb-2">
+                                    <label class="form-label">Receipt QR Size:
+                                        <span t-esc="state.receiptQrSize"/>px</label>
+                                    <input type="range"
+                                           class="form-range"
+                                           min="80"
+                                           max="300"
+                                           step="10"
+                                           t-model="state.receiptQrSize"
+                                           t-on-input="onReceiptQrSizeChange"/>
+                                </div>
+
+                                <!-- Receipt QR Position -->
+                                <div class="mb-2">
+                                    <label class="form-label">Receipt QR Position</label>
+                                    <select class="form-select"
+                                            t-model="state.receiptQrPosition"
+                                            t-on-change="onReceiptQrPositionChange">
+                                        <option value="left">Left</option>
+                                        <option value="center">Center</option>
+                                        <option value="right">Right</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QR Code URL Section -->
+                        <div class="editor_panel_section">
+                            <div class="form-check mb-2">
+                               <input type="checkbox"
+                                      t-on-change="onToggleQr"
+                                      t-model="state.showSection"
+                                      class="form-check-input"
+                               />
+                                <label class="form-check-label" for="enableQrSection">
+                                    Enable QR code URL
+                                </label>
+                            </div>
+
+                            <!-- Hidden section -->
+                            <div t-if="state.showSection" class="mt-3">
+                                <input type="text"
+                                       placeholder="Enter your url..."
+                                       t-ref="userInput"
+                                       class="form-control mb-2"/>
+
+                                <!-- QR Size Control -->
+                                <div class="mb-2">
+                                    <label class="form-label">QR Size: <span t-esc="state.qrSize"/>px</label>
+                                    <input type="range"
+                                           class="form-range"
+                                           min="80"
+                                           max="300"
+                                           step="10"
+                                           t-model="state.qrSize"
+                                           t-on-input="onQrSizeChange"/>
+                                </div>
+
+                                <!-- QR Position Control -->
+                                <div class="mb-2">
+                                    <label class="form-label">QR Position</label>
+                                    <select class="form-select" t-model="state.qrPosition"
+                                            t-on-change="onQrPositionChange">
+                                        <option value="left">Left</option>
+                                        <option value="center">Center</option>
+                                        <option value="right">Right</option>
+                                    </select>
+                                </div>
+
+                                <button class="btn btn-primary mt-2"
+                                        t-on-click="submitValue">
+                                    Generate QR
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Draggable Fields -->
+                        <div class="editor_panel_section">
+                            <h5 class="d-flex align-items-center gap-2">
+                                <i class="fa fa-arrows"/>
+                                Drag and Drop Fields
+                            </h5>
+                            <select t-on-change="onModelChange" class="form-select">
+                                <option value="">Select Model</option>
+                                <option value="pos.order">POS Order</option>
+                                <option value="res.partner">Customer</option>
+                            </select>
+                            <t t-if="state.model">
+                                <div class="field-list-container mt-2">
+                                    <ul>
+                                        <li t-foreach="state.fields" t-as="field" t-key="field.technical"
+                                            draggable="true" t-on-dragstart="onDragStart" t-on-dragend="onDragEnd"
+                                            t-att-data-field="field.technical"
+                                            class="p-2 border-bottom cursor-pointer">
+                                            <t t-esc="field.label"/>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </t>
+                        </div>
+
+                        <div class="editor_panel_section">
+                          <div class="field-selector">
+                              <h5 class="d-flex align-items-center gap-2">
+                                <i class="fa fa-arrows"/>
+                                  Drag and Drop Column
+                            </h5>
+
+                              <select class="form-select form-select-sm"
+                                      t-model="state.popup.selectedField">
+                                <option value=""> Select Product Field </option>
+                                  <t t-foreach="state.productFields" t-as="f" t-key="f.name">
+                                    <option t-att-value="f.name">
+                                        <t t-esc="f.label"/>
+                                        (<t t-esc="f.name"/>)
+                                    </option>
+                                </t>
+                            </select>
+
+                              <!-- Scrollable drag container -->
+                              <div class="field-drag-list mt-2">
+                               <t t-foreach="state.productFields.filter(
+                            f => f.name === state.popup.selectedField
+                        )"
+                                  t-as="f"
+                                  t-key="'drag-'+f.name">
+
+                            <!-- TEXT PLACEHOLDER -->
+                                   <div class="field-chip text-chip"
+                                        draggable="true"
+                                        t-att-data-field="f.name"
+                                        t-on-dragstart="onDragStart">
+                                <t t-esc="f.label"/>
+                            </div>
+
+                                   <!-- COLUMN DRAG -->
+                                   <div class="field-chip column-chip mt-1"
+                                        draggable="true"
+                                        t-att-data-field="f.name"
+                                        t-on-dragstart="onColumnDragStart">
+                                <i class="fa fa-columns me-1"/>
+                                       <t t-esc="f.label"/>
+                            </div>
+                        </t>
+
+                                  <t t-if="!state.popup.selectedField">
+                                    <div class="text-muted small">
+                                        Select a product field to display
+                                    </div>
+                                </t>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+
+                    <!-- Receipt Preview -->
+                    <div class="receipt_content " t-ref="ReceiptContent" t-on-click="onReceiptClick"
+                         t-att-style="'font-family:' + state.fontStyle" contenteditable="true" t-on-drop="onDrop"/>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-class">
+                    <button id="saveButton" class="btn btn-primary" t-on-click="saveEditedReceipt">Save</button>
+                    <button id="resetButton" class="btn btn-outline-secondary"
+                            t-on-click="resetEditedReceipt">Reset</button>
+                </div>
+
+                <t t-if="state.popup.visible">
+                    <div class="receipt-popup-menu shadow-sm border bg-white rounded"
+                         t-att-style="'position:fixed; z-index:9999; top:' + state.popup.y + 'px; left:' +
+                          state.popup.x + 'px; padding:8px; min-width:200px;'">
+
+                        <div class="mb-2">
+                            <label class="form-label mb-1" style="font-size:12px;">Select Product Field</label>
+
+                            <select class="form-select form-select-sm"
+                                    t-model="state.popup.selectedField">
+                                <option value="">-- Select Product Field --</option>
+                                <t t-foreach="state.productFields" t-as="f" t-key="f.name">
+                                    <option t-att-value="f.name">
+                                        <t t-esc="f.label"/>
+                                        (<t t-esc="f.name"/>)
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+
+                        <t t-if="state.popup.type === 'column'">
+                            <button class="btn btn-sm btn-outline-primary w-100 mb-1"
+                                    t-on-click="onAddColumnClick">
+                                Add Column
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-danger w-100"
+                                    t-on-click="onRemoveColumnClick">
+                                Remove Column
+                            </button>
+                        </t>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>
