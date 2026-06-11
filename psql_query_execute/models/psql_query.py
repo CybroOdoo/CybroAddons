@@ -21,7 +21,7 @@
 import json
 import io
 from odoo import fields, models, _
-from odoo.tools import date_utils, json_default
+from odoo.tools import json_default
 from odoo.exceptions import ValidationError
 
 try:

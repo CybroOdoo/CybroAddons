@@ -38,7 +38,7 @@
             'psql_query_execute/static/src/js/action_manager.js',
         ],
     },
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'license': "LGPL-3",
     'installable': True,
     'auto_install': False,
