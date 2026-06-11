@@ -18,18 +18,22 @@ patch(ProductScreen.prototype, {
         const product_tmpl_id = main_product.raw.product_tmpl_id;
         const product_variants = product_product.filter(product => product.raw.product_tmpl_id === product_tmpl_id);
         let total_qty_available = 0;
-        product_variants.forEach(v => {
-                total_qty_available += this.pos.location_stock_map?.[v.id] || 0;
-            });
+        product_variants.forEach(variant => {
+                stock_product.forEach(stock => {
+                     if (stock.raw.product_id && stock.raw.product_id.id === variant.id) {
+                          total_qty_available += stock.raw.available_quantity;
+                     }
+                });
+        });
      if(event.type === 'consu'){
-     if(this.pos.config.location_from === 'all_warehouse'){
-        let qty_available = 0;
+     if(this.pos.res_setting['stock_from'] === 'all_warehouse'){
+     let qty_available = 0;
         product_variants.forEach((variant) => {
             if (variant.qty_available) {
                 qty_available += variant.qty_available;
             }
         });
-        if (this.pos.config.stock_product === 'on_hand') {
+        if (this.pos.res_setting['stock_type'] === 'on_hand') {
             if (qty_available <= event.deny) {
              await this.dialog.add(AlertDialog, {
                             title: _t('Deny Order'),
@@ -38,7 +42,7 @@ patch(ProductScreen.prototype, {
             } else {
                         super.addProductToOrder(event);
             }
-        }else if (this.pos.config.stock_product === 'outgoing_qty') {
+        }else if (this.pos.res_setting['stock_type'] === 'outgoing_qty') {
 
             if (event.outgoing_qty <= event.deny) {
                 await this.dialog.add(AlertDialog, {
@@ -48,7 +52,7 @@ patch(ProductScreen.prototype, {
             }else {
                     super.addProductToOrder(event);
             }
-        } else if (this.pos.config.stock_product === 'incoming_qty') {
+        } else if (this.pos.res_setting['stock_type'] === 'incoming_qty') {
                 if (event.incoming_qty <= event.deny) {
                     await this.dialog.add(AlertDialog, {
                         title: _t('Deny Order'),
@@ -59,8 +63,8 @@ patch(ProductScreen.prototype, {
                 }
         }
      }
-     else if (this.pos.config.location_from ==='current_warehouse') {
-                if (this.pos.config.stock_product === 'on_hand') {
+     else if (this.pos.res_setting['stock_from'] ==='current_warehouse') {
+                if (this.pos.res_setting['stock_type'] === 'on_hand') {
                     if (total_qty_available <= event.deny) {
                         await this.dialog.add(AlertDialog, {
                               title: _t('Deny Order'),
@@ -69,7 +73,7 @@ patch(ProductScreen.prototype, {
                     } else {
                         super.addProductToOrder(event);
                     }
-                }else if (this.pos.config.stock_product === 'outgoing_qty') {
+                }else if (this.pos.res_setting['stock_type'] === 'outgoing_qty') {
                     if (event.outgoing_qty <= event.deny) {
                         await this.dialog.add(AlertDialog, {
                             title: _t('Deny Order'),
@@ -78,7 +82,7 @@ patch(ProductScreen.prototype, {
                     } else {
                         super.addProductToOrder(event);
                     }
-                }else if (this.pos.config.stock_product === 'incoming_qty') {
+                }else if (this.pos.res_setting['stock_type'] === 'incoming_qty') {
                     if (event.incoming_qty <= event.deny) {
                         await this.dialog.add(AlertDialog, {
                             title: _t('Deny Order'),

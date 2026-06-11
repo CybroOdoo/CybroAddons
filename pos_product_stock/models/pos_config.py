@@ -43,8 +43,6 @@ class PosConfig(models.Model):
 
     @api.onchange('location_from')
     def _onchange_location_from(self):
-        """ Adjust the stock_location_id when stock_from is changed. """
+        """ Adjust the pos_stock_location_id when location_from is changed. """
         if self.location_from == 'all_warehouse':
-            self.stock_location_id = False
-        elif self.location_from == 'current_warehouse':
-            self.stock_location_id = self.pos_config_id.pos_stock_location_id
+            self.pos_stock_location_id = False

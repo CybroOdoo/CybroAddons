@@ -27,31 +27,6 @@ class StockQuant(models.Model):
     _name = 'stock.quant'
     _inherit = ['stock.quant','pos.load.mixin']
 
-
-    def get_available_quantity(self, product_id, location_id, lot_id=None, package_id=None, owner_id=None, strict=False, allow_negative=False):
-
-        self = self.sudo()
-        quants = self._gather(product_id, location_id, lot_id=lot_id, package_id=package_id, owner_id=owner_id, strict=strict)
-        if product_id.tracking == 'none':
-            available_quantity = sum(quants.mapped('quantity')) - sum(quants.mapped('reserved_quantity'))
-            if allow_negative:
-                return available_quantity
-            else:
-                return available_quantity if product_id.uom_id.compare(available_quantity, 0.0) >= 0.0 else 0.0
-        else:
-            availaible_quantities = {lot_id: 0.0 for lot_id in list(set(quants.mapped('lot_id'))) + ['untracked']}
-            for quant in quants:
-                if not quant.lot_id and strict and lot_id:
-                    continue
-                if not quant.lot_id:
-                    availaible_quantities['untracked'] += quant.quantity - quant.reserved_quantity
-                else:
-                    availaible_quantities[quant.lot_id] += quant.quantity - quant.reserved_quantity
-            if allow_negative:
-                return sum(availaible_quantities.values())
-            else:
-                return sum(available_quantity for available_quantity in availaible_quantities.values() if product_id.uom_id.compare(available_quantity, 0) > 0)
-
     @api.model
     def _load_pos_data_fields(self, config_id):
         """Returns the list of fields to be loaded for POS data."""

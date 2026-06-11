@@ -4,3 +4,8 @@
 #### Version 19.0.1.0.0
 #### ADD
 - Initial Commit for POS Product Stock
+- 
+#### 03.10.2025
+#### Version 19.0.1.0.1
+#### UPDT   
+- Added Test Case

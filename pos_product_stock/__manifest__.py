@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'POS Product Stock',
-    'version': "19.0.1.0.0",
+    'version': "19.0.1.0.1",
     'category': 'Point Of Sale',
     'summary': "Quantity of  all Products in each Warehouse",
     'description': "Shows Stock quantity in POS  for all Products in each "
@@ -39,7 +39,6 @@
         'point_of_sale._assets_pos': [
             'pos_product_stock/static/src/xml/product_item.xml',
             'pos_product_stock/static/src/css/product_quantity.scss',
-            'pos_product_stock/static/src/js/pos_location_stock_loader.js',
             'pos_product_stock/static/src/js/pos_location.js',
             'pos_product_stock/static/src/js/pos_payment_screen.js',
             'pos_product_stock/static/src/js/pos_session.js',
