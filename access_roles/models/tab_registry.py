@@ -22,6 +22,8 @@
 import re
 from odoo import api, Command, fields, models
 
+from . import run_once
+
 
 class TabRegistry(models.Model):
     """Class for representing tabs"""
@@ -36,7 +38,8 @@ class TabRegistry(models.Model):
     def _register_hook(self):
         """Triggers filter extraction during module initialization."""
         super()._register_hook()
-        self.get_all_tabs()
+        if run_once(self.env.cr, 'tab_registry_rebuild'):
+            self.get_all_tabs()
         return True
 
     def get_all_tabs(self):

@@ -22,6 +22,8 @@
 import xml.etree.ElementTree as ET
 from odoo import api, Command, fields, models
 
+from . import run_once
+
 
 class FilterRegistry(models.Model):
     """Stores and manages filters from search views."""
@@ -39,7 +41,8 @@ class FilterRegistry(models.Model):
     def _register_hook(self):
         """Triggers filter extraction during module initialization."""
         super()._register_hook()
-        self.get_all_filters()
+        if run_once(self.env.cr, 'filter_registry_rebuild'):
+            self.get_all_filters()
         return True
 
     def _get_filter_elements_from_arch(self, arch):

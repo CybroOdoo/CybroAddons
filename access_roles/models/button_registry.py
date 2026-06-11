@@ -22,6 +22,8 @@
 import re
 from odoo import api, Command, fields, models
 
+from . import run_once
+
 
 class ButtonRegistry(models.Model):
     """Class for representing buttons"""
@@ -40,7 +42,8 @@ class ButtonRegistry(models.Model):
         Calls `get_all_buttons` to populate the button registry.
         """
         super()._register_hook()
-        self.get_all_buttons()
+        if run_once(self.env.cr, 'button_registry_rebuild'):
+            self.get_all_buttons()
         return True
 
     def get_all_buttons(self):

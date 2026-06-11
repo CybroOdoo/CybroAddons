@@ -22,6 +22,8 @@
 import re
 from odoo import api, Command, fields, models
 
+from . import run_once
+
 
 class GroupByRegistry(models.Model):
     """Stores and manages group_by filters from search views."""
@@ -39,7 +41,8 @@ class GroupByRegistry(models.Model):
     def _register_hook(self):
         """Triggers group_by extraction during module initialization."""
         super()._register_hook()
-        self.get_all_groupby()
+        if run_once(self.env.cr, 'groupby_registry_rebuild'):
+            self.get_all_groupby()
         return True
 
     def _extract_groupby_attributes(self, filter_tag):
