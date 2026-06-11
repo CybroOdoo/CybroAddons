@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'All in One Dynamic Fields',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Extra Tools',
     'summary': 'Create Custom Fields As Per Your Need Without Any Coding.',
     'description': "The features of module facilitates the addition of fields"
