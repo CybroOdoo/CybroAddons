@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Export Attachments From List View',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Document Management',
     'summary': 'The module used to download multiple record attachment easily',
     'description': 'When using dynamic functionality in this model,'
