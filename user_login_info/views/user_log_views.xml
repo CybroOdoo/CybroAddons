@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Menu of the model user log-->
+<odoo>
+    <record id="user_log_action" model="ir.actions.act_window">
+        <field name="name">User Info</field>
+        <field name="res_model">user.log</field>
+        <field name="view_mode">list,form</field>
+    </record>
+<!--It is used to display the form view for the user log model-->
+    <record id="user_log_view_form" model="ir.ui.view">
+        <field name="name">user.log.view.form</field>
+        <field name="model">user.log</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <field name="image" widget="image" class="oe_avatar" />
+                    <div class="oe_title">
+                        <h1>
+                            <field name="user_id" placeholder="User Name"/>
+                        </h1>
+                    </div>
+                    <div invisible="is_secure != 1">
+                        <span>
+                            UNKNOWN USER TRIED TO LOG-IN
+                        </span>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="user_id" invisible="is_secure == 1"/>
+                            <field name="is_secure" invisible="1"/>
+                            <field name="create_date"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+<!--It is used to display the list view for the user log model-->
+    <record model="ir.ui.view" id="user_log_view_list">
+        <field name="name">user.log.view.list</field>
+        <field name="model">user.log</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="user_id"/>
+                <field name="image"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+    <!--    Main menu of the module-->
+    <menuitem id="menu_login_info_type" name="Login info"
+              web_icon="user_login_info,static/description/assets/icons/icon.png"
+              action="user_log_action"/>
+
+    <!-- Inherit Login Template to add camera capture script -->
+    <template id="login" inherit_id="web.login">
+        <xpath expr="//form" position="inside">
+            <input type="hidden" name="captured_image" id="captured_image"/>
+        </xpath>
+    </template>
+</odoo>
