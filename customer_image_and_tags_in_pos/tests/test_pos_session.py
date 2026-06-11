@@ -19,28 +19,18 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###############################################################################
-{
-    'name': 'Customer Image And Tags In POS',
-    'version': '19.0.1.0.1',
-    'category': 'Point of Sale',
-    'summary': 'Images and tags in pos customer session',
-    'description': 'Can see the image and tags of customer in '
-                   'customer selection page while choosing'
-                   ' the customer in pos',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['point_of_sale'],
-    'assets': {
-        'point_of_sale._assets_pos':[
-            'customer_image_and_tags_in_pos/static/src/js/PartnerLine.js',
-            'customer_image_and_tags_in_pos/static/src/xml/PartnerLine.xml',
-        ],
-    },
-    'images': ['static/description/banner.jpg'],
-    'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+
+from odoo.tests import common, tagged
+
+
+@tagged('post_install', '-at_install')
+class TestPosSession(common.TransactionCase):
+
+    def test_load_pos_data_models(self):
+        """Test that res.partner.category is loaded when getting POS data models."""
+        pos_config = self.env['pos.config'].search([], limit=1)
+        if not pos_config:
+            pos_config = self.env['pos.config'].create({'name': 'Test POS Config'})
+
+        models = self.env['pos.session']._load_pos_data_models(pos_config)
+        self.assertIn('res.partner.category', models)

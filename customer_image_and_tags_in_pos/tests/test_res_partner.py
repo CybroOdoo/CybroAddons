@@ -19,28 +19,18 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###############################################################################
-{
-    'name': 'Customer Image And Tags In POS',
-    'version': '19.0.1.0.1',
-    'category': 'Point of Sale',
-    'summary': 'Images and tags in pos customer session',
-    'description': 'Can see the image and tags of customer in '
-                   'customer selection page while choosing'
-                   ' the customer in pos',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['point_of_sale'],
-    'assets': {
-        'point_of_sale._assets_pos':[
-            'customer_image_and_tags_in_pos/static/src/js/PartnerLine.js',
-            'customer_image_and_tags_in_pos/static/src/xml/PartnerLine.xml',
-        ],
-    },
-    'images': ['static/description/banner.jpg'],
-    'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+
+from odoo.tests import common, tagged
+
+
+@tagged('post_install', '-at_install')
+class TestResPartner(common.TransactionCase):
+
+    def test_load_pos_data_fields(self):
+        """Test that category_id is included in the loaded partner fields."""
+        pos_config = self.env['pos.config'].search([], limit=1)
+        if not pos_config:
+            pos_config = self.env['pos.config'].create({'name': 'Test POS Config'})
+
+        fields = self.env['res.partner']._load_pos_data_fields(pos_config)
+        self.assertIn('category_id', fields)
