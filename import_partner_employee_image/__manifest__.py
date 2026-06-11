@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Import Employee/Partner Image",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Human Resources',
     'summary': """Import Partner/Employee Image From Url and Local storage using CSV and XLSX Files""",
     'description': """Effortlessly enrich your Partner/Employee records by importing images from both online sources 
