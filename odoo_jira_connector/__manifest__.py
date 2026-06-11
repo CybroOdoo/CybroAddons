@@ -47,7 +47,7 @@
         'views/jira_sprint_views.xml',
     ],
     'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'installable': True,
     'application': False,
     'auto_install': False,

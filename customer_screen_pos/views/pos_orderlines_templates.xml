@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="customer_pos_screen" name="POS Customer Screen">
+        <div style="background-color:lightblue">
+            <h3><center>POS Order Lines</center></h3>
+        </div>
+        <body style="overflow-auto border; background: #f2f2f2; font-family: 'Open Sans', sans-serif;">
+            <div class="container row" id="customer_facing_display"
+                 style="display: contents; align-items: center; justify-content: center; overflow-auto border;">
+                <center style="width:100%">
+                    <div class="pos_orderlines col-md-10">
+                        <table class="table table-striped table-light">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">Name</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="orderlinelist" t-as="orderline">
+                                    <tr>
+                                        <th colspan="2">
+                                            <t t-esc="orderline['name']"/>
+                                            <input type="hidden" class="session_id" t-att-value="orderline['session']"/>
+                                            <input type="hidden" class="partner_id" t-att-value="orderline['partner_id']"/>
+                                            <input type="hidden" class="order_name" t-att-value="orderline['order_name']"/>
+                                        </th>
+                                        <td><t t-esc="orderline['qty']"/></td>
+                                        <td><t t-esc="orderline['price']"/></td>
+                                    </tr>
+                                </t>
+                                <tr>
+                                    <td colspan="2"/>
+                                    <td/>
+                                    <th><t t-esc="total"/></th>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="row" t-if="orderlinelist">
+                            <div class="col" style="align-items: flex-start; display: flex;">
+                                <button id="openModalBtn" class="btn btn-secondary">Add Review</button>
+                            </div>
+                        </div>
+                    </div>
+                </center>
+            </div>
+
+            <!-- Review Modal -->
+            <div id="myModal" class="modal"
+                 style="display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+                <div class="modal-content"
+                     style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 40%;">
+                    <span class="close" id="closeModal"
+                          style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor:pointer;"/>
+                    <div id="review-form-container">
+                        <h2 id="add-review-header">Add Review</h2>
+                        <form id="review-form">
+                            <div class="popup five-star-rating-popup">
+                                <header class="title">Rate Our Service</header>
+                                <main class="body content">
+                                    <div class="rate_this_prod" style="text-align: center; margin: 20px 0;">
+                                        <style>
+                                            .stars input[type="radio"] {
+                                                display: none;
+                                            }
+
+                                            .stars label {
+                                                font-size: 30px;
+                                                color: #ccc;
+                                                cursor: pointer;
+                                            }
+
+                                            .stars input[type="radio"]:checked ~ label,
+                                            .stars label:hover,
+                                            .stars label:hover ~ label {
+                                                color: gold;
+                                            }
+                                            .stars {
+                                                direction: rtl;
+                                                display: inline-flex;
+                                            }
+                                        </style>
+
+                                        <div class="rate stars">
+                                            <input type="radio" id="star5" name="rate" value="star5"/>
+                                            <label for="star5" title="5 stars">★</label>
+
+                                            <input type="radio" id="star4" name="rate" value="star4"/>
+                                            <label for="star4" title="4 stars">★</label>
+
+                                            <input type="radio" id="star3" name="rate" value="star3"/>
+                                            <label for="star3" title="3 stars">★</label>
+
+                                            <input type="radio" id="star2" name="rate" value="star2"/>
+                                            <label for="star2" title="2 stars">★</label>
+
+                                            <input type="radio" id="star1" name="rate" value="star1"/>
+                                            <label for="star1" title="1 star">★</label>
+                                        </div>
+
+                                    </div>
+                                    <textarea name="review_text" class="review_text" rows="4"
+                                              placeholder="Write a message..." style="width: 100%;"/>
+                                </main>
+                                <footer class="footer">
+                                    <button type="button" onclick="submitReview()">Submit</button>
+                                </footer>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <script type="text/javascript">
+                document.addEventListener("DOMContentLoaded", function () {
+                const modal = document.querySelector("#myModal");
+                const openBtn = document.querySelector("#openModalBtn");
+                const closeBtn = document.querySelector("#closeModal");
+
+                openBtn?.addEventListener("click", () => {
+                    modal.style.display = "block";
+                });
+
+                closeBtn?.addEventListener("click", () => {
+                    modal.style.display = "none";
+                });
+
+                window.onclick = function (event) {
+                    if (event.target === modal) {
+                        modal.style.display = "none";
+                    }
+                };
+            });
+
+            function submitReview() {
+                const rating = document.querySelector('input[name="rate"]:checked')?.value || '';
+                const review = document.querySelector('.review_text')?.value || '';
+                const session = document.querySelector('.session_id')?.value || '';
+                const partner_id = document.querySelector('.partner_id')?.value || '';
+                const order_name = document.querySelector('.order_name')?.value || '';
+
+                const data = {
+                    review_star: rating,
+                    review_text: review,
+                    session: session,
+                    partner_id: partner_id,
+                    order_name: order_name,
+                };
+
+                fetch('/customer/review', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(result => {
+                    console.log("Result:", result);
+                    if (result.success) {
+                        document.querySelector("#myModal").style.display = "none";
+                        document.querySelector('.review_text').value = '';
+                        const stars = document.querySelectorAll('input[name="rate"]');
+                        stars.forEach(star => star.checked = false);
+                    }
+                })
+                .catch(error => {
+                    console.error("Review submission error:", error);
+                });
+            }
+
+            </script>
+        </body>
+        <style>
+            #wrapwrap{
+                display:none !important;
+            }
+        </style>
+    </template>
+
+    <template id="customer_screen_pos_main_page" name="Customer Screen">
+        <t t-call="web.frontend_layout">
+            <t t-set="no_header" t-value="True"/>
+            <t t-set="no_footer" t-value="True"/>
+        </t>
+    </template>
+</odoo>
