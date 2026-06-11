@@ -19,22 +19,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-{
-    'name': 'Automatic Mail to Child Contact',
-    'version': '19.0.1.0.1',
-    'category': 'Discuss',
-    'summary': """Send Mail to all Child Contact in Sales and Invoice""",
-    'description': """Send Mail to all Child Contact in Sales and Invoice.
-     All child contacts are automatically add in the Recipients field.So we 
-     can easily manage the child contact in mail.""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'depends': ['base', 'sale_management'],
-    'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from . import test_account_move_send
+from . import test_mail_template
