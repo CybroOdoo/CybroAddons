@@ -48,8 +48,8 @@ class WebsiteSaleFileUpload(main.WebsiteSale):
         res.qcontext.update({'attachment': all_attachments})
         return res
 
-    @http.route('/shop/attachments', type='json', auth='public', website=True,
-                sitemap=False)
+    @http.route('/shop/attachments', type='jsonrpc', auth='public',
+                website=True, sitemap=False)
     def shop_attachments(self, **post):
         """For delete the attachment from websites"""
         attachment = request.env['ir.attachment'].sudo().browse(int(post.get(

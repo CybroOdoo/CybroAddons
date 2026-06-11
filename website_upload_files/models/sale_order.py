@@ -26,7 +26,7 @@ class SaleOrder(models.Model):
     """For adding the count of attachment as field in sale order"""
     _inherit = 'sale.order'
 
-    attachment_count = fields.Integer(string='Attachment Count',
+    attachment_count = fields.Integer(string='Uploaded File Count',
                                       help="Count of attachment",
                                       compute='_compute_attachment_count')
 

@@ -21,14 +21,14 @@
 ############################################################################
 {
     'name': 'Multiple Attachments In eCommerce Order',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'eCommerce',
     'summary': 'Can upload files in payment page of website.',
     'description': 'Can upload files related to the sale order in payment page'
                    'of website.This attachment can also view in website order.'
                    'Through the attachment we can give further details or '
                    'information regarding the sale order.',
-    'author': 'Cybrosys Techno Solutions',
+    'author': 'Cybrosys Techno solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
