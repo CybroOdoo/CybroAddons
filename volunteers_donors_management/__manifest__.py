@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Volunteers and Donors Management",
-    'version': "19.0.1.0.0",
+    'version': "19.0.1.0.1",
     'category': 'Extra Tools',
     'summary': "The app helps manage volunteers and donors in Odoo, allowing "
                "assign volunteers and donors in Project and CRM ",
