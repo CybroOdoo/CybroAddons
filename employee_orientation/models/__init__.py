@@ -26,5 +26,5 @@ from . import orientation_request
 from . import employee_training
 from . import employee_orientation_report
 from . import hr_employee
-
+from . import res_users
 

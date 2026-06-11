@@ -115,12 +115,12 @@ class EmployeeTraining(models.Model):
         ir_model_data = self.env['ir.model.data']
         try:
             template_id = ir_model_data._xmlid_lookup(
-                'employee_orientation.orientation_training_mailer')[2]
+                'employee_orientation.orientation_training_mailer')[1]
         except ValueError:
             template_id = False
         try:
             compose_form_id = ir_model_data._xmlid_lookup(
-                'mail.email_compose_message_wizard_form')[2]
+                'mail.email_compose_message_wizard_form')[1]
         except ValueError:
             compose_form_id = False
         ctx = dict(self.env.context or {})
@@ -142,4 +142,3 @@ class EmployeeTraining(models.Model):
             'target': 'new',
             'context': ctx,
         }
-

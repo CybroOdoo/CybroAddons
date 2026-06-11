@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': "Employee Orientation & Training",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': "Human Resources",
     'summary': """Employee Orientation/Training Program Employee orientation by
     which an employee acquires the necessary skills,knowledge, behaviors.""",
