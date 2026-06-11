@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--  Action for the config settings   -->
+    <record id="action_settings" model="ir.actions.act_window">
+        <field name="name">Seller Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'multi_vendor_marketplace',
+            'bin_size': False}
+        </field>
+    </record>
+<!--    View for res.config.settings-->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.multi.vendor.marketplace</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="15"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Auto Approval Settings"
+                     string="Seller Dashboard"
+                     name="multi_vendor_marketplace"
+                     groups="base.group_user">
+                    <block title="Auto Approval" name="auto_approval">
+                        <setting id="seller_approval" help="When enabled, all seller's requests will be automatically approved">
+                            <field name="seller_approval"/>
+                        </setting>
+                        <setting id="quantity_approval" help="When enabled, all seller's product quantity update request will be automatically approved">
+                            <field name="quantity_approval"/>
+                        </setting>
+                        <setting id="product_approval" help="When enabled, all seller's products will be automatically approved">
+                            <field name="product_approval"/>
+                        </setting>
+                    </block>
+
+                    <block title="Product Terms" name="product_terms">
+                        <setting id="internal_category" help="All marketplace products will belong to defined internal category.">
+                            <label for="internal_categ_id"/>
+                            <field name="internal_categ_id"/>
+                        </setting>
+                        <setting id="seller_loc" help="This will be the default seller's location and warehouse.">
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label for="seller_location_id" class="col-lg-3 o_light_label"/>
+                                    <field name="seller_location_id"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="seller_warehouse_id" class="col-lg-3 o_light_label"/>
+                                    <field name="seller_warehouse_id"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="product_variant" help="Allow sellers for managing their product attributes, defining variants (Eg: Color, Size,....)">
+                            <field name="product_variants"/>
+                        </setting>
+                        <setting id="product_pricing" help="Allow sellers managing for Advanced pricing on product using pricelist.">
+                            <field name="product_pricing"/>
+                        </setting>
+                        <setting id="uom" help="Allow sellers for setting different Units of Measurements for their products">
+                            <field name="uom"/>
+                        </setting>
+                    </block>
+
+                    <block title="Payment Terms" name="payment_terms">
+                        <setting id="commission" help="Global commission for marketplace seller">
+                            <field name="commission"/><span>%</span>
+                        </setting>
+                        <setting id="currency" help="Marketplace currency will be used to pay to seller">
+                            <field name="currency"/>
+                        </setting>
+                        <setting id="amt_limit" help="Amount Limit for seller payment request">
+                            <field name="amt_limit"/>
+                        </setting>
+                        <setting id="min_gap" help="Minimum gap for next payment request">
+                            <field name="min_gap"/><span>Days</span>
+                        </setting>
+                        <setting id="pay_journal" help="Account journal for seller payment">
+                            <field name="pay_journal"/>
+                        </setting>
+                        <setting id="pay_product" help="Product used for seller payment">
+                            <field name="pay_product"/>
+                        </setting>
+                    </block>
+
+                    <block title="Mail &amp; Notifications" name="mail_n_notifications">
+                        <setting id="mail_admin_request" string="On New Seller Request" help="Email notification sent to admin on new seller request">
+                             <field name="seller_request_admin_mail"/>
+                             <div class="mt8" invisible="not seller_request_admin_mail">
+                                 <label for="seller_request_admin_mail_template_id"/>
+                                 <field name="seller_request_admin_mail_template_id" required="seller_request_admin_mail"/>
+                             </div>
+                        </setting>
+                        <setting id="mail_admin_approve" string="On New Seller Approval / Rejection" help="Email notification sent to admin on seller approval/rejection">
+                            <field name="seller_approve_admin_mail"/>
+                            <div class="mt8" invisible="not seller_approve_admin_mail">
+                                <label for="seller_approve_admin_mail_template_id"/>
+                                <field name="seller_approve_admin_mail_template_id" required="seller_approve_admin_mail"/>
+                            </div>
+                        </setting>
+                        <setting id="mail_seller_request" string="On Seller Request (Seller Mail)" help="Email notification sent to seller on their request">
+                            <field name="seller_request_seller_mail"/>
+                            <div class="mt8" invisible="not seller_request_seller_mail">
+                                <label for="seller_request_seller_mail_template_id"/>
+                                <field name="seller_request_seller_mail_template_id" required="seller_request_seller_mail"/>
+                            </div>
+                        </setting>
+                        <setting id="mail_seller_approve" string="On Seller Approval / Rejection (Seller Mail)" help="Email notification sent to seller on approval/rejection">
+                            <field name="seller_approve_seller_mail"/>
+                            <div class="mt8" invisible="not seller_approve_seller_mail">
+                                <label for="seller_approve_seller_mail_template_id"/>
+                                <field name="seller_approve_seller_mail_template_id" required="seller_approve_seller_mail"/>
+                            </div>
+                        </setting>
+                        <setting id="mail_admin_product_request" string="On Product Approval / Rejection" help="Email notification sent on product approval/rejection">
+                            <field name="product_approve_admin_mail"/>
+                            <div class="mt8" invisible="not product_approve_admin_mail">
+                                <label for="product_approve_admin_mail_template_id"/>
+                                <field name="product_approve_admin_mail_template_id" required="product_approve_admin_mail"/>
+                            </div>
+                        </setting>
+                        <setting id="mail_admin_new_order" string="On New Order" help="Email notification sent on new order">
+                            <field name="new_order_seller_mail"/>
+                            <div class="mt8" invisible="not new_order_seller_mail">
+                                <label for="new_order_seller_mail_template_id"/>
+                                <field name="new_order_seller_mail_template_id" required="new_order_seller_mail"/>
+                            </div>
+                        </setting>
+                        <setting id="mail_seller_product_request" string="On Product Approval / Rejection (Seller Mail)" help="Email notification sent to seller on product status">
+                            <field name="product_approve_seller_mail"/>
+                            <div class="mt8" invisible="not product_approve_seller_mail">
+                                <label for="product_approve_seller_mail_template_id"/>
+                                <field name="product_approve_seller_mail_template_id" required="product_approve_seller_mail"/>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <block title="Website" name="website_settings">
+                        <setting id="prod_count" help="Enable to display Seller Products on website">
+                            <field name="prod_count"/>
+                        </setting>
+                        <setting id="sale_count" help="Enable to display Seller product sale count on website">
+                            <field name="sale_count"/>
+                        </setting>
+                        <setting id="seller_addr" help="Enable to display Seller Address on website">
+                            <field name="seller_addr"/>
+                        </setting>
+                        <setting id="seller_since" help="Enable to display Seller since date on website">
+                            <field name="seller_since"/>
+                        </setting>
+                        <setting id="ret_policy" help="Enable to display Seller return policy on website">
+                            <field name="ret_policy"/>
+                        </setting>
+                        <setting id="ship_policy" help="Enable to display Seller shipping policy on website">
+                            <field name="ship_policy"/>
+                        </setting>
+                        <setting id="shop_tnc" help="Enable to display Seller shop Terms and Conditions on website">
+                            <field name="shop_tnc"/>
+                        </setting>
+                        <setting id="contact_seller_button" help="Enable to display Seller contact button on website">
+                            <field name="contact_seller_button"/>
+                        </setting>
+                        <setting id="bcome_seller" help="Enable to display Become a Seller button on website">
+                            <field name="bcome_seller"/>
+                        </setting>
+                        <setting id="recent_products" help="Enter the number to show recently added products on website (Maximum 20)">
+                            <field name="recent_products"/>
+                        </setting>
+                        <setting id="show_seller_review" string="Seller Review Settings" help="Enable to display Seller review on website">
+                            <field name="show_seller_review"/>
+                            <div class="mt8" invisible="not show_seller_review">
+                                <div class="row mt8">
+                                    <label for="seller_review_count" class="col-lg-3 o_light_label"/>
+                                    <field name="seller_review_count"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="auto_publish_seller_review" class="col-lg-3 o_light_label"/>
+                                    <field name="auto_publish_seller_review"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="sell_menu_header_footer_sellerlist" string="Marketplace Landing Page Settings" help="Settings for Sell menu and Seller list">
+                            <div class="content-group">
+                                <div class="mt8">
+                                    <field name="show_sell_menu_header"/>
+                                    <label for="show_sell_menu_header"/>
+                                </div>
+                                <div class="mt8">
+                                    <field name="show_sell_menu_footer"/>
+                                    <label for="show_sell_menu_footer"/>
+                                </div>
+                                <div class="mt8">
+                                    <field name="show_sellers_list"/>
+                                    <label for="show_sellers_list"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="landing_page" string="Landing Page Labels" help="Customize labels for seller pages">
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label for="sell_link_label" class="col-lg-3 o_light_label"/>
+                                    <field name="sell_link_label"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="seller_list_link_label" class="col-lg-3 o_light_label"/>
+                                    <field name="seller_list_link_label"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="seller_msg" string="Seller Messages" help="Messages shown in Seller profile based on state">
+                             <div class="content-group">
+                                <div class="row mt8">
+                                    <label for="new_status_msg" class="col-lg-3 o_light_label"/>
+                                    <field name="new_status_msg"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="pending_status_msg" class="col-lg-3 o_light_label"/>
+                                    <field name="pending_status_msg"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="banner" string="Seller Landing Page Banner" help="Banner for Seller landing page">
+                            <field name="image" widget="image"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+<!--    Configuration menu-->
+    <menuitem id="configuration_root" parent="seller_root"
+              name="Configuration" sequence="49"
+              groups="multi_vendor_marketplace.multi_vendor_marketplace_admin,multi_vendor_marketplace.multi_vendor_marketplace_seller"
+              action="vendor_dashboard_action"/>
+<!--    Settings menu-->
+    <menuitem id="seller_settings" parent="configuration_root"
+              name="Settings" sequence="51"
+              groups="multi_vendor_marketplace.multi_vendor_marketplace_admin"
+              action="action_settings"/>
+</odoo>
