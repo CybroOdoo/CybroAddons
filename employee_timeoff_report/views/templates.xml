@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Time Off Dashboard Template -->
+    <template id="timeoff_report_template">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container py-5" id="timeoff_report_dashboard">
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-6">
+                            <h2 class="mb-0">My Time Off Report</h2>
+                            <p class="text-muted"><t t-esc="employee.name"/> | <t t-esc="employee.work_email"/></p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a href="/my/timeoff/print" class="btn btn-primary shadow-sm js_print_and_redirect" style="border-radius: 10px; padding: 10px 25px; font-weight: 600;">
+                                <i class="fa fa-print me-2"></i> Print PDF Report
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Summary Table -->
+                    <div class="row mb-5">
+                        <div class="col-12">
+                            <div class="card shadow-sm border-0" style="border-radius: 15px; background: #f8fafc;">
+                                <div class="card-body p-4">
+                                    <h5 class="card-title mb-4 font-weight-bold" style="color: #1e293b;">Time Off Summary</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-borderless align-middle mb-0">
+                                            <thead>
+                                                <tr style="border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                                                    <th class="pb-3">Leave Type</th>
+                                                    <th class="text-center pb-3">Allocated</th>
+                                                    <th class="text-center pb-3">Taken</th>
+                                                    <th class="text-center pb-3">Remaining</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="leave_summary" t-as="summary">
+                                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                                        <td class="py-3 font-weight-bold" style="color: #334155;"><t t-esc="summary['name']"/></td>
+                                                        <td class="text-center py-3"><span class="badge bg-light text-dark px-3 py-2" style="font-size: 0.9rem; border: 1px solid #e2e8f0;"><t t-esc="summary['allocated']"/> Days</span></td>
+                                                        <td class="text-center py-3 text-warning font-weight-bold"><t t-esc="summary['taken']"/> Days</td>
+                                                        <td class="text-center py-3">
+                                                            <span class="badge bg-success-soft text-success px-3 py-2" style="font-size: 0.9rem; background-color: #dcfce7; border: 1px solid #bbf7d0;">
+                                                                <t t-esc="summary['remaining']"/> Days
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Table -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                                <div class="card-body p-4">
+                                    <h5 class="card-title mb-4 font-weight-bold" style="color: #1e293b;">Detailed Leave History</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle">
+                                            <thead class="bg-light">
+                                                <tr style="color: #475569;">
+                                                    <th class="ps-4">Leave Type</th>
+                                                    <th>Description</th>
+                                                    <th>Period</th>
+                                                    <th class="text-center">Duration</th>
+                                                    <th class="text-center">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="timeoffs" t-as="leave">
+                                                    <tr>
+                                                        <td class="ps-4 font-weight-bold"><t t-esc="leave.holiday_status_id.name"/></td>
+                                                        <td class="text-muted"><t t-esc="leave.name or 'No description'"/></td>
+                                                        <td>
+                                                            <div class="small">
+                                                                <span class="text-primary"><t t-esc="leave.date_from" t-options='{"widget": "date"}'/></span>
+                                                                <i class="fa fa-long-arrow-right mx-2 text-muted"></i>
+                                                                <span class="text-primary"><t t-esc="leave.date_to" t-options='{"widget": "date"}'/></span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="text-center"><t t-esc="leave.number_of_days"/> days</td>
+                                                        <td class="text-center">
+                                                            <span t-attf-class="badge rounded-pill #{'bg-success' if leave.state == 'validate' else 'bg-info' if leave.state == 'confirm' else 'bg-secondary'} px-3 py-2">
+                                                                <t t-esc="dict(leave._fields['state']._description_selection(leave.env)).get(leave.state)"/>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <t t-if="not timeoffs">
+                                                    <tr>
+                                                        <td colspan="5" class="text-center py-5 text-muted">No leave records found.</td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

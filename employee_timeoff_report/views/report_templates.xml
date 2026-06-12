@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Time Off PDF Report Action -->
+    <record id="action_report_employee_timeoff" model="ir.actions.report">
+        <field name="name">Employee Time Off Report</field>
+        <field name="model">hr.employee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">employee_timeoff_report.report_timeoff_template</field>
+        <field name="report_file">employee_timeoff_report.report_timeoff_template</field>
+        <field name="binding_model_id" ref="hr.model_hr_employee"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Time Off PDF Report Template -->
+    <template id="report_timeoff_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Helvetica', sans-serif; color: #333;">
+                        <div class="row mb-5">
+                            <div class="col-12 text-center" style="border-bottom: 2px solid #1e3a8a; padding-bottom: 20px;">
+                                <h1 style="color: #1e3a8a; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">Time Off Report</h1>
+                                <p class="text-muted" style="font-size: 1.1rem;"><t t-esc="o.name"/> | <t t-esc="o.work_email"/></p>
+                            </div>
+                        </div>
+
+                        <!-- Summary Section (Data passed from Controller) -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h3 style="color: #1e3a8a; border-left: 5px solid #1e3a8a; padding-left: 15px; margin-bottom: 25px;">Time Off Summary</h3>
+                                <table class="table table-bordered table-sm" style="border: 1px solid #dee2e6;">
+                                    <thead style="background-color: #f8fafc; color: #1e3a8a;">
+                                        <tr>
+                                            <th style="padding: 12px;">Leave Type</th>
+                                            <th class="text-center" style="padding: 12px;">Allocated Days</th>
+                                            <th class="text-center" style="padding: 12px;">Taken Days</th>
+                                            <th class="text-center" style="padding: 12px;">Remaining Days</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="leave_summary" t-as="summary">
+                                            <tr>
+                                                <td style="padding: 10px; font-weight: bold;"><t t-esc="summary['name']"/></td>
+                                                <td class="text-center" style="padding: 10px;"><t t-esc="summary['allocated']"/></td>
+                                                <td class="text-center" style="padding: 10px; color: #b91c1c;"><t t-esc="summary['taken']"/></td>
+                                                <td class="text-center" style="padding: 10px; color: #15803d; font-weight: bold;"><t t-esc="summary['remaining']"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Details Section -->
+                        <div class="row mt-5">
+                            <div class="col-12">
+                                <h3 style="color: #1e3a8a; border-left: 5px solid #1e3a8a; padding-left: 15px; margin-bottom: 25px;">Detailed Leave History</h3>
+                                <table class="table table-striped table-sm" style="border: 1px solid #dee2e6;">
+                                    <thead style="background-color: #f8fafc; color: #1e3a8a;">
+                                        <tr>
+                                            <th style="padding: 12px;">Details</th>
+                                            <th style="padding: 12px;">Start Date</th>
+                                            <th style="padding: 12px;">End Date</th>
+                                            <th class="text-center" style="padding: 12px;">Duration</th>
+                                            <th class="text-center" style="padding: 12px;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="timeoffs" t-as="leave">
+                                            <tr>
+                                                <td style="padding: 10px;">
+                                                    <div style="font-weight: bold;"><t t-esc="leave.holiday_status_id.name"/></div>
+                                                    <div class="small text-muted"><t t-esc="leave.name or 'No description'"/></div>
+                                                </td>
+                                                <td style="padding: 10px;"><t t-esc="leave.date_from" t-options='{"widget": "date"}'/></td>
+                                                <td style="padding: 10px;"><t t-esc="leave.date_to" t-options='{"widget": "date"}'/></td>
+                                                <td class="text-center" style="padding: 10px;"><t t-esc="leave.number_of_days"/> Days</td>
+                                                <td class="text-center" style="padding: 10px;">
+                                                    <t t-esc="dict(leave._fields['state']._description_selection(leave.env)).get(leave.state)"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 text-end small text-muted">
+                            Report Generated on: <t t-esc="today" t-options='{"widget": "datetime"}'/>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
