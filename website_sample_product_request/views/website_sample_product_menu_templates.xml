@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="website_sample_product_request.submenu_active" inherit_id="website.submenu">
+        <xpath expr="//li[@t-if='submenu.is_visible and not (submenu.child_id or submenu.is_mega_menu)']/a" position="attributes">
+            <attribute name="t-attf-class">
+                #{link_class or ''} #{'active' if submenu.clean_url() and (
+                    unslug_url(request.httprequest.path) == unslug_url(submenu.clean_url())
+                    or (request.params.get('type') == 'sample' and 'type=sample' in submenu.clean_url())
+                ) else ''}
+            </attribute>
+        </xpath>
+        <xpath expr="//li[@t-elif='show_dropdown']" position="attributes">
+            <attribute name="t-attf-class">
+                #{item_class or ''} dropdown #{
+                    (
+                        (submenu.clean_url() and submenu.clean_url() != '/' and any(request.httprequest.path == child.url for child in submenu.child_id if child.url))
+                        or (submenu.clean_url() and request.httprequest.path == submenu.clean_url())
+                        or (request.params.get('type') == 'sample' and submenu.clean_url() and 'type=sample' in submenu.clean_url())
+                    ) and 'active'
+                } #{submenu.is_mega_menu and 'position-static'}
+            </attribute>
+        </xpath>
+    </template>
+</odoo>
