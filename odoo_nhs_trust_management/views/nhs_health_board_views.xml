@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Smart Button Action -->
+    <record id="action_nhs_trust_from_health_board" model="ir.actions.act_window">
+        <field name="name">Associated Trusts</field>
+        <field name="res_model">nhs.trust</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('health_board_id', '=', active_id)]</field>
+        <field name="context">{'default_health_board_id': active_id}</field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_nhs_health_board_tree" model="ir.ui.view">
+        <field name="name">nhs.health.board.tree</field>
+        <field name="model">nhs.health.board</field>
+        <field name="arch" type="xml">
+            <list string="NHS Scotland Health Boards">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="board_type"/>
+                <field name="region_id"/>
+                <field name="trust_count" string="Trusts Count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_nhs_health_board_form" model="ir.ui.view">
+        <field name="name">nhs.health.board.form</field>
+        <field name="model">nhs.health.board</field>
+        <field name="arch" type="xml">
+            <form string="NHS Scotland Health Board">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_nhs_trust_from_health_board)d" type="action" class="oe_stat_button" icon="fa-hospital-o">
+                            <field name="trust_count" string="Trusts" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. NHS Greater Glasgow and Clyde"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Core Classification">
+                            <field name="code" placeholder="e.g. SCO-GLA"/>
+                            <field name="short_name" placeholder="e.g. Greater Glasgow &amp; Clyde"/>
+                            <field name="board_type"/>
+                        </group>
+                        <group string="Geographics &amp; Contact">
+                            <field name="region_id"/>
+                            <field name="population_served"/>
+                            <field name="website" widget="url" placeholder="e.g. https://www.nhsggc.org.uk"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Headquarters &amp; Details" name="hq_details">
+                            <group>
+                                <field name="headquarters_address" placeholder="Specify full headquarters postal address..."/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <!-- Chatter -->
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_nhs_health_board_search" model="ir.ui.view">
+        <field name="name">nhs.health.board.search</field>
+        <field name="model">nhs.health.board</field>
+        <field name="arch" type="xml">
+            <search string="Search Health Boards">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="region_id"/>
+                <filter string="Territorial Boards" name="territorial" domain="[('board_type', '=', 'territorial')]"/>
+                <filter string="National Boards" name="national" domain="[('board_type', '=', 'national')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter string="NHS Region" name="group_by_region" context="{'group_by': 'region_id'}"/>
+                    <filter string="Board Type" name="group_by_type" context="{'group_by': 'board_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_nhs_health_board" model="ir.actions.act_window">
+        <field name="name">NHS Scotland Health Boards</field>
+        <field name="res_model">nhs.health.board</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_nhs_health_board_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define a new Health Board for NHS Scotland.
+            </p>
+        </field>
+    </record>
+</odoo>

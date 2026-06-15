@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Smart Button Action -->
+    <record id="action_nhs_trust_from_region" model="ir.actions.act_window">
+        <field name="name">Associated Trusts</field>
+        <field name="res_model">nhs.trust</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('region_id', '=', active_id)]</field>
+        <field name="context">{'default_region_id': active_id}</field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_nhs_region_tree" model="ir.ui.view">
+        <field name="name">nhs.region.tree</field>
+        <field name="model">nhs.region</field>
+        <field name="arch" type="xml">
+            <list string="NHS Regions">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="health_system"/>
+                <field name="trust_count" string="Trusts Count" sum="Total Trusts"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_nhs_region_form" model="ir.ui.view">
+        <field name="name">nhs.region.form</field>
+        <field name="model">nhs.region</field>
+        <field name="arch" type="xml">
+            <form string="NHS Region">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_nhs_trust_from_region)d" type="action" class="oe_stat_button" icon="fa-hospital-o">
+                            <field name="trust_count" string="Trusts" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. North East and Yorkshire"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code" placeholder="e.g. NEY"/>
+                            <field name="health_system"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_nhs_region_search" model="ir.ui.view">
+        <field name="name">nhs.region.search</field>
+        <field name="model">nhs.region</field>
+        <field name="arch" type="xml">
+            <search string="Search NHS Regions">
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="NHS England" name="england" domain="[('health_system', '=', 'nhs_england')]"/>
+                <filter string="NHS Scotland" name="scotland" domain="[('health_system', '=', 'nhs_scotland')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter string="Health System" name="group_by_system" context="{'group_by': 'health_system'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_nhs_region" model="ir.actions.act_window">
+        <field name="name">NHS Regions</field>
+        <field name="res_model">nhs.region</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_nhs_region_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define a new geographical NHS Region.
+            </p>
+        </field>
+    </record>
+</odoo>

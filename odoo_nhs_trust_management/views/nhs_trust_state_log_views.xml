@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_nhs_trust_state_log_tree" model="ir.ui.view">
+        <field name="name">nhs.trust.state.log.tree</field>
+        <field name="model">nhs.trust.state.log</field>
+        <field name="arch" type="xml">
+            <list string="Workflow State Changes Audit Log" create="false" edit="false" delete="false">
+                <field name="change_date"/>
+                <field name="trust_id"/>
+                <field name="from_state"/>
+                <field name="to_state"/>
+                <field name="reason"/>
+                <field name="user_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_nhs_trust_state_log_search" model="ir.ui.view">
+        <field name="name">nhs.trust.state.log.search</field>
+        <field name="model">nhs.trust.state.log</field>
+        <field name="arch" type="xml">
+            <search string="Search State Logs">
+                <field name="trust_id"/>
+                <field name="user_id"/>
+                <field name="reason"/>
+                <group name="group_by">
+                    <filter string="Trust" name="group_by_trust" context="{'group_by': 'trust_id'}"/>
+                    <filter string="Changed By" name="group_by_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Target State" name="group_by_state" context="{'group_by': 'to_state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_nhs_trust_state_log" model="ir.actions.act_window">
+        <field name="name">Workflow Audit Logs</field>
+        <field name="res_model">nhs.trust.state.log</field>
+        <field name="view_mode">list</field>
+        <field name="search_view_id" ref="view_nhs_trust_state_log_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No state transition audit logs found.
+            </p>
+            <p>
+                State changes on NHS Trusts are logged here automatically.
+            </p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         nhs.icb  —  NHS Integrated Care Board (ICB)
+    ================================================================ -->
+
+    <!-- List View -->
+    <record id="view_nhs_icb_tree" model="ir.ui.view">
+        <field name="name">nhs.icb.list</field>
+        <field name="model">nhs.icb</field>
+        <field name="arch" type="xml">
+            <list string="NHS Integrated Care Boards (ICBs)">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="short_name"/>
+                <field name="region_id"/>
+                <field name="population_served" optional="show"/>
+                <field name="trust_count" string="Trusts"/>
+                <field name="active" widget="boolean_toggle" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_nhs_icb_form" model="ir.ui.view">
+        <field name="name">nhs.icb.form</field>
+        <field name="model">nhs.icb</field>
+        <field name="arch" type="xml">
+            <form string="NHS Integrated Care Board (ICB)">
+                <sheet>
+                    <!-- Stat Buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_trusts" type="object"
+                                class="oe_stat_button" icon="fa-hospital-o">
+                            <field name="trust_count" string="Trusts" widget="statinfo"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"
+                                   placeholder="e.g. NHS Humber and North Yorkshire ICB"/>
+                        </h1>
+                        <h4 class="text-muted">
+                            <field name="code" placeholder="ODS Code (e.g. QOP)"/>
+                            <span class="ms-2" invisible="not short_name">
+                                — <field name="short_name" class="oe_inline"
+                                          placeholder="Short name"/>
+                            </span>
+                        </h4>
+                    </div>
+
+                    <group>
+                        <group string="Core Identifiers">
+                            <field name="code" placeholder="e.g. QOP"/>
+                            <field name="short_name" placeholder="e.g. Humber &amp; NY"/>
+                            <field name="region_id"
+                                   domain="[('health_system', '=', 'nhs_england')]"
+                                   options="{'no_open': True, 'no_create': True}"/>
+                        </group>
+                        <group string="Key Metrics &amp; Contact">
+                            <field name="population_served"/>
+                            <field name="website" widget="url"
+                                   placeholder="e.g. https://humberandnorthyorkshire.icb.nhs.uk"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Headquarters &amp; Info" name="hq_info">
+                            <group>
+                                <field name="headquarters_address"
+                                       placeholder="Specify full postal address..."
+                                       nolabel="1"/>
+                            </group>
+                        </page>
+
+                        <page string="Associated Trusts" name="associated_trusts">
+                            <field name="trust_ids" readonly="1">
+                                <list>
+                                    <field name="ods_code"/>
+                                    <field name="name"/>
+                                    <field name="trust_type_id"/>
+                                    <field name="foundation_trust" widget="boolean"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'active'"
+                                           decoration-warning="state == 'special_measures'"
+                                           decoration-danger="state == 'dissolved'"
+                                           decoration-info="state == 'under_review'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_nhs_icb_search" model="ir.ui.view">
+        <field name="name">nhs.icb.search</field>
+        <field name="model">nhs.icb</field>
+        <field name="arch" type="xml">
+            <search string="Search ICBs">
+                <field name="name"
+                       filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self)]"/>
+                <field name="code"/>
+                <field name="short_name"/>
+                <field name="region_id"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter string="NHS Region" name="group_by_region"
+                            context="{'group_by': 'region_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_nhs_icb" model="ir.actions.act_window">
+        <field name="name">NHS Integrated Care Boards (ICBs)</field>
+        <field name="res_model">nhs.icb</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_nhs_icb_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define a new Integrated Care Board (ICB).
+            </p>
+            <p>
+                There are 42 statutory ICBs in NHS England. Pre-loaded data is available
+                via Configuration → Integrated Care Boards.
+            </p>
+        </field>
+    </record>
+</odoo>

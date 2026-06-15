@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Board Members list view (create/delete restriction injected server-side per user group) -->
+    <record id="view_nhs_board_member_list" model="ir.ui.view">
+        <field name="name">res.partner.nhs.board.member.list</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <list string="Board Members">
+                <field name="name"/>
+                <field name="nhs_trust_id" string="NHS Trust"/>
+                <field name="nhs_board_role" string="Role"/>
+                <field name="is_voting_member" string="Voting"/>
+                <field name="term_start_date" string="Term Start"/>
+                <field name="term_end_date" string="Term End"/>
+                <field name="is_term_active" string="Term Active" widget="boolean"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Standalone Board Members list action (all trusts, not scoped to active_id) -->
+    <record id="action_nhs_board_members" model="ir.actions.act_window">
+        <field name="name">Board Members</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_nhs_board_member', '=', True)]</field>
+        <field name="context">{'default_is_nhs_board_member': True, 'default_is_company': False}</field>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('view_nhs_board_member_list')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No board members found.</p>
+            <p>Board members are created from within a Trust record.</p>
+        </field>
+    </record>
+
+    <record id="view_partner_form_nhs_inherit" model="ir.ui.view">
+        <field name="name">res.partner.form.nhs.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="is_nhs_board_member" widget="boolean_toggle" readonly="not can_edit_board_member"/>
+                <field name="can_edit_board_member" invisible="1"/>
+            </xpath>
+            <!-- Add NHS Trust smart button for board members -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button type="object" name="action_open_nhs_trust"
+                        class="oe_stat_button" icon="fa-hospital-o"
+                        invisible="not is_nhs_board_member or not nhs_trust_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="nhs_trust_id" readonly="1" options="{'no_open': True}"/>
+                        </span>
+                        <span class="o_stat_text">NHS Trust</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="NHS Governance" name="nhs_governance" invisible="not is_nhs_board_member">
+                    <group string="Trust Board Membership Profile">
+                        <group>
+                            <field name="nhs_trust_id"
+                                   required="is_nhs_board_member and can_edit_board_member"
+                                   readonly="not can_edit_board_member"
+                                   domain="[('state', 'not in', ['dissolved', 'suspended'])]"/>
+                            <field name="nhs_board_role"
+                                   required="is_nhs_board_member and can_edit_board_member"
+                                   readonly="not can_edit_board_member"/>
+                            <field name="is_voting_member" readonly="not can_edit_board_member"/>
+                        </group>
+                        <group>
+                            <field name="term_start_date" readonly="not can_edit_board_member"/>
+                            <field name="term_end_date" readonly="not can_edit_board_member"/>
+                            <field name="is_term_active" readonly="1"/>
+                            <field name="appointment_authority" readonly="not can_edit_board_member"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
