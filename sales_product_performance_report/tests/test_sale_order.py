@@ -19,8 +19,26 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
+from odoo.tests.common import TransactionCase
 
-from . import product_template
-from . import res_users
-from . import sale_order
+class TestSaleOrder(TransactionCase):
 
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.sale_order = cls.env['sale.order'].create({
+            'partner_id': cls.env.ref('base.partner_admin').id,
+        })
+
+    def test_actions(self):
+        # Test action_product_performance_report
+        res_prod = self.sale_order.action_product_performance_report()
+        self.assertEqual(res_prod.get('res_model'), 'product.performance')
+        self.assertEqual(res_prod.get('target'), 'new')
+        self.assertEqual(res_prod.get('view_mode'), 'form')
+
+        # Test action_sales_performance_report
+        res_sales = self.sale_order.action_sales_performance_report()
+        self.assertEqual(res_sales.get('res_model'), 'sales.performance')
+        self.assertEqual(res_sales.get('target'), 'new')
+        self.assertEqual(res_sales.get('view_mode'), 'form')

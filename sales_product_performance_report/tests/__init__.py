@@ -19,8 +19,8 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-
-from . import product_template
-from . import res_users
-from . import sale_order
-
+from . import test_product_performance
+from . import test_product_template
+from . import test_res_users
+from . import test_sale_order
+from . import test_sales_performance

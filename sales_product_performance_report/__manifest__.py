@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Sales And Products Performance Report",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Sales, Accounting',
     'summary': 'Performance Report Summary of Sales and Products',
     'description': "The Overview of Sales and Products Performance Done by"
