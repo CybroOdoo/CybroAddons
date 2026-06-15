@@ -19,26 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-{
-    'name': 'Merge Invoices',
-    'version': '17.0.1.0.1',
-    'category': 'Accounting',
-    'summary': 'This module will helps to merge different Account moves',
-    'description': "This module helps to manage invoices, credit note,"
-                   " debit note, vendor bills by merging them",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'depends': ['account'],
-    'data': [
-        'security/ir.model.access.csv',
-        'data/ir_actions_server_data.xml',
-        'wizard/merge_invoice_views.xml',
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False
-}
+from . import test_invoice_merging
