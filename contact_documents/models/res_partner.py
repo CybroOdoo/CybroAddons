@@ -36,7 +36,7 @@ class PartnerDocuments(models.Model):
         for record in self:
             record.document_count = self.env[
                 'ir.attachment'].search_count(
-                [('res_id', '=', self.id), ('res_model', '=', 'res.partner')])
+                [('res_id', '=', record.id), ('res_model', '=', 'res.partner')])
 
     def action_partner_documents(self):
         """Return the documents of corresponding partner in the smart tab"""
