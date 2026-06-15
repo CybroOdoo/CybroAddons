@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Timesheet Auto Create",
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Project',
     'summary': 'Time sheet from Work report',
     'description': """This module helps to create a timesheet based on the work 
