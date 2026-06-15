@@ -21,7 +21,7 @@
 ###########################################################################
 {
     "name": "Profit And Loss PDF Report",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Accounting",
     "summary": """Profit and Loss PDF Report in community""",
     "description": """This app, designed for use within the community edition,
@@ -30,7 +30,7 @@
     "author": "Cybrosys Techno Solutions",
     "company": "Cybrosys Techno Solutions",
     "maintainer": "Cybrosys Techno Solutions",
-    "website": "https://www.cybrosys.com",
+    "website": "http://www.cybrosys.com",
     "depends": ["account", "sale", "account_check_printing",
                 "base_account_budget", "analytic"],
     "data": [
