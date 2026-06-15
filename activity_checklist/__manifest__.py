@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Activity Checklist",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Discuss',
     'summary': """Create, organize, and track to-do activities efficiently using Odoo 
     scheduled activities with prioritization and recurrence options""",
