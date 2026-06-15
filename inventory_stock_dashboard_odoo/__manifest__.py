@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Inventory Dashboard Odoo 18',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Warehouse',
     'summary': 'Detailed dashboard view for Inventory module.',
     'description': """This module presents a detailed dashboard view for the

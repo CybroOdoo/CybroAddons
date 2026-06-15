@@ -1,6 +1,6 @@
 /** @odoo-module **/
 import { registry } from "@web/core/registry";
-import { onWillStart, onMounted, useState, useRef } from "@odoo/owl";
+import { onWillStart, onMounted, onWillUnmount, useState, useRef } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 const actionRegistry = registry.category("actions");
 import { _t } from "@web/core/l10n/translation";
@@ -31,6 +31,7 @@ class Dashboard extends owl.Component{
             out_stock_count: [],
             dead_stock_name: [],
         });
+        this.charts = {};
         // When the component is about to start, fetch data in tiles
         onWillStart(async () => {
             this.props.title = 'Dashboard';
@@ -38,6 +39,10 @@ class Dashboard extends owl.Component{
         // When the component is mounted, render various charts
         onMounted(async () => {
             await this.render_graphs();
+        });
+        // Destroy all charts when component is unmounted
+        onWillUnmount(() => {
+            Object.values(this.charts).forEach(c => c && c.destroy());
         });
     }
     render_graphs(){
@@ -73,7 +78,8 @@ class Dashboard extends owl.Component{
             }
             this.state.operationDict = operationDict
             this.rootRef.el.querySelector('#operation_type_table').style.display = 'none';
-            var myChart = new Chart(ctx, {
+            if (this.charts.operation) { this.charts.operation.destroy(); }
+            this.charts.operation = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: name,
@@ -126,7 +132,8 @@ class Dashboard extends owl.Component{
             }
             this.state.countDictionary = countDictionary;
             this.rootRef.el.querySelector("#pro_info").style.display = 'none';
-            var myChart = new Chart(ctx, {
+            if (this.charts.canvaspie) { this.charts.canvaspie.destroy(); }
+            this.charts.canvaspie = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: products,
@@ -179,7 +186,8 @@ class Dashboard extends owl.Component{
             this.state.MoveData = stockMoveDict;
             this.rootRef.el.querySelector('#stock_move_table').style.display = 'none';
             var ctx = this.rootRef.el.querySelector("#stock_moves");
-            var myChart = new Chart(ctx, {
+            if (this.charts.stock_moves) { this.charts.stock_moves.destroy(); }
+            this.charts.stock_moves = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: name,
@@ -238,7 +246,8 @@ class Dashboard extends owl.Component{
                     this.state.monthly_stock = name
                     this.state.monthly_stock_count = count
                     this.rootRef.el.querySelector("#product_move_table").style.display = 'none';
-                    var myChart = new Chart(ctx, {
+                    if (this.charts.product_move) { this.charts.product_move.destroy(); }
+                    this.charts.product_move = new Chart(ctx, {
                         type: 'line',
                     data: {
                         labels: name,
@@ -280,7 +289,8 @@ class Dashboard extends owl.Component{
             this.state.categCountDict = name;
             this.state.categName = count;
             this.rootRef.el.querySelector("#category_table").style.display = 'none';
-            var myChart = new Chart(ctx, {
+            if (this.charts.product_category) { this.charts.product_category.destroy(); }
+            this.charts.product_category = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: name,
@@ -335,7 +345,8 @@ class Dashboard extends owl.Component{
                 this.state.dead_stock_name = name
                 this.state.dead_stock_count = count
                 this.rootRef.el.querySelector('#dead_stock_table').style.display = 'none';
-                var myChart = new Chart(ctx, {
+                if (this.charts.dead_stock) { this.charts.dead_stock.destroy(); }
+                this.charts.dead_stock = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: name,
@@ -381,7 +392,8 @@ class Dashboard extends owl.Component{
                 this.state.out_stock_count = count
                 this.rootRef.el.querySelector("#out_of_stock").style.display = 'block';
                 this.rootRef.el.querySelector("#out_of_stock_table").style.display = 'none';
-                var myChart = new Chart(ctx, {
+                if (this.charts.out_of_stock) { this.charts.out_of_stock.destroy(); }
+                this.charts.out_of_stock = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: name,
@@ -496,7 +508,8 @@ class Dashboard extends owl.Component{
                 }
                 this.state.countDictionary = countDictionary;
                 this.rootRef.el.querySelector("#pro_info").style.display = 'none';
-                var myChart = new Chart(ctx, {
+                if (this.charts.canvaspie) { this.charts.canvaspie.destroy(); }
+                this.charts.canvaspie = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: products,
@@ -549,7 +562,8 @@ class Dashboard extends owl.Component{
                 }
                 this.state.countDictionary = countDictionary;
                 this.rootRef.el.querySelector("#pro_info").style.display = 'none';
-                var myChart = new Chart(ctx, {
+                if (this.charts.canvaspie) { this.charts.canvaspie.destroy(); }
+                this.charts.canvaspie = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: products,
@@ -602,7 +616,8 @@ class Dashboard extends owl.Component{
                 }
                 this.state.countDictionary = countDictionary;
                 this.rootRef.el.querySelector("#pro_info").style.display = 'none';
-                var myChart = new Chart(ctx, {
+                if (this.charts.canvaspie) { this.charts.canvaspie.destroy(); }
+                this.charts.canvaspie = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: products,
@@ -655,7 +670,8 @@ class Dashboard extends owl.Component{
                 }
                 this.state.countDictionary = countDictionary;
                 this.rootRef.el.querySelector("#pro_info").style.display = 'none';
-                var myChart = new Chart(ctx, {
+                if (this.charts.canvaspie) { this.charts.canvaspie.destroy(); }
+                this.charts.canvaspie = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: products,
@@ -711,7 +727,8 @@ class Dashboard extends owl.Component{
                     stockMoveDict[location] = stockCount;
                 }
                 this.state.MoveData = stockMoveDict;
-                var myChart = new Chart(ctx, {
+                if (this.charts.stock_moves) { this.charts.stock_moves.destroy(); }
+                this.charts.stock_moves = new Chart(ctx, {
                     type: 'pie',
                     data: {
                         labels: name,
@@ -764,7 +781,8 @@ class Dashboard extends owl.Component{
                 }
                 this.state.MoveData = stockMoveDict;
                 this.rootRef.el.querySelector("#stock_move_table").style.display = 'none';
-                var myChart = new Chart(ctx, {
+                if (this.charts.stock_moves) { this.charts.stock_moves.destroy(); }
+                this.charts.stock_moves = new Chart(ctx, {
                     type: 'pie',
                     data: {
                         labels: name,
@@ -817,7 +835,8 @@ class Dashboard extends owl.Component{
                 }
                 this.state.MoveData = stockMoveDict;
                 this.rootRef.el.querySelector("#stock_move_table").style.display = 'none';
-                var myChart = new Chart(ctx, {
+                if (this.charts.stock_moves) { this.charts.stock_moves.destroy(); }
+                this.charts.stock_moves = new Chart(ctx, {
                     type: 'pie',
                     data: {
                         labels: name,
@@ -870,7 +889,8 @@ class Dashboard extends owl.Component{
                     stockMoveDict[location] = stockCount;
                 }
                 this.state.MoveData = stockMoveDict;
-                    var myChart = new Chart(ctx, {
+                    if (this.charts.stock_moves) { this.charts.stock_moves.destroy(); }
+                    this.charts.stock_moves = new Chart(ctx, {
                     type: 'pie',
                     data: {
                         labels: name,
@@ -920,7 +940,8 @@ class Dashboard extends owl.Component{
             this.state.monthly_stock = name
             this.state.monthly_stock_count = count
             this.rootRef.el.querySelector("#product_move_table").style.display = 'none';
-            var myChart = new Chart(ctx, {
+            if (this.charts.product_move) { this.charts.product_move.destroy(); }
+            this.charts.product_move = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: name,
