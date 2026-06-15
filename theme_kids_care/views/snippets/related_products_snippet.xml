@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template to register the "Related Products" snippet in the website builder's snippet panel -->
+    <template id="kidscare_related_products_snippet" inherit_id="website.snippets" name="Related Products">
+        <xpath expr="//div[@id='snippet_structure']/div[hasclass('o_panel_body')]"
+               position="inside">
+            <t t-snippet="theme_kids_care.related_products_snippet"
+               string="Related Products"/>
+        </xpath>
+    </template>
+    <!-- Main template for the "Related Products" snippet, showing a carousel of related products -->
+    <template id="related_products_snippet" name="Product Offer">
+        <section class="section-all-the-snekers mt-5 float-left w-100"
+                 data-snippet="theme_kids_care.all_products_snippet"
+                 data-name="All Products">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-6 pl-0">
+                        <h3 class="h3-all-sneakers">
+                            <b>Related Products</b>
+                        </h3>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="w-100 float-left text-right container-btn">
+                            <button style="border: 1px solid #000;">
+                                <a href="/shop" style="color: inherit; text-decoration: none;">Show More</a>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <div class="row">
+                            <div class="owl-carousel owl-theme mt-3">
+                                <t t-set="products"
+                                   t-value="request.env['product.template'].sudo().search([('is_published', '=', True)])"/>
+                                <t t-foreach="products" t-as="product">
+                                    <div class="item">
+                                        <div class="container-swiper-slide mr-4 p-4">
+                                            <div class="w-100 float-left text-left">
+                                                <h3 class="text-dark">
+                                                    <b>
+                                                        <t t-esc="product.name"/>
+                                                    </b>
+                                                    <span class="span-star">&#9734; &#9734; &#9734; &#9734; &#9734;
+                                                    </span>
+                                                </h3>
+                                                <p class="mb-0">
+                                                    <t t-esc="product.categ_id.name"/>
+                                                </p>
+                                                <div class="kids-care-size float-left w-100 pt-3">
+                                                    <div class="kids-care-img"
+                                                         style="width: 200px; height: 200px; overflow: hidden; justify-self: end; margin-right: 0;">
+                                                        <img t-att-src="'/web/image/product.template/%s/image_512' % product.id"
+                                                             alt=""
+                                                             style="width: 200px; height: 200px; object-fit: contain; display: block; margin: 0 auto;"/>
+                                                    </div>
+                                                    <div class="container-size float-left">
+                                                        <br/>
+                                                        <br/>
+                                                        <br/>
+                                                        <br/>
+                                                        <div class="float-left w-100">
+                                                        </div>
+                                                        <p/>
+                                                        <div class="cart-container w-100 float-left pr-4">
+                                                            <h2 class="float-left">
+                                                                <b>
+                                                                    <span t-esc="product.list_price"
+                                                                          t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                                                </b>
+                                                            </h2>
+                                                            <form action="/theme_kids_care/cart/add" method="POST"
+                                                                  class="float-right">
+                                                                <t t-nocache="The csrf token must always be up to date.">
+                                                                    <input type="hidden" name="csrf_token"
+                                                                           t-att-value="request.csrf_token()"/>
+                                                                </t>
+                                                                <input type="hidden" name="product_id"
+                                                                       t-att-value="product.product_variant_id.id"/>
+                                                                <input type="hidden" name="product_template_id"
+                                                                       t-att-value="product.id"/>
+                                                                <input type="hidden" name="add_qty" value="1"/>
+                                                                <button type="submit"
+                                                                        class="btn btn-primary btn-add-to-cart pr-5 pl-5 pt-3 pb-3">
+                                                                    Add to Cart
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+</odoo>
