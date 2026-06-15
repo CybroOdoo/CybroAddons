@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': "Water Supply With Manufacturing Order",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Manufacturing',
     'summary': """This app allows you to create water supplying methods""",
     'description': """This app allows you to create water supplying methods
