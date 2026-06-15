@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Extends the nhs.trust form view defined in odoo_nhs_trust_management.
+        Adds:
+          1. Three new stat buttons (Sites, Departments, CQC Inspections)
+          2. Four new notebook tabs (Sites, CQC Inspections, Financials, Workforce)
+    -->
+    <record id="view_nhs_trust_form_operations_inherit" model="ir.ui.view">
+        <field name="name">nhs.trust.form.operations.inherit</field>
+        <field name="model">nhs.trust</field>
+        <field name="inherit_id" ref="odoo_nhs_trust_management.view_nhs_trust_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Stat Buttons -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_sites" type="object"
+                        class="oe_stat_button" icon="fa-map-marker">
+                    <field name="site_count" string="Sites" widget="statinfo"/>
+                </button>
+                <button name="action_view_departments" type="object"
+                        class="oe_stat_button" icon="fa-building">
+                    <field name="department_count" string="Departments" widget="statinfo"/>
+                </button>
+                <button name="action_view_cqc_inspections" type="object"
+                        class="oe_stat_button" icon="fa-shield"
+                        invisible="health_system != 'nhs_england'">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">CQC</span>
+                        <span class="o_stat_value">
+                            <field name="latest_cqc_rating"/>
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- ── CQC Registration — placed after the parent group so it spans full width ── -->
+            <xpath expr="//group[group[@name='geo_scope']]" position="after">
+                <group string="CQC Registration" invisible="health_system != 'nhs_england'"
+                       name="cqc_basic">
+                    <group>
+                        <field name="cqc_provider_id" placeholder="e.g. 1-101677898"/>
+                        <field name="cqc_registration_status" readonly="1" force_save="1"/>
+                        <field name="latest_cqc_status" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="latest_cqc_rating" readonly="1"/>
+                        <field name="latest_cqc_date" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- ── Notebook Tabs-->
+            <xpath expr="//notebook" position="inside">
+
+                <!-- Sites Tab -->
+<!--                <page string="Sites" name="sites_tab">-->
+<!--                    <field name="site_ids" context="{'default_trust_id': id}">-->
+<!--                        <list>-->
+<!--                            <field name="name"/>-->
+<!--                            <field name="code"/>-->
+<!--                            <field name="site_type"/>-->
+<!--                            <field name="city"/>-->
+<!--                            <field name="bed_capacity"/>-->
+<!--                            <field name="has_ae_department" widget="boolean" string="A&amp;E"/>-->
+<!--                            <field name="department_count" string="Depts"/>-->
+<!--                        </list>-->
+<!--                    </field>-->
+<!--                </page>-->
+
+                <!-- CQC Inspections Tab (England only) -->
+<!--                <page string="CQC Inspections" name="cqc_tab"-->
+<!--                      invisible="health_system != 'nhs_england'">-->
+<!--                    <field name="cqc_inspection_ids" context="{'default_trust_id': id}">-->
+<!--                        <list decoration-success="overall_rating == 'outstanding'"-->
+<!--                              decoration-info="overall_rating == 'good'"-->
+<!--                              decoration-warning="overall_rating == 'requires_improvement'"-->
+<!--                              decoration-danger="overall_rating == 'inadequate'">-->
+<!--                            <field name="inspection_date"/>-->
+<!--                            <field name="inspection_type"/>-->
+<!--                            <field name="overall_rating" widget="badge"-->
+<!--                                   decoration-success="overall_rating == 'outstanding'"-->
+<!--                                   decoration-info="overall_rating == 'good'"-->
+<!--                                   decoration-warning="overall_rating == 'requires_improvement'"-->
+<!--                                   decoration-danger="overall_rating == 'inadequate'"/>-->
+<!--                            <field name="safe_rating"/>-->
+<!--                            <field name="effective_rating"/>-->
+<!--                            <field name="caring_rating"/>-->
+<!--                            <field name="responsive_rating"/>-->
+<!--                            <field name="well_led_rating"/>-->
+<!--                            <field name="next_inspection_due"/>-->
+<!--                        </list>-->
+<!--                    </field>-->
+<!--                </page>-->
+
+                <!-- Financials Tab -->
+                <page string="Financials" name="financials_tab">
+                    <group>
+                        <group string="Financial Year">
+                            <field name="financial_year" placeholder="e.g. 2025/26"/>
+                        </group>
+                    </group>
+                    <group string="Income &amp; Expenditure">
+                        <group>
+                            <field name="annual_budget"/>
+                            <field name="annual_income"/>
+                            <field name="annual_expenditure"/>
+                            <field name="surplus_deficit" readonly="1"
+                                   decoration-success="surplus_deficit &gt; 0"
+                                   decoration-danger="surplus_deficit &lt; 0"/>
+                        </group>
+                        <group string="Capital &amp; Liabilities">
+                            <field name="capital_allocation"/>
+                            <field name="pfi_obligations"/>
+                        </group>
+                    </group>
+                </page>
+
+                <!-- Workforce &amp; Capacity Tab -->
+                <page string="Workforce &amp; Capacity" name="workforce_tab">
+                    <group>
+                        <group string="Workforce">
+                            <field name="total_workforce"/>
+                        </group>
+                        <group string="Bed Capacity">
+                            <field name="total_bed_capacity" readonly="1"/>
+                            <field name="manual_bed_capacity"
+                                   help="Set a non-zero value to override the auto-sum from sites."/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Description &amp; Notes" name="description_notes">
+                            <field name="description" placeholder="Describe clinical specialties, main referral centers, patient demographics, or strategy..."/>
+                        </page>
+
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Extend the Trust list to add CQC rating and latest bed capacity columns -->
+    <record id="view_nhs_trust_list_operations_inherit" model="ir.ui.view">
+        <field name="name">nhs.trust.list.operations.inherit</field>
+        <field name="model">nhs.trust</field>
+        <field name="inherit_id" ref="odoo_nhs_trust_management.view_nhs_trust_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="site_count" string="Sites" optional="show"/>
+                <field name="total_bed_capacity" string="Beds" optional="show"/>
+                <field name="latest_cqc_rating" optional="show"
+                       widget="badge"
+                       decoration-success="latest_cqc_rating == 'outstanding'"
+                       decoration-info="latest_cqc_rating == 'good'"
+                       decoration-warning="latest_cqc_rating == 'requires_improvement'"
+                       decoration-danger="latest_cqc_rating == 'inadequate'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extend the Trust search to add CQC rating filters -->
+    <record id="view_nhs_trust_search_operations_inherit" model="ir.ui.view">
+        <field name="name">nhs.trust.search.operations.inherit</field>
+        <field name="model">nhs.trust</field>
+        <field name="inherit_id" ref="odoo_nhs_trust_management.view_nhs_trust_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='foundation']" position="after">
+                <separator/>
+                <filter string="CQC Outstanding" name="cqc_outstanding"
+                        domain="[('latest_cqc_rating', '=', 'outstanding')]"/>
+                <filter string="CQC Good" name="cqc_good"
+                        domain="[('latest_cqc_rating', '=', 'good')]"/>
+                <filter string="CQC Requires Improvement" name="cqc_ri"
+                        domain="[('latest_cqc_rating', '=', 'requires_improvement')]"/>
+                <filter string="CQC Inadequate" name="cqc_inadequate"
+                        domain="[('latest_cqc_rating', '=', 'inadequate')]"/>
+            </xpath>
+            <xpath expr="//filter[@name='group_by_state']" position="after">
+                <filter string="CQC Rating" name="group_by_cqc" context="{'group_by': 'latest_cqc_rating'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

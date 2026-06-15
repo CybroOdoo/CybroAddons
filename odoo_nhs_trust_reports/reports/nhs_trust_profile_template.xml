@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="nhs_trust_profile_template">
+<t t-call="web.html_container">
+<t t-foreach="docs" t-as="doc">
+<t t-call="web.external_layout">
+<div class="page" style="font-family:Arial, Helvetica, sans-serif; font-size:10.5px; color:#1a1a1a; line-height:1.4;">
+
+    <!-- NHS BLUE HEADER BAND -->
+    <table style="width:100%; border-collapse:collapse; background:#005EB8; margin-bottom:20px;">
+        <tr>
+            <td style="padding:14px 18px; vertical-align:middle;">
+                <div style="font-size:17px; font-weight:bold; color:#ffffff; letter-spacing:0.3px;">
+                    <t t-esc="doc.short_name or doc.name"/>
+                </div>
+                <div style="margin-top:4px; font-size:10px; color:#cce0f5;">
+                    ODS Code: <strong style="color:#ffffff;"><t t-esc="doc.ods_code"/></strong>
+                    <t t-if="doc.foundation_trust">
+                        &#160;&#160;|&#160;&#160;
+                        <span style="background:#ffffff; color:#005EB8; padding:1px 6px; font-size:9px; font-weight:bold;">NHS Foundation Trust</span>
+                    </t>
+                </div>
+            </td>
+            <td style="padding:14px 18px; text-align:right; vertical-align:middle;">
+                <t t-set="state_label" t-value="dict([('draft','Draft'),('under_review','Under Review'),('active','Active'),('special_measures','Special Measures'),('merging','Merging'),('dissolved','Dissolved')]).get(doc.state, doc.state)"/>
+                <div style="font-size:10px; color:#cce0f5;">
+                    Status: <strong style="color:#ffffff;"><t t-esc="state_label"/></strong>
+                </div>
+                <div style="margin-top:3px; font-size:10px; color:#cce0f5;">
+                    Health System: <strong style="color:#ffffff;"><t t-if="doc.health_system == 'nhs_england'">NHS England</t><t t-else="">NHS Scotland</t></strong>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- SECTION HEADING MACRO: dark bold underline, no color -->
+    <!-- SECTION 1 - IDENTIFICATION -->
+    <div style="border-bottom:1.5px solid #222; margin-bottom:6px; padding-bottom:2px; margin-top:0;">
+        <span style="font-size:12px; font-weight:bold; color:#1a1a1a;">1.&#160;&#160;Identification</span>
+    </div>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:14px;">
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Legal Name</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.name"/></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Short Name</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.short_name or '&#8212;'"/></td>
+        </tr>
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Health System</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-if="doc.health_system == 'nhs_england'">NHS England</t><t t-else="">NHS Scotland</t></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Trust Type</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.trust_type_id.name if doc.trust_type_id else '&#8212;'"/></td>
+        </tr>
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Workflow Status</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="state_label"/></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Establishment Date</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.establishment_date or '&#8212;'"/></td>
+        </tr>
+        <tr t-if="doc.foundation_trust">
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Foundation Authorised</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.foundation_authorised_date or '&#8212;'"/></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Companies House No.</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.companies_house_number or '&#8212;'"/></td>
+        </tr>
+        <tr t-if="doc.vat_number">
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">VAT Number</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;" colspan="3"><t t-esc="doc.vat_number"/></td>
+        </tr>
+    </table>
+
+    <!-- SECTION 2 - ORGANISATIONAL HIERARCHY -->
+    <div style="border-bottom:1.5px solid #222; margin-bottom:6px; padding-bottom:2px;">
+        <span style="font-size:12px; font-weight:bold; color:#1a1a1a;">2.&#160;&#160;Organisational Hierarchy</span>
+    </div>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:14px;">
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">NHS Region</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.region_id.name if doc.region_id else '&#8212;'"/></td>
+            <t t-if="doc.health_system == 'nhs_england'">
+                <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Integrated Care Board</td>
+                <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.icb_id.name if doc.icb_id else '&#8212;'"/></td>
+            </t>
+            <t t-else="">
+                <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">NHS Health Board</td>
+                <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.health_board_id.name if doc.health_board_id else '&#8212;'"/></td>
+            </t>
+        </tr>
+        <tr t-if="doc.health_system == 'nhs_england'">
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Integrated Care System</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;" colspan="3"><t t-esc="doc.ics_id.name if doc.ics_id else '&#8212;'"/></td>
+        </tr>
+    </table>
+
+    <!-- SECTION 3 - CONTACT -->
+    <div style="border-bottom:1.5px solid #222; margin-bottom:6px; padding-bottom:2px;">
+        <span style="font-size:12px; font-weight:bold; color:#1a1a1a;">3.&#160;&#160;Contact</span>
+    </div>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:14px;">
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Address</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;">
+                <t t-esc="doc.street or ''"/>
+                <t t-if="doc.street2">, <t t-esc="doc.street2"/></t>
+                <t t-if="doc.city">, <t t-esc="doc.city"/></t>
+                <t t-if="doc.county">, <t t-esc="doc.county"/></t>
+                <t t-if="doc.zip">&#160;<t t-esc="doc.zip"/></t>
+                <t t-if="not doc.street and not doc.city">&#8212;</t>
+            </td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Phone</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.phone or '&#8212;'"/></td>
+        </tr>
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Email</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.email or '&#8212;'"/></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Website</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.website or '&#8212;'"/></td>
+        </tr>
+    </table>
+
+    <!-- SECTION 4 - GOVERNANCE -->
+    <div style="border-bottom:1.5px solid #222; margin-bottom:6px; padding-bottom:2px;">
+        <span style="font-size:12px; font-weight:bold; color:#1a1a1a;">4.&#160;&#160;Governance</span>
+    </div>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Board Chair</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.chair_id.name if doc.chair_id else '&#8212;'"/></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Chief Executive</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.chief_executive_id.name if doc.chief_executive_id else '&#8212;'"/></td>
+        </tr>
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Medical Director</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.medical_director_id.name if doc.medical_director_id else '&#8212;'"/></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Director of Nursing</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.director_of_nursing_id.name if doc.director_of_nursing_id else '&#8212;'"/></td>
+        </tr>
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Director of Finance</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;" colspan="3"><t t-esc="doc.finance_director_id.name if doc.finance_director_id else '&#8212;'"/></td>
+        </tr>
+    </table>
+    <t t-if="doc.board_member_ids">
+        <table style="width:100%; border-collapse:collapse; margin-bottom:14px; font-size:9.5px;">
+            <thead>
+                <tr style="background:#1a1a1a;">
+                    <th style="padding:4px 7px; text-align:left; color:#fff; border:1px solid #1a1a1a;">Name</th>
+                    <th style="padding:4px 7px; text-align:left; color:#fff; border:1px solid #1a1a1a;">Role</th>
+                    <th style="padding:4px 7px; text-align:center; color:#fff; border:1px solid #1a1a1a;">Voting</th>
+                    <th style="padding:4px 7px; text-align:left; color:#fff; border:1px solid #1a1a1a;">Term Start</th>
+                    <th style="padding:4px 7px; text-align:left; color:#fff; border:1px solid #1a1a1a;">Term End</th>
+                    <th style="padding:4px 7px; text-align:left; color:#fff; border:1px solid #1a1a1a;">Appointment Authority</th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-set="role_map" t-value="{'chair':'Chair','vice_chair':'Vice Chair','ceo':'CEO','medical_director':'Medical Director','director_of_nursing':'Director of Nursing','finance_director':'Finance Director','coo':'COO','exec_director':'Executive Director','ned':'Non-Executive Director','associate_ned':'Associate NED','governor':'Governor','other':'Other'}"/>
+                <t t-foreach="doc.board_member_ids" t-as="bm">
+                    <tr t-attf-style="background:#{bm_index % 2 == 0 and '#f8f8f8' or '#ffffff'};">
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8;"><t t-esc="bm.name"/></td>
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8;"><t t-esc="role_map.get(bm.nhs_board_role, bm.nhs_board_role or '&#8212;')"/></td>
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8; text-align:center;"><t t-esc="'Yes' if bm.is_voting_member else 'No'"/></td>
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8;"><t t-esc="bm.term_start_date or '&#8212;'"/></td>
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8;"><t t-esc="bm.term_end_date or '&#8212;'"/></td>
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8;"><t t-esc="bm.appointment_authority or '&#8212;'"/></td>
+                    </tr>
+                </t>
+            </tbody>
+        </table>
+    </t>
+
+    <!-- SECTION 5 - FINANCIALS -->
+    <div style="border-bottom:1.5px solid #222; margin-bottom:6px; padding-bottom:2px;">
+        <span style="font-size:12px; font-weight:bold; color:#1a1a1a;">5.&#160;&#160;Financials<t t-if="doc.financial_year">&#160;<span style="font-size:10px; font-weight:normal; color:#555;">(<t t-esc="doc.financial_year"/>)</span></t></span>
+    </div>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:14px;">
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Annual Budget</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;">&#163;<t t-esc="'{:,.0f}'.format(doc.annual_budget or 0)"/></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Annual Income</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;">&#163;<t t-esc="'{:,.0f}'.format(doc.annual_income or 0)"/></td>
+        </tr>
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Annual Expenditure</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;">&#163;<t t-esc="'{:,.0f}'.format(doc.annual_expenditure or 0)"/></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Surplus / Deficit</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;">
+                <t t-set="sd" t-value="doc.surplus_deficit or 0"/>
+                <span t-attf-style="font-weight:bold; color:#{sd >= 0 and '#006600' or '#cc0000'};">&#163;<t t-esc="'{:,.0f}'.format(sd)"/><t t-if="sd >= 0">&#160;(Surplus)</t><t t-else="">&#160;(Deficit)</t></span>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Capital Allocation (CDEL)</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;">&#163;<t t-esc="'{:,.0f}'.format(doc.capital_allocation or 0)"/></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">PFI Obligations</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;">&#163;<t t-esc="'{:,.0f}'.format(doc.pfi_obligations or 0)"/></td>
+        </tr>
+    </table>
+
+    <!-- SECTION 6 - WORKFORCE AND CAPACITY -->
+    <div style="border-bottom:1.5px solid #222; margin-bottom:6px; padding-bottom:2px;">
+        <span style="font-size:12px; font-weight:bold; color:#1a1a1a;">6.&#160;&#160;Workforce &amp; Capacity</span>
+    </div>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:14px;">
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Total Workforce (FTE)</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="'{:,}'.format(doc.total_workforce or 0)"/></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Total Bed Capacity</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="'{:,}'.format(doc.total_bed_capacity or 0)"/></td>
+        </tr>
+        <tr>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#f2f2f2; border:1px solid #c8c8c8;">Number of Sites</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.site_count or 0"/></td>
+            <td style="width:22%; padding:5px 7px; font-weight:bold; color:#333; background:#e8e8e8; border:1px solid #c8c8c8;">Number of Departments</td>
+            <td style="padding:5px 7px; border:1px solid #c8c8c8;"><t t-esc="doc.department_count or 0"/></td>
+        </tr>
+    </table>
+
+    <!-- SECTION 7 - SITES -->
+    <t t-if="doc.site_ids">
+        <div style="border-bottom:1.5px solid #222; margin-bottom:6px; padding-bottom:2px;">
+            <span style="font-size:12px; font-weight:bold; color:#1a1a1a;">7.&#160;&#160;Sites<span style="font-size:10px; font-weight:normal; color:#555;">&#160;(<t t-esc="len(doc.site_ids)"/>)</span></span>
+        </div>
+        <table style="width:100%; border-collapse:collapse; margin-bottom:14px; font-size:9.5px;">
+            <thead>
+                <tr style="background:#1a1a1a;">
+                    <th style="padding:4px 7px; color:#fff; border:1px solid #1a1a1a; text-align:left;">Code</th>
+                    <th style="padding:4px 7px; color:#fff; border:1px solid #1a1a1a; text-align:left;">Site Name</th>
+                    <th style="padding:4px 7px; color:#fff; border:1px solid #1a1a1a; text-align:left;">Type</th>
+                    <th style="padding:4px 7px; color:#fff; border:1px solid #1a1a1a; text-align:left;">City</th>
+                    <th style="padding:4px 7px; color:#fff; border:1px solid #1a1a1a; text-align:right;">Beds</th>
+                    <th style="padding:4px 7px; color:#fff; border:1px solid #1a1a1a; text-align:center;">A&amp;E</th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-set="stype" t-value="{'acute_hospital':'Acute Hospital','teaching_hospital':'Teaching Hospital','community_hospital':'Community Hospital','mental_health_unit':'Mental Health Unit','clinic':'Clinic','community_centre':'Community Centre','ambulance_station':'Ambulance Station','admin_office':'Admin Office','other':'Other'}"/>
+                <t t-foreach="doc.site_ids" t-as="site">
+                    <tr t-attf-style="background:#{site_index % 2 == 0 and '#f8f8f8' or '#ffffff'};">
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8;"><t t-esc="site.code or '&#8212;'"/></td>
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8;"><t t-esc="site.name"/></td>
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8;"><t t-esc="stype.get(site.site_type, site.site_type)"/></td>
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8;"><t t-esc="site.city or '&#8212;'"/></td>
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8; text-align:right;"><t t-esc="site.bed_capacity or 0"/></td>
+                        <td style="padding:4px 7px; border:1px solid #c8c8c8; text-align:center;"><t t-if="site.has_ae_department">Yes</t><t t-else="">&#8212;</t></td>
+                    </tr>
+                </t>
+            </tbody>
+        </table>
+    </t>
+
+    <!-- SECTION 8 - CQC (England only) -->
+    <t t-if="doc.health_system == 'nhs_england' and doc.cqc_inspection_ids">
+        <div style="border-bottom:1.5px solid #222; margin-bottom:6px; padding-bottom:2px;">
+            <span style="font-size:12px; font-weight:bold; color:#1a1a1a;">8.&#160;&#160;CQC Inspection History</span>
+        </div>
+        <table style="width:100%; border-collapse:collapse; margin-bottom:14px; font-size:9.5px;">
+            <thead>
+                <tr style="background:#1a1a1a;">
+                    <th style="padding:4px 6px; color:#fff; border:1px solid #1a1a1a; text-align:left;">Date</th>
+                    <th style="padding:4px 6px; color:#fff; border:1px solid #1a1a1a; text-align:left;">Type</th>
+                    <th style="padding:4px 6px; color:#fff; border:1px solid #1a1a1a; text-align:left;">Overall</th>
+                    <th style="padding:4px 6px; color:#fff; border:1px solid #1a1a1a; text-align:left;">Safe</th>
+                    <th style="padding:4px 6px; color:#fff; border:1px solid #1a1a1a; text-align:left;">Effective</th>
+                    <th style="padding:4px 6px; color:#fff; border:1px solid #1a1a1a; text-align:left;">Caring</th>
+                    <th style="padding:4px 6px; color:#fff; border:1px solid #1a1a1a; text-align:left;">Responsive</th>
+                    <th style="padding:4px 6px; color:#fff; border:1px solid #1a1a1a; text-align:left;">Well-Led</th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-set="rl" t-value="{'outstanding':'Outstanding','good':'Good','requires_improvement':'Requires Improvement','inadequate':'Inadequate','not_rated':'Not Rated'}"/>
+                <t t-set="it" t-value="{'comprehensive':'Comprehensive','focused':'Focused','responsive':'Responsive','thematic':'Thematic','follow_up':'Follow-Up'}"/>
+                <t t-foreach="doc.cqc_inspection_ids" t-as="insp">
+                    <tr t-attf-style="background:#{insp_index % 2 == 0 and '#f8f8f8' or '#ffffff'};">
+                        <td style="padding:4px 6px; border:1px solid #c8c8c8;"><t t-esc="insp.inspection_date or '&#8212;'"/></td>
+                        <td style="padding:4px 6px; border:1px solid #c8c8c8;"><t t-esc="it.get(insp.inspection_type, insp.inspection_type)"/></td>
+                        <td style="padding:4px 6px; border:1px solid #c8c8c8; font-weight:bold;"><t t-esc="rl.get(insp.overall_rating, '&#8212;')"/></td>
+                        <td style="padding:4px 6px; border:1px solid #c8c8c8;"><t t-esc="rl.get(insp.safe_rating, '&#8212;')"/></td>
+                        <td style="padding:4px 6px; border:1px solid #c8c8c8;"><t t-esc="rl.get(insp.effective_rating, '&#8212;')"/></td>
+                        <td style="padding:4px 6px; border:1px solid #c8c8c8;"><t t-esc="rl.get(insp.caring_rating, '&#8212;')"/></td>
+                        <td style="padding:4px 6px; border:1px solid #c8c8c8;"><t t-esc="rl.get(insp.responsive_rating, '&#8212;')"/></td>
+                        <td style="padding:4px 6px; border:1px solid #c8c8c8;"><t t-esc="rl.get(insp.well_led_rating, '&#8212;')"/></td>
+                    </tr>
+                </t>
+            </tbody>
+        </table>
+    </t>
+
+    <!-- FOOTER -->
+    <div style="margin-top:20px; padding-top:6px; border-top:1px solid #aaa; font-size:8.5px; color:#666; text-align:center;">
+        NHS Trust Management&#160;|&#160;ODS Code: <t t-esc="doc.ods_code"/>&#160;|&#160;Generated: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d %B %Y, %H:%M')"/>&#160;|&#160;Data is correct as at the date of generation.
+    </div>
+
+</div>
+</t>
+</t>
+</t>
+</template>
+</odoo>

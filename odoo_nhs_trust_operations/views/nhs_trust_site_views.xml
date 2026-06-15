@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         nhs.trust.specialty — Clinical Specialty lookup table
+    ================================================================ -->
+    <record id="view_nhs_trust_specialty_list" model="ir.ui.view">
+        <field name="name">nhs.trust.specialty.list</field>
+        <field name="model">nhs.trust.specialty</field>
+        <field name="arch" type="xml">
+            <list string="Clinical Specialties" editable="bottom">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="description"/>
+                <field name="active" widget="boolean_toggle" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_nhs_trust_specialty_form" model="ir.ui.view">
+        <field name="name">nhs.trust.specialty.form</field>
+        <field name="model">nhs.trust.specialty</field>
+        <field name="arch" type="xml">
+            <form string="Clinical Specialty">
+                <sheet>
+                    <group>
+                        <group string="Identity">
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group string="Status">
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1" placeholder="Short description of what this specialty covers..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_nhs_trust_specialty" model="ir.actions.act_window">
+        <field name="name">Clinical Specialties</field>
+        <field name="res_model">nhs.trust.specialty</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add a clinical specialty.</p>
+            <p>Seed this list with NHS Data Dictionary specialty codes (e.g. 320 Cardiology, 110 T&amp;O).</p>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         nhs.trust.site — List / Form / Kanban / Search
+    ================================================================ -->
+    <record id="view_nhs_trust_site_list" model="ir.ui.view">
+        <field name="name">nhs.trust.site.list</field>
+        <field name="model">nhs.trust.site</field>
+        <field name="arch" type="xml">
+            <list string="NHS Trust Sites"
+                  decoration-info="site_type == 'teaching_hospital'"
+                  decoration-warning="site_type == 'mental_health_unit'">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="trust_id"/>
+                <field name="site_type"/>
+                <field name="city"/>
+                <field name="has_ae_department" widget="boolean" string="A&amp;E"/>
+                <field name="active" widget="boolean_toggle" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_nhs_trust_site_form" model="ir.ui.view">
+        <field name="name">nhs.trust.site.form</field>
+        <field name="model">nhs.trust.site</field>
+        <field name="arch" type="xml">
+            <form string="NHS Trust Site">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_departments" type="object"
+                                class="oe_stat_button" icon="fa-building">
+                            <field name="department_count" string="Departments" widget="statinfo"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. The Royal London Hospital"/>
+                        </h1>
+                        <h4>
+                            <field name="code" placeholder="ODS Sub-Code (optional)"/>
+                            <div class="text-muted mt-2">
+                                <label for="trust_id" string="Parent Trust: " class="oe_inline"/>
+                                <field name="trust_id" options="{'no_open': False}" class="oe_inline"/>
+                            </div>
+                        </h4>
+                    </div>
+
+                    <group>
+                        <group string="Classification">
+                            <field name="site_type"/>
+                            <field name="has_ae_department" widget="boolean_toggle"/>
+                            <field name="ae_type"
+                                   invisible="not has_ae_department"
+                                   required="has_ae_department"/>
+                        </group>
+                        <group string="Capacity">
+                            <field name="bed_capacity" invisible="site_type not in ('acute_hospital', 'teaching_hospital', 'community_hospital', 'mental_health_unit')"/>
+                            <field name="icu_bed_capacity" invisible="site_type not in ('acute_hospital', 'teaching_hospital', 'community_hospital', 'mental_health_unit')"/>
+                            <field name="operating_theatres" invisible="site_type not in ('acute_hospital', 'teaching_hospital', 'community_hospital', 'mental_health_unit')"/>
+                            <field name="opening_hours"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Location" name="location">
+                            <group>
+
+
+                                <group name="Address">
+                                    <label for="street" string="Address"/>
+                                    <div class="o_address_format">
+                                        <field name="street" placeholder="Street..." class="o_address_street"/>
+                                        <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                                        <field name="city" placeholder="City" class="o_address_city"/>
+                                        <field name="zip" placeholder="Postcode" class="o_address_zip"/>
+                                        <div name="trust_address_country" class="d-flex justify-content-between">
+                                            <field name="country_id" placeholder="Country" class="o_address_country" options="{'no_open': True, 'no_create': True}"/>
+                                        </div>
+                                    </div>
+                                </group>
+                                <group string="GPS Coordinates">
+                                    <field name="latitude"/>
+                                    <field name="longitude"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Contact &amp; Management" name="contact">
+                            <group>
+                                <group string="Contact Details">
+                                    <field name="phone" widget="phone"/>
+                                    <field name="email" widget="email"/>
+                                </group>
+                                <group string="Site Management">
+                                    <field name="site_manager_id" options="{'no_create': True}"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Clinical Specialties" name="specialties">
+                            <group>
+                                <field name="specialty_ids" widget="many2many_tags"/>
+                            </group>
+                        </page>
+
+                        <page string="Departments" name="departments">
+                            <field name="department_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="department_type"/>
+                                    <field name="specialty_id"/>
+                                    <field name="head_of_department_id"/>
+                                    <field name="staff_count"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Free-text operational notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_nhs_trust_site_kanban" model="ir.ui.view">
+        <field name="name">nhs.trust.site.kanban</field>
+        <field name="model">nhs.trust.site</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="site_type" quick_create="false">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="trust_id"/>
+                <field name="site_type"/>
+                <field name="city"/>
+                <field name="bed_capacity"/>
+                <field name="has_ae_department"/>
+                <field name="department_count"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click o_kanban_record">
+                            <div class="oe_kanban_details">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <t t-if="record.has_ae_department.raw_value">
+                                        <span class="badge text-bg-danger ms-1" title="Has A&amp;E">A&amp;E</span>
+                                    </t>
+                                </div>
+                                <div class="o_kanban_record_body mt-2">
+                                    <div class="text-muted">
+                                        <i class="fa fa-hospital-o me-1" title="Parent Trust"/>
+                                        <field name="trust_id"/>
+                                    </div>
+                                    <div class="mt-1 text-muted">
+                                        <i class="fa fa-map-marker me-1" title="City"/>
+                                        <field name="city"/>
+                                    </div>
+                                    <div class="mt-1">
+                                        <span class="badge text-bg-info me-1" invisible="site_type not in ('acute_hospital', 'teaching_hospital', 'community_hospital', 'mental_health_unit')">
+                                            <i class="fa fa-bed me-1" title="Bed capacity"/>
+                                            <field name="bed_capacity"/> beds
+                                        </span>
+                                        <span class="badge text-bg-secondary">
+                                            <field name="department_count"/> depts
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_nhs_trust_site_search" model="ir.ui.view">
+        <field name="name">nhs.trust.site.search</field>
+        <field name="model">nhs.trust.site</field>
+        <field name="arch" type="xml">
+            <search string="Search Sites">
+                <field name="name"/>
+                <field name="trust_id"/>
+                <field name="city"/>
+                <separator/>
+                <filter string="Has A&amp;E" name="has_ae" domain="[('has_ae_department', '=', True)]"/>
+                <filter string="Acute Hospitals" name="acute" domain="[('site_type', '=', 'acute_hospital')]"/>
+                <filter string="Teaching Hospitals" name="teaching" domain="[('site_type', '=', 'teaching_hospital')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter string="Trust" name="group_by_trust" context="{'group_by': 'trust_id'}"/>
+                    <filter string="Site Type" name="group_by_type" context="{'group_by': 'site_type'}"/>
+                    <filter string="City" name="group_by_city" context="{'group_by': 'city'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_nhs_trust_site" model="ir.actions.act_window">
+        <field name="name">NHS Trust Sites</field>
+        <field name="res_model">nhs.trust.site</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_nhs_trust_site_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add a new NHS Trust site.</p>
+            <p>Sites represent physical locations — hospitals, clinics, ambulance stations, admin buildings.</p>
+        </field>
+    </record>
+</odoo>

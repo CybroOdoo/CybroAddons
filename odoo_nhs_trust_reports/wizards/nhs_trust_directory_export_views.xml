@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         nhs.trust.directory.export  —  Excel Export Wizard
+    ================================================================ -->
+
+    <record id="view_nhs_trust_directory_export_form" model="ir.ui.view">
+        <field name="name">nhs.trust.directory.export.form</field>
+        <field name="model">nhs.trust.directory.export</field>
+        <field name="arch" type="xml">
+            <form string="Export NHS Trust Directory">
+                <div class="alert alert-info" role="alert" invisible="export_file">
+                    <i class="fa fa-info-circle me-1"/>
+                    Configure the filters below then click <strong>Generate Excel</strong> to create the
+                    directory export. The file will appear here for download.
+                </div>
+
+                <group string="Export Filters">
+                    <group>
+                        <field name="health_system" widget="radio"
+                               options="{'horizontal': true}"/>
+                        <field name="status_filter"/>
+                    </group>
+                    <group>
+                        <field name="region_ids" widget="many2many_tags"
+                               domain="health_system != 'all' and [('health_system', '=', health_system)] or []"
+                               placeholder="All regions (leave empty for no filter)"/>
+                    </group>
+                </group>
+
+                <!-- Download area — shown only after generation -->
+                <group string="Download" invisible="not export_file">
+                    <field name="export_file" filename="export_filename" widget="binary"
+                           string="Excel File" readonly="1"/>
+                    <field name="export_filename" invisible="1"/>
+                </group>
+
+                <footer>
+                    <button name="action_export" string="Generate Excel"
+                            type="object" class="btn-primary"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_nhs_trust_directory_export" model="ir.actions.act_window">
+        <field name="name">Export Trust Directory (Excel)</field>
+        <field name="res_model">nhs.trust.directory.export</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Export the NHS Trust Directory to Excel.</p>
+        </field>
+    </record>
+</odoo>

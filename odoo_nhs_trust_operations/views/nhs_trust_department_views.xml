@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         nhs.trust.department — List / Form / Search
+    ================================================================ -->
+    <record id="view_nhs_trust_department_list" model="ir.ui.view">
+        <field name="name">nhs.trust.department.list</field>
+        <field name="model">nhs.trust.department</field>
+        <field name="arch" type="xml">
+            <list string="NHS Trust Departments"
+                  decoration-info="department_type == 'clinical'"
+                  decoration-muted="department_type == 'corporate'">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="trust_id"/>
+                <field name="site_id"/>
+                <field name="department_type" widget="badge"/>
+                <field name="head_of_department_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_nhs_trust_department_form" model="ir.ui.view">
+        <field name="name">nhs.trust.department.form</field>
+        <field name="model">nhs.trust.department</field>
+        <field name="arch" type="xml">
+            <form string="NHS Trust Department">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Emergency Department"/>
+                        </h1>
+                        <h4 class="text-muted">
+                            <field name="code" placeholder="Internal code (optional)"/>
+                        </h4>
+                    </div>
+
+                    <group>
+                        <group string="Hierarchy">
+                            <field name="site_id" options="{'no_create': True}"/>
+                            <field name="trust_id" readonly="1"/>
+                            <field name="department_type"/>
+                        </group>
+                        <group string="Clinical Details">
+                            <field name="specialty_id" options="{'no_create': True}"/>
+                            <field name="head_of_department_id" options="{'no_create': True}"/>
+                            <field name="staff_count"/>
+                        </group>
+                    </group>
+
+                    <group string="Contact Details">
+                        <group>
+                            <field name="phone" widget="phone"/>
+                            <field name="email" widget="email"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+
+                    <group string="Description">
+                        <field name="description" placeholder="Free-text description of this department's scope..." nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_nhs_trust_department_search" model="ir.ui.view">
+        <field name="name">nhs.trust.department.search</field>
+        <field name="model">nhs.trust.department</field>
+        <field name="arch" type="xml">
+            <search string="Search Departments">
+                <field name="name"/>
+                <field name="trust_id"/>
+                <field name="site_id"/>
+                <field name="specialty_id"/>
+                <separator/>
+                <filter string="Clinical" name="clinical"
+                        domain="[('department_type', '=', 'clinical')]"/>
+                <filter string="Corporate" name="corporate"
+                        domain="[('department_type', '=', 'corporate')]"/>
+                <filter string="Support" name="support"
+                        domain="[('department_type', '=', 'support')]"/>
+                <filter string="Research" name="research"
+                        domain="[('department_type', '=', 'research')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter string="Trust" name="group_by_trust" context="{'group_by': 'trust_id'}"/>
+                    <filter string="Site" name="group_by_site" context="{'group_by': 'site_id'}"/>
+                    <filter string="Department Type" name="group_by_type" context="{'group_by': 'department_type'}"/>
+                    <filter string="Specialty" name="group_by_specialty" context="{'group_by': 'specialty_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_nhs_trust_department" model="ir.actions.act_window">
+        <field name="name">NHS Trust Departments</field>
+        <field name="res_model">nhs.trust.department</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_nhs_trust_department_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add a new department.</p>
+            <p>Departments are sub-units of a site — clinical, corporate, support, or research.</p>
+        </field>
+    </record>
+</odoo>
