@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Product Management System',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Warehouse , Extra Tools',
     'summary': """This module helps in product management system.""",
     'description': """ Mass actions are operations that might be proceeded for 

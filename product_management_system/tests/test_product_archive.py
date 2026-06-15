@@ -19,5 +19,26 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
+from odoo.tests.common import TransactionCase
 
-from . import wizard
+class TestProductArchive(TransactionCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.product_template_1 = cls.env['product.template'].create({
+            'name': 'Archive Product 1',
+            'active': True,
+        })
+        cls.product_template_2 = cls.env['product.template'].create({
+            'name': 'Archive Product 2',
+            'active': True,
+        })
+
+    def test_archive_product(self):
+        wizard = self.env['product.archive'].create({
+            'product_ids': [self.product_template_1.id, self.product_template_2.id],
+        })
+        wizard.action_archive_product()
+        self.assertFalse(self.product_template_1.active)
+        self.assertFalse(self.product_template_2.active)
