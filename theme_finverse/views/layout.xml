@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Add iconify to head -->
+    <template id="theme_finverse_head_assets" inherit_id="website.layout" name="Finance Head Assets">
+        <xpath expr="//head" position="inside">
+            <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+        </xpath>
+    </template>
+
+    <!-- Header Override -->
+    <template id="finance_header" inherit_id="website.layout" name="Finance Header">
+        <xpath expr="//header" position="before">
+            <!-- Search Modal -->
+            <div class="modal fade" id="o_search_modal" aria-hidden="true" tabindex="-1">
+                <div class="modal-dialog modal-lg pt-5">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Search Finverse</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <t t-call="website.website_search_box_input">
+                                <t t-set="_classes" t-valuef="input-group-lg"/>
+                                <t t-set="action" t-valuef="/website/search"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//header" position="replace">
+            <header class="header-container" style="position:relative; z-index:999;">
+                <nav class="navbar" id="finance-navbar">
+                    <a href="/" class="logo">
+                        <div class="logo-icon">
+                            <span class="fa fa-asterisk"></span>
+                        </div>
+                        <span>Finverse</span>
+                    </a>
+
+                    <!-- Centre nav links (desktop only, excludes Insights & Contact) -->
+                    <div class="nav-links">
+                        <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                            <t t-if="submenu.url not in ['/insights', '/contactus', '/contact-us']">
+                                <div class="nav-item">
+                                    <a t-att-href="submenu.url" style="text-decoration:none;color:inherit;"
+                                       t-esc="submenu.name"/>
+                                </div>
+                            </t>
+                        </t>
+                    </div>
+
+                    <!-- Right actions (desktop only) -->
+                    <div class="nav-actions">
+                        <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                            <t t-if="submenu.name == 'Insights'">
+                                <a t-att-href="submenu.url" class="nav-pill glass" style="text-decoration:none;">
+                                    <span t-esc="submenu.name"/>
+                                </a>
+                            </t>
+                        </t>
+                        <a href="#" class="icon-btn glass o_not_editable" data-bs-toggle="modal"
+                           data-bs-target="#o_search_modal" aria-label="Search">
+                            <span class="fa fa-search" style="font-size:20px;color:#111827;"></span>
+                        </a>
+                        <t t-if="not user_id._is_public()" t-call="portal.user_dropdown">
+                            <t t-set="_avatar" t-value="True"/>
+                            <t t-set="_icon" t-value="True"/>
+                            <t t-set="_item_class" t-value="'nav-item dropdown ml-2 list-unstyled'"/>
+                            <t t-set="_link_class" t-value="'nav-link text-dark'"/>
+                        </t>
+                        <div t-if="user_id._is_public()" class="nav-item list-unstyled">
+                            <a href="/web/login" class="nav-link text-dark" style="font-weight: 500;">Sign In</a>
+                        </div>
+                        <a href="/contactus" class="nav-pill primary text-decoration-none">Contact Us</a>
+                    </div>
+
+                    <!-- Hamburger (mobile/tablet only) -->
+                    <button class="hamburger-menu" id="hamburgerMenu"
+                            aria-label="Toggle navigation menu"
+                            aria-expanded="false" aria-controls="mobileMenu">
+                        <span class="hamburger-line"></span>
+                        <span class="hamburger-line"></span>
+                        <span class="hamburger-line"></span>
+                    </button>
+                </nav>
+
+                <!-- Mobile drawer — outside nav so it spans full viewport width -->
+                <div class="mobile-menu" id="mobileMenu" role="dialog" aria-label="Navigation menu">
+                    <!-- Backdrop for closing on tap-outside -->
+                    <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
+                    <div class="mobile-menu-panel">
+                        <div class="mobile-menu-header">
+                            <a href="/" class="logo">
+                                <div class="logo-icon">
+                                    <span class="fa fa-asterisk"></span>
+                                </div>
+                                <span>Finverse</span>
+                            </a>
+                            <button class="mobile-close-btn" id="mobileCloseBtn" aria-label="Close menu">
+                                <span class="fa fa-times" style="font-size:22px;"></span>
+                            </button>
+                        </div>
+                        <div class="mobile-nav-links">
+                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                <t t-if="submenu.url not in ['/contactus', '/contact-us']">
+                                    <div class="nav-item">
+                                        <a t-att-href="submenu.url"
+                                           style="text-decoration:none;color:inherit;"
+                                           t-esc="submenu.name"/>
+                                    </div>
+                                </t>
+                            </t>
+                        </div>
+                        <div class="mobile-nav-actions">
+                            <div class="nav-item mb-3 list-unstyled" t-if="not user_id._is_public()">
+                                <t t-call="portal.user_dropdown">
+                                    <t t-set="_avatar" t-value="True"/>
+                                    <t t-set="_icon" t-value="True"/>
+                                    <t t-set="_link_class"
+                                       t-value="'nav-link text-dark d-flex align-items-center gap-2'"/>
+                                </t>
+                            </div>
+                            <div class="nav-item mb-3 list-unstyled" t-if="user_id._is_public()">
+                                <a href="/web/login" class="nav-link text-dark" style="font-weight: 500;">Sign In</a>
+                            </div>
+                            <a href="/contactus"
+                               class="nav-pill primary text-decoration-none"
+                               style="display:flex;justify-content:center;">Contact Us
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+        </xpath>
+    </template>
+
+    <template id="finance_user_dropdown" inherit_id="portal.user_dropdown" name="Finance User Dropdown">
+        <xpath expr="//a" position="replace">
+            <a href="#" role="button" data-bs-toggle="dropdown"
+               t-attf-class="#{'' if _no_caret else 'dropdown-toggle'} #{_link_class}">
+                <t t-if="_avatar">
+                    <t t-set="avatar_source" t-value="image_data_uri(user_id.avatar_256)" id="dropdown"/>
+                    <img t-att-src="avatar_source" t-attf-class="rounded-circle o_object_fit_cover #{_avatar_class}"
+                         width="24" height="24" alt="image" loading="eager"/>
+                </t>
+                <div t-if="_icon" t-attf-class="#{_icon_wrap_class}" style="display:none;">
+                    <i t-attf-class="fa fa-1x fa-fw fa-user #{_icon_class}"/>
+                </div>
+                <span t-if="_user_name" t-attf-class="#{_user_name_class}"
+                      t-esc="user_id.name[:23] + '...' if user_id.name and len(user_id.name) &gt; 25 else user_id.name"/>
+            </a>
+        </xpath>
+    </template>
+
+    <!-- Footer Override -->
+    <template id="finance_footer" inherit_id="website.layout" name="Finance Footer">
+        <xpath expr="//div[@id='footer']" position="replace">
+            <footer class="footer" id="footer">
+                <div class="footer-top">
+                    <h2>Ready to transform your<br/>financial future?
+                    </h2>
+                    <a href="/contactus" class="nav-pill primary text-decoration-none"
+                       style="font-size: 18px; padding: 20px 40px; display: inline-flex; align-items: center; gap: 12px; cursor: pointer;">
+                        Get Started Today
+                        <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                            <span class="fa fa-arrow-right" style="font-size: 24px"></span>
+                        </div>
+                    </a>
+                </div>
+                <div class="footer-grid">
+                    <div class="footer-brand">
+                        <div class="logo" style="font-size: 28px; color: #ffffff">
+                            <div class="logo-icon" style="width: 36px; height: 36px">
+                                <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                                    <span class="fa fa-asterisk" style="font-size: 24px; color: #ffffff"></span>
+                                </div>
+                            </div>
+                            <span style="font-weight: 600">Finverse</span>
+                        </div>
+                        <p>
+                            Empowering businesses with strategic financial consulting and cutting-edge data analytics to
+                            drive sustainable growth.
+                        </p>
+                    </div>
+                    <div class="footer-links">
+                        <h4>Company</h4>
+                        <ul>
+                            <li>
+                                <a href="/about">About Us</a>
+                            </li>
+                            <li>
+                                <a href="#">Careers</a>
+                            </li>
+                            <li>
+                                <a href="#">Newsroom</a>
+                            </li>
+                            <li>
+                                <a href="/contactus">Contact</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="footer-links">
+                        <h4>Services</h4>
+                        <ul>
+                            <li>
+                                <a href="/services">Wealth Management</a>
+                            </li>
+                            <li>
+                                <a href="#">Data Analytics</a>
+                            </li>
+                            <li>
+                                <a href="#">Corporate Finance</a>
+                            </li>
+                            <li>
+                                <a href="#">Digital Transformation</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="footer-newsletter">
+                        <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 24px">Subscribe to Our Newsletter
+                        </h4>
+                        <p>Get the latest financial insights and industry news delivered to your inbox.</p>
+                        <div class="position-relative js_subscribe" data-list-id="1">
+                            <div class="js_subscribe_wrap newsletter-form" style="gap: 8px;">
+                                <input type="email" name="email" placeholder="Email address"
+                                       class="form-control js_subscribe_email" required="required"
+                                       style="flex:1; border-radius:9999px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:12px 20px;"/>
+                                <button type="button" class="nav-pill primary border-0 js_subscribe_btn">Subscribe
+                                </button>
+                            </div>
+                            <div class="js_subscribed_wrap d-none">
+                                <p class="text-success mt-2">Thanks for subscribing!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <div>© 2026 Finverse Consulting. All rights reserved.</div>
+                    <div class="social-links">
+                        <a href="#"
+                           style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; color:inherit; text-decoration:none;">
+                            <span class="fa fa-linkedin" style="font-size: 24px"></span>
+                        </a>
+                        <a href="#"
+                           style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; color:inherit; text-decoration:none;">
+                            <span class="fa fa-twitter" style="font-size: 24px"></span>
+                        </a>
+                        <a href="#"
+                           style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; color:inherit; text-decoration:none;">
+                            <span class="fa fa-facebook" style="font-size: 24px"></span>
+                        </a>
+                    </div>
+                </div>
+            </footer>
+        </xpath>
+    </template>
+    <!-- Custom Search Box override to ensure search button is always present and styled -->
+    <template id="finverse_search_box" inherit_id="website.website_search_box" name="Finverse Searchbox">
+        <xpath expr="//div[@role='search']" position="replace">
+            <div t-attf-class="input-group #{_classes}" role="search">
+                <input type="search" name="search"
+                       t-att-class="'search-query form-control oe_search_box %s' % (_input_classes or '')"
+                       t-att-placeholder="placeholder or 'Search Finverse...'" t-att-value="search"/>
+                <button type="submit" t-att-class="'btn oe_search_button %s' % (_submit_classes or 'btn-primary')"
+                        aria-label="Search" title="Search">
+                    <span class="fa fa-search"></span>
+                </button>
+            </div>
+        </xpath>
+    </template>
+</odoo>
