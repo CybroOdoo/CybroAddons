@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Sale Product Dimensions',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     "summary": "Add length, width and area fields and area-based pricing "
     "across Sales, Purchase, Stock, MRP and Invoices",
     "description": "Adds length_mm, width_mm, area_m2 and price_per_m2 fields"

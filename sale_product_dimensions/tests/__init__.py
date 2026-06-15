@@ -19,5 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from . import models
-from . import tests
+from . import test_account_move_line
+from . import test_mrp_production
+from . import test_purchase_order_line
+from . import test_sale_order_line
