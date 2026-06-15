@@ -21,7 +21,7 @@
 #############################################################################
 {
     "name": "Music School Institute",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Industries",
     "summary": "Efficiently manage teachers, students, classes, attendance, "
                 "fees, and more with our Music School Management module. ",
