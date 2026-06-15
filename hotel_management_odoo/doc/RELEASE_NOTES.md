@@ -34,3 +34,8 @@
 #### Version 18.0.1.1.4
 #### UPDT
 - Fixed the hotel.room issue in JS by counting products marked as is_room.
+
+#### 08.06.2026
+#### Version 18.0.1.1.5
+#### UPDT
+- Fixed the issue of reserved room can not be reserved although the reserve date is different.

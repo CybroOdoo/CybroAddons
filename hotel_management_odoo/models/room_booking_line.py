@@ -99,17 +99,18 @@ class RoomBookingLine(models.Model):
         and update the qty of hotel service line
         -----------------------------------------------------------------
         @param self: object pointer"""
-        if self.checkout_date < self.checkin_date:
-            raise ValidationError(
-                _("Checkout must be greater or equal checkin date"))
         if self.checkin_date and self.checkout_date:
+            if self.checkout_date < self.checkin_date:
+                # Adjust checkout_date to avoid blocking UI during entry
+                self.checkout_date = self.checkin_date
+
             diffdate = self.checkout_date - self.checkin_date
             qty = diffdate.days
             if diffdate.total_seconds() > 0:
                 qty = qty + 1
             self.uom_qty = qty
 
-    @api.depends('uom_qty', 'price_unit', 'tax_ids','currency_id')
+    @api.depends('uom_qty', 'price_unit', 'tax_ids', 'currency_id')
     def _compute_price_subtotal(self):
         """Compute the amounts of the room booking line."""
         for line in self:
@@ -151,28 +152,25 @@ class RoomBookingLine(models.Model):
            for the given dates. It searches for existing bookings
            in the 'reserved' or 'check_in' state and checks for date
            conflicts. If a conflict is found, a ValidationError is raised."""
-        records = self.env['room.booking'].search(
-            [('state', 'in', ['reserved', 'check_in'])])
-        for rec in records:
-            rec_room_id = rec.room_line_ids.room_id
-            rec_checkin_date = rec.room_line_ids.checkin_date
-            rec_checkout_date = rec.room_line_ids.checkout_date
-            if rec_room_id and rec_checkin_date and rec_checkout_date:
-                # Check for conflicts with existing room lines
-                for line in self:
-                    if line.id != rec.id and line.room_id == rec_room_id:
+        for line in self:
+            if not (line.room_id and line.checkin_date and line.checkout_date):
+                continue
+
+            records = self.env['room.booking'].search(
+                [('state', 'in', ['reserved', 'check_in'])])
+            for rec in records:
+                for booked_line in rec.room_line_ids:
+                    if not (booked_line.room_id and booked_line.checkin_date and booked_line.checkout_date):
+                        continue
+
+                    if line.room_id == booked_line.room_id and line.id != booked_line.id:
                         # Check if the dates overlap
-                        if (rec_checkin_date <= line.checkin_date <= rec_checkout_date or
-                                rec_checkin_date <= line.checkout_date <= rec_checkout_date):
+                        if (booked_line.checkin_date < line.checkout_date and
+                                booked_line.checkout_date > line.checkin_date):
                             raise ValidationError(
                                 _("Sorry, You cannot create a reservation for "
                                   "this date since it overlaps with another "
                                   "reservation..!!"))
-                        if rec_checkout_date <= line.checkout_date and rec_checkin_date >= line.checkin_date:
-                            raise ValidationError(
-                                "Sorry You cannot create a reservation for this"
-                                "date due to an existing reservation between "
-                                "this date")
 
     @api.depends(
         'room_id',
