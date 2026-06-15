@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Product Stock Reservation',
-    'version': "18.0.1.0.0",
+    'version': "18.0.1.0.1",
     'category': 'Sales,Warehouse',
     'summary': """ Reserve Product for Sales Order.""",
     'description': """This module allow sales users to create a product stock 

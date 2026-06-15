@@ -47,7 +47,7 @@ class SaleStockReservation(models.TransientModel):
              'associated with the wizard.')
     sale_order_id = fields.Many2one(
         "sale.order", string="Sale order",
-        readonly="True",
+        readonly=True,
         help="Many2one field that returns the Sale Order")
     mail_notification_ids = fields.Many2many(
         "res.users",

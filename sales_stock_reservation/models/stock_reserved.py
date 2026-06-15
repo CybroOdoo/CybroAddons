@@ -29,33 +29,34 @@ class StockReserved(models.Model):
     _name = "stock.reserved"
     _description = "Reserved stock details"
 
-    name = fields.Char(string="Name", readonly="True", help="Name")
-    order_line_name = fields.Char(string="Order Line", readonly="True",
+    name = fields.Char(string="Name", readonly=True, help="Name")
+    order_line_name = fields.Char(string="Order Line", readonly=True,
                                   help="Name of order line")
     product_id = fields.Many2one("product.product", string="Product",
-                                 readonly="True", help="Product reserved")
+                                 readonly=True, help="Product reserved")
     status = fields.Selection(
         [('reserved', 'Reserved'), ('cancelled', 'Cancelled')],
-        string="Status", readonly="True", help="Status of reservation")
+        string="Status", readonly=True, help="Status of reservation")
     reserved_quantity = fields.Float(string="Reserved Quantity",
-                                     readonly="True",
+                                     readonly=True,
                                      help="Quantity Reserved")
     sale_order_id = fields.Many2one("sale.order", string="Sale Order",
-                                    readonly="True",
+                                    readonly=True,
                                     help="Sale order")
-    move_id = fields.Many2one("stock.move", string="Move Id", readonly="True",
+    move_id = fields.Many2one("stock.move", string="Move Id", readonly=True,
                               help="Stock move details")
 
-    @api.model
+    @api.model_create_multi
     def create(self, vals_list):
         """
          Create a new record for the model and generate a sequence for the name
           field if it is not provided.
           :return: the result of the parent `create()` method call
         """
-        if vals_list.get('name', _('New')) == _('New'):
-            vals_list['name'] = self.env['ir.sequence'].next_by_code(
-                'stock.reserved'
-            ) or _('New')
+        for vals in vals_list:
+            if vals.get('name', _('New')) == _('New'):
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'stock.reserved'
+                ) or _('New')
         res = super().create(vals_list)
         return res

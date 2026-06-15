@@ -25,6 +25,7 @@ from odoo import fields, models
 class StockReservation(models.TransientModel):
     """ This model for storing wizard order line values."""
     _name = "stock.reservation"
+    _description = "Stock Reservation"
 
     stock_reservation_wizard_id = fields.Many2one(
         "sale.stock.reservation", string="Wizard",
