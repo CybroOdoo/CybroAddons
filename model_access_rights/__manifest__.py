@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Hide Create|Delete|Archive|Export Options - Model Wise',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Extra Tools, Productivity',
     'summary': """ Can hide options from user """,
     'description': """ By using this module we can hide the options like create,

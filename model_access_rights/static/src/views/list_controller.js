@@ -31,8 +31,11 @@ patch(ListController.prototype, {
                                     self.activeActions.create = false;
                                 }
                                 if (result[i].is_export) {
-                                    self.isExportEnable = false
-                                    self.isExportEnable = false
+                                    self.isExportEnable = false;
+                                    self.activeActions.export_xlsx = false;
+                                    if (self.env.config && self.env.config.viewArch) {
+                                        self.env.config.viewArch.setAttribute("export_xlsx", "false");
+                                    }
                                 }
                                 if (result[i].is_delete) {
                                     self.activeActions.delete = false;
@@ -40,14 +43,17 @@ patch(ListController.prototype, {
                             }
                         }
                     } else {
-                        if (await self.user.userId == result[i].user[0]) {
+                        if (self.user.userId == result[i].user) {
                             if (!this.user.isAdmin) {
                                 if (result[i].is_create_or_update) {
                                     self.activeActions.create = false;
                                 }
                                 if (result[i].is_export) {
-                                    self.isExportEnable = false
-                                    self.isExportEnable = false
+                                    self.isExportEnable = false;
+                                    self.activeActions.export_xlsx = false;
+                                    if (self.env.config && self.env.config.viewArch) {
+                                        self.env.config.viewArch.setAttribute("export_xlsx", "false");
+                                    }
                                 }
                                 if (result[i].is_delete) {
                                     self.activeActions.delete = false;

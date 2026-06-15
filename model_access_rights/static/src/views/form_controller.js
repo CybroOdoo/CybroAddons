@@ -36,7 +36,7 @@ patch(FormController.prototype, {
                             }
                         }
                     } else {
-                        if (await self.user.userId == result[i].user[0]) {
+                        if (self.user.userId == result[i].user) {
                             if (!this.user.isAdmin) {
                                 if (result[i].is_create_or_update) {
                                     self.canCreate = false
