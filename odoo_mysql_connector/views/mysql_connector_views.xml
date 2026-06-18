@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    mysql connector form view-->
+    <record id="mysql_connector_view_form" model="ir.ui.view">
+        <field name="model">mysql.connector</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_sync_table" type="object" string="Sync Table"
+                            class="oe_highlight" invisible="state in ['draft','sync']"/>
+                    <button name="action_fetch_data" type="object" string="Fetch Data"
+                            class="oe_highlight" invisible="state == 'sync'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="state == 'sync'"/>
+                            <field name="credential_id" options="{'no_create': True}"  readonly="state == 'sync'"/>
+                        </group>
+                        <group>
+                            <field name="sql_table" readonly="state == 'sync'"/>
+                            <field name="model_id" options="{'no_create': True}"  readonly="state == 'sync'"/>
+                            <field name="is_fetched" invisible="True"/>
+                        </group>
+                    </group>
+                    <notebook invisible="is_fetched == False" >
+                        <page string="Data Mapping">
+                            <field name="sync_ids" readonly="state == 'sync'">
+                                <list create="false" editable="bottom">
+                                    <field name="mysql_field"/>
+                                    <field name="ir_field_id" options="{'no_create': True}"  />
+                                    <field name="ref_table"/>
+                                    <field name="ref_col" />
+                                    <field name="ref_col_name" required="ref_col != False"/>
+                                    <field name="model_id"  column_invisible="True"/>
+                                    <field name="foreign_key"  column_invisible="True"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--    mysql connector list view-->
+    <record id="mysql_connector_view_tree" model="ir.ui.view">
+        <field name="model">mysql.connector</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="credential_id"/>
+                <field name="sql_table"/>
+                <field name="model_id"/>
+            </list>
+        </field>
+    </record>
+    <!--    mysql connector action-->
+    <record id="mysql_connector_action" model="ir.actions.act_window">
+        <field name="name">Connector</field>
+        <field name="res_model">mysql.connector</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <!--    mysql connector menu-->
+    <menuitem id="mysql_connector_menu"
+              name="Connector"
+              action="mysql_connector_action"
+              parent="mysql_connector_menu_configuration"
+              sequence="1"/>
+</odoo>
