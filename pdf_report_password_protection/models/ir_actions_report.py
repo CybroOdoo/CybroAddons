@@ -37,12 +37,15 @@ class IrActionsReportInherit(models.Model):
     # the password protection is enabled.
     def apply_password_protection(self, pdf_content, pwd):
         """Method Added to Implement the pasword options"""
+        if not self.is_password or not pdf_content.startswith(b'%PDF-'):
+            return pdf_content
+
         input_buffer = BytesIO(pdf_content)
         reader = PdfFileReader(input_buffer)
         writer = PdfFileWriter()
         writer.appendPagesFromReader(reader)
         if self.is_password:
-            writer.encrypt(user_pwd=self.password_name, owner_pwd=None,
+            writer.encrypt(user_password=self.password_name, owner_pwd=None,
                            use_128bit=True)
         output_buffer = BytesIO()
         writer.write(output_buffer)

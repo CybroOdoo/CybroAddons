@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Password protection in PDF Reports',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Tools',
     'summary': 'This module adds password protection to PDF reports.',
     'description': 'This module adds functionality for password protecting PDF '
