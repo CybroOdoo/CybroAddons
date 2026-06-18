@@ -21,7 +21,8 @@
 ###########################################################################
 {
     "name": "Profit And Loss PDF Report",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
+    "release_notes": "18.0.1.0.1: Added and verified test cases.",
     "category": "Accounting",
     "summary": """Profit and Loss PDF Report in community""",
     "description": """This app, designed for use within the community edition,
