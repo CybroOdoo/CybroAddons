@@ -21,9 +21,10 @@
 #############################################################################
 {
     'name': 'Userwise Developer Mode Restriction',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Extra Tools',
     'summary': 'Userwise Developer Mode Restriction',
+    'release_notes': '18.0.1.0.1: Added comprehensive automated test suite to verify debug mode restrictions.',
     "description": "Restrict Developer Mode for Specific Users, Disable "
                    "Developer Mode,Restrict Debug mode User wise,Developer "
                    "mode restriction userwise",
