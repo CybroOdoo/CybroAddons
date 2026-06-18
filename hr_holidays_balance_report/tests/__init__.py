@@ -19,27 +19,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-{
-    'name': 'HR Balance Leave Report',
-    'version': '18.0.1.0.1',
-    'category': 'Human Resources',
-    'summary': 'Allocated balance, taken leaves and remaining balance per'
-               ' leave type for each employee',
-    'description': 'User Can view Allocated balance, taken leaves and remaining'
-                   ' balance per leave type for each employee',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['hr_holidays'],
-    'data': [
-        'security/report_balance_leave_security.xml',
-        'security/ir.model.access.csv',
-        'report/report_balance_leave_views.xml'
-    ],
-    'images': ['static/description/banner.png'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+
+from . import test_hr_holidays_balance_report
