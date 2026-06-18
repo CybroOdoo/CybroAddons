@@ -26,7 +26,7 @@
     'summary': 'NHS Bckoffice Operations in Odoo, Trust Management - Operations & Compliance, CQC Inspections, Trust Sites and Departments',
     'description': """NHS Trust Management - Foundation provides the core framework for managing NHS Trust governance, 
     leadership, workflows, security access, and NHS England and Scotland organizational master data within Odoo, NHS, NHS Odoo, NHS Trust Management,
-    ICB Management, NHS Backoffice, NHS Operations, NHS Governance, Trust Sites and Departments, CQC Inspections""",
+    ICB Management, NHS Backoffice, NHS Operations, NHS Governance, Trust Sites and Departments, CQC Inspections, odoo nhs, odoo in nhs, odoo apps for nhs, nhs, ODOO NHS""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
