@@ -19,28 +19,28 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-{
-    'name': 'User Login Alert',
-    'version': '18.0.1.0.1',
-    'category': 'Extra Tools',
-    'summary': """Secure Odoo account by alerts user about any login 
-     happened from any systems""",
-    'description': """Secure your Odoo account by alerts at right time. If any
-     successful login to user's account happens, an alert mail will be send to 
-     user with the browser and IP details.""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer ': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['mail'],
-    'data': [
-        'security/user_login_alert_groups.xml',
-        'views/res_users_views.xml',
-    ],
-    'external_dependencies': {'python': ['httpagentparser']},
-    'images': ['static/description/banner.png'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from odoo.tests.common import TransactionCase, tagged
+
+
+@tagged('post_install', '-at_install')
+class TestResUsers(TransactionCase):
+    """Test suite for res.users inheritance in user_login_alert module"""
+
+    def setUp(self):
+        super(TestResUsers, self).setUp()
+        self.test_user = self.env['res.users'].create({
+            'name': 'Test User',
+            'login': 'test_user_alert',
+            'email': 'test_user@example.com',
+        })
+
+    def test_user_login_fields(self):
+        """Verify that newly added login fields can be set and retrieved"""
+        self.test_user.write({
+            'last_logged_ip': '127.0.0.1',
+            'last_logged_browser': 'Chrome',
+            'last_logged_os': 'Linux',
+        })
+        self.assertEqual(self.test_user.last_logged_ip, '127.0.0.1')
+        self.assertEqual(self.test_user.last_logged_browser, 'Chrome')
+        self.assertEqual(self.test_user.last_logged_os, 'Linux')
