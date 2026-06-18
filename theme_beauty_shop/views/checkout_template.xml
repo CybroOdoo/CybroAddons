@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Custom checkout page that matches the Glowing theme styling -->
+    <template id="beauty_shop_checkout"
+              inherit_id="website_sale.checkout_layout"
+              name="Beauty Shop Checkout"
+              priority="100">
+        <!-- Prepend the hero section without breaking the Odoo checkout flow -->
+        <xpath expr="//div[hasclass('o_website_sale_checkout_container')]" position="before">
+            <section class="cart-hero">
+                <div class="container">
+                    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+                        <a href="/">Home</a>
+                        <i class="bi bi-chevron-right"/>
+                        <span>Shopping Cart</span>
+                    </nav>
+                    <div class="row align-items-end g-3">
+                        <div class="col-md-8">
+                            <h1 class="cart-title">Your
+                                <em>cart</em>
+                            </h1>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <span class="cart-count">
+                                <strong>
+                                    <t t-out="website_sale_order.cart_quantity"/>
+                                    items
+                                </strong>
+                                in your bag
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Progress steps -->
+                    <ol class="cart-steps">
+                        <li>
+                            <span class="step-circle">1</span>
+                            <div>
+                                <strong>Cart</strong>
+                                <small>Review items</small>
+                            </div>
+                        </li>
+                        <li class="active">
+                            <span class="step-circle">2</span>
+                            <div>
+                                <strong>Shipping</strong>
+                                <small>Where to deliver</small>
+                            </div>
+                        </li>
+                        <li class="active">
+                            <span class="step-circle">3</span>
+                            <div>
+                                <strong>Payment</strong>
+                                <small>Secure checkout</small>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="step-circle">
+                                <i class="bi bi-check"/>
+                            </span>
+                            <div>
+                                <strong>Done</strong>
+                                <small>Order confirmed</small>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </section>
+        </xpath>
+        <!-- Add custom class to check out summary card -->
+        <xpath expr="//div[contains(@class, 'card-body') and contains(@class, 'p-lg-4')]" position="attributes">
+            <attribute name="class" add="glowing-checkout-card" separator=" "/>
+        </xpath>
+    </template>
+    <template id="beauty_shop_delivery_methods"
+              inherit_id="website_sale.delivery_form"
+              name="Beauty Shop Delivery Methods"
+              priority="100">
+        <xpath expr="//h4" position="replace">
+            <div class="glow-delivery-title-wrap">
+            </div>
+        </xpath>
+        <xpath expr="//ul[@id='o_delivery_methods']" position="replace">
+            <!-- KEEP t-if -->
+            <ul t-if="delivery_methods"
+                id="o_delivery_methods"
+                class="list-group glow-delivery-wrapper">
+                <h6 class="mb-3">Delivery method</h6>
+                <!-- Delivery Methods -->
+                <t t-foreach="delivery_methods" t-as="dm">
+                    <li name="o_delivery_method"
+                        class="list-group-item glow-delivery-method">
+                        <t t-call="website_sale.delivery_method">
+                            <t t-set="is_selected"
+                               t-value="dm.id == selected_dm_id"/>
+                        </t>
+                    </li>
+                </t>
+            </ul>
+        </xpath>
+    </template>
+</odoo>

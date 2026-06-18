@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    Product Details-->
+    <template id="product_custom" inherit_id="website_sale.product" name="Beauty Shop Product Detail">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap" class="js_sale o_wsale_product_page">
+                <!-- Breadcrumb -->
+                <div class="container pd-breadcrumb-wrap mt-4">
+                    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+                        <a href="/">Home</a>
+                        <i class="bi bi-chevron-right"/>
+                        <a href="/shop">Shop</a>
+                        <i class="bi bi-chevron-right"/>
+                        <t t-if="category">
+                            <a t-att-href="keep('/shop/category/' + slug(category), category=0)" t-out="category.name">
+                                Category
+                            </a>
+                            <i class="bi bi-chevron-right"/>
+                        </t>
+                        <span t-field="product.name">Intensive Glow C+ Serum</span>
+                    </nav>
+                </div>
+                <!-- Product detail -->
+                <section class="product-detail">
+                    <div class="container">
+                        <div class="row g-4 g-lg-5">
+                            <!-- Gallery -->
+                            <div class="col-lg-6 pd-gallery">
+                                <div class="pd-main">
+                                    <span class="pd-flag">Best Seller</span>
+                                    <button class="pd-zoom" aria-label="Zoom">
+                                        <i class="bi bi-arrows-fullscreen"/>
+                                    </button>
+                                    <span t-field="product.image_1920"
+                                          t-options="{'widget': 'image', 'class': 'product-img', 'id': 'pdMainImg'}"/>
+                                </div>
+                                <div class="pd-thumbs" t-if="product.product_template_image_ids">
+                                    <button class="pd-thumb active" t-att-data-src="image_data_uri(product.image_1920)"
+                                            aria-label="View Main">
+                                        <span t-field="product.image_128" t-options="{'widget': 'image'}"/>
+                                    </button>
+                                    <t t-foreach="product.product_template_image_ids" t-as="p_image">
+                                        <button class="pd-thumb" t-att-data-src="image_data_uri(p_image.image_1920)"
+                                                aria-label="View Extra">
+                                            <span t-field="p_image.image_128" t-options="{'widget': 'image'}"/>
+                                        </button>
+                                    </t>
+                                </div>
+                            </div>
+                            <!-- Info -->
+                            <div class="col-lg-6 pd-info" id="pd-info">
+                                <span class="pd-eyebrow">
+                                    <t t-out="category.name if category else 'Shop'"/>
+                                </span>
+                                <h1 class="pd-title" t-field="product.name">Intensive Glow
+                                    <em>C+ Serum</em>
+                                </h1>
+                                <div class="pd-meta">
+                                    <div class="pd-rating">
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <strong>4.9</strong>
+                                        <a href="#reviews">412 reviews</a>
+                                    </div>
+                                    <span class="pd-sku" t-if="product.default_code">SKU:
+                                        <t t-out="product.default_code"/>
+                                    </span>
+                                </div>
+                                <p class="pd-desc" t-field="product.description_sale">A daily dose of radiance,
+                                    bottled.
+                                </p>
+                                <!-- Odoo Form for Add to Cart & Variants -->
+                                <form t-if="product._is_add_to_cart_possible()"
+                                      action="/beauty/cart/update"
+                                      method="POST">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="product_id" t-att-value="product_variant.id"/>
+                                    <input type="hidden" name="product_template_id" t-att-value="product.id"/>
+                                    <!-- Variants -->
+                                    <div t-if="product.valid_product_template_attribute_line_ids"
+                                         class="pd-option mt-3 mb-3">
+                                        <t t-call="website_sale.variants">
+                                            <t t-set="ul_class" t-valuef="flex-column"/>
+                                            <t t-set="parent_combination" t-value="None"/>
+                                            <t t-set="combination" t-value="combination_info['combination']"/>
+                                        </t>
+                                    </div>
+                                    <!-- Quantity + Add to cart -->
+                                    <div class="pd-buy d-flex align-items-center gap-3">
+                                        <div class="pd-qty d-flex align-items-center css_quantity input-group"
+                                             style="max-width: 130px;">
+                                            <button type="button" class="btn btn-link js_add_cart_json"
+                                                    aria-label="Decrease" data-qty="-1"
+                                                    style="color:black;text-decoration:none;padding:0.5rem 1rem;">−
+                                            </button>
+                                            <input type="text" class="form-control quantity text-center"
+                                                   data-min="1" name="add_qty"
+                                                   t-att-value="add_qty or 1" aria-label="Quantity"
+                                                   style="border:none;background:transparent;font-weight:500;width:40px;padding:0;box-shadow:none;"/>
+                                            <button type="button" class="btn btn-link js_add_cart_json"
+                                                    aria-label="Increase" data-qty="1"
+                                                    style="color:black;text-decoration:none;padding:0.5rem 1rem;">+
+                                            </button>
+                                        </div>
+                                        <!-- IMPORTANT: type="submit", not <a> with a-submit -->
+                                        <button type="submit" id="add_to_cart" class="btn-routine pd-add-cart">
+                                            <span>Add to cart</span>
+                                            <span class="arrow-chip">
+                                                <i class="bi bi-arrow-up-right"/>
+                                            </span>
+                                        </button>
+                                        <button type="button" class="pd-wish o_add_wishlist"
+                                                t-att-data-product-product-id="product.product_variant_ids[0].id"
+                                                t-att-data-product-template-id="product.id"
+                                                aria-label="Add to wishlist">
+                                            <i class="bi bi-heart"/>
+                                        </button>
+                                    </div>
+                                </form>
+                                <p t-elif="not product.active" class="alert alert-warning mt-3">This product is no
+                                    longer available.
+                                </p>
+                                <p t-else="" class="alert alert-warning mt-3">This product has no valid combination.</p>
+                                <!-- Benefits -->
+                                <ul class="pd-benefits mt-4">
+                                    <li>
+                                        <i class="bi bi-stars"/>
+                                        <div>
+                                            <strong>Visible brightening</strong>
+                                            <small>in 4 weeks of daily use</small>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-droplet"/>
+                                        <div>
+                                            <strong>Plant-derived Vitamin C 12%</strong>
+                                            <small>with bakuchiol &amp; niacinamide</small>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-shield-check"/>
+                                        <div>
+                                            <strong>Dermatologist tested</strong>
+                                            <small>safe for sensitive skin</small>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <!-- Trust strip -->
+                                <div class="pd-trust">
+                                    <span>
+                                        <i class="bi bi-truck"/>
+                                        Free shipping over $50
+                                    </span>
+                                    <span>
+                                        <i class="bi bi-arrow-repeat"/>
+                                        30-day returns
+                                    </span>
+                                    <span>
+                                        <i class="bi bi-shield-lock"/>
+                                        Secure checkout
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- Detail tabs -->
+                <section class="pd-tabs-section mt-5 mb-5">
+                    <div class="container">
+                        <ul class="nav pd-tabs" role="tablist">
+                            <li>
+                                <button class="pd-tab active" data-tab="description">Description</button>
+                            </li>
+                            <li>
+                                <button class="pd-tab" data-tab="ingredients">Ingredients</button>
+                            </li>
+                            <li>
+                                <button class="pd-tab" data-tab="howto">How to use</button>
+                            </li>
+                            <li>
+                                <button class="pd-tab" data-tab="shipping">Shipping &amp; Returns</button>
+                            </li>
+                        </ul>
+                        <div class="pd-panel active" id="panel-description">
+                            <div class="row g-4 g-lg-5">
+                                <div class="col-lg-7">
+                                    <div t-if="product.website_description" t-field="product.website_description"/>
+                                    <t t-else="">
+                                        <h3>A multi-tasking glow product</h3>
+                                        <p>Our most beloved product reimagined for sensitive skin. A creamy, lightweight
+                                            formula that brightens, smooths and visibly fades dark spots — without
+                                            irritation, fragrance, or oil. It layers seamlessly under SPF and makeup.
+                                        </p>
+                                        <ul class="pd-list">
+                                            <li>Visibly fades dark spots and post-blemish marks</li>
+                                            <li>Smooths uneven texture and refines pores</li>
+                                            <li>Boosts skin's natural radiance and clarity</li>
+                                            <li>Reinforces moisture barrier with ceramides</li>
+                                        </ul>
+                                    </t>
+                                </div>
+                                <div class="col-lg-5">
+                                    <div class="pd-stat-card">
+                                        <strong>4 weeks</strong>
+                                        <small>87% of testers saw visibly brighter skin</small>
+                                    </div>
+                                    <div class="pd-stat-card">
+                                        <strong>96%</strong>
+                                        <small>said skin felt smoother &amp; more even</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pd-panel" id="panel-ingredients">
+                            <div class="row g-4 g-lg-5">
+                                <div class="col-lg-6">
+                                    <h3>Key actives</h3>
+                                    <ul class="pd-list">
+                                        <li>
+                                            <strong>Vitamin C 12%</strong>
+                                            — stable ascorbyl glucoside that brightens without sting
+                                        </li>
+                                        <li>
+                                            <strong>Bakuchiol</strong>
+                                            — plant-based retinol alternative for smoothing
+                                        </li>
+                                        <li>
+                                            <strong>Niacinamide 4%</strong>
+                                            — refines pores and evens tone
+                                        </li>
+                                        <li>
+                                            <strong>Squalane</strong>
+                                            — plant-derived hydration boost
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h3>Full ingredients</h3>
+                                    <p class="pd-ingredients-list">Aqua, Ascorbyl Glucoside, Niacinamide, Glycerin,
+                                        Bakuchiol, Squalane, Sodium Hyaluronate, Allantoin, Tocopherol, Centella
+                                        Asiatica Extract, Panthenol, Xanthan Gum, Sodium Phytate, Citric Acid, Pentylene
+                                        Glycol, Ethylhexylglycerin, Phenoxyethanol.
+                                    </p>
+                                    <span class="pd-tag-list">
+                                        <span>Vegan</span>
+                                        <span>Fragrance-free</span>
+                                        <span>Non-comedogenic</span>
+                                        <span>Cruelty-free</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pd-panel" id="panel-howto">
+                            <div class="row g-4 g-lg-5">
+                                <div class="col-lg-7">
+                                    <h3>Use morning &amp; night</h3>
+                                    <ol class="pd-steps">
+                                        <li>
+                                            <span class="step-num">01</span>
+                                            <div>
+                                                <strong>Cleanse</strong>
+                                                with the gentle coconut oil cleanser and pat dry.
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <span class="step-num">02</span>
+                                            <div>
+                                                <strong>Apply 3–4 drops</strong>
+                                                to fingertips and press evenly across face and neck.
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <span class="step-num">03</span>
+                                            <div>
+                                                <strong>Follow with moisturizer</strong>
+                                                while the skin is still slightly damp.
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <span class="step-num">04</span>
+                                            <div>
+                                                <strong>SPF in the morning</strong>
+                                                Vitamin C boosts your sunscreen's protection.
+                                            </div>
+                                        </li>
+                                    </ol>
+                                </div>
+                                <div class="col-lg-5">
+                                    <div class="pd-tip">
+                                        <strong>Pro tip</strong>
+                                        <p>Start by using every other night for the first week to let your skin adjust,
+                                            then move to daily use.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pd-panel" id="panel-shipping">
+                            <div class="row g-4 g-lg-5">
+                                <div class="col-md-6">
+                                    <h3>Shipping</h3>
+                                    <p>Orders over <strong>$50</strong> ship free in the U.S. Standard ground delivery
+                                        in <strong>3–5 business days</strong>. Express options at checkout.
+                                        International shipping to 38 countries.
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h3>Returns</h3>
+                                    <p>Try it for <strong>30 days</strong>. If it's not for you, we'll refund or replace
+                                        — no questions, no return shipping. Unopened items can be returned within 60
+                                        days.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- Sticky mobile add-to-cart bar (Visible on mobile) -->
+                <div class="pd-sticky-bar d-lg-none d-flex">
+                    <span t-field="product.image_128" t-options="{'widget': 'image', 'class': 'rounded-circle'}"
+                          style="width: 40px; height: 40px;"/>
+                    <div class="pd-sticky-info">
+                        <strong t-field="product.name">Intensive Glow C+ Serum</strong>
+                        <small>
+                            <span class="oe_price" t-out="combination_info['price']"
+                                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}">$48.00
+                            </span>
+                        </small>
+                    </div>
+                    <!-- Will trigger main form add to cart -->
+                    <button class="btn-routine sm" onclick="document.getElementById('add_to_cart').click()">
+                        <span>Add</span>
+                        <span class="arrow-chip">
+                            <i class="bi bi-handbag"/>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

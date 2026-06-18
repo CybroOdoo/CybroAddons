@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Search view-->
+    <record id="zk_report_daily_attendance_view_search" model="ir.ui.view">
+        <field name="name">zk.report.daily.attendance.view.search</field>
+        <field name="model">zk.report.daily.attendance</field>
+        <field name="arch" type="xml">
+            <search string="Hr Attendance Search">
+                <filter icon="terp-stock_align_left_24" string="My Attendance"
+                        name="my_attendance"
+                        domain="[('employee_id.user_id.id', '=', uid)]"/>
+                <filter name="today" string="Today"
+                        domain="[('punching_time', '&gt;=', datetime.datetime.now().strftime('%Y-%m-%d 00:00:00')),('punching_time', '&lt;=',datetime.datetime.now().strftime('%Y-%m-%d 23:23:59'))]"/>
+                <filter string="Current Month" name="month"
+                        domain="[('punching_time', '&gt;=', datetime.datetime.now().strftime('%Y-%m-01'))]"/>
+                <separator/>
+                <field name="employee_id" string="Name"/>
+            </search>
+        </field>
+    </record>
+    <!--Attendance list view -->
+    <record id="zk_report_daily_attendance_view_list" model="ir.ui.view">
+        <field name="name">zk.report.daily.attendance.view.list</field>
+        <field name="model">zk.report.daily.attendance</field>
+        <field name="arch" type="xml">
+            <list delete="0">
+                <field name="punching_day"/>
+                <field name="employee_id"/>
+                <field name="punch_type"/>
+                <field name="attendance_type"/>
+                <field name="punching_time"/>
+                <field name="address_id"/>
+            </list>
+        </field>
+    </record>
+    <!--Menu action for attendance report-->
+    <record id="zk_report_daily_attendance_action"
+            model="ir.actions.act_window">
+        <field name="name">Attendance Analysis</field>
+        <field name="res_model">zk.report.daily.attendance</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_my_attendance':1}</field>
+        <field name="search_view_id"
+               ref="zk_report_daily_attendance_view_search"/>
+    </record>
+    <!--Menu Items-->
+    <menuitem id="zk_report_daily_attendance_menu_root" name="Attendance Log"
+              action="zk_report_daily_attendance_action"
+              parent="zk_machine_menu_root"
+              sequence="2" groups="hr_attendance.group_hr_attendance_officer"/>
+</odoo>

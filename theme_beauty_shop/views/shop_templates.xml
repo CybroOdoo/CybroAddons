@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Include Custom Assets in Frontend -->
+    <template id="custom_fonts" inherit_id="website.layout" name="Beauty Shop Theme Fonts">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&amp;family=Instrument+Serif:ital@0;1&amp;display=swap"
+                  rel="stylesheet"/>
+        </xpath>
+    </template>
+    <!-- Overriding standard products item (card) -->
+    <template id="products_item" inherit_id="website_sale.products_item" name="Beauty Shop Product Item" priority="100">
+        <xpath expr="//form" position="replace">
+            <form action="/beauty/cart/update" method="post" class="oe_product_cart h-100"
+                  t-att-data-publish="product.website_published and 'on' or 'off'" itemscope="itemscope">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <input type="hidden" name="product_id"
+                       t-att-value="product.product_variant_ids[0].id if product.product_variant_ids else product.id"/>
+                <article class="product-card h-100">
+                    <div t-attf-class="product-media tone-mint">
+                        <button type="button" class="wish-btn o_add_wishlist"
+                                t-att-data-product-product-id="product.product_variant_ids[0].id"
+                                t-att-data-product-template-id="product.id" aria-label="Wishlist">
+                            <i class="bi bi-heart"/>
+                        </button>
+                        <a t-att-href="product_href" class="d-block h-100" itemprop="url">
+                            <span t-field="product.image_1920"
+                                  t-options="{'widget': 'image', 'preview_image': 'image_1024', 'itemprop': 'image', 'class': 'product-img'}"/>
+                        </a>
+                        <button type="submit" class="quick-add"><i class="bi bi-bag-plus me-2"/>Add to Cart
+                        </button>
+                    </div>
+                    <div class="product-body">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="cat-label">
+                                <t t-esc="product.public_categ_ids[0].name if product.public_categ_ids else 'Shop'"/>
+                            </small>
+                        </div>
+                        <h3 class="product-title">
+                            <a itemprop="name" t-att-href="product_href" t-att-content="product.name"
+                               t-field="product.name"/>
+                        </h3>
+                        <div class="price" itemprop="offers" itemscope="itemscope">
+                            <t t-set="combination_info" t-value="product._get_combination_info()"/>
+                            <span t-out="combination_info['price']"
+                                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            <t t-if="combination_info['has_discounted_price']">
+                                <span class="strike" style="text-decoration: line-through;"
+                                      t-out="combination_info['list_price']"
+                                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            </t>
+                            <meta itemprop="priceCurrency" t-att-value="website.currency_id.name"/>
+                        </div>
+                    </div>
+                </article>
+            </form>
+        </xpath>
+    </template>
+    <!-- Customizing Shop Page Layout -->
+    <template id="products" inherit_id="website_sale.products" priority="100">
+        <xpath expr="//div[@id='o_wsale_container']" position="before">
+            <!-- Shop hero -->
+            <section class="shop-hero">
+                <div class="container">
+                    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+                        <a href="/">Home</a>
+                        <i class="bi bi-chevron-right"/>
+                        <span>Shop</span>
+                    </nav>
+                    <div class="row align-items-end g-4">
+                        <div class="col-lg-8">
+                            <span class="eyebrow">— The Edit</span>
+                            <h1 class="shop-title">Shop everything
+                                <em>good for you.</em>
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Collection cards -->
+            <section class="collections-strip mb-4">
+                <div class="container">
+                    <div class="row g-3 g-lg-4">
+                        <div class="col-6 col-md-4 col-lg">
+                            <a href="/shop" t-attf-class="collection-card #{'active' if not category else ''}">
+                                <div class="collection-img">
+                                    <img src="/theme_beauty_shop/static/src/img/routine-ritual.jpg" alt="All products"
+                                         style="max-width: 100%; height: auto; border-radius: 50%;"/>
+                                </div>
+                                <div class="collection-info text-center mt-2">
+                                    <strong>All Products</strong>
+                                </div>
+                            </a>
+                        </div>
+                        <t t-foreach="categories" t-as="cat">
+                            <div class="col-6 col-md-4 col-lg">
+                                <a t-att-href="keep('/shop/category/' + slug(cat), category=0)"
+                                   t-attf-class="collection-card #{'active' if category and category.id == cat.id else ''}">
+                                    <div class="collection-img" style="border-radius: 50%; overflow: hidden;">
+                                        <span t-field="cat.image_1920" t-options="{'widget': 'image'}"
+                                              style="width: 100%; height: auto;"/>
+                                    </div>
+                                    <div class="collection-info text-center mt-2">
+                                        <strong t-esc="cat.name"/>
+                                    </div>
+                                </a>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+        <xpath expr="//div[@id='products_grid']" position="attributes">
+            <attribute name="class" add="col-lg-9" separator=" "/>
+        </xpath>
+        <xpath expr="//div[@id='o_wsale_pager']" position="attributes">
+            <attribute name="class" add="shop-toolbar mb-4" separator=" "/>
+        </xpath>
+        <!-- Customizing the Toolbar (Results count, Search, Sort, Pricelist) -->
+        <xpath expr="//div[hasclass('products_header')]" position="replace">
+            <div t-if="not opt_wsale_floating_bar" class="products_header d-flex flex-column w-100 mb-4 gap-3">
+                <!-- Search Bar on top (no background) -->
+                <div class="o_wsale_products_header_search_form_container d-none d-lg-block"
+                     style="min-width: 250px; background: transparent;">
+                    <t t-if="is_view_active('website_sale.search')">
+                        <t t-set="search_term">Search</t>
+                        <t t-if="category" t-set="placeholder" t-valuef="{{ search_term }} {{ category.name }}"/>
+                        <t t-call="website_sale.search" placeholder="placeholder" search="original_search or search"/>
+                    </t>
+                </div>
+                <!-- Row below: Results count, Filters, Pricelist, Sort -->
+                <div class="shop-toolbar d-flex align-items-center w-100 justify-content-between"
+                     style="background: #E7E5DF; padding: 0.5rem; border-radius: 0.5rem;">
+                    <button t-if="is_view_active('website_sale.products_attributes')" class="filter-toggle d-lg-none"
+                            type="button" data-bs-toggle="offcanvas"
+                            data-bs-target="#wsale_products_attributes_collapse">
+                        <i class="bi bi-sliders"/>
+                        Filters
+                    </button>
+                    <span class="results-count">
+                        <t t-if="search_count">
+                            <t t-set="page_start" t-value="pager['offset'] + 1"/>
+                            <t t-set="page_end" t-value="min(pager['offset'] + ppg, search_count)"/>
+                            Showing
+                            <strong><t t-out="page_start"/>–
+                                <t t-out="page_end"/>
+                            </strong>
+                            of
+                            <strong>
+                                <t t-out="search_count"/>
+                            </strong>
+                            products
+                        </t>
+                        <t t-else="">
+                            Showing <strong>0</strong> products
+                        </t>
+                    </span>
+                    <div class="d-flex align-items-center gap-1">
+                        <t t-if="hasPricelistDropdown" t-call="website_sale.pricelist_list"/>
+                        <t t-if="is_view_active('website_sale.sort')" t-call="website_sale.sort"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <template id="sort" inherit_id="website_sale.sort" priority="100">
+        <xpath expr="//div[contains(@t-attf-class, 'o_sortby_dropdown')]" position="replace">
+            <div t-attf-class="o_sortby_dropdown dropdown dropdown_sorty_by sort-wrap {{_classes}}">
+                <t t-set="_current_sort" t-value="isSortingBy and isSortingBy[0][0] or website.shop_default_sort"/>
+                <t t-set="_sort_label">Sort</t>
+                <span class="d-none d-md-inline"><t t-out="_sort_label"/>:
+                </span>
+                <a role="button" href="#" class="sort-select text-decoration-none dropdown-toggle"
+                   data-bs-toggle="dropdown">
+                    <span class="d-md-none">
+                        <t t-out="_sort_label"/>
+                    </span>
+                    <span class="d-none d-md-inline">
+                        <t t-if="isSortingBy" t-out="isSortingBy[0][1]"/>
+                        <span t-else="" t-out="dict(website_sale_sortable)[website.shop_default_sort]"/>
+                    </span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end" role="menu">
+                    <t t-foreach="website_sale_sortable" t-as="sortby">
+                        <t t-set="_is_active" t-value="_current_sort == sortby[0]"/>
+                        <a role="menuitem" rel="noindex,nofollow" t-att-href="keep(order=sortby[0])"
+                           t-attf-class="dropdown-item {{_is_active and 'active'}}">
+                            <span t-out="sortby[1]"/>
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <template id="pricelist_list" inherit_id="website_sale.pricelist_list" priority="100">
+        <xpath expr="//div[contains(@t-attf-class, 'o_pricelist_dropdown')]" position="replace">
+            <t t-set="website_sale_pricelists"
+               t-value="website_sale_pricelists or website.get_pricelist_available(show_visible=True)"/>
+            <t t-set="hasPricelistDropdown"
+               t-value="hasPricelistDropdown or (website_sale_pricelists and len(website_sale_pricelists)&gt;1)"/>
+            <t t-set="pricelist" t-value="request.pricelist"/>
+            <t t-set="pricelist_label">Pricelist</t>
+            <div t-attf-class="o_pricelist_dropdown dropdown sort-wrap #{_classes if hasPricelistDropdown else 'd-none'}">
+                <span class="d-none d-md-inline"><t t-out="pricelist_label"/>:
+                </span>
+                <a role="button" href="#" class="sort-select text-decoration-none dropdown-toggle"
+                   data-bs-toggle="dropdown">
+                    <span class="d-none d-md-inline" t-out="pricelist and pricelist.name or ' - '"/>
+                    <span class="d-md-none">
+                        <t t-out="pricelist_label"/>
+                    </span>
+                </a>
+                <div class="dropdown-menu" role="menu">
+                    <t t-foreach="website_sale_pricelists" t-as="pl">
+                        <t t-set="_is_active" t-value="pricelist.id == pl.id"/>
+                        <a role="menuitem" t-att-href="'/shop/change_pricelist/%s' % pl.id"
+                           t-attf-class="dropdown-item {{_is_active and 'active'}}"
+                           t-att-aria-current="_is_active and 'true' or 'false'">
+                            <span class="switcher_pricelist" t-att-data-pl_id="pl.id" t-out="pl.name"/>
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

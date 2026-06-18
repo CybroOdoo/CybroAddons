@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Override the /shop/confirmation page with the Glowing success design -->
+    <template id="beauty_shop_confirmation"
+              inherit_id="website_sale.confirmation"
+              name="Beauty Shop Order Confirmation"
+              priority="100">
+        <!-- Replace the entire checkout_layout call with our custom success page -->
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']" position="replace">
+            <t t-set="additional_title">Order Confirmed</t>
+            <t t-call="website.layout">
+                <div id="wrap" class="oe_website_sale">
+                    <!-- Success hero -->
+                    <section class="success-hero">
+                        <div class="container">
+                            <!-- Animated checkmark -->
+                            <div class="success-icon">
+                                <svg viewBox="0 0 80 80" aria-hidden="true">
+                                    <circle class="ring" cx="40" cy="40" r="36"/>
+                                    <path class="check" d="M24 41 L36 53 L57 30"/>
+                                </svg>
+                            </div>
+                            <div class="success-copy">
+                                <span class="eyebrow">— Order confirmed</span>
+                                <h1 class="success-title">Thank you,
+                                    <em><t t-out="order.partner_id.name"/>!
+                                    </em>
+                                </h1>
+                                <p class="success-sub">Your order is on its way to becoming part of your daily ritual.
+                                    A confirmation email has been sent to
+                                    <strong>
+                                        <t t-out="order.partner_id.email"/>
+                                    </strong>
+                                    .
+                                </p>
+                                <!-- Progress steps -->
+                                <ol class="cart-steps">
+                                    <li class="active">
+                                        <span class="step-circle">
+                                            <i class="bi bi-check"/>
+                                        </span>
+                                        <div>
+                                            <strong>Cart</strong>
+                                            <small>Reviewed</small>
+                                        </div>
+                                    </li>
+                                    <li class="active">
+                                        <span class="step-circle">
+                                            <i class="bi bi-check"/>
+                                        </span>
+                                        <div>
+                                            <strong>Shipping</strong>
+                                            <small>Address set</small>
+                                        </div>
+                                    </li>
+                                    <li class="active">
+                                        <span class="step-circle">
+                                            <i class="bi bi-check"/>
+                                        </span>
+                                        <div>
+                                            <strong>Payment</strong>
+                                            <small>Processed</small>
+                                        </div>
+                                    </li>
+                                    <li class="active">
+                                        <span class="step-circle">
+                                            <i class="bi bi-check"/>
+                                        </span>
+                                        <div>
+                                            <strong>Done</strong>
+                                            <small>Order confirmed</small>
+                                        </div>
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Order details -->
+                    <section class="success-details">
+                        <div class="container">
+                            <div class="row g-4 g-lg-5">
+                                <!-- Order info (left column) -->
+                                <div class="col-lg-7">
+                                    <!-- Order summary card -->
+                                    <div class="success-card">
+                                        <div class="sc-head">
+                                            <div>
+                                                <small class="sc-label">Order number</small>
+                                                <strong class="sc-order-no">
+                                                    <t t-out="order.name"/>
+                                                </strong>
+                                            </div>
+                                            <div class="text-end">
+                                                <small class="sc-label">Date placed</small>
+                                                <strong>
+                                                    <t t-out="order.date_order" t-options="{'widget': 'date'}"/>
+                                                </strong>
+                                            </div>
+                                            <a href="/shop/print" target="_blank" class="sc-invoice">
+                                                <i class="bi bi-download"/>
+                                                Invoice
+                                            </a>
+                                        </div>
+                                        <hr/>
+                                        <h3 class="sc-section-title">Items
+                                            <small>(<t
+                                                    t-out="len(order.order_line.filtered(lambda l: not l.is_delivery))"/>
+                                                )
+                                            </small>
+                                        </h3>
+                                        <ul class="mini-cart sc-items">
+                                            <t t-foreach="order.order_line.filtered(lambda l: not l.is_delivery)"
+                                               t-as="line">
+                                                <li>
+                                                    <span class="mc-thumb">
+                                                        <img t-attf-src="/web/image/product.product/#{line.product_id.id}/image_128"
+                                                             t-att-alt="line.product_id.name"
+                                                             style="width:60px;height:60px;object-fit:cover;border-radius:10px;"/>
+                                                        <span class="mc-qty">
+                                                            <t t-out="int(line.product_uom_qty)"/>
+                                                        </span>
+                                                    </span>
+                                                    <div class="mc-info">
+                                                        <strong>
+                                                            <t t-out="line.product_id.name"/>
+                                                        </strong>
+                                                    </div>
+                                                    <span class="mc-price">
+                                                        <t t-out="line.price_subtotal"
+                                                           t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                                                    </span>
+                                                </li>
+                                            </t>
+                                        </ul>
+                                        <hr/>
+                                        <ul class="totals-list sc-totals">
+                                            <li>
+                                                <span>Subtotal</span>
+                                                <strong>
+                                                    <t t-out="order.amount_untaxed"
+                                                       t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                                                </strong>
+                                            </li>
+                                            <!-- Delivery line -->
+                                            <t t-set="delivery_line"
+                                               t-value="order.order_line.filtered(lambda l: l.is_delivery)"/>
+                                            <li t-if="delivery_line">
+                                                <span>Shipping</span>
+                                                <strong>
+                                                    <t t-if="delivery_line[0].price_subtotal == 0">
+                                                        <span class="text-success">Free</span>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <t t-out="delivery_line[0].price_subtotal"
+                                                           t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                                                    </t>
+                                                </strong>
+                                            </li>
+                                            <li>
+                                                <span>Tax</span>
+                                                <strong>
+                                                    <t t-out="order.amount_tax"
+                                                       t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                                                </strong>
+                                            </li>
+                                            <li class="total-row">
+                                                <span>Total paid</span>
+                                                <div>
+                                                    <strong>
+                                                        <t t-out="order.amount_total"
+                                                           t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                                                    </strong>
+                                                    <small>
+                                                        <t t-out="order.currency_id.name"/>
+                                                    </small>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <!-- What's next card -->
+                                    <div class="success-card next-card">
+                                        <h3 class="sc-section-title">What's next?</h3>
+                                        <ul class="next-list">
+                                            <li>
+                                                <span class="next-ico">
+                                                    <i class="bi bi-envelope-paper"/>
+                                                </span>
+                                                <div>
+                                                    <strong>Confirmation email sent</strong>
+                                                    <small>Check your inbox for a receipt with all the details</small>
+                                                </div>
+                                                <span class="next-status done">
+                                                    <i class="bi bi-check-circle-fill"/>
+                                                </span>
+                                            </li>
+                                            <li>
+                                                <span class="next-ico">
+                                                    <i class="bi bi-box-seam"/>
+                                                </span>
+                                                <div>
+                                                    <strong>Packing your order</strong>
+                                                    <small>Our team is hand-packing everything with care</small>
+                                                </div>
+                                                <span class="next-status active">In progress</span>
+                                            </li>
+                                            <li>
+                                                <span class="next-ico">
+                                                    <i class="bi bi-truck"/>
+                                                </span>
+                                                <div>
+                                                    <strong>Shipping update</strong>
+                                                    <small>You'll get a tracking link as soon as your order ships
+                                                    </small>
+                                                </div>
+                                                <span class="next-status">Pending</span>
+                                            </li>
+                                            <li>
+                                                <span class="next-ico">
+                                                    <i class="bi bi-heart-fill"/>
+                                                </span>
+                                                <div>
+                                                    <strong>Arriving on your doorstep</strong>
+                                                    <small>Your skincare ritual is on its way</small>
+                                                </div>
+                                                <span class="next-status">Pending</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <!-- Payment status (keep Odoo's native alerts for errors/pending) -->
+                                    <t t-call="website_sale.payment_confirmation_status"/>
+                                </div>
+                                <!-- Sidebar (right column) -->
+                                <aside class="col-lg-5">
+                                    <!-- Shipping address -->
+                                    <div class="success-card sm-card">
+                                        <h3 class="sc-section-title">Shipping to</h3>
+                                        <address class="sc-address">
+                                            <strong>
+                                                <t t-out="order.partner_shipping_id.name"/>
+                                            </strong>
+                                            <br/>
+                                            <t t-if="order.partner_shipping_id.street">
+                                                <t t-out="order.partner_shipping_id.street"/>
+                                                <br/>
+                                            </t>
+                                            <t t-if="order.partner_shipping_id.street2">
+                                                <t t-out="order.partner_shipping_id.street2"/>
+                                                <br/>
+                                            </t>
+                                            <t t-if="order.partner_shipping_id.city">
+                                                <t t-out="order.partner_shipping_id.city"/>,
+                                            </t>
+                                            <t t-if="order.partner_shipping_id.state_id">
+                                                <t t-out="order.partner_shipping_id.state_id.name"/>
+                                            </t>
+                                            <t t-if="order.partner_shipping_id.zip">
+                                                <t t-out="order.partner_shipping_id.zip"/>
+                                            </t>
+                                            <br/>
+                                            <t t-if="order.partner_shipping_id.country_id">
+                                                <t t-out="order.partner_shipping_id.country_id.name"/>
+                                            </t>
+                                            <t t-if="order.partner_shipping_id.phone">
+                                                <small>
+                                                    <i class="bi bi-telephone me-1"/>
+                                                    <t t-out="order.partner_shipping_id.phone"/>
+                                                </small>
+                                            </t>
+                                        </address>
+                                    </div>
+                                    <!-- Delivery estimate card -->
+                                    <t t-if="order.carrier_id">
+                                        <div class="success-card sm-card delivery-card">
+                                            <div class="delivery-head">
+                                                <i class="bi bi-truck"/>
+                                                <div>
+                                                    <small class="sc-label">Delivery method</small>
+                                                    <strong>
+                                                        <t t-out="order.carrier_id.name"/>
+                                                    </strong>
+                                                </div>
+                                            </div>
+                                            <p>You'll receive a tracking link as soon as your order leaves our
+                                                warehouse.
+                                            </p>
+                                        </div>
+                                    </t>
+                                    <!-- Help card -->
+                                    <div class="help-card">
+                                        <i class="bi bi-headset"/>
+                                        <div>
+                                            <strong>Need to make changes?</strong>
+                                            <small>Contact us, and we'll be happy to help with your order.</small>
+                                        </div>
+                                    </div>
+                                    <!-- Sign-up invite for public users -->
+                                    <t t-if="request.env['res.users']._get_signup_invitation_scope() == 'b2c' and request.website.is_public_user()">
+                                        <div class="refer-card">
+                                            <i class="bi bi-person-plus"/>
+                                            <h4>Create an account</h4>
+                                            <p>Sign up to track your order and enjoy a faster checkout next time.</p>
+                                            <a role="button"
+                                               t-att-href="order.partner_id.signup_prepare() and order.partner_id.with_context(relative_url=True)._get_signup_url()"
+                                               class="btn-routine light sm">
+                                                <span>Sign Up</span>
+                                                <span class="arrow-chip">
+                                                    <i class="bi bi-arrow-up-right"/>
+                                                </span>
+                                            </a>
+                                        </div>
+                                    </t>
+                                </aside>
+                            </div>
+                            <!-- Continue shopping CTA -->
+                            <div class="success-cta">
+                                <a href="/shop" class="btn-routine">
+                                    <span>Continue shopping</span>
+                                    <span class="arrow-chip">
+                                        <i class="bi bi-arrow-up-right"/>
+                                    </span>
+                                </a>
+                                <a href="/shop/print" target="_blank" class="continue-link">
+                                    <i class="bi bi-printer"/>
+                                    Print receipt
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Tracking data (keep Odoo's analytics intact) -->
+                    <div t-att-data-order-id="order.id"
+                         t-att-data-order-tracking-info="json.dumps(order_tracking_info)"
+                         class="d-none"
+                         name="order_confirmation"/>
+                    <input t-if='website.plausible_shared_key'
+                           type='hidden'
+                           class='js_plausible_push'
+                           data-event-name='Shop'
+                           t-attf-data-event-params='{"CTA": "Order Confirmed", "amount": "#{"%3s-%3s" % (max(0, round(website_sale_order.amount_total/100)*100 - 50), round(website_sale_order.amount_total/100)*100 + 50)}"}'/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>
