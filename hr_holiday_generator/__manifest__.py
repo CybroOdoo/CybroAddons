@@ -21,7 +21,7 @@
 ################################################################################
 {
     "name": "HR Holiday Generator",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "category": 'Human Resources',
     "summary": """Generate public holidays based on selected criteria.""",
     "description": """This module allows you to generate public holidays based 
