@@ -20,7 +20,7 @@
 ###############################################################################
 {
     'name': "Whatsapp Product Inquiry In Website",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'eCommerce',
     'summary': 'Customers can inquire Website product details through Whatsapp',
     'description': """By installing this module, there will be an Inquire
