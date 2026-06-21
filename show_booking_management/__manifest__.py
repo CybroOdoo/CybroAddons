@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "Show Booking Management",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Services',
     'summary': "Manage shows and book shows easily.",
     'description': """A module for show booking management. Admin can manage shows 
