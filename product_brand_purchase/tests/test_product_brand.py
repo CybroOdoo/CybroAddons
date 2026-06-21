@@ -19,27 +19,31 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-{
-    'name': 'Product Brand in Purchase',
-    'version': '19.0.1.0.1',
-    'category': 'Purchases',
-    'summary': 'Product Brand for manage products',
-    'description': 'This module allows the odoo users to manage their product'
-                   ' brands easily',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['purchase'],
-    'data': [
-        'security/ir.model.access.csv',
-        'views/product_brand_views.xml',
-        'views/product_template_views.xml',
-        'views/purchase_report_views.xml',
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from odoo.tests import TransactionCase, tagged
+
+
+@tagged('post_install', '-at_install')
+class TestProductBrand(TransactionCase):
+    """Test cases for Product Brand"""
+
+    def setUp(self):
+        super(TestProductBrand, self).setUp()
+        self.brand = self.env['product.brand'].create({'name': 'Test Brand'})
+        self.product1 = self.env['product.template'].create({
+            'name': 'Test Product 1',
+            'brand_id': self.brand.id,
+        })
+        self.product2 = self.env['product.template'].create({
+            'name': 'Test Product 2',
+            'brand_id': self.brand.id,
+        })
+
+    def test_compute_product_count(self):
+        """Test the compute function for product count."""
+        self.assertEqual(self.brand.product_count, '2')
+        
+        self.env['product.template'].create({
+            'name': 'Test Product 3',
+            'brand_id': self.brand.id,
+        })
+        self.assertEqual(self.brand.product_count, '3')

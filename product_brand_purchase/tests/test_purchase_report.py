@@ -19,27 +19,21 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-{
-    'name': 'Product Brand in Purchase',
-    'version': '19.0.1.0.1',
-    'category': 'Purchases',
-    'summary': 'Product Brand for manage products',
-    'description': 'This module allows the odoo users to manage their product'
-                   ' brands easily',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['purchase'],
-    'data': [
-        'security/ir.model.access.csv',
-        'views/product_brand_views.xml',
-        'views/product_template_views.xml',
-        'views/purchase_report_views.xml',
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from odoo.tests import TransactionCase, tagged
+
+
+@tagged('post_install', '-at_install')
+class TestPurchaseReport(TransactionCase):
+    """Test cases for Purchase Report SQL extension"""
+
+    def test_select(self):
+        """Test the _select method includes brand_id."""
+        report = self.env['purchase.report']
+        select_query = str(report._select())
+        self.assertIn('t.brand_id', select_query, "brand_id should be in the SELECT query")
+
+    def test_group_by(self):
+        """Test the _group_by method includes brand_id."""
+        report = self.env['purchase.report']
+        group_by_query = str(report._group_by())
+        self.assertIn('t.brand_id', group_by_query, "brand_id should be in the GROUP BY query")

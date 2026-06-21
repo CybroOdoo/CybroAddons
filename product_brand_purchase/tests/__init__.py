@@ -19,27 +19,5 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-{
-    'name': 'Product Brand in Purchase',
-    'version': '19.0.1.0.1',
-    'category': 'Purchases',
-    'summary': 'Product Brand for manage products',
-    'description': 'This module allows the odoo users to manage their product'
-                   ' brands easily',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['purchase'],
-    'data': [
-        'security/ir.model.access.csv',
-        'views/product_brand_views.xml',
-        'views/product_template_views.xml',
-        'views/purchase_report_views.xml',
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from . import test_product_brand
+from . import test_purchase_report
