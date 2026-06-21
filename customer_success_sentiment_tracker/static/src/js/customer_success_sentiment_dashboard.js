@@ -41,7 +41,7 @@ class SentimentDashboard extends Component {
                 this.orm.searchCount("helpdesk.ticket", [["risk_level", "=", "low"], ["stage_id.fold", "=", false]]),
                 this.orm.searchCount("helpdesk.ticket", [["stage_id.fold", "=", false]]),
                 this.orm.searchCount("res.partner", [["is_at_risk", "=", true]]),
-                this.orm.call("helpdesk.ticket", "read_group", [[["sentiment_score", "!=", false], ["stage_id.fold", "=", false]], ["sentiment_score:avg"], []]),
+                this.orm.formattedReadGroup("helpdesk.ticket", [["sentiment_score", "!=", false], ["stage_id.fold", "=", false]], [], ["sentiment_score:avg"]),
                 this.orm.searchCount("helpdesk.ticket", [["sentiment_score", ">=", 0.2], ["stage_id.fold", "=", false]]),
                 this.orm.searchCount("helpdesk.ticket", [["sentiment_score", ">", -0.2], ["sentiment_score", "<", 0.2], ["stage_id.fold", "=", false]]),
                 this.orm.searchCount("helpdesk.ticket", [["sentiment_score", "<=", -0.2], ["stage_id.fold", "=", false]]),
@@ -58,8 +58,8 @@ class SentimentDashboard extends Component {
             this.state.low_risk = lowRisk;
             this.state.total = total;
             this.state.customers_at_risk = partnersAtRisk;
-            this.state.avg_sentiment = sentimentData.length && sentimentData[0].sentiment_score_avg
-                ? parseFloat(sentimentData[0].sentiment_score_avg).toFixed(2) : 0;
+            this.state.avg_sentiment = sentimentData.length && sentimentData[0]["sentiment_score:avg"]
+                ? parseFloat(sentimentData[0]["sentiment_score:avg"]).toFixed(2) : 0;
             this.state.positive_count = positiveCount;
             this.state.neutral_count = neutralCount;
             this.state.negative_count = negativeCount;

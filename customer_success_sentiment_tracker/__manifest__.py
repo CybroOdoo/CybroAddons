@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Customer Success Sentiment Tracker',
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.2',
     'category': 'Extra Tools',
     'sequence': 1,
     'summary': 'Customer Success Sentiment Tracker using AI',
