@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Bulk Order Management',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Sales,Purchases,Manufacturing',
     'summary': """Create Manufacturing Orders, Purchase Orders and Sales Orders
                 in Bulk.""",
@@ -31,7 +31,7 @@
     'author': "Cybrosys Techno Solutions",
     'company': "Cybrosys Techno Solutions",
     'maintainer': "Cybrosys Techno Solutions",
-    'website': 'https://www.cybrosys.com',
+    'website': "https://cybrosys.com",
     'depends': ['sale_management', 'purchase', 'mrp'],
     'data': [
         'security/ir.model.access.csv',
