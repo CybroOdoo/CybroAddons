@@ -82,7 +82,7 @@ class PackersAndMoversManagementController(http.Controller):
         return http.request.render('packers_and_movers_management.truck_page',
                                    {'truck_type_ids': truck_type_ids})
 
-    @http.route(['/geo/<from_location>/<to_location>'], type='json',
+    @http.route(['/geo/<from_location>/<to_location>'], type='jsonrpc',
                 auth="none", website=False, csrf=False)
     def geo_location(self, from_location, to_location):
         """Function to Calculate distance between from and to location"""
