@@ -23,9 +23,9 @@ Company
 
 Credits
 -------
-* Developer: (V17) : Dhanya B,
-            (V18) : Adarsh K,
-            (V19) : Faiz K C
+* Developer: (V17)  Dhanya B,
+             (V18)  Adarsh K,
+             (V19)  Faiz K C
 Contact : odoo@cybrosys.com
 
 Contacts
