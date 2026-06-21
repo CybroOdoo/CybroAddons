@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Digital Signature In Purchase Order, Invoice, Inventory',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Extra Tools',
     'summary': 'Enhance Security with Digital Signatures in Purchase Orders, '
                'Invoices, and Inventory',
