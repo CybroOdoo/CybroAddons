@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Legal Case Management Dashboard",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Services',
     'summary':"Provides an overview of legal case management activities.",
     'description': """This module provides a detailed overview of legal case management activities 
