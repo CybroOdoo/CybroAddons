@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Hotel Management',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Industries',
     'summary': """A complete Hotel Management System that cover all areas of 
      Hotel services""" ,
@@ -53,13 +53,13 @@
         'views/cleaning_request_views.xml',
         'views/food_booking_line_views.xml',
         'views/dashboard_view.xml',
+        'wizard/room_booking_detail_views.xml',
+        'wizard/sale_order_detail_views.xml',
+        'wizard/compute_bill_views.xml',
         'views/reporting_views.xml',
         'report/room_booking_reports.xml',
         'report/sale_order_reports.xml',
         'report/combined_bill_report.xml',
-        'wizard/room_booking_detail_views.xml',
-        'wizard/sale_order_detail_views.xml',
-        'wizard/compute_bill_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
