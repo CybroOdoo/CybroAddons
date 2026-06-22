@@ -17,7 +17,7 @@
 #    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
 #    (AGPL v3) along with this program.
 #    If not, see <http://www.gnu.org/licenses/>.
-
-################################################################################
-from . import account_move
-from . import res_config_settings
+#
+###############################################################################
+from . import test_account_move
+from . import test_res_config_settings
