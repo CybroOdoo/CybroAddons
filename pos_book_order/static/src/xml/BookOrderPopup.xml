@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Popup for Booking Orders -->
+    <t t-name="pos_book_order.BookOrderPopup">
+        <Dialog title="props.title" footer="false" contentClass="'p-4'"
+                bodyClass="'d-flex flex-column gap-3 border-bottom'">
+            <div class="popup popup-confirm">
+                <div class="modal-header">
+                    <t t-if="props.partner">
+                        <div class="container">
+                            <div class="row mb-3">
+                                <label class="col-6 fw-bold text-uppercase text-primary">Amount Total</label>
+                                <div class="col-6 text-end fw-bold">
+                                    <span t-esc="order.amount_total"/>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-6 fw-bold text-uppercase text-primary">Customer</label>
+                                <div class="col-6 text-end">
+                                    <span t-esc="props.partner.name"/>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <label class="col-6 fw-bold text-uppercase text-primary">Phone Contact for Delivery (*)</label>
+                                <div class="col-6 text-end">
+                                    <span t-esc="props.partner.phone"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+                <main class="modal-body">
+                    <!-- Radio Buttons for Pickup/Delivery -->
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="form-check me-4">
+                            <input class="form-check-input" type="radio" name="method" id="pickup" checked="pickup"
+                                   t-ref="pickup_radio" t-on-click="() => this.checkMethod()"/>
+                            <label class="form-check-label" for="pickup">Pickup</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="method" id="deliver"
+                                   t-ref="deliver_radio" t-on-click="() => this.checkMethod()"/>
+                            <label class="form-check-label" for="deliver">Deliver</label>
+                        </div>
+                    </div>
+
+                    <!-- Pricelist -->
+                    <t t-if="order.pricelist">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase text-primary">Pricelist (*)</label>
+                            <input class="form-control" name="pricelist" type="text"
+                                   t-att-value="order.pricelist.display_name"
+                                   readonly="1"/>
+                        </div>
+                    </t>
+
+                    <!-- Booking Date -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-uppercase text-primary">Booking Date (*)</label>
+                        <input type="date" id="BookingDate" name="order_date" class="form-control"
+                               t-att-value="new Date().toISOString().split('T')[0]"/>
+                    </div>
+
+                    <!-- Order Note -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-uppercase text-primary">Order Note</label>
+                        <textarea t-ref="orderNote" class="form-control" name="order_note"
+                                  placeholder="Enter your notes here..."
+                                  rows="2"/>
+                    </div>
+
+                    <!-- Pickup Date -->
+                    <div id="Method_pickup" t-ref="Method_pickup" class="mb-3">
+                        <label class="form-label fw-bold text-uppercase text-primary">Pickup Date</label>
+                        <input t-ref="pickUpDate" name="pickup_date" class="form-control" id="pickup_date" type="date"/>
+                    </div>
+
+                    <!-- Delivery Date & Address -->
+                    <div id="Method_deliver" t-ref="Method_deliver" class="mb-3 d-none">
+                        <label class="form-label fw-bold text-uppercase text-primary">Delivery Date</label>
+                        <input t-ref="deliveryDate" name="deliver_date" class="form-control" id="deliver_date"
+                               type="date"/>
+
+                        <t t-if="props.partner">
+                            <div class="mt-3">
+                                <label class="form-label fw-bold text-uppercase text-primary">Delivery Address (*)</label>
+                                <input class="form-control" name="delivery_address" type="text" id="delivery_address"
+                                       t-ref="delivery_address"
+                                       t-att-value="props.partner.contact_address" required="1"/>
+                            </div>
+                        </t>
+                    </div>
+                </main>
+                <footer class="footer modal-footer">
+                    <div class="button confirm btn btn-lg btn-primary"
+                         t-on-click="confirm">
+                        <t t-esc="props.confirmText"/>
+                    </div>
+                    <div class="button cancel btn btn-lg btn-secondary"
+                         t-on-click="() => this.props.close()">
+                        <t t-esc="props.cancelText"/>
+                    </div>
+                </footer>
+            </div>
+        </Dialog>
+    </t>
+</templates>
