@@ -26,7 +26,7 @@ from odoo.http import request
 class ProductModel(http.Controller):
     """ This controller provides an endpoint for retrieving AR-related data for
     a given product. """
-    @http.route('/product/ar_image', type='json', auth='none')
+    @http.route('/product/ar_image', type='jsonrpc', auth='none')
     def get_product_ar_model(self, product_id):
         """ This method returns AR related data in the product """
         product = request.env['product.template'].sudo().browse(

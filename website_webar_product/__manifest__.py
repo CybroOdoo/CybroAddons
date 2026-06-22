@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Website WebAR Product Viewer',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Website',
     'summary': """Realistic view of the product in website.""",
     'description': """This module helps to view Products in Website in 3D.
