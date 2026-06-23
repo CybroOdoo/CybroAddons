@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree/list view for ODS Cached Organisations (nhs.ods.organisation) -->
+    <record id="view_nhs_ods_organisation_list" model="ir.ui.view">
+        <field name="name">nhs.ods.organisation.list</field>
+        <field name="model">nhs.ods.organisation</field>
+        <field name="arch" type="xml">
+            <list string="ODS Cache">
+                <field name="ods_code"/>
+                <field name="name"/>
+                <field name="primary_role_code"/>
+                <field name="status" decoration-success="status=='active'" decoration-muted="status=='inactive'"/>
+                <field name="last_change_date"/>
+                <field name="last_fetched_at"/>
+                <field name="trust_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view for ODS Cached Organisation (nhs.ods.organisation) -->
+    <record id="view_nhs_ods_organisation_form" model="ir.ui.view">
+        <field name="name">nhs.ods.organisation.form</field>
+        <field name="model">nhs.ods.organisation</field>
+        <field name="arch" type="xml">
+            <form string="ODS Cached Organisation">
+                <header>
+                    <button name="action_refresh_and_apply" type="object"
+                            string="Refresh from ODS"
+                            class="btn-primary"
+                            help="Fetch latest data from the NHS ODS API and update the cache."/>
+                    <button name="apply_to_trust" type="object"
+                            string="Apply to Trust"
+                            class="btn-secondary"
+                            invisible="not trust_id"
+                            help="Push the cached ODS data to the linked NHS Trust record."/>
+                    <button name="apply_to_trust" type="object"
+                            string="Create Trust"
+                            class="btn-secondary"
+                            invisible="trust_id"
+                            help="Create a new NHS Trust record from this cached ODS data."/>
+                    <field name="status" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                        <h2><field name="ods_code"/></h2>
+                    </div>
+                    <group>
+                        <group string="Identity">
+                            <field name="primary_role_code"/>
+                            <field name="non_primary_role_codes"/>
+                            <field name="last_change_date"/>
+                            <field name="last_fetched_at"/>
+                        </group>
+                        <group string="Links">
+                            <field name="trust_id"/>
+                            <field name="icb_id"/>
+                            <field name="health_board_id"/>
+                        </group>
+                    </group>
+                    <group string="Address">
+                        <group>
+                            <field name="address_line1"/>
+                            <field name="address_line2"/>
+                            <field name="city"/>
+                            <field name="county"/>
+                        </group>
+                        <group>
+                            <field name="postcode"/>
+                            <field name="country_text"/>
+                            <field name="phone"/>
+                            <field name="email"/>
+                            <field name="website"/>
+                        </group>
+                    </group>
+                    <group string="Dates">
+                        <field name="operational_start_date"/>
+                        <field name="operational_end_date"/>
+                    </group>
+                    <notebook>
+                        <page string="Raw JSON" name="raw_json">
+                            <field name="raw_json" widget="text"/>
+                        </page>
+                        <page string="Sync History" name="sync_history">
+                            <field name="sync_run_ids" readonly="1">
+                                <list>
+                                    <field name="sync_run_id"/>
+                                    <field name="outcome"/>
+                                    <field name="changed_fields"/>
+                                    <field name="duration_ms"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view for ODS Cached Organisation (nhs.ods.organisation) -->
+    <record id="view_nhs_ods_organisation_search" model="ir.ui.view">
+        <field name="name">nhs.ods.organisation.search</field>
+        <field name="model">nhs.ods.organisation</field>
+        <field name="arch" type="xml">
+            <search string="ODS Cache">
+                <field name="ods_code" string="ODS Code / Name"
+                       filter_domain="['|', ('ods_code', 'ilike', self), ('name', 'ilike', self)]"/>
+                <field name="primary_role_code"/>
+                <separator/>
+                <filter string="Active" name="active" domain="[('status','=','active')]"/>
+                <filter string="Inactive" name="inactive_orgs" domain="[('status','=','inactive')]"/>
+                <filter string="Linked to Trust" name="linked" domain="[('trust_id','!=',False)]"/>
+                <filter string="Unlinked" name="unlinked" domain="[('trust_id','=',False)]"/>
+                <group name="group_by">
+                    <filter string="Role Code" name="group_by_role" context="{'group_by': 'primary_role_code'}"/>
+                    <filter string="Status" name="group_by_status" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action definition for accessing ODS Cache -->
+    <record id="action_nhs_ods_organisations" model="ir.actions.act_window">
+        <field name="name">ODS Cache</field>
+        <field name="res_model">nhs.ods.organisation</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_nhs_ods_organisation_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No ODS cache entries yet.</p>
+            <p>Run a sync to populate this cache from the NHS Digital ODS portal.</p>
+        </field>
+    </record>
+</odoo>

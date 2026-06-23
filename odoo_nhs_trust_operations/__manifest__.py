@@ -20,7 +20,7 @@
 #
 #############################################################################
 {
-    'name': 'NHS Trust Management — Operations & Compliance',
+    'name': 'NHS Trust — Operations & Compliance',
     'version': '19.0.1.0.0',
     'category': 'Healthcare/NHS',
     'summary': 'NHS Bckoffice Operations in Odoo, Trust Management - Operations & Compliance, CQC Inspections, Trust Sites and Departments',

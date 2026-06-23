@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit and extend NHS Trust form view to integrate ODS sync info, smart buttons, and conflict ribbons -->
+    <record id="view_nhs_trust_form_ods_sync_inherit" model="ir.ui.view">
+        <field name="name">nhs.trust.form.ods.sync</field>
+        <field name="model">nhs.trust</field>
+        <field name="inherit_id" ref="odoo_nhs_trust_management.view_nhs_trust_form"/>
+        <field name="arch" type="xml">
+            <!-- ODS conflict ribbon above header -->
+            <xpath expr="//form/header" position="before">
+                <div class="alert alert-danger text-center mb0 p-1"
+                     role="alert"
+                     invisible="ods_pending_conflict_count == 0">
+                    <strong>ODS Conflicts: <field name="ods_pending_conflict_count" readonly="1"/> pending</strong>
+                    — <button name="action_view_conflicts" type="object"
+                               string="Review Conflicts" class="btn-link p-0"/>
+                </div>
+            </xpath>
+
+            <!-- Smart buttons for ODS -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_conflicts" type="object"
+                        class="oe_stat_button" icon="fa-exclamation-triangle"
+                        invisible="ods_pending_conflict_count == 0"
+                        groups="odoo_nhs_trust_management.group_nhs_trust_manager">
+                    <field name="ods_pending_conflict_count" widget="statinfo" string="ODS Conflicts"/>
+                </button>
+                <button name="action_refresh_from_ods" type="object"
+                        class="oe_stat_button" icon="fa-refresh"
+                        invisible="not ods_code"
+                        groups="odoo_nhs_trust_management.group_nhs_trust_manager">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Refresh</span>
+                        <span class="o_stat_text">from ODS</span>
+                    </div>
+                </button>
+                <button name="action_view_provenance" type="object"
+                        class="oe_stat_button" icon="fa-tag"
+                        groups="odoo_nhs_trust_management.group_nhs_trust_manager">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Field</span>
+                        <span class="o_stat_text">Sources</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- ODS last-synced chip inside sheet at the bottom -->
+            <xpath expr="//sheet" position="inside">
+                <div class="text-muted small mt-3"
+                     invisible="not ods_last_synced_at">
+                    Last synced from ODS:
+                    <field name="ods_last_synced_at" widget="datetime" readonly="1"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

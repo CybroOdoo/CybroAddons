@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree/list view definition for ODS Sync Details (nhs.ods.sync.detail) -->
+    <record id="view_nhs_ods_sync_detail_list" model="ir.ui.view">
+        <field name="name">nhs.ods.sync.detail.list</field>
+        <field name="model">nhs.ods.sync.detail</field>
+        <field name="arch" type="xml">
+            <list string="Sync Details"
+                  decoration-danger="outcome=='error'"
+                  decoration-warning="outcome=='conflict'"
+                  decoration-success="outcome in ('created','updated')"
+                  decoration-muted="outcome in ('unchanged','skipped')"
+                  create="false">
+                <field name="sync_run_id"/>
+                <field name="ods_code"/>
+                <field name="outcome" widget="badge"
+                       decoration-success="outcome in ('created','updated')"
+                       decoration-danger="outcome=='error'"
+                       decoration-warning="outcome=='conflict'"
+                       decoration-info="outcome=='would_update'"/>
+                <field name="trust_id"/>
+                <field name="ods_organisation_id"/>
+                <field name="changed_fields"/>
+                <field name="skip_reason"/>
+                <field name="error_message" optional="hide"/>
+                <field name="duration_ms" string="ms"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view definition for ODS Sync Detail (nhs.ods.sync.detail) -->
+    <record id="view_nhs_ods_sync_detail_form" model="ir.ui.view">
+        <field name="name">nhs.ods.sync.detail.form</field>
+        <field name="model">nhs.ods.sync.detail</field>
+        <field name="arch" type="xml">
+            <form string="Sync Detail" create="false">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="ods_code" readonly="1"/>
+                        </h1>
+                        <h3>
+                            <field name="outcome" widget="badge"
+                                   decoration-success="outcome in ('created','updated')"
+                                   decoration-danger="outcome=='error'"
+                                   decoration-warning="outcome=='conflict'"
+                                   decoration-info="outcome=='would_update'"
+                                   readonly="1"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group string="Run Info">
+                            <field name="sync_run_id" readonly="1"/>
+                            <field name="ods_organisation_id" readonly="1"/>
+                            <field name="trust_id" readonly="1"/>
+                            <field name="icb_id" readonly="1"
+                                   invisible="not icb_id"/>
+                        </group>
+                        <group string="Result">
+                            <field name="changed_fields" readonly="1"
+                                   invisible="not changed_fields"/>
+                            <field name="duration_ms" readonly="1" string="Duration (ms)"/>
+                        </group>
+                    </group>
+                    <group string="Skip Reason" invisible="not skip_reason">
+                        <field name="skip_reason" nolabel="1" readonly="1"/>
+                    </group>
+                    <group string="Error" invisible="not error_message">
+                        <field name="error_message" nolabel="1" readonly="1" widget="text"/>
+                    </group>
+                    <group string="Diff (Dry Run)" invisible="not diff_json">
+                        <field name="diff_json" nolabel="1" readonly="1" widget="text"/>
+                    </group>
+                    <notebook>
+                        <page string="Conflicts" name="conflicts"
+                              invisible="outcome != 'conflict'">
+                            <field name="conflict_ids" readonly="1">
+                                <list>
+                                    <field name="trust_id"/>
+                                    <field name="conflict_type"/>
+                                    <field name="field_label"/>
+                                    <field name="current_value"/>
+                                    <field name="ods_value"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view definition for ODS Sync Details (nhs.ods.sync.detail) -->
+    <record id="view_nhs_ods_sync_detail_search" model="ir.ui.view">
+        <field name="name">nhs.ods.sync.detail.search</field>
+        <field name="model">nhs.ods.sync.detail</field>
+        <field name="arch" type="xml">
+            <search string="Sync Details">
+                <field name="sync_run_id"/>
+                <field name="ods_code"/>
+                <field name="trust_id"/>
+                <separator/>
+                <filter string="Created" name="created" domain="[('outcome','=','created')]"/>
+                <filter string="Updated" name="updated" domain="[('outcome','=','updated')]"/>
+                <filter string="Unchanged" name="unchanged" domain="[('outcome','=','unchanged')]"/>
+                <filter string="Conflicts" name="conflict" domain="[('outcome','=','conflict')]"/>
+                <filter string="Errors" name="error" domain="[('outcome','=','error')]"/>
+                <filter string="Skipped" name="skipped" domain="[('outcome','=','skipped')]"/>
+                <group name="group_by">
+                    <filter string="Sync Run" name="group_by_run" context="{'group_by': 'sync_run_id'}"/>
+                    <filter string="Outcome" name="group_by_outcome" context="{'group_by': 'outcome'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window action for accessing ODS Sync Details -->
+    <record id="action_nhs_ods_sync_detail" model="ir.actions.act_window">
+        <field name="name">Sync Details</field>
+        <field name="res_model">nhs.ods.sync.detail</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_nhs_ods_sync_detail_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No sync detail records yet.</p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form view definition for Welsh Local Health Board (nhs.welsh.lhb) -->
+    <record id="view_nhs_welsh_lhb_form" model="ir.ui.view">
+        <field name="name">nhs.welsh.lhb.form</field>
+        <field name="model">nhs.welsh.lhb</field>
+        <field name="arch" type="xml">
+            <form string="Welsh Local Health Board">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_trusts" type="object"
+                                class="oe_stat_button" icon="fa-hospital-o"
+                                invisible="trust_count == 0">
+                            <field name="trust_count" widget="statinfo" string="Trusts"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Full LHB Name..."/></h1>
+                        <h2><field name="name_cy" placeholder="Enw Cymraeg (Welsh name)..."/></h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="short_name"/>
+                            <field name="lhb_type"/>
+                            <field name="region_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="established_date"/>
+                            <field name="population_served"/>
+                            <field name="area_served_km2"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Contact &amp; Leadership" name="contact">
+                            <group>
+                                <group string="Leadership">
+                                    <field name="chair_id" options="{'no_create': True}"/>
+                                    <field name="chief_executive_id" options="{'no_create': True}"/>
+                                </group>
+                                <group string="Contact">
+                                    <field name="website" widget="url"/>
+                                    <field name="headquarters_address"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Trusts" name="trusts">
+                            <field name="trust_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="ods_code"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree/list view definition for Welsh Local Health Board (nhs.welsh.lhb) -->
+    <record id="view_nhs_welsh_lhb_list" model="ir.ui.view">
+        <field name="name">nhs.welsh.lhb.list</field>
+        <field name="model">nhs.welsh.lhb</field>
+        <field name="arch" type="xml">
+            <list string="Welsh Local Health Boards">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="short_name"/>
+                <field name="lhb_type"/>
+                <field name="region_id"/>
+                <field name="trust_count" string="Trusts"/>
+                <field name="population_served"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search view definition for Welsh Local Health Board (nhs.welsh.lhb) -->
+    <record id="view_nhs_welsh_lhb_search" model="ir.ui.view">
+        <field name="name">nhs.welsh.lhb.search</field>
+        <field name="model">nhs.welsh.lhb</field>
+        <field name="arch" type="xml">
+            <search string="Welsh Local Health Boards">
+                <field name="name" string="Name / Code / Short Name"
+                       filter_domain="['|', '|', ('name', 'ilike', self), ('code', 'ilike', self), ('short_name', 'ilike', self)]"/>
+                <separator/>
+                <filter string="University Health Boards" name="filter_university"
+                        domain="[('lhb_type', '=', 'university')]"/>
+                <filter string="Teaching Health Boards" name="filter_teaching"
+                        domain="[('lhb_type', '=', 'teaching')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter string="LHB Type" name="group_by_type" context="{'group_by': 'lhb_type'}"/>
+                    <filter string="Region" name="group_by_region" context="{'group_by': 'region_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window action for accessing Welsh Local Health Boards -->
+    <record id="action_nhs_welsh_lhb" model="ir.actions.act_window">
+
+        <field name="name">Welsh Local Health Boards</field>
+        <field name="res_model">nhs.welsh.lhb</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_nhs_welsh_lhb_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No Welsh Local Health Boards found.</p>
+            <p>Add the 7 Welsh LHBs here. These are the integrated health planning and provider bodies for NHS Wales.</p>
+        </field>
+    </record>
+</odoo>

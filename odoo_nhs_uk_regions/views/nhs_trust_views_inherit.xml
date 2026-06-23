@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit and extend NHS Trust form view to include Welsh LHB and conditional geographic rules -->
+    <record id="view_nhs_trust_form_uk_regions" model="ir.ui.view">
+        <field name="name">nhs.trust.form.uk.regions</field>
+        <field name="model">nhs.trust</field>
+        <field name="inherit_id" ref="odoo_nhs_trust_management.view_nhs_trust_form"/>
+        <field name="arch" type="xml">
+            <field name="health_board_id" position="after">
+                <field name="welsh_lhb_id"
+                       invisible="health_system != 'nhs_wales'"
+                       required="health_system == 'nhs_wales'"
+                       options="{'no_create': True}"
+                       domain="[('region_id', '=', region_id)]"/>
+            </field>
+            <field name="icb_id" position="attributes">
+                <attribute name="invisible">health_system != 'nhs_england'</attribute>
+                <attribute name="required">health_system == 'nhs_england'</attribute>
+            </field>
+            <field name="ics_id" position="attributes">
+                <attribute name="invisible">health_system != 'nhs_england'</attribute>
+            </field>
+        </field>
+    </record>
+
+    <!-- Inherit and extend NHS Trust search view to add Welsh, NI, and Welsh LHB filtering/grouping -->
+    <record id="view_nhs_trust_search_uk_regions" model="ir.ui.view">
+
+        <field name="name">nhs.trust.search.uk.regions</field>
+        <field name="model">nhs.trust</field>
+        <field name="inherit_id" ref="odoo_nhs_trust_management.view_nhs_trust_search"/>
+        <field name="arch" type="xml">
+            <filter name="scotland_system" position="after">
+                <filter string="NHS Wales" name="filter_wales"
+                        domain="[('health_system', '=', 'nhs_wales')]"/>
+                <filter string="HSC Northern Ireland" name="filter_ni"
+                        domain="[('health_system', '=', 'hsc_ni')]"/>
+            </filter>
+            <filter name="group_by_system" position="after">
+                <filter string="Welsh LHB" name="group_by_welsh_lhb"
+                        context="{'group_by': 'welsh_lhb_id'}"/>
+            </filter>
+            <field name="health_board_id" position="after">
+                <field name="welsh_lhb_id" string="Welsh LHB"/>
+            </field>
+        </field>
+    </record>
+</odoo>

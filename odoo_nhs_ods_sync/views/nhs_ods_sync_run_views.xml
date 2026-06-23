@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List/tree view definition for ODS Sync Runs (nhs.ods.sync.run) -->
+    <record id="view_nhs_ods_sync_run_list" model="ir.ui.view">
+        <field name="name">nhs.ods.sync.run.list</field>
+        <field name="model">nhs.ods.sync.run</field>
+        <field name="arch" type="xml">
+            <list string="Sync Runs" decoration-success="state=='success'" decoration-danger="state=='failed'" decoration-warning="state=='running'" decoration-muted="state in ('cancelled','dry_run')">
+                <field name="name"/>
+                <field name="started_at"/>
+                <field name="run_type"/>
+                <field name="triggered_by"/>
+                <field name="state"/>
+                <field name="fetched_count" string="Fetched"/>
+                <field name="created_count" string="Created"/>
+                <field name="updated_count" string="Updated"/>
+                <field name="conflict_count" string="Conflicts" decoration-danger="conflict_count &gt; 0"/>
+                <field name="error_count" string="Errors" decoration-danger="error_count &gt; 0"/>
+                <field name="duration" string="Duration (min)" widget="float_time"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view definition for ODS Sync Run (nhs.ods.sync.run) -->
+    <record id="view_nhs_ods_sync_run_form" model="ir.ui.view">
+        <field name="name">nhs.ods.sync.run.form</field>
+        <field name="model">nhs.ods.sync.run</field>
+        <field name="arch" type="xml">
+            <form string="Sync Run">
+                <header>
+                    <button name="action_run" type="object" string="Start Run"
+                            class="btn-primary"
+                            invisible="state != 'pending'"/>
+                    <button name="action_refresh_status" type="object"
+                            string="Refresh Status"
+                            class="btn-secondary"
+                            invisible="state != 'running'"
+                            help="Reload this record to see latest progress counts."/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state != 'running'"
+                            groups="odoo_nhs_ods_sync.group_nhs_ods_sync_operator"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="pending,running,success,failed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_details" type="object"
+                                class="oe_stat_button" icon="fa-list">
+                            <field name="fetched_count" widget="statinfo" string="Details"/>
+                        </button>
+                        <button name="action_view_conflicts" type="object"
+                                class="oe_stat_button" icon="fa-exclamation-triangle"
+                                invisible="conflict_count == 0">
+                            <field name="conflict_count" widget="statinfo" string="Conflicts"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <notebook>
+                        <page string="Summary" name="summary">
+                            <group>
+                                <group string="Run Info">
+                                    <field name="run_type"/>
+                                    <field name="targeted_ods_code"
+                                           invisible="run_type != 'targeted'"
+                                           required="run_type == 'targeted'"
+                                           placeholder="e.g. RJ1, RW1, 7A6"/>
+                                    <field name="triggered_by"/>
+                                    <field name="user_id"/>
+                                    <field name="delta_since" invisible="run_type != 'incremental'"/>
+                                </group>
+                                <group string="Timing">
+                                    <field name="started_at"/>
+                                    <field name="completed_at"/>
+                                    <field name="duration" widget="float_time"/>
+                                    <field name="api_base_url_used"/>
+                                </group>
+                            </group>
+                            <group string="Counts">
+                                <group>
+                                    <field name="fetched_count"/>
+                                    <field name="created_count"/>
+                                    <field name="updated_count"/>
+                                    <field name="unchanged_count"/>
+                                </group>
+                                <group>
+                                    <field name="conflict_count"/>
+                                    <field name="error_count"/>
+                                    <field name="skipped_count"/>
+                                </group>
+                            </group>
+                            <group string="Error Log" invisible="state not in ('failed','partial')">
+                                <field name="error_log" nolabel="1" widget="text"/>
+                            </group>
+                        </page>
+                        <page string="Details" name="details">
+                            <field name="detail_ids" readonly="1"
+                                   list_view_ref="odoo_nhs_ods_sync.view_nhs_ods_sync_detail_list"
+                                   form_view_ref="odoo_nhs_ods_sync.view_nhs_ods_sync_detail_form">
+                            </field>
+                        </page>
+                        <page string="Conflicts" name="conflicts" invisible="conflict_count == 0">
+                            <field name="conflict_ids" readonly="1">
+                                <list>
+                                    <field name="trust_id"/>
+                                    <field name="field_label"/>
+                                    <field name="conflict_type"/>
+                                    <field name="current_value"/>
+                                    <field name="ods_value"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view definition for ODS Sync Runs (nhs.ods.sync.run) -->
+    <record id="view_nhs_ods_sync_run_search" model="ir.ui.view">
+        <field name="name">nhs.ods.sync.run.search</field>
+        <field name="model">nhs.ods.sync.run</field>
+        <field name="arch" type="xml">
+            <search string="Sync Runs">
+                <field name="name"/>
+                <separator/>
+                <filter string="Failed" name="failed" domain="[('state','=','failed')]"/>
+                <filter string="With Conflicts" name="with_conflicts" domain="[('conflict_count','>',0)]"/>
+                <filter string="Manual" name="manual" domain="[('triggered_by','=','manual')]"/>
+                <filter string="Cron" name="cron" domain="[('triggered_by','=','cron')]"/>
+                <group name="group_by">
+                    <filter string="State" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Run Type" name="group_by_type" context="{'group_by': 'run_type'}"/>
+                    <filter string="Triggered By" name="group_by_trigger" context="{'group_by': 'triggered_by'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window action for accessing ODS Sync Runs -->
+    <record id="action_nhs_ods_sync_runs" model="ir.actions.act_window">
+        <field name="name">Sync Runs</field>
+        <field name="res_model">nhs.ods.sync.run</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_nhs_ods_sync_run_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No sync runs yet.</p>
+            <p>Use "Run Sync Now" to start your first ODS synchronisation.</p>
+        </field>
+    </record>
+
+    <!-- List view for Field Provenance (nhs.ods.field.provenance) -->
+    <record id="view_nhs_ods_field_provenance_list" model="ir.ui.view">
+        <field name="name">nhs.ods.field.provenance.list</field>
+        <field name="model">nhs.ods.field.provenance</field>
+        <field name="arch" type="xml">
+            <list string="Field Provenance" create="false">
+                <field name="trust_id"/>
+                <field name="field_name"/>
+                <field name="source" widget="badge" decoration-info="source == 'ods'" decoration-warning="source == 'manual'"/>
+                <field name="last_updated_at"/>
+                <field name="last_updated_by_user_id"/>
+                <field name="last_sync_run_id"/>
+                <field name="auto_update" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view for Field Provenance (nhs.ods.field.provenance) -->
+    <record id="view_nhs_ods_field_provenance_form" model="ir.ui.view">
+        <field name="name">nhs.ods.field.provenance.form</field>
+        <field name="model">nhs.ods.field.provenance</field>
+        <field name="arch" type="xml">
+            <form string="Field Provenance" create="false">
+                <sheet>
+                    <group>
+                        <group string="Field Information">
+                            <field name="trust_id" readonly="1"/>
+                            <field name="field_name" readonly="1"/>
+                            <field name="auto_update" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Update Source Details">
+                            <field name="source" readonly="1"/>
+                            <field name="last_updated_at" readonly="1"/>
+                            <field name="last_updated_by_user_id" readonly="1" invisible="source != 'manual'"/>
+                            <field name="last_sync_run_id" readonly="1" invisible="source != 'ods'"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Window action for accessing Field Provenance records -->
+    <record id="action_nhs_ods_field_provenance" model="ir.actions.act_window">
+        <field name="name">Field Provenance</field>
+        <field name="res_model">nhs.ods.field.provenance</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No provenance records yet.</p>
+            <p>Provenance records are created automatically when fields are edited manually or synced from ODS.</p>
+        </field>
+    </record>
+</odoo>
+
