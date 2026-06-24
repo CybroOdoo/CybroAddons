@@ -581,11 +581,45 @@ class DbBackupConfigure(models.Model):
         if self.backup_destination == 'local':
             self.hide_active = True
 
+    def _niq_cleanup_stale_backup_temps(self):
+        """NIQ: elimina temporales de respaldo huerfanos (con mas de 2h) del
+        directorio temporal. Cada respaldo crea un NamedTemporaryFile (.zip/
+        .dump) y, dentro de dump_data, un TemporaryDirectory (con dump.sql +
+        copia del filestore). Si el proceso muere por SIGKILL esos temporales
+        no se liberan y con el tiempo saturan el disco -> el respaldo empieza
+        a fallar con ENOSPC en cadena (incidente 2026-06-18: 90 GB acumulados).
+        Limpiar al inicio garantiza que el sistema se auto-sane aunque un run
+        previo haya muerto sin ejecutar sus context managers."""
+        tmp_root = tempfile.gettempdir()
+        now = datetime.utcnow().timestamp()
+        try:
+            entries = os.listdir(tmp_root)
+        except OSError:
+            return
+        for entry in entries:
+            if not entry.startswith('tmp'):
+                continue
+            path = os.path.join(tmp_root, entry)
+            try:
+                # Solo temporales con mas de 2h, para no tocar uno en curso.
+                if now - os.path.getmtime(path) < 7200:
+                    continue
+                if os.path.isfile(path) and entry.endswith(('.zip', '.dump')):
+                    os.remove(path)
+                elif os.path.isdir(path) and os.path.exists(
+                        os.path.join(path, 'dump.sql')):
+                    shutil.rmtree(path, ignore_errors=True)
+            except OSError:
+                continue
+
     def _schedule_auto_backup(self, frequency):
         """Function for generating and storing backup.
            Database backup for all the active records in backup configuration
            model will be created."""
         records = self.search([('backup_frequency', '=', frequency)])
+        # NIQ: barrer temporales huerfanos de respaldos previos interrumpidos
+        # antes de empezar, para que un fallo no se convierta en bola de nieve.
+        self._niq_cleanup_stale_backup_temps()
         mail_template_success = self.env.ref(
             'auto_database_backup.mail_template_data_db_backup_successful')
         mail_template_failed = self.env.ref(
@@ -594,6 +628,10 @@ class DbBackupConfigure(models.Model):
             backup_time = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
             backup_filename = f"{rec.db_name}_{backup_time}.{rec.backup_format}"
             rec.backup_filename = backup_filename
+            # NIQ: limpiar el estado de error previo. Si este respaldo termina
+            # bien el campo queda vacio; antes solo se escribia en el except y
+            # nunca se limpiaba, dejando el estado en "ERROR" para siempre.
+            rec.generated_exception = False
             # Local backup
             if rec.backup_destination == 'local':
                 try:
@@ -1003,22 +1041,30 @@ class DbBackupConfigure(models.Model):
                         # take a backup of the database and upload it to the
                         # S3 bucket
                         if rec.aws_folder_name in prefixes:
+                            # NIQ: delete=False + try/finally para garantizar el
+                            # borrado del temporal aunque falle la subida.
                             temp = tempfile.NamedTemporaryFile(
-                                suffix='.%s' % rec.backup_format)
-                            with open(temp.name, "wb+") as tmp:
-                                self.dump_data(rec.db_name, tmp,
-                                                        rec.backup_format, rec.backup_frequency)
-                            backup_file_name = temp.name
-                            remote_file_path = f"{rec.aws_folder_name}/{rec.db_name}_" \
-                                               f"{backup_time}.{rec.backup_format}"
-                            s3.Object(rec.bucket_file_name,
-                                      remote_file_path).upload_file(
-                                backup_file_name)
-                            # If notify_user is enabled, send an email to the
-                            # user notifying them about the successful backup
-                            if rec.notify_user:
-                                mail_template_success.send_mail(rec.id,
-                                                                force_send=True)
+                                suffix='.%s' % rec.backup_format,
+                                delete=False)
+                            try:
+                                with open(temp.name, "wb+") as tmp:
+                                    self.dump_data(rec.db_name, tmp,
+                                                            rec.backup_format, rec.backup_frequency)
+                                backup_file_name = temp.name
+                                remote_file_path = f"{rec.aws_folder_name}/{rec.db_name}_" \
+                                                   f"{backup_time}.{rec.backup_format}"
+                                s3.Object(rec.bucket_file_name,
+                                          remote_file_path).upload_file(
+                                    backup_file_name)
+                                # If notify_user is enabled, send an email to the
+                                # user notifying them about the successful backup
+                                if rec.notify_user:
+                                    mail_template_success.send_mail(rec.id,
+                                                                    force_send=True)
+                            finally:
+                                # NIQ: liberar el temporal pase lo que pase.
+                                if os.path.exists(temp.name):
+                                    os.remove(temp.name)
                     except Exception as error:
                         # If any error occurs, set the 'generated_exception'
                         # field to the error message and log the error
