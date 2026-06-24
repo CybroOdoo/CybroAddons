@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Custom checkout page that matches the Glowing theme styling -->
+    <template id="beauty_shop_checkout"
+              inherit_id="website_sale.checkout_layout"
+              name="Beauty Shop Checkout"
+              priority="100">
+        <!--
+            In Odoo 18, checkout_layout wraps everything inside:
+                <div class="oe_website_sale o_website_sale_checkout container py-2">
+            We inject the hero BEFORE that div, inside #wrap.
+        -->
+        <xpath expr="//div[@id='wrap']/div[hasclass('oe_website_sale')]" position="before">
+            <section class="cart-hero">
+                <div class="container">
+                    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+                        <a href="/">Home</a>
+                        <i class="bi bi-chevron-right"/>
+                        <span>Checkout</span>
+                    </nav>
+                    <div class="row align-items-end g-3">
+                        <div class="col-md-8">
+                            <h1 class="cart-title">Check<em>out</em></h1>
+                        </div>
+                        <div class="col-md-4 text-md-end" t-if="website_sale_order">
+                            <span class="cart-count">
+                                <strong>
+                                    <t t-out="website_sale_order.cart_quantity"/> items
+                                </strong> in your bag
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Progress steps: step 2 active for checkout/shipping -->
+                    <ol class="cart-steps">
+                        <li>
+                            <span class="step-circle">1</span>
+                            <div><strong>Cart</strong><small>Review items</small></div>
+                        </li>
+                        <li class="active">
+                            <span class="step-circle">2</span>
+                            <div><strong>Shipping</strong><small>Where to deliver</small></div>
+                        </li>
+                        <li class="active">
+                            <span class="step-circle">3</span>
+                            <div><strong>Payment</strong><small>Secure checkout</small></div>
+                        </li>
+                        <li>
+                            <span class="step-circle"><i class="bi bi-check"/></span>
+                            <div><strong>Done</strong><small>Order confirmed</small></div>
+                        </li>
+                    </ol>
+                </div>
+            </section>
+        </xpath>
+        <!-- Style the sticky order summary card -->
+        <xpath expr="//div[hasclass('o_total_card')]" position="attributes">
+            <attribute name="class" add="glowing-checkout-card" separator=" "/>
+        </xpath>
+    </template>
+    <!-- Payment page: step 3 active -->
+    <template id="beauty_shop_payment_hero"
+              inherit_id="website_sale.payment"
+              name="Beauty Shop Payment Hero"
+              priority="100">
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']" position="attributes">
+            <!-- nothing to change on the call itself -->
+        </xpath>
+    </template>
+    <!-- Delivery methods styling -->
+    <template id="beauty_shop_delivery_methods"
+              inherit_id="website_sale.delivery_form"
+              name="Beauty Shop Delivery Methods"
+              priority="100">
+        <!-- Replace the heading with our styled version -->
+        <xpath expr="//h4[hasclass('text-uppercase')]" position="replace">
+            <h6 class="mb-3 text-uppercase small fw-bold" style="letter-spacing:.05em;">
+                Delivery method
+            </h6>
+        </xpath>
+        <!-- Wrap the delivery list in our custom class -->
+        <xpath expr="//ul[@id='o_delivery_methods']" position="attributes">
+            <attribute name="class" add="glow-delivery-wrapper" separator=" "/>
+        </xpath>
+        <!-- Style each delivery method item -->
+        <xpath expr="//li[@name='o_delivery_method']" position="attributes">
+            <attribute name="class" add="glow-delivery-method" separator=" "/>
+        </xpath>
+    </template>
+</odoo>

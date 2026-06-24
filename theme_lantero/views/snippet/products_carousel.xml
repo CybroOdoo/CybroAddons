@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dynamic Products Carousel
+         Fetches the latest published products from the database. -->
+    <template id="s_products_carousel" name="Lantero Products Carousel">
+        <!-- Define targeting categories and fetch matching products -->
+        <t t-set="lantero_categ_names" t-value="['Rings', 'Necklaces', 'Earrings', 'Bracelets']"/>
+        <t t-set="lantero_categs"
+           t-value="request.env['product.public.category'].sudo().search(
+               [('name', 'in', lantero_categ_names)])"/>
+        <!-- Query matching products, fallback to any published products -->
+        <t t-set="carousel_products"
+           t-value="request.env['product.template'].sudo().search(
+               [('is_published', '=', True),
+                ('public_categ_ids', 'in', lantero_categs.ids)],
+               order='create_date desc', limit=8)
+               if lantero_categs else
+               request.env['product.template'].sudo().search(
+               [('is_published', '=', True)],
+               order='create_date desc', limit=8)"/>
+        <section class="products-section bg-white s_products_carousel"
+                 data-snippet="theme_lantero.s_products_carousel"
+                 data-name="Products Carousel">
+            <div class="container">
+                <div class="products-header">
+                    <h2 class="products-title o_editable">New arrivals</h2>
+                    <!-- Slider navigation controls -->
+                    <div class="slider-nav">
+                        <button class="slider-btn" data-slider-prev="1"
+                                aria-label="Previous">
+                            <i class="bi bi-chevron-left"/>
+                        </button>
+                        <button class="slider-btn" data-slider-next="1"
+                                aria-label="Next">
+                            <i class="bi bi-chevron-right"/>
+                        </button>
+                    </div>
+                </div>
+                <div class="products-slider" data-slider-track="1">
+                    <t t-if="carousel_products">
+                        <!-- Iterating over fetched products to build carousel cards -->
+                        <t t-foreach="carousel_products" t-as="product">
+                            <a t-att-href="product.website_url"
+                               class="product-card text-decoration-none d-block">
+                                <div class="product-img-wrapper">
+                                    <!-- Render ribbons/badges such as sales or custom status -->
+                                    <t t-if="product.website_ribbon_id">
+                                        <span class="product-badge"
+                                              t-esc="product.website_ribbon_id.name"/>
+                                    </t>
+                                    <t t-elif="product.compare_list_price and product.compare_list_price &gt; product.list_price">
+                                        <span class="product-badge bg-danger">Sale</span>
+                                    </t>
+                                    <img t-attf-src="/web/image/product.template/#{product.id}/image_512"
+                                         t-att-alt="product.name"
+                                         class="img img-fluid"
+                                         loading="lazy"
+                                         style="width:100%;height:100%;object-fit:cover;"/>
+                                </div>
+                                <h4 class="product-title" t-esc="product.name"/>
+                                <span class="product-price">
+                                    <!-- Render discounted/compare price line if applicable -->
+                                    <t t-if="product.compare_list_price and product.compare_list_price &gt; product.list_price">
+                                        <del class="text-muted me-2">
+                                            <t t-esc="product.currency_id.symbol"/><t t-esc="'%.2f' % product.compare_list_price"/>
+                                        </del>
+                                    </t>
+                                    <t t-esc="product.currency_id.symbol"/><t t-esc="'%.2f' % product.list_price"/>
+                                </span>
+                            </a>
+                        </t>
+                    </t>
+                    <!-- Fallback message when no products are found -->
+                    <t t-else="">
+                        <div class="w-100 text-center py-5">
+                            <p class="text-muted">No products published
+                            yet. Add products in the Shop to see them
+                            here.</p>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </template>
+    <!-- Registering the Products Carousel snippet under structure category -->
+    <template id="s_products_carousel_snippet"
+              inherit_id="website.snippets" priority="16">
+        <xpath expr="//snippets[@id='snippet_structure']/*[last()]"
+               position="after">
+            <t t-snippet="theme_lantero.s_products_carousel"
+               string="Products Carousel"
+               t-thumbnail="/theme_lantero/static/src/img/product_1_1777448174198.png"
+               group="lantero_section"/>
+        </xpath>
+    </template>
+</odoo>

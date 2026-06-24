@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ─── Product Detail Page ─── -->
+  <template id="restaurant_product_page" inherit_id="website_sale.product" name="Savora Product" priority="99">
+    <xpath expr="//div[@id='wrap']" position="replace">
+      <div id="wrap" class="oe_structure sv-product-page oe_website_sale">
+        <div class="container">
+          <!-- Breadcrumb -->
+          <nav aria-label="breadcrumb" class="py-3 mb-4">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/" style="color:var(--sv-muted);">Home</a></li>
+              <li class="breadcrumb-item"><a href="/shop" style="color:var(--sv-muted);">Menu</a></li>
+              <li t-if="category" class="breadcrumb-item">
+                <a t-att-href="'/shop/category/%s' % slug(category)" style="color:var(--sv-muted);" t-esc="category.name"/>
+              </li>
+              <li class="breadcrumb-item active"><span t-field="product.name"/></li>
+            </ol>
+          </nav>
+          <div class="row g-5" id="product_detail_main"
+               data-name="Product Page"
+               t-att-data-image_width="website.product_page_image_width"
+               t-att-data-image_layout="website.product_page_image_layout">
+            <!-- Gallery -->
+            <t t-set="combination_info" t-value="product._get_combination_info()"/>
+            <t t-set="product_variant" t-value="product.env['product.product'].browse(combination_info['product_id'])"/>
+            <div class="col-lg-6 mt-lg-4 o_wsale_product_images position-relative"
+                 t-if="website.product_page_image_width != 'none'"
+                 t-att-data-image-amount="len(product_variant._get_images() if product_variant else product._get_images())">
+              <div class="sv-product-gallery">
+                <t t-call="website_sale.shop_product_images"/>
+              </div>
+            </div>
+            <!-- Product Info -->
+            <div class="col-lg-6 sv-product-info js_product js_main_product">
+              <t t-if="category">
+                <p class="sv-eyebrow mb-2"><t t-esc="category.name"/></p>
+              </t>
+              <h1 class="sv-product-title" t-field="product.name"/>
+              <!-- Rating -->
+              <div class="o_website_rating_static mb-3" t-if="product.rating_count">
+                <t t-call="website_rating.rating_widget_stars_static">
+                  <t t-set="rating_avg" t-value="product.rating_avg"/>
+                </t>
+                <span style="color:var(--sv-muted); font-size:13px;" t-esc="'(%d reviews)' % product.rating_count"/>
+              </div>
+              <!-- Price -->
+              <div class="sv-product-price" id="product_price">
+                <span class="oe_price" t-esc="combination_info['price']"
+                      t-options="{'widget':'monetary','display_currency':website.currency_id}"/>
+                <del t-if="combination_info.get('compare_list_price') and combination_info['compare_list_price'] > combination_info['price']"
+                     t-esc="combination_info['compare_list_price']"
+                     t-options="{'widget':'monetary','display_currency':website.currency_id}"/>
+              </div>
+              <!-- Description -->
+              <div class="sv-product-desc">
+                <p t-field="product.description_sale" t-if="product.description_sale"/>
+              </div>
+              <!-- Variants -->
+              <t t-if="product.valid_product_template_attribute_line_ids">
+                <div class="sv-variants">
+                  <t t-call="website_sale.variants">
+                    <t t-set="ul_class" t-valuef="flex-column"/>
+                    <t t-set="parent_combination" t-value="None"/>
+                    <t t-set="combination" t-value="combination_info['combination']"/>
+                  </t>
+                </div>
+              </t>
+              <!-- Quantity + Add to Cart -->
+              <form action="/shop/cart/update" method="post" class="js_add_cart_variants js_product js_main_product" style="margin-bottom:32px;">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <input type="hidden" class="product_template_id" name="product_template_id" t-att-value="product.id"/>
+                <input type="hidden" class="product_id" name="product_id" t-att-value="product_variant.id"/>
+                <div class="sv-qty-wrap mb-4">
+                  <span class="sv-qty-label">Quantity</span>
+                  <div class="css_quantity input-group d-inline-flex">
+                    <a href="#" role="button" name="remove_one" class="btn js_add_cart_json">−</a>
+                    <input type="text" name="add_qty" value="1" min="1" class="form-control quantity" style="text-align:center; width:60px;"/>
+                    <a href="#" role="button" name="add_one" class="btn js_add_cart_json">+</a>
+                  </div>
+                </div>
+                <button type="submit" class="sv-add-to-cart a-submit btn">
+                  <i class="fa fa-shopping-bag me-2"/> Add to Cart
+                </button>
+              </form>
+              <!-- Wishlist -->
+              <t t-set="wishlist_installed" t-value="bool(request.env.registry.get('product.wishlist'))"/>
+              <t t-if="wishlist_installed">
+                <button class="o_add_wishlist btn d-flex align-items-center gap-2 mb-4"
+                        type="button"
+                        role="button"
+                        data-action="o_wishlist"
+                        t-att-data-product-template-id="product.id"
+                        t-att-data-product-product-id="product.product_variant_id.id"
+                        style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); color:var(--sv-cream); border-radius:4px; padding:12px 24px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.3s;">
+                  <i class="fa fa-heart-o"/> Save to Wishlist
+                </button>
+              </t>
+              <!-- Share -->
+              <div class="d-flex align-items-center gap-3 mt-2">
+                <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--sv-muted);">Share:</span>
+                <a href="#" class="sv-nav-icon" style="color:var(--sv-muted);"><i class="fa fa-twitter"/></a>
+                <a href="#" class="sv-nav-icon" style="color:var(--sv-muted);"><i class="fa fa-facebook"/></a>
+                <a href="#" class="sv-nav-icon" style="color:var(--sv-muted);"><i class="fa fa-instagram"/></a>
+              </div>
+            </div>
+          </div>
+          <!-- Product Tabs -->
+          <div class="sv-product-tabs mt-5">
+            <ul class="nav nav-tabs">
+              <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#svTabDesc">Description</button></li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane fade show active" id="svTabDesc">
+                <div t-field="product.description" style="color:var(--sv-muted); line-height:1.8;"/>
+              </div>
+            </div>
+          </div>
+          <div class="oe_structure"/>
+        </div>
+      </div>
+    </xpath>
+  </template>
+</odoo>

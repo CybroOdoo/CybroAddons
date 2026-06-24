@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- Add Lantero class to the shop page wrapper -->
+  <template id="lantero_shop_wrap" name="Lantero Shop Wrap"
+            inherit_id="website_sale.products">
+    <!-- Target the main page wrapper to apply custom styling classes -->
+    <xpath expr="//div[@id='wrap']" position="attributes">
+      <attribute name="class" add="lantero-shop-page" separator=" "/>
+    </xpath>
+  </template>
+  <!-- Shop Banner: Elegant page header above the product grid -->
+  <template id="lantero_shop_banner" name="Lantero Shop Banner"
+            inherit_id="website_sale.products">
+    <xpath expr="//div[hasclass('oe_website_sale')]" position="before">
+      <div class="lantero-shop-banner">
+        <div class="container">
+          <!-- Render description dynamically depending on whether a category is selected -->
+          <t t-if="category">
+            <h1 t-esc="category.name"/>
+            <p t-if="category.website_description"
+               t-out="category.website_description"/>
+            <p t-else="">Explore our collection of meticulously
+            crafted pieces. Find the perfect jewel to elevate your
+            everyday style.</p>
+          </t>
+          <t t-else="">
+            <h1>Shop All Jewelry</h1>
+            <p>Explore our entire collection of meticulously crafted
+            rings, necklaces, earrings, and bracelets. Find the perfect
+            piece to elevate your everyday style.</p>
+          </t>
+        </div>
+      </div>
+    </xpath>
+  </template>
+  <!-- Add class to product image wrapper -->
+  <template id="lantero_product_img" name="Lantero Product Img"
+            inherit_id="website_sale.products_item">
+    <xpath expr="//div[hasclass('oe_product_image')]"
+           position="attributes">
+      <attribute name="class" add="lantero-product-img-wrap"
+                 separator=" "/>
+    </xpath>
+  </template>
+  <!-- Add class to product info body -->
+  <template id="lantero_product_body" name="Lantero Product Body"
+            inherit_id="website_sale.products_item">
+    <xpath expr="//div[hasclass('o_wsale_product_information')]"
+           position="attributes">
+      <attribute name="class" add="lantero-product-body" separator=" "/>
+    </xpath>
+  </template>
+  <!-- Breadcrumb styling -->
+  <template id="lantero_product_breadcrumb" name="Lantero Breadcrumb"
+            inherit_id="website_sale.product">
+    <xpath expr="//ol[hasclass('breadcrumb')]" position="attributes">
+      <attribute name="class" add="lantero-breadcrumb" separator=" "/>
+    </xpath>
+  </template>
+  <!-- Product detail section class -->
+  <template id="lantero_product_detail_style"
+            name="Lantero Product Detail Style"
+            inherit_id="website_sale.product">
+    <xpath expr="//section[@id='product_detail']" position="attributes">
+      <attribute name="class" add="lantero-product-detail"
+                 separator=" "/>
+    </xpath>
+  </template>
+  <!-- Replace Add to Cart button with Lantero styling -->
+  <template id="lantero_cta_wrapper" inherit_id="website_sale.product">
+    <xpath expr="//a[@id='add_to_cart']" position="replace">
+      <a id="add_to_cart"
+         role="button"
+         href="#"
+         t-attf-class="btn btn-primary js_check_product a-submit flex-grow-1 lantero-add-to-cart-btn"
+         t-att-data-show-quantity="is_view_active('website_sale.product_quantity')"
+         data-animation-selector=".o_wsale_product_images">
+         ADD TO CART
+      </a>
+    </xpath>
+  </template>
+  <!-- "You May Also Like" section after product detail -->
+  <template id="lantero_similar_products" name="Lantero Similar Products"
+            inherit_id="website_sale.product">
+    <xpath expr="//section[@id='product_detail']" position="after">
+      <!-- Query either accessory products or fallback to other products in the same category -->
+      <t t-set="_also_like_products"
+         t-value="product.sudo().accessory_product_ids.mapped('product_tmpl_id').filtered(lambda p: p.is_published)[:4] or request.env['product.template'].sudo().search([('is_published','=',True),('categ_id','=',product.categ_id.id),('id','!=',product.id)], limit=4)"/>
+      <t t-if="_also_like_products">
+        <section class="lantero-also-like">
+          <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-end mb-5">
+              <div>
+                <span class="section-subtitle">Curated for you</span>
+                <h2 class="mt-2 mb-0 related-title">You May Also Like</h2>
+              </div>
+            </div>
+            <div class="row">
+              <!-- Render up to 4 suggested related products -->
+              <t t-foreach="_also_like_products[:4]" t-as="rec">
+                <div class="col-lg-3 col-md-6 col-6 mb-4 mb-lg-0">
+                  <a t-attf-href="/shop/#{slug(rec)}" class="product-card text-decoration-none">
+                    <div class="product-img-wrapper related-img-wrapper mb-3">
+                      <t t-set="image_url" t-value="request.env['website'].image_url(rec, 'image_256')"/>
+                      <img t-att-src="image_url" t-att-alt="rec.name"
+                           loading="lazy"/>
+                    </div>
+                    <div class="text-center">
+                      <h5 class="related-product-title" t-esc="rec.name"/>
+                      <span class="text-muted fs-sm">
+                        <t t-out="rec.list_price"
+                           t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                      </span>
+                    </div>
+                  </a>
+                </div>
+              </t>
+            </div>
+          </div>
+        </section>
+      </t>
+    </xpath>
+  </template>
+  <!-- Replace "Order overview" heading with "YOUR BAG" -->
+  <template id="lantero_cart" name="Lantero Cart"
+            inherit_id="website_sale.cart">
+    <xpath expr="//h3[text()='Order overview']" position="replace">
+      <h3 class="mb-4 lantero-cart-title">YOUR BAG</h3>
+    </xpath>
+  </template>
+  <template id="lantero_checkout_wrap" name="Lantero Checkout Wrap"
+            inherit_id="website_sale.checkout_layout">
+    <xpath expr="//div[@id='wrap']" position="attributes">
+      <attribute name="class" add="lantero-checkout" separator=" "/>
+    </xpath>
+  </template>
+  <template id="lantero_wizard_checkout" name="Lantero Wizard Checkout"
+            inherit_id="website_sale.wizard_checkout">
+    <!-- Replace default Odoo step wizard with clean, minimalist Lantero step progress indicators -->
+    <xpath expr="//t[@t-call='website.step_wizard']" position="replace">
+      <div class="lantero-checkout-steps">
+        <t t-set="reached_current" t-value="False"/>
+        <t t-foreach="website._get_checkout_steps()" t-as="step">
+          <t t-set="is_current"
+             t-value="xmlid in step[0]"/>
+          <t t-if="is_current" t-set="reached_current" t-value="True"/>
+          <!-- Completed steps (before current) — clickable -->
+          <t t-if="not reached_current or (is_current and not reached_current)">
+            <a t-att-href="step[1]['current_href']"
+               class="checkout-step is-completed">
+              <span class="step-num">
+                <i class="bi bi-check-lg"/>
+              </span>
+              <t t-out="step[1]['name']"/>
+            </a>
+          </t>
+          <!-- Current active step — active, not clickable -->
+          <t t-elif="is_current">
+            <span class="checkout-step is-active">
+              <span class="step-num" t-out="step_index + 1"/>
+              <t t-out="step[1]['name']"/>
+            </span>
+          </t>
+          <!-- Future steps — disabled -->
+          <t t-else="">
+            <span class="checkout-step">
+              <span class="step-num" t-out="step_index + 1"/>
+              <t t-out="step[1]['name']"/>
+            </span>
+          </t>
+          <!-- Divider between steps -->
+          <t t-if="not step_last">
+            <span class="checkout-step-divider"/>
+          </t>
+        </t>
+      </div>
+    </xpath>
+  </template>
+  <template id="lantero_confirmation" inherit_id="website_sale.confirmation"
+            name="Lantero Confirmation">
+    <!-- Replace the "Thank you for your order" heading and Print button wrapper with custom premium header -->
+    <xpath expr="//div[h3[contains(.,'Thank you for your order')]]" position="replace">
+      <!-- Lantero success header -->
+      <div class="lantero-confirmation-header mb-4 mt-3 text-center">
+        <div class="lantero-success-icon mb-4">
+          <i class="bi bi-check-lg"/>
+        </div>
+        <span class="section-subtitle">
+          Order <t t-out="order.name"/>
+        </span>
+        <h1 class="lantero-thank-you-title">
+          Thank you, <t t-out="order.partner_id.name.split(' ')[0]"/>.
+        </h1>
+        <p class="lantero-thank-you-lead">
+          Your order is confirmed and queued for preparation.
+          We've sent a confirmation to
+          <strong><t t-out="order.partner_id.email"/></strong>
+          with your receipt and tracking details.
+        </p>
+      </div>
+      <!-- What happens next — 3-step progress -->
+      <div class="lantero-order-next">
+        <div class="row">
+          <div class="col-md-4 mb-4 mb-md-0">
+            <div class="order-next-step is-active">
+              <span class="order-next-num">
+                <i class="bi bi-check-lg"/>
+              </span>
+              <h3>Order confirmed</h3>
+              <p>Just now</p>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4 mb-md-0">
+            <div class="order-next-step">
+              <span class="order-next-num">2</span>
+              <h3>Preparing</h3>
+              <p>1–2 business days</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="order-next-step">
+              <span class="order-next-num">3</span>
+              <h3>Shipped to you</h3>
+              <p>Estimated delivery</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </xpath>
+    <!-- Remove redundant order name blocks since they are in the custom header -->
+    <xpath expr="//t[@t-if=&quot;tx_sudo.state == 'done'&quot;]" position="replace"/>
+    <xpath expr="//t[@t-if=&quot;tx_sudo.state != 'done'&quot;]" position="replace"/>
+    <!-- Replace address info with Lantero-styled cards -->
+    <xpath expr="//div[hasclass('card')][.//span[hasclass('address-inline')]]" position="replace">
+      <div id="address_on_payment">
+        <!-- Shipping info card -->
+        <t t-if="order._has_deliverable_products()">
+          <div class="checkout-section-block mb-4">
+            <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: #351C15; margin-bottom: 6px;">
+              Shipping to
+            </h2>
+            <div class="lantero-info-card">
+              <span class="info-card-label">
+                <t t-if="order.carrier_id"
+                   t-out="order.carrier_id.name"/>
+                <t t-else="">Standard delivery</t>
+              </span>
+              <t t-out="order.partner_shipping_id"
+                 t-options="dict(
+                     widget='contact',
+                     fields=['name', 'address', 'phone'],
+                     no_marker=True,
+                 )"/>
+            </div>
+          </div>
+        </t>
+        <!-- Payment info card -->
+        <div class="checkout-section-block mb-4">
+          <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: #351C15; margin-bottom: 6px;">
+            Payment
+          </h2>
+          <div class="lantero-info-card">
+            <span class="info-card-label">
+              <t t-set="tx_sudo_display"
+                 t-value="order.get_portal_last_transaction()"/>
+              <t t-if="tx_sudo_display and tx_sudo_display.provider_id">
+                <t t-out="tx_sudo_display.provider_id.name"/>
+              </t>
+              <t t-else="">Payment method</t>
+            </span>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="bi bi-credit-card" style="font-size: 1.4rem;"/>
+              <t t-if="order.partner_invoice_id"
+                 t-out="order.partner_invoice_id.name"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </xpath>
+    <!-- Add help footer after confirmation structure 2 -->
+    <xpath expr="//div[@id='oe_structure_website_sale_confirmation_2']" position="after">
+      <div class="lantero-help-footer mb-5">
+        <p>Need to make a change or have a question about your order?</p>
+        <a href="/contactus">
+          Contact our concierge <i class="bi bi-arrow-right ms-2"/>
+        </a>
+      </div>
+    </xpath>
+  </template>
+  <template id="lantero_portal_wrap" name="Lantero Portal Wrap"
+            inherit_id="portal.portal_layout">
+    <xpath expr="//div[hasclass('o_portal_wrap')]" position="attributes">
+      <attribute name="class" add="lantero-portal-wrap" separator=" "/>
+    </xpath>
+  </template>
+</odoo>

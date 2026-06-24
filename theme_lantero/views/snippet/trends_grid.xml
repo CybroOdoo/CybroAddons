@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dynamic Trends Grid
+         Pulls the latest 4 product images for the 2×2 grid,
+         keeping the editorial text editable. -->
+    <template id="s_trends_grid" name="Lantero Trends Grid">
+        <!-- Fetching the 4 latest published products with images -->
+        <t t-set="trend_products"
+           t-value="request.env['product.template'].sudo().search(
+               [('is_published', '=', True), ('image_1920', '!=', False)],
+               order='create_date desc', limit=4)"/>
+        <section class="trends-section bg-white s_trends_grid"
+                 data-snippet="theme_lantero.s_trends_grid"
+                 data-name="Trends Grid">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 mb-5 mb-lg-0">
+                        <div class="trend-img-grid">
+                            <!-- Render the dynamic images if products are found -->
+                            <t t-if="trend_products">
+                                <t t-foreach="trend_products" t-as="tp">
+                                    <img t-attf-src="/web/image/product.template/#{tp.id}/image_512"
+                                         class="img img-fluid"
+                                         t-att-alt="tp.name"
+                                         loading="lazy"/>
+                                </t>
+                            </t>
+                            <!-- Otherwise fallback to beautiful static placeholders -->
+                            <t t-else="">
+                                <img src="/theme_lantero/static/src/img/product_1_1777448174198.png"
+                                     class="img img-fluid" alt="Trend 1"/>
+                                <img src="/theme_lantero/static/src/img/product_2_1777448189229.png"
+                                     class="img img-fluid" alt="Trend 2"/>
+                                <img src="/theme_lantero/static/src/img/rings_1777448120321.png"
+                                     class="img img-fluid" alt="Trend 3"/>
+                                <img src="/theme_lantero/static/src/img/necklaces_1777448088430.png"
+                                     class="img img-fluid" alt="Trend 4"/>
+                            </t>
+                        </div>
+                    </div>
+                    <!-- Right column: Editorial column linking to the blog -->
+                    <div class="col-lg-5 offset-lg-1">
+                        <span class="trends-subtitle o_editable">Our Blog</span>
+                        <h2 class="trends-title o_editable">Latest fashion trends paired with timeless styles</h2>
+                        <p class="trends-text o_editable">Stay ahead of the curve while maintaining a classic elegance. Explore our styling guides, jewelry care tips, and the inspirations behind our newest collections.</p>
+                        <a href="/blog" class="btn-primary-custom">Read our blog</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+    <!-- Registering the Trends Grid snippet under structure category -->
+    <template id="s_trends_grid_snippet" inherit_id="website.snippets" priority="16">
+        <xpath expr="//snippets[@id='snippet_structure']/*[last()]" position="after">
+            <t t-snippet="theme_lantero.s_trends_grid"
+               string="Trends Grid"
+               t-thumbnail="/theme_lantero/static/src/img/rings_1777448120321.png"
+               group="lantero_section"/>
+        </xpath>
+    </template>
+</odoo>

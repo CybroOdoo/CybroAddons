@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dynamic Categories Grid
+         Queries product.public.category to render real shop categories. -->
+    <template id="s_categories_grid" name="Lantero Categories Grid">
+        <!-- Fetching up to 6 product categories ordered by sequence -->
+        <t t-set="shop_categories"
+           t-value="request.env['product.public.category'].sudo().search(
+               [], order='sequence asc', limit=6)"/>
+        <section class="categories-section s_categories_grid"
+                 data-snippet="theme_lantero.s_categories_grid"
+                 data-name="Categories Grid">
+            <div class="container">
+                <span class="section-subtitle o_editable">Discover Your Style</span>
+                <h2 class="section-title o_editable">Shop by Category</h2>
+                <t t-if="shop_categories">
+                    <!-- Render categories in rows of 3 -->
+                    <t t-set="cat_list" t-value="list(shop_categories)"/>
+                    <div class="row mb-4">
+                        <!-- Iterating through the first 3 categories -->
+                        <t t-foreach="cat_list[:3]" t-as="cat">
+                            <div t-attf-class="col-md-4 #{'mb-4 mb-md-0' if not cat_last else ''}">
+                                <a t-attf-href="/shop/category/#{slug(cat)}"
+                                   class="cat-box h-100 w-100 m-0">
+                                    <!-- Display category image or fallback placeholder -->
+                                    <t t-if="cat.image_1920">
+                                        <img t-attf-src="/web/image/product.public.category/#{cat.id}/image_1920"
+                                             class="img img-fluid" t-att-alt="cat.name"/>
+                                    </t>
+                                    <t t-else="">
+                                        <img src="/theme_lantero/static/src/img/necklaces_1777448088430.png"
+                                             class="img img-fluid" t-att-alt="cat.name"/>
+                                    </t>
+                                    <div class="cat-content">
+                                        <h3 class="cat-title" t-esc="cat.name"/>
+                                        <span class="cat-link">EXPLORE <i class="bi bi-arrow-right"/></span>
+                                    </div>
+                                </a>
+                             </div>
+                        </t>
+                    </div>
+                    <t t-if="len(cat_list) &gt; 3">
+                        <div class="row">
+                            <!-- Iterating through categories 4 to 6 -->
+                            <t t-foreach="cat_list[3:6]" t-as="cat">
+                                <div t-attf-class="col-md-4 #{'mb-4 mb-md-0' if not cat_last else ''}">
+                                    <a t-attf-href="/shop/category/#{slug(cat)}"
+                                       class="cat-box h-100 w-100 m-0">
+                                        <!-- Display category image or fallback placeholder -->
+                                        <t t-if="cat.image_1920">
+                                            <img t-attf-src="/web/image/product.public.category/#{cat.id}/image_1920"
+                                                 class="img img-fluid" t-att-alt="cat.name"/>
+                                        </t>
+                                        <t t-else="">
+                                            <img src="/theme_lantero/static/src/img/rings_1777448120321.png"
+                                                 class="img img-fluid" t-att-alt="cat.name"/>
+                                        </t>
+                                        <div class="cat-content">
+                                            <h3 class="cat-title" t-esc="cat.name"/>
+                                            <span class="cat-link">EXPLORE <i class="bi bi-arrow-right"/></span>
+                                        </div>
+                                    </a>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </t>
+                <!-- Fallback when no shop categories exist -->
+                <t t-else="">
+                    <div class="text-center py-5">
+                        <p class="text-muted">No categories yet. Add product categories in the Shop to see them here.</p>
+                    </div>
+                </t>
+            </div>
+        </section>
+    </template>
+    <!-- Registering the Categories Grid snippet under structure category -->
+    <template id="s_categories_grid_snippet" inherit_id="website.snippets" priority="16">
+        <xpath expr="//snippets[@id='snippet_structure']/*[last()]" position="after">
+            <t t-snippet="theme_lantero.s_categories_grid"
+               string="Categories Grid"
+               t-thumbnail="/theme_lantero/static/src/img/necklaces_1777448088430.png"
+               group="lantero_section"/>
+        </xpath>
+    </template>
+</odoo>

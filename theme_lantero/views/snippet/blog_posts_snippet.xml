@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dynamic Recent Blog Posts
+         Shows latest 3 published blog posts in a card grid.
+         Uses static jewelry images as card thumbnails. -->
+    <template id="s_recent_blog_posts" name="Lantero Recent Blog Posts">
+        <!-- Fetching the latest 3 published blog posts -->
+        <t t-set="recent_posts"
+           t-value="request.env['blog.post'].sudo().search(
+               [('website_published', '=', True)],
+               order='published_date desc, create_date desc', limit=3)"/>
+        <!-- Card thumbnail images (jewelry assets, cycled per card) -->
+        <t t-set="card_thumbs" t-value="[
+             '/theme_lantero/static/src/img/hero_image_1777447769754.png',
+             '/theme_lantero/static/src/img/craftsman_1777447788481.png',
+             '/theme_lantero/static/src/img/product_2_1777448189229.png',
+         ]"/>
+        <section class="blog-posts-section s_recent_blog_posts"
+                 data-snippet="theme_lantero.s_recent_blog_posts"
+                 data-name="Recent Blog Posts">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-end mb-5">
+                    <div>
+                        <span class="section-subtitle">Recent Stories</span>
+                        <h2 class="related-title mt-2 mb-0">Latest from the Journal</h2>
+                    </div>
+                    <a href="/blog" class="about-link d-none d-md-inline-block">View all <i class="bi bi-arrow-right ms-2"/></a>
+                </div>
+                <t t-if="recent_posts">
+                    <div class="row">
+                        <!-- Iterating through recent posts to render blog cards -->
+                        <t t-foreach="recent_posts" t-as="post">
+                            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                                <a t-att-href="'/blog/%s/%s' % (slug(post.blog_id), slug(post))"
+                                   class="blog-card text-decoration-none d-block">
+                                    <div class="blog-card-img-wrapper">
+                                        <!-- Cycle through fallback thumbnail assets -->
+                                        <img t-att-src="card_thumbs[post_index % len(card_thumbs)]"
+                                             t-att-alt="post.name" loading="lazy"/>
+                                    </div>
+                                    <span class="blog-meta">
+                                        <span class="blog-category" t-esc="post.blog_id.name"/>
+                                        <span t-field="post.published_date" t-options='{"format": "MMMM dd, yyyy"}'/>
+                                    </span>
+                                    <h3 class="blog-card-title" t-esc="post.name"/>
+                                    <p class="blog-card-excerpt" t-if="post.subtitle" t-esc="post.subtitle"/>
+                                    <span class="blog-card-link">Read more <i class="bi bi-arrow-right"/></span>
+                                </a>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+                <!-- Fallback when no blog posts exist -->
+                <t t-else="">
+                    <div class="text-center py-5">
+                        <p class="text-muted">No blog posts yet. Publish articles in the Journal to see them here.</p>
+                    </div>
+                </t>
+            </div>
+        </section>
+    </template>
+    <!-- Registering the Recent Blog Posts snippet under structure category -->
+    <template id="s_recent_blog_posts_snippet" inherit_id="website.snippets" priority="16">
+        <xpath expr="//snippets[@id='snippet_structure']/*[last()]" position="after">
+            <t t-snippet="theme_lantero.s_recent_blog_posts"
+               string="Recent Blog Posts"
+               t-thumbnail="/theme_lantero/static/src/img/hero_image_1777447769754.png"
+               group="lantero_section"/>
+        </xpath>
+    </template>
+</odoo>

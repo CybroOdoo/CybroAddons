@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ── Snippet: Lookup Form (s_track_lookup) has been extracted to views/snippet/track_lookup.xml ── -->
+    <!-- ── Snippet: Carrier Info ── -->
+    <!-- Snippet: Carrier Info -->
+    <template id="s_track_carrier" name="Track Order Carrier Info">
+        <div class="track-carrier" data-snippet="theme_lantero.s_track_carrier" data-name="Track Order Carrier Info">
+            <div class="track-carrier-icon"><i class="bi bi-box-seam"/></div>
+            <div class="track-carrier-info">
+                <!-- Check if picking carrier information exists to display dynamic values, else fallback to mock -->
+                <t t-if="picking and picking.carrier_id">
+                    <span class="label" t-out="'Shipped via ' + picking.carrier_id.name"/>
+                    <span class="value" t-out="'Tracking: ' + (picking.carrier_tracking_ref or 'Pending')"/>
+                </t>
+                <t t-else="">
+                    <span class="label">Shipped via DHL Express</span>
+                    <span class="value">Tracking: 1Z999AA10123456784</span>
+                </t>
+            </div>
+            <!-- Dynamic tracking link if reference is available, else mock fallback link -->
+            <t t-if="picking and picking.carrier_tracking_ref">
+                <a t-attf-href="https://www.dhl.com/en-en/home/tracking.html?tracking-id=#{picking.carrier_tracking_ref}" target="_blank" class="track-carrier-link">
+                    View on carrier site <i class="bi bi-arrow-right"/>
+                </a>
+            </t>
+            <t t-else="">
+                <a href="#" class="track-carrier-link">View on carrier site <i class="bi bi-arrow-right"/></a>
+            </t>
+        </div>
+    </template>
+    <!-- Registering the Track Carrier snippet under structure category -->
+    <template id="s_track_carrier_snippet" inherit_id="website.snippets" priority="16">
+        <xpath expr="//snippets[@id='snippet_structure']/*[last()]" position="after">
+            <t t-snippet="theme_lantero.s_track_carrier"
+               string="Order Carrier Info"
+               t-thumbnail="/theme_lantero/static/src/img/fav.png"
+               group="lantero_section"/>
+        </xpath>
+    </template>
+    <!-- Track Order Main Page View Template -->
+    <template id="lantero_track_order_page" name="Track Your Order">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Track Your Order</t>
+            <div id="wrap">
+                <!-- Page Header Section -->
+                <section class="page-header o_colored_level" data-name="Page Header">
+                    <div class="container">
+                        <span class="section-subtitle o_editable">Order Status</span>
+                        <h1 class="page-title o_editable">Track your order</h1>
+                        <p class="page-desc o_editable">Enter your order number and the email used at checkout to see live status, carrier information, and delivery updates.</p>
+                    </div>
+                </section>
+                <div class="oe_structure oe_empty" id="lantero_track_order_top_zone"/>
+                <!-- Search Form lookup zone calling track lookup snippet -->
+                <div class="oe_structure" id="lantero_track_order_lookup_zone">
+                    <t t-call="theme_lantero.s_track_lookup">
+                        <t t-set="order_number" t-value="order_number"/>
+                        <t t-set="email" t-value="email"/>
+                    </t>
+                </div>
+                <div class="oe_structure oe_empty" id="lantero_track_order_bottom_zone"/>
+                <section class="track-section pt-0 o_colored_level" data-name="Track Results Section">
+                    <div class="container">
+                        <!-- Error Message if order search fails -->
+                        <t t-if="error">
+                            <div class="alert alert-danger text-center mx-auto mb-5" style="max-width: 720px; border-radius: 0;" role="alert">
+                                <t t-out="error"/>
+                            </div>
+                        </t>
+                        <!-- DYNAMIC RENDER (When sale order is found in search) -->
+                        <t t-if="order">
+                            <!-- Order Header info block -->
+                            <div class="track-order-header">
+                                <div class="track-order-header-item">
+                                    <span class="label">Order</span>
+                                    <span class="value" t-out="'#' + order.name"/>
+                                </div>
+                                <div class="track-order-header-item">
+                                    <span class="label">Placed on</span>
+                                    <span class="value" t-field="order.date_order" t-options="{'widget': 'date', 'format': 'MMMM dd, YYYY'}"/>
+                                </div>
+                                <div class="track-order-header-item">
+                                    <span class="label">Estimated delivery</span>
+                                    <span class="value">Pending Update</span>
+                                </div>
+                                <div class="track-order-header-item">
+                                    <span class="label">Items</span>
+                                    <span class="value" t-out="str(len(order.order_line.filtered(lambda l: not l.display_type))) + ' pieces'"/>
+                                </div>
+                            </div>
+                            <!-- Stepper displaying live tracking stages -->
+                            <div class="track-progress" t-attf-style="--progress: #{progress};">
+                                <div t-attf-class="track-step #{'is-complete' if status_step &gt;= 1 else ''}">
+                                    <div class="track-step-icon"><i class="bi bi-check-lg"/></div>
+                                    <div class="track-step-label">Order placed</div>
+                                    <div class="track-step-meta" t-field="order.date_order" t-options="{'widget': 'datetime', 'format': 'MMM dd, HH:mm'}"/>
+                                </div>
+                                <div t-attf-class="track-step #{'is-complete' if status_step &gt;= 2 else ''}">
+                                    <div class="track-step-icon"><i class="bi bi-check-lg"/></div>
+                                    <div class="track-step-label">Hand-crafted</div>
+                                    <div class="track-step-meta">Completed</div>
+                                </div>
+                                <div t-attf-class="track-step #{'is-complete' if status_step &gt; 3 else ('is-active' if status_step == 3 else '')}">
+                                    <div class="track-step-icon"><i class="bi bi-truck"/></div>
+                                    <div class="track-step-label">Shipped</div>
+                                    <div class="track-step-meta" t-out="'Completed' if status_step &gt; 3 else ('In transit' if status_step == 3 else 'Pending')"/>
+                                </div>
+                                <div t-attf-class="track-step #{'is-active' if status_step == 4 else ''}">
+                                    <div class="track-step-icon"><i class="bi bi-geo-alt"/></div>
+                                    <div class="track-step-label">Out for delivery</div>
+                                    <div class="track-step-meta" t-out="'In transit' if status_step == 4 else 'Pending'"/>
+                                </div>
+                                <div t-attf-class="track-step #{'is-complete' if status_step == 5 else ''}">
+                                    <div class="track-step-icon"><i class="bi bi-house-check"/></div>
+                                    <div class="track-step-label">Delivered</div>
+                                    <div class="track-step-meta" t-out="'Delivered' if status_step == 5 else 'Pending'"/>
+                                </div>
+                            </div>
+                            <!-- Carrier Info Snippet inclusion -->
+                            <t t-call="theme_lantero.s_track_carrier"/>
+                            <div class="row gx-lg-5">
+                                <!-- Live Activity Timeline logs -->
+                                <div class="col-lg-7 mb-5 mb-lg-0">
+                                    <h2 class="checkout-section-title mb-4">Activity</h2>
+                                    <ul class="track-timeline">
+                                        <t t-if="status_step == 5">
+                                            <li class="track-timeline-item is-done">
+                                                <span class="track-timeline-time">Delivered</span>
+                                                <h3 class="track-timeline-title">Package Delivered</h3>
+                                                <p class="track-timeline-desc">Your order has been successfully delivered to the shipping address provided.</p>
+                                            </li>
+                                        </t>
+                                        <t t-if="status_step &gt;= 3">
+                                            <li class="track-timeline-item is-done">
+                                                <span class="track-timeline-time">Shipped</span>
+                                                <h3 class="track-timeline-title">Package shipped</h3>
+                                                <p class="track-timeline-desc">Your order has left our atelier and is in transit. You can track it using the carrier tracking number above.</p>
+                                            </li>
+                                        </t>
+                                        <t t-if="status_step &gt;= 2">
+                                            <li class="track-timeline-item is-done">
+                                                <span class="track-timeline-time">Atelier</span>
+                                                <h3 class="track-timeline-title">Quality check complete</h3>
+                                                <p class="track-timeline-desc">Your crafted jewelry pieces have successfully passed our three-stage quality inspection, boxed, and prepared for collection.</p>
+                                            </li>
+                                            <li class="track-timeline-item is-done">
+                                                <span class="track-timeline-time">Atelier</span>
+                                                <h3 class="track-timeline-title">Hand-crafting complete</h3>
+                                                <p class="track-timeline-desc">The master artisan benchwork for your order items has been completed and sent to packaging.</p>
+                                            </li>
+                                        </t>
+                                        <li class="track-timeline-item is-done">
+                                            <span class="track-timeline-time" t-field="order.date_order" t-options="{'widget': 'date', 'format': 'MMMM dd, YYYY'}"/>
+                                            <h3 class="track-timeline-title">Order received and confirmed</h3>
+                                            <p class="track-timeline-desc" t-out="'Payment of ' + str(order.amount_total) + ' ' + order.currency_id.name + ' confirmed. Confirmation email sent.'"/>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <!-- Ordered items and prices summary block -->
+                                <div class="col-lg-5">
+                                    <div class="order-summary">
+                                        <h2 class="order-summary-title">In this order</h2>
+                                        <t t-foreach="order.order_line.filtered(lambda l: not l.display_type)" t-as="line">
+                                            <div class="order-item">
+                                                <div class="order-item-img-wrap">
+                                                    <img t-attf-src="/web/image/product.product/#{line.product_id.id}/image_128" t-att-alt="line.product_id.name"/>
+                                                    <span class="order-item-qty-bubble" t-out="int(line.product_uom_qty)"/>
+                                                </div>
+                                                <div class="order-item-info">
+                                                    <div class="order-item-title" t-out="line.product_id.name"/>
+                                                    <div class="order-item-variant" t-out="line.product_id.product_template_attribute_value_ids.mapped('name') and ' &#183; '.join(line.product_id.product_template_attribute_value_ids.mapped('name')) or ''"/>
+                                                </div>
+                                                <div class="order-item-price" t-field="line.price_total" t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                                            </div>
+                                        </t>
+                                        <div class="order-totals">
+                                            <div class="order-totals-row">
+                                                <span>Subtotal</span>
+                                                <span t-field="order.amount_untaxed" t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                                            </div>
+                                            <div class="order-totals-row">
+                                                <span>Shipping</span>
+                                                <span>Free</span>
+                                            </div>
+                                            <div class="order-totals-row">
+                                                <span>Tax</span>
+                                                <span t-field="order.amount_tax" t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                                            </div>
+                                            <div class="order-totals-row is-total">
+                                                <span>Total</span>
+                                                <span t-field="order.amount_total" t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                                            </div>
+                                        </div>
+                                        <h3 class="checkout-section-title mt-4 mb-3" style="font-size: 1.1rem;">Shipping to</h3>
+                                        <div class="info-card">
+                                            <span t-field="order.partner_shipping_id.name"/><br/>
+                                            <span t-field="order.partner_shipping_id.street"/><br/>
+                                            <t t-if="order.partner_shipping_id.street2">
+                                                <span t-field="order.partner_shipping_id.street2"/><br/>
+                                            </t>
+                                            <span t-field="order.partner_shipping_id.city"/>, <span t-field="order.partner_shipping_id.state_id.name"/> <span t-field="order.partner_shipping_id.zip"/><br/>
+                                            <span t-field="order.partner_shipping_id.country_id.name"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                        <!-- STATIC RENDER / FALLBACK (Default beautifully pre-populated mock order when no queries are active) -->
+                        <t t-else="">
+                            <!-- Mock Order Header details -->
+                            <div class="track-order-header">
+                                <div class="track-order-header-item">
+                                    <span class="label">Order</span>
+                                    <span class="value">#L-2026-04830</span>
+                                </div>
+                                <div class="track-order-header-item">
+                                    <span class="label">Placed on</span>
+                                    <span class="value">April 30, 2026</span>
+                                </div>
+                                <div class="track-order-header-item">
+                                    <span class="label">Estimated delivery</span>
+                                    <span class="value">May 03 &#8212; May 07</span>
+                                </div>
+                                <div class="track-order-header-item">
+                                    <span class="label">Items</span>
+                                    <span class="value">2 pieces</span>
+                                </div>
+                            </div>
+                            <!-- Mock Stepper tracking stages -->
+                            <div class="track-progress" style="--progress: 50;">
+                                <div class="track-step is-complete">
+                                    <div class="track-step-icon"><i class="bi bi-check-lg"/></div>
+                                    <div class="track-step-label">Order placed</div>
+                                    <div class="track-step-meta">Apr 30, 09:14</div>
+                                </div>
+                                <div class="track-step is-complete">
+                                    <div class="track-step-icon"><i class="bi bi-check-lg"/></div>
+                                    <div class="track-step-label">Hand-crafted</div>
+                                    <div class="track-step-meta">May 01, 16:42</div>
+                                </div>
+                                <div class="track-step is-active">
+                                    <div class="track-step-icon"><i class="bi bi-truck"/></div>
+                                    <div class="track-step-label">Shipped</div>
+                                    <div class="track-step-meta">May 02, 11:08</div>
+                                </div>
+                                <div class="track-step">
+                                    <div class="track-step-icon"><i class="bi bi-geo-alt"/></div>
+                                    <div class="track-step-label">Out for delivery</div>
+                                    <div class="track-step-meta">Pending</div>
+                                </div>
+                                <div class="track-step">
+                                    <div class="track-step-icon"><i class="bi bi-house-check"/></div>
+                                    <div class="track-step-label">Delivered</div>
+                                    <div class="track-step-meta">Pending</div>
+                                </div>
+                            </div>
+                            <!-- Carrier Info Snippet inclusion -->
+                            <t t-call="theme_lantero.s_track_carrier"/>
+                        </t>
+                        <!-- Concierge / Need help contact zone -->
+                        <div class="text-center mt-5 pt-3">
+                            <p class="text-muted fs-sm mb-2">Question about your delivery?</p>
+                            <a href="/contactus" class="about-link">Contact our concierge <i class="bi bi-arrow-right ms-2"/></a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+    <!-- Register/publish the /track-order page in website pages registry -->
+    <record id="lantero_track_order_page_page" model="theme.website.page">
+        <field name="url">/track-order</field>
+        <field name="view_id" ref="lantero_track_order_page"/>
+        <field name="is_published">True</field>
+    </record>
+</odoo>

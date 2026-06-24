@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--    Template for Home Page-->
+    <template id="voltro_home_page" name="Voltro Home Page"
+              inherit_id="website.homepage">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap" class="oe_structure oe_empty o_editable">
+                <!-- Hero -->
+                <section class="hero">
+                    <div class="container-xl">
+                        <div class="hero-grid">
+                            <!-- Left: Headline -->
+                            <div class="hero-cell cell-text">
+                                <span class="mini-eyebrow">— The Essentials</span>
+                                <h1 class="hero-title">
+                                    <span>Beauty</span>
+                                    <span>inspired by</span>
+                                    <span>Real Life.</span>
+                                </h1>
+                                <p class="hero-sub">Made using clean, non-toxic ingredients, our products are designed
+                                    for everyone.
+                                </p>
+                                <a href="/shop" class="btn-routine">
+                                    <span>Shop the Collection</span>
+                                    <span class="arrow-chip">
+                                        <i class="bi bi-arrow-up-right"/>
+                                    </span>
+                                </a>
+                                <div class="cell-meta">
+                                    <span>
+                                        <i class="bi bi-shield-check"/>
+                                        Cruelty-free
+                                    </span>
+                                    <span>
+                                        <i class="bi bi-flower2"/>
+                                        Plant-powered
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- Middle: Hero image -->
+                            <a href="/shop" class="hero-cell cell-image">
+                                <img src="/theme_beauty_shop/static/src/img/hero-oil.jpg"
+                                     alt="Glowing skincare essentials"/>
+                                <span class="btn-routine light sm image-btn">
+                                    <span>Shop now</span>
+                                    <span class="arrow-chip">
+                                        <i class="bi bi-arrow-up-right"/>
+                                    </span>
+                                </span>
+                            </a>
+                            <!-- Top right: New arrival -->
+                            <a href="/shop" class="hero-cell cell-card card-cream">
+                                <img class="card-bg"
+                                     src="/theme_beauty_shop/static/src/img/product-serum.jpg"
+                                     alt=""/>
+                                <div class="card-text">
+                                    <small class="mini-eyebrow dark">New Arrival</small>
+                                    <h3>Intensive Glow
+                                        <br/>
+                                        <em>C+ Serum</em>
+                                    </h3>
+                                    <span class="card-link">Explore
+                                        <span class="line"/>
+                                    </span>
+                                </div>
+                                <span class="arrow-circle">
+                                    <i class="bi bi-arrow-up-right"/>
+                                </span>
+                            </a>
+                            <!-- Bottom right: Sale -->
+                            <a href="/shop" class="hero-cell cell-card card-dark">
+                                <img class="card-bg dim"
+                                     src="/theme_beauty_shop/static/src/img/product-spray.jpg"
+                                     alt=""/>
+                                <div class="card-text">
+                                    <h3 class="sale-title">25%
+                                        <em>off</em>
+                                    </h3>
+                                    <p>Everything in store.<br/>Limited time only.
+                                    </p>
+                                    <span class="btn-routine light sm">
+                                        <span>Shop Sale</span>
+                                        <span class="arrow-chip">
+                                            <i class="bi bi-arrow-up-right"/>
+                                        </span>
+                                    </span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                <!-- Featured products -->
+                <section id="products" class="section-products">
+                    <div class="container">
+                        <div class="section-head">
+                            <div class="row align-items-end">
+                                <div class="col-md-8">
+                                    <span class="eyebrow">— Bestsellers</span>
+                                    <h2 class="display-4 fw-light mb-2">Our Featured
+                                        <em>Products</em>
+                                    </h2>
+                                    <p class="text-muted mb-md-0">Get the skin you want to feel curated picks loved by
+                                        our community.
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <a href="/shop" class="btn-routine sm">
+                                        <span>View all products</span>
+                                        <span class="arrow-chip">
+                                            <i class="bi bi-arrow-up-right"/>
+                                        </span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-4 oe_website_sale" id="products_grid">
+                            <t t-set="featured_products"
+                               t-value="request.env['product.template'].search([('website_published', '=', True)], limit=4)"/>
+                            <t t-foreach="featured_products" t-as="f_product">
+                                <div class="col-6 col-lg-3">
+                                    <article class="product-card">
+                                        <div class="product-media tone-mint">
+                                            <button class="wish-btn o_add_wishlist"
+                                                    t-att-data-product-product-id="f_product.product_variant_ids[0].id"
+                                                    t-att-data-product-template-id="f_product.id" aria-label="Wishlist">
+                                                <i class="bi bi-heart"/>
+                                            </button>
+                                            <a t-att-href="'/shop/product/%s' % slug(f_product)">
+                                                <span t-field="f_product.image_1920"
+                                                      t-options="{'widget': 'image', 'class': 'product-img'}"/>
+                                            </a>
+                                            <form class="w-100 js_product">
+                                                <input type="hidden" name="csrf_token"
+                                                       t-att-value="request.csrf_token()"/>
+                                                <input type="hidden" name="product_id"
+                                                       t-att-value="f_product.product_variant_ids[0].id if f_product.product_variant_ids else f_product.id"/>
+                                                <input type="hidden" name="product_template_id"
+                                                       t-att-value="f_product.id"/>
+                                                <input type="hidden" name="product_type" t-att-value="f_product.type"/>
+                                                <div class="o_wsale_product_btn w-100 text-center">
+                                                    <button type="button" class="quick-add a-submit"><i
+                                                            class="bi bi-bag-plus me-2"/>Add to Cart
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="product-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <small class="cat-label">
+                                                    <t t-out="f_product.public_categ_ids[0].name if f_product.public_categ_ids else 'Shop'"/>
+                                                </small>
+                                            </div>
+                                            <h3 class="product-title">
+                                                <a t-att-href="'/shop/product/%s' % slug(f_product)">
+                                                    <t t-out="f_product.name"/>
+                                                </a>
+                                            </h3>
+                                            <div class="price">
+                                                <t t-set="combination_info"
+                                                   t-value="f_product._get_combination_info()"/>
+                                                <span t-out="combination_info['price']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+                <!-- Routine / How to use -->
+                <section class="section-routine">
+                    <div class="container">
+                        <div class="row align-items-center g-5">
+                            <div class="col-lg-5">
+                                <div class="routine-collage">
+                                    <div class="r-tile r-tile-1">
+                                        <img src="/theme_beauty_shop/static/src/img/routine-ritual.jpg"
+                                             alt="Daily skincare ritual"/>
+                                        <span class="r-label">Daily Ritual</span>
+                                    </div>
+                                    <div class="r-tile r-tile-2">
+                                        <img src="/theme_beauty_shop/static/src/img/product-serum.jpg"
+                                             alt="Perfecting facial serum"/>
+                                        <span class="r-label">Cleanser</span>
+                                    </div>
+                                    <div class="r-tile r-tile-3">
+                                        <img src="/theme_beauty_shop/static/src/img/product-cream.jpg"
+                                             alt="Moisturizing cream"/>
+                                        <span class="r-label">C+ Serum</span>
+                                    </div>
+                                    <div class="r-tile r-tile-4">
+                                        <img src="/theme_beauty_shop/static/src/img/hero-oil.jpg"
+                                             alt="Facial oil dropper"/>
+                                        <span class="r-label">Body Lotion</span>
+                                    </div>
+                                    <div class="r-tile r-tile-5">
+                                        <img src="/theme_beauty_shop/static/src/img/product-spray.jpg"
+                                             alt="Shield spray"/>
+                                        <span class="r-label">Hair Mask</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-7">
+                                <span class="eyebrow">— Your daily ritual</span>
+                                <h2 class="display-4 fw-light mb-4">Glowing skin in
+                                    <em>three steps</em>
+                                </h2>
+                                <div class="routine-steps">
+                                    <div class="step">
+                                        <span class="step-no">01</span>
+                                        <div>
+                                            <h6>Cleanse</h6>
+                                            <p class="text-muted mb-0">Wash with our gentle coconut oil cleanser to lift
+                                                impurities without stripping skin.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-no">02</span>
+                                        <div>
+                                            <h6>Treat</h6>
+                                            <p class="text-muted mb-0">Apply 3–4 drops of perfecting facial oil to lock
+                                                in hydration overnight.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-no">03</span>
+                                        <div>
+                                            <h6>Protect</h6>
+                                            <p class="text-muted mb-0">Finish with shield spray for SPF defense and a
+                                                luminous, dewy finish.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="/shop" class="btn-routine mt-4">
+                                    <span>Build your routine</span>
+                                    <span class="arrow-chip">
+                                        <i class="bi bi-arrow-up-right"/>
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- Promise / Values -->
+                <section id="promise" class="section-promise">
+                    <div class="container">
+                        <div class="row align-items-end mb-5">
+                            <div class="col-lg-7">
+                                <span class="eyebrow">— The Glowing Promise</span>
+                                <h2 class="display-5 fw-light mb-0">Skincare with
+                                    <em>nothing to hide</em>
+                                </h2>
+                            </div>
+                            <div class="col-lg-5 text-lg-end mt-3 mt-lg-0">
+                                <p class="text-muted mb-0">Every formula is screened against our 1,800+ "no" list, so
+                                    you only get what your skin actually needs.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row g-3 g-md-4">
+                            <div class="col-6 col-md-3">
+                                <div class="promise-card">
+                                    <i class="bi bi-flower2"/>
+                                    <h6>Plant-Powered</h6>
+                                    <p>Botanical extracts at the heart of every formula.</p>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="promise-card">
+                                    <i class="bi bi-shield-check"/>
+                                    <h6>Dermatologist Tested</h6>
+                                    <p>Clinically proven for every skin type.</p>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="promise-card">
+                                    <i class="bi bi-recycle"/>
+                                    <h6>Refillable</h6>
+                                    <p>Packaging designed to live more than once.</p>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="promise-card">
+                                    <i class="bi bi-heart"/>
+                                    <h6>Cruelty-Free</h6>
+                                    <p>Never tested on animals Leaping Bunny certified.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- Press / testimonials -->
+                <section class="press-section">
+                    <div class="container">
+                        <!-- Header -->
+                        <div class="text-center mb-5 press-head">
+                            <span class="eyebrow">— Customer reviews</span>
+                            <h2 class="display-5 fw-light mb-0">Loved by
+                                <em>customers worldwide</em>
+                            </h2>
+                        </div>
+                        <!-- Review cards -->
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <article class="review-card">
+                                    <div class="rating">
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <span>5.0</span>
+                                    </div>
+                                    <h6 class="review-title">Phenomenal service</h6>
+                                    <p>"Also the customer service is phenomenal. I would purchase again they know how to
+                                        make their customers feel valued."
+                                    </p>
+                                    <div class="reviewer">
+                                        <span class="avatar bg-accent">EM</span>
+                                        <div>
+                                            <strong>Emma Rivers
+                                                <i class="bi bi-patch-check-fill"/>
+                                            </strong>
+                                            <small>Perfecting Facial Oil</small>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                            <div class="col-md-4">
+                                <article class="review-card featured">
+                                    <span class="badge-pick">Most Loved</span>
+                                    <div class="rating">
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <span>5.0</span>
+                                    </div>
+                                    <h6 class="review-title">Luxe without compromise</h6>
+                                    <p>"Great product line. Very attentive staff to deal with clean formulas without
+                                        compromising on luxe textures."
+                                    </p>
+                                    <div class="reviewer">
+                                        <span class="avatar bg-cream">SC</span>
+                                        <div>
+                                            <strong>Sofia Chen
+                                                <i class="bi bi-patch-check-fill"/>
+                                            </strong>
+                                            <small>Intensive Glow C+ Serum</small>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                            <div class="col-md-4">
+                                <article class="review-card">
+                                    <div class="rating">
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-half"/>
+                                        <span>4.8</span>
+                                    </div>
+                                    <h6 class="review-title">Thoughtfully made</h6>
+                                    <p>"Looking to affordably upgrade your everyday routine? Look no further than this
+                                        thoughtfully made skincare."
+                                    </p>
+                                    <div class="reviewer">
+                                        <span class="avatar bg-rose">AJ</span>
+                                        <div>
+                                            <strong>Ava Johansson
+                                                <i class="bi bi-patch-check-fill"/>
+                                            </strong>
+                                            <small>Shield Spray</small>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                        <!-- Summary footer -->
+                        <div class="reviews-footer">
+                            <div class="big-rating">
+                                <strong>4.9</strong>
+                                <div>
+                                    <div class="stars">
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                        <i class="bi bi-star-fill"/>
+                                    </div>
+                                    <small>Based on <strong>4,200+ verified</strong> reviews
+                                    </small>
+                                </div>
+                            </div>
+                            <a href="#" class="btn-routine sm">
+                                <span>Read all reviews</span>
+                                <span class="arrow-chip">
+                                    <i class="bi bi-arrow-up-right"/>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                <!-- Instagram grid -->
+                <section class="instagram-section">
+                    <div class="container">
+                        <div class="text-center mb-5">
+                            <span class="eyebrow">
+                                <i class="bi bi-instagram me-1"/>
+                                @glowing
+                            </span>
+                            <h2 class="display-4 fw-light mb-2">Join the
+                                <em>#GlowingFamily</em>
+                            </h2>
+                            <p class="text-muted">Share your glow with us, we love seeing how you ritual.</p>
+                        </div>
+                        <div class="ig-grid">
+                            <a href="#" class="ig-tile" aria-label="Instagram post — applying skincare ritual"
+                               t-attf-style="background-image:url('/theme_beauty_shop/static/src/img/ig-1.jpg')">
+                                <i class="bi bi-instagram"/>
+                            </a>
+                            <a href="#" class="ig-tile" aria-label="Instagram post — flatlay of skincare products"
+                               t-attf-style="background-image:url('/theme_beauty_shop/static/src/img/ig-2.jpg')">
+                                <i class="bi bi-instagram"/>
+                            </a>
+                            <a href="#" class="ig-tile" aria-label="Instagram post — bathroom shelf with bottles"
+                               t-attf-style="background-image:url('/theme_beauty_shop/static/src/img/ig-3.jpg')">
+                                <i class="bi bi-instagram"/>
+                            </a>
+                            <a href="#" class="ig-tile" aria-label="Instagram post — close-up of glowing skin"
+                               t-attf-style="background-image:url('/theme_beauty_shop/static/src/img/ig-4.jpg')">
+                                <i class="bi bi-instagram"/>
+                            </a>
+                            <a href="#" class="ig-tile" aria-label="Instagram post — customer with our facial oil"
+                               t-attf-style="background-image:url('/theme_beauty_shop/static/src/img/ig-5.jpg')">
+                                <i class="bi bi-instagram"/>
+                            </a>
+                            <a href="#" class="ig-tile" aria-label="Instagram post — customer portrait sharing routine"
+                               t-attf-style="background-image:url('/theme_beauty_shop/static/src/img/ig-6.jpg')">
+                                <i class="bi bi-instagram"/>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                <!-- Newsletter -->
+                <section class="newsletter">
+                    <div class="container">
+                        <div class="newsletter-card">
+                            <span class="eyebrow">— Stay in the glow</span>
+                            <h2 class="news-title">Get <em>10% off</em> your first order
+                            </h2>
+                            <p class="news-sub">Subscribe for early access, expert skin tips, and subscriber-only
+                                offers.
+                            </p>
+                            <form class="news-form"
+                                  t-attf-onsubmit="event.preventDefault(); this.querySelector('.sub-msg').classList.add('show');">
+                                <label class="news-input-group">
+                                    <input type="email" placeholder="Your email address" required="required"/>
+                                    <button type="submit" class="btn-routine sm news-submit">
+                                        <span>Subscribe</span>
+                                        <span class="arrow-chip">
+                                            <i class="bi bi-arrow-up-right"/>
+                                        </span>
+                                    </button>
+                                </label>
+                                <small class="form-foot">By subscribing you agree to our <a href="#">privacy policy</a>.
+                                </small>
+                                <small class="sub-msg">✓ Welcome — check your inbox for your code.</small>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+    </template>
+</odoo>
