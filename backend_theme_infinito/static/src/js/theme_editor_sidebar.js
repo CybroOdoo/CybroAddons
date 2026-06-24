@@ -110,7 +110,7 @@ export class ThemeEditorSidebar extends Component {
                 </div>
             </div>
             <div class="sidebar_footer">
-                <a href="#" class="btn btn-reset js_reset_changes" t-on-click="_onResetChanges" style="margin-top:0px;">Reset</a>
+                <a href="#" class="btn btn-reset me-2 js_reset_changes" t-on-click="_onResetChanges" style="margin-top:0px;">Reset</a>
                 <a href="#" class="btn btn-submit js_save_changes" t-on-click="_onSaveChanges">Save Change
                 </a>
             </div>

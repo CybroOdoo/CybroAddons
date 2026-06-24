@@ -9,3 +9,8 @@ Initial Commit for Infinito Backend Theme
 #### Version 17.0.1.0.1
 #### UPDT
 Resolved the issue of recent apps
+
+#### 16.06.2026
+#### Version 17.0.1.0.2
+#### UPDT
+Minor styling improvements and UI fixes

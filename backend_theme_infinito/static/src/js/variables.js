@@ -3,7 +3,6 @@
  * Object containing CSS variable names and their corresponding ranges for generating color variations.
  * @type {Object.<string, number[]>}
  */
- console.log("1234567327453245735")
 const variables = {
     "--bg_white": [1, 1],
     "--bg_black": [5, 1],
