@@ -19,28 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-{
-    'name': 'Timesheet PDF Report',
-    'version': '19.0.1.0.1',
-    "category": "Project",
-    'summary': 'Timesheet PDF Report of Employees',
-    'description': 'Comprehensive timesheet PDF report summarizing employee '
-                   'work hours and activities for efficient tracking and '
-                   'management.',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['hr','hr_timesheet'],
-    'data': [
-        'security/ir.model.access.csv',
-        'report/timesheet_templates.xml',
-        'report/timesheet_reports.xml',
-        'wizard/timesheet_report_views.xml',
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from . import test_timesheets_by_employee
