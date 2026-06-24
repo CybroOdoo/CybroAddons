@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Trending Now Snippet -->
+    <template id="s_velox_trending_grid_snippet" name="Velox Trending Now">
+        <t t-set="month_start" t-value="datetime.date.today().replace(day=1).strftime('%Y-%m-%d')"/>
+        <t t-set="sold_groups" t-value="request.env['sale.order.line'].sudo()._read_group(
+      [('order_id.state', 'in', ['sale', 'done']), ('order_id.date_order', '&gt;=', month_start), ('product_id.active', '=', True)],
+      ['product_id'],
+      ['product_uom_qty:sum'],
+      order='product_uom_qty:sum desc',
+      limit=64
+    )"/>
+        <t t-set="top_variant_ids" t-value="[p.id for p, qty in sold_groups if p and qty &gt; 5]"/>
+        <t t-set="ordered_tmpl_ids" t-value="list(dict.fromkeys(
+      v.product_tmpl_id.id
+      for v in request.env['product.product'].sudo().browse(top_variant_ids)
+    ))"/>
+        <t t-set="_trending_base"
+           t-value="request.env['product.template'].sudo().browse(ordered_tmpl_ids).filtered(lambda p: p.is_published)[:8]"/>
+        <t t-set="trending_products"
+           t-value="_trending_base if _trending_base else request.env['product.template'].sudo().search([('is_published', '=', True)], order='create_date desc', limit=8)"/>
+        <t t-set="products_in_wishlist"
+           t-value="request.env['product.wishlist'].sudo().search([('partner_id', '=', request.env.user.partner_id.id)]).mapped('product_id.product_tmpl_id') if (request.env.registry.models.get('product.wishlist') and not request.env.user._is_public()) else request.env['product.template'].sudo().browse()"/>
+        <section class="s_velox_trending_grid o_colored_level trending-now pb64 pt64"
+                 data-snippet="theme_velox.s_velox_trending_grid_snippet"
+                 data-name="Velox Trending Now">
+            <div class="container container-fluid">
+                <div class="velox-section-header mb40">
+                    <h2 class="s_title velox-section-title text-white" data-name="Section Title">Trending Now</h2>
+                    <a href="/shop/trending" class="velox-section-link">View All Trending</a>
+                </div>
+                <div class="velox-products-wrap">
+                    <t t-if="trending_products">
+                        <div class="row g-3">
+                            <t t-foreach="trending_products" t-as="product">
+                                <div class="col-6 col-md-4 col-lg-3">
+                                    <t t-call="theme_velox.velox_product_card"/>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <p class="text-center velox-section-link">No trending products at the moment.</p>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </template>
+</odoo>

@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Shop Pages and Templates -->
+    <!-- Velox Shop Wrap
+         Defines the structure and styling for Velox Shop Wrap.
+    -->
+    <template id="velox_shop_wrap" name="Velox Shop Wrap" inherit_id="website_sale.products">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="velox-shop-page" separator=" "/>
+        </xpath>
+    </template>
+    <!--
+      Velox Shop Banner
+      Defines the structure and styling for Velox Shop Banner.
+    -->
+    <template id="velox_shop_banner" name="Velox Shop Banner" inherit_id="website_sale.products">
+        <xpath expr="//div[@id='o_wsale_container']" position="before">
+            <div class="velox-shop-banner">
+                <div class="velox-shop-banner-overlay"/>
+                <div class="container position-relative" style="z-index:1">
+                    <t t-if="category">
+                        <h1 t-esc="category.name"/>
+                        <p t-if="category.website_description" t-out="category.website_description"/>
+                        <p t-else="">Conquer the elements. Engineered for ultimate durability, protection, and
+                            performance.
+                        </p>
+                    </t>
+                    <t t-else="">
+                        <h1>Outdoor Collection</h1>
+                        <p>Conquer the elements. Engineered for ultimate durability, protection, and performance.</p>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <!--
+      Velox Product Img
+      Defines the structure and styling for Velox Product Img.
+    -->
+    <template id="velox_product_img" name="Velox Product Img" inherit_id="website_sale.products_item">
+        <xpath expr="//div[contains(@t-attf-class, 'oe_product_image')]" position="attributes">
+            <attribute name="class" add="velox-product-img-wrap" separator=" "/>
+        </xpath>
+    </template>
+    <!--
+      Velox Product Body
+      Defines the structure and styling for Velox Product Body.
+    -->
+    <template id="velox_product_body" name="Velox Product Body" inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('o_wsale_product_information')]" position="attributes">
+            <attribute name="class" add="velox-product-body" separator=" "/>
+        </xpath>
+    </template>
+    <!--
+      Velox Product Breadcrumb
+      Defines the structure and styling for Velox Product Breadcrumb.
+    -->
+    <template id="velox_product_breadcrumb" name="Velox Product Breadcrumb" inherit_id="website_sale.product">
+        <xpath expr="//ol[hasclass('breadcrumb')]" position="attributes">
+            <attribute name="class" add="velox-breadcrumb" separator=" "/>
+        </xpath>
+    </template>
+    <!--
+      Velox Product Detail Style
+      Defines the structure and styling for Velox Product Detail Style.
+    -->
+    <template id="velox_product_detail_style" name="Velox Product Detail Style" inherit_id="website_sale.product">
+        <xpath expr="//section[@id='product_detail']" position="attributes">
+            <attribute name="class" add="velox-product-detail" separator=" "/>
+        </xpath>
+    </template>
+    <!-- Product Page: ADD TO BAG -->
+    <!--
+      Velox Cta Wrapper
+      Defines the structure and styling for Velox Cta Wrapper.
+    -->
+    <template id="velox_cta_wrapper" inherit_id="website_sale.cta_wrapper">
+        <xpath expr="//a[@id='add_to_cart']" position="replace">
+            <a
+                    id="add_to_cart"
+                    role="button"
+                    href="#"
+                    t-attf-class="btn btn-primary js_check_product a-submit flex-grow-1 velox-add-to-cart-btn"
+                    t-att-data-show-quantity="is_view_active('website_sale.product_quantity')"
+                    data-animation-selector=".o_wsale_product_images"
+            >
+                <i class="fa fa-shopping-bag me-2"/>
+                ADD TO BAG
+            </a>
+        </xpath>
+    </template>
+    <!-- Completely remove the standard bottom product action row (eliminates dead space) -->
+    <!--
+      Velox Remove Bottom Actions
+      Defines the structure and styling for Velox Remove Bottom Actions.
+    -->
+    <template id="velox_remove_bottom_actions" inherit_id="website_sale.shop_product_buttons">
+        <xpath expr="//div[hasclass('o_wsale_product_action_row')]" position="attributes">
+            <attribute name="style">
+                display:none!important;height:0!important;overflow:hidden!important;padding:0!important;margin:0!important;
+            </attribute>
+        </xpath>
+    </template>
+    <!-- Shop Grid: Cart Overlay on Product Image -->
+    <!--
+      Velox Grid Overlays
+      Defines the structure and styling for Velox Grid Overlays.
+    -->
+    <template id="velox_grid_overlays" inherit_id="website_sale.products_item">
+        <xpath expr="//div[contains(@t-attf-class, 'oe_product_image')]" position="inside">
+
+            <t t-if="product._website_show_quick_add()">
+                <button
+                        type="button"
+                        class="velox-grid-cart-btn o_wsale_product_btn_primary"
+                        data-velox-cart="1"
+                        t-att-data-product-template-id="product.id"
+                        t-att-data-product-product-id="product._get_first_possible_variant_id()"
+                        aria-label="Add to cart"
+                        title="Add to cart"
+                >
+                    <i class="fa fa-shopping-bag"/>
+                </button>
+            </t>
+        </xpath>
+    </template>
+    <!--
+      Velox Portal Wrap
+      Defines the structure and styling for Velox Portal Wrap.
+    -->
+    <template id="velox_portal_wrap" name="Velox Portal Wrap" inherit_id="portal.portal_layout">
+        <xpath expr="//div[hasclass('o_portal_wrap')]" position="attributes">
+            <attribute name="class" add="velox-portal-wrap" separator=" "/>
+        </xpath>
+    </template>
+    <!--
+      Velox Similar Products
+      Defines the structure and styling for Velox Similar Products.
+    -->
+    <template id="velox_similar_products" name="Velox Similar Products" inherit_id="website_sale.product">
+        <xpath expr="//section[@id='product_detail']" position="after">
+
+            <t t-set="_also_like_products"
+               t-value="product.sudo().accessory_product_ids.mapped('product_tmpl_id').filtered(lambda p: p.is_published)[:4] or request.env['product.template'].sudo().search([('is_published','=',True),('categ_id','=',product.categ_id.id),('id','!=',product.id)], limit=4)"/>
+            <t t-if="_also_like_products">
+                <t t-set="_also_like_wl"
+                   t-value="request.env['product.wishlist'].sudo().search([('partner_id','=',request.env.user.partner_id.id)]).mapped('product_id.product_tmpl_id') if (request.env.registry.models.get('product.wishlist') and not request.env.user._is_public()) else request.env['product.template'].sudo().browse()"/>
+                <section class="velox-also-like pt64 pb64">
+                    <div class="container">
+                        <div class="velox-section-header mb40">
+                            <h2 class="velox-section-title velox-also-like-title">YOU MIGHT ALSO LIKE</h2>
+                            <a t-attf-href="/shop?categ_id=#{product.categ_id.id}" class="velox-section-link">View All
+                            </a>
+                        </div>
+                        <div class="row g-3">
+                            <t t-foreach="_also_like_products[:4]" t-as="rec">
+                                <div class="col-lg-3 col-md-6 col-6">
+                                    <t t-set="product" t-value="rec"/>
+                                    <t t-set="products_in_wishlist" t-value="_also_like_wl"/>
+                                    <t t-call="theme_velox.velox_product_card"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+            </t>
+        </xpath>
+    </template>
+    <!--
+      Velox Confirmation
+      Defines the structure and styling for Velox Confirmation.
+    -->
+    <template id="velox_confirmation" inherit_id="website_sale.confirmation" name="Velox Confirmation">
+        <xpath expr="//div[@id='order_name']" position="replace">
+            <div class="velox-confirmation-header mb-4 mt-5">
+                <div class="velox-icon-circle mb-4"
+                     style="width: 80px; height: 80px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; font-size: 2rem;">
+                    <i class="fa fa-check"></i>
+                </div>
+                <h1 class="velox-thank-you text-uppercase mb-3"
+                    style="font-family: var(--font-display); font-weight: 700; letter-spacing: 0.05em; font-size: 2.5rem;">
+                    THANK YOU,<t t-out="order.partner_id.name.split(' ')[0].upper()"/>!
+                </h1>
+                <p class="velox-order-subtitle text-muted" style="line-height: 1.6; max-width: 600px;">
+                    Your order
+                    <strong>
+                        <t t-out="order.name"/>
+                    </strong>
+                    is confirmed.
+                    <br/>
+                    We've accepted your order and we're getting it ready. A confirmation email has been sent to
+                    <strong>
+                        <t t-out="order.partner_id.email"/>
+                    </strong>
+                    .
+                </p>
+            </div>
+        </xpath>
+
+        <!-- Remove the standard 'Thank you' heading and 'Payment confirmation status' blocks -->
+        <xpath expr="//h3[contains(text(), 'Thank you for your order')]/.." position="replace"/>
+        <xpath expr="//t[@t-call='website_sale.payment_confirmation_status']" position="replace"/>
+        <xpath expr="//div[hasclass('mt-3')][t[@t-call='website_sale.address_on_checkout']]" position="replace">
+            <div class="velox-order-details mt-5 pt-5" style="border-top: 1px solid rgba(255,255,255,0.2);">
+                <h3 class="mb-5 text-uppercase"
+                    style="font-family: var(--font-cond); font-weight: 700; font-size: 1.5rem; letter-spacing: 0.05em;">
+                    ORDER DETAILS
+                </h3>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="text-uppercase text-muted fw-bold mb-2"
+                               style="font-size: 0.75rem; letter-spacing: 0.1em;">Contact Information
+                        </label>
+                        <div class="text-white">
+                            <t t-out="order.partner_id.email"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="text-uppercase text-muted fw-bold mb-2"
+                               style="font-size: 0.75rem; letter-spacing: 0.1em;">Payment Method
+                        </label>
+                        <div class="text-white">
+                            <t t-if="tx_sudo">
+                                <t t-out="tx_sudo.provider_id.name"/>
+                                <br/>
+                                <t t-out="order.amount_total"
+                                   t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                            </t>
+                            <t t-else="">No payment transaction automatically processed.</t>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="text-uppercase text-muted fw-bold mb-2"
+                               style="font-size: 0.75rem; letter-spacing: 0.1em;">Shipping Address
+                        </label>
+                        <div class="text-white" style="line-height: 1.6;">
+                            <t t-out="order.partner_shipping_id"
+                               t-options="dict(widget='contact', fields=['name', 'address'], no_marker=True)"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="text-uppercase text-muted fw-bold mb-2"
+                               style="font-size: 0.75rem; letter-spacing: 0.1em;">Shipping Method
+                        </label>
+                        <div class="text-white" style="line-height: 1.6;">
+                            <t t-if="order.carrier_id">
+                                <t t-out="order.carrier_id.name"/>
+                                <br/>
+                                <span class="text-muted">(<t t-out="order.carrier_id.delivery_type"/>)
+                                </span>
+                            </t>
+                            <t t-else="">Standard Shipping</t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="/shop" class="btn btn-primary mt-5 mb-5 a-submit"
+               style="border-radius: 4px; font-weight: 700; height: 48px; min-width: 250px; display: inline-flex; align-items: center; justify-content: center; text-transform: uppercase;">
+                CONTINUE SHOPPING
+            </a>
+        </xpath>
+    </template>
+    <!-- Replace Order Summary Text with YOUR BAG -->
+    <!--
+      Velox Cart
+      Defines the structure and styling for Velox Cart.
+    -->
+    <template id="velox_cart" name="Velox Cart" inherit_id="website_sale.cart">
+        <xpath expr="//h4[text()='Order summary']" position="replace">
+            <h4 class="mb-0 text-uppercase"
+                style="font-family: var(--font-display); letter-spacing: 0.05em; font-weight: 700; font-size: 1.5rem;">
+                YOUR BAG
+            </h4>
+        </xpath>
+    </template>
+
+</odoo>

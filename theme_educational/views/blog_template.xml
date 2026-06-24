@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="educational_blog" name="Educational Blog"
+              inherit_id="website_blog.opt_blog_cover_post">
+        <!-- The template inherits from "website_blog.blog_post_short" and replaces the content of a div with ID
+        "o_wblog_blog_top" with a new section containing a heading "Blog". -->
+        <xpath expr="//div[hasclass('o_not_editable')]" position="replace">
+             <section class="section-course-details float-left w-100">
+                 <div class="container">
+                     <div class="row">
+                         <div class="col-lg-12">
+                             <h3 class="text-center">Blog Grid</h3>
+                             <p class="text-center">Home  /  Library</p>
+                         </div>
+                     </div>
+                 </div>
+             </section>
+        </xpath>
+    </template>
+    <template id="educational_blog_content" name="Educational Content"
+              inherit_id="website_blog.posts_loop">
+        <!-- The template inherits from "website_blog.blog_post_short" and replaces the content of a div with ID
+        "o_wblog_blog_top" with a new section containing a heading "Blog". -->
+        <xpath expr="//div[@id='o_wblog_posts_loop']" position="replace">
+            <t t-if="state_info" t-set="state" t-value="state_info['state']"/>
+            <t t-set="opt_posts_loop_show_cover" t-value="is_view_active('website_blog.opt_posts_loop_show_cover')"/>
+            <div groups="website.group_website_designer" t-if="state_info and (state_info['published'] > 0 and state_info['unpublished'] > 0)">
+                <div class="bg-200 py-2 mb-4 alert alert-dismissable">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <span class="me-1">Show:</span>
+                <div class="btn-group btn-group-sm">
+                    <a t-attf-class="btn #{state == 'published' and 'btn-success' or 'btn-default bg-white border'}"
+                       t-attf-href="#{state == 'published' and blog_url(state='') or blog_url(state='published')}">
+                        <i t-attf-class="fa me-1 #{state == 'published' and 'fa-check-square-o' or 'fa-square-o'}"/>
+                        Published (<t t-esc="state_info['published']" />)
+                    </a>
+                    <a t-attf-class="btn #{state == 'unpublished' and 'btn-success' or 'btn-default bg-white border'}"
+                       t-attf-href="#{state == 'unpublished' and blog_url(state='') or blog_url(state='unpublished')}">
+                        <i t-attf-class="fa me-1 #{state == 'unpublished' and 'fa-check-square-o' or 'fa-square-o'}"/>
+                        Unpublished (<t t-esc="state_info['unpublished']" />)
+                    </a>
+                </div>
+                <div class="pt-1 fst-italic small">This box will not be visible to your visitors</div>
+                </div>
+            </div>
+            <div t-attf-class="row #{posts and not opt_blog_readable and 'mx-n2'}">
+                <div t-if="tag or date_begin or search" class="col-12 mb-3">
+                    <div t-if="posts" class="h4 mb-3">
+                        <t t-esc="search_count"/>
+                        <t t-if="search_count &lt; 2">Article</t>
+                        <t t-else="">Articles</t>
+                    </div>
+                    <span t-if="search" class="align-items-baseline border d-inline-flex ps-2 rounded mb-2">
+                        <i class="fa fa-search me-2 text-muted"/>
+                        <t t-esc="search"/>
+                        <a t-att-href="blog_url(search=False, tag=tag)" class="btn border-0 py-1 post_link">&#215;</a>
+                    </span>
+                    <t t-if="tag">
+                        <!-- Show active tags with a category set -->
+                        <t t-foreach="tag_category" t-as="nav_tag_category">
+                            <t t-call="website_blog.tags_list">
+                                <t t-set='tags' t-value='nav_tag_category.tag_ids' />
+                                <t t-set='dismissibleBtn' t-value="True"/>
+                            </t>
+                        </t>
+
+                        <!-- Show active tags without a category set -->
+                        <t t-call="website_blog.tags_list">
+                            <t t-set='tags' t-value='other_tags'/>
+                            <t t-set='dismissibleBtn' t-value="True"/>
+                        </t>
+                    </t>
+                    <span t-if="date_begin" class="align-items-baseline border d-inline-flex ps-2 rounded mb-2">
+                        <i class="fa fa-calendar-o me-2 text-muted"/>
+                        <t t-esc="date_begin" t-options="{'widget': 'date', 'format': 'MMM yyyy'}"></t>
+                        <a t-attf-href="#{blog_url(date_begin=False, date_end=False, tag=tag)}" class="btn border-0 py-1">&#215;</a>
+                    </span>
+                    <hr class="mt-2"/>
+                </div>
+                <div t-if="not posts" class="col">
+                    <t t-set="no_results_str">No results for "%s".</t>
+                    <h2 t-if="search" t-esc="no_results_str % search" class="fw-bold"/>
+                    <h2 t-else="">No blog post yet.</h2>
+                    <div class="alert alert-info" groups="website.group_website_designer">
+                        Click on "<b>New</b>" in the top-right corner to write your first blog post.
+                    </div>
+                </div>
+                <t t-if="not opt_blog_list_view">
+                    <t t-if="opt_blog_readable">
+                        <t t-if="opt_blog_sidebar_show" t-set="colWidth" t-value="'col-md-6'"/>
+                        <t t-else="" t-set="colWidth" t-value="'col-md-6 col-xl-4'"/>
+                    </t>
+                    <t t-else="">
+                        <t t-if="opt_blog_sidebar_show" t-set="colWidth" t-value="'px-2 col-md-6 col-xl-4'"/>
+                        <t t-else="" t-set="colWidth" t-value="'px-2 col-sm-6 col-lg-4 col-xl-3'"/>
+                    </t>
+                </t>
+                <t t-foreach="posts" t-as="blog_post">
+                    <div class="col-lg-4">
+                        <div class="blog-container mt-4 text-center p-3 float-left w-100 card h-100 o_wblog_post position-relative" name="blog_post">
+                            <t t-if="opt_blog_list_view">
+                                <div t-att-class="opt_blog_cards_design and 'card-body py-3'">
+                                    <t t-call="website_blog.post_heading"/>
+                                </div>
+                                <div t-if="not opt_blog_cards_design" class="py-2">
+                                    <t t-call="website_blog.post_info"></t>
+                                </div>
+                                <div t-if="opt_posts_loop_show_cover">
+                                    <t t-call="website_blog.post_cover_image"/>
+                                </div>
+                                <div t-if="is_view_active('website_blog.opt_posts_loop_show_teaser')" t-att-class="opt_blog_cards_design and 'card-body pt-0'">
+                                    <t t-call="website_blog.post_teaser"/>
+                                </div>
+                                <div t-if="opt_blog_cards_design" t-attf-class="opt_blog_cards_design and 'card-body pt-0 pb-2'}">
+                                    <t t-call="website_blog.post_info"></t>
+                                </div>
+                                <div t-else="" class="mt-3">
+                                    <a t-attf-href="/blog/#{slug(blog_post.blog_id)}/#{slug(blog_post)}" class="btn btn-primary">
+                                        Read more <i class="oi oi-chevron-right ms-2"/>
+                                    </a>
+                                </div>
+                            </t>
+                            <t t-if="not opt_blog_list_view">
+                                <t t-if="opt_posts_loop_show_cover" t-call="website_blog.post_cover_image"/>
+                                <div t-att-class="opt_blog_cards_design and 'card-body px-2 py-0 mb-2'">
+                                    <t t-call="website_blog.post_heading"/>
+                                    <div t-if="is_view_active('website_blog.opt_posts_loop_show_teaser')">
+                                        <t t-call="website_blog.post_teaser"/>
+                                    </div>
+                                    </div>
+                                <div t-attf-class="o_wblog_normalize_font #{'card-footer px-2 pb-2' if opt_blog_cards_design else 'pe-2 pb-2'}">
+                                    <t t-call="website_blog.post_info"></t>
+                                </div>
+                            </t>
+                            <!-- Add 'unpublished' badge -->
+                            <span t-if="not blog_post.website_published" class="bg-danger small py-1 px-2 position-absolute o_not_editable" style="top:0; right:0">unpublished</span>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </template>
+</odoo>
