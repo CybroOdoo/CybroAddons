@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Fleet Rental Management',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': "Services",
     'summary': """This module will helps you to give the vehicles for Rent.""",
     'description': """This module is an application for Vehicle Rental System 
