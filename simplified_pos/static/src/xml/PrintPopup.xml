@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- A template is created for the print popup -->
+    <t t-name="PrintPopup" owl="1">
+        <Dialog size="'md'" title="props.title" modalRef="modalRef">
+            <!-- Footer Buttons -->
+            <t t-set-slot="footer">
+                <div style="
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 10px;
+                    width: 100%;
+                    box-sizing: border-box;">
+                    <button class="button confirm"
+                            t-on-click="printReceipt"
+                            style="
+                                background-color: #4CAF50;
+                                color: white;
+                                padding: 8px 16px;
+                                border: none;
+                                border-radius: 4px;
+                                cursor: pointer;">
+                        <t t-esc="props.confirmText || 'Print'"/>
+                    </button>
+                    <button class="button cancel"
+                            t-on-click="cancel"
+                            style="
+                                background-color: #ccc;
+                                color: #333;
+                                padding: 8px 16px;
+                                border: 1px solid #ccc;
+                                border-radius: 4px;
+                                cursor: pointer;">
+                        <t t-esc="props.cancelText || 'Cancel'"/>
+                    </button>
+                </div>
+            </t>
+
+            <!-- Main Content -->
+            <main class="body" style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;">
+
+                <!-- Optional Body Text -->
+                <div t-if="props.bodyText" style="text-align: center; color: #333;">
+                    <t t-esc="props.bodyText"/>
+                </div>
+
+                <div class="popup popup-selection">
+                    <div class="form-container">
+
+                        <!-- Company Logo or Name -->
+                        <t t-if="this.pos.company_logo_base64">
+                            <img class="pos-receipt-logo"
+                                 t-att-src="this.pos.company_logo_base64"
+                                 alt="Logo"/>
+                            <br/>
+                        </t>
+                        <t t-if="!this.pos.company_logo_base64">
+                            <h2 class="pos-receipt-center-align">
+                                <t t-esc="this.pos.company.name"/>
+                            </h2>
+                            <br/>
+                        </t>
+
+                        <!-- Company Contact Info -->
+                        <div class="pos-receipt-contact">
+                            <t t-if="this.pos.company.name">
+                                <div><t t-esc="this.pos.company.name"/></div>
+                            </t>
+                            <t t-if="this.pos.company.phone">
+                                <div>Tel: <t t-esc="this.pos.company.phone"/></div>
+                            </t>
+                            <t t-if="this.pos.company.vat">
+                                <div><t t-esc="this.pos.company.vat_label"/>: <t t-esc="this.pos.company.vat"/></div>
+                            </t>
+                            <t t-if="this.pos.company.email">
+                                <div><t t-esc="this.pos.company.email"/></div>
+                            </t>
+                            <t t-if="this.pos.company.website">
+                                <div><t t-esc="this.pos.company.website"/></div>
+                            </t>
+
+                            <!-- Header HTML or Plain Header -->
+                            <t t-if="this.pos.header_html">
+                                <t t-out="this.pos.header_html"/>
+                            </t>
+                            <t t-if="!this.pos.header_html and this.pos.header">
+                                <div style="white-space: pre-line;">
+                                    <t t-esc="this.pos.header"/>
+                                </div>
+                            </t>
+
+                            <!-- Cashier Info -->
+                            <t t-if="this.pos.cashier">
+                                <div class="cashier">
+                                    <div>--------------------------------</div>
+                                    <div>Served by <t t-esc="this.pos.cashier.name"/></div>
+                                </div>
+                            </t>
+                        </div>
+
+                        <br/><br/>
+
+                        <!-- Orderlines -->
+                        <div class="orderlines-receipt">
+                            <t t-foreach="orderlines" t-as="line" t-key="line[0]">
+                                <div>
+                                    <t t-esc="line[0]"/>
+                                    <span style="float: right; margin-right: 20px;">
+                                        <t t-esc="line[3]"/>
+                                    </span>
+                                </div>
+                                <br/>
+                            </t>
+                        </div>
+
+                        <!-- Total Section -->
+                        <div class="pos-receipt-right-align">----------------</div>
+                        <br/>
+                        <div class="pos-receipt-amount"
+                             style="margin-left: 40px; font-size: 18px;">
+                            TOTAL
+                            <span t-esc="total"
+                                  class="pos-receipt-right-align"
+                                  style="float: right;"/>
+                        </div>
+                        <br/><br/>
+                    </div>
+                </div>
+            </main>
+        </Dialog>
+    </t>
+</templates>
