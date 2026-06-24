@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Undo and Redo',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Tools',
     'summary': 'Module for undo and redo in Odoo',
     'description': """This module adds global undo and
