@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Logout Idle User',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Auto logout idle user with fixed time""",
     'description': """User can fix the timer in the user's profile, if the user
