@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Override default Odoo login page template -->
+    <template id="login" inherit_id="web.login" name="VoyageX Web Login">
+        <xpath expr="//form" position="replace">
+            <form class="oe_login_form" role="form" t-attf-action="/web/login" method="post" onsubmit="this.action = '/web/login' + location.hash">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <section class="vx-login-section">
+                    <div class="container">
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-lg-5 col-md-7 col-sm-10">
+                                <div class="vx-login-card">
+                                    <div class="text-center mb-4">
+                                        <div class="vx-login-avatar mb-3">
+                                            <i class="bi bi-person"/>
+                                        </div>
+                                        <h2 class="vx-login-title">Log in to VoyageX</h2>
+                                        <p class="vx-login-subtitle">Enter your credentials to continue</p>
+                                    </div>
+
+                                    <!-- Database selection (if multi-db) -->
+                                    <div class="mb-3" t-if="databases and len(databases) &gt; 1">
+                                        <label for="db" class="vx-login-label">Database</label>
+                                        <div class="vx-login-input-wrap">
+                                            <i class="bi bi-database"/>
+                                            <input type="text" name="db" t-att-value="request.db" id="db" class="vx-login-input" required="required" readonly="readonly"/>
+                                            <a role="button" href="/web/database/selector" class="vx-login-eye-btn text-decoration-none">
+                                                <i class="bi bi-arrow-right-short"/>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <!-- Social Sign In / OAuth buttons -->
+                                    <div class="o_login_auth mb-3"/>
+
+                                    <div class="vx-login-divider mb-4" t-if="providers">
+                                        <span>or</span>
+                                    </div>
+
+                                    <div class="mb-3 field-login">
+                                        <label for="login" class="vx-login-label">Email address</label>
+                                        <div class="vx-login-input-wrap">
+                                            <i class="bi bi-envelope"/>
+                                            <input type="text" placeholder="you@example.com" name="login" t-att-value="login" id="login" class="vx-login-input" required="required" autocomplete="username" autofocus="autofocus" autocapitalize="off"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <label for="password" class="vx-login-label">Password</label>
+                                        </div>
+                                        <div class="vx-login-input-wrap">
+                                            <i class="bi bi-lock"/>
+                                            <input type="password" placeholder="Enter your password" name="password" id="password" class="vx-login-input vx-password-input" required="required" autocomplete="current-password" t-att-autofocus="'autofocus' if login else None" maxlength="4096"/>
+                                            <button type="button" class="vx-login-eye-btn">
+                                                <i class="bi bi-eye-slash"/>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Errors & Messages -->
+                                    <p class="alert alert-danger mb-4" t-if="error" role="alert">
+                                        <t t-esc="error"/>
+                                    </p>
+                                    <p class="alert alert-success mb-4" t-if="message" role="status">
+                                        <t t-esc="message"/>
+                                    </p>
+
+                                    <button type="submit" class="vx-login-submit-btn w-100 mb-3 text-center d-block">
+                                        Log in
+                                    </button>
+
+                                    <!-- Superuser Login in debug mode -->
+                                    <div class="text-center mb-3" t-if="debug">
+                                        <button type="submit" name="redirect" value="/web/become" class="btn btn-link btn-sm text-decoration-none" style="color: var(--vx-primary);">
+                                            Log in as superuser
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <input type="hidden" name="redirect" t-att-value="redirect"/>
+            </form>
+        </xpath>
+    </template>
+
+    <!-- Override default Odoo auth_signup login links block -->
+    <template id="auth_signup_login" inherit_id="auth_signup.login" name="VoyageX Auth Signup Login Links">
+        <xpath expr="//div[hasclass('justify-content-between')]" position="replace">
+            <div class="d-flex flex-column gap-2 mt-3 text-center">
+                <p class="vx-login-signup-text" t-if="signup_enabled">
+                    Don't have an account?
+                    <a t-attf-href="/web/signup?{{ keep_query() }}" class="vx-login-signup-link">Sign up free</a>
+                </p>
+                <a t-if="reset_password_enabled" t-attf-href="/web/reset_password?{{ keep_query() }}" class="vx-login-forgot d-inline-block">Forgot password?</a>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Override default Odoo auth_signup form fields -->
+    <template id="auth_signup_fields" inherit_id="auth_signup.fields" name="VoyageX Auth Signup Fields">
+        <xpath expr="." position="replace">
+            <div class="mb-3 field-login">
+                <label for="login" class="vx-login-label">Email address</label>
+                <div class="vx-login-input-wrap">
+                    <i class="bi bi-envelope"/>
+                    <input type="text" name="login" t-att-value="login" id="login" class="vx-login-input" autofocus="autofocus"
+                        autocapitalize="off" required="required" t-att-readonly="'readonly' if only_passwords else None"
+                        placeholder="you@example.com"/>
+                </div>
+            </div>
+
+            <div class="mb-3 field-name">
+                <label for="name" class="vx-login-label">Full name</label>
+                <div class="vx-login-input-wrap">
+                    <i class="bi bi-person"/>
+                    <input type="text" name="name" t-att-value="name" id="name" class="vx-login-input" placeholder="e.g. John Doe"
+                        required="required" t-att-readonly="'readonly' if only_passwords else None"
+                        t-att-autofocus="'autofocus' if login and not only_passwords else None" />
+                </div>
+            </div>
+
+            <div class="mb-3 field-password">
+                <label for="password" class="vx-login-label">Password</label>
+                <div class="vx-login-input-wrap">
+                    <i class="bi bi-lock"/>
+                    <input type="password" name="password" id="password" class="vx-login-input vx-password-input"
+                        required="required" t-att-autofocus="'autofocus' if only_passwords else None"
+                        placeholder="Create a password"/>
+                    <button type="button" class="vx-login-eye-btn">
+                        <i class="bi bi-eye-slash"/>
+                    </button>
+                </div>
+                <div class="vx-login-hint mt-1" t-if="not only_passwords">Must be at least 8 characters</div>
+            </div>
+
+            <div class="mb-3 field-confirm_password">
+                <label for="confirm_password" class="vx-login-label">Confirm Password</label>
+                <div class="vx-login-input-wrap">
+                    <i class="bi bi-lock-fill"/>
+                    <input type="password" name="confirm_password" id="confirm_password" class="vx-login-input vx-password-input"
+                        required="required" placeholder="Confirm your password"/>
+                    <button type="button" class="vx-login-eye-btn">
+                        <i class="bi bi-eye-slash"/>
+                    </button>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Override default Odoo auth_signup signup page template -->
+    <template id="signup" inherit_id="auth_signup.signup" name="VoyageX Web Signup">
+        <xpath expr="//form" position="replace">
+            <form class="oe_signup_form" role="form" method="post" t-if="not message">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                <section class="vx-login-section">
+                    <div class="container">
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-lg-5 col-md-7 col-sm-10">
+                                <div class="vx-login-card">
+                                    <div class="text-center mb-4">
+                                        <div class="vx-login-avatar mb-3">
+                                            <i class="bi bi-person-plus"/>
+                                        </div>
+                                        <h2 class="vx-login-title">Create your account</h2>
+                                        <p class="vx-login-subtitle">Start planning your next adventure</p>
+                                    </div>
+                                    <!-- Social Sign Up / OAuth buttons -->
+                                    <div class="o_login_auth mb-3"/>
+
+                                    <div class="vx-login-divider mb-4" t-if="providers">
+                                        <span>or</span>
+                                    </div>
+                                    <!-- Render fields template -->
+                                    <t t-call="auth_signup.fields">
+                                        <t t-set="only_passwords" t-value="bool(token and not invalid_token)"/>
+                                    </t>
+                                    <!-- Errors & Messages -->
+                                    <p class="alert alert-danger mb-4" t-if="error" role="alert">
+                                        <t t-esc="error"/>
+                                    </p>
+                                    <button type="submit" class="vx-login-submit-btn w-100 mb-3 text-center d-block">
+                                        Create account
+                                    </button>
+                                    <p class="text-center vx-login-signup-text">
+                                        Already have an account?
+                                        <a t-attf-href="/web/login?{{ keep_query() }}" class="vx-login-signup-link">Log in</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <input type="hidden" name="redirect" t-att-value="redirect"/>
+                <input type="hidden" name="token" t-att-value="token"/>
+            </form>
+
+            <div t-if="message" class="vx-login-section">
+                <div class="container">
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-lg-5 col-md-7 col-sm-10">
+                            <div class="vx-login-card text-center">
+                                <div class="vx-login-avatar mb-3">
+                                    <i class="bi bi-check-circle" style="color: #22c55e;"/>
+                                </div>
+                                <h2 class="vx-login-title">Success</h2>
+                                <p class="alert alert-success my-3">
+                                    <t t-esc="message"/>
+                                </p>
+                                <a href="/web/login" class="vx-login-submit-btn w-100 mb-3 text-center d-block text-decoration-none">
+                                    Back to Login
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Override default Odoo auth_signup reset password page template -->
+    <template id="reset_password" inherit_id="auth_signup.reset_password" name="VoyageX Web Reset Password">
+        <xpath expr="." position="replace">
+            <div t-if="message" class="vx-login-section">
+                <div class="container">
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-lg-5 col-md-7 col-sm-10">
+                            <div class="vx-login-card text-center">
+                                <div class="vx-login-avatar mb-3">
+                                    <i class="bi bi-envelope-check" style="color: var(--vx-primary);"/>
+                                </div>
+                                <h2 class="vx-login-title">Reset Link Sent</h2>
+                                <p class="alert alert-success my-3">
+                                    <t t-esc="message"/>
+                                </p>
+                                <a href="/web/login" class="vx-login-submit-btn w-100 mb-3 text-center d-block text-decoration-none">
+                                    Back to Login
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form class="oe_reset_password_form" role="form" method="post" t-if="not message">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                <section class="vx-login-section">
+                    <div class="container">
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-lg-5 col-md-7 col-sm-10">
+                                <div class="vx-login-card">
+                                    <div class="text-center mb-4">
+                                        <div class="vx-login-avatar mb-3">
+                                            <i class="bi bi-key"/>
+                                        </div>
+                                        <h2 class="vx-login-title">Reset Password</h2>
+                                        <p class="vx-login-subtitle">Enter your email to receive a reset link</p>
+                                    </div>
+
+                                    <!-- If token is present, we only show passwords -->
+                                    <t t-if="token and not invalid_token">
+                                        <t t-call="auth_signup.fields">
+                                            <t t-set="only_passwords" t-value="1"/>
+                                        </t>
+                                    </t>
+
+                                    <!-- If no token, we show email input -->
+                                    <t t-if="not token">
+                                        <div class="mb-3 field-login">
+                                            <label for="login" class="vx-login-label">Your Email</label>
+                                            <div class="vx-login-input-wrap">
+                                                <i class="bi bi-envelope"/>
+                                                <input type="text" name="login" t-att-value="login" id="login" class="vx-login-input"
+                                                    autofocus="autofocus" required="required" autocapitalize="off" placeholder="you@example.com"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                    <!-- Errors & Messages -->
+                                    <p class="alert alert-danger mb-4" t-if="error" role="alert">
+                                        <t t-esc="error"/>
+                                    </p>
+                                    <button type="submit" class="vx-login-submit-btn w-100 mb-3 text-center d-block">
+                                        Reset Password
+                                    </button>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <a t-if="not token" t-attf-href="/web/login?{{ keep_query() }}" class="vx-login-signup-link">Back to Login</a>
+                                        <a t-if="invalid_token" href="/web/login" class="vx-login-signup-link">Back to Login</a>
+                                    </div>
+                                    <div class="o_login_auth"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <input type="hidden" name="redirect" t-att-value="redirect"/>
+                <input type="hidden" name="token" t-att-value="token"/>
+            </form>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="o_wsale_offcanvas_custom" name="Custom Styled Offcanvas" inherit_id="website_sale.o_wsale_offcanvas">
+
+        <!-- Replace the main offcanvas structure with custom styling -->
+        <xpath expr="//aside[@id='o_wsale_offcanvas']" position="replace">
+            <aside id="o_wsale_offcanvas"
+                   class="o_website_offcanvas offcanvas offcanvas-end p-0 custom-offcanvas">
+                <div class="offcanvas-header justify-content-end custom-offcanvas-header">
+                    <button type="button" string="X" class="btn-close custom-close-btn" data-bs-dismiss="offcanvas" aria-label="Close"/>
+                </div>
+
+                <!-- Search section with custom styling -->
+                <div t-if="category" class="offcanvas-body d-lg-none flex-grow-0 overflow-visible custom-search-section">
+                    <t t-call="website_sale.search">
+                        <t t-set="search" t-value="original_search or search"/>
+                        <t t-set="_s_searchbar_autocomplete_classes" t-valuef="bg-primary custom-searchbar"> </t>
+                    </t>
+                </div>
+
+                <!-- Main content with custom accordion styling -->
+                <div id="o_wsale_offcanvas_content" class="accordion accordion-flush flex-grow-1 overflow-auto custom-accordion-container">
+
+                    <!-- Pricelist section -->
+                    <div class="d-block d-lg-none custom-accordion-item" t-if="hasPricelistDropdown">
+                        <h2 id="o_wsale_offcanvas_orderby_header" class="accordion-header mb-0">
+                            <button class="custom-accordion-button accordion-button rounded-0 collapsed"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#o_wsale_offcanvas_pricelist"
+                                aria-expanded="false"
+                                aria-controls="o_wsale_offcanvas_pricelist">
+                                <b>Pricelist</b>
+                            </button>
+                        </h2>
+                        <t t-set="curr_pl" t-value="website.pricelist_id"/>
+                        <div id="o_wsale_offcanvas_pricelist"
+                            class="accordion-collapse collapse custom-accordion-body"
+                            aria-labelledby="o_wsale_offcanvas_orderby_header">
+                            <div class="accordion-body pt-0">
+                                <div class="list-group list-group-flush custom-list-group">
+                                    <a t-foreach="website_sale_pricelists" t-as="pl"
+                                        role="menuitem"
+                                        rel="noindex,nofollow"
+                                        t-att-href="'/shop/change_pricelist/%s' % pl.id"
+                                        class="list-group-item border-0 ps-0 pb-0 custom-list-item">
+                                        <div class="form-check d-inline-block">
+                                            <input type="radio"
+                                                t-attf-onclick="location.href='/shop/change_pricelist/#{pl.id}';"
+                                                class="form-check-input o_not_editable custom-radio"
+                                                name="wsale_pricelist_radios_offcanvas"
+                                                t-att-checked="curr_pl == pl">
+                                                <label class="form-check-label fw-normal custom-label" t-out="pl.name"/>
+                                            </input>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sort By section -->
+                    <div t-if="is_view_active('website_sale.sort')" class="custom-accordion-item">
+                        <t t-if="isSortingBy" t-set="isSortingBy" t-value="isSortingBy[0][1]"/>
+                        <t t-else="" t-set="isSortingBy" t-value="website.shop_default_sort"/>
+                        <h2 id="o_wsale_offcanvas_orderby_header" class="accordion-header mb-0">
+                            <button class="custom-accordion-button accordion-button rounded-0 collapsed"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#o_wsale_offcanvas_orderby"
+                                    aria-expanded="false"
+                                    aria-controls="o_wsale_offcanvas_orderby">
+                                    <b>Sort By</b>
+                            </button>
+                        </h2>
+                        <div id="o_wsale_offcanvas_orderby"
+                             class="accordion-collapse collapse custom-accordion-body"
+                             aria-labelledby="o_wsale_offcanvas_orderby_header">
+                            <div class="accordion-body pt-0">
+                                <div class="list-group list-group-flush custom-list-group">
+                                    <a t-foreach="website_sale_sortable" t-as="sortby"
+                                       role="menuitem"
+                                       rel="noindex,nofollow"
+                                       t-att-href="keep('/shop', order=sortby[0])"
+                                       class="list-group-item border-0 ps-0 pb-0 custom-list-item">
+                                        <div class="form-check d-inline-block">
+                                            <input type="radio"
+                                                   t-attf-onclick="location.href='#{keep('/shop', order=sortby[0])}';"
+                                                   class="form-check-input o_not_editable custom-radio"
+                                                   name="wsale_sortby_radios_offcanvas"
+                                                   t-att-checked="isSortingBy and isSortingBy == sortby[1]">
+                                                <label class="form-check-label fw-normal custom-label" t-out="sortby[1]"/>
+                                            </input>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Categories section -->
+                    <div t-if="opt_wsale_categories" class="custom-accordion-item">
+                        <h2 id="o_wsale_offcanvas_categories_header" class="accordion-header mb-0">
+                            <button class="custom-accordion-button accordion-button rounded-0 collapsed"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#o_wsale_offcanvas_categories"
+                                    aria-expanded="false"
+                                    aria-controls="o_wsale_offcanvas_categories">
+                                    <b>Categories</b>
+                            </button>
+                        </h2>
+                        <div id="o_wsale_offcanvas_categories"
+                             class="accordion-collapse collapse custom-accordion-body"
+                             aria-labelledby="o_wsale_offcanvas_categories_header">
+                            <div class="accordion-body pt-0">
+                                <t t-call="website_sale.products_categories_list">
+                                    <t t-set="isOffcanvas" t-value="true"/>
+                                    <t t-set="_titleClasses" t-valuef="d-none"/>
+                                    <t t-set="_radioGroup" t-valuef="_offcanvas"/>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attributes form -->
+                    <form t-if="opt_wsale_attributes or opt_wsale_attributes_top"
+                          t-attf-class="js_attributes accordion accordion-flush d-flex flex-column custom-attributes-form {{len(attributes) > 0 and 'border-bottom'}}"
+                          method="get">
+                        <input t-if="category" type="hidden" name="category" t-att-value="category.id"/>
+                        <input type="hidden" name="search" t-att-value="search"/>
+
+                        <t t-foreach="attributes" t-as="a">
+                            <t t-cache="a,attrib_set">
+                                <t t-set="_status" t-value="'inactive'"/>
+                                <t t-foreach="a.value_ids" t-as="v" t-if="v.id in attrib_set" t-set="_status" t-value="'active'"/>
+
+                                <div t-if="a.value_ids and len(a.value_ids) &gt; 1"
+                                     t-attf-class="custom-accordion-item border-top-0 {{(_status == 'active') and 'order-1' or 'order-2'}}">
+                                    <h2 class="accordion-header mb-0" t-attf-id="o_wsale_offcanvas_attribute_{{a.id}}_header">
+                                        <button t-attf-class="custom-accordion-button accordion-button rounded-0 {{ not attrib_values and 'collapsed'}}"
+                                                type="button"
+                                                t-att-data-status="_status"
+                                                data-bs-toggle="collapse"
+                                                t-attf-data-bs-target="#o_wsale_offcanvas_attribute_{{a.id}}"
+                                                t-att-aria-expanded="_status == 'active' and 'True' or 'False'"
+                                                t-attf-aria-controls="o_wsale_offcanvas_attribute_{{a.id}}">
+                                                <b t-out="a.name"/>
+                                        </button>
+                                    </h2>
+                                    <div t-attf-id="o_wsale_offcanvas_attribute_{{a.id}}"
+                                         t-attf-class="accordion-collapse collapse custom-accordion-body {{ (_status == 'active') and 'show'}}"
+                                         t-att-aria-expanded="(_status == 'active') and 'True' or 'False'"
+                                         t-attf-aria-labelledby="o_wsale_offcanvas_attribute_{{a.id}}_header">
+
+                                        <div class="accordion-body pt-0">
+                                            <div t-if="a.display_type == 'color'" class="pt-1 pb-3">
+                                                <t t-call="website_sale.o_wsale_offcanvas_color_attribute"/>
+                                            </div>
+                                            <div t-elif="a.display_type in ('radio', 'pills', 'select')"
+                                                 class="list-group list-group-flush custom-list-group">
+                                                <div t-foreach="a.value_ids" t-as="v" class="list-group-item border-0 ps-0 pb-0 custom-list-item">
+                                                    <div class="form-check mb-1">
+                                                        <input type="checkbox"
+                                                               name="attrib"
+                                                               class="form-check-input custom-checkbox"
+                                                               t-att-id="'%s-%s' % (a.id,v.id)"
+                                                               t-att-value="'%s-%s' % (a.id,v.id)"
+                                                               t-att-checked="'checked' if v.id in attrib_set else None"/>
+                                                        <label class="form-check-label fw-normal custom-label" t-att-for="'%s-%s' % (a.id,v.id)" t-field="v.name"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+
+                        <!-- Tags section -->
+                        <t t-if="opt_wsale_filter_tags and (opt_wsale_attributes or opt_wsale_attributes_top)">
+                            <t t-set="_status" t-value="'inactive'"/>
+                            <t t-foreach="all_tags" t-as="v" t-if="v.id in tags" t-set="_status" t-value="'active'"/>
+                            <div t-if="all_tags" class="custom-accordion-item">
+                                <h2 class="accordion-header mb-0" t-attf-id="o_wsale_offcanvas_tags_header">
+                                    <button t-attf-class="custom-accordion-button accordion-button border-top rounded-0 {{ not tags and 'collapsed'}}"
+                                            type="button"
+                                            t-att-data-status="_status"
+                                            data-bs-toggle="collapse"
+                                            t-attf-data-bs-target="#o_wsale_offcanvas_tags"
+                                            t-att-aria-expanded="_status == 'active' and 'True' or 'False'"
+                                            t-attf-aria-controls="o_wsale_offcanvas_tags">
+                                        <b>Tags</b>
+                                    </button>
+                                </h2>
+                                <div t-attf-id="o_wsale_offcanvas_tags"
+                                     t-attf-class="accordion-collapse collapse custom-accordion-body {{ (_status == 'active') and 'show'}}"
+                                     t-att-aria-expanded="(_status == 'active') and 'True' or 'False'"
+                                     t-attf-aria-labelledby="o_wsale_offcanvas_tags_header">
+                                    <div class="accordion-body pt-0">
+                                        <div class="list-group list-group-flush custom-list-group">
+                                            <t t-call="website_sale.filter_products_tags_list">
+                                                <t t-set="all_tags" t-value="all_tags"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </form>
+
+                    <!-- Price filter -->
+                    <t t-if="opt_wsale_filter_price and (opt_wsale_attributes or opt_wsale_attributes_top)"
+                       t-call="website_sale.filter_products_price">
+                        <t t-set="_classes" t-valuef="custom-accordion-button accordion accordion-flush px-4"/>
+                        <t t-set="_classes_title" t-valuef="ms-n1 pt-3 pb-2"/>
+                        <t t-set="isOffcanvas" t-value="True"/>
+                    </t>
+                </div>
+
+                <!-- Clear filters button -->
+                <div class="offcanvas-body d-flex justify-content-between flex-grow-0 border-top overflow-hidden custom-footer">
+                    <a t-attf-class="btn custom-clear-btn d-flex py-1 mb-2 {{(not attrib_values and not isFilteringByPrice and not tags) and 'disabled' }}"
+                       t-att-aria-disabled="(not attrib_values and not isFilteringByPrice and not tags) and 'true' or 'false'"
+                       href="/shop"
+                       title="Clear Filters">
+                        Clear Filters
+                    </a>
+                </div>
+            </aside>
+        </xpath>
+
+    </template>
+    <template id="products_filter_bar_inherited" inherit_id="website_sale.products" priority="50">
+        <xpath expr="//div[hasclass('products_header')]" position="replace">
+            <div class="container-fluid cmpad pb-5 slider">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="head-flex flex-wrap gap-2 border-0 pb-2">
+                             <t t-if="category">
+                                <p class="mb-0">Home - <span t-esc="category.name"/></p>
+                            </t>
+                            <t t-else="">
+                                <p class="mb-0">Home - Shop</p>
+                            </t>
+                            <!-- Pager info / Count -->
+                            <t t-if="search_count">
+                                <p class="mb-0">Showing <span t-esc="search_count"/> results</p>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="col-md-12 pb-3">
+                        <div class="filter">
+                            <div class="row gap-3 gap-md-0">
+                                <div class="col-md-6 col-sm-12 d-flex justify-content-between justify-content-sm-start gap-md-4">
+                                    <button class="d-flex gap-2 toggleSidemenu " data-bs-toggle="offcanvas" data-bs-target="#o_wsale_offcanvas">
+                                        <span>Filter By</span>
+                                        <img src="/theme_electronest/static/src/img/icons/filter.svg" alt="" width="18"/>
+                                    </button>
+
+                                    <div class="d-flex gap-2 align-items-center dropdown">
+                                        <span>Sort By</span>
+                                        <a role="button" href="#" data-bs-toggle="dropdown" class="dropdown-toggle text-decoration-none text-dark">
+                                            <t t-if="is_view_active('website_sale.sort')">
+                                                <t t-if="website_sale_sortable">
+                                                    <t t-foreach="website_sale_sortable" t-as="sortby">
+                                                        <span t-if="isSortingBy == sortby[0]" t-esc="sortby[1]"/>
+                                                    </t>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <span>Default</span>
+                                            </t>
+                                        </a>
+                                        <div class="dropdown-menu" role="menu">
+                                             <t t-foreach="website_sale_sortable" t-as="sortby">
+                                                <a role="menuitem" rel="noindex,nofollow" t-att-href="keep('/shop', order=sortby[0])" class="dropdown-item">
+                                                    <span t-esc="sortby[1]"/>
+                                                </a>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-sm-12 d-flex gap-2 align-items-center justify-content-end">
+                                    <form class="search" method="get" action="/shop">
+                                         <t t-if="category">
+                                            <input type="hidden" name="category" t-att-value="category.id" />
+                                        </t>
+                                        <input type="text" name="search" placeholder="Search for products..." t-att-value="search"/>
+                                        <button type="submit" style="background: none; border: none; padding: 0;">
+                                            <img src="/theme_electronest/static/src/img/icons/search.svg" alt=""/>
+                                        </button>
+                                    </form>
+
+                                    <!-- Grid/List Toggle -->
+                                    <t t-set="_activeClasses" t-translation="off">active</t>
+                                    <div class="o_wsale_apply_layout btn-group" t-att-data-active-classes="_activeClasses">
+                                        <input type="radio" class="btn-check" name="wsale_products_layout" id="o_wsale_apply_grid"
+                                               t-att-checked="'checked' if layout_mode != 'list' else None" value="grid"/>
+                                        <label t-attf-class="btn btn-light border-0 #{_activeClasses if layout_mode != 'list' else None} o_wsale_apply_grid"
+                                               title="Grid View" for="o_wsale_apply_grid">
+                                            <img src="/theme_electronest/static/src/img/icons/grid.svg" alt="" width="18"/>
+                                        </label>
+
+                                        <input type="radio" class="btn-check" name="wsale_products_layout" id="o_wsale_apply_list"
+                                               t-att-checked="'checked' if layout_mode == 'list' else None" value="list"/>
+                                        <label t-attf-class="btn btn-light border-0 #{_activeClasses if layout_mode == 'list' else None} o_wsale_apply_list"
+                                               title="List View" for="o_wsale_apply_list">
+                                            <i class="fa fa-list"/>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//div[@id='products_grid']" position="attributes">
+            <attribute name="class" add="container-fluid cmpad" separator=" "/>
+        </xpath>
+    </template>
+</odoo>

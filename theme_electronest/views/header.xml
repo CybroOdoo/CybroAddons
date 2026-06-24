@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Replace the main navbar with your custom header -->
+    <template id="template_header_default_inherited"
+              inherit_id="website.template_header_default">
+        <xpath expr="//t[@t-call='website.navbar']" position="replace">
+            <header>
+                <!-- Defaults normally provided by Odoo's header placeholders -->
+                <t t-set="_text" t-value="False"/>
+                <t t-set="_badge" t-value="False"/>
+                <t t-set="_badge_class" t-value="''"/>
+                <t t-set="_icon_wrap_class" t-value="''"/>
+                <t t-set="_text_class" t-value="''"/>
+                <t t-set="_item_class" t-value="''"/>
+                <t t-set="_link_class" t-value="''"/>
+                <div class="d-none">
+                    <t t-call="website.placeholder_header_search_box"/>
+                    <t t-call="website.placeholder_header_call_to_action"/>
+                </div>
+                <nav class="navbar navbar-expand-lg navbar-light container-fluid cmpad">
+                    <div class="head-main w-100">
+
+                        <!-- Logo -->
+                        <a href="/" class="logo-sec navbar-brand">
+                            <img src="/theme_electronest/static/src/img/logo/logo.svg" alt="Logo" width="100%"/>
+                        </a>
+
+                        <!-- Mobile: Icons + Hamburger button (visible only on mobile) -->
+                        <div class="d-flex align-items-center gap-2 d-lg-none">
+
+                            <!-- Mobile Icons -->
+                            <div class="head-icon d-flex gap-2 align-items-center">
+
+                                <!-- Cart Icon (Mobile) -->
+                                <t t-nocache="The number of products is dynamic, this rendering cannot be cached."
+                                   t-nocache-_text="_text"
+                                   t-nocache-_badge="_badge"
+                                   t-nocache-_badge_class="_badge_class"
+                                   t-nocache-_icon_wrap_class="_icon_wrap_class"
+                                   t-nocache-_text_class="_text_class"
+                                   t-nocache-_item_class="_item_class"
+                                   t-nocache-_link_class="_link_class">
+                                    <t t-set="website_sale_cart_quantity"
+                                       t-value="request.session['website_sale_cart_quantity'] if 'website_sale_cart_quantity' in request.session else website.sale_get_order().cart_quantity or 0"/>
+                                    <t t-set="show_cart" t-value="True"/>
+                                    <div t-attf-class="o_wsale_my_cart #{not show_cart and 'd-none'}">
+                                        <a href="/shop/cart" aria-label="eCommerce cart" class="position-relative">
+                                            <img src="/theme_electronest/static/src/img/icons/cart.svg" alt=""
+                                                 width="18"/>
+                                            <span t-attf-class="my_cart_quantity badge bg-primary position-absolute top-0 start-100 translate-middle #{'d-none' if (website_sale_cart_quantity == 0) else ''}"
+                                                  t-esc="website_sale_cart_quantity"
+                                                  t-att-data-order-id="request.session.get('sale_order_id', '')"/>
+                                        </a>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <!-- Hamburger Toggle Button -->
+                            <button class="navbar-toggler border-0"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#mobileMenu"
+                                    aria-controls="mobileMenu"
+                                    aria-expanded="false"
+                                    aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"/>
+                            </button>
+                        </div>
+
+                        <!-- Desktop Menu (hidden on mobile) -->
+                        <div class="menu-sec d-none d-lg-flex align-items-center justify-content-between flex-grow-1 ms-4">
+                            <div class="d-flex gap-4 align-items-center">
+                                <div class="dropdown o_electronest_category_menu">
+                                    <a class="catbtn">
+                                        <img src="/theme_electronest/static/src/img/icons/menu.svg" alt="" width="18"/>
+                                        Categories
+                                    </a>
+                                    <div class="dropdown-content">
+                                        <div class="drop-sec">
+                                            <div class="sec1">
+                                                <div
+                                                        class="nav flex-column nav-pills me-3"
+                                                        id="mytab"
+                                                        role="tablist"
+                                                        aria-orientation="vertical">
+                                                    <t t-set="root_categories" t-value="request.env['product.public.category'].sudo().search([
+                                                ('website_id', 'in', [False, website.id]),
+                                                ('parent_id', '=', False)
+                                            ], order='sequence, name')"/>
+
+                                                    <t t-foreach="root_categories" t-as="cat">
+                                                        <button
+                                                                t-attf-class="nav-link #{'active' if cat_first else ''}"
+                                                                t-attf-id="tab-#{cat.id}-tab"
+                                                                t-attf-data-bs-target="#tab-#{cat.id}"
+                                                                type="button"
+                                                                role="tab"
+                                                                t-attf-aria-controls="tab-#{cat.id}"
+                                                                aria-selected="false">
+                                                            <t t-esc="cat.name"/>
+                                                        </button>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                            <div class="sec2">
+                                                <div class="tab-content" id="v-pills-tabContent">
+                                                    <t t-foreach="root_categories" t-as="cat">
+                                                        <div t-attf-class="tab-pane fade #{'show active' if cat_index == 0 else ''}"
+                                                             t-attf-id="tab-#{cat.id}"
+                                                             role="tabpanel"
+                                                             t-attf-aria-labelledby="tab-#{cat.id}-tab"
+                                                             tabindex="0">
+
+                                                            <t t-set="child_cats"
+                                                               t-value="request.env['product.public.category'].sudo().search([('parent_id', '=', cat.id), ('website_id', 'in', [False, website.id])], order='sequence, name')"/>
+
+                                                            <t t-if="child_cats">
+                                                                <!-- Show all descendants for the hovered root category -->
+                                                                <ul>
+                                                                    <t t-foreach="child_cats" t-as="child">
+                                                                        <li>
+                                                                            <a t-attf-href="/shop?category=#{child.id}"
+                                                                               t-esc="child.name"/>
+                                                                        </li>
+                                                                    </t>
+                                                                </ul>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <ul>
+                                                                    <li>
+                                                                        <a t-attf-href="/shop?category=#{cat.id}"
+                                                                           t-esc="cat.name"/>
+                                                                    </li>
+                                                                </ul>
+                                                            </t>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <ul class="menu-list d-flex list-unstyled mb-0 gap-3">
+                                    <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                        <t t-call="website.submenu"/>
+                                    </t>
+                                </ul>
+                            </div>
+
+                            <div class="d-flex gap-3 align-items-center">
+                                <!-- Search Bar -->
+                                <form method="get" action="/shop" class="header-search d-none d-md-block">
+                                    <img src="/theme_electronest/static/src/img/icons/search.svg" alt="" width="15"/>
+                                    <input type="text" name="search"
+                                           placeholder="Search for products, brands and more..." t-att-value="search"/>
+                                </form>
+
+                                <div class="head-icon d-flex gap-2 align-items-center">
+                                    <!-- User Icon -->
+                                    <t t-if="user_id._is_public()">
+                                        <a href="/web/login">
+                                            <img src="/theme_electronest/static/src/img/icons/user.svg" alt=""
+                                                 width="15"/>
+                                        </a>
+                                    </t>
+                                    <t t-else="">
+                                        <a href="/my/home">
+                                            <img src="/theme_electronest/static/src/img/icons/user.svg" alt=""
+                                                 width="15"/>
+                                        </a>
+                                    </t>
+
+                                    <!-- Wishlist Icon (Desktop) -->
+                                    <t t-if="is_view_active('website_sale_wishlist.add_to_wishlist')">
+                                        <t t-nocache="The wishlist may vary and depends on the user."
+                                           t-nocache-_item_class="_item_class"
+                                           t-nocache-_link_class="_link_class"
+                                           t-nocache-_badge_class="_badge_class"
+                                           t-nocache-_icon_wrap_class="_icon_wrap_class"
+                                           t-nocache-_text_class="_text_class"
+                                           t-nocache-_text="_text">
+                                            <t t-set="wishcount"
+                                               t-value="len(request.env['product.wishlist'].current())"/>
+                                            <t t-set="show_wishes" t-value="True"/>
+                                            <div t-attf-class="o_wsale_my_wish #{not show_wishes and 'd-none'} #{_item_class}">
+                                                <a href="/shop/wishlist" t-attf-class="#{_link_class}">
+                                                    <img src="/theme_electronest/static/src/img/icons/wish.svg" alt=""
+                                                         width="16"/>
+                                                    <span t-if="wishcount" t-esc="wishcount"
+                                                          t-attf-class="my_wish_quantity o_animate_blink badge bg-primary #{_badge_class}"/>
+                                                    <span t-else="" style="display: none;">0</span>
+                                                </a>
+                                            </div>
+                                        </t>
+                                    </t>
+
+                                    <!-- Cart Icon (Desktop) -->
+                                    <t t-nocache="The number of products is dynamic, this rendering cannot be cached."
+                                       t-nocache-_text="_text"
+                                       t-nocache-_badge="_badge"
+                                       t-nocache-_badge_class="_badge_class"
+                                       t-nocache-_icon_wrap_class="_icon_wrap_class"
+                                       t-nocache-_text_class="_text_class"
+                                       t-nocache-_item_class="_item_class"
+                                       t-nocache-_link_class="_link_class">
+                                        <t t-set="website_sale_cart_quantity"
+                                           t-value="request.session['website_sale_cart_quantity'] if 'website_sale_cart_quantity' in request.session else website.sale_get_order().cart_quantity or 0"/>
+                                        <t t-set="show_cart" t-value="True"/>
+                                        <li t-attf-class="#{_item_class} divider d-none"/>
+                                        <div t-attf-class="o_wsale_my_cart #{not show_cart and 'd-none'} #{_item_class}">
+                                            <a href="/shop/cart" t-attf-class="#{_link_class}"
+                                               aria-label="eCommerce cart">
+                                                <div t-attf-class="#{_icon_wrap_class}">
+                                                    <img src="/theme_electronest/static/src/img/icons/cart.svg" alt=""
+                                                         width="18"/>
+                                                    <span t-attf-class="my_cart_quantity badge bg-primary #{_badge_class} #{'d-none' if (website_sale_cart_quantity == 0) else ''}"
+                                                          t-esc="website_sale_cart_quantity"
+                                                          t-att-data-order-id="request.session.get('sale_order_id', '')"/>
+                                                    <span t-if="_text" t-attf-class="#{_text_class}">My Cart</span>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Collapsible Menu -->
+                        <div class="collapse navbar-collapse w-100" id="mobileMenu">
+                            <!-- Mobile Search -->
+                            <form method="get" action="/shop" class="mobile-search my-2 d-lg-none">
+                                <img src="/theme_electronest/static/src/img/icons/search.svg" alt="" width="15"/>
+                                <input type="text" name="search" placeholder="Search for products, brands and more..."
+                                       t-att-value="search"/>
+                            </form>
+
+                            <!-- Mobile Nav Links -->
+                            <ul class="navbar-nav d-lg-none">
+                                <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                    <li class="nav-item">
+                                        <t t-call="website.submenu">
+                                            <t t-set="item_class" t-value="'nav-item'"/>
+                                            <t t-set="link_class" t-value="'nav-link'"/>
+                                        </t>
+                                    </li>
+                                </t>
+                                <!-- User Dropdown -->
+                                <t t-call="portal.user_dropdown">
+                                    <t t-set="_icon" t-value="true"/>
+                                    <t t-set="_user_name" t-value="true"/>
+                                    <t t-set="_user_name_class" t-valuef="me-auto small"/>
+                                    <t t-set="_link_class" t-valuef="nav-link d-flex align-items-center border-0"/>
+                                    <t t-set="_icon_class" t-valuef="me-2"/>
+                                    <t t-set="_item_class" t-valuef="dropdown dropup"/>
+                                    <t t-set="_dropdown_menu_class" t-valuef="w-100"/>
+                                </t>
+                            </ul>
+
+                        </div>
+                    </div>
+                </nav>
+            </header>
+        </xpath>
+    </template>
+
+    <!-- Remove Odoo's default mobile header to prevent duplication -->
+    <template id="template_header_mobile_remove"
+              inherit_id="website.template_header_default">
+        <xpath expr="//t[@t-call='website.template_header_mobile']" position="replace"/>
+    </template>
+
+    <template id="template_header_contactus_inherit" inherit_id="website.template_header_default">
+        <xpath expr="//t[@t-call='website.placeholder_header_call_to_action']" position="replace"/>
+    </template>
+</odoo>

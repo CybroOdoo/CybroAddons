@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="electronest_best_offers_snippet" inherit_id="website.snippets" name="Best Offers">
+        <xpath expr="//div[@id='snippet_structure']/div[hasclass('o_panel_body')]"
+               position="inside">
+            <t t-snippet="theme_electronest.best_offers_snippet"
+               string="Best Offers"/>
+        </xpath>
+    </template>
+
+    <!-- Website snippet to display latest 10 published products with image, name, price and add-to-cart option -->
+    <template id="best_offers_snippet" name="Best Offers">
+        <section>
+            <div class="container-fluid cmpad py-4">
+                <div class="row">
+                    <div class="col-md-12 pb-4">
+                        <div class="head-flex head2">
+                            <h3>Best Offers On
+                                <span>Products</span>
+                            </h3>
+                            <a href="/shop">View All</a>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="row row-cols-xl-5 row-cols-lg-4 row-cols-md-3 row-cols-2 g-3">
+                            <t t-nocache="CSRF token and product data must always be fresh">
+                                <t t-set="products"
+                                   t-value="request.env['product.template'].sudo().search([('is_published', '=', True)], limit=10)"/>
+                                <t t-foreach="products" t-as="product">
+                                    <div class="col">
+                                        <div class="mycard">
+                                            <div class="img">
+                                                <img t-att-src="'/web/image/product.template/%s/image_512' % product.id"
+                                                        alt=""
+                                                        width="200"/>
+                                                <form action="/shop/cart/update" method="POST"
+                                                      class="float-right">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <input type="hidden" name="product_id"
+                                                           t-att-value="product.product_variant_id.id"/>
+                                                    <input type="hidden" name="product_template_id"
+                                                           t-att-value="product.id"/>
+                                                    <input type="hidden" name="add_qty" value="1"/>
+                                                    <button type="submit" class="cartbtn">
+                                                        <img src="/theme_electronest/static/src/img/icons/cart.svg" alt=""/>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            <div class="con">
+                                                <h3>
+                                                    <t t-esc="product.name"/>
+                                                </h3>
+                                                <div class="fw-bold" style="font-size: 1rem; color: #333;">
+                                                    <t t-esc="product.list_price"
+                                                       t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                                </div>
+                                            </div>
+                                            <a t-att-href="product.website_url" class="stretched-link"/>
+                                        </div>
+                                    </div>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </section>
+</template>
+</odoo>

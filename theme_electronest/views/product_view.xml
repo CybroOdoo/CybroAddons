@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit product page to customize layout, add custom cart actions, and show recently viewed products slider -->
+    <template id="product_view_inherit" inherit_id="website_sale.product" priority="999">
+        <xpath expr="//div[@id='product_detail_main']" position="replace">
+            <div class="row" id="product_detail_main"
+                 data-name="Product Page"
+                 t-att-data-image_width="website.product_page_image_width"
+                 t-att-data-image_layout="website.product_page_image_layout">
+                <div class="row">
+                    <div class="col-lg-6" style="background-color: #f5f5f5;">
+                        <div class="container-product-view p-5 float-left w-100">
+                            <div class="product-view-img text-center">
+                                <t t-call="website_sale.shop_product_images"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="item-details w-100 float-left text-right">
+                            <div class="content">
+                                <h1>
+                                    <span t-field="product.name"/>
+                                </h1>
+                                <div class="rating flex-wrap gap-2 pb-4">
+                                    <div class="d-flex gap-3">
+                                        <span
+                                        >4.4
+                                            <img src="/theme_electronest/static/src/img/icons/star.svg" alt=""
+                                                 width="10"/>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex gap-3">
+                                        <p>Category :
+                                            <label t-field="product.categ_id.name"/>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="w-100 text-left">
+                                    <div class="price">
+                                        <div class="d-flex gap-2 main align-items-center">
+                                            <t t-call="website_sale.product_price"/>
+                                            <small t-if="'base_unit_price' in combination_info"
+                                                   class="ms-1 text-muted o_base_unit_price_wrapper d-none"
+                                                   groups="website_sale.group_show_uom_price">
+                                                <t t-call='website_sale.base_unit_price'/>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <form t-if="product._is_add_to_cart_possible()" action="/shop/cart/update"
+                                      method="POST">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"
+                                           t-nocache="The csrf token must always be up to date."/>
+                                    <div class="js_product js_main_product mb-3">
+                                        <t t-placeholder="select">
+                                            <input type="hidden" class="product_id" name="product_id"
+                                                   t-att-value="product_variant.id"/>
+                                            <input type="hidden" class="product_template_id"
+                                                   name="product_template_id"
+                                                   t-att-value="product.id"/>
+                                            <input t-if="product.public_categ_ids.ids" type="hidden"
+                                                   class="product_category_id" name="product_category_id"
+                                                   t-att-value="product.public_categ_ids.ids[0]"/>
+                                            <t t-call="website_sale.variants">
+                                                <t t-set="ul_class" t-value="'flex-column'"/>
+                                                <t t-set="parent_combination" t-value="None"/>
+                                            </t>
+                                        </t>
+                                        <p t-if="True" class="css_not_available_msg alert alert-warning">This
+                                            combination
+                                            does not exist.
+                                        </p>
+                                        <div class="buy flex-wrap align-items-center">
+                                            <div class="count" style="height: 36px; align-items: stretch;">
+                                                <button type="button"
+                                                        style="height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 8px;"
+                                                        onclick="var qty=this.nextElementSibling; qty.value=Math.max(1,parseInt(qty.value||1)-1)">
+                                                    <img src="/theme_electronest/static/src/img/icons/minus.svg" alt=""
+                                                         width="25"/>
+                                                </button>
+                                                <input type="number" name="add_qty" value="1" min="1"
+                                                       style="height: 100%; padding: 0;"/>
+                                                <button type="button" class="px-2"
+                                                        style="height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 8px;"
+                                                        onclick="var qty=this.previousElementSibling; qty.value=parseInt(qty.value||1)+1">
+                                                    <img src="/theme_electronest/static/src/img/icons/plus.svg" alt=""
+                                                         width="25"/>
+                                                </button>
+                                            </div>
+                                            <div id="o_wsale_cta_wrapper" class="d-flex flex-wrap align-items-center">
+                                                <t t-set="hasQuantities" t-value="false"/>
+                                                <t t-set="hasBuyNow" t-value="false"/>
+                                                <!-- TODO: remove line below in master -->
+                                                <t t-set="ctaSizeBig" t-value="not hasQuantities or not hasBuyNow"/>
+                                                <div id="product_option_block" class="d-flex flex-wrap"/>
+                                                <div style="display:flex; align-items:center; gap: 12px;">
+                                                    <!-- Add to Cart Button -->
+                                                    <div id="add_to_cart_wrap"
+                                                         t-attf-class="{{'d-none' if combination_info['prevent_zero_price_sale'] else 'd-flex'}} align-items-center">
+                                                        <a data-animation-selector=".o_wsale_product_images"
+                                                           role="button"
+                                                           class="bttn"
+                                                           id="add_to_cart"
+                                                           style="height: 36px; display: flex; align-items: center; justify-content: center;"
+                                                           href="#">
+                                                            Add to cart
+                                                        </a>
+                                                    </div>
+                                                    <div>
+                                                        <a href="#" role="button"
+                                                           class="bttn bttn1 o_we_buy_now"
+                                                           style="height: 36px; display: flex; align-items: center; justify-content: center;">
+                                                            Buy Now
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <t
+                                                    t-if="is_view_active('website_sale.product_tags')"
+                                                    t-call="website_sale.product_tags">
+                                                <t t-set="all_product_tags"
+                                                   t-value="product_variant.all_product_tag_ids"/>
+                                            </t>
+                                        </div>
+                                    </div>
+
+                                    <t t-set="product_variant"
+                                       t-value="product_variant or product._create_first_product_variant()"/>
+                                    <div class="war">
+                                        <div class="sec bor">
+                                            <div class="d-flex gap-3 flex-wrap align-items-center">
+                                                <span>
+                                                    <img
+                                                            src="/theme_electronest/static/src/img/icons/payment.svg"
+                                                            alt=""
+                                                            width="30"
+                                                    />
+                                                </span>
+                                                <p>
+                                                    <b>Payment.</b>
+                                                    Payment upon receipt of goods, Payment by
+                                                    card in the department, Google Pay, Online card, -5%
+                                                    discount in case of payment
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="sec">
+                                            <div class="d-flex gap-3 flex-wrap align-items-center">
+                                                <span>
+                                                    <img
+                                                            src="/theme_electronest/static/src/img/icons/warrenty.svg"
+                                                            alt=""
+                                                            width="25"
+                                                    />
+                                                </span>
+                                                <p>
+                                                    <b>Warranty.</b>
+                                                    The Consumer Protection Act does not
+                                                    provide for the return of this product of proper quality.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <ul class="wish flex-wrap">
+                                        <li>
+                                            <a href="#" role="button"
+                                               class="o_add_wishlist"
+                                               data-action="o_wishlist"
+                                               t-att-data-product-template-id="product.id"
+                                               t-att-data-product-product-id="product_variant.id">
+                                                <img src="/theme_electronest/static/src/img/icons/add1.svg" alt=""
+                                                     width="30"/>
+                                                Add to wishlist
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" role="button"
+                                               class="o_add_compare"
+                                               data-action="o_comparelist"
+                                               t-att-data-product-product-id="product_variant.id">
+                                                <img src="/theme_electronest/static/src/img/icons/add3.svg" alt=""
+                                                     width="30"/>
+                                                Compare
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-5">
+                    <div class="col-md-12 pb-4">
+                        <div class="head-flex head2">
+                            <h3>Recently viewed
+                                <span>Products</span>
+                            </h3>
+                            <a href="/shop">View All</a>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="swiper recentswiper">
+                            <div class="swiper-wrapper">
+                                <t t-set="products"
+                                   t-value="request.env['product.template'].sudo().search([('is_published', '=', True)])"/>
+                                <t t-foreach="products" t-as="product">
+                                    <div class="swiper-slide">
+                                        <div class="mycard">
+                                            <div class="img">
+                                                <img
+                                                        t-att-src="'/web/image/product.template/%s/image_512' % product.id"
+                                                        alt=""
+                                                        width="200"
+                                                />
+                                                <form action="/shop/cart/update" method="POST"
+                                                      class="float-right">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"
+                                                           t-nocache="The csrf token must always be up to date."/>
+                                                    <input type="hidden" name="product_id"
+                                                           t-att-value="product.product_variant_id.id"/>
+                                                    <input type="hidden" name="product_template_id"
+                                                           t-att-value="product.id"/>
+                                                    <input type="hidden" name="add_qty" value="1"/>
+                                                    <button type="submit" class="cartbtn">
+                                                        <img src="/theme_electronest/static/src/img/icons/cart.svg"
+                                                             alt=""/>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            <h6>
+                                                <t t-esc="product.name"/>
+                                            </h6>
+                                            <div class="fw-bold" style="font-size: 1rem; color: #333;">
+                                                <t t-esc="product.list_price"
+                                                   t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                            </div>
+
+                                            <a t-att-href="product.website_url" class="stretched-link"></a>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="swiper-button-next normal-next"></div>
+                            <div class="swiper-button-prev normal-prev"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
