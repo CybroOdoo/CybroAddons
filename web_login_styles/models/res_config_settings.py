@@ -59,9 +59,9 @@ class ResConfigSettings(models.TransientModel):
         :return: Dictionary of configuration values
         :rtype: dict
         """
-        res = super(ResConfigSettings, self).get_values()
+        res = super().get_values()
         params = self.env['ir.config_parameter'].sudo()
-        res.update(image=params.get_param('web_login_styles.image'))
+        res['image'] = params.get_param('web_login_styles.image')
         return res
 
     def set_values(self):
@@ -71,7 +71,7 @@ class ResConfigSettings(models.TransientModel):
         This method extends the default `set_values` to persist the selected
         login background image into system parameters.
         """
-        super(ResConfigSettings, self).set_values()
+        super().set_values()
         params = self.env['ir.config_parameter'].sudo()
         params.set_param('web_login_styles.image', self.image)
 
