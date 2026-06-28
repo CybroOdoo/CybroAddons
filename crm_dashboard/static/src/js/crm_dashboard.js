@@ -3,6 +3,8 @@ import {registry} from "@web/core/registry";
 import {Component} from "@odoo/owl";
 import {onWillStart, onMounted, useState, useRef, useEffect} from "@odoo/owl";
 import {useService} from "@web/core/utils/hooks";
+import { _t } from "@web/core/l10n/translation";
+import { sprintf } from "@odoo/owl";
 
 export class CrmDashboard extends Component {
     setup() {
@@ -34,7 +36,45 @@ export class CrmDashboard extends Component {
             country_count: [],
             country_revenue: [],
             recent_activities:[],
-
+            // Pre-translated UI strings (used by dashboard_templates.xml).
+            // We translate here in JS (_t) because the QWeb template does
+            // not have _t in its context. Keys are camelCase.
+            texts: {
+                thisYear: _t('This Year'),
+                thisQuarter: _t('This Quarter'),
+                thisMonth: _t('This Month'),
+                thisWeek: _t('This Week'),
+                crmDashboard: _t('CRM Dashboard'),
+                myLeads: _t('My Leads'),
+                myOpportunities: _t('My Opportunities'),
+                expectedRevenue: _t('Expected Revenue'),
+                revenue: _t('Revenue'),
+                winRatio: _t('Win Ratio'),
+                averageClosingTime: _t('Average Closing Time'),
+                opportunityWinLossRatio: _t('Opportunity Win Loss Ratio'),
+                unassignedLeadsCount: _t('Unassigned Leads Count'),
+                leadsStage: _t('Leads Stage'),
+                leadsByMonths: _t('Leads By Months'),
+                crmActivities: _t('CRM Activities'),
+                leadsGroupByCampaign: _t('Leads Group By Campaign'),
+                leadsGroupByMedium: _t('Leads Group By Medium'),
+                leadsGroupBySource: _t('Leads Group By Source'),
+                lostOpportunityLead: _t('Lost Opportunity/Lead'),
+                totalRevenueBySalesperson: _t('Total Revenue by Salesperson'),
+                upcomingActivities: _t('Upcoming Activities'),
+                recentActivities: _t('Recent Activities'),
+                topSalespersonRevenue: _t('Top Salesperson Revenue'),
+                topCountryWiseRevenue: _t('Top Country Wise Revenue'),
+                topCountryWiseCount: _t('Top Country Wise Count'),
+                opportunity: _t('Opportunity'),
+                country: _t('Country'),
+                count: _t('Count'),
+                seconds: _t('Seconds'),
+                activityLabel: _t('Activity:'),
+                nameLabel: _t('Name:'),
+                summaryLabel: _t('Summary:'),
+                salesRepLabel: _t('Sales Rep:'),
+            },
         })
         onWillStart(async () => {
             await this.fetch_data();
@@ -138,7 +178,7 @@ export class CrmDashboard extends Component {
         var date = this.SetPeriods()
         this.action.doAction({
             type: "ir.actions.act_window",
-            name: "Leads",
+            name: _t('Leads'),
             res_model: 'crm.lead',
             views: [[false, "kanban"], [false, "form"]],
             target: "current",
@@ -150,7 +190,7 @@ export class CrmDashboard extends Component {
         var date = this.SetPeriods()
         this.action.doAction({
             type: "ir.actions.act_window",
-            name: "Opportunities",
+            name: _t('Opportunities'),
             res_model: 'crm.lead',
             views: [[false, "kanban"], [false, "form"]],
             target: "current",
@@ -162,7 +202,7 @@ export class CrmDashboard extends Component {
         var date = this.SetPeriods()
         this.action.doAction({
             type: "ir.actions.act_window",
-            name: "Expense Revenue",
+            name: _t('Expense Revenue'),
             res_model: 'crm.lead',
             views: [[false, "list"], [false, "form"]],
             target: "current",
@@ -174,7 +214,7 @@ export class CrmDashboard extends Component {
         var date = this.SetPeriods()
         this.action.doAction({
             type: "ir.actions.act_window",
-            name: "Revenue",
+            name: _t('Revenue'),
             res_model: 'crm.lead',
             views: [[false, "list"], [false, "form"]],
             target: "current",
@@ -186,7 +226,7 @@ export class CrmDashboard extends Component {
         var date = this.SetPeriods()
         this.action.doAction({
             type: "ir.actions.act_window",
-            name: "Unassigned Leads",
+            name: _t('Unassigned Leads'),
             res_model: 'crm.lead',
             views: [[false, "list"], [false, "form"]],
             target: "current",
@@ -202,7 +242,7 @@ export class CrmDashboard extends Component {
         const data = {
             labels: arrays[1],
             datasets: [{
-                label: 'Leads',
+                label: _t('Leads'),
                 data: arrays[0],
                 backgroundColor: [
                     "#003f5c",
@@ -247,7 +287,7 @@ export class CrmDashboard extends Component {
         const data = {
             labels: arrays[1],
             datasets: [{
-                label: 'Leads',
+                label: _t('Leads'),
                 data: arrays[0],
                 backgroundColor: [
                     "#003f5c",
@@ -292,7 +332,7 @@ export class CrmDashboard extends Component {
         const data = {
             labels: arrays[1],
             datasets: [{
-                label: 'Activity',
+                label: _t('Activity'),
                 data: arrays[0],
                 backgroundColor: [
                     "#003f5c",
@@ -337,7 +377,7 @@ export class CrmDashboard extends Component {
         const data = {
             labels: arrays[1],
             datasets: [{
-                label: 'Activity',
+                label: _t('Activity'),
                 data: arrays[0],
                 backgroundColor: [
                     "#003f5c",
@@ -382,7 +422,7 @@ export class CrmDashboard extends Component {
         const data = {
             labels: arrays[1],
             datasets: [{
-                label: 'Activity',
+                label: _t('Activity'),
                 data: arrays[0],
                 backgroundColor: [
                     "#003f5c",
@@ -427,7 +467,7 @@ export class CrmDashboard extends Component {
         const data = {
             labels: arrays[1],
             datasets: [{
-                label: 'Activity',
+                label: _t('Activity'),
                 data: arrays[0],
                 backgroundColor: [
                     "#003f5c",
@@ -472,7 +512,7 @@ export class CrmDashboard extends Component {
         const data = {
             labels: arrays['month'],
             datasets: [{
-                label: 'Activity',
+                label: _t('Activity'),
                 data: arrays['count'],
                 backgroundColor: [
                     "#003f5c",
@@ -517,7 +557,7 @@ export class CrmDashboard extends Component {
         const data = {
             labels: arrays[1],
             datasets: [{
-                label: 'Activity',
+                label: _t('Activity'),
                 data: arrays[0],
                 backgroundColor: [
                     "#003f5c",
