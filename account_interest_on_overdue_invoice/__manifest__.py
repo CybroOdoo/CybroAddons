@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Interest for Overdue Invoice',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Accounting',
     'summary': """This module helps to manage Interest on Overdue Invoices.""",
     'description': "This module helps to calculate daily, weekly or monthly"
