@@ -19,28 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-{
-    'name': 'Sale Recurring',
-    'version': '19.0.1.0.1',
-    'category': 'Sales',
-    'summary': 'Automatic sale order creation based on recurring orders',
-    'description': 'This module is helps to create sale orders automatically '
-                   'based on the recurring orders.',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['account', 'sale_management'],
-    'data': [
-        'security/ir.model.access.csv',
-        'data/ir_sequence_data.xml',
-        'data/ir_cron_data.xml',
-        'views/sale_recurring_views.xml',
-        'views/sale_order_views.xml'
-    ],
-    'images': ['static/description/banner.png'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'application': False,
-    'auto_install': False,
-}
+from . import test_sale_recurring
