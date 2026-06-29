@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Hide Any Menu User Wise',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Extra Tools',
     'summary': 'This Module Helps To Hide any Menu items user wise.',
     'description': """This module provides functionality to hide or restrict menu 
