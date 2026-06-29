@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Dental Clinic Management',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Services',
     'summary': """Dental Clinic Management is to manage the entire dental clinic.""",
     'description': """Dental Clinic Management software, dental clinics can 
