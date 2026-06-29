@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Event Ticket QR Code Scanner',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Marketing',
     'summary': 'QR Code Scanner for Event Ticket',
     'description': """This module helps to create QR codes for event tickets,
