@@ -19,25 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-{
-    'name': "Readonly User Access",
-    'version': '19.0.1.0.1',
-    'category': 'Extra Tools',
-    'summary': """Grant read-only access to users""",
-    'description': """This module helps you to grant read-only
-     access to selected users.""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'images': ['static/description/banner.png'],
-    'depends': ['base'],
-    'data': [
-        'security/odoo_readonly_user_groups.xml',
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': "LGPL-3",
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from . import test_ir_model_access
+from . import test_ir_rule
+from . import test_res_users
