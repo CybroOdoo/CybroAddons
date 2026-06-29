@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 ################################################################################
 #
-#    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Swaraj R (odoo@cybrosys.com)
+#    Cybrosys Techno Solutions
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Cybrosys Techno Solutions (<https://www.cybrosys.com>)
 #
 #    This program is free software: you can modify
 #    it under the terms of the GNU Affero General Public License (AGPL) as
@@ -19,10 +20,9 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-
 {
     'name': 'Custom Receipts For POS',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Point of Sale',
     'summary': """Customizable Point of Sale Receipt Designs with multiple 
     templates support""",
