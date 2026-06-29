@@ -19,23 +19,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-{
-    'name': "Duplicate Contact Details Alert",
-    'version': '19.0.1.0.1',
-    "category": 'Extra Tools',
-    'summary': """Duplicate Contact Details Alert""",
-    'description': """Duplicate Contact Details Alert""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'contacts'],
-    'data': [
-        'views/res_config_settings_views.xml',
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': "LGPL-3",
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from . import test_res_config_settings
+from . import test_res_partner

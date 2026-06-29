@@ -76,7 +76,7 @@ class ResPartner(models.Model):
                 if vals.get(field_name):
                     partner = self.env['res.partner'].search(
                         [(field_name, '=', vals.get(field_name)),
-                         ('id', '!=', self.id)],
+                         ('id', 'not in', self.ids)],
                         limit=1
                     )
                     if partner:
