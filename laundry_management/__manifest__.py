@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Laundry Management',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     "category": "Industries",
     'summary': """Complete Laundry Service Management""",
     'description': 'This module is very useful to manage all process of laundry'

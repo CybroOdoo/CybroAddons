@@ -45,7 +45,7 @@ class WashingWashing(models.Model):
         help='State of wash')
     laundry_id = fields.Many2one('laundry.order.line')
     product_line_ids = fields.One2many('wash.order.line', 'wash_id',
-                                       string='Products', ondelete='cascade',
+                                       string='Products',
                                        help='Related Products for wash.')
     total_amount = fields.Float(compute='_compute_total_amount',
                                 string='Grand Total')
@@ -125,7 +125,7 @@ class WashOrderLine(models.Model):
                               help='Add the required quantity')
     product_id = fields.Many2one('product.product', string='Product',
                                  help='Order line Product')
-    price_unit = fields.Float('Unit Price', default=0.0,
+    price_unit = fields.Float('Unit Price',
                               related='product_id.list_price',
                               help='Unit price of Product')
     subtotal = fields.Float(compute='_compute_subtotal', string='Subtotal',

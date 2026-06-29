@@ -96,8 +96,8 @@ class ReportLaundryOrder(models.Model):
         return group_by_str
 
     def init(self):
-        tools.sql.drop_view_if_exists(self._cr, 'report_laundry_order')
-        self._cr.execute("""
+        tools.sql.drop_view_if_exists(self.env.cr, 'report_laundry_order')
+        self.env.cr.execute("""
             CREATE view report_laundry_order as
               %s
               FROM laundry_order t

@@ -68,7 +68,7 @@ class LaundryOrder(models.Model):
                                         required=True,
                                         help="Name of laundry person")
     order_line_ids = fields.One2many('laundry.order.line', 'laundry_id',
-                                     required=True, ondelete='cascade',
+                                     required=True,
                                      help="Order lines of laundry orders")
     total_amount = fields.Float(compute='_compute_total_amount', string='Total',
                                 store=True,
@@ -85,7 +85,7 @@ class LaundryOrder(models.Model):
         ('return', 'Returned'),
         ('cancel', 'Cancelled'),
     ], string='Status', readonly=True, copy=False, index=True,
-        track_visibility='onchange', default='draft', help="State of the Order")
+        tracking=True, default='draft', help="State of the Order")
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -141,7 +141,12 @@ class LaundryOrder(models.Model):
             'view_mode': 'form',
             'res_model': 'sale.advance.payment.inv',
             'type': 'ir.actions.act_window',
-            'context': {'laundry_sale_id': self.sale_id.id},
+            'context': {
+                'laundry_sale_id': [self.sale_id.id],
+                'active_model': 'sale.order',
+                'active_id': self.sale_id.id,
+                'active_ids': [self.sale_id.id]
+            },
             'target': 'new'
         }
 

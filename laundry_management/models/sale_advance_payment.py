@@ -31,13 +31,13 @@ class SaleAdvancePaymentInv(models.TransientModel):
 
     def create_invoices(self):
         """Function for creating invoices for the advance payment."""
-        laundry_sale_id = self._context.get('laundry_sale_id')
+        laundry_sale_id = self.env.context.get('laundry_sale_id')
         sale_order = self.env['sale.order']
         if laundry_sale_id:
             sale_orders = sale_order.browse(laundry_sale_id)
         else:
             sale_orders = sale_order.browse(
-                self._context.get('active_ids', []))
+                self.env.context.get('active_ids', []))
         if self.advance_payment_method == 'delivered':
             sale_orders._create_invoices()
         elif self.advance_payment_method == 'all':
@@ -84,7 +84,7 @@ class SaleAdvancePaymentInv(models.TransientModel):
                     'tax_id': [(6, 0, tax_ids)],
                 })
                 self._create_invoice(order, so_line, amount)
-        if self._context.get('open_invoices', False):
+        if self.env.context.get('open_invoices', False):
             return sale_orders.action_view_invoice()
         return {'type': 'ir.actions.act_window_close'}
 
