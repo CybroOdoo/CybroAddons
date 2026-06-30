@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Restrict Pricelists for Users',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Sales',
     'summary': 'Feature to Restrict Pricelist for users.',
     'description': "This module provides an option to set allowed pricelists "
