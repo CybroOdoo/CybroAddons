@@ -19,25 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-{
-    'name': 'Catch Weight Management: Accounting',
-    'version': '18.0.1.0.1',
-    'category': 'Accounting',
-    'summary': """The module helps to manage Catch Weight
-                Management in Accounting.""",
-    'description': """This Module lets us to enable Catch Weight 
-                    Management System in Accounting Module.""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'account', 'cw_stock', 'uom'],
-    'data': [
-        'views/account_move_views.xml',
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from . import test_account_move_line
