@@ -34,10 +34,8 @@ export class MasterSearch extends FormController {
         var resultDiv = this.closest('.oe_result_div')
         var element = resultDiv.querySelector('.oe_details_list')
         if (element.style.display === "none" || element.style.display === "") {
-            console.log("block")
             element.style.display = "block";
         } else {
-            console.log("none")
             element.style.display = "none";
         }
     }

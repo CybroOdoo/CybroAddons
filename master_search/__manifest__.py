@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Aysha Shalin (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': 'Global Search',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Easy Search in Customers, Products, Sale, Purchase, Inventory
     and Accounting modules""",
