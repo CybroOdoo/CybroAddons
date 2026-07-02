@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Custom website header navigation layout with search overlay. -->
+<odoo>
+
+    <template id="velox_head_assets" name="Velox Head Assets"
+              inherit_id="website.layout">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com"
+                  crossorigin="anonymous"/>
+            <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&amp;family=Barlow+Condensed:wght@400;600;700&amp;display=swap"
+                  rel="stylesheet"/>
+        </xpath>
+    </template>
+
+    <template id="velox_header_override" name="Velox Custom Header"
+              inherit_id="website.layout">
+        <xpath expr="//header" position="replace">
+            <header id="top" data-name="Header" class="o_header_standard">
+
+                <div class="announcement-bar o_velox_announcement">
+                    <span>Free standard shipping</span>
+                    on orders over $100.
+                    <span>Free returns.</span>
+                </div>
+
+                <nav class="velox-nav navbar navbar-expand-lg">
+                    <div class="container">
+
+                        <a class="navbar-brand" href="/">VELO
+                            <span>X</span>
+                        </a>
+
+                        <div class="d-flex align-items-center order-lg-3 ms-auto ms-lg-3
+                         nav-icons velox-nav-icons">
+
+                            <a href="#" id="openSearchBtn" aria-label="Search">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
+                                     height="24"
+                                     viewBox="0 0 24 24">
+                                    <path fill="none" stroke="currentColor"
+                                          stroke-linecap="round" stroke-linejoin="round"
+                                          stroke-width="2"
+                                          d="m21 21l-4.343-4.343m0 0A8 8 0 1 0 5.343 5.343a8 8 0 0 0 11.314 11.314"/>
+                                </svg>
+                            </a>
+
+                            <ul class="navbar-nav mb-0 ms-2 d-none d-sm-flex">
+                                <t t-call="portal.placeholder_user_sign_in">
+                                    <t t-set="_link_class" t-value="'nav-link'"/>
+                                </t>
+                                <t t-call="portal.user_dropdown">
+                                    <t t-set="_user_name" t-value="False"/>
+                                    <t t-set="_item_class" t-value="'nav-item dropdown'"/>
+                                    <t t-set="_link_class" t-value="'nav-link'"/>
+                                </t>
+                            </ul>
+
+                            <ul class="navbar-nav mb-0 ms-3">
+                                <li class="nav-item o_wsale_my_cart">
+                                    <a href="/shop/cart" aria-label="Cart"
+                                       class="nav-link" style="position:relative;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24"
+                                             height="24"
+                                             viewBox="0 0 16 16">
+                                            <path fill="currentColor" fill-rule="evenodd"
+                                                  d="M5.174 3h5.652a1.5 1.5 0 0 1 1.49 1.328l.808 7A1.5 1.5 0 0 1 11.634 13H4.366a1.5 1.5 0 0 1-1.49-1.672l.808-7A1.5 1.5 0 0 1 5.174 3m-2.98 1.156A3 3 0 0 1 5.174 1.5h5.652a3 3 0 0 1 2.98 2.656l.808 7a3 3 0 0 1-2.98 3.344H4.366a3 3 0 0 1-2.98-3.344zM5 5.25a.75.75 0 0 1 1.5 0v.25a1.5 1.5 0 1 0 3 0v-.25a.75.75 0 0 1 1.5 0v.25a3 3 0 0 1-6 0z"
+                                                  clip-rule="evenodd"/>
+                                        </svg>
+
+                                        <t t-set="sale_order"
+                                           t-value="request.website.sale_get_order()"/>
+                                        <t t-set="cart_qty"
+                                           t-value="sale_order.cart_quantity if sale_order else 0"/>
+
+                                        <sup class="my_cart_quantity o_cart_quantity badge text-bg-primary rounded-pill z-index-1"
+                                             style="position:absolute;top:-1px;right:-4px;
+            background:var(--velox-accent) !important;
+            color:#fff;font-size:9px;
+            font-family:var(--font-cond);font-weight:700;
+            width:16px;height:16px;display:flex;
+            align-items:center;justify-content:center;
+            padding:0;"
+                                             t-esc="cart_qty"/>
+                                    </a>
+                                </li>
+                            </ul>
+
+                        </div>
+
+
+                        <button class="navbar-toggler ms-2" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#veloxNav"
+                                aria-controls="veloxNav" aria-expanded="false"
+                                aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"/>
+                        </button>
+
+                        <div class="collapse navbar-collapse order-lg-2
+                         justify-content-center" id="veloxNav">
+                            <ul class="navbar-nav mb-2 mb-lg-0 mx-auto">
+
+                                <li class="nav-item">
+                                    <a t-attf-class="nav-link#{
+                      ' active' if request.httprequest.path.startswith('/shop/new-release') else ''}"
+                                       href="/shop/new-release">New Releases
+                                    </a>
+                                </li>
+
+                                <t t-set="gender_attr"
+                                   t-value="request.env['product.attribute'].sudo().search(
+                       [('name','=','Gender')], limit=1)"/>
+                                <t t-set="men_val"
+                                   t-value="gender_attr.value_ids.filtered(
+                       lambda v: v.name == 'Men')[:1]
+                       if gender_attr
+                       else request.env['product.attribute.value']"/>
+                                <t t-set="women_val"
+                                   t-value="gender_attr.value_ids.filtered(
+                       lambda v: v.name == 'Women')[:1]
+                       if gender_attr
+                       else request.env['product.attribute.value']"/>
+
+                                <li class="nav-item">
+                                    <t t-if="gender_attr and men_val">
+                                        <a t-attf-class="nav-link#{' active' if ( (str(gender_attr.id) + '-' + str(men_val.id)) in request.httprequest.args.getlist('attribute_value') or (str(gender_attr.id) + '-' + str(men_val.id)) in request.httprequest.args.getlist('attrib') ) else ''}"
+                                           t-attf-href="/shop?attribute_value=#{gender_attr.id}-#{men_val.id}">
+                                            Men
+                                        </a>
+                                    </t>
+                                    <t t-else="">
+                                        <a class="nav-link" href="/shop">Men</a>
+                                    </t>
+                                </li>
+
+                                <li class="nav-item">
+                                    <t t-if="gender_attr and women_val">
+                                        <a t-attf-class="nav-link#{' active' if ( (str(gender_attr.id) + '-' + str(women_val.id)) in request.httprequest.args.getlist('attribute_value') or (str(gender_attr.id) + '-' + str(women_val.id)) in request.httprequest.args.getlist('attrib') ) else ''}"
+                                           t-attf-href="/shop?attribute_value=#{gender_attr.id}-#{women_val.id}">
+                                            Women
+                                        </a>
+                                    </t>
+                                    <t t-else="">
+                                        <a class="nav-link" href="/shop">Women</a>
+                                    </t>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a t-attf-class="nav-link#{
+                      ' active' if request.httprequest.path.startswith('/shop/sale') else ''}"
+                                       href="/shop/sale">Sale
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </div>
+
+                    </div>
+                </nav>
+            </header>
+        </xpath>
+    </template>
+
+    <template id="velox_search_overlay" name="Velox Search Overlay"
+              inherit_id="website.layout">
+        <xpath expr="//div[@id='wrapwrap']" position="after">
+            <div class="velox-search-overlay" id="searchOverlay" aria-hidden="true">
+                <button class="velox-search-close" id="closeSearchBtn"
+                        aria-label="Close search">&#215;
+                </button>
+                <div class="velox-search-inner">
+                    <form action="/shop" method="get"
+                          class="velox-search-form o_searchbar_form"
+                          id="searchForm">
+                        <input type="text" name="search"
+                               placeholder="WHAT ARE YOU LOOKING FOR?"
+                               class="velox-search-input" id="searchInput"
+                               autocomplete="off" spellcheck="false"/>
+                        <button type="submit" class="velox-search-submit oe_search_button"
+                                aria-label="Submit Search">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                                 viewBox="0 0 24 24">
+                                <path fill="none" stroke="currentColor"
+                                      stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="m21 21l-4.343-4.343m0 0A8 8 0 1 0 5.343 5.343a8 8 0 0 0 11.314 11.314"/>
+                            </svg>
+                        </button>
+                    </form>
+                    <div class="velox-popular-searches">
+                        <p>POPULAR SEARCHES</p>
+                        <div class="velox-search-tags">
+                            <a href="/shop?search=Running+Shoes" class="velox-search-tag">
+                                Running Shoes
+                            </a>
+                            <a href="/shop?search=Tech+Fleece" class="velox-search-tag">
+                                Tech Fleece
+                            </a>
+                            <a href="/shop?search=Training+Shorts"
+                               class="velox-search-tag">Training Shorts
+                            </a>
+                            <a href="/shop?search=Bags" class="velox-search-tag">Bags
+                                &amp; Backpacks
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="velox_user_dropdown" inherit_id="portal.user_dropdown">
+        <xpath expr="//a" position="replace">
+            <a href="#" role="button" data-bs-toggle="dropdown"
+               t-attf-class="#{'' if _no_caret else 'dropdown-toggle'} #{_link_class}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                     viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round"
+                       stroke-linejoin="round" stroke-width="2">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </g>
+                </svg>
+            </a>
+        </xpath>
+    </template>
+
+</odoo>

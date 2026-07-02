@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Grid displaying the top trending sports products. -->
+<odoo>
+    <template id="s_velox_trending_grid_snippet" name="Velox Trending Now">
+        <section class="s_velox_trending_grid o_colored_level trending-now pb64 pt64"
+                 data-snippet="s_velox_trending_grid"
+                 data-name="Velox Trending Now">
+            <div class="container container-fluid">
+                <div class="velox-section-header mb40">
+                    <h2 class="s_title velox-section-title" data-name="Section Title">
+                        Trending Now
+                    </h2>
+                    <a href="/shop/trending" class="velox-section-link">View All
+                        Trending
+                    </a>
+                </div>
+                <t t-set="month_start"
+                   t-value="datetime.date.today().replace(day=1).strftime('%Y-%m-%d')"/>
+                <t t-set="sold_groups" t-value="request.env['sale.order.line'].sudo().read_group(
+          [('order_id.state', 'in', ['sale', 'done']), ('order_id.date_order', '&gt;=', month_start), ('product_id.active', '=', True)],
+          fields=['product_id', 'product_uom_qty:sum'],
+          groupby=['product_id'],
+          orderby='product_uom_qty desc',
+          limit=64
+        )"/>
+                <t t-set="top_variant_ids"
+                   t-value="[g['product_id'][0] for g in sold_groups if g.get('product_id') and g.get('product_uom_qty', 0) &gt; 5]"/>
+                <t t-set="seen_tmpl_ids" t-value="[]"/>
+                <t t-set="ordered_tmpl_ids" t-value="[]"/>
+                <t t-foreach="request.env['product.product'].sudo().browse(top_variant_ids)"
+                   t-as="variant">
+                    <t t-if="variant.product_tmpl_id.id not in seen_tmpl_ids">
+                        <t t-set="seen_tmpl_ids"
+                           t-value="seen_tmpl_ids + [variant.product_tmpl_id.id]"/>
+                        <t t-set="ordered_tmpl_ids"
+                           t-value="ordered_tmpl_ids + [variant.product_tmpl_id.id]"/>
+                    </t>
+                </t>
+                <t t-set="trending_products"
+                   t-value="request.env['product.template'].sudo().browse(ordered_tmpl_ids).filtered(lambda p: p.is_published)[:8]"/>
+                <t t-if="not trending_products">
+                    <t t-set="trending_products"
+                       t-value="request.env['product.template'].sudo().search([('is_published', '=', True)], order='create_date desc', limit=8)"/>
+                </t>
+                <t t-if="trending_products">
+                    <div class="row g-3">
+                        <t t-foreach="trending_products" t-as="product">
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <t t-call="theme_velox.velox_product_card"/>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+                <t t-else="">
+                    <p class="text-center velox-section-link">No trending products at the
+                        moment.
+                    </p>
+                </t>
+            </div>
+        </section>
+    </template>
+</odoo>
