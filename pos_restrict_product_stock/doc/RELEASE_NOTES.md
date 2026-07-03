@@ -9,3 +9,8 @@
 #### Version 19.0.1.1.0
 #### UPDATE
 - Fixed the issue where restrict popup was not appearing for product variants.
+
+#### 02.07.2026
+#### Version 19.0.1.1.1
+#### UPDATE
+- Fixed POS product and variant stock display based on the configured POS stock location.

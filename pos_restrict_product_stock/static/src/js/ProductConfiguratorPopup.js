@@ -20,61 +20,44 @@ patch(ProductConfiguratorPopup.prototype, {
             return super.confirm(...arguments);
         }
 
-        try {
-            const result = await this.pos.getProductInfo(
-                this.props.productTemplate,
-                1,
-                0,
-                product
-            );
+        const qtyAvailable = product.qty_available || 0;
+        const forecastQty = product.virtual_available || 0;
 
-            const warehouse =
-                result?.productInfo?.warehouses?.[0] || {};
+        let outOfStock = false;
 
-            const qtyAvailable = warehouse.available_quantity || 0;
-            const forecastQty = warehouse.forecasted_quantity || 0;
+        switch (posConfig.stock_type) {
+            case "qty_on_hand":
+                outOfStock = qtyAvailable <= 0;
+                break;
 
-            let outOfStock = false;
+            case "virtual_qty":
+                outOfStock = forecastQty <= 0;
+                break;
 
-            switch (posConfig.stock_type) {
-                case "qty_on_hand":
-                    outOfStock = qtyAvailable <= 0;
-                    break;
+            case "both":
+                outOfStock =
+                    qtyAvailable <= 0 ||
+                    forecastQty <= 0;
+                break;
+        }
 
-                case "virtual_qty":
-                    outOfStock = forecastQty <= 0;
-                    break;
-
-                case "both":
-                    outOfStock =
-                        qtyAvailable <= 0 ||
-                        forecastQty <= 0;
-                    break;
-            }
-
-            if (outOfStock) {
-                const confirmed = await new Promise((resolve) => {
-                    dialog.add(ConfirmationDialog, {
-                        title: _t("Out of Stock"),
-                        body: _t(
-                            "%s is out of stock. Do you want to proceed?"
-                        ).replace("%s", product.display_name),
-                        confirmLabel: _t("Order"),
-                        cancelLabel: _t("Cancel"),
-                        confirm: () => resolve(true),
-                        cancel: () => resolve(false),
-                    });
+        if (outOfStock) {
+            const confirmed = await new Promise((resolve) => {
+                dialog.add(ConfirmationDialog, {
+                    title: _t("Out of Stock"),
+                    body: _t(
+                        "%s is out of stock. Do you want to proceed?"
+                    ).replace("%s", product.display_name),
+                    confirmLabel: _t("Order"),
+                    cancelLabel: _t("Cancel"),
+                    confirm: () => resolve(true),
+                    cancel: () => resolve(false),
                 });
+            });
 
-                if (!confirmed) {
-                    return;
-                }
+            if (!confirmed) {
+                return;
             }
-        } catch (error) {
-            console.error(
-                "Error while checking stock for variant:",
-                error
-            );
         }
         return super.confirm(...arguments);
     },
