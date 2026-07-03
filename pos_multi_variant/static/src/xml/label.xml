@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Add "Multi-variant" label badge on product card -->
+    <t t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('product-img')]" position="inside">
+            <t t-if="props.isPosVariants">
+                <span class="custom-pos-label">Multi-variant</span>
+            </t>
+        </xpath>
+    </t>
+
+    <!-- Pass isPosVariants from product list to ProductCard -->
+    <t t-inherit="point_of_sale.ProductsWidget" t-inherit-mode="extension" owl="1">
+        <xpath expr="//ProductCard" position="attributes">
+            <attribute name="isPosVariants">product.is_pos_variants</attribute>
+        </xpath>
+    </t>
+
+    <!-- Show selected variants in the orderline (POS UI + Receipt) -->
+    <t t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
+        <xpath expr="//ul[hasclass('info-list')]" position="inside">
+            <t t-if="props.line.product_variants and props.line.product_variants.length">
+                <li class="pos-variant-info">
+                    <t t-foreach="props.line.product_variants" t-as="variant" t-key="variant_index">
+                        <span class="d-block text-muted small">
+                            <t t-esc="variant.type"/>:
+                            + <t t-esc="env.utils.formatCurrency(variant.extra_price)"/>
+                        </span>
+                    </t>
+                </li>
+            </t>
+        </xpath>
+    </t>
+
+</templates>

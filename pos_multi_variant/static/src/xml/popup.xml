@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pos_multi_variant.ProductsPopup" owl="1">
+        <div class="popup popup-selection pos-multi-variant-popup d-flex flex-column" style="max-height: 85vh; width: 480px; max-width: 95vw;">
+
+            <!-- Header -->
+            <div class="modal-header drag-handle flex-shrink-0">
+                <h4 class="modal-title">
+                    <t t-esc="props.title"/>
+                </h4>
+            </div>
+
+            <!-- Scrollable variant selection area — takes all remaining space -->
+            <div class="selection flex-grow-1 overflow-y-auto p-3" style="min-height: 0;">
+                <t t-foreach="props.products" t-as="product" t-key="product.id">
+                    <!-- Attribute name as section heading -->
+                    <div class="text-center fw-bold py-2 border-bottom mb-3">
+                        <t t-esc="product.attribute_id[1]"/>
+                    </div>
+                    <t t-set="attrName" t-value="product.attribute_id[1]"/>
+
+                    <!-- Variant cards row -->
+                    <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
+                        <t t-foreach="props.variant_details" t-as="variant" t-key="variant.id">
+                            <t t-foreach="product.value_ids" t-as="val" t-key="val">
+                                <t t-if="variant.id == val">
+                                    <button type="button"
+                                            class="btn variant-card d-flex flex-column align-items-center p-3 border rounded"
+                                            t-att-class="{'btn-primary': isSelected(attrName, variant.name), 'btn-outline-secondary': !isSelected(attrName, variant.name)}"
+                                            t-on-click="() => this.selectVariant(product, variant, attrName)"
+                                            style="width: 110px; min-height: 130px;">
+                                        <img t-att-src="imageUrl()"
+                                             t-att-alt="variant.name"
+                                             style="width: 60px; height: 60px; object-fit: cover; margin-bottom: 6px; border-radius: 4px;"/>
+                                        <div class="fw-bold small text-center">
+                                            <t t-esc="variant.name"/>
+                                        </div>
+                                        <div class="small text-success text-center">
+                                            + <t t-esc="env.utils.formatCurrency(product.extra_price)"/>
+                                        </div>
+                                    </button>
+                                </t>
+                            </t>
+                        </t>
+                    </div>
+                </t>
+            </div>
+
+            <!-- Footer — always at the bottom, never overlapping -->
+            <footer class="footer modal-footer flex-shrink-0 d-flex justify-content-start gap-2 p-3 border-top">
+                <div class="button confirm btn btn-primary btn-lg" t-on-click="confirm">
+                    <t t-esc="props.confirmText"/>
+                </div>
+                <div class="button cancel btn btn-light btn-lg" t-on-click="cancel">
+                    <t t-esc="props.cancelText"/>
+                </div>
+            </footer>
+
+        </div>
+    </t>
+
+</templates>

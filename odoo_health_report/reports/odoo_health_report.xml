@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- QWeb template for module health report displaying module statistics,code quality metrics,
+     and violations in PDF format.-->
+    <template id="odoo_health_report" name="Odoo Module Health Report">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <style type="text/css">
+                    .hr-module-title {
+                    color: #000;
+                    font-size: 18px;
+                    font-weight: 700;
+                    text-transform: capitalize;
+                    margin-bottom: 10px;
+                    }
+                    table, th, td, tr, thead, tbody {
+                    border: none !important;
+                    }
+                    .hr-table {
+                    width: 100%;
+                    overflow: hidden;
+                    }
+                    .hr-table thead {
+                    background-color: #ddf66b;
+                    color: #000;
+                    }
+                    .hr-table thead th {
+                    font-size: 16px;
+                    background-color: #DDF66B;
+                    color: #000 !important;
+                    }
+                    .hr-table thead th:first-child {
+                    border-top-left-radius: 10px;
+                    }
+                    .hr-table thead th:last-child {
+                    border-top-right-radius: 10px;
+                    }
+                    .hr-table tbody tr td {
+                    font-size: 14px !important;
+                    color: #495057 !important;
+                    border-bottom: 1px solid #ddd !important;
+                    }
+                </style>
+
+                <div class="footer"
+                     style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; font-size: 14px; border-top: 1px solid #ccc;">
+                    <p style="text-align: left; margin: 0;">Cybrosys
+                        Technologies | www.cybrosys.com | info@cybrosys.com
+                    </p>
+                    <p style="text-align: right; margin: 0; right: 40px; top: 10px; position:absolute;">
+                        <span class="page"/>
+                        | Page
+                    </p>
+                </div>
+
+                <body style="display: flex; justify-content: center; align-items: center; flex-flow: column; gap: 2rem; font-family: 'Public Sans', sans-serif; font-size: 1rem;">
+                    <main>
+                        <section>
+                            <t t-if="module_quality">
+                                <t t-set="field_details"
+                                   t-value="module_quality['field_details']"/>
+                                <t t-set="count_lines"
+                                   t-value="module_quality['count_lines']"/>
+                                <t t-set="violations"
+                                   t-value="module_quality['violations']"/>
+
+                                <!-- Header Light Blue Section -->
+                                <div style="background-color: #96c0ff; text-align: center; padding: 15px 0;">
+                                    <img src="/odoo_health_report/static/src/assets/images/logo/logo.svg"
+                                         alt="" width="250"/>
+                                </div>
+                                <!-- Dark Blue Title Section -->
+                                <div style="background-color: #0047b3; color: white;">
+                                    <h3 style="margin: 0; text-align: center; padding: 15px 0; font-size: 1rem;">
+                                        Module Quality Report
+                                    </h3>
+                                </div>
+
+                                <table style="width: 100%; margin: 15px 0;">
+                                    <tr>
+                                        <!-- Critical Overview -->
+                                        <td style="width: 40%; padding: 10px; vertical-align: top;">
+                                            <div style="background: url('/odoo_health_report/static/src/assets/images/icons_report/box.png') no-repeat; background-size: cover; border-radius: 15px; color: white; padding: 20px; position: relative; height: 135px;width: 100%;">
+                                                <h5 style="margin: 0; font-size: 14pt; font-weight: normal;color: white;">
+                                                    Apps installed ratio
+                                                </h5>
+                                                <img src="/odoo_health_report/static/src/assets/images/icons_report/graph.png"
+                                                     alt=""
+                                                     style="width: 155px; position: absolute; left: 16px; top: 52px;"/>
+                                                <h6 style="position: absolute; bottom: 10px; left: 40px; font-size: 12pt; margin: 0;color: white;">
+                                                    Overall
+                                                    <span style="font-weight: bold;">
+                                                        <t t-esc="field_details['critical_overview']['overall_percentage']['value']"/>
+                                                        %
+                                                    </span>
+                                                </h6>
+                                            </div>
+                                        </td>
+                                        <!-- Fields -->
+                                        <td style="width: 60%;">
+                                            <table style="width: 100%;">
+                                                <tr>
+                                                    <td style="padding: 10px; width: 33.33%;">
+                                                        <div style="background: #d9e8ff; border-radius: 15px; padding: 15px; position: relative; height: 135px;">
+                                                            <h3 style="margin-top: 20px; color: #7b7b7b; font-size: 14pt;">
+                                                                Total Fields
+                                                            </h3>
+                                                            <img src="/odoo_health_report/static/src/assets/images/icons_report/icon-all-field.svg"
+                                                                 style="position: absolute; right: 5px; top: 5px;"/>
+                                                            <p style="margin: 8px 0; font-size: 12pt; color: black; font-weight: bold;">
+                                                                <t t-esc="field_details['critical_overview']['total_fields']['value']"/>
+                                                            </p>
+                                                        </div>
+                                                    </td>
+                                                    <td style="padding: 10px; width: 33.33%;">
+                                                        <div style="background: #d9e8ff; border-radius: 15px; padding: 15px; position: relative; height: 135px;">
+                                                            <h3 style="margin-top: 20px; color: #7b7b7b; font-size: 14pt;">
+                                                                Stored Fields
+                                                            </h3>
+                                                            <img src="/odoo_health_report/static/src/assets/images/icons_report/icon-stored.svg"
+                                                                 style="position: absolute; right: 5px; top: 5px;"/>
+                                                            <p style="margin: 8px 0; font-size: 12pt; color: black; font-weight: bold;">
+                                                                <t t-esc="field_details['critical_overview']['stored']['value']"/>
+                                                            </p>
+                                                        </div>
+                                                    </td>
+                                                    <td style="padding: 10px; width: 33.33%;">
+                                                        <div style="background: #d9e8ff; border-radius: 15px; padding: 15px; position: relative; height: 135px;">
+                                                            <h3 style="margin-top: 20px; color: #7b7b7b; font-size: 14pt;">
+                                                                Non-Stored<br/>
+                                                                Fields
+                                                            </h3>
+                                                            <img src="/odoo_health_report/static/src/assets/images/icons_report/icon-non-stored.svg"
+                                                                 style="position: absolute; right: 5px; top: 5px;"/>
+                                                            <p style="margin: 8px 0; font-size: 12pt; color: black; font-weight: bold;">
+                                                                <t t-esc="field_details['critical_overview']['non_stored']['value']"/>
+                                                            </p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <section>
+                                    <h3>Module Lines Of Code</h3>
+                                    <t t-foreach="count_lines.get('result')"
+                                       t-as="author">
+                                        <h3 class="hr-module-title">
+                                            <t t-esc="author"/>
+                                        </h3>
+                                        <table class="hr-table"
+                                               style="margin-bottom: 15px;">
+                                            <thead>
+                                                <th style="text-align: left; padding: 10px">
+                                                    Module
+                                                </th>
+                                                <th style="text-align: center; padding: 10px">
+                                                    Technical Name
+                                                </th>
+                                                <th style="text-align: center; padding: 10px">
+                                                    Java Script Lines
+                                                </th>
+                                                <th style="text-align: center; padding: 10px">
+                                                    Python Lines
+                                                </th>
+                                                <th style="padding: 10px">XML
+                                                    Lines
+                                                </th>
+                                            </thead>
+                                            <t t-foreach="count_lines['result'].get(author)"
+                                               t-as="author_module">
+                                                <tbody>
+                                                    <tr style="border-bottom: 1px solid #e9e9e9">
+                                                        <td style="padding: 10px">
+                                                            <t t-esc="author_module['module_name']"/>
+                                                        </td>
+                                                        <td style="text-align: center; padding: 10px">
+                                                            <t t-esc="author_module['technical_name']"/>
+                                                        </td>
+                                                        <td style="text-align: center; padding: 10px">
+                                                            <t t-esc="author_module['py_lines']"/>
+                                                        </td>
+                                                        <td style="text-align: center; padding: 10px">
+                                                            <t t-esc="author_module['js_lines']"/>
+                                                        </td>
+                                                        <td style="text-align: center; padding: 10px">
+                                                            <t t-esc="author_module['xml_lines']"/>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </t>
+                                        </table>
+                                    </t>
+                                </section>
+                                <section>
+                                    <t t-if="violations">
+                                        <t t-foreach="violations"
+                                           t-as="violation_module">
+                                            <br/>
+                                            <hr/>
+                                            <h3>Violations of
+                                                <t t-esc="violation_module['module']"/>
+                                            </h3>
+                                            <t t-foreach="violation_module['violations']"
+                                               t-as="violations_categ">
+                                                <!--  Odoo Code Standards Check  -->
+                                                <t t-if="violations_categ == 'odoo_standards'">
+                                                    <h3 style="font-size: 1.1rem; color: #333; margin: 0; margin-bottom: 10px; font-weight: 700;">
+                                                        Odoo Code Standards
+                                                        Check
+                                                    </h3>
+                                                    <t t-if="violation_module['violations']['odoo_standards']">
+                                                        <table class="hr-table">
+                                                            <thead>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    File Name
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    Line
+                                                                </th>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    Violation
+                                                                    Message
+                                                                </th>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    Suggestion
+                                                                </th>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr t-foreach="violation_module['violations']['odoo_standards']"
+                                                                    t-as="line"
+                                                                    style="border-bottom: 1px solid #e9e9e9">
+                                                                    <td style="padding: 10px"
+                                                                        t-esc="line['file']"/>
+                                                                    <td style="text-align: center; padding: 10px"
+                                                                        t-esc="line['line']"/>
+                                                                    <td style="text-align: left; padding: 10px; color: #8B0000;"
+                                                                        t-esc="line['issue']"/>
+                                                                    <td style="text-align: left; padding: 10px"
+                                                                        t-esc="line['suggestion']"/>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <br/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span style="font-size: 0.6rem; color: black; margin: 0; margin-bottom: 10px; font-weight: 500;">
+                                                            No issues found
+                                                        </span>
+                                                        <br/>
+                                                    </t>
+                                                </t>
+
+                                                <!--  Style &amp; Linting Check  -->
+                                                <t t-elif="violations_categ == 'style_lint'">
+                                                    <h3 style="font-size: 1rem; color: #333; margin: 0; margin-bottom: 10px; font-weight: 700;">
+                                                        Style &amp; Linting
+                                                        Check
+                                                    </h3>
+                                                    <t t-if="violation_module['violations']['style_lint']">
+                                                        <table class="hr-table">
+                                                            <thead>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    File Name
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    Line
+                                                                </th>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    Violation
+                                                                    Message
+                                                                </th>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr t-foreach="violation_module['violations']['style_lint']"
+                                                                    t-as="selected"
+                                                                    style="border-bottom: 1px solid #e9e9e9">
+                                                                    <td style="padding: 10px"
+                                                                        t-esc="selected['file_name']"/>
+                                                                    <td style="text-align: center; padding: 10px"
+                                                                        t-esc="selected['line_number']"/>
+                                                                    <td style="text-align: left; padding: 10px; color: #8B0000;"
+                                                                        t-esc="selected['violation_message']"/>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <br/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span style="font-size: 0.6rem; color: black; margin: 0; margin-bottom: 10px; font-weight: 500;">
+                                                            No issues found
+                                                        </span>
+                                                        <br/>
+                                                    </t>
+                                                </t>
+
+                                                <!--  General Code Quality  -->
+                                                <t t-elif="violations_categ == 'code_quality'">
+                                                    <h3 style="font-size: 1rem; color: #333; margin: 0; margin-bottom: 10px; font-weight: 700;">
+                                                        General Code Quality
+                                                    </h3>
+                                                    <t t-if="violation_module['violations']['code_quality']">
+                                                        <table class="hr-table">
+                                                            <thead>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    File Name
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    Line
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    Column
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    Code
+                                                                </th>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    Violation
+                                                                    Message
+                                                                </th>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr t-foreach="violation_module['violations']['code_quality']"
+                                                                    t-as="selected"
+                                                                    style="border-bottom: 1px solid #e9e9e9">
+                                                                    <td style="padding: 10px"
+                                                                        t-esc="selected['file']"/>
+                                                                    <td style="text-align: center; padding: 10px"
+                                                                        t-esc="selected['line']"/>
+                                                                    <td style="text-align: center; padding: 10px"
+                                                                        t-esc="selected['column']"/>
+                                                                    <td style="text-align: center; padding: 10px"
+                                                                        t-esc="selected['code']"/>
+                                                                    <td style="text-align: left; padding: 10px; color: #8B0000;"
+                                                                        t-esc="selected['message']"/>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <br/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span style="font-size: 0.6rem; color: black; margin: 0; margin-bottom: 10px; font-weight: 500;">
+                                                            No issues found
+                                                        </span>
+                                                        <br/>
+                                                    </t>
+                                                </t>
+
+                                                <!--  Maintainability Index  -->
+                                                <t t-elif="violations_categ == 'maintainability_index'">
+                                                    <h3 style="font-size: 1rem; color: #333; margin: 0; margin-bottom: 10px; font-weight: 700;">
+                                                        Maintainability Index
+                                                    </h3>
+                                                    <t t-if="violation_module['violations']['maintainability_index']">
+                                                        <table class="hr-table">
+                                                            <thead>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    File Name
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    Grade
+                                                                </th>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr t-foreach="violation_module['violations']['maintainability_index']"
+                                                                    t-as="selected"
+                                                                    style="border-bottom: 1px solid #e9e9e9">
+                                                                    <td style="padding: 10px"
+                                                                        t-esc="selected['file']"/>
+                                                                    <td style="text-align: center; padding: 10px"
+                                                                        t-esc="selected['grade']"/>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <br/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span style="font-size: 0.6rem; color: black; margin: 0; margin-bottom: 10px; font-weight: 500;">
+                                                            No issues found
+                                                        </span>
+                                                        <br/>
+                                                    </t>
+                                                </t>
+
+                                                <!--  Import Sorting Check  -->
+                                                <t t-elif="violations_categ == 'import_sort'">
+                                                    <h3 style="font-size: 1rem; color: #333; margin: 0; margin-bottom: 10px; font-weight: 700;">
+                                                        Import Sorting Check
+                                                    </h3>
+                                                    <t t-if="violation_module['violations']['import_sort']">
+                                                        <table class="hr-table">
+                                                            <thead>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    File Name
+                                                                </th>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    Message
+                                                                </th>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr t-foreach="violation_module['violations']['import_sort']"
+                                                                    t-as="selected"
+                                                                    style="border-bottom: 1px solid #e9e9e9">
+                                                                    <td style="padding: 10px"
+                                                                        t-esc="selected['file']"/>
+                                                                    <td style="text-align: left; padding: 10px"
+                                                                        t-esc="selected['message']"/>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <br/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span style="font-size: 0.6rem; color: black; margin: 0; margin-bottom: 10px; font-weight: 500;">
+                                                            No issues found
+                                                        </span>
+                                                        <br/>
+                                                    </t>
+                                                </t>
+
+                                                <!--  Code Formatting Check  -->
+                                                <t t-elif="violations_categ == 'code_format'">
+                                                    <h3 style="font-size: 1rem; color: #333; margin: 0; margin-bottom: 10px; font-weight: 700;">
+                                                        Code Formatting Check
+                                                    </h3>
+                                                    <t t-if="violation_module['violations']['code_format']">
+                                                        <table class="hr-table">
+                                                            <thead>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    File Name
+                                                                </th>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    Action
+                                                                </th>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr t-foreach="violation_module['violations']['code_format']"
+                                                                    t-as="selected"
+                                                                    style="border-bottom: 1px solid #e9e9e9">
+                                                                    <td style="padding: 10px"
+                                                                        t-esc="selected[1]"/>
+                                                                    <td style="text-align: left; padding: 10px"
+                                                                        t-esc="selected[0]"/>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <br/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span style="font-size: 0.6rem; color: black; margin: 0; margin-bottom: 10px; font-weight: 500;">
+                                                            No issues found
+                                                        </span>
+                                                        <br/>
+                                                    </t>
+                                                </t>
+
+                                                <!--  Code Complexity  -->
+                                                <t t-elif="violations_categ == 'code_complexity'">
+                                                    <h3 style="font-size: 1rem; color: #333; margin: 0; margin-bottom: 10px; font-weight: 700;">
+                                                        Code Complexity
+                                                    </h3>
+                                                    <t t-set="cc_colors"
+                                                       t-value="{'A': 'text-success', 'B': 'text-primary', 'C': 'text-warning', 'D': 'text-orange', 'E': 'text-danger', 'F': 'text-dark-red'}"/>
+                                                    <t t-foreach="violation_module['violations']['code_complexity'].items()"
+                                                       t-as="cc_files">
+                                                        <h3 style="font-size: 1rem; color: #333; margin: 0; margin-bottom: 10px">
+                                                            File:
+                                                            <t t-esc="cc_files[0]"/>
+                                                        </h3>
+                                                        <t t-if="cc_files[1]">
+                                                            <table class="hr-table">
+                                                                <thead>
+                                                                    <th style="text-align: left; padding: 10px">
+                                                                        Type
+                                                                    </th>
+                                                                    <th style="text-align: left; padding: 10px">
+                                                                        Name
+                                                                    </th>
+                                                                    <th style="text-align: left; padding: 10px">
+                                                                        Class
+                                                                        Name
+                                                                    </th>
+                                                                    <th style="text-align: center; padding: 10px">
+                                                                        Line No.
+                                                                    </th>
+                                                                    <th style="text-align: center; padding: 10px">
+                                                                        End Line
+                                                                    </th>
+                                                                    <th style="text-align: center; padding: 10px">
+                                                                        Complexity
+                                                                    </th>
+                                                                    <th style="text-align: center; padding: 10px">
+                                                                        Rank
+                                                                    </th>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr t-if="cc_files[1]"
+                                                                        t-foreach="cc_files[1]"
+                                                                        t-as="line"
+                                                                        style="border-bottom: 1px solid #e9e9e9">
+                                                                        <td style="padding: 10px"
+                                                                            t-esc="line['type']"/>
+                                                                        <td style="text-align: left; padding: 10px"
+                                                                            t-esc="line['name']"/>
+                                                                        <td style="text-align: left; padding: 10px">
+                                                                            <t t-if="line.get('classname')"
+                                                                               t-esc="line['classname']"/>
+                                                                        </td>
+                                                                        <td style="text-align: center; padding: 10px"
+                                                                            t-esc="line['lineno']"/>
+                                                                        <td style="text-align: center; padding: 10px"
+                                                                            t-esc="line['endline']"/>
+                                                                        <td style="text-align: center; padding: 10px"
+                                                                            t-att-class="cc_colors[line['rank']]"
+                                                                            t-esc="line['complexity']"/>
+                                                                        <td style="text-align: center; padding: 10px"
+                                                                            t-att-class="cc_colors[line['rank']]"
+                                                                            t-esc="line['rank']"/>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <br/>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span style="font-size: 0.6rem; color: black; margin: 0; margin-bottom: 10px; font-weight: 500;">
+                                                                No issues found
+                                                            </span>
+                                                            <br/>
+                                                        </t>
+                                                    </t>
+                                                </t>
+
+                                                <!--  Security scan  -->
+                                                <t t-elif="violations_categ == 'security_scan'">
+                                                    <h3 style="font-size: 1rem; color: #333; margin: 0; margin-bottom: 10px; font-weight: 700;">
+                                                        Security Scan
+                                                    </h3>
+                                                    <t t-if="violation_module['violations']['security_scan']">
+                                                        <table class="hr-table">
+                                                            <thead>
+                                                                <th style="text-align: left; padding: 10px">
+                                                                    Test ID
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    Test Name
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    Severity
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    Confidence
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    Issue Text
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    File
+                                                                </th>
+                                                                <th style="text-align: center; padding: 10px">
+                                                                    Line
+                                                                </th>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr t-foreach="violation_module['violations']['security_scan']"
+                                                                    t-as="selected"
+                                                                    style="border-bottom: 1px solid #e9e9e9">
+                                                                    <td style="padding: 10px"
+                                                                        t-esc="selected['test_id']"/>
+                                                                    <td style="text-align: center; padding: 10px"
+                                                                        t-esc="selected['test_name']"/>
+                                                                    <td style="text-align: center; padding: 10px"
+                                                                        t-esc="selected['issue_severity']"/>
+                                                                    <td style="text-align: center; padding: 10px"
+                                                                        t-esc="selected['issue_confidence']"/>
+                                                                    <td style="text-align: left; padding: 10px"
+                                                                        t-esc="selected['issue_text']"/>
+                                                                    <td style="text-align: left; padding: 10px"
+                                                                        t-esc="selected['filename']"/>
+                                                                    <td style="text-align: center; padding: 10px"
+                                                                        t-esc="selected['line_number']"/>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <br/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span style="font-size: 0.6rem; color: black; margin: 0; margin-bottom: 10px; font-weight: 500;">
+                                                            No issues found
+                                                        </span>
+                                                        <br/>
+                                                        <br/>
+                                                    </t>
+                                                </t>
+                                            </t>
+                                        </t>
+                                    </t>
+                                </section>
+                            </t>
+                        </section>
+                    </main>
+                </body>
+            </t>
+        </t>
+    </template>
+</odoo>

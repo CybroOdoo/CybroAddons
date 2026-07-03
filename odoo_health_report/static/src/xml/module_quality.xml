@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Template for Module Quality dashboard. Displays metrics, module statistics, and violation details.-->
+<templates id="module_quality_template" xml:space="preserve">
+    <t t-name="odoo_health_report.module_quality_template">
+        <!-- Header -->
+        <div class="hr-header">
+            <div style="display: flex; align-items: center; justify-content: center;">
+                <img src="/odoo_health_report/static/src/assets/images/logo/logo.svg"
+                     class="hr-header__logo"/>
+                <span style="border-left: 2px solid #DEDEDE; padding-left: 10px; margin-left: 18px; font-size: 16px; font-weight: 600; text-wrap: nowrap;">Module dashboard </span>
+            </div>
+
+            <!-- Report button -->
+            <div data-bs-toggle="modal" data-bs-target="#myModal">
+                <button style="font-size: 14px; font-weight: 600; padding: 7px 25px; border-radius: 15px; background: #0066ff05; border: 1px solid #0065ff; color: #0065ff;display: flex; align-items: center; gap: 8px;">
+                <span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                         viewBox="0 0 15 15">
+                      <path fill="currentColor"
+                            d="M2.5 6.5V6H2v.5zm4 0V6H6v.5zm0 4H6v.5h.5zm7-7h.5v-.207l-.146-.147zm-3-3l.354-.354L10.707 0H10.5zM2.5 7h1V6h-1zm.5 4V8.5H2V11zm0-2.5v-2H2v2zm.5-.5h-1v1h1zm.5-.5a.5.5 0 0 1-.5.5v1A1.5 1.5 0 0 0 5 7.5zM3.5 7a.5.5 0 0 1 .5.5h1A1.5 1.5 0 0 0 3.5 6zM6 6.5v4h1v-4zm.5 4.5h1v-1h-1zM9 9.5v-2H8v2zM7.5 6h-1v1h1zM9 7.5A1.5 1.5 0 0 0 7.5 6v1a.5.5 0 0 1 .5.5zM7.5 11A1.5 1.5 0 0 0 9 9.5H8a.5.5 0 0 1-.5.5zM10 6v5h1V6zm.5 1H13V6h-2.5zm0 2H12V8h-1.5zM2 5V1.5H1V5zm11-1.5V5h1V3.5zM2.5 1h8V0h-8zm7.646-.146l3 3l.708-.708l-3-3zM2 1.5a.5.5 0 0 1 .5-.5V0A1.5 1.5 0 0 0 1 1.5zM1 12v1.5h1V12zm1.5 3h10v-1h-10zM14 13.5V12h-1v1.5zM12.5 15a1.5 1.5 0 0 0 1.5-1.5h-1a.5.5 0 0 1-.5.5zM1 13.5A1.5 1.5 0 0 0 2.5 15v-1a.5.5 0 0 1-.5-.5z"/>
+                    </svg>
+                </span>
+                    Report</button>
+            </div>
+        </div>
+
+        <!-- Tiles -->
+        <div t-if="state.field['critical_overview']"
+             class="d-flex gap-4 hr-dashboard-cards">
+            <div class="hr-dashboard-card__overview">
+                <div class="hr-dashboard-card__overview-content">
+                    <t t-if="state.field['critical_overview']['overall_percentage']">
+                        <h3>
+                          <t t-esc="state.field['critical_overview']['overall_percentage']['label']"/>
+                        </h3>
+                        <div style="position: relative; width: 190px; text-align: center">
+                            <canvas id="gaugeChart" width="190" height="100"
+                                    t-ref="overview"/>
+                            <div id="gaugeText" t-ref="overviewText">
+                                <t t-esc="state.field['critical_overview']['overall_percentage']['value']"/>
+                                % Overall
+                            </div>
+                        </div>
+                        <img src="/odoo_health_report/static/src/assets/images/illustrations/3d-women.svg"/>
+                    </t>
+                    <t t-else="">
+                    Loading.....
+                    </t>
+                </div>
+            </div>
+
+            <div class="hr-dashboard-card__status">
+                <div class="hr-dashboard-card__status-content">
+                    <h4>
+                        <t t-esc="state.field['critical_overview']['total_fields']['label']"/>
+                    </h4>
+                    <p>
+                        <t t-esc="state.field['critical_overview']['total_fields']['value']"/>
+                    </p>
+                </div>
+                <div class="">
+                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path d="M37 0C49.7025 0 60 10.2975 60 23V37C60 49.7025 49.7025 60 37 60H23C10.2975 60 0 49.7025 0 37V23C0 10.2975 10.2975 0 23 0H37Z"
+                              fill="#2B7FFF"/>
+                        <path d="M40 46H20C18.34 46 17 44.66 17 43V17C17 15.34 18.34 14 20 14H34.18C34.98 14 35.74 14.32 36.3 14.88L42.12 20.7C42.68 21.26 43 22.02 43 22.82V43C43 44.66 41.66 46 40 46ZM20 16C19.44 16 19 16.44 19 17V43C19 43.56 19.44 44 20 44H40C40.56 44 41 43.56 41 43V22.82C41.0016 22.6888 40.9757 22.5588 40.9241 22.4383C40.8724 22.3177 40.7961 22.2093 40.7 22.12L34.88 16.3C34.6954 16.1116 34.4438 16.0038 34.18 16H20Z"
+                              fill="white"/>
+                        <path d="M41.76 24H35.94C34.32 24 33 22.68 33 21.06V15.24C33 14.68 33.44 14.24 34 14.24C34.56 14.24 35 14.68 35 15.24V21.06C35 21.58 35.42 22 35.94 22H41.76C42.32 22 42.76 22.44 42.76 23C42.76 23.56 42.32 24 41.76 24ZM35 40H25C24.44 40 24 39.56 24 39C24 38.44 24.44 38 25 38H35C35.56 38 36 38.44 36 39C36 39.56 35.56 40 35 40ZM35 34H25C24.44 34 24 33.56 24 33C24 32.44 24.44 32 25 32H35C35.56 32 36 32.44 36 33C36 33.56 35.56 34 35 34ZM29 28H25C24.44 28 24 27.56 24 27C24 26.44 24.44 26 25 26H29C29.56 26 30 26.44 30 27C30 27.56 29.56 28 29 28Z"
+                              fill="white"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="hr-dashboard-card__page-size">
+                <div class="hr-dashboard-card__page-size-content">
+                    <h4>
+                        <t t-esc="state.field['critical_overview']['stored']['label']"/>
+                    </h4>
+                    <p>
+                    <t t-esc="state.field['critical_overview']['stored']['value']"/>
+                    </p>
+                </div>
+                <div class="">
+                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path d="M37 0C49.7025 0 60 10.2975 60 23V37C60 49.7025 49.7025 60 37 60H23C10.2975 60 0 49.7025 0 37V23C0 10.2975 10.2975 0 23 0H37Z"
+                              fill="#2B7FFF"/>
+                        <path d="M32.6668 15.6667H22.0002C20.5335 15.6667 19.3468 16.8667 19.3468 18.3333L19.3335 39.6667C19.3335 41.1333 20.5202 42.3333 21.9868 42.3333H38.0002C39.4668 42.3333 40.6668 41.1333 40.6668 39.6667V23.6667L32.6668 15.6667ZM38.0002 39.6667H22.0002V18.3333H31.5602L38.0002 24.7733V39.6667ZM25.2668 27.0933L23.7068 25.5333V30.3333H28.5068L26.5868 28.4133C26.9386 27.729 27.4715 27.1545 28.1275 26.7524C28.7836 26.3503 29.5374 26.1362 30.3068 26.1333C31.4207 26.1333 32.489 26.5758 33.2767 27.3635C34.0643 28.1511 34.5068 29.2194 34.5068 30.3333C34.5068 31.4472 34.0643 32.5155 33.2767 33.3032C32.489 34.0908 31.4207 34.5333 30.3068 34.5333C29.6307 34.5334 28.9646 34.3697 28.3656 34.0562C27.7665 33.7427 27.2523 33.2888 26.8668 32.7333H24.8002C25.2682 33.8014 26.0366 34.7104 27.0119 35.3496C27.9873 35.9887 29.1274 36.3305 30.2935 36.3333C33.6002 36.3333 36.2935 33.64 36.2935 30.3333C36.2935 27.0267 33.6002 24.3333 30.2935 24.3333C28.1735 24.3333 26.3335 25.44 25.2668 27.0933Z"
+                              fill="white"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="hr-dashboard-card__load-time">
+                <div class="hr-dashboard-card__load-time-content">
+                    <h4>
+                        <t t-esc="state.field['critical_overview']['non_stored']['label']"/>
+                    </h4>
+                    <p>
+                        <t t-esc="state.field['critical_overview']['non_stored']['value']"/>
+                    </p>
+                </div>
+                <div class="">
+                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path d="M37 0C49.7025 0 60 10.2975 60 23V37C60 49.7025 49.7025 60 37 60H23C10.2975 60 0 49.7025 0 37V23C0 10.2975 10.2975 0 23 0H37Z"
+                              fill="#2B7FFF"/>
+                        <path d="M19.3335 44.3333V17.6667H34.6668L40.6668 24.6667V44.3333H19.3335Z"
+                              stroke="white" stroke-width="2" stroke-linecap="round"
+                              stroke-linejoin="round"/>
+                        <path d="M25.3335 27L34.6668 36.3333M36.6668 31.6667C36.6668 35.3487 33.6822 38.3333 30.0002 38.3333C26.3182 38.3333 23.3335 35.3487 23.3335 31.6667C23.3335 27.9847 26.3182 25 30.0002 25C31.7024 24.998 33.3405 25.6492 34.5768 26.8193C35.2378 27.4417 35.7642 28.1929 36.1237 29.0266C36.4831 29.8603 36.668 30.7588 36.6668 31.6667Z"
+                              stroke="white" stroke-width="2" stroke-linecap="round"
+                              stroke-linejoin="round"/>
+                        <path d="M36.6668 31.6667C36.6668 35.3487 33.6822 38.3333 30.0002 38.3333M23.3335 31.6667C23.3335 27.9847 26.3182 25 30.0002 25"
+                              stroke="white" stroke-width="2" stroke-linecap="round"
+                              stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module Lines of Code-->
+        <div>
+            <div class="hr-card">
+                <span class="hr-card-title">Module Lines of Code</span>
+                <div class="scrollbar hr-module-table-container">
+                    <t t-set="authorIndex" t-value="0"/>
+                    <t t-foreach="Object.keys(state.quality_monitoring)" t-as="author"
+                       t-key="author_index">
+                        <t t-set="isFirst" t-value="authorIndex === 0"/>
+                        <t t-set="authorIndex" t-value="authorIndex + 1"/>
+                        <span class="hr-module-table-container-title"
+                              t-on-click="() => this.displayAuthorModules(author)"><t t-esc="author"/></span>
+                        <div class="table-container" style="margin-bottom: 15px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Module</th>
+                                        <th>Technical Name</th>
+                                        <th>JavaScript Lines</th>
+                                        <th>Python Lines</th>
+                                        <th>XML Lines</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.quality_monitoring[author]"
+                                       t-as="author_module" t-key="author_module_index">
+                                        <tr>
+                                            <td><t t-esc="author_module.module_name"/></td>
+                                            <td><t t-esc="author_module.technical_name"/></td>
+                                            <td><t t-esc="author_module.js_lines"/></td>
+                                            <td><t t-esc="author_module.py_lines"/></td>
+                                            <td><t t-esc="author_module.xml_lines"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+
+        <!-- Violating Modules-->
+        <div>
+            <div class="hr-card">
+                <span class="hr-card-title">All Modules</span>
+                <div class="hr-accordion scrollbar">
+                    <t t-if="state.all_modules">
+                        <t t-foreach="Object.entries(state.all_modules)" t-as="module"
+                           t-key="module_index">
+                            <div class="hr-accordion-item">
+                                <button class="hr-accordion-header"
+                                        t-att-class="module[0] === state.selectedModule ? 'selected' : ''"
+                                        t-att-data-module="module[0]"
+                                        t-on-click="() => this.displayViolations(module[0])">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="icon-box">
+                                            <img t-att-src="module[1][1]" width="30" height="30"
+                                                 viewBox="0 0 48 48"/>
+                                        </span>
+                                        <span t-esc="module[1][0]"/>
+                                    </div>
+                                    <t t-if="module[0] === state.selectedModule &amp;&amp; ! state.loading_accordian">
+                                        <span class="icon">
+                                            <svg width="16" height="2" viewBox="0 0 16 2" fill="none"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                                  d="M0.850098 0.25H15.1521C15.351 0.25 15.5418 0.329018 15.6824 0.46967C15.8231 0.610323 15.9021 0.801088 15.9021 1C15.9021 1.19891 15.8231 1.38968 15.6824 1.53033C15.5418 1.67098 15.351 1.75 15.1521 1.75H0.850098C0.651185 1.75 0.46042 1.67098 0.319767 1.53033C0.179115 1.38968 0.100098 1.19891 0.100098 1C0.100098 0.801088 0.179115 0.610323 0.319767 0.46967C0.46042 0.329018 0.651185 0.25 0.850098 0.25Z"
+                                                  fill="black"/>
+                                            </svg>
+                                        </span>
+                                    </t>
+                                    <t t-elif="module[0] === state.selectedModule &amp;&amp; state.loading_accordian">
+                                        <span class="icon">
+                                          <div class="text-center">
+                                            <i class="fa fa-spinner fa-spin me-2"/>
+                                          </div>
+                                        </span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="icon">
+                                            <svg width="18" height="18" viewBox="0 0 18 18"
+                                                 fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M9 1.5V16.5M16.5 9H1.5" stroke="black"
+                                                      stroke-width="1.5" stroke-linecap="round"
+                                                      stroke-linejoin="round"/>
+                                            </svg>
+                                        </span>
+                                  </t>
+                                </button>
+                                <t t-if="state.selectedModule === module[0] and state.expanded_accordian">
+                                    <t t-if="state.loading_accordian">
+                                        <div class="text-center mt-3">
+                                            <i class="fa fa-spinner fa-spin me-2"/>
+                                            Analysing the module...
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div t-if="state.module_selected"
+                                             class="hr-accordion-content show">
+
+                                        <!--  Odoo Code Standards  -->
+                                            <h3 class="mt-4">Odoo Code Standards Check for: <t
+                                                    t-esc="module[1][0]"/></h3>
+                                            <div class="table-container">
+                                        <table t-if="state.module_selected.odoo_standards_check">
+                                            <thead>
+                                                <tr>
+                                                <th>File</th>
+                                                    <th>Line</th>
+                                                    <th>Issue</th>
+                                                    <th>Suggestion</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.module_selected.odoo_standards_check"
+                                                   t-as="issues" t-key="issues_index">
+                                                    <tr>
+                                                        <td t-esc="issues.file"/>
+                                                        <td t-esc="issues.line"/>
+                                                        <td class="error" t-esc="issues.issue"/>
+                                                        <td><t t-if="issues.suggestion" t-esc="issues.suggestion"/></td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                                <t t-else="">
+                                          No issues found
+                                        </t>
+                                        </div>
+
+                                            <!--  Style &amp; Linting Check  -->
+                                            <h3 class="mt-4">Style &amp; Linting Check for: <t
+                                                    t-esc="module[1][0]"/></h3>
+                                            <div class="table-container">
+                                            <table t-if="state.module_selected.style_lint_check">
+                                                <thead>
+                                                    <tr>
+                                                    <th>File Name</th>
+                                                    <th>Line Number</th>
+                                                    <th>Violation Message</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="state.module_selected.style_lint_check"
+                                                            t-as="selected" t-key="selected_index">
+                                                        <tr>
+                                                            <td t-esc="selected['file_name']"/>
+                                                            <td t-esc="selected['line_number']"/>
+                                                            <td class="error">
+                                                            <t t-esc="selected['violation_message']"/>
+                                                            </td>
+                                                        </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                                <t t-else="">
+                                                    No issues found
+                                                </t>
+                                            </div>
+
+                                            <!--  General Code Quality  -->
+                                            <h3 class="mt-4">General Code Quality for: <t
+                                                    t-esc="module[1][0]"/></h3>
+                                            <div class="table-container">
+                                                <table t-if="state.module_selected.code_quality_check">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>File Name</th>
+                                                            <th>Line</th>
+                                                            <th>Column</th>
+                                                            <th>Code</th>
+                                                            <th>Violation Message</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="state.module_selected.code_quality_check"
+                                                        t-as="selected" t-key="selected_index">
+                                                            <tr>
+                                                                <td t-esc="selected['file']"/>
+                                                                <td t-esc="selected['line']"/>
+                                                                <td t-esc="selected['column']"/>
+                                                                <td t-esc="selected['code']"/>
+                                                                <td class="error">
+                                                                <t t-esc="selected['message']"/>
+                                                                </td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                                <t t-else="">
+                                                  No issues found
+                                                </t>
+                                            </div>
+
+                                            <!--  Security scan  -->
+                                            <h3 class="mt-4">Security Scan for: <t
+                                                    t-esc="module[1][0]"/></h3>
+                                            <div class="table-container">
+                                                <table t-if="state.module_selected.security_scan.length >= 1">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Test ID</th>
+                                                            <th>Test Name</th>
+                                                            <th>Severity</th>
+                                                            <th>Confidence</th>
+                                                            <th>Issue Text</th>
+                                                            <th>File</th>
+                                                            <th>Line</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="state.module_selected.security_scan"
+                                                        t-as="selected" t-key="selected_index">
+                                                            <tr>
+                                                                <td t-esc="selected.test_id"/>
+                                                                <td t-esc="selected.test_name"/>
+                                                                <td t-esc="selected.issue_severity"/>
+                                                                <td t-esc="selected.issue_confidence"/>
+                                                                <td t-esc="selected.issue_text"/>
+                                                                <td t-esc="selected.filename"/>
+                                                                <td t-esc="selected.line_number"/>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                                <t t-else="">
+                                                  No issues found
+                                                </t>
+                                            </div>
+
+                                            <!--  Maintainability Index  -->
+                                            <h3 class="mt-4">Maintainability Index for: <t
+                                                    t-esc="module[1][0]"/></h3>
+                                            <div class="table-container">
+                                                <table t-if="state.module_selected.mi_check">
+                                                    <thead>
+                                                        <tr>
+                                                        <th>File Name</th>
+                                                        <th>Grade</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="state.module_selected.mi_check"
+                                                        t-as="selected" t-key="selected_index">
+                                                            <tr>
+                                                                <td t-esc="selected['file']"/>
+                                                                <td t-esc="selected['grade']"/>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                                <t t-else="">
+                                                  No issues found
+                                                </t>
+                                            </div>
+
+                                            <!--  Import Sorting  -->
+                                            <h3 class="mt-4">Import Sorting Check for: <t
+                                                    t-esc="module[1][0]"/></h3>
+                                            <div class="table-container">
+                                                <table t-if="state.module_selected.import_sort_check">
+                                                    <thead>
+                                                        <tr>
+                                                        <th>File Name</th>
+                                                        <th>Message</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="state.module_selected.import_sort_check"
+                                                        t-as="selected" t-key="selected_index">
+                                                            <tr>
+                                                                <td t-esc="selected['file']"/>
+                                                                <td t-esc="selected['message']"/>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                                <t t-else="">
+                                                  No issues found
+                                                </t>
+                                            </div>
+
+                                            <!--  Coding Format  -->
+                                            <h3 class="mt-4">Code Formatting Check for: <t
+                                                    t-esc="module[1][0]"/></h3>
+                                            <div class="table-container">
+                                                <table t-if="state.module_selected.code_format_check">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>File Name</th>
+                                                            <th>Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="state.module_selected.code_format_check"
+                                                        t-as="selected" t-key="selected_index">
+                                                            <tr>
+                                                                <td t-esc="selected[1]"/>
+                                                                <td t-esc="selected[0]"/>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                                <t t-else="">
+                                                  No issues found
+                                                </t>
+                                            </div>
+
+                                            <!--  Code Complexity  -->
+                                            <t t-set="cc_colors"
+                                               t-value="{'A': 'text-success', 'B': 'text-primary', 'C': 'text-warning', 'D': 'text-orange', 'E': 'text-danger', 'F': 'text-dark-red'}"/>
+                                            <h3 class="mt-4">Code Complexity for: <t
+                                                    t-esc="module[1][0]"/></h3>
+                                            <t t-foreach="Object.entries(state.module_selected.cc_check)"
+                                                t-as="cc_files" t-key="cc_files_index">
+                                                <h5 style="color: grey;">File: <t t-esc="cc_files[0]"/></h5>
+                                                <div class="table-container mb-4">
+                                                    <table t-if="cc_files[1]">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Type</th>
+                                                                <th>Name</th>
+                                                                <th>Class Name</th>
+                                                                <th>Line No.</th>
+                                                                <th>End Line</th>
+                                                                <th>Complexity</th>
+                                                                <th>Rank</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <t t-if="cc_files[1]" t-foreach="cc_files[1]"
+                                                            t-as="line" t-key="line_index">
+                                                                <tr>
+                                                                    <td t-esc="line.type"/>
+                                                                    <td t-esc="line.name"/>
+                                                                    <td><t t-if="line.classname" t-esc="line.classname"/></td>
+                                                                    <td t-esc="line.lineno"/>
+                                                                    <td t-esc="line.endline"/>
+                                                                    <td t-att-class="cc_colors[line.rank]"
+                                                                    t-esc="line.complexity"/>
+                                                                    <td t-att-class="cc_colors[line.rank]"
+                                                                    t-esc="line.rank"/>
+                                                                </tr>
+                                                            </t>
+                                                        </tbody>
+                                                    </table>
+                                                    <t t-else="">
+                                                    No issues found
+                                                    </t>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </t>
+                                </t>
+                            </div>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <div class="text-center mt-4">
+                            <h4>No violations found for modules</h4>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
