@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Theme Lumiee Events',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Theme/Corporate',
     'summary': 'Elegant Wedding Planner, Event Management, and Corporate Celebrations Theme',
     'description': 'An elegant, modern, and highly polished premium event management theme designed for wedding planners, event coordinators, caterers, corporate organizers, and creative agencies to present their planning services, comparison packages, interactive portfolios, and contact channels.',
@@ -65,7 +65,7 @@
     },
     'images': [
         'static/description/banner.jpg',
-        'static/description/thumbnail.jpg',
+        'static/description/theme_screenshot.jpg',
     ],
     'license': 'LGPL-3',
     'installable': True,
