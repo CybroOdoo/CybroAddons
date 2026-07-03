@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="odoo_mcp_manager.McpDashboard">
+    <div class="mcp-dashboard">
+
+        <!-- ── Loading overlay ─────────────────────────────────────────── -->
+        <t t-if="state.loading and !state.data">
+            <div class="mcp-loading">
+                <div class="mcp-spinner"/>
+                <span>Loading dashboard…</span>
+            </div>
+        </t>
+
+        <!-- ── Main Dashboard ──────────────────────────────────────────── -->
+        <t t-if="state.data">
+            <t t-set="d" t-value="state.data"/>
+
+            <!-- Header -->
+            <div class="mcp-header">
+                <div class="mcp-header-left">
+                    <h1 class="mcp-title">Odoo MCP Gateway</h1>
+                    <span t-attf-class="mcp-status-badge {{ statusBadgeClass }}">
+                        <span class="status-dot"/>
+                        <t t-esc="statusLabel"/>
+                    </span>
+                    <div class="mcp-endpoint">MCP Endpoint: /mcp_gateway</div>
+                </div>
+                <div class="mcp-header-right">
+                    <span class="mcp-last-request">
+                        <i class="fa fa-clock-o"/> Last request: <t t-esc="d.last_request"/>
+                    </span>
+                    <button t-attf-class="mcp-refresh-btn {{ state.refreshAnim ? 'spinning' : '' }}" t-on-click="onRefresh" title="Refresh dashboard">
+                        <i class="fa fa-refresh"/>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── Top 3 Cards Row ──────────────────────────────────────── -->
+            <div class="mcp-cards-row">
+
+                <!-- MCP Server Card -->
+                <div class="mcp-card mcp-card--server">
+                    <div class="mcp-card-header">
+                        <div class="mcp-card-icon mcp-card-icon--purple">
+                            <i class="fa fa-server"/>
+                        </div>
+                        <span class="mcp-card-title">MCP Server</span>
+                        <span class="mcp-badge mcp-badge--green">
+                            <span class="badge-dot badge-dot--green"/>Active
+                        </span>
+                    </div>
+                    <div class="mcp-server-stats">
+                        <div class="mcp-stat-item">
+                            <span class="mcp-stat-label">Sessions</span>
+                            <span class="mcp-stat-value"><t t-esc="d.mcp_server.sessions"/></span>
+                            <span class="mcp-stat-sub">Active</span>
+                        </div>
+                        <div class="mcp-stat-item">
+                            <span class="mcp-stat-label">Keys</span>
+                            <span class="mcp-stat-value"><t t-esc="d.mcp_server.keys"/></span>
+                            <span class="mcp-stat-sub">Configured</span>
+                        </div>
+                        <div class="mcp-stat-item">
+                            <span class="mcp-stat-label">Uptime</span>
+                            <span class="mcp-stat-value mcp-stat-value--sm"><t t-esc="d.mcp_server.uptime"/></span>
+                            <span class="mcp-stat-sub">Running</span>
+                        </div>
+                        <div class="mcp-stat-item">
+                            <span class="mcp-stat-label">Last Request</span>
+                            <span class="mcp-stat-value mcp-stat-value--sm"><t t-esc="d.mcp_server.last_request"/></span>
+                            <span class="mcp-stat-sub">Ago</span>
+                        </div>
+                    </div>
+                    <div class="mcp-card-footer" t-on-click="openKeys">
+                        <i class="fa fa-key"/> Manage Keys <i class="fa fa-arrow-right"/>
+                    </div>
+                </div>
+
+                <!-- AI Providers Card -->
+                <div class="mcp-card mcp-card--providers">
+                    <div class="mcp-card-header">
+                        <div class="mcp-card-icon mcp-card-icon--teal">
+                            <i class="fa fa-plug"/>
+                        </div>
+                        <span class="mcp-card-title">AI Providers</span>
+                        <span class="mcp-badge mcp-badge--blue">
+                            <t t-esc="d.providers.active_count"/> Active
+                        </span>
+                    </div>
+                    <div class="mcp-provider-list">
+                        <t t-foreach="d.providers.list" t-as="prov" t-key="prov.name">
+                            <div class="mcp-provider-item">
+                                <div class="mcp-provider-icon"
+                                     t-attf-style="background:{{ providerColor(prov.service) }}15; color: {{ providerColor(prov.service) }};">
+                                    <i t-attf-class="fa {{ providerIcon(prov.service) }}"/>
+                                </div>
+                                <span class="mcp-provider-name"><t t-esc="prov.name"/></span>
+                                <span t-attf-class="mcp-provider-status mcp-provider-status--{{ prov.status }}"
+                                      t-att-title="prov.error or (prov.last_checked ? 'Checked at ' + prov.last_checked : 'Not yet checked')">
+                                    <t t-if="prov.status === 'connected'">Connected</t>
+                                    <t t-elif="prov.status === 'error'">Error</t>
+                                    <t t-else="">Not Checked</t>
+                                </span>
+                            </div>
+                        </t>
+                        <t t-if="!d.providers.list.length">
+                            <div class="mcp-empty-hint">No providers configured yet.</div>
+                        </t>
+                    </div>
+                    <div class="mcp-card-footer" t-on-click="openProviders">
+                        <i class="fa fa-plug"/> Manage Providers <i class="fa fa-arrow-right"/>
+                    </div>
+                </div>
+
+                <!-- MCP Tools Card -->
+                <div class="mcp-card mcp-card--tools">
+                    <div class="mcp-card-header">
+                        <div class="mcp-card-icon mcp-card-icon--indigo">
+                            <i class="fa fa-wrench"/>
+                        </div>
+                        <span class="mcp-card-title">MCP Tools</span>
+                        <span class="mcp-badge mcp-badge--blue">
+                            <t t-esc="d.tools.total"/> Total
+                        </span>
+                    </div>
+                    <div class="mcp-tools-stats">
+                        <div class="mcp-tools-stat">
+                            <span class="mcp-tools-stat-label">Enabled</span>
+                            <span class="mcp-tools-stat-value"><t t-esc="d.tools.enabled"/></span>
+                        </div>
+                        <div class="mcp-tools-stat">
+                            <span class="mcp-tools-stat-label">Custom</span>
+                            <span class="mcp-tools-stat-value"><t t-esc="d.tools.custom"/></span>
+                        </div>
+                        <div class="mcp-tools-stat">
+                            <span class="mcp-tools-stat-label">Calls Today</span>
+                            <span class="mcp-tools-stat-value"><t t-esc="d.tools.calls_today"/></span>
+                        </div>
+                        <div class="mcp-tools-stat">
+                            <span class="mcp-tools-stat-label">Success Rate</span>
+                            <span class="mcp-tools-stat-value mcp-tools-stat-value--green">
+                                <t t-esc="d.tools.success_rate"/>%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mcp-card-footer" t-on-click="openTools">
+                        <i class="fa fa-wrench"/> Manage Tools <i class="fa fa-arrow-right"/>
+                    </div>
+                </div>
+
+            </div><!-- /mcp-cards-row -->
+
+
+
+            <!-- ── Main Content Row: Activity (left) + Stats+Ops (right) ── -->
+            <div class="mcp-bottom-row">
+
+                <!-- LEFT: Recent Activity (tall) -->
+                <div class="mcp-activity-panel">
+                    <div class="mcp-panel-header">
+                        <span class="mcp-panel-title">Recent Activity</span>
+                        <span class="mcp-panel-action" t-on-click="openLogs">
+                            View all logs <i class="fa fa-arrow-right"/>
+                        </span>
+                    </div>
+                    <div class="mcp-activity-table">
+                        <t t-foreach="d.activity" t-as="act" t-key="act_index">
+                            <div class="mcp-activity-row">
+                                <span class="mcp-act-time"><t t-esc="act.time"/></span>
+                                <span class="mcp-act-action"><t t-esc="act.action"/></span>
+                                <span class="mcp-act-model"><t t-esc="act.model"/></span>
+                                <span t-attf-class="mcp-act-status {{ activityStatusClass(act.status) }}">
+                                    <t t-esc="activityStatusLabel(act.status)"/>
+                                </span>
+                                <span class="mcp-act-agent">
+                                    <i class="fa fa-user-circle-o"/> <t t-esc="act.agent"/>
+                                </span>
+                            </div>
+                        </t>
+                        <t t-if="!d.activity.length">
+                            <div class="mcp-empty-activity">No recent activity found.</div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- RIGHT: 3 Stat Cards + Operations Panel -->
+                <div class="mcp-right-column">
+
+                    <!-- Stat Cards stacked vertically -->
+                    <div class="mcp-stats-stack">
+
+                        <div class="mcp-stat-card">
+                            <div class="mcp-stat-card-icon mcp-stat-card-icon--purple">
+                                <i class="fa fa-plug"/>
+                            </div>
+                            <div class="mcp-stat-card-body">
+                                <span class="mcp-stat-card-label">Active Providers</span>
+                                <span class="mcp-stat-card-value"><t t-esc="d.stats.active_api_keys"/></span>
+                                <span class="mcp-stat-card-delta">Enabled providers</span>
+                            </div>
+                        </div>
+
+                        <div class="mcp-stat-card">
+                            <div class="mcp-stat-card-icon mcp-stat-card-icon--teal">
+                                <i class="fa fa-comments"/>
+                            </div>
+                            <div class="mcp-stat-card-body">
+                                <span class="mcp-stat-card-label">Active Bot Channels</span>
+                                <span class="mcp-stat-card-value"><t t-esc="d.stats.active_bot_channels"/></span>
+                                <span class="mcp-stat-card-delta">Connected platforms</span>
+                            </div>
+                        </div>
+
+                        <div class="mcp-stat-card">
+                            <div class="mcp-stat-card-icon mcp-stat-card-icon--blue">
+                                <i class="fa fa-clock-o"/>
+                            </div>
+                            <div class="mcp-stat-card-body">
+                                <span class="mcp-stat-card-label">Avg Response Time</span>
+                                <span class="mcp-stat-card-value"><t t-esc="d.stats.avg_response_s"/>s</span>
+                                <span t-attf-class="mcp-stat-card-delta {{ deltaClass(d.stats.avg_response_delta, false) }}">
+                                    <t t-esc="d.stats.avg_response_delta"/>
+                                </span>
+                            </div>
+                        </div>
+
+                    </div><!-- /mcp-stats-stack -->
+
+                    <!-- Operations Panel -->
+                    <div class="mcp-operations-panel">
+                        <div class="mcp-panel-header">
+                            <span class="mcp-panel-title">Operations</span>
+                        </div>
+                        <div class="mcp-ops-grid">
+
+                            <div class="mcp-ops-card" t-on-click="openSessions">
+                                <div class="mcp-ops-icon mcp-ops-icon--purple">
+                                    <i class="fa fa-users"/>
+                                </div>
+                                <span class="mcp-ops-label">Sessions</span>
+                                <span class="mcp-ops-value"><t t-esc="d.operations.sessions"/></span>
+                                <span class="mcp-ops-sub">Active sessions</span>
+                                <span class="mcp-ops-link">View Sessions <i class="fa fa-arrow-right"/></span>
+                            </div>
+
+                            <div class="mcp-ops-card" t-on-click="openLogs">
+                                <div class="mcp-ops-icon mcp-ops-icon--blue">
+                                    <i class="fa fa-list-alt"/>
+                                </div>
+                                <span class="mcp-ops-label">Execution Logs</span>
+                                <span class="mcp-ops-value"><t t-esc="d.operations.logs_today"/></span>
+                                <span class="mcp-ops-sub">Logs today</span>
+                                <span class="mcp-ops-link">View Logs <i class="fa fa-arrow-right"/></span>
+                            </div>
+
+                            <div class="mcp-ops-card" t-on-click="openConsents">
+                                <div class="mcp-ops-icon mcp-ops-icon--orange">
+                                    <i class="fa fa-shield"/>
+                                </div>
+                                <span class="mcp-ops-label">Pending Consents</span>
+                                <span class="mcp-ops-value"><t t-esc="d.operations.pending_consents"/></span>
+                                <span class="mcp-ops-sub">Awaiting approval</span>
+                                <span class="mcp-ops-link mcp-ops-link--orange">Review Consents <i class="fa fa-arrow-right"/></span>
+                            </div>
+
+                        </div>
+                    </div><!-- /mcp-operations-panel -->
+
+                </div><!-- /mcp-right-column -->
+
+            </div><!-- /mcp-bottom-row -->
+
+
+        </t><!-- /t-if state.data -->
+
+    </div><!-- /mcp-dashboard -->
+</t>
+
+</templates>

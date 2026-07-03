@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ai_session_view_tree" model="ir.ui.view">
+        <field name="name">ai.session.view.tree</field>
+        <field name="model">ai.session</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'terminated'" decoration-success="state == 'initialized'" decoration-info="state == 'initializing'">
+                <field name="session_id"/>
+                <field name="user_id"/>
+                <field name="mcp_source" string="Client Source"/>
+                <field name="client_name"/>
+                <field name="client_version"/>
+                <field name="protocol_version"/>
+                <field name="state" widget="badge" decoration-success="state == 'initialized'" decoration-warning="state == 'initializing'" decoration-danger="state == 'terminated'"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ai_session_view_form" model="ir.ui.view">
+        <field name="name">ai.session.view.form</field>
+        <field name="model">ai.session</field>
+        <field name="arch" type="xml">
+            <form string="AI Session">
+                <header>
+                    <button name="terminate" string="Terminate Session" type="object" class="btn-secondary" invisible="state == 'terminated'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="not_initialized,initializing,initialized,terminated"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="session_id"/>
+                        <h1>
+                            <field name="session_id" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Session Info">
+                            <field name="user_id" readonly="1"/>
+                            <field name="mcp_source" string="Client Source" readonly="1"/>
+                            <field name="active" readonly="1"/>
+                        </group>
+                        <group string="Client Details">
+                            <field name="client_name" readonly="1"/>
+                            <field name="client_version" readonly="1"/>
+                            <field name="protocol_version" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="System &amp; Network">
+                        <field name="user_agent" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="ai_session_action" model="ir.actions.act_window">
+        <field name="name">AI Sessions</field>
+        <field name="res_model">ai.session</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
