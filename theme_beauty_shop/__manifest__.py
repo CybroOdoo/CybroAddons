@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Beauty Shop Theme',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Theme/eCommerce',
     'summary': 'Beauty Shop Theme is an advanced eCommerce theme crafted for beauty and wellness stores. '
                'It transforms your online shop into a sophisticated, modern platform with a sleek '
@@ -53,7 +53,7 @@
         ],
     },
     'images': ['static/description/banner.jpg',
-               'static/description/thumbnail.jpg'],
+               'static/description/theme_screenshot.jpg'],
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,
