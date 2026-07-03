@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Theme Lantero',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Theme/Corporate',
     'summary': 'Premium Jewelry Website Theme',
     'description': 'A stunning jewelry theme for Odoo 19 with a premium aesthetic.',
@@ -65,7 +65,7 @@
     },
     'images': [
         'static/description/banner.jpg',
-        'static/description/thumbnail.jpg'
+        'static/description/theme_screenshot.jpg'
     ],
     'license': 'LGPL-3',
     'installable': True,
