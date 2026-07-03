@@ -202,7 +202,7 @@ class MasterSearch(models.Model):
 
     def _search_query(self, key):
         """ search for the model with given key and update result """
-        company_id = self.env.user.company_id.id
+        company_id = self.env.company.id
         if self.search_mode == 'all':
             active_qry = """ and obj.active in ({},{}) 
             """.format("'FALSE'", "'TRUE'")
@@ -235,7 +235,7 @@ class MasterSearch(models.Model):
             sp_query.format(op_id=company_id, key=key, active=active_qry))
         moves = self.env.cr.dictfetchall()
         move_ids = self.env['account.move'].browse([i['id'] for i in moves])
-        self.account_ids += move_ids
+        self.account_ids += move_ids._filtered_access('read')
 
     def _search_purchase_transactions(self, key, active_qry, company_id):
         """ Search for all purchase transactions """
@@ -250,7 +250,7 @@ class MasterSearch(models.Model):
         purchases = self.env.cr.dictfetchall()
         purchase_ids = self.env['purchase.order'].browse(
             [i['id'] for i in purchases])
-        self.purchase_ids += purchase_ids
+        self.purchase_ids += purchase_ids._filtered_access('read')
 
     def _search_sale_transactions(self, key, active_qry, company_id):
         """ Search for all sale transactions """
@@ -267,7 +267,7 @@ class MasterSearch(models.Model):
             sp_query.format(op_id=company_id, key=key, active=active_qry))
         sales = self.env.cr.dictfetchall()
         sale_ids = self.env['sale.order'].browse([i['id'] for i in sales])
-        self.sale_ids += sale_ids
+        self.sale_ids += sale_ids._filtered_access('read')
 
     def _search_inventory_transactions(self, key, active_qry, company_id):
         """ Search for all inventory transactions """
@@ -283,7 +283,7 @@ class MasterSearch(models.Model):
         transactions = self.env.cr.dictfetchall()
         transaction_ids = self.env['stock.picking'].browse(
             [i['id'] for i in transactions])
-        self.transaction_ids += transaction_ids
+        self.transaction_ids += transaction_ids._filtered_access('read')
 
     def _search_products(self, key, active_qry, company_id):
         """ search for products """
@@ -299,7 +299,7 @@ class MasterSearch(models.Model):
         template_ids = self.env.cr.dictfetchall()
         product_template_ids = self.env['product.template'].browse(
             [i['id'] for i in template_ids])
-        self.product_ids += product_template_ids
+        self.product_ids += product_template_ids._filtered_access('read')
 
     def _search_customer(self, key, active_qry):
         """ search for customer """
@@ -314,4 +314,4 @@ class MasterSearch(models.Model):
         customers = self.env.cr.dictfetchall()
         customer_ids = self.env['res.partner'].browse(
             [i['id'] for i in customers])
-        self.customer_ids += customer_ids
+        self.customer_ids += customer_ids._filtered_access('read')

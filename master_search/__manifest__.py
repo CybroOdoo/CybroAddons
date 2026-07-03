@@ -21,9 +21,8 @@
 ##############################################################################
 {
     'name': 'Global Search',
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.0',
     'category': 'Extra Tools',
-    
     'summary': """Easy Search in Customers, Products, Sale, Purchase, Inventory
      and Accounting modules""",
     'description': """This module allows users to search the records in
