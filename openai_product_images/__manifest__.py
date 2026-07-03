@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'Generate Product Images Using OpenAI',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Extra Tools',
     'summary': 'This module helps to generate images for products using DALL-E.',
     'description': 'Odoo module for generating product images using '
