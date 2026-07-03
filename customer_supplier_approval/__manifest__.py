@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Customer/Supplier Approval',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """This module allows users to validate or approve contacts """,
     'description': """By this module, you can grant access to users to 
