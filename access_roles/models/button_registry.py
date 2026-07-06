@@ -20,10 +20,7 @@
 #
 #############################################################################
 import re
-from odoo import api, Command, fields, models
-
-from . import run_once
-
+from odoo import Command, fields, models
 
 class ButtonRegistry(models.Model):
     """Class for representing buttons"""
@@ -34,18 +31,6 @@ class ButtonRegistry(models.Model):
     action_name = fields.Char(string='Action/Method Name')
     model_id = fields.Many2one('ir.model', string='Model', ondelete='cascade')
     view_ids = fields.Many2many('ir.ui.view', string='View')
-
-    @api.model
-    def _register_hook(self):
-        """
-        Hook that runs when the module is loaded.
-        Calls `get_all_buttons` to populate the button registry.
-        """
-        super()._register_hook()
-        if run_once(self.env.cr, 'button_registry_rebuild'):
-            self.get_all_buttons()
-            self.env.flush_all()
-        return True
 
     def get_all_buttons(self):
         """Finds buttons from views and stores them."""

@@ -19,12 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-def run_once(cr, lock_name):
-    """Try to acquire a transaction-scoped advisory lock.
-    Returns True if this worker got the job lock (should run the job)."""
-    cr.execute("SELECT pg_try_advisory_xact_lock(hashtext(%s))", (lock_name,))
-    return cr.fetchone()[0]
-
 from . import access_role
 from . import button_registry
 from . import domain_model
@@ -34,6 +28,7 @@ from . import groupby_registry
 from . import ir_ui_menu
 from . import ir_ui_view
 from . import ir_rule
+from . import registry_rebuild_mixin
 from . import res_users
 from . import res_groups
 from . import role_management
