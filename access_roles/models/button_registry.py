@@ -44,6 +44,7 @@ class ButtonRegistry(models.Model):
         super()._register_hook()
         if run_once(self.env.cr, 'button_registry_rebuild'):
             self.get_all_buttons()
+            self.env.flush_all()
         return True
 
     def get_all_buttons(self):

@@ -43,6 +43,7 @@ class GroupByRegistry(models.Model):
         super()._register_hook()
         if run_once(self.env.cr, 'groupby_registry_rebuild'):
             self.get_all_groupby()
+            self.env.flush_all()
         return True
 
     def _extract_groupby_attributes(self, filter_tag):

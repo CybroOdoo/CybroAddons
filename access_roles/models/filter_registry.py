@@ -43,6 +43,7 @@ class FilterRegistry(models.Model):
         super()._register_hook()
         if run_once(self.env.cr, 'filter_registry_rebuild'):
             self.get_all_filters()
+            self.env.flush_all()
         return True
 
     def _get_filter_elements_from_arch(self, arch):
