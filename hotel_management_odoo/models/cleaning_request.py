@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -97,13 +97,6 @@ class CleaningRequest(models.Model):
         """Button action for updating the state to assign"""
         if not self.assigned_id:
             raise ValidationError(_('Please select an Assigned To person before assigning.'))
-        if self.cleaning_type == 'room' and not self.room_id:
-            raise ValidationError(_('Please choose a Room.'))
-        if self.cleaning_type == 'hotel' and not self.hotel:
-            raise ValidationError(_('Please enter the Hotel.'))
-        if self.cleaning_type == 'vehicle' and not self.vehicle_id:
-            raise ValidationError(_('Please choose a Vehicle.'))
-
         self.update({'state': 'assign'})
 
     def action_start_cleaning(self):
@@ -131,7 +124,7 @@ class CleaningRequest(models.Model):
     def action_maintain_request(self):
         """Button action for creating the maintenance request"""
         self.env['maintenance.request'].sudo().create({
-            'name': 'Maintenance Request - %s' % self.sequence,
+            'name': 'Maintenance Request - %s' % self.name,
             'date': fields.Date.today(),
             'state': 'draft',
             'type': self.cleaning_type,

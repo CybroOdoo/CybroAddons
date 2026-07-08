@@ -89,9 +89,8 @@ class MaintenanceRequest(models.Model):
     support_reason = fields.Char(string='Support',
                                  help="Reason for adding Support")
     remarks = fields.Char(string='Remarks', help="Add Remarks")
-    domain_partner_ids = fields.Many2many('res.users',
+    domain_partner_ids = fields.Many2many('res.partner',
                                           string="Partner",
-                                          compute='_compute_domain_partner_ids',
                                           help="For filtering Users")
 
     @api.model_create_multi
@@ -101,15 +100,14 @@ class MaintenanceRequest(models.Model):
             if vals.get('sequence', 'New') == 'New':
                 vals['sequence'] = self.env['ir.sequence'].next_by_code(
                     'maintenance.request')
-            if not vals.get('name'):
-                vals['name'] = vals['sequence']
         return super().create(vals_list)
 
-    @api.depends('team_id')
-    def _compute_domain_partner_ids(self):
+    @api.onchange('team_id')
+    def _onchange_team_id(self):
         """Function for filtering the maintenance team user"""
-        for record in self:
-            record.domain_partner_ids = record.team_id.member_ids
+        self.update({
+            'domain_partner_ids': self.team_id.member_ids.ids
+        })
 
     def action_assign_team(self):
         """Button action for changing the state to team_leader_approve"""
@@ -143,7 +141,7 @@ class MaintenanceRequest(models.Model):
         if self.remarks:
             self.state = 'verify'
         else:
-            raise ValidationError('Please Add remark')
+            raise ValidationError(_('Please Add remark'))
 
     def action_assign_support(self):
         """Button action for changing the state to ongoing"""

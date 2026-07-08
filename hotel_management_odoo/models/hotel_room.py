@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, tools , _
+from odoo import api, fields, models, tools
 from odoo.exceptions import ValidationError
 
 
