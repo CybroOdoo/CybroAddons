@@ -55,8 +55,10 @@ class EventBookingLine(models.Model):
     tax_ids = fields.Many2many('account.tax',
                                'hotel_event_order_line_taxes_rel',
                                'event_id',
-                               'tax_id', related='ticket_id.taxes_id',
+                               'tax_id',
                                string='Taxes',
+                               compute='_compute_tax_ids',
+                               store=True, readonly=False,
                                help="Default taxes used when selling the event"
                                     "tickets.",
                                domain=[('type_tax_use', '=', 'sale')])
@@ -75,6 +77,14 @@ class EventBookingLine(models.Model):
     state = fields.Selection(related='booking_id.state',
                              string="Order Status",
                              help="State of Room Booking", copy=False)
+
+    @api.depends('ticket_id', 'booking_id.company_id')
+    def _compute_tax_ids(self):
+        """Restrict the ticket's taxes to the booking's own company"""
+        for line in self:
+            company = line.booking_id.company_id or self.env.company
+            line.tax_ids = line.ticket_id.taxes_id.filtered(
+                lambda tax: not tax.company_id or tax.company_id == company)
 
     @api.depends('uom_qty', 'price_unit', 'tax_ids')
     def _compute_price_subtotal(self):
