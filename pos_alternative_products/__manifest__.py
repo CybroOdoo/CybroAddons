@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Alternative Products in Pos',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Point of Sale',
     'summary': """We can select alternative product , when a product have 
      zero available quantity in pos.""",
