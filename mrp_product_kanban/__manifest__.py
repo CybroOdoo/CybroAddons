@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Manufacturing Product Kanban",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Manufacturing',
     'summary': """This module is to manage manufacturing order details in
     product kanban view.""",
