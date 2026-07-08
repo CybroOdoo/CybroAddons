@@ -46,14 +46,14 @@ class LoanRequest(models.Model):
                                    required=True, help="Can choose different "
                                                        "loan types suitable")
     loan_amount = fields.Float(string="Loan Amount",
-                               help="Total loan amount", )
+                               help="Total loan amount",related='loan_type_id.loan_amount' )
     disbursal_amount = fields.Float(string="Disbursal Amount",
                                     help="Total loan amount "
-                                         "available to disburse")
+                                         "available to disburse",related='loan_type_id.disbursal_amount')
     tenure = fields.Integer(string="Tenure", default=1,
-                            help="Installment period")
+                            help="Installment period",related='loan_type_id.tenure')
     interest_rate = fields.Float(string="Interest Rate", help="Interest "
-                                                              "percentage")
+                                                              "percentage",related='loan_type_id.interest_rate')
     date = fields.Date(string="Date", default=fields.Date.today(),
                        readonly=True, help="Date")
     partner_id = fields.Many2one('res.partner', string="Partner",
@@ -120,16 +120,6 @@ class LoanRequest(models.Model):
             record = super().create(vals)
             records |= record
         return records
-
-    @api.onchange('loan_type_id')
-    def _onchange_loan_type_id(self):
-        """Changing field values based on the chosen loan type"""
-        type_id = self.loan_type_id
-        self.loan_amount = type_id.loan_amount
-        self.disbursal_amount = type_id.disbursal_amount
-        self.tenure = type_id.tenure
-        self.interest_rate = type_id.interest_rate
-        self.documents_ids = type_id.documents_ids
 
     def action_loan_request(self):
         """Changes the state to confirmed and send confirmation mail"""

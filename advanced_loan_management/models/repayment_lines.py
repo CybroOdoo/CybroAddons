@@ -20,6 +20,7 @@
 #
 ################################################################################
 from odoo import fields, models
+from odoo.orm.decorators import ondelete
 
 
 class RepaymentLines(models.Model):
@@ -30,7 +31,7 @@ class RepaymentLines(models.Model):
     name = fields.Char(string="Loan ", default="/", readonly=True,
                        help="Repayment no: of loan")
     partner_id = fields.Many2one('res.partner', string="Partner",
-                                 required=True,
+                                 required=True, readonly=True,
                                  help="Partner")
     company_id = fields.Many2one('res.company', string='Company',
                                  readonly=True,
@@ -41,13 +42,13 @@ class RepaymentLines(models.Model):
                        readonly=True,
                        help="Date of the payment")
     amount = fields.Float(string="Amount", required=True, help="Amount",
-                          digits=(16, 2))
+                          digits=(16, 2), readonly=True)
     interest_amount = fields.Float(string="Interest Amount", required=True,
-                                   help="Interest Amount", digits=(16, 2))
+                                   help="Interest Amount", digits=(16, 2), readonly=True)
     total_amount = fields.Float(string="Total Amount", required=True,
-                                help="Total Amount", digits=(16, 2))
+                                help="Total Amount", digits=(16, 2), readonly=True)
     loan_id = fields.Many2one('loan.request', string="Loan Ref.",
-                              help="Loan",
+                              help="Loan", ondelete="restrict", 
                               readonly=True)
     state = fields.Selection(string="State",
                              selection=[('unpaid', 'Unpaid'),
@@ -71,7 +72,7 @@ class RepaymentLines(models.Model):
                                            store=True,
                                            help="Account For Repayment")
     invoice = fields.Boolean(string="invoice", default=False,
-                             help="For monitoring the record")
+                             help="For monitoring the record",readonly=True)
 
     def action_pay_emi(self):
         """Creates invoice for each EMI"""
@@ -104,6 +105,7 @@ class RepaymentLines(models.Model):
             'partner_id': self.partner_id.id,
             'currency_id': self.company_id.currency_id.id,
             'payment_reference': self.name,
+            'repayment_line_id': self.id,
             'invoice_line_ids': [
                 (0, 0, {
                     'price_unit': self.amount,
