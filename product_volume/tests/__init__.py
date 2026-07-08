@@ -19,24 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-{
-    'name': 'Product Volume Calculation',
-    'version': '19.0.1.0.1',
-    'category': "Inventory",
-    'summary': """ This module will helps you to give dimensions of the product.""",
-    'description': "Module helps you to manage the length, breadth and height "
-                   "of the product and calculates its volume accordingly.",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'depends': ['stock'],
-    'data': [
-        'views/product_template_views.xml'
-    ],
-    'images': ['static/description/banner.jpg'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from . import test_product_template
