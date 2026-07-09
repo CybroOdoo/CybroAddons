@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Form -->
+    <record id="account_recurring_invoice_view_form" model="ir.ui.view">
+        <field name="name">account.recurring.invoice.view.form</field>
+        <field name="model">account.recurring.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Recurring Invoice">
+                <header>
+                    <button name="action_start" type="object"
+                            string="Start" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_generate_now" type="object"
+                            string="Generate Now"
+                            invisible="state != 'running'"/>
+                    <button name="action_stop" type="object"
+                            string="Stop" invisible="state != 'running'"/>
+                    <button name="action_draft" type="object"
+                            string="Set to Draft" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,running,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_invoices" icon="fa-pencil-square-o">
+                            <field name="invoice_count" widget="statinfo"
+                                   string="Invoices"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="move_type"
+                                   readonly="state != 'draft'"/>
+                            <field name="partner_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="journal_type" invisible="1"/>
+                            <field name="journal_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                        </group>
+                        <group>
+                            <label for="interval_number" string="Repeat Every"/>
+                            <div class="o_row">
+                                <field name="interval_number"
+                                       readonly="state == 'done'"/>
+                                <field name="interval_type"
+                                       readonly="state == 'done'"/>
+                            </div>
+                            <field name="date_start"
+                                   readonly="state != 'draft'"/>
+                            <field name="date_next"/>
+                            <field name="date_end"/>
+                            <field name="auto_post"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Invoice Lines" name="lines">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="name"/>
+                                    <field name="quantity"/>
+                                    <field name="price_unit"/>
+                                    <field name="tax_ids" widget="many2many_tags"
+                                           optional="show"/>
+                                    <field name="account_id" optional="hide"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- List -->
+    <record id="account_recurring_invoice_view_list" model="ir.ui.view">
+        <field name="name">account.recurring.invoice.view.list</field>
+        <field name="model">account.recurring.invoice</field>
+        <field name="arch" type="xml">
+            <list string="Recurring Invoices">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="move_type"/>
+                <field name="date_next"/>
+                <field name="date_end" optional="hide"/>
+                <field name="invoice_count"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'running'"
+                       decoration-muted="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search -->
+    <record id="account_recurring_invoice_view_search" model="ir.ui.view">
+        <field name="name">account.recurring.invoice.view.search</field>
+        <field name="model">account.recurring.invoice</field>
+        <field name="arch" type="xml">
+            <search string="Recurring Invoices">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <filter name="running" string="Running"
+                        domain="[('state', '=', 'running')]"/>
+                <filter name="draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="done" string="Done"
+                        domain="[('state', '=', 'done')]"/>
+                <group>
+                    <filter name="group_partner" string="Partner"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_type" string="Document Type"
+                            context="{'group_by': 'move_type'}"/>
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_account_recurring_invoice" model="ir.actions.act_window">
+        <field name="name">Recurring Invoices</field>
+        <field name="res_model">account.recurring.invoice</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="account_recurring_invoice_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a recurring invoice template
+            </p><p>
+                Define a partner, invoice lines and a schedule; running
+                templates generate invoices automatically.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_account_recurring_invoice"
+              name="Recurring Invoices"
+              parent="account.menu_finance_receivables"
+              action="action_account_recurring_invoice"
+              sequence="30"/>
+</odoo>

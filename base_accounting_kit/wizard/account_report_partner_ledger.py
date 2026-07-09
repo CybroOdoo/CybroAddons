@@ -27,16 +27,6 @@ class AccountPartnerLedger(models.TransientModel):
     _inherit = "account.common.partner.report"
     _description = "Account Partner Ledger"
 
-    section_main_report_ids = fields.Many2many(string="Section Of",
-                                               comodel_name='account.report',
-                                               relation="account_report_partner_section_rel",
-                                               column1="sub_report_id",
-                                               column2="main_report_id")
-    section_report_ids = fields.Many2many(string="Sections",
-                                          comodel_name='account.report',
-                                          relation="account_report_partner_section_rel",
-                                          column1="main_report_id",
-                                          column2="sub_report_id")
     name = fields.Char(string="Partner Ledger Report", default="Partner Ledger Report", required=True, translate=True)
     amount_currency = fields.Boolean("With Currency",
                                      help="It adds the currency column on report if the "
@@ -50,3 +40,40 @@ class AccountPartnerLedger(models.TransientModel):
         return self.env.ref(
             'base_accounting_kit.action_report_partnerledger').report_action(
             self, data=data)
+
+    def action_print_xlsx(self):
+        """Export the partner ledger to xlsx."""
+        self.ensure_one()
+        data = self.pre_print_report(self._xlsx_base_data())
+        data['form'].update({'reconciled': self.reconciled,
+                             'amount_currency': self.amount_currency})
+        report_model = self.env[
+            'report.base_accounting_kit.report_partnerledger']
+        values = report_model._get_report_values(None, data)
+        lines_fn = values['lines']
+        columns = [
+            {'label': 'Date', 'width': 12},
+            {'label': 'JRNL', 'width': 8},
+            {'label': 'Account', 'width': 28},
+            {'label': 'Ref', 'width': 32},
+            {'label': 'Debit', 'width': 16, 'num': True},
+            {'label': 'Credit', 'width': 16, 'num': True},
+            {'label': 'Balance', 'width': 16, 'num': True},
+        ]
+        rows = []
+        for partner in values['docs']:
+            rows.append({'cells': [partner.name], 'bold': True})
+            for line in lines_fn(data, partner):
+                rows.append({'cells': [
+                    line.get('date'), line.get('code'),
+                    line.get('a_name') or '', line.get('displayed_name') or '',
+                    line.get('debit'), line.get('credit'),
+                    line.get('progress'),
+                ], 'indent': 1})
+        table = {
+            'title': 'Partner Ledger',
+            'meta': self._xlsx_meta(data['form']),
+            'columns': columns,
+            'rows': rows,
+        }
+        return self._xlsx_action('Partner Ledger', table)

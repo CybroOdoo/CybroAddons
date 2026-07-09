@@ -24,40 +24,17 @@ from odoo import api, fields, models
 
 class AccountingReport(models.TransientModel):
     _name = "cash.flow.report"
-    _inherit = "account.report"
+    _inherit = "account.common.report"
     _description = "Cash Flow Report"
 
-    section_main_report_ids = fields.Many2many(string="Section Of",
-                                               comodel_name='account.report',
-                                               relation="account_cash_flow_report_section_rel",
-                                               column1="sub_report_id",
-                                               column2="main_report_id")
-    section_report_ids = fields.Many2many(string="Sections",
-                                          comodel_name='account.report',
-                                          relation="account_cash_flow_report_section_rel",
-                                          column1="main_report_id",
-                                          column2="sub_report_id")
     name = fields.Char(string="Cash Flow Report", default="Cash Flow Report", required=True, translate=True)
-    date_from = fields.Date(string='Start Date')
-    date_to = fields.Date(string='End Date')
-    company_id = fields.Many2one('res.company', string='Company', required=True, readonly=True, default=lambda self: self.env.company)
-    target_move = fields.Selection([('posted', 'All Posted Entries'),
-                                    ('all', 'All Entries'),
-                                    ], string='Target Moves', required=True, default='posted')
-    journal_ids = fields.Many2many(
-        comodel_name='account.journal',
-        string='Journals',
-        required=True,
-        default=lambda self: self.env['account.journal'].search([('company_id', '=', self.company_id.id)]),
-        domain="[('company_id', '=', company_id)]",
-    )
 
     @api.model
     def _get_account_report(self):
         reports = []
-        if self._context.get('active_id'):
+        if self.env.context.get('active_id'):
             menu = self.env['ir.ui.menu'].browse(
-                self._context.get('active_id')).name
+                self.env.context.get('active_id')).name
             reports = self.env['account.financial.report'].search(
                 [('name', 'ilike', menu)])
         return reports and reports[0] or False
@@ -100,9 +77,8 @@ class AccountingReport(models.TransientModel):
         result['company_id'] = data['form']['company_id'][0] or False
         return result
 
-    # @api.multi
     def check_report(self):
-        res = super(AccountingReport, self).check_report()
+        res = super().check_report()
         data = {}
         data['form'] = self.read(
             ['account_report_id', 'date_from_cmp', 'date_to_cmp',
@@ -115,9 +91,6 @@ class AccountingReport(models.TransientModel):
         return res
 
     def _print_report(self, data):
-        raise NotImplementedError()
-
-    def _print_report(self, data):
         data['form'].update(self.read(
             ['date_from_cmp', 'debit_credit', 'date_to_cmp', 'filter_cmp',
              'account_report_id', 'enable_filter', 'label_filter',
@@ -126,3 +99,44 @@ class AccountingReport(models.TransientModel):
             'base_accounting_kit.action_report_cash_flow').report_action(self,
                                                                          data=data,
                                                                          config=False)
+
+    def action_print_xlsx(self):
+        """Export the cash flow statement to xlsx."""
+        self.ensure_one()
+        data = self._xlsx_base_data()
+        data['form'].update(self.read(
+            ['date_from_cmp', 'debit_credit', 'date_to_cmp', 'filter_cmp',
+             'account_report_id', 'enable_filter', 'label_filter',
+             'target_move'])[0])
+        data['form']['comparison_context'] = self._build_comparison_context(
+            data)
+        report_lines = self.env[
+            'report.base_accounting_kit.report_cash_flow'].get_account_lines(
+            data['form'])
+        columns = [{'label': 'Name', 'width': 45}]
+        if self.debit_credit:
+            columns += [{'label': 'Debit', 'width': 18, 'num': True},
+                        {'label': 'Credit', 'width': 18, 'num': True}]
+        columns.append({'label': 'Balance', 'width': 18, 'num': True})
+        if self.enable_filter:
+            columns.append(
+                {'label': self.label_filter or 'Comparison', 'width': 18,
+                 'num': True})
+        rows = []
+        for line in report_lines:
+            is_report = line.get('type') == 'report'
+            cells = [line.get('name')]
+            if self.debit_credit:
+                cells += [line.get('debit', 0.0), line.get('credit', 0.0)]
+            cells.append(line.get('balance', 0.0))
+            if self.enable_filter:
+                cells.append(line.get('balance_cmp', 0.0))
+            rows.append({'cells': cells, 'bold': is_report,
+                         'indent': 0 if is_report else 1})
+        table = {
+            'title': 'Cash Flow Report',
+            'meta': self._xlsx_meta(data['form']),
+            'columns': columns,
+            'rows': rows,
+        }
+        return self._xlsx_action('Cash Flow Report', table)

@@ -29,8 +29,8 @@ class XLSXReportController(http.Controller):
     """ Controller for xlsx report """
     @http.route('/xlsx_report', type='http', auth='user', methods=['POST'],
                 csrf=False)
-    def get_report_xlsx(self, model, data, output_format, report_name,
-                        report_action=None, options=None, **kwargs):
+    def get_report_xlsx(self, model, options, output_format, report_name,
+                        report_action=None, **kwargs):
         """ Get xlsx report data """
         report_obj = request.env[model].sudo()
         try:
@@ -40,7 +40,7 @@ class XLSXReportController(http.Controller):
                         ('Content-Type', 'application/vnd.ms-excel'),
                         ('Content-Disposition', content_disposition(
                             report_name + '.xlsx'))])
-                report_obj.get_xlsx_report(data, response, report_name, report_action)
+                report_obj.get_xlsx_report(json.loads(options), response)
                 response.set_cookie('fileToken', 'dummy token')
                 return response
         except Exception as event:

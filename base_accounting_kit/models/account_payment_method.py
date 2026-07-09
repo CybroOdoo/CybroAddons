@@ -31,5 +31,7 @@ class AccountPaymentMethod(models.Model):
     def _get_payment_method_information(self):
         """Super the function to update the pdc values"""
         res = super()._get_payment_method_information()
-        res['pdc'] = {'mode': 'multi', 'domain': [('type', '=', 'bank')]}
+        # v19 reads the 'type' key (tuple of journal types); a 'domain' key is
+        # ignored — so restrict PDC method lines to bank journals via 'type'.
+        res['pdc'] = {'mode': 'multi', 'type': ('bank',)}
         return res

@@ -70,7 +70,7 @@ class ImportBankStatement(models.TransientModel):
             res = fields.Date.from_string(date_str)
             if res:
                 return res
-        except:
+        except Exception:
             pass
 
         return fields.Date.today()
@@ -151,12 +151,12 @@ class ImportBankStatement(models.TransientModel):
                                         if temp:
                                             float(temp)
                                             return val, i
-                                    except: pass
+                                    except Exception: pass
                                 if is_date:
                                     try:
                                         self._parse_date(val)
                                         return val, i
-                                    except: pass
+                                    except Exception: pass
                         return None, -1
 
                     # Heuristic backups for unmapped fields
@@ -192,11 +192,11 @@ class ImportBankStatement(models.TransientModel):
                             try:
                                 float(val.replace('$', '').replace(',', '').strip())
                                 continue
-                            except:
+                            except Exception:
                                 try:
                                     self._parse_date(val)
                                     continue
-                                except:
+                                except Exception:
                                     name = val
                                     mapped_indices.add(i)
                                     break
@@ -232,7 +232,7 @@ class ImportBankStatement(models.TransientModel):
                             if not partner and len(partner_name) > 1 and not partner_name.isdigit():
                                 try:
                                     self._parse_date(partner_name)
-                                except:
+                                except Exception:
                                     raise ValidationError(_("Partner '%s' does not exist") % partner_name)
 
                     statement = self.env['account.bank.statement'].create({
@@ -265,7 +265,7 @@ class ImportBankStatement(models.TransientModel):
                     order = openpyxl.load_workbook(
                         filename=BytesIO(base64.b64decode(self.attachment)))
                     xl_order = order.active
-                except:
+                except Exception:
                     raise ValidationError(_("Choose correct file"))
                 for record in xl_order.iter_rows(min_row=2, max_row=None,
                                                  min_col=None,

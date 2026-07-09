@@ -6,10 +6,10 @@ import { kanbanView } from "@web/views/kanban/kanban_view";
 import { KanbanController } from "@web/views/kanban/kanban_controller";
 import { KanbanRenderer } from "@web/views/kanban/kanban_renderer";
 import { KanbanRecord } from "@web/views/kanban/kanban_record";
-const { useState } = owl;
+import { useState } from "@odoo/owl";
 
 class CustomKanbanController extends KanbanController {
-    async setup(){
+    setup(){
         super.setup()
         this.state = useState({
             selectedStLineId: null,
@@ -18,7 +18,6 @@ class CustomKanbanController extends KanbanController {
         });
         this.action = useService("action")
         this.orm = useService("orm")
-        const o_bank_reconcile_status_buttons_aside_left = document.getElementsByClassName("o_bank_reconcile_status_buttons_aside_left")
     }
 
     async openRecord(record, mode) {

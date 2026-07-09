@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Form -->
+    <record id="account_bulk_payment_view_form" model="ir.ui.view">
+        <field name="name">account.bulk.payment.view.form</field>
+        <field name="model">account.bulk.payment</field>
+        <field name="arch" type="xml">
+            <form string="Bulk Payment">
+                <header>
+                    <button name="action_validate" type="object"
+                            string="Validate" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_print" type="object"
+                            string="Print"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object"
+                                name="action_open_payments" icon="fa-money">
+                            <field name="payment_count" widget="statinfo"
+                                   string="Payments"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="batch_type"
+                                   readonly="state != 'draft'"/>
+                            <field name="journal_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="payment_method_line_id"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="amount_total" widget="monetary"/>
+                        </group>
+                    </group>
+                    <field name="payment_ids" readonly="state != 'draft'">
+                        <list>
+                            <field name="name"/>
+                            <field name="date"/>
+                            <field name="partner_id"/>
+                            <field name="memo" optional="show"/>
+                            <field name="amount"/>
+                            <field name="state"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- List -->
+    <record id="account_bulk_payment_view_list" model="ir.ui.view">
+        <field name="name">account.bulk.payment.view.list</field>
+        <field name="model">account.bulk.payment</field>
+        <field name="arch" type="xml">
+            <list string="Bulk Payments">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="journal_id"/>
+                <field name="batch_type"/>
+                <field name="payment_count"/>
+                <field name="amount_total" widget="monetary"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'sent'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search -->
+    <record id="account_bulk_payment_view_search" model="ir.ui.view">
+        <field name="name">account.bulk.payment.view.search</field>
+        <field name="model">account.bulk.payment</field>
+        <field name="arch" type="xml">
+            <search string="Bulk Payments">
+                <field name="name"/>
+                <field name="journal_id"/>
+                <filter name="draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="sent" string="Sent"
+                        domain="[('state', '=', 'sent')]"/>
+                <group>
+                    <filter name="group_journal" string="Bank"
+                            context="{'group_by': 'journal_id'}"/>
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_account_bulk_payment" model="ir.actions.act_window">
+        <field name="name">Bulk Payments</field>
+        <field name="res_model">account.bulk.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="account_bulk_payment_view_search"/>
+    </record>
+
+    <!-- "Add to Bulk Payment" contextual action on payments -->
+    <record id="action_add_payments_to_bulk" model="ir.actions.server">
+        <field name="name">Add to Bulk Payment</field>
+        <field name="model_id" ref="account.model_account_payment"/>
+        <field name="binding_model_id" ref="account.model_account_payment"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_add_to_bulk_payment()</field>
+    </record>
+
+    <menuitem id="menu_account_bulk_payment"
+              name="Bulk Payments"
+              parent="account.menu_finance_payables"
+              action="action_account_bulk_payment"
+              sequence="25"/>
+</odoo>

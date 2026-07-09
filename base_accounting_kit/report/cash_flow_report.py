@@ -90,7 +90,7 @@ class ReportFinancial(models.AbstractModel):
             elif report.type == 'account_type':
                 # it's the sum the leaf accounts with such an account type
                 accounts = self.env['account.account'].search(
-                    [('account_type', 'in', report.account_type_ids)])
+                    [('account_type', '=', report.account_type_ids)])
                 res[report.id]['account'] = self._compute_account_balance(
                     accounts)
                 for value in res[report.id]['account'].values():
@@ -155,7 +155,6 @@ class ReportFinancial(models.AbstractModel):
                 # the rest of the loop is used to display the details of the financial report, so it's not needed here.
                 continue
             if res[report.id].get('account'):
-                # if res[report.id].get('debit'):
                 sub_lines = []
                 for account_id, value in res[report.id]['account'].items():
                     # if there are accounts to display, we add them to the
@@ -170,7 +169,7 @@ class ReportFinancial(models.AbstractModel):
                         'balance': value['balance'] * int(report.sign) or 0.0,
                         'type': 'account',
                         'level': report.display_detail == 'detail_with_hierarchy' and 4,
-                        'account_type': account.internal_type,
+                        'account_type': account.account_type,
                     }
                     if data['debit_credit']:
                         vals['debit'] = value['debit']

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_report_bulk_payment" model="ir.actions.report">
+        <field name="name">Bulk Payment</field>
+        <field name="model">account.bulk.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">base_accounting_kit.report_bulk_payment_document</field>
+        <field name="report_file">base_accounting_kit.report_bulk_payment_document</field>
+        <field name="print_report_name">'Bulk Payment - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_account_bulk_payment"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_bulk_payment_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Bulk Payment <span t-field="doc.name"/></h2>
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <strong>Bank:</strong>
+                                <span t-field="doc.journal_id"/><br/>
+                                <strong>Type:</strong>
+                                <span t-field="doc.batch_type"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>Date:</strong>
+                                <span t-field="doc.date"/>
+                            </div>
+                        </div>
+                        <table class="table table-sm o_main_table mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Payment</th>
+                                    <th>Date</th>
+                                    <th>Partner</th>
+                                    <th>Memo</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc.payment_ids" t-as="pay">
+                                    <td><span t-field="pay.name"/></td>
+                                    <td><span t-field="pay.date"/></td>
+                                    <td><span t-field="pay.partner_id"/></td>
+                                    <td><span t-field="pay.memo"/></td>
+                                    <td class="text-end">
+                                        <span t-field="pay.amount"
+                                              t-options="{'widget': 'monetary', 'display_currency': pay.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="row justify-content-end">
+                            <div class="col-4 text-end">
+                                <strong>Total: </strong>
+                                <span t-field="doc.amount_total"
+                                      t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

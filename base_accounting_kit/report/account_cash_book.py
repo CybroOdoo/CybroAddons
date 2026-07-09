@@ -41,6 +41,7 @@ class ReportCashBook(models.AbstractModel):
                 date_from=self.env.context.get('date_from'),
                 date_to=False,
                 initial_bal=True,
+                strict_range=True,
             )._query_get()
 
             init_wheres = [""]
@@ -139,13 +140,13 @@ class ReportCashBook(models.AbstractModel):
         # ------------------------------
         for row in cr.dictfetchall():
             balance = 0
-            for line in move_lines.get(row['account_id'], []):  # ✅ safe fallback
+            for line in move_lines.get(row['account_id'], []):  # safe fallback
                 balance += line['debit'] - line['credit']
             row['balance'] += balance
 
             acc_id = row.pop('account_id')
             if acc_id not in move_lines:
-                move_lines[acc_id] = []  # ✅ ensure list exists
+                move_lines[acc_id] = []  # ensure list exists
             move_lines[acc_id].append(row)
 
         # ------------------------------
@@ -158,7 +159,7 @@ class ReportCashBook(models.AbstractModel):
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
             res['code'] = account.code
             res['name'] = account.name
-            res['move_lines'] = move_lines.get(account.id, [])  # ✅ safe lookup
+            res['move_lines'] = move_lines.get(account.id, [])  # safe lookup
 
             for line in res['move_lines']:
                 res['debit'] += line['debit']

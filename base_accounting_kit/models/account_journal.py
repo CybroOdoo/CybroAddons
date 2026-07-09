@@ -19,13 +19,37 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models, _
+from odoo import api, fields, models, _
 
 
 class AccountJournal(models.Model):
     """Module inherited for adding the reconcile method in the account
     journal"""
     _inherit = "account.journal"
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Make the PDC payment method available on newly created bank
+        journals. (Bank journals that already exist when the module is
+        installed are linked automatically by the core
+        ``_auto_link_payment_methods`` when the PDC method record is created.)"""
+        journals = super().create(vals_list)
+        bank_journals = journals.filtered(lambda j: j.type == 'bank')
+        if bank_journals:
+            methods = self.env['account.payment.method'].search(
+                [('code', '=', 'pdc')])
+            Line = self.env['account.payment.method.line']
+            for method in methods:
+                for journal in bank_journals:
+                    if not Line.search_count([
+                            ('payment_method_id', '=', method.id),
+                            ('journal_id', '=', journal.id)]):
+                        Line.create({
+                            'name': method.name,
+                            'payment_method_id': method.id,
+                            'journal_id': journal.id,
+                        })
+        return journals
 
     multiple_invoice_ids = fields.One2many('multiple.invoice',
                                            'journal_id',
@@ -93,17 +117,23 @@ class AccountJournal(models.Model):
                         """),
             }
         else:
-            # Open reconciliation view for customers/suppliers
-            action_context = {'show_mode_selector': False,
-                              'company_ids': self.mapped('company_id').ids}
-            if self.type == 'sale':
-                action_context.update({'mode': 'customers'})
-            elif self.type == 'purchase':
-                action_context.update({'mode': 'suppliers'})
+            # Open the customer/supplier open items for manual reconciliation.
+            # (The enterprise 'manual_reconciliation_view' client action is not
+            # available in Community, so we open the reconcilable journal items.)
+            account_type = ('asset_receivable' if self.type == 'sale'
+                            else 'liability_payable')
             return {
-                'type': 'ir.actions.client',
-                'tag': 'manual_reconciliation_view',
-                'context': action_context,
+                'name': _("Reconciliation"),
+                'type': 'ir.actions.act_window',
+                'res_model': 'account.move.line',
+                'view_mode': 'list,form',
+                'domain': [
+                    ('account_id.account_type', '=', account_type),
+                    ('parent_state', '=', 'posted'),
+                    ('reconciled', '=', False),
+                    ('company_id', 'in', self.mapped('company_id').ids),
+                ],
+                'context': {'search_default_group_by_partner': 1},
             }
 
     def action_import_wizard(self):

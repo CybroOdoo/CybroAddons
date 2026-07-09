@@ -38,7 +38,7 @@ class ReportBankBook(models.AbstractModel):
         if init_balance:
             init_tables, init_where_clause, init_where_params = move_line.with_context(
                 date_from=self.env.context.get('date_from'), date_to=False,
-                initial_bal=True)._query_get()
+                initial_bal=True, strict_range=True)._query_get()
             init_wheres = [""]
             if init_where_clause.strip():
                 init_wheres.append(init_where_clause.strip())

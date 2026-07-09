@@ -105,41 +105,22 @@ class AccountAssetDepreciationLine(models.Model):
                 'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
                 'amount_currency': company_currency != current_currency and line.amount or 0.0,
             }
-            line_ids = [(0, 0, {
-                'account_id': asset_id.account_depreciation_id.id,
-                'partner_id': partner.id,
-                'credit': amount if float_compare(amount, 0.0,
-                                                  precision_digits=prec) > 0 else 0.0,
-            }), (0, 0, {
-                'account_id': asset_id.account_depreciation_expense_id.id,
-                'partner_id': partner.id,
-                'debit': amount if float_compare(amount, 0.0,
-                                                 precision_digits=prec) > 0 else 0.0,
-            })]
+            # Build a balanced two-line entry directly (no create-then-rewrite
+            # and no "Automatic Balancing Line" removal — that hack is a no-op
+            # for a tax-less JE in v19 and breaks under translation).
             move = self.env['account.move'].create({
                 'ref': line.asset_id.code,
                 'date': depreciation_date or False,
                 'journal_id': asset_id.journal_id.id,
-                'line_ids': line_ids,
+                'line_ids': [(0, 0, move_line_1), (0, 0, move_line_2)],
             })
-            for move_line in move.line_ids:
-                if move_line.account_id.id == move_line_1['account_id']:
-                    move_line.write({'credit': move_line_1['credit'],
-                                     'debit': move_line_1['debit']})
-                elif move_line.account_id.id == move_line_2['account_id']:
-                    move_line.write({'debit': move_line_2['debit'],
-                                     'credit': move_line_2['credit']})
-            if move.line_ids.filtered(
-                    lambda x: x.name == 'Automatic Balancing Line'):
-                move.line_ids.filtered(
-                    lambda x: x.name == 'Automatic Balancing Line').unlink()
             line.write({'move_id': move.id, 'move_check': True})
             created_moves |= move
 
         if post_move and created_moves:
             created_moves.filtered(lambda m: any(
                 m.asset_depreciation_ids.mapped(
-                    'asset_id.open_asset'))).post()
+                    'asset_id.open_asset'))).action_post()
         return [x.id for x in created_moves]
 
     def create_grouped_move(self, post_move=True):
@@ -156,7 +137,9 @@ class AccountAssetDepreciationLine(models.Model):
             # Sum amount of all depreciation lines
             company_currency = line.asset_id.company_id.currency_id
             current_currency = line.asset_id.currency_id
-            amount += current_currency.compute(line.amount, company_currency)
+            amount += current_currency._convert(
+                line.amount, company_currency, line.asset_id.company_id,
+                depreciation_date)
 
         name = category_id.name + _(' (grouped)')
         move_line_1 = {
@@ -187,7 +170,7 @@ class AccountAssetDepreciationLine(models.Model):
 
         if post_move and created_moves:
             self.post_lines_and_close_asset()
-            created_moves.post()
+            created_moves.action_post()
         return [x.id for x in created_moves]
 
     def post_lines_and_close_asset(self):
@@ -234,14 +217,3 @@ class AccountAssetDepreciationLine(models.Model):
         for asset, messages in assets_to_post.items():
             for msg in messages:
                 asset.message_post(body=msg)
-
-    # def unlink(self):
-    #     """Check if the depreciation line is linked to a posted move before deletion."""
-    #     for record in self:
-    #         if record.move_check:
-    #             if record.asset_id.category_id.type == 'purchase':
-    #                 msg = _("You cannot delete posted depreciation lines.")
-    #             else:
-    #                 msg = _("You cannot delete posted installment lines.")
-    #             raise UserError(msg)
-    #     return super(AccountAssetDepreciationLine, self).unlink()

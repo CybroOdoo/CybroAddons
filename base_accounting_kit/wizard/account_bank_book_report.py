@@ -19,13 +19,13 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from datetime import date
-from odoo import api, fields, models, _
+from odoo import fields, models, _
 from odoo.exceptions import UserError
 
 
 class BankBookWizard(models.TransientModel):
     _name = 'account.bank.book.report'
+    _inherit = 'account.report.xlsx.mixin'
     _description = 'Account Bank Book Report'
 
     company_id = fields.Many2one('res.company', string='Company',
@@ -35,10 +35,10 @@ class BankBookWizard(models.TransientModel):
                                     ('all', 'All Entries')],
                                    string='Target Moves', required=True,
                                    default='posted')
-    date_from = fields.Date(string='Start Date', default=date.today(),
-                            required=True)
-    date_to = fields.Date(string='End Date', default=date.today(),
-                          required=True)
+    date_from = fields.Date(string='Start Date',
+                            default=fields.Date.context_today, required=True)
+    date_to = fields.Date(string='End Date',
+                          default=fields.Date.context_today, required=True)
     display_account = fields.Selection(
         [('all', 'All'), ('movement', 'With movements'),
          ('not_zero', 'With balance is not equal to 0')],
@@ -62,6 +62,7 @@ class BankBookWizard(models.TransientModel):
                                    'account_report_bankbook_account_rel',
                                    'report_id', 'account_id',
                                    'Accounts',
+                                   domain="[('account_type', '=', 'asset_cash')]",
                                    default=_get_default_account_ids)
     journal_ids = fields.Many2many('account.journal',
                                    'account_report_bankbook_journal_rel',
@@ -69,17 +70,6 @@ class BankBookWizard(models.TransientModel):
                                    string='Journals', required=True,
                                    default=lambda self: self.env[
                                        'account.journal'].search([]))
-
-    @api.onchange('account_ids')
-    def onchange_account_ids(self):
-        if self.account_ids:
-            journals = self.env['account.journal'].search(
-                [('type', '=', 'bank')])
-            accounts = []
-            for journal in journals:
-                accounts.append(journal.default_account_id.id)
-            domain = {'account_ids': [('id', 'in', accounts)]}
-            return {'domain': domain}
 
     def _build_contexts(self, data):
         result = {}
@@ -110,3 +100,37 @@ class BankBookWizard(models.TransientModel):
         return self.env.ref(
             'base_accounting_kit.action_report_bank_book').report_action(self,
                                                                          data=data)
+
+    def _bank_book_data(self):
+        """Build the ``data`` dict shared by the PDF and xlsx exports."""
+        if self.initial_balance and not self.date_from:
+            raise UserError(_("You must choose a Start Date"))
+        data = {}
+        data['ids'] = self.env.context.get('active_ids', [])
+        data['model'] = self.env.context.get('active_model', 'ir.ui.menu')
+        data['form'] = self.read(
+            ['date_from', 'date_to', 'journal_ids', 'target_move',
+             'display_account', 'account_ids', 'sortby', 'initial_balance'])[0]
+        used_context = self._build_contexts(data)
+        data['form']['used_context'] = dict(
+            used_context, lang=self.env.context.get('lang') or 'en_US')
+        return data
+
+    def action_print_xlsx(self):
+        """Export the bank book to xlsx."""
+        self.ensure_one()
+        data = self._bank_book_data()
+        accounts = self.env['account.account'].search(
+            [('id', 'in', data['form']['account_ids'])])
+        if not accounts:
+            journals = self.env['account.journal'].search(
+                [('type', '=', 'bank')])
+            accounts = journals.mapped('default_account_id')
+        report_model = self.env['report.base_accounting_kit.report_bank_book']
+        accounts_res = report_model.with_context(
+            data['form']['used_context'])._get_account_move_entry(
+            accounts, data['form']['initial_balance'],
+            data['form']['sortby'], data['form']['display_account'])
+        table = self._ledger_table(
+            'Bank Book', self._xlsx_meta(data['form']), accounts_res)
+        return self._xlsx_action('Bank Book', table)

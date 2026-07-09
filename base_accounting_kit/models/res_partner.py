@@ -52,6 +52,12 @@ class ResPartner(models.Model):
          ('no_action_needed', 'No action needed')],
         string='Followup status',
         )
+    followup_level_id = fields.Many2one(
+        'followup.line', string='Follow-up Level', copy=False,
+        help="Last follow-up level applied to this customer.")
+    latest_followup_date = fields.Date(
+        string='Latest Follow-up', copy=False, readonly=True,
+        help="Date the last follow-up was sent to this customer.")
 
     warning_stage = fields.Float(string='Warning Amount',
                                  help="A warning message will appear once the "
@@ -64,7 +70,7 @@ class ResPartner(models.Model):
                                        "Set its value to 0.00 to disable "
                                        "this feature")
     due_amount = fields.Float(string="Total Sale",
-                              compute="compute_due_amount")
+                              compute="_compute_due_amount")
     active_limit = fields.Boolean("Active Credit Limit", default=False)
 
     enable_credit_limit = fields.Boolean(string="Credit Limit Enabled",
@@ -87,7 +93,7 @@ class ResPartner(models.Model):
                     if is_overdue:
                         total_overdue += amount or 0
             min_date = record.get_min_date()
-            action = record.action_after()
+            action = record.action_after() or 0
             if min_date:
                 date_reminder = min_date + timedelta(days=action)
                 if date_reminder:
@@ -126,8 +132,8 @@ class ResPartner(models.Model):
                     ORDER BY fl.delay;
 
                     """
-        self._cr.execute(delay, [self.env.company.id])
-        record = self._cr.dictfetchall()
+        self.env.cr.execute(delay, [self.env.company.id])
+        record = self.env.cr.dictfetchall()
 
         return record
 
@@ -140,12 +146,111 @@ class ResPartner(models.Model):
             for i in record:
                 return i['delay']
 
-    def compute_due_amount(self):
+    # ------------------------------------------------------------------
+    # Follow-up escalation & sending
+    # ------------------------------------------------------------------
+    def _get_followup_lines(self):
+        """The company's follow-up levels, ordered by delay (model _order)."""
+        return self.env['followup.line'].search(
+            [('followup_id.company_id', '=', self.env.company.id)])
+
+    def _max_overdue_days(self):
+        """Largest number of days any of the partner's open invoices is overdue."""
+        self.ensure_one()
+        today = fields.Date.context_today(self)
+        overdue = []
+        for am in self.invoice_list:
+            due = am.invoice_date_due or am.date
+            if due and due < today:
+                overdue.append((today - due).days)
+        return max(overdue) if overdue else 0
+
+    def _get_next_followup_line(self):
+        """Return the next escalation level due for this partner, or empty.
+
+        Picks levels whose ``delay`` has been reached by the partner's overdue
+        days, and returns the first one *beyond* the level already sent."""
+        self.ensure_one()
+        days = self._max_overdue_days()
+        reached = self._get_followup_lines().filtered(lambda l: l.delay <= days)
+        if not reached:
+            return self.env['followup.line']
+        if not self.followup_level_id:
+            return reached[0]
+        remaining = reached.filtered(
+            lambda l: l.delay > self.followup_level_id.delay)
+        return remaining[0] if remaining else self.env['followup.line']
+
+    def _followup_letter_report(self):
+        return self.env.ref(
+            'base_accounting_kit.action_report_followup_letter',
+            raise_if_not_found=False)
+
+    def _send_followup(self, followup_line=None):
+        """Send the reminder for the (next) due level: email the customer,
+        log it in the chatter and advance the partner's follow-up level.
+        Shared by the manual button and the scheduled action."""
+        default_template = self.env.ref(
+            'base_accounting_kit.mail_template_followup',
+            raise_if_not_found=False)
+        for partner in self:
+            line = followup_line or partner._get_next_followup_line()
+            if not line:
+                continue
+            if line.send_email and partner.email:
+                template = line.email_template_id or default_template
+                if template:
+                    template.send_mail(partner.id, force_send=True)
+            partner.write({
+                'followup_level_id': line.id,
+                'latest_followup_date': fields.Date.context_today(partner),
+            })
+            partner.message_post(
+                body=_("Follow-up '%s' sent to %s.") % (line.name, partner.name))
+        return True
+
+    def action_send_followup(self):
+        """Manual button: send the due follow-up to the selected partner(s)."""
+        self._send_followup()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'message': _('Follow-up sent.'),
+                'type': 'success',
+                'sticky': False,
+            },
+        }
+
+    def action_print_followup_letter(self):
+        """Manual button: print the reminder letter (PDF)."""
+        self.ensure_one()
+        report = self._followup_letter_report()
+        if not report:
+            raise UserError(_("The follow-up letter report is not available."))
+        return report.report_action(self)
+
+    @api.model
+    def _cron_send_followups(self):
+        """Scheduled action: email the due follow-up to every customer whose
+        next escalation level has been reached."""
+        today = fields.Date.context_today(self)
+        overdue_moves = self.env['account.move'].search([
+            ('move_type', '=', 'out_invoice'),
+            ('payment_state', '=', 'not_paid'),
+            ('state', '=', 'posted'),
+            ('invoice_date_due', '<', today),
+        ])
+        partners = overdue_moves.mapped('partner_id')
+        for partner in partners:
+            if partner._get_next_followup_line():
+                partner._send_followup()
+
+    @api.depends('credit', 'debit')
+    def _compute_due_amount(self):
         """Compute function to compute the due amount with the
          credit and debit amount"""
         for rec in self:
-            if not rec.id:
-                continue
             rec.due_amount = rec.credit - rec.debit
 
     def _compute_enable_credit_limit(self):
@@ -160,11 +265,12 @@ class ResPartner(models.Model):
     def constrains_warning_stage(self):
         """Constrains functionality used to indicate or raise an
         UserError"""
-        if self.active_limit and self.enable_credit_limit:
-            if self.warning_stage >= self.blocking_stage:
-                if self.blocking_stage > 0:
-                    raise UserError(_(
-                        "Warning amount should be less than Blocking amount"))
+        for rec in self:
+            if rec.active_limit and rec.enable_credit_limit:
+                if rec.warning_stage >= rec.blocking_stage:
+                    if rec.blocking_stage > 0:
+                        raise UserError(_(
+                            "Warning amount should be less than Blocking amount"))
 
     # customer statement
 
@@ -202,23 +308,24 @@ class ResPartner(models.Model):
             rec.vendor_statement_ids = bills
 
     def main_query(self):
-        """ Return select query """
+        """ Return select query (parameters: partner id, company id) """
         query = """SELECT name , invoice_date, invoice_date_due,
                        amount_total_signed AS sub_total,
                        amount_residual_signed AS amount_due ,
                        amount_residual AS balance
                FROM account_move WHERE payment_state != 'paid'
-               AND state ='posted' AND partner_id= '%s'
-               AND company_id = '%s' """ % (self.id, self.env.company.id)
+               AND state ='posted' AND partner_id = %s
+               AND company_id = %s """
         return query
 
     def amount_query(self):
-        """ Return query for calculating total amount """
-        amount_query = """ SELECT SUM(amount_total_signed) AS total, 
+        """ Return query for calculating total amount
+        (parameters: partner id, company id) """
+        amount_query = """ SELECT SUM(amount_total_signed) AS total,
                        SUM(amount_residual) AS balance
-                   FROM account_move WHERE payment_state != 'paid' 
-                   AND state ='posted' AND partner_id= '%s'
-                   AND company_id = '%s' """ % (self.id, self.env.company.id)
+                   FROM account_move WHERE payment_state != 'paid'
+                   AND state ='posted' AND partner_id = %s
+                   AND company_id = %s """
         return amount_query
 
     def action_share_pdf(self):
@@ -228,9 +335,10 @@ class ResPartner(models.Model):
             main_query += """ AND move_type IN ('out_invoice')"""
             amount = self.amount_query()
             amount += """ AND move_type IN ('out_invoice')"""
-            self.env.cr.execute(main_query)
+            params = (self.id, self.env.company.id)
+            self.env.cr.execute(main_query, params)
             main = self.env.cr.dictfetchall()
-            self.env.cr.execute(amount)
+            self.env.cr.execute(amount, params)
             amount = self.env.cr.dictfetchall()
             data = {
                 'customer': self.display_name,
@@ -285,9 +393,10 @@ class ResPartner(models.Model):
             main_query += """ AND move_type IN ('out_invoice')"""
             amount = self.amount_query()
             amount += """ AND move_type IN ('out_invoice')"""
-            self.env.cr.execute(main_query)
+            params = (self.id, self.env.company.id)
+            self.env.cr.execute(main_query, params)
             main = self.env.cr.dictfetchall()
-            self.env.cr.execute(amount)
+            self.env.cr.execute(amount, params)
             amount = self.env.cr.dictfetchall()
             data = {
                 'customer': self.display_name,
@@ -313,9 +422,10 @@ class ResPartner(models.Model):
             main_query += """ AND move_type IN ('out_invoice')"""
             amount = self.amount_query()
             amount += """ AND move_type IN ('out_invoice')"""
-            self.env.cr.execute(main_query)
+            params = (self.id, self.env.company.id)
+            self.env.cr.execute(main_query, params)
             main = self.env.cr.dictfetchall()
-            self.env.cr.execute(amount)
+            self.env.cr.execute(amount, params)
             amount = self.env.cr.dictfetchall()
             data = {
                 'customer': self.display_name,
@@ -417,9 +527,10 @@ class ResPartner(models.Model):
             main_query += """ AND move_type IN ('out_invoice')"""
             amount = self.amount_query()
             amount += """ AND move_type IN ('out_invoice')"""
-            self.env.cr.execute(main_query)
+            params = (self.id, self.env.company.id)
+            self.env.cr.execute(main_query, params)
             main = self.env.cr.dictfetchall()
-            self.env.cr.execute(amount)
+            self.env.cr.execute(amount, params)
             amount = self.env.cr.dictfetchall()
             data = {
                 'customer': self.display_name,
@@ -525,4 +636,124 @@ class ResPartner(models.Model):
             }
         else:
             raise ValidationError('There is no statement to send')
+
+    # ------------------------------------------------------------------
+    # Vendor (supplier) statement — the counterpart to the customer
+    # statement above, for posted unpaid vendor bills.
+    # ------------------------------------------------------------------
+    def _statement_data(self, move_type):
+        """Build the statement payload (partner, address, open documents and
+        totals) for ``move_type`` — shared by the vendor statement actions."""
+        self.ensure_one()
+        main_query = self.main_query() + " AND move_type IN ('%s')" % move_type
+        amount_query = self.amount_query() + \
+            " AND move_type IN ('%s')" % move_type
+        params = (self.id, self.env.company.id)
+        self.env.cr.execute(main_query, params)
+        main = self.env.cr.dictfetchall()
+        self.env.cr.execute(amount_query, params)
+        amount = self.env.cr.dictfetchall()
+        return {
+            'customer': self.display_name,
+            'street': self.street,
+            'street2': self.street2,
+            'city': self.city,
+            'state': self.state_id.name,
+            'zip': self.zip,
+            'my_data': main,
+            'total': amount[0]['total'],
+            'balance': amount[0]['balance'],
+            'currency': self.currency_id.symbol,
+        }
+
+    def _statement_sent_notification(self):
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'message': 'Email Sent Successfully',
+                'type': 'success',
+                'sticky': False,
+            },
+        }
+
+    def _statement_email_body(self):
+        return ('<p>Dear <strong>%s</strong></p>'
+                '<p>We have attached your vendor statement. Please check.</p>'
+                '<p>Best regards,</p><p>%s</p>' % (
+                    self.name, self.env.user.name))
+
+    def action_vendor_print_pdf(self):
+        """Print the supplier statement (open vendor bills) as PDF."""
+        if not self.vendor_statement_ids:
+            raise ValidationError('There is no statement to print')
+        data = self._statement_data('in_invoice')
+        return self.env.ref(
+            'base_accounting_kit.res_partner_action').report_action(
+            self, data=data)
+
+    def action_vendor_print_xlsx(self):
+        """Export the supplier statement as xlsx."""
+        if not self.vendor_statement_ids:
+            raise ValidationError('There is no statement to print')
+        data = self._statement_data('in_invoice')
+        return {
+            'type': 'ir.actions.report',
+            'data': {
+                'model': 'res.partner',
+                'options': json.dumps(data, default=json_default),
+                'output_format': 'xlsx',
+                'report_name': 'Vendor Statement Report',
+            },
+            'report_type': 'xlsx',
+        }
+
+    def action_vendor_share_pdf(self):
+        """Email the supplier statement PDF to the vendor."""
+        if not self.vendor_statement_ids:
+            raise ValidationError('There is no statement to send')
+        data = self._statement_data('in_invoice')
+        report = self.env['ir.actions.report'].sudo()._render_qweb_pdf(
+            'base_accounting_kit.res_partner_action', self, data=data)
+        attachment = self.env['ir.attachment'].sudo().create({
+            'name': 'Vendor Statement Report',
+            'type': 'binary',
+            'datas': base64.b64encode(report[0]),
+            'mimetype': 'application/pdf',
+            'res_model': 'res.partner',
+        })
+        self.env['mail.mail'].sudo().create({
+            'email_to': self.email,
+            'subject': 'Vendor Statement Report',
+            'body_html': self._statement_email_body(),
+            'attachment_ids': [attachment.id],
+        }).send()
+        return self._statement_sent_notification()
+
+    def action_vendor_share_xlsx(self):
+        """Email the supplier statement xlsx to the vendor."""
+        if not self.vendor_statement_ids:
+            raise ValidationError('There is no statement to send')
+        data = self._statement_data('in_invoice')
+        # Reuse the customer statement's workbook builder via a stream.
+        output = io.BytesIO()
+        response = type('XlsxResponse', (object,), {'stream': output})()
+        self.get_xlsx_report(data, response)
+        output.seek(0)
+        attachment = self.env['ir.attachment'].sudo().create({
+            'name': 'Vendor Statement Report.xlsx',
+            'type': 'binary',
+            'datas': base64.b64encode(output.read()),
+            'mimetype': 'application/vnd.openxmlformats-officedocument'
+                        '.spreadsheetml.sheet',
+            'res_model': 'res.partner',
+        })
+        output.close()
+        self.env['mail.mail'].sudo().create({
+            'email_to': self.email,
+            'subject': 'Vendor Statement Report',
+            'body_html': self._statement_email_body(),
+            'attachment_ids': [attachment.id],
+        }).send()
+        return self._statement_sent_notification()
 

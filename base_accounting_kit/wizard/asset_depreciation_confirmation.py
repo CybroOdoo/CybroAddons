@@ -33,7 +33,7 @@ class AssetDepreciationConfirmationWizard(models.TransientModel):
 
     def asset_compute(self):
         self.ensure_one()
-        context = self._context
+        context = self.env.context
         created_move_ids = self.env['account.asset.asset'].sudo().compute_generated_entries(self.date, asset_type=context.get('asset_type'))
         moves = self.env['account.move'].browse(created_move_ids)
         auto_post_draft_moves = moves.filtered(lambda move: move.state == 'draft' and move.auto_post)

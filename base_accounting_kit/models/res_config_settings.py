@@ -37,12 +37,18 @@ class ResConfigSettings(models.TransientModel):
     fiscalyear_last_month = fields.Selection(
         related='company_id.fiscalyear_last_month', readonly=False
     )
+    fx_reval_journal_id = fields.Many2one(
+        related='company_id.fx_reval_journal_id', readonly=False)
+    fx_reval_gain_account_id = fields.Many2one(
+        related='company_id.fx_reval_gain_account_id', readonly=False)
+    fx_reval_loss_account_id = fields.Many2one(
+        related='company_id.fx_reval_loss_account_id', readonly=False)
 
     @api.model
     def get_values(self):
         """Retrieve the values for configuration settings including the
          customer credit limit from the database parameters. """
-        res = super(ResConfigSettings, self).get_values()
+        res = super().get_values()
         params = self.env['ir.config_parameter'].sudo()
         customer_credit_limit = params.get_param('customer_credit_limit',
                                                  default=False)
@@ -51,7 +57,7 @@ class ResConfigSettings(models.TransientModel):
 
     def set_values(self):
         """Set the customer credit limit value in the database parameters using superuser access."""
-        super(ResConfigSettings, self).set_values()
+        super().set_values()
         self.env['ir.config_parameter'].sudo().set_param(
             "customer_credit_limit",
             self.customer_credit_limit)

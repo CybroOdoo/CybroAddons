@@ -19,12 +19,14 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from datetime import date
+from datetime import timedelta
+
 from odoo import fields, models
 
 
 class DayBookWizard(models.TransientModel):
     _name = 'account.day.book.report'
+    _inherit = 'account.report.xlsx.mixin'
     _description = 'Account Day Book Report'
 
     company_id = fields.Many2one('res.company', string='Company',
@@ -43,10 +45,10 @@ class DayBookWizard(models.TransientModel):
                                    'report_id', 'account_id',
                                    'Accounts')
 
-    date_from = fields.Date(string='Start Date', default=date.today(),
-                            required=True)
-    date_to = fields.Date(string='End Date', default=date.today(),
-                          required=True)
+    date_from = fields.Date(string='Start Date',
+                            default=fields.Date.context_today, required=True)
+    date_to = fields.Date(string='End Date',
+                          default=fields.Date.context_today, required=True)
 
     def _build_contexts(self, data):
         result = {}
@@ -74,3 +76,55 @@ class DayBookWizard(models.TransientModel):
         return self.env.ref(
             'base_accounting_kit.day_book_pdf_report').report_action(self,
                                                                      data=data)
+
+    def action_print_xlsx(self):
+        """Export the day book to xlsx (entries grouped by date)."""
+        self.ensure_one()
+        data = {}
+        data['form'] = self.read(
+            ['date_from', 'date_to', 'journal_ids', 'target_move',
+             'account_ids'])[0]
+        used_context = self._build_contexts(data)
+        data['form']['used_context'] = dict(
+            used_context, lang=self.env.context.get('lang') or 'en_US')
+        accounts = self.env['account.account'].search(
+            [('id', 'in', data['form']['account_ids'])]) \
+            if data['form']['account_ids'] \
+            else self.env['account.account'].search([])
+        report_model = self.env[
+            'report.base_accounting_kit.day_book_report_template']
+        columns = [
+            {'label': 'Date / Account', 'width': 32},
+            {'label': 'JRNL', 'width': 8},
+            {'label': 'Partner', 'width': 28},
+            {'label': 'Ref', 'width': 28},
+            {'label': 'Debit', 'width': 16, 'num': True},
+            {'label': 'Credit', 'width': 16, 'num': True},
+            {'label': 'Balance', 'width': 16, 'num': True},
+        ]
+        rows = []
+        day = self.date_from
+        while day <= self.date_to:
+            res = report_model.with_context(
+                data['form']['used_context'])._get_account_move_entry(
+                accounts, data['form'], str(day))
+            if res['lines']:
+                rows.append({'cells': [
+                    str(day), '', '', '', res['debit'], res['credit'],
+                    res['balance'],
+                ], 'bold': True})
+                for line in res['lines']:
+                    rows.append({'cells': [
+                        line.get('accname') or '', line.get('lcode'),
+                        line.get('partner_name') or '',
+                        line.get('lname') or '', line.get('debit'),
+                        line.get('credit'), line.get('balance'),
+                    ], 'indent': 1})
+            day += timedelta(days=1)
+        table = {
+            'title': 'Day Book',
+            'meta': self._xlsx_meta(data['form']),
+            'columns': columns,
+            'rows': rows,
+        }
+        return self._xlsx_action('Day Book', table)

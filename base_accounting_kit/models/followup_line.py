@@ -37,3 +37,14 @@ class FollowupLine(models.Model):
                                 "  Could be negative if you want to send a polite alert beforehand.")
     followup_id = fields.Many2one('account.followup', 'Follow Ups',
                                   ondelete="cascade")
+    send_email = fields.Boolean(
+        string='Send an Email', default=True,
+        help="When reached, email the reminder to the customer.")
+    email_template_id = fields.Many2one(
+        'mail.template', string='Email Template',
+        domain=[('model', '=', 'res.partner')],
+        help="Template used for the reminder email. Falls back to the default "
+             "follow-up template when empty.")
+    print_letter = fields.Boolean(
+        string='Print a Letter',
+        help="Offer a printable reminder letter (PDF) at this level.")

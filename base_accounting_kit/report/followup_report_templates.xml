@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Follow-up reminder letter -->
+    <record id="action_report_followup_letter" model="ir.actions.report">
+        <field name="name">Follow-up Letter</field>
+        <field name="model">res.partner</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">base_accounting_kit.report_followup_letter_document</field>
+        <field name="report_file">base_accounting_kit.report_followup_letter_document</field>
+        <field name="print_report_name">'Follow-up - %s' % (object.name)</field>
+    </record>
+
+    <template id="report_followup_letter_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Payment Reminder</h2>
+                        <p>
+                            <strong>
+                                <span t-field="doc.name"/>
+                            </strong>
+                        </p>
+                        <p>
+                            According to our records, the following invoices are
+                            still unpaid and now overdue. We kindly ask you to
+                            arrange payment at your earliest convenience.
+                        </p>
+                        <table class="table table-sm o_main_table mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Invoice</th>
+                                    <th>Date</th>
+                                    <th>Due Date</th>
+                                    <th class="text-end">Amount Due</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc.invoice_list" t-as="inv">
+                                    <td><span t-field="inv.name"/></td>
+                                    <td><span t-field="inv.invoice_date"/></td>
+                                    <td><span t-field="inv.invoice_date_due"/></td>
+                                    <td class="text-end">
+                                        <span t-field="inv.amount_residual"
+                                              t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="row justify-content-end">
+                            <div class="col-4">
+                                <strong>Total overdue: </strong>
+                                <span t-field="doc.total_overdue"
+                                      t-options="{'widget': 'monetary', 'display_currency': doc.env.company.currency_id}"/>
+                            </div>
+                        </div>
+                        <p class="mt-4">
+                            If payment has already been made, please disregard
+                            this letter.
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="mail_template_followup" model="mail.template">
+            <field name="name">Payment Follow-up Reminder</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="subject">Payment Reminder - {{ object.env.company.name }}</field>
+            <field name="email_from">{{ (user.email_formatted or user.company_id.email_formatted) }}</field>
+            <field name="partner_to">{{ object.id }}</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="lang">{{ object.lang }}</field>
+            <field name="body_html" type="html">
+                <div style="margin:0px;padding:0px;font-size:13px;">
+                    <p>Dear <t t-out="object.name or ''">Customer</t>,</p>
+                    <p>
+                        According to our records, the following invoices are still
+                        unpaid and now overdue. We kindly ask you to arrange
+                        payment at your earliest convenience.
+                    </p>
+                    <table border="1" width="100%"
+                           style="border-collapse:collapse;margin:12px 0;">
+                        <thead>
+                            <tr style="background-color:#f2f2f2;">
+                                <th style="padding:6px;text-align:left;">Invoice</th>
+                                <th style="padding:6px;text-align:left;">Date</th>
+                                <th style="padding:6px;text-align:left;">Due Date</th>
+                                <th style="padding:6px;text-align:right;">Amount Due</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="object.invoice_list" t-as="inv">
+                                <tr>
+                                    <td style="padding:6px;"><t t-out="inv.name or ''"/></td>
+                                    <td style="padding:6px;"><t t-out="inv.invoice_date or ''"/></td>
+                                    <td style="padding:6px;"><t t-out="inv.invoice_date_due or ''"/></td>
+                                    <td style="padding:6px;text-align:right;">
+                                        <t t-out="inv.amount_residual"
+                                           t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <p>
+                        <strong>Total overdue:
+                            <t t-out="object.total_overdue"
+                               t-options="{'widget': 'monetary', 'display_currency': object.env.company.currency_id}"/>
+                        </strong>
+                    </p>
+                    <p>If payment has already been made, please disregard this message.</p>
+                    <p>Best regards,<br/><t t-out="object.env.company.name or ''"/></p>
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -12,10 +12,10 @@
             </xpath>
             <xpath expr="//button[@name='action_post']" position="before">
                 <button name="print_checks" class="oe_highlight"
-                        invisible="payment_method_code not in ['check_printing','pdc'] or state != 'posted'"
+                        invisible="payment_method_code not in ['check_printing','pdc'] or state not in ('in_process','paid')"
                         string="Print Check" type="object"/>
                 <button name="unmark_as_sent"
-                        invisible="payment_method_code not in ['check_printing','pdc'] or state != 'sent'"
+                        invisible="payment_method_code not in ['check_printing','pdc'] or not is_sent"
                         string="Unmark Sent" type="object"/>
             </xpath>
             <xpath expr="//div[@name='amount_div']" position="after">
@@ -23,7 +23,6 @@
                        invisible="payment_method_code not in ['check_printing','pdc'] or state != 'draft'"
                        groups="base.group_no_one"/>
             </xpath>
-<!--            <xpath expr="//field[@name='ref']" position="after">-->
             <xpath expr="//field[@name='date']" position="after">
                 <field name="check_manual_sequencing" invisible="1"/>
                 <field name="check_number"
@@ -32,9 +31,9 @@
             <xpath expr="//field[@name='date']" position="after">
                 <field name="effective_date"
                        invisible="payment_method_code != 'pdc'"
-                       required="payment_method_code in 'pdc'"
-                       readonly="state not in ('draft')"/>
-                <field name="bank_reference"/>
+                       required="payment_method_code == 'pdc'"
+                       readonly="state != 'draft'"/>
+                <field name="bank_reference" readonly="state != 'draft'"/>
                 <field name="cheque_reference" readonly="state != 'draft'"/>
             </xpath>
         </field>
@@ -47,6 +46,11 @@
         <field name="arch" type="xml">
             <list string="Statement lines" create="false"
                   default_order="date desc, statement_id desc, sequence desc, id desc">
+                <header>
+                    <button name="action_auto_reconcile" type="object"
+                            string="Auto-Reconcile"
+                            help="Automatically reconcile the selected lines by matching partner + amount, or a reconciliation-model rule."/>
+                </header>
                 <!-- Invisible fields -->
                 <field name="state" column_invisible="1"/>
                 <field name="sequence" readonly="1" column_invisible="1"/>

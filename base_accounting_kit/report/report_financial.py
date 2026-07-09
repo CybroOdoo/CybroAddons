@@ -25,22 +25,6 @@ from odoo import api, fields, models
 # ---------------------------------------------------------
 # Account Financial Report
 # ---------------------------------------------------------
-class AccountTypes(models.Model):
-    _name = "account.account.type"
-
-    name = fields.Char(string='Account Type', required=True, translate=True)
-    type = fields.Selection([
-        ('other', 'Regular'),
-        ('receivable', 'Receivable'),
-        ('payable', 'Payable'),
-        ('liquidity', 'Liquidity'),
-    ], required=True, default='other',
-        help="The 'Internal Type' is used for features available on " 
-             "different types of accounts: liquidity type is for cash or "
-             "bank accounts" \
-             ", payable/receivable is for vendor/customer accounts.")
-
-
 class AccountFinancialReport(models.Model):
     _name = "account.financial.report"
     _description = "Account Report"
@@ -92,9 +76,6 @@ class AccountFinancialReport(models.Model):
     account_report_id = fields.Many2one(
         'account.financial.report',
         'Report Value')
-    # account_type_ids = fields.Many2many(
-    #     'account.account.type',
-    #     'Account Types')
     account_type_ids = fields.Selection(
         selection=[
             ("asset_receivable", "Receivable"),
@@ -116,7 +97,7 @@ class AccountFinancialReport(models.Model):
             ("expense_direct_cost", "Cost of Revenue"),
             ("off_balance", "Off-Balance Sheet"),
         ],
-        string="Type",
+        string="Account Type",
         help="These types are defined according to your country. The type contains more information " \
              "about the account and its specificities."
     )

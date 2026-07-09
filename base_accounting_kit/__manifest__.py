@@ -20,15 +20,26 @@
 #
 #############################################################################
 {
-    'name': 'Odoo 19 Full Accounting Kit for Community',
-    'version': '19.0.2.3.1',
+    'name': 'Odoo 19 Accounting for Community : Financial Report, PDC, Assets, Bank Reconciliation, Lock Dates',
+    'version': '19.0.3.3.1',
     'category': 'Accounting',
     'live_test_url': 'https://kit.easyinstance.com/web/login?redirect=/odoo/accounting',
-    'summary': """Odoo 19 Accounting, Odoo 19 Accounting Reports, Odoo18 Accounting, Odoo Accounting, Odoo19 Financial Reports, Odoo19 Asset, Odoo19 Profit and Loss, PDC, Followups, Odoo19, Accounting, Odoo Apps, Reports""",
-    'description': """ Odoo 19 Accounting, The module used to manage the Full
-     Account Features that can manage the Account Reports,Journals Asset and 
-     Budget Management, Accounting Reports, PDC, Credit Limit, 
-     Follow Ups,  Day-Bank-Cash book report, Odoo 18 Accounting, odoo apps""",
+    'summary': """Brings full accounting features back to Odoo 19 Community: financial reports (P&L, Balance Sheet,
+                  General Ledger, Trial Balance, Partner Ledger, Aged Receivable/Payable), asset management,
+                  budgets, bank statement import, PDC, and customer follow-ups — everything Community is missing.""",
+    'description': """ 
+      Full Accounting Kit for Odoo 19 Community
+      =========================================
+      Restores full accounting capabilities to Odoo 19 Community Edition.
+        * Financial Reports - Profit and Loss, Balance Sheet, General Ledger,
+          Trial Balance, Partner Ledger, Aged Receivable, Aged Payable,
+          Cash Flow Statement, Tax Report and Journal Audit (PDF and XLSX export).
+        * Asset Management - asset creation, depreciation schedules and disposal.
+        * Budget Management - budgets per analytic account and period.
+        * Bank statement import and bank reconciliation.
+        * PDC (Post-Dated Cheque) management.
+        * Customer follow-ups and recurring payments, odoo19 accounting, odoo19 assets, odoo19 pdc, odoo19 full accounting.
+    """,
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -41,8 +52,14 @@
         'data/account_financial_report_data.xml',
         'data/cash_flow_data.xml',
         'data/followup_levels.xml',
+        'data/mail_template_followup.xml',
+        'data/followup_cron.xml',
+        'data/bank_auto_reconcile_cron.xml',
+        'data/account_bulk_payment_data.xml',
+        'data/account_recurring_invoice_data.xml',
         'data/multiple_invoice_data.xml',
         'data/recurring_entry_cron.xml',
+        'data/account_asset_cron.xml',
         'data/account_pdc_data.xml',
         'views/reports_config_view.xml',
         'views/accounting_menu.xml',
@@ -55,10 +72,13 @@
         'views/followup_report.xml',
         'wizard/asset_depreciation_confirmation_views.xml',
         'wizard/asset_modify_views.xml',
+        'wizard/asset_disposal_views.xml',
+        'wizard/asset_revaluation_views.xml',
+        'wizard/account_fx_revaluation_views.xml',
         'views/account_asset_asset_views.xml',
         'views/account_asset_category_views.xml',
         'views/account_move_views.xml',
-        'views/product_template_views.xml',
+        'views/product_views.xml',
         'views/multiple_invoice_layout_view.xml',
         'views/multiple_invoice_form.xml',
         'views/account_journal_views.xml',
@@ -91,16 +111,20 @@
         'report/multiple_invoice_report_template.xml',
         'report/res_partner_reports.xml',
         'report/res_partner_templates.xml',
+        'report/followup_report_templates.xml',
+        'report/bulk_payment_report_templates.xml',
         'views/account_recurring_payments_view.xml',
         'views/account_move_line_views.xml',
         'views/account_bank_statement_views.xml',
         'views/account_bank_statement_line_views.xml',
         'views/account_payment_view.xml',
+        'views/account_bulk_payment_views.xml',
+        'views/account_recurring_invoice_views.xml',
         'wizard/account_lock_date_views.xml',
         'wizard/import_bank_statement_views.xml',
     ],
     'external_dependencies': {
-            'python': ['openpyxl', 'ofxparse', 'qifparse']
+            'python': ['openpyxl', 'ofxparse', 'qifparse', 'xlsxwriter']
         },
     'assets': {
         'web.assets_backend': [

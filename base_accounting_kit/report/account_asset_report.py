@@ -45,8 +45,8 @@ class AssetAssetReport(models.Model):
     company_id = fields.Many2one('res.company', string='Company', readonly=True)
 
     def init(self):
-        tools.drop_view_if_exists(self._cr, 'asset_asset_report')
-        self._cr.execute("""
+        tools.drop_view_if_exists(self.env.cr, 'asset_asset_report')
+        self.env.cr.execute("""
             create or replace view asset_asset_report as (
                 select
                     min(dl.id) as id,

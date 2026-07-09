@@ -2,8 +2,8 @@
 import { registry } from '@web/core/registry';
 import { ListController } from "@web/views/list/list_controller";
 import { listView } from "@web/views/list/list_view";
-import { useState, useRef } from "@odoo/owl";
-import { useListener, useService} from "@web/core/utils/hooks";
+import { useState } from "@odoo/owl";
+import { useService } from "@web/core/utils/hooks";
 export class AccountMoveLineListController extends ListController {
      constructor() {
         super(...arguments);
@@ -17,13 +17,13 @@ export class AccountMoveLineListController extends ListController {
          this.orm = useService("orm")
      }
      async openRecord(record) {
-        const kanban_row = this.__owl__.bdom.parentEl.ownerDocument.querySelector(`tr[data-id]`);
+        const kanban_row = document.querySelector(`tr[data-id]`);
         const data_id = parseInt(kanban_row.getAttribute('data-id'))
         var data = await this.orm.call('account.bank.statement.line',
             'update_match_row_data',
             [record.resId])
         await this.orm.call('account.bank.statement.line', 'write', [[data_id], { lines_widget_json: JSON.stringify(data) }]);
-        const rowSelector = this.__owl__.bdom.parentEl.querySelector(`tr[data-id='${record.id}']`)
+        const rowSelector = document.querySelector(`tr[data-id='${record.id}']`)
          if (!record.clickCount) {
             record.clickCount = true
             rowSelector.style.backgroundColor = "#d1ecf1";
@@ -32,10 +32,10 @@ export class AccountMoveLineListController extends ListController {
             record.clickCount = false;
             rowSelector.style.backgroundColor = "white";
          }
-        const currencySymbol = await this.orm.call('res.currency', 'read',[record.data.currency_id.id])
-        const mainKanbanDiv = this.__owl__.bdom.parentEl.ownerDocument.querySelector('#base_accounting_reconcile')
-        const existingRow = this.__owl__.bdom.parentEl.ownerDocument.querySelector(`tr[data-resId="${record.resId}"]`)
-        const stateLineRow = this.__owl__.bdom.parentEl.ownerDocument.querySelector('.statement_row')
+        const currencySymbol = await this.orm.call('res.currency', 'read', [[record.data.currency_id.id]])
+        const mainKanbanDiv = document.querySelector('#base_accounting_reconcile')
+        const existingRow = document.querySelector(`tr[data-resId="${record.resId}"]`)
+        const stateLineRow = document.querySelector('.statement_row')
         if (stateLineRow){
             const dataIdValue = stateLineRow.getAttribute('data-id');
             if(dataIdValue == record.resId){
@@ -62,7 +62,7 @@ export class AccountMoveLineListController extends ListController {
                 partnerName = record.data.partner_id.display_name;
             }
             if (record.data.move_id && record.data.move_id.display_name) {
-                moveId = `<br/><span id="moveLine" style="font-size: 12px; font-style: italic;font-weight: normal;color: #01666b;cursor: pointer;" data-moveId="${record.data.move_id[0]}">${record.data.move_id.display_name}</span>`;
+                moveId = `<br/><span id="moveLine" style="font-size: 12px; font-style: italic;font-weight: normal;color: #01666b;cursor: pointer;" data-moveId="${record.data.move_id.id}">${record.data.move_id.display_name}</span>`;
             }
 
 
@@ -74,7 +74,6 @@ export class AccountMoveLineListController extends ListController {
 
             const newRow = document.createElement('tr');
             newRow.setAttribute('data-resId', record.resId); // Set a unique identifier for the row
-            console.log(record, "record")
             if (debitColumn !== '') {
                 newRow.innerHTML = `<td style="font-weight: bold; display: table-cell; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: top;">${record.data.account_id.display_name}
                                     ${moveId}<span style="font-size: 12px;font-style: italic;font-weight: normal;"> : ${record.data.name}</span></td>
@@ -98,30 +97,30 @@ export class AccountMoveLineListController extends ListController {
                                     </td>`;
             }
             newRow.addEventListener('click', async () => {
-                const allRows = this.__owl__.bdom.parentEl.ownerDocument.querySelectorAll('tr[data-resId]');
+                const allRows = document.querySelectorAll('tr[data-resId]');
                 allRows.forEach(row => {
                     row.classList.remove('selected-row');
                 });
                  newRow.classList.add('selected-row');
                  if (record.resId){
-                    const manualOpsTab = this.__owl__.bdom.parentEl.ownerDocument.querySelector('[name="manual_operations_tab"]');
+                    const manualOpsTab = document.querySelector('[name="manual_operations_tab"]');
                     if (manualOpsTab) {
                         manualOpsTab.click();
-                        const accountField = this.__owl__.bdom.parentEl.ownerDocument.querySelector('[name="account_id"]');
+                        const accountField = document.querySelector('[name="account_id"]');
                         accountField.value = record.data.account_id.display_name;
                     }
                  }
             });
             // Append the new row to the mainKanbanDiv
             mainKanbanDiv.appendChild(newRow);
-            const deleteButtons = this.__owl__.bdom.parentEl.ownerDocument.querySelectorAll('.fa-trash-o');
+            const deleteButtons = document.querySelectorAll('.fa-trash-o');
             deleteButtons.forEach(button => {
                 button.addEventListener('click', async (event) => {
                     const resId = event.target.getAttribute('data-resId');
                     await this.removeRecord(resId);
                 });
             });
-            const moveLine = this.__owl__.bdom.parentEl.ownerDocument.querySelectorAll('#moveLine');
+            const moveLine = document.querySelectorAll('#moveLine');
             moveLine.forEach(line => {
                 line.addEventListener('click',async (event) => {
                     const moveId = event.target.getAttribute('data-moveId');
@@ -132,8 +131,8 @@ export class AccountMoveLineListController extends ListController {
         this.updateResIdList();
     }
     async removeRecord(resId){
-        const mainKanbanDiv = this.__owl__.bdom.parentEl.ownerDocument.querySelector('#base_accounting_reconcile');
-        const rowToRemove = this.__owl__.bdom.parentEl.ownerDocument.querySelector(`tr[data-resId="${resId}"]`);
+        const mainKanbanDiv = document.querySelector('#base_accounting_reconcile');
+        const rowToRemove = document.querySelector(`tr[data-resId="${resId}"]`);
         if (rowToRemove) {
             mainKanbanDiv.removeChild(rowToRemove);
             this.updateResIdList();
@@ -155,7 +154,7 @@ export class AccountMoveLineListController extends ListController {
     }
     updateResIdList() {
         // Get all resId values from the current rows and update the resIdList array
-        const rows = this.__owl__.bdom.parentEl.ownerDocument.querySelectorAll('tr[data-resId]');
+        const rows = document.querySelectorAll('tr[data-resId]');
         this.resIdList = Array.from(rows).map(row => parseInt(row.getAttribute('data-resId'), 10));
     }
 

@@ -34,12 +34,3 @@ class ProductTemplate(models.Model):
                                                    string='Deferred Revenue Type',
                                                    company_dependent=True,
                                                    ondelete="restrict")
-
-    def _get_asset_accounts(self):
-        """Override method to customize asset accounts based on asset and deferred revenue categories."""
-        res = super(ProductTemplate, self)._get_asset_accounts()
-        if self.asset_category_id:
-            res['stock_input'] = self.property_account_expense_id
-        if self.deferred_revenue_category_id:
-            res['stock_output'] = self.property_account_income_id
-        return res

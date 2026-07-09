@@ -55,11 +55,14 @@ class AccountAssetAsset(models.Model):
     date = fields.Date(string='Date', required=True,
                        default=fields.Date.context_today)
     state = fields.Selection(
-        [('draft', 'Draft'), ('open', 'Running'), ('close', 'Close'),('cancelled','Cancelled')],
+        [('draft', 'Draft'), ('open', 'Running'), ('paused', 'Paused'),
+         ('close', 'Close'), ('cancelled', 'Cancelled')],
         'Status', required=True, copy=False, default='draft',
         help="When an asset is created, the status is 'Draft'.\n"
              "If the asset is confirmed, the status goes in 'Running' and the depreciation lines can be posted in the accounting.\n"
+             "A running asset can be 'Paused' to temporarily stop its depreciation, then resumed.\n"
              "You can manually close an asset when the depreciation is over. If the last line of depreciation is posted, the asset automatically goes in that status.")
+    pause_date = fields.Date(string='Paused On', copy=False, readonly=True)
     active = fields.Boolean(default=True)
     partner_id = fields.Many2one('res.partner', string='Partner')
     method = fields.Selection(
@@ -117,6 +120,11 @@ class AccountAssetAsset(models.Model):
         required=True,
         domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=','liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=','liability_credit_card'),('active', '=', True)]",
         help="Account used in the periodical entries, to record a part of the asset as expense.")
+    account_disposal_id = fields.Many2one(
+        'account.account', string='Gain/Loss Account',
+        domain="[('active', '=', True)]",
+        help="Account used to book the gain or loss when the asset is sold or "
+             "scrapped.")
     journal_id = fields.Many2one('account.journal', string='Journal',
                                  required=True)
     open_asset = fields.Boolean(string='Auto-confirm Assets',
@@ -135,7 +143,7 @@ class AccountAssetAsset(models.Model):
                 if depreciation_line.move_id:
                     raise UserError(_(
                         'You cannot delete a document that contains posted entries.'))
-        return super(AccountAssetAsset, self).unlink()
+        return super().unlink()
 
     def _get_last_depreciation_date(self):
         """
@@ -161,6 +169,12 @@ class AccountAssetAsset(models.Model):
         if self.depreciation_line_ids:
             self.depreciation_line_ids = [(fields.Command.clear())]
 
+
+    @api.model
+    def _cron_generate_entries(self):
+        """Scheduled action: post the depreciation entries of running assets
+        that are due as of today."""
+        self.compute_generated_entries(fields.Date.today())
 
     @api.model
     def compute_generated_entries(self, date, asset_type=None):
@@ -313,7 +327,7 @@ class AccountAssetAsset(models.Model):
             day = depreciation_date.day
             month = depreciation_date.month
             year = depreciation_date.year
-            total_days = (year % 4) and 365 or 366
+            total_days = 366 if calendar.isleap(year) else 365
 
             undone_dotation_number = self._compute_board_undone_dotation_nb(
                 depreciation_date, total_days)
@@ -360,34 +374,12 @@ class AccountAssetAsset(models.Model):
         return True
 
     def validate(self):
-        """Update the state to 'open' and track specific fields based on the asset's method."""
+        """Update the state to 'open' and post the depreciation moves due."""
         self.write({'state': 'open'})
-        field = [
-            'method',
-            'method_number',
-            'method_period',
-            'method_end',
-            'method_progress_factor',
-            'method_time',
-            'salvage_value',
-            'invoice_id',
-        ]
-        ref_tracked_fields = self.env['account.asset.asset'].fields_get(field)
         if not self.depreciation_line_ids:
             self.compute_depreciation_board()
         for asset in self:
-            tracked_fields = ref_tracked_fields.copy()
-            if asset.method == 'linear':
-                del (tracked_fields['method_progress_factor'])
-            if asset.method_time != 'end':
-                del (tracked_fields['method_end'])
-            else:
-                del (tracked_fields['method_number'])
-            dummy, tracking_value_ids = asset._mail_track(tracked_fields,
-                                                          dict.fromkeys(
-                                                              field))
-            asset.message_post(subject=_('Asset created'),
-                               tracking_value_ids=tracking_value_ids)
+            asset.message_post(body=_('Asset created'))
 
             today_date = fields.Date.context_today(self)
 
@@ -409,73 +401,155 @@ class AccountAssetAsset(models.Model):
         return True
 
 
-    def _get_disposal_moves(self):
-        """Get the disposal moves for the asset."""
-        move_ids = []
+    def pause(self):
+        """Temporarily stop the depreciation of a running asset by freezing
+        the auto-posting of its remaining (draft) depreciation entries."""
         for asset in self:
-            unposted_depreciation_line_ids = asset.depreciation_line_ids.filtered(
-                lambda x: not x.move_check)
-            if unposted_depreciation_line_ids:
-                old_values = {
-                    'method_end': asset.method_end,
-                    'method_number': asset.method_number,
-                }
+            if asset.state == 'open':
+                draft_moves = asset.depreciation_line_ids.mapped(
+                    'move_id').filtered(lambda m: m.state == 'draft')
+                draft_moves.write({'auto_post': 'no'})
+                asset.write({'state': 'paused',
+                             'pause_date': fields.Date.context_today(asset)})
+                asset.message_post(body=_("Asset depreciation paused."))
+        return True
 
-                # Remove all unposted depr. lines
-                commands = [(2, line_id.id, False) for line_id in
-                            unposted_depreciation_line_ids]
+    def resume(self):
+        """Resume a paused asset: shift the remaining (draft) depreciation
+        entries forward by the paused duration and re-arm their auto-posting."""
+        today = fields.Date.context_today(self)
+        for asset in self:
+            if asset.state != 'paused':
+                continue
+            gap = (today - asset.pause_date).days if asset.pause_date else 0
+            for line in asset.depreciation_line_ids.filtered(
+                    lambda l: l.move_id and l.move_id.state == 'draft'):
+                if gap > 0 and line.depreciation_date:
+                    new_date = line.depreciation_date + relativedelta(days=gap)
+                    line.depreciation_date = new_date
+                    line.move_id.write({'date': new_date})
+                line.move_id.write({'auto_post': 'at_date'})
+            asset.write({'state': 'open', 'pause_date': False})
+            asset.message_post(body=_("Asset depreciation resumed."))
+        return True
 
-                # Create a new depr. line with the residual amount and post it
-                sequence = len(asset.depreciation_line_ids) - len(
-                    unposted_depreciation_line_ids) + 1
-                today = datetime.today().strftime(DF)
-                vals = {
-                    'amount': asset.value_residual,
-                    'asset_id': asset.id,
-                    'sequence': sequence,
-                    'name': (asset.code or '') + '/' + str(sequence),
-                    'remaining_value': 0,
-                    'depreciated_value': asset.value - asset.salvage_value,
-                    # the asset is completely depreciated
-                    'depreciation_date': today,
-                }
-                commands.append((0, False, vals))
-                asset.write(
-                    {'depreciation_line_ids': commands, 'method_end': today,
-                     'method_number': sequence})
-                tracked_fields = self.env['account.asset.asset'].fields_get(
-                    ['method_number', 'method_end'])
-                changes, tracking_value_ids = asset._mail_track(
-                    tracked_fields, old_values)
-
-                if changes:
-                    asset.message_post(subject=_(
-                        'Asset sold or disposed. Accounting entry awaiting for validation.'),
-                        tracking_value_ids=tracking_value_ids)
-                move_ids += asset.depreciation_line_ids[-1].create_move(
-                    post_move=False)
-
-        return move_ids
+    def _get_accumulated_depreciation(self):
+        """Sum of the posted depreciation for this asset."""
+        self.ensure_one()
+        return sum(self.depreciation_line_ids.filtered(
+            lambda l: l.move_check).mapped('amount'))
 
     def set_to_close(self):
-        """Set the asset to close state by creating disposal moves and returning an action window to view the move(s)."""
-        move_ids = self._get_disposal_moves()
-        if move_ids:
-            name = _('Disposal Move')
-            view_mode = 'form'
-            if len(move_ids) > 1:
-                name = _('Disposal Moves')
-                view_mode = 'list,form'
-            return {
-                'name': name,
-                'view_mode': view_mode,
-                'res_model': 'account.move',
-                'type': 'ir.actions.act_window',
-                'target': 'current',
-                'res_id': move_ids[0],
-            }
-        # Fallback, as if we just clicked on the smartbutton
-        return self.open_entries()
+        """Open the sell/dispose wizard for this asset."""
+        self.ensure_one()
+        return {
+            'name': _('Sell or Dispose'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'asset.dispose',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_asset_id': self.id, 'active_id': self.id,
+                        'active_model': 'account.asset.asset'},
+        }
+
+    def action_revaluate(self):
+        """Open the revaluation wizard for this asset."""
+        self.ensure_one()
+        return {
+            'name': _('Modify Value'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'asset.revaluation',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_asset_id': self.id, 'active_id': self.id,
+                        'active_model': 'account.asset.asset'},
+        }
+
+    def _dispose(self, disposal_date, sale_value=0.0, sale_account=None):
+        """Post the disposal journal entry (remove gross value, reverse the
+        accumulated depreciation, book proceeds and the gain/loss) and close
+        the asset."""
+        self.ensure_one()
+        if not self.account_disposal_id:
+            raise UserError(_(
+                "Set a Gain/Loss account on the asset (or its category) "
+                "before disposing of it."))
+        # Drop the remaining unposted depreciation lines.
+        unposted = self.depreciation_line_ids.filtered(lambda l: not l.move_check)
+        if unposted:
+            self.write({'depreciation_line_ids': [(2, l.id, False)
+                                                  for l in unposted]})
+        gross_value = self.value
+        accumulated = self._get_accumulated_depreciation()
+        partner_id = self.partner_id.id
+        lines = []
+        if accumulated:
+            lines.append((0, 0, {
+                'name': _('Accumulated depreciation'),
+                'account_id': self.account_depreciation_id.id,
+                'debit': accumulated, 'credit': 0.0, 'partner_id': partner_id}))
+        lines.append((0, 0, {
+            'name': _('Asset disposal'),
+            'account_id': self.account_asset_id.id,
+            'debit': 0.0, 'credit': gross_value, 'partner_id': partner_id}))
+        if sale_value and sale_account:
+            lines.append((0, 0, {
+                'name': _('Disposal proceeds'),
+                'account_id': sale_account.id,
+                'debit': sale_value, 'credit': 0.0, 'partner_id': partner_id}))
+        # proceeds - net book value: >0 gain, <0 loss
+        diff = sale_value + accumulated - gross_value
+        if self.currency_id.compare_amounts(diff, 0.0) > 0:
+            lines.append((0, 0, {
+                'name': _('Gain on disposal'),
+                'account_id': self.account_disposal_id.id,
+                'debit': 0.0, 'credit': diff, 'partner_id': partner_id}))
+        elif self.currency_id.compare_amounts(diff, 0.0) < 0:
+            lines.append((0, 0, {
+                'name': _('Loss on disposal'),
+                'account_id': self.account_disposal_id.id,
+                'debit': -diff, 'credit': 0.0, 'partner_id': partner_id}))
+        move = self.env['account.move'].create({
+            'ref': _('Disposal of %s') % (self.code or self.name),
+            'date': disposal_date,
+            'journal_id': self.journal_id.id,
+            'line_ids': lines,
+        })
+        move.action_post()
+        self.write({'state': 'close'})
+        self.message_post(
+            body=_("Asset disposed. Disposal entry %s posted.") % move.name)
+        return move
+
+    def _revaluate(self, amount, date, account):
+        """Increase the asset's gross value, post the revaluation entry
+        (Dr asset account / Cr the chosen account) and re-spread the
+        remaining depreciation."""
+        self.ensure_one()
+        if self.state not in ('open', 'paused'):
+            raise UserError(_("Only a running asset can be revaluated."))
+        move = self.env['account.move'].create({
+            'ref': _('Revaluation of %s') % (self.code or self.name),
+            'date': date,
+            'journal_id': self.journal_id.id,
+            'line_ids': [
+                (0, 0, {'name': _('Asset revaluation'),
+                        'account_id': self.account_asset_id.id,
+                        'debit': amount, 'credit': 0.0,
+                        'partner_id': self.partner_id.id}),
+                (0, 0, {'name': _('Asset revaluation'),
+                        'account_id': account.id,
+                        'debit': 0.0, 'credit': amount,
+                        'partner_id': self.partner_id.id}),
+            ],
+        })
+        move.action_post()
+        self.value += amount
+        self.compute_depreciation_board()
+        self.message_post(body=_(
+            "Asset value increased by %s. Revaluation entry %s posted.") % (
+            amount, move.name))
+        return move
 
     def set_to_draft(self):
         """Set the asset's state to 'draft'."""
@@ -501,6 +575,11 @@ class AccountAssetAsset(models.Model):
     def _entry_count(self):
         """Compute the number of entries related to the asset based on the depreciation lines."""
         for asset in self:
+            # A not-yet-saved asset has a NewId (not an int), which is not a
+            # valid domain value; it trivially has no posted entries yet.
+            if not isinstance(asset.id, int):
+                asset.entry_count = 0
+                continue
             res = self.env['account.asset.depreciation.line'].search_count(
                 [('asset_id', '=', asset.id), ('move_id', '!=', False)])
             asset.entry_count = res or 0
@@ -538,6 +617,7 @@ class AccountAssetAsset(models.Model):
                     'account_asset_id':category.account_asset_id.id,
                     'account_depreciation_id':category.account_depreciation_id.id,
                     'account_depreciation_expense_id':category.account_depreciation_expense_id.id,
+                    'account_disposal_id': category.account_disposal_id.id,
                     'account_analytic_id':category.account_analytic_id.id
                 }
             }
@@ -549,11 +629,13 @@ class AccountAssetAsset(models.Model):
             self.prorata = False
 
     def copy_data(self, default=None):
-        """Copies the data of the current record with the option to override default values."""
-        if default is None:
-            default = {}
-        default['name'] = self.name + _(' (copy)')
-        return super(AccountAssetAsset, self).copy_data(default)
+        """Copies the data of the current record with the option to override
+        default values (batch-safe: Odoo 19 ``copy_data`` returns a list)."""
+        default = dict(default or {})
+        vals_list = super().copy_data(default=default)
+        for asset, vals in zip(self, vals_list):
+            vals['name'] = asset.name + _(' (copy)')
+        return vals_list
 
     def _compute_entries(self, date, group_entries=False):
         """Compute depreciation entries for the given date."""
@@ -609,15 +691,18 @@ class AccountAssetAsset(models.Model):
         }
 
     def action_cancel_assets(self):
+        """Cancel the asset: reverse posted depreciation entries (never delete
+        posted accounting moves) and drop the remaining draft entries/lines."""
+        today = fields.Date.context_today(self)
         for asset in self:
-            for move in asset.depreciation_line_ids.mapped('move_id'):
-                if move.state == 'posted':
-                    # Force to draft
-                    move.button_draft()  # or move.state = 'draft' if button_draft is restricted
-                move.unlink()
-
-            # Delete all depreciation lines
+            moves = asset.depreciation_line_ids.mapped('move_id')
+            posted_moves = moves.filtered(lambda m: m.state == 'posted')
+            draft_moves = moves.filtered(lambda m: m.state == 'draft')
+            if posted_moves:
+                posted_moves._reverse_moves([
+                    {'ref': _('Reversal of asset %s', asset.name),
+                     'date': today}
+                    for _move in posted_moves], cancel=True)
+            draft_moves.unlink()
             asset.depreciation_line_ids.unlink()
-
-            # Reset state
             asset.state = 'cancelled'

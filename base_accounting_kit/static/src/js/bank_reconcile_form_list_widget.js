@@ -2,10 +2,11 @@
 import { registry } from '@web/core/registry';
 import { standardWidgetProps } from "@web/views/widgets/standard_widget_props";
 import { View } from "@web/views/view";
-const { Component, useSubEnv } = owl;
+import { Component, useSubEnv } from "@odoo/owl";
 
 class FormListView extends Component {
     setup(){
+        super.setup();
         useSubEnv({
             config:{},
         });

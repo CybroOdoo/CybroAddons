@@ -58,7 +58,7 @@ class AccountInvoiceLine(models.Model):
                         'The number of depreciations or the period length of '
                         'your asset category cannot be null.'))
                 months = cat.method_number * cat.method_period
-                if record.move_id in ['out_invoice', 'out_refund']:
+                if record.move_id.move_type in ('out_invoice', 'out_refund'):
                     record.asset_mrr = record.price_subtotal_signed / months
                 if record.move_id.invoice_date:
                     start_date = datetime.strptime(
@@ -68,14 +68,29 @@ class AccountInvoiceLine(models.Model):
                     record.asset_start_date = start_date.strftime(DF)
                     record.asset_end_date = end_date.strftime(DF)
 
+    def _get_asset_category(self):
+        """Return the asset/deferred-revenue category for this line: the one
+        set on the line, else the product's category based on the move type."""
+        self.ensure_one()
+        if self.asset_category_id:
+            return self.asset_category_id
+        tmpl = self.product_id.product_tmpl_id
+        if self.move_id.move_type in ('in_invoice', 'in_refund'):
+            return tmpl.asset_category_id
+        if self.move_id.move_type in ('out_invoice', 'out_refund'):
+            return tmpl.deferred_revenue_category_id
+        return self.env['account.asset.category']
+
     def asset_create(self):
-        """Create function for the asset and its associated properties"""
+        """Create the asset/deferred-revenue record for lines that resolve to
+        an asset category (from the line or, as a fallback, the product)."""
         for record in self:
-            if record.asset_category_id:
+            category = record._get_asset_category()
+            if category:
                 vals = {
                     'name': record.name,
                     'code': record.move_id.name or False,
-                    'category_id': record.asset_category_id.id,
+                    'category_id': category.id,
                     'value': record.price_subtotal,
                     'partner_id': record.partner_id.id,
                     'company_id': record.move_id.company_id.id,
@@ -85,64 +100,36 @@ class AccountInvoiceLine(models.Model):
                 }
                 changed_vals = record.env[
                     'account.asset.asset'].onchange_category_id_values(
-                    vals['category_id'])
+                    category.id)
                 vals.update(changed_vals['value'])
                 asset = record.env['account.asset.asset'].create(vals)
-                if record.asset_category_id.open_asset:
+                if category.open_asset:
                     asset.validate()
         return True
 
-    @api.depends('asset_category_id')
+    @api.onchange('asset_category_id')
     def onchange_asset_category_id(self):
-        """On change function based on the category and its updates the
-        account status"""
-        if self.move_id.move_type == 'out_invoice' and self.asset_category_id:
-            self.account_id = self.asset_category_id.account_asset_id.id
-        elif self.move_id.move_type == 'in_invoice' and self.asset_category_id:
-            self.account_id = self.asset_category_id.account_asset_id.id
+        """Set the account from the selected asset category."""
+        if self.asset_category_id and self.move_id.move_type in (
+                'out_invoice', 'in_invoice'):
+            self.account_id = self.asset_category_id.account_asset_id
 
     @api.onchange('product_id')
-    def _onchange_uom_id(self):
-        """Onchange function for product that's call the UOM compute function
-         and the asset category function"""
-        result = super(AccountInvoiceLine, self)._compute_product_uom_id()
-        self.onchange_asset_category_id()
-        return result
-
-    @api.depends('product_id')
-    def _onchange_product_id(self):
-        """Onchange product values and it's associated with the move types"""
-        vals = super(AccountInvoiceLine, self)._compute_price_unit()
+    def _onchange_product_id_asset(self):
+        """Populate the asset/deferred-revenue category from the product."""
         if self.product_id:
+            tmpl = self.product_id.product_tmpl_id
             if self.move_id.move_type == 'out_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id
+                self.asset_category_id = tmpl.deferred_revenue_category_id
             elif self.move_id.move_type == 'in_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id
-        return vals
-
-    def _set_additional_fields(self, invoice):
-        """The function adds additional fields that based on the invoice
-        move types"""
-        if not self.asset_category_id:
-            if invoice.type == 'out_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
-            elif invoice.type == 'in_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
-            self.onchange_asset_category_id()
-        super(AccountInvoiceLine, self)._set_additional_fields(invoice)
-
-    def get_invoice_line_account(self, type, product, fpos, company):
-        """"It returns the invoice line and callback"""
-        return product.asset_category_id.account_asset_id or super(
-            AccountInvoiceLine, self).get_invoice_line_account(type, product,
-                                                               fpos, company)
+                self.asset_category_id = tmpl.asset_category_id
 
     @api.model
     def _query_get(self, domain=None):
         """Used to add domain constraints to the query"""
-        self.check_access_rights('read')
+        self.check_access('read')
 
-        context = dict(self._context or {})
+        context = dict(self.env.context or {})
         domain = domain or []
         if not isinstance(domain, (list, tuple)):
             domain = ast.literal_eval(domain)
@@ -186,12 +173,6 @@ class AccountInvoiceLine(models.Model):
         if context.get('account_ids'):
             domain += [('account_id', 'in', context['account_ids'].ids)]
 
-        if context.get('analytic_tag_ids'):
-            domain += [('analytic_tag_ids', 'in', context['analytic_tag_ids'].ids)]
-
-        if context.get('analytic_account_ids'):
-            domain += [('analytic_account_id', 'in', context['analytic_account_ids'].ids)]
-
         if context.get('partner_ids'):
             domain += [('partner_id', 'in', context['partner_ids'].ids)]
 
@@ -205,7 +186,13 @@ class AccountInvoiceLine(models.Model):
             domain.append(('display_type', 'not in', ('line_section', 'line_note')))
             domain.append(('parent_state', '!=', 'cancel'))
             query = self._search(domain, bypass_access=True)
-            tables, from_params = query.from_clause
-            where_clause, where_params = query.where_clause
-            where_clause_params = from_params + where_params
+            # In Odoo 19 ``Query.from_clause``/``where_clause`` return
+            # ``odoo.tools.SQL`` objects (code + params) instead of the old
+            # ``(str, params)`` tuples. Expose the composed SQL string and its
+            # parameters so the legacy raw-SQL report parsers keep working.
+            from_sql = query.from_clause
+            where_sql = query.where_clause
+            tables = from_sql.code
+            where_clause = where_sql.code
+            where_clause_params = list(from_sql.params) + list(where_sql.params)
         return tables, where_clause, where_clause_params

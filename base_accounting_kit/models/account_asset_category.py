@@ -36,7 +36,7 @@ class AccountAssetCategory(models.Model):
                                   default=lambda self: self.env[
                                       'res.currency'].search(
                                       [('name', '=', 'USD')]).id,
-                                  readonly=True, hide=True)
+                                  readonly=True)
     account_analytic_id = fields.Many2one('account.analytic.account',
                                           string='Analytic Account',
                                           domain="[('company_id', '=', company_id)]")
@@ -54,6 +54,11 @@ class AccountAssetCategory(models.Model):
         required=True,
         domain="[('account_type', '!=', 'asset_receivable'),('account_type', '!=','liability_payable'),('account_type', '!=', 'asset_cash'),('account_type', '!=','liability_credit_card'),('active', '=', True)]",
         help="Account used in the periodical entries, to record a part of the asset as expense.")
+    account_disposal_id = fields.Many2one(
+        'account.account', string='Gain/Loss Account',
+        domain="[('active', '=', True)]",
+        help="Account used to record the gain or loss when an asset of this "
+             "category is sold or scrapped.")
     journal_id = fields.Many2one('account.journal', string='Journal',
                                  required=True)
     method = fields.Selection(
@@ -110,11 +115,11 @@ class AccountAssetCategory(models.Model):
         if self.method_time != 'number':
             self.prorata = False
 
-    @api.model
-    def create(self, vals):
-        record = super().create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
         asset_id = self.env.context.get('default_asset_id')
         if asset_id:
             asset = self.env['account.asset.asset'].browse(asset_id)
-            asset.category_id = record.id
-        return record
+            asset.category_id = records[:1].id
+        return records

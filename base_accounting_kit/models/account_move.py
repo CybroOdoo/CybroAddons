@@ -33,6 +33,10 @@ class AccountMove(models.Model):
     due_amount = fields.Float(string="Due Amount",
                               related='partner_id.due_amount')
     recurring_ref = fields.Char(string='Recurring Ref')
+    recurring_invoice_id = fields.Many2one(
+        'account.recurring.invoice', string='Recurring Invoice',
+        copy=False, index='btree_not_null',
+        help="The recurring template that generated this invoice.")
     asset_depreciation_ids = fields.One2many('account.asset.depreciation.line',
                                              'move_id',
                                              string='Assets Depreciation Lines')
@@ -47,27 +51,11 @@ class AccountMove(models.Model):
         for move in self:
             for line in move.asset_depreciation_ids:
                 line.move_posted_check = False
-        return super(AccountMove, self).button_cancel()
-
-    def post(self):
-        """Supering the post method to mapped the asset depreciation records"""
-        self.mapped('asset_depreciation_ids').post_lines_and_close_asset()
-        return super(AccountMove, self).action_post()
-
-    @api.model
-    def _refund_cleanup_lines(self, lines):
-        """Supering the refund cleanup lines to check the asset category """
-        result = super(AccountMove, self)._refund_cleanup_lines(lines)
-        for i, line in enumerate(lines):
-            for name, field in line._fields.items():
-                if name == 'asset_category_id':
-                    result[i][2][name] = False
-                    break
-        return result
+        return super().button_cancel()
 
     def action_cancel(self):
         """Action perform to cancel the asset record"""
-        res = super(AccountMove, self).action_cancel()
+        res = super().action_cancel()
         self.env['account.asset.asset'].sudo().search(
             [('invoice_id', 'in', self.ids)]).write({'active': False})
         return res
@@ -85,7 +73,10 @@ class AccountMove(models.Model):
                                         rec.partner_id.name, rec.due_amount,
                                         rec.currency_id.symbol))
 
-        result = super(AccountMove, self).action_post()
+        result = super().action_post()
+        # Post the linked asset depreciation lines and close fully
+        # depreciated assets (previously handled by the dead ``post`` override).
+        self.mapped('asset_depreciation_ids').post_lines_and_close_asset()
         for inv in self:
             context = dict(self.env.context)
             # Within the context of an invoice,

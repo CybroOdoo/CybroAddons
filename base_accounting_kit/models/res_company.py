@@ -21,13 +21,24 @@
 #############################################################################
 from datetime import datetime
 import calendar
-from odoo import models, api, _
+from odoo import fields, models, api, _
 from odoo.exceptions import RedirectWarning
 
 
 class ResCompany(models.Model):
     """Model for inheriting res_company."""
     _inherit = "res.company"
+
+    fx_reval_journal_id = fields.Many2one(
+        'account.journal', string='FX Revaluation Journal',
+        domain="[('type', '=', 'general'), ('company_id', '=', id)]",
+        help="Journal used for foreign-currency revaluation entries.")
+    fx_reval_gain_account_id = fields.Many2one(
+        'account.account', string='Unrealized FX Gain Account',
+        help="Account crediting the unrealized foreign-exchange gains.")
+    fx_reval_loss_account_id = fields.Many2one(
+        'account.account', string='Unrealized FX Loss Account',
+        help="Account debiting the unrealized foreign-exchange losses.")
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -37,14 +48,15 @@ class ResCompany(models.Model):
                 month = vals.get('fiscalyear_last_month')
                 day = vals.get('fiscalyear_last_day')
                 if month and day:
-                    if vals.account_opening_date:
-                        year = vals.account_opening_date.year
+                    opening_date = vals.get('account_opening_date')
+                    if opening_date:
+                        year = fields.Date.to_date(opening_date).year
                     else:
                         year = datetime.now().year
                     max_day = calendar.monthrange(year, int(month))[1]
                     if int(day) > max_day:
                         vals['fiscalyear_last_day'] = max_day
-        return super(ResCompany, self).create(vals_list)
+        return super().create(vals_list)
 
     def write(self, vals):
         """Auto-correct fiscal year day to a valid value when month or day is updated to prevent invalid calendar dates."""
@@ -63,10 +75,12 @@ class ResCompany(models.Model):
                 elif int(day) > max_day:
                     vals['fiscalyear_last_day'] = max_day
 
-        return super(ResCompany, self).write(vals)
+        return super().write(vals)
 
     def _validate_locks(self, values):
         """Validate the hard lock date by checking for unposted entries and unreconciled bank statement lines."""
+        # Keep the standard lock-date validations provided by ``account``.
+        super()._validate_locks(values)
         if values.get('hard_lock_date'):
             draft_entries = self.env['account.move'].search([
                 ('company_id', 'in', self.ids),
