@@ -19,28 +19,63 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import Command, fields, models
 
 
 class IrUiMenu(models.Model):
-    """
-    Model to restrict the menu for specific users.
-    """
+    """Restrict menu items from being displayed to specific users."""
     _inherit = 'ir.ui.menu'
 
     restrict_user_ids = fields.Many2many(
-        'res.users', string="Restricted Users",
-        help='Users restricted from accessing this menu.')
+        comodel_name='res.users',
+        string="Restricted Users",
+        help="Users restricted from accessing this menu.")
+    restrict_group_ids = fields.Many2many(
+        comodel_name='res.groups',
+        relation='hide_menu_restrict_group_rel',
+        column1='menu_id',
+        column2='group_id',
+        string="Restricted Groups",
+        help="Users belonging to these groups are restricted from "
+             "accessing this menu.")
 
     def _filter_visible_menus(self):
-        """
-        Override to filter out menus restricted for current user.
-        Applies only to the current user context.
+        """Hide menus restricted for the current user or their groups.
+
+        System administrators are never restricted and always see the
+        full menu hierarchy.
         """
         menus = super()._filter_visible_menus()
-
-        # Allow system admin to see everything
-        if self.env.user.role == 'group_system':
+        user = self.env.user
+        if user.has_group('base.group_system'):
             return menus
+        user_group_ids = set(user._get_group_ids())
         return menus.filtered(
-            lambda menu: self.env.user.id not in menu.restrict_user_ids.ids)
+            lambda menu: user not in menu.restrict_user_ids
+            and not user_group_ids.intersection(menu.restrict_group_ids.ids))
+
+    def action_restrict_submenus(self):
+        """Copy this menu's restrictions onto all of its descendant menus."""
+        self.ensure_one()
+        descendants = self.search(
+            [('id', 'child_of', self.id), ('id', '!=', self.id)])
+        if descendants:
+            descendants.write({
+                'restrict_user_ids': [
+                    Command.link(user_id)
+                    for user_id in self.restrict_user_ids.ids],
+                'restrict_group_ids': [
+                    Command.link(group_id)
+                    for group_id in self.restrict_group_ids.ids],
+            })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'type': 'success',
+                'sticky': False,
+                'message': self.env._(
+                    "Restrictions applied to %s sub-menu(s).",
+                    len(descendants)),
+            },
+        }

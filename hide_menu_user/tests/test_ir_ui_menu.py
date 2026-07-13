@@ -19,66 +19,78 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo.tests.common import TransactionCase
 from odoo import Command
+from odoo.tests.common import TransactionCase
+
 
 class TestIrUiMenu(TransactionCase):
+    """Test menu filtering for restricted users on ir.ui.menu."""
 
     @classmethod
     def setUpClass(cls):
-        super(TestIrUiMenu, cls).setUpClass()
+        super().setUpClass()
         cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
-        
+        cls.group_user = cls.env.ref('base.group_user')
+
         cls.action = cls.env['ir.actions.act_window'].create({
             'name': 'Test Action',
             'res_model': 'res.users',
-            'view_mode': 'tree',
+            'view_mode': 'list',
         })
         cls.menu_1 = cls.env['ir.ui.menu'].create({
             'name': 'Test Menu 1',
-            'action': f'ir.actions.act_window,{cls.action.id}'
+            'action': f'ir.actions.act_window,{cls.action.id}',
         })
         cls.menu_2 = cls.env['ir.ui.menu'].create({
             'name': 'Test Menu 2',
-            'action': f'ir.actions.act_window,{cls.action.id}'
+            'action': f'ir.actions.act_window,{cls.action.id}',
         })
-        
-        cls.user_1 = cls.env.ref('base.public_user')
-        cls.user_1.write({
-            'active': True,
-            'group_ids': [Command.set([cls.env.ref('base.group_user').id])],
-        })
-        
-        # Restrict user_1 from seeing menu_1
-        cls.menu_1.restrict_user_ids = [Command.link(cls.user_1.id)]
 
-    def test_01_filter_visible_menus(self):
-        """Test that _filter_visible_menus hides restricted menus."""
-        # Clear the cache for the current user to ensure _filter_visible_menus is run
+        cls.user = cls.env['res.users'].create({
+            'name': 'Restricted User',
+            'login': 'restricted_menu_user',
+            'group_ids': [Command.set([cls.group_user.id])],
+        })
+        # Restrict the user from seeing menu_1.
+        cls.menu_1.restrict_user_ids = [Command.link(cls.user.id)]
+
+    def test_01_filter_visible_menus_hides_restricted(self):
+        """_filter_visible_menus drops menus restricted for the user."""
         self.env.registry.clear_cache()
-        
-        # User 1 should not see menu 1
-        menus = self.env['ir.ui.menu'].with_user(self.user_1).search([('id', 'in', [self.menu_1.id, self.menu_2.id])])
-        
-        # Call _filter_visible_menus on the recordset
-        visible_menus = menus.with_user(self.user_1)._filter_visible_menus()
-        
+        menus = (self.menu_1 + self.menu_2).with_user(self.user)
+        visible_menus = menus._filter_visible_menus()
         self.assertNotIn(self.menu_1, visible_menus)
-        
-        # Note: If menu_2 is not linked to an action, it might be filtered out naturally. 
-        # But we only need to test if menu_1 is excluded.
 
-    def test_02_system_admin_bypass(self):
-        """Test that system admin bypasses the restriction."""
+    def test_02_system_admin_bypasses_restriction(self):
+        """System administrators are never restricted."""
         admin_user = self.env.ref('base.user_admin')
-        # Even if restricted
         self.menu_1.restrict_user_ids = [Command.link(admin_user.id)]
-        
-        # Clear cache just in case
         self.env.registry.clear_cache()
-        
-        menus = self.env['ir.ui.menu'].search([('id', '=', self.menu_1.id)])
-        visible_menus = menus.with_user(admin_user)._filter_visible_menus()
-        
-        # Admin should see it, because of group_system role
+        visible_menus = self.menu_1.with_user(admin_user)._filter_visible_menus()
         self.assertIn(self.menu_1, visible_menus)
+
+    def test_03_load_menus_end_to_end(self):
+        """End-to-end web-client workflow: the restriction hides the menu in
+        ``load_menus`` and reappears (via cache invalidation) once removed."""
+        menu_model = self.env['ir.ui.menu']
+        # A visible app (root) with a child menu pointing to a readable action.
+        app = menu_model.create({'name': 'Hide Menu Test App'})
+        child = menu_model.create({
+            'name': 'Hide Menu Test Child',
+            'parent_id': app.id,
+            'action': f'ir.actions.act_window,{self.action.id}',
+        })
+
+        user_menus = menu_model.with_user(self.user)
+
+        # Baseline: the child menu is part of the user's loaded menu tree.
+        self.env.registry.clear_cache()
+        self.assertIn(child.id, user_menus.load_menus(False))
+
+        # Restricting writes to ir.ui.menu, which clears the menu cache.
+        child.restrict_user_ids = [Command.link(self.user.id)]
+        self.assertNotIn(child.id, user_menus.load_menus(False))
+
+        # Removing the restriction makes the menu reappear.
+        child.restrict_user_ids = [Command.unlink(self.user.id)]
+        self.assertIn(child.id, user_menus.load_menus(False))

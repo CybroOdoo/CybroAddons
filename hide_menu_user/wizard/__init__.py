@@ -19,6 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from . import test_res_users
-from . import test_ir_ui_menu
-from . import test_hide_menu_features
+from . import hide_menu_copy_wizard

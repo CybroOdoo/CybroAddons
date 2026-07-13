@@ -19,54 +19,71 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo.tests.common import TransactionCase
 from odoo import Command
+from odoo.tests.common import TransactionCase
+
 
 class TestResUsers(TransactionCase):
+    """Test the per-user hidden-menu synchronisation on res.users."""
 
     @classmethod
     def setUpClass(cls):
-        super(TestResUsers, cls).setUpClass()
+        super().setUpClass()
         cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
-        
-        cls.menu_1 = cls.env['ir.ui.menu'].create({
-            'name': 'Test Menu 1',
-        })
-        cls.menu_2 = cls.env['ir.ui.menu'].create({
-            'name': 'Test Menu 2',
-        })
-        
-        cls.user = cls.env.ref('base.public_user')
-        cls.user.write({
-            'active': True,
-            'group_ids': [Command.set([cls.env.ref('base.group_user').id])],
+        cls.group_user = cls.env.ref('base.group_user')
+        cls.group_portal = cls.env.ref('base.group_portal')
+
+        cls.menu_1 = cls.env['ir.ui.menu'].create({'name': 'Test Menu 1'})
+        cls.menu_2 = cls.env['ir.ui.menu'].create({'name': 'Test Menu 2'})
+
+        cls.user = cls.env['res.users'].create({
+            'name': 'Hide Menu Test User',
+            'login': 'hide_menu_test_user',
+            'group_ids': [Command.set([cls.group_user.id])],
         })
 
-    def test_01_hide_menu_ids_write(self):
-        """Test that writing to hide_menu_ids updates restrict_user_ids on the menu."""
-        # Add menu_1 to hide_menu_ids
+    def test_01_write_syncs_restrict_user_ids(self):
+        """Writing hide_menu_ids mirrors onto the menu restrict_user_ids."""
         self.user.write({'hide_menu_ids': [Command.set([self.menu_1.id])]})
         self.assertIn(self.user.id, self.menu_1.restrict_user_ids.ids)
         self.assertNotIn(self.user.id, self.menu_2.restrict_user_ids.ids)
-        
-        # Change to menu_2
+
+        # Switching the hidden menu unlinks the old and links the new one.
         self.user.write({'hide_menu_ids': [Command.set([self.menu_2.id])]})
         self.assertNotIn(self.user.id, self.menu_1.restrict_user_ids.ids)
         self.assertIn(self.user.id, self.menu_2.restrict_user_ids.ids)
 
-    def test_02_compute_is_show_specific_menu(self):
-        """Test compute logic for is_show_specific_menu."""
-        # User has base.group_user
+    def test_02_create_syncs_restrict_user_ids(self):
+        """A user created with hide_menu_ids populates restrict_user_ids."""
+        user = self.env['res.users'].create({
+            'name': 'Created With Hidden Menu',
+            'login': 'created_with_hidden_menu',
+            'group_ids': [Command.set([self.group_user.id])],
+            'hide_menu_ids': [Command.set([self.menu_1.id])],
+        })
+        self.assertIn(user.id, self.menu_1.restrict_user_ids.ids)
+
+    def test_03_compute_is_show_specific_menu(self):
+        """is_show_specific_menu is a pure reflection of internal membership."""
+        # Internal user -> page shown (flag False).
         self.assertFalse(self.user.is_show_specific_menu)
-        
-        # Assign a menu
+        # Non-internal user -> page hidden (flag True).
+        portal_user = self.env['res.users'].create({
+            'name': 'Portal User',
+            'login': 'hide_menu_portal_user',
+            'group_ids': [Command.set([self.group_portal.id])],
+        })
+        self.assertTrue(portal_user.is_show_specific_menu)
+
+    def test_04_downgrade_clears_hidden_menus(self):
+        """Losing internal access clears hidden menus and restrictions."""
         self.user.write({'hide_menu_ids': [Command.set([self.menu_1.id])]})
         self.assertIn(self.user.id, self.menu_1.restrict_user_ids.ids)
-        
-        # Remove base.group_user
-        self.user.write({'group_ids': [Command.unlink(self.env.ref('base.group_user').id)]})
-        self.assertTrue(self.user.is_show_specific_menu)
-        
-        # Check that hide_menu_ids is cleared and menu restrictions are removed
+
+        # Make the user non-internal.
+        self.user.write({
+            'group_ids': [Command.set([self.group_portal.id])],
+        })
         self.assertFalse(self.user.hide_menu_ids)
         self.assertNotIn(self.user.id, self.menu_1.restrict_user_ids.ids)
+        self.assertTrue(self.user.is_show_specific_menu)
