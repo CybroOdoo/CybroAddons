@@ -23,8 +23,14 @@
     'name': "AI Dynamic Dashboard Pro",
     'version': '19.0.2.0.0',
     'category': 'Productivity',
-    'summary': 'A basic responsive dashboard structure.',
-    'description': 'A basic responsive dashboard structure with a clean and responsive layout.',
+    'summary': 'AI-powered drag-and-drop dashboard builder for Odoo. '
+               'Charts, KPIs, tables, themes and smart insights in one place.',
+    'description': 'Build interactive, responsive dashboards with a drag-and-drop grid layout. '
+                   'Add cards for charts, KPI blocks, tables, to-do lists, embedded views and '
+                   'activities, then group and filter them by date or custom domains. Includes '
+                   'AI-assisted card generation and per-card business insights (Google Gemini or '
+                   'Odoo AI), customizable themes with company-logo palette extraction, and '
+                   'reusable color groups.',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
