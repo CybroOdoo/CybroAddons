@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="DashboardListTemplate" owl="1">
+        <div class="grid-stack-item o_dynamic_dashboard_grid_item"
+             t-att-gs-x="props.card.gs_x" t-att-gs-y="props.card.gs_y"
+             t-att-gs-w="props.card.gs_w || 3" t-att-gs-h="props.card.gs_h || 2"
+             t-att-id="props.card.id">
+
+            <DashboardCardButtons card="props.card" dashboards="props.dashboards"
+                                colorGroups="props.colorGroups" t-if="props.dashboard"/>
+
+            <div class="card h-100 grid-stack-item-content">
+                <div class="card-body list-view-container d-flex flex-column overflow-hidden h-100">
+                    <!-- Header -->
+                    <div class="table-header-section">
+                        <div class="header-text">
+                            <h2 class="table-main-heading" t-if="state.card.name">
+<!--                                <i class="fa fa-list"/>-->
+                                <t t-esc="state.card.name"/>
+                            </h2>
+                            <p class="table-sub-heading" t-if="state.card.description">
+                                <t t-esc="state.card.description"/>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- List View -->
+                   <div t-if="state.headers.length &gt; 0 and state.rows.length &gt; 0" class="flex-grow-1 overflow-auto d-flex flex-column" style="min-height: 0;">
+
+                        <div class="table-scroll-wrapper flex-grow-1">
+                            <table class="table table-hover dashboard-list-view">
+                                <thead>
+                                    <tr>
+                                        <th t-foreach="state.headers" t-as="header" t-key="header">
+                                            <span t-esc="header"/>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="state.rows" t-as="row" t-key="row.id"
+                                        class="list-row clickable-row"
+                                        t-on-click="() => onRowClick(row.id)">
+                                        <td t-foreach="state.headers" t-as="header" t-key="header">
+                                            <span t-esc="row[header] || '-'"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="list-pagination" t-if="state.totalRecords > state.rowsPerPage">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Showing <strong t-esc="state.start"/> - <strong t-esc="state.end"/> of <strong t-esc="state.totalRecords"/></span>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" t-on-click="previousPage" t-att-disabled="!state.hasPrev">
+                                        <i class="fa fa-chevron-left"/>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" t-on-click="nextPage" t-att-disabled="!state.hasNext">
+                                        <i class="fa fa-chevron-right"/>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <t t-else="">
+                        <div class="empty-state text-center p-5 o_dashboard_empty_state">
+                            <i class="fa fa-list fa-3x text-muted mb-3"/>
+                            <h5>No Records Found</h5>
+                            <p class="text-muted">No data matching the current filters</p>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

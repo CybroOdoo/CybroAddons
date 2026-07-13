@@ -1,67 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!--Kanban view of the dashboard menu-->
-    <record id="dashboard_menu_view_kanban" model="ir.ui.view">
-        <field name="name">dashboard.menu.view.kanban</field>
-        <field name="model">dashboard.menu</field>
-        <field name="arch" type="xml">
-            <kanban>
-                <field name="name"/>
-                <templates>
-                    <t t-name="card">
-                        <div t-attf-class="oe_kanban_global_click">
-                            <center>
-                                <h3 class="my-2 ms-3">
-                                    Name:
-                                    <field name="name"/>
-                                </h3>
-                            </center>
-                            <div class="row">
-                                <hr class="mt4 mb4"/>
-                                <div class="col-6 text-center">
-                                    <strong>Parent:</strong>
-                                </div>
-                                <div class="col-6 text-center">
-                                    <field name="menu_id"/>
-                                </div>
-                            </div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
-        </field>
-    </record>
-    <!--Form view of the dashboard menu-->
-    <record id="dashboard_menu_view_form" model="ir.ui.view">
-        <field name="name">dashboard.menu.view.form</field>
-        <field name="model">dashboard.menu</field>
-        <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <group>
-                        <group>
-                            <field name="name" class="oe_inline"/>
-                            <field name="menu_id" class="oe_inline"/>
-                            <field name="sequence" class="oe_inline"/>
-                            <field name="group_ids" widget="many2many_tags"
-                                   invisible="1"/>
-                            <field name="client_action_id" invisible="1"/>
-                        </group>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
+    <data>
+        <!-- list View -->
+        <record id="dashboard_menu_view_list" model="ir.ui.view">
+            <field name="name">dashboard.menu.list</field>
+            <field name="model">dashboard.menu</field>
+            <field name="arch" type="xml">
+                <list string="Dashboard Menus">
+                    <field name="name"/>
+                    <field name="parent_id"/>
+                    <field name="menu_id"/>
+                    <field name="sequence"/>
+                </list>
+            </field>
+        </record>
 
-    <!--    Action specified for the dashboard menu-->
-    <record id="dashboard_menu_action" model="ir.actions.act_window">
-        <field name="name">Dashboards Menu</field>
-        <field name="type">ir.actions.act_window</field>
-        <field name="res_model">dashboard.menu</field>
-        <field name="view_mode">kanban,form</field>
-    </record>
-    <!--Menu Item of the model Dashboard Menu-->
-    <menuitem name="Dashboard Menu" id="dashboard_menu_view_action"
-              parent="odoo_dynamic_dashboard.menu_dashboard"
-              sequence="10" action="dashboard_menu_action"/>
+        <!-- Form View -->
+        <record id="dashboard_menu_view_form" model="ir.ui.view">
+            <field name="name">dashboard.menu.form</field>
+            <field name="model">dashboard.menu</field>
+            <field name="arch" type="xml">
+                <form string="Dashboard Menu">
+                    <sheet>
+                        <group>
+                            <group string="Menu Configuration">
+                                <field name="name"/>
+                                <field name="parent_id"/>
+                                <field name="menu_id"/>
+                                <field name="sequence"/>
+                                <field name="dashboard_name"/>
+                                <field name="description"/>
+                                <field name="theme_id" required="1" options="{'no_create': True}"/>
+                                <field name="dark_mode_enabled" widget="boolean_toggle"/>
+                            </group>
+                        </group>
+                        <notebook invisible="not id">
+                            <page string="Cards">
+                                <field name="card_ids">
+                                    <kanban>
+                                        <templates>
+                                            <t t-name="card">
+                                                <div t-attf-class="oe_kanban_global_click">
+                                                    <div class="oe_kanban_details">
+                                                        <img t-if="record.icon and record.icon.raw_value"
+                                                             t-att-src="'data:image/png;base64,' + record.icon.raw_value"
+                                                             alt="Card Icon"
+                                                             style="max-width: 50px; max-height: 50px;"/>
+                                                        <ul>
+                                                            <li>
+                                                                Name:
+                                                                <field name="name"/>
+                                                            </li>
+                                                            <li>
+                                                                Model:
+                                                                <field name="model_id"/>
+                                                            </li>
+                                                            <li>
+                                                                Type:
+                                                                <field name="type"/>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </templates>
+                                    </kanban>
+                                </field>
+                            </page>
+                            <page string="Icon Configuration">
+                                <group>
+                                    <group>
+                                        <field name="icon_class"/>
+                                        <br/>
+                                        <div class="text-muted o_form_label"
+                                             style="margin-top: -10px; margin-bottom: 10px; margin-left: 2px;">
+                                            <p>
+                                                <i class="fa fa-info-circle me-1"/>
+                                                <span>Copy the full class (e.g., 'fa-solid fa-user')
+                                                    from the
+                                                </span>
+                                                <a href="https://fontawesome.com/v6/icons?m=free"
+                                                   target="_blank">
+                                                    Font Awesome gallery
+                                                    <i class="fa fa-external-link-alt ms-1"/>
+
+                                                </a>
+                                            </p>
+                                        </div>
+                                        <field name="color_1" widget="color"/>
+                                        <field name="color_2" widget="color"/>
+                                        <field name="gradient_degree"/>
+
+                                        <field name="icon_style_json" widget="icon_preview"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Custom Filters">
+                                <field name="custom_filter_ids">
+                                    <list editable="bottom">
+                                        <field name="name"/>
+                                        <field name="model_id"/>
+                                        <field name="model_name" column_invisible="1" force_save="1"/>
+                                        <field name="domain" widget="domain" options="{'model': 'model_name'}"/>
+                                    </list>
+                                    <!-- Template for inline form -->
+                                    <form>
+                                        <group>
+                                            <field name="name"/>
+                                            <field name="model_id"/>
+                                            <field name="model_name" invisible="1" force_save="1"/>
+                                            <field name="domain" widget="domain" options="{'model': 'model_name'}"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                            <page string="Date Filters">
+                                <field name="advanced_date_filter_ids">
+                                    <list editable="bottom">
+                                        <field name="name"/>
+                                        <field name="filter_type"/>
+                                        <field name="year"/>
+                                        <field name="month" invisible="filter_type == 'year'"/>
+                                        <field name="week_number" invisible="filter_type in ['month', 'year']"/>
+                                        <field name="day_range_start" invisible="filter_type != 'week'"/>
+                                        <field name="day_range_end" invisible="filter_type != 'week'"/>
+                                    </list>
+                                    <!-- Template for inline form -->
+                                    <form>
+                                        <group>
+                                            <field name="name"/>
+                                            <field name="filter_type"/>
+                                            <field name="year"/>
+                                            <field name="month" invisible="filter_type == 'year'"/>
+                                            <field name="week_number" invisible="filter_type in ['month', 'year']"/>
+                                            <field name="day_range_start" invisible="filter_type != 'week'"/>
+                                            <field name="day_range_end" invisible="filter_type != 'week'"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Action for Dashboard Menus -->
+        <record id="dashboard_menu_action" model="ir.actions.act_window">
+            <field name="name">Dashboard Menus</field>
+            <field name="res_model">dashboard.menu</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <!-- Menu Item -->
+        <menuitem id="dashboard_menu_root"
+                  name="Configuration"
+                  parent="odoo_dynamic_dashboard_menu_root"
+                  sequence="10"/>
+
+        <menuitem id="dashboard_menu_item"
+                  name="Dashboard Menus"
+                  parent="dashboard_menu_root"
+                  action="dashboard_menu_action"
+                  sequence="10"/>
+    </data>
 </odoo>

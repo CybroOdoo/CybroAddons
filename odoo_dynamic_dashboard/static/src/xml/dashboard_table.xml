@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="DashboardTableTemplate" owl="1">
+        <div class="grid-stack-item o_dynamic_dashboard_grid_item"
+             t-att-gs-x="props.card.gs_x" t-att-gs-y="props.card.gs_y"
+             t-att-gs-w="props.card.gs_w || 3" t-att-gs-h="props.card.gs_h || 2" t-att-id="props.card.id"
+             t-att-style="props.style">
+            <DashboardCardButtons card="props.card" dashboards="props.dashboards"
+                                  colorGroups="props.colorGroups" t-if="props.dashboard"/>
+            <div class="card h-100 grid-stack-item-content">
+                <div class="dashboard-table-component">
+
+
+                    <!-- Table Content -->
+                    <t t-if="state.headers">
+                        <div class="table-content-wrapper">
+
+                            <!-- Table Header Section -->
+                            <div class="table-header-section">
+                                <div class="header-text">
+                                    <h2 class="table-main-heading" t-if="state.card.name">
+<!--                                        <i class="fa fa-table"/>-->
+                                        <t t-esc="state.card.name"/>
+                                    </h2>
+                                    <p class="table-sub-heading" t-if="state.card.description">
+                                        <t t-esc="state.card.description"/>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Table Meta Information -->
+                            <div class="table-meta-info" t-if="state.card.show_record_count">
+                                <div class="meta-item">
+                                    <i class="fa fa-database text-muted"/>
+                                    <span class="meta-label">Source:</span>
+                                    <strong t-esc="state.res_model">Dashboard</strong>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-list-ol text-muted"/>
+                                    <span class="meta-label">Records:</span>
+                                    <strong class="text-primary" t-esc="state.totalRecords">10
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <!-- Table Wrapper -->
+                            <div class="table-scroll-wrapper">
+                                <t t-if="state.headers.length > 0 and state.rows.length > 0">
+                                   <table class="dashboard-data-table" t-att-class="state.tableClass">
+                                        <thead class="table-header">
+                                            <tr class="header-row">
+                                                <th t-foreach="state.headers"
+                                                    t-as="header"
+                                                    t-key="header_index"
+                                                    class="header-cell">
+                                                    <div class="header-content">
+                                                        <span class="header-label"
+                                                              t-esc="header.field_label"/>
+                                                    </div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="table-body">
+                                            <tr t-foreach="state.rows"
+                                                t-as="row"
+                                                t-key="row.id"
+                                                class="table-body-row"
+                                                t-att-class="{ 'clickable-row': state.card.enable_click }"
+                                                t-on-click="() => this.onRowClick(row.id)">
+                                                <td t-foreach="state.headers"
+                                                    t-as="cell"
+                                                    t-key="cell_index"
+                                                    class="table-cell"
+                                                    t-att-class="getFieldClass(cell.type)">
+
+
+                                                    <!-- Boolean Field -->
+                                                    <t t-if="cell.type === 'boolean'">
+                                                        <span class="badge badge-pill"
+                                                              t-att-class="getCellBadgeClass(cell, row[cell.field_name])">
+                                                            <i t-att-class="row[cell.field_name] ? 'fa fa-check' : 'fa fa-times'"/>
+                                                            <t t-esc="row[cell.field_name] ? ' Yes' : ' No'"/>
+                                                        </span>
+                                                    </t>
+
+                                                    <!-- Monetary/Float Field -->
+                                                    <t t-elif="cell.type === 'monetary' or cell.type === 'float'">
+                                                        <span class="monetary-value">
+                                                            <t t-esc="row[cell.field_name]"/>
+                                                        </span>
+                                                    </t>
+
+                                                    <!-- Many2one Field -->
+                                                    <t t-elif="cell.type === 'many2one'">
+                                                        <span class="many2one-value">
+                                                            <i class="fa fa-link text-muted"/>
+                                                            <t t-esc="row[cell.field_name]"/>
+                                                        </span>
+                                                    </t>
+
+                                                    <!-- Date/Datetime Field -->
+                                                    <t t-elif="cell.type === 'date' or cell.type === 'datetime'">
+                                                        <span class="date-value">
+                                                            <i class="fa fa-calendar text-muted"/>
+                                                            <t t-esc="row[cell.field_name]"/>
+                                                        </span>
+                                                    </t>
+
+                                                    <!-- Default Field -->
+                                                    <t t-else="">
+                                                        <span class="cell-value"
+                                                              t-esc="row[cell.field_name]"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- Pagination Controls -->
+                                    <div class="table-pagination" t-if="state.totalPages > 1">
+                                        <div class="pagination-info">
+                                            <span class="pagination-text">
+                                                Showing
+                                                <strong t-esc="getCurrentRangeStart()"/>
+                                                to
+                                                <strong t-esc="getCurrentRangeEnd()"/>
+                                                of
+                                                <strong t-esc="state.totalRecords"/>
+                                                records
+                                            </span>
+                                            <span class="batch-info">
+                                                (Page
+                                                <strong t-esc="state.currentPage"/>
+                                                of<strong t-esc="state.totalPages"/>)
+                                            </span>
+                                        </div>
+
+                                        <div class="pagination-controls">
+                                            <div class="pagination-buttons">
+                                                <button class="btn btn-sm btn-pagination"
+                                                        t-on-click="firstPage"
+                                                        t-att-disabled="state.currentPage === 1"
+                                                        title="First page">
+                                                    <i class="fa fa-angle-double-left"/>
+                                                </button>
+
+                                                <button class="btn btn-sm btn-pagination"
+                                                        t-on-click="previousPage"
+                                                        t-att-disabled="state.currentPage === 1"
+                                                        title="Previous page">
+                                                    <i class="fa fa-angle-left"/>
+                                                </button>
+
+                                                <div class="page-numbers">
+                                                    <button t-foreach="getPageNumbers()"
+                                                            t-as="page"
+                                                            t-key="page"
+                                                            class="btn btn-sm btn-page-number"
+                                                            t-att-class="{ 'active': page === state.currentPage }"
+                                                            t-on-click="() => this.goToPage(page)"
+                                                            t-esc="page"/>
+                                                </div>
+
+                                                <button class="btn btn-sm btn-pagination"
+                                                        t-on-click="nextPage"
+                                                        t-att-disabled="state.currentPage === state.totalPages"
+                                                        title="Next page">
+                                                    <i class="fa fa-angle-right"/>
+                                                </button>
+
+                                                <button class="btn btn-sm btn-pagination"
+                                                        t-on-click="lastPage"
+                                                        t-att-disabled="state.currentPage === state.totalPages"
+                                                        title="Last page">
+                                                    <i class="fa fa-angle-double-right"/>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+
+                                <!-- Empty State -->
+                                <t t-else="">
+                                    <div class="table-empty-state o_dashboard_empty_state">
+                                        <div class="empty-icon">
+                                            <i class="fa fa-inbox fa-4x text-muted"/>
+                                        </div>
+                                        <h4 class="empty-title">No Records Found</h4>
+                                        <p class="empty-message">
+                                            There are no records matching the current filters.
+                                        </p>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+            </div>
+        </div>
+    </t>
+</templates>

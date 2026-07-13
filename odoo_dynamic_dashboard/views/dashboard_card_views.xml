@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Kanban View -->
+        <record id="dashboard_card_view_kanban" model="ir.ui.view">
+            <field name="name">dashboard.card.kanban</field>
+            <field name="model">dashboard.card</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_global_click">
+                                <div class="oe_kanban_details">
+                                    <img t-if="record.icon.raw_value"
+                                         t-att-src="'data:image/png;base64,' + record.icon.raw_value"
+                                         alt="Card Icon"
+                                         style="max-width: 50px; max-height: 50px;"/>
+                                    <ul>
+                                        <li>
+                                            Name:
+                                            <field name="name"/>
+                                        </li>
+                                        <li>
+                                            Model:
+                                            <field name="model_id"/>
+                                        </li>
+                                        <li>
+                                            Type:
+                                            <field name="type"/>
+                                        </li>
+                                        <li t-if="record.more_button_enabled.raw_value">
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Form View -->
+        <record id="dashboard_card_view_form" model="ir.ui.view">
+            <field name="name">dashboard.card.form</field>
+            <field name="model">dashboard.card</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group col="2" class="dashboard-card-form">
+                            <!-- Left Side: Preview (Takes 60% space) -->
+                            <group string="Dashboard Preview" colspan="1"
+                                   class="preview-group d-block">
+                                <div class="card-preview-container">
+                                    <widget name="card_preview"/>
+                                </div>
+                            </group>
+
+                            <!-- Right Side: Card Configuration (Takes 40% space) -->
+                            <group string="Card Configuration" colspan="1">
+                                <!--                <label for="type" string="Card Type"/>-->
+                                <field name="type" widget="card_type_selection" nolabel="1"
+                                       required="1"/>
+
+                                <!--                <label for="chart_type" string="Chart Type" invisible="type != 'chart'"/>-->
+                                <field name="chart_type" widget="card_type_selection"
+                                       invisible="type != 'chart'" nolabel="1"/>
+                                <field name="table_type" widget="card_type_selection"
+                                                    invisible="type != 'table'" nolabel="1"/>
+
+                                <field name="todo_type" widget="card_type_selection"
+                                           invisible="type != 'to-do'" nolabel="1"/>
+                                <field name="view_type" widget="card_type_selection"
+                                           invisible="type != 'views'" nolabel="1"/>
+
+                                <field name="activity_type" widget="card_type_selection"
+                                           invisible="type != 'activity'" nolabel="1"/>
+                            </group>
+                        </group>
+
+                        <!-- Basic Information & Chart Data -->
+                        <group>
+                            <group string="Basic Information">
+                                <field name="name" placeholder="Enter card name..."/>
+                                <field name="description" placeholder="Card description..."/>
+                            </group>
+                            <group string="Icon (optional)">
+                                <field name="icon_class"
+                                       placeholder="e.g. fa-solid fa-chart-line"/>
+                                <field name="icon_layout" invisible="not icon_class"/>
+                                <field name="icon_color" widget="color"
+                                       invisible="not icon_class"/>
+                                <field name="icon_size" invisible="not icon_class"/>
+                            </group>
+                            <group string="Data Source">
+                                <field name="model_id" options="{'no_create_edit': 1}" invisible="type == 'to-do'"/>
+                                <field name="model_name" invisible="1"/>
+                                <field name="domain" widget="domain"
+                                       options="{'model': 'model_name'}" invisible="type == 'to-do'"/>
+                                <field name="todo_ids" invisible="type != 'to-do'">
+                                        <list>
+                                            <field name="is_done"/>
+                                            <field name="name"/>
+                                            <field name="status"/>
+                                            <field name="card_id" invisible="1"/>
+
+                                        </list>
+                                </field>
+
+                                <field name="record_limit" invisible="type == 'to-do'"/>
+                                <field name="aggregation_method" invisible="type != 'chart'"/>
+                                <field name="block_aggregation_method" invisible="type != 'block'"/>
+                                <field name="block_value" invisible="1"/>
+                                <field name="measure_field_id" invisible="type not in ('chart', 'block')"/>
+                                <field name="group_by_field_id" invisible="type != 'chart'"/>
+                            </group>
+
+                        </group>
+
+                        <!-- Data SourSmallce -->
+                        <group>
+                             <group string="Chart Data" invisible="type != 'chart'">
+                                <field name="chart_x_axis_data" placeholder="X-axis label..."/>
+                                <field name="chart_y_axis_data" placeholder="Y-axis label..."/>
+                                <field name="index_axis" invisible="chart_type != 'bar'"/>
+                                <field name="semi_circular"
+                                       invisible="chart_type not in ('pie', 'doughnut')"/>
+                            </group>
+                            <!-- Table Configuration -->
+                            <group string="Table Settings" invisible="type != 'table'">
+                                <field name="table_limit"/>
+                                <field name="table_field_line_ids">
+                                    <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="field_id"/>
+                                    </list>
+                                </field>
+                                <field name="table_order"
+                                       placeholder="e.g., create_date desc"/>
+                                <field name="show_record_count"/>
+                                <field name="enable_click"/>
+                                <field name="table_headers"/>
+                                <field name="table_rows"/>
+                            </group>
+                            <!-- Legend Configuration -->
+                            <group string="Legend Configuration" invisible="type != 'chart'">
+                                <field name="legend"/>
+                                <field name="legend_position" invisible="not legend"/>
+                                <field name="legend_alignment" invisible="not legend"/>
+                                <field name="legend_label_pointstyle" invisible="not legend"/>
+                            </group>
+                            <!-- Todo Settings -->
+                            <group string="Todo Settings" invisible="type != 'to-do'">
+                                <field name="todo_type" nolabel="0"/>
+                            </group>
+
+                            <!-- View Settings - -->
+                            <group string="View Settings" invisible="type != 'views'">
+                                <field name="view_type"  nolabel="0" required="1"/>
+                            </group>
+
+
+
+
+<!--                            &lt;!&ndash; view Settings &ndash;&gt;-->
+<!--                            <group string="view Settings" invisible="type != 'view'">-->
+<!--                                <field name="view_type" nolabel="0"/>-->
+<!--                            </group>-->
+
+                        </group>
+                        <group invisible="type != 'chart'">
+                            <!-- Chart Colors -->
+                            <group string="Chart Colors">
+                                <field name="color_group_id"
+                                       options="{'no_create_edit': 1, 'no_quick_create': 1}"
+                                       invisible="chart_type in ('line', 'area', 'radar')"/>
+                                <field name="chart_color" widget="color"
+                                       invisible="chart_type not in ('line', 'area', 'radar')"/>
+                            </group>
+                            <group/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

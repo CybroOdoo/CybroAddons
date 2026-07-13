@@ -2,55 +2,66 @@
 ################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Arjun S (odoo@cybrosys.com)
 #
-#    This program is free software: you can modify
-#    it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE (AGPL) as
-#    published by the Free Software Foundation, either version 3 of the
-#    License, or (at your option) any later version.
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
 #
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
 #
 #    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
-#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
 {
-    'name': "Odoo Dynamic Dashboard",
-    'version': '19.0.1.0.0',
+    'name': "AI Dynamic Dashboard Pro",
+    'version': '19.0.2.0.0',
     'category': 'Productivity',
-    'summary': """Odoo Dynamic Dashboard, Dynamic Dashboard, Odoo AI, Odoo18, Odoo18 Dashboards, Dashboard with AI, AI Dashboard, Odoo Dashboard,Graph View,""",
-    'description': """Create Configurable Odoo Dynamic Dashboard to get the 
-    information that are relevant to your business, department, or a specific 
-    process or need""",
-    'live_test_url': 'https://www.youtube.com/watch?v=bSUashq4_D8',
+    'summary': 'A basic responsive dashboard structure.',
+    'description': 'A basic responsive dashboard structure with a clean and responsive layout.',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['web'],
+    'depends': ['web','hr','web_hierarchy','hr_org_chart'],
+    'external_dependencies': {
+        'python': ['google-genai'],
+    },
     'data': [
+        'security/dashboard_security.xml',
+        'security/dashboard_security_data.xml',
         'security/ir.model.access.csv',
-        'data/dashboard_theme_data.xml',
         'views/dashboard_views.xml',
-        'views/dynamic_block_views.xml',
         'views/dashboard_menu_views.xml',
-        'views/dashboard_theme_views.xml',
-        'wizard/dashboard_mail_views.xml',
+        'views/dashboard_card_views.xml',
+        'views/dashboard_wizard_views.xml',
+        'views/dashboard_color_group_views.xml',
+        'views/add_to_dashboard_wizard.xml',
+        'views/dashboard_theme_group_views.xml',
+        'views/res_config_settings_views.xml',
+        'data/dashboard_color_data.xml',
+        'data/dashboard_theme_data.xml'
     ],
     'assets': {
         'web.assets_backend': [
-            'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js',
-            'odoo_dynamic_dashboard/static/src/css/**/*.css',
-            'odoo_dynamic_dashboard/static/src/scss/**/*.scss',
+            'odoo_dynamic_dashboard/static/src/lib/gridstack/dist/gridstack.min.css',
+            'odoo_dynamic_dashboard/static/src/lib/apexcharts/dist/apexcharts.min.js',
+            'odoo_dynamic_dashboard/static/src/lib/gridstack/dist/gridstack-all.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+            # Restructured assets
             'odoo_dynamic_dashboard/static/src/js/**/*.js',
             'odoo_dynamic_dashboard/static/src/xml/**/*.xml',
-            'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css',
-            'odoo_dynamic_dashboard/static/src/js/interact_min.js'
+            'odoo_dynamic_dashboard/static/src/css/**/*.css',
+            'odoo_dynamic_dashboard/static/src/css/**/*.scss',
+
+            'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
         ],
     },
     'images': ['static/description/banner.jpg'],
@@ -58,5 +69,4 @@
     'installable': True,
     'auto_install': False,
     'application': True,
-    'uninstall_hook': 'uninstall_hook',
 }
