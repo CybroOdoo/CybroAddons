@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Menu Lock in Odoo',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': """This Module will help to lock all the menu items""",
     'description': """User can choose the menus and set the password for lock 
                     them""",
