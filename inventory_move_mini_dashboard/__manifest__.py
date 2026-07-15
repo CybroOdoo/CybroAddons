@@ -23,7 +23,7 @@
     'name': 'Inventory Move Mini Dashboard',
     'version': '16.0.1.0.0',
     'category': 'Extra Tools',
-    'summary': 'Mini Dashboard View for Stock Moves and Transfers',
+    'summary': 'Inventory Mini Dashboard for Stock Moves and Transfers',
     'description': 'Module offers a user-friendly mini dashboard for '
                    'stock moves and transfers, providing real-time data '
                    'visualization to efficiently track inventory movement',

@@ -1,9 +1,8 @@
 .. image:: https://img.shields.io/badge/licence-LGPL--3-blue.svg
     :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: LGPL-3
-
 Inventory Move Mini Dashboard
-=============================
+=================================
 A mini dashboard is added to the stock move and stock picking models that gives Inventory Mini Dashboard for Stock Moves and Transfers.
 
 Configuration

@@ -58,7 +58,7 @@ class MiniDashboard(models.Model):
         result['count'] = len(stock_moves)
         result['draft'] = stock_move.search_count([('state', '=', 'draft')])
         result['cancelled'] = stock_move.search_count(
-            [('state', '=', 'cancelled')])
+            [('state', '=', 'cancel')])
         result['waiting'] = stock_move.search_count(
             [('state', 'in', ('waiting', 'confirmed'))])
         result['partially_available'] = stock_move.search_count(
