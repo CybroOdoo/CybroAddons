@@ -22,9 +22,9 @@
 from odoo import fields, models
 
 
-class DalleImageSuggestion(models.Model):
+class OpenAIImageSuggestion(models.Model):
     """Store AI-generated images for product templates."""
-    _name = 'dalle.image.suggestion'
+    _name = 'openai.image.suggestion'
     _description = 'Model For Saving AI Generated Product Images'
     _rec_name = 'product_tmpl_id'
 

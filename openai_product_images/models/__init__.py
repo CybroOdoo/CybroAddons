@@ -19,5 +19,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from . import dalle_image_suggestion
+from . import openai_image_suggestion
 from . import product_template

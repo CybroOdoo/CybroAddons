@@ -19,17 +19,16 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-import base64
-from urllib.request import urlopen
 from openai import OpenAI
-from odoo import fields, models, _
+from odoo import fields, models
+from odoo.tools.translate import _
 from odoo.exceptions import UserError
 
 
 class ImageSuggestion(models.TransientModel):
-    """Image generator for product from OpenAI DALL·E 3"""
+    """Image generator for product from OpenAI"""
     _name = 'image.suggestion'
-    _description = 'Model For Creation Of Product Images Using DALL·E'
+    _description = 'Model For Creation Of Product Images Using OpenAI'
     _rec_name = 'product_tmpl_id'
 
     image_prompt = fields.Char(
@@ -52,8 +51,8 @@ class ImageSuggestion(models.TransientModel):
     size_image = fields.Selection(
         [
             ('1024x1024', '1024x1024'),
-            ('1024x1792', '1024x1792 (Portrait)'),
-            ('1792x1024', '1792x1024 (Landscape)')
+            ('1024x1536', '1024x1536 (Portrait)'),
+            ('1536x1024', '1536x1024 (Landscape)')
         ],
         string="Resolution",
         help="Resolution of generated images",
@@ -62,17 +61,18 @@ class ImageSuggestion(models.TransientModel):
     )
     quality = fields.Selection(
         [
-            ('standard', 'Standard'),
-            ('hd', 'High Definition')
+            ('low', 'Low'),
+            ('medium', 'Medium'),
+            ('high', 'High')
         ],
         string="Quality",
-        help="Image quality setting for DALL·E 3",
+        help="Image quality setting for OpenAI",
         required=True,
-        default='standard'
+        default='medium'
     )
 
     def action_generate_images(self):
-        """Generate product images from OpenAI DALL·E 3"""
+        """Generate product images from OpenAI"""
         api_key = self.env['ir.config_parameter'].sudo().get_param(
             'openai_api_key')
 
@@ -81,7 +81,6 @@ class ImageSuggestion(models.TransientModel):
 
         client = OpenAI(api_key=api_key)
 
-        # Safety — default to 1
         total_images = self.num_image or 1
 
         try:
@@ -89,22 +88,17 @@ class ImageSuggestion(models.TransientModel):
 
             for i in range(total_images):
                 response = client.images.generate(
-                    model="dall-e-3",
+                    model="gpt-image-2",
                     prompt=self.image_prompt,
                     size=self.size_image,
                     quality=self.quality,
-                    n=1,  # DALL·E 3 rule
+                    n=1,
                 )
-
-                # Get image URL
-                image_url = response.data[0].url
-                image_content = urlopen(image_url).read()
-                image_b64_encoded = base64.b64encode(image_content)
-
+                image_b64_encoded = response.data[0].b64_json.encode('utf-8')
                 last_image_b64 = image_b64_encoded
 
                 # Save each image to history table
-                self.env['dalle.image.suggestion'].create({
+                self.env['openai.image.suggestion'].create({
                     'product_image': image_b64_encoded,
                     'product_tmpl_id': self.product_tmpl_id.id,
                 })

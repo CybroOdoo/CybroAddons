@@ -4,7 +4,7 @@
 
 Generate Product Images Using OpenAI
 =====================================
-Odoo Module for Generating Product Images using DALL-E,OpenAI,dalle,chatgpt,
+Odoo Module for Generating Product Images using OpenAI,AI Image,openai_image,chatgpt,
 odoo chatgpt connector,odoo chatgpt,openai odoo.
 
 Configuration

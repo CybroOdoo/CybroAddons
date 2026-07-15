@@ -44,12 +44,12 @@ class ProductTemplate(models.Model):
             'context': {'default_product_tmpl_id': self.id},
         }
 
-    def action_dall_e_image(self):
-        """Open DALL·E generated images related to the product."""
+    def action_view_ai_images(self):
+        """Open AI generated images related to the product."""
         return {
-            'name': 'DALL-E Images',
+            'name': 'AI Images',
             'view_mode': 'list,form',
-            'res_model': 'dalle.image.suggestion',
+            'res_model': 'openai.image.suggestion',
             'type': 'ir.actions.act_window',
             'domain': [('product_tmpl_id', '=', self.id)],
         }
