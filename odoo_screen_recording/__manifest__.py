@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Odoo Screen Recording",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': "Extra Tools",
     'summary': """Record your screen any time and store it for further use
      in odoo""",
