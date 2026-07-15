@@ -5,4 +5,9 @@
 #### ADD
 - Initial Commit for Loan Management
 
+#### 08.07.2026
+#### Version 16.0.1.0.1
+#### BUG_FIX
+- Resolved an issue when payment using Outstanding credits
+
 

@@ -19,12 +19,14 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from odoo import models
+from odoo import models, fields
 
 
 class AccountMove(models.Model):
     """Alter loan repayment line state on draft and cancel button click"""
     _inherit = 'account.move'
+
+    repayment_line_id = fields.Many2one('repayment.line', string="Repayment Line")
 
     def button_draft(self):
         """Change repayment record state to 'invoiced'
@@ -52,3 +54,10 @@ class AccountMove(models.Model):
                     'invoice': False
                 })
         return res
+
+    def _compute_payment_state(self):
+        super()._compute_payment_state()
+        for record in self:
+            if record.payment_state in ['paid','reversed'] and record.repayment_line_id:
+                if record.repayment_line_id.state != 'paid':
+                    record.repayment_line_id.write({'state': 'paid'})

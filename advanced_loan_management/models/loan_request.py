@@ -47,14 +47,14 @@ class LoanRequest(models.Model):
                                    required=True, help="Can choose different "
                                                        "loan types suitable")
     loan_amount = fields.Float(string="Loan Amount", store=True,
-                               help="Total loan amount", )
+                               help="Total loan amount",related='loan_type_id.loan_amount' )
     disbursal_amount = fields.Float(string="Disbursal_amount",
                                     help="Total loan amount "
-                                         "available to disburse")
+                                         "available to disburse",related='loan_type_id.disbursal_amount')
     tenure = fields.Integer(string="Tenure",
-                            help="Installment period")
-    interest_rate = fields.Float(string="Interest rate", help="Interest "
-                                                              "percentage")
+                            help="Installment period", related='loan_type_id.tenure')
+    interest_rate = fields.Float(string="Interest rate",  help="Interest "
+                                                              "percentage", related='loan_type_id.interest_rate')
     date = fields.Date(string="Date", default=fields.Date.today(),
                        readonly=True, help="Date")
     partner_id = fields.Many2one('res.partner', string="Partner",
