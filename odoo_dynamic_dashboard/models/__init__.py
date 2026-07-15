@@ -2,32 +2,25 @@
 ################################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#
 #    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#    Author: Arjun S (odoo@cybrosys.com)
 #
-#    You can modify it under the terms of the GNU AFFERO
-#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#    This program is free software: you can modify
+#    it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE (AGPL) as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
 #
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#    GNU AFFERO GENERAL PUBLIC LICENSE for more details.
 #
 #    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
-#    (AGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ################################################################################
-from . import add_to_dashboard_wizard
-from . import dashboard_card
-from . import dashboard_card_field
-from . import dashboard_color_group
-from . import dashboard_custom_filter
-from . import dashboard_date_filter
-from . import dashboard_duplicate_wizard
+from . import dashboard_block
 from . import dashboard_menu
-from . import dashboard_theme_group
-from . import dashboard_todo
-from . import ir_ui_menu_inherit
-from . import res_config_settings
+from . import dashboard_theme
+from . import domain_to_sql
+from . import ir_ui_menu
