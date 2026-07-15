@@ -19,24 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-{
-    'name': 'Journal Discount on Invoices And Bills',
-    'version': '16.0.1.0.3',
-    'category': 'Accounting',
-    'summary': """Create discount journal items for discounts in invoices and 
-    bills""",
-    'description': """This module enables users to generate journal entries 
-    for discounts that are offered on invoices or bills, and these discounts 
-    are accounted for after the invoices or bills have been posted.""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['account'],
-    'data': ['views/product_category_views.xml'],
-    'images': ['static/description/banner.png'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from . import test_account_move
