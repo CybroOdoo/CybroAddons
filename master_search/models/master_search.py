@@ -81,7 +81,7 @@ class MasterSearch(models.Model):
                                             'count')
     sale_count = fields.Integer(string="Sale Count", compute="_get_sale_count",
                                 help='To fetched  sale search count')
-    purchase_count = fields.Integer(string="Sale Count",
+    purchase_count = fields.Integer(string="Purchase Count",
                                     compute="_get_purchase_count",
                                     help='To fetched  purchase search count')
     account_count = fields.Integer(string="Account Count",
@@ -99,7 +99,7 @@ class MasterSearch(models.Model):
     purchase_ids = fields.Many2many('purchase.order',
                                     'master_search_purchase_details_rel',
                                     'search_id', 'company_id',
-                                    string="Sale", help='To fetch datas of'
+                                    string="Purchase", help='To fetch datas of'
                                                         ' purchase search')
     account_ids = fields.Many2many('account.move',
                                    'master_search_account_details_rel',
