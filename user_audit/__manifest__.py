@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': "User Activity Audit",
-    "version": "16.0.1.0.1",
+    "version": "16.0.1.0.0",
     "summary": "Tracking user's create, write, read activities",
     "description": "This module helps you to track user's all type of "
                    "activities like create, write, read etc on various models "

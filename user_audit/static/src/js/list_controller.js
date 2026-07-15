@@ -4,8 +4,6 @@ import { patch } from "@web/core/utils/patch";
 import { ListController } from '@web/views/list/list_controller';
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { useService } from "@web/core/utils/hooks";
-import { DynamicRecordList } from "@web/views/relational_model";
-
 patch(ListController.prototype, 'list-controller-patch', {
     setup() {
         this._super.apply(arguments);
@@ -24,12 +22,6 @@ patch(ListController.prototype, 'list-controller-patch', {
             }
             if (!list.editedRecord) {
                 await (group || list).createRecord({}, this.editable === "top");
-                        this.orm.call(
-                           "user.audit",
-                           "create_audit_log_for_create",
-                           [resModel],
-                        ).then(function(data) {
-                        });
             }
             this.render();
         } else {
