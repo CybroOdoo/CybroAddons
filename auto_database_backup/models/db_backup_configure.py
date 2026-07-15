@@ -36,8 +36,6 @@ import subprocess
 import tempfile
 import odoo
 from datetime import datetime, timedelta
-from nextcloud import NextCloud
-from requests.auth import HTTPBasicAuth
 from werkzeug import urls
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
@@ -252,54 +250,69 @@ class DbBackupConfigure(models.Model):
                     }
                 }
 
-    def action_nextcloud(self):
-        """If it has next_cloud_password, domain, and next_cloud_user_name
-         which will perform an action for nextcloud connection test"""
-        if self.domain and self.next_cloud_password and \
-                self.next_cloud_user_name:
+    def _nc_ensure_folder_path(self, nc, folder_path):
+        """Ensure every segment of folder_path exists in Nextcloud.
+        Creates missing intermediate directories recursively using
+        nextcloud_client.Client so that nested paths such as
+        'backup/odoo19' are handled correctly at any depth.
+        Existing directories are detected via file_info() and skipped
+        to avoid the HTTP 405 error that Nextcloud raises when MKCOL
+        is called on an already-existing path."""
+        folder_path = folder_path.strip('/')
+        if not folder_path:
+            return
+        current = ''
+        for segment in folder_path.split('/'):
+            current = '%s/%s' % (current, segment) if current else segment
             try:
-                ncx = NextCloud(self.domain,
-                                auth=HTTPBasicAuth(self.next_cloud_user_name,
-                                                   self.next_cloud_password))
-                data = ncx.list_folders('/').__dict__
-                if data['raw'].status_code == 207:
-                    self.active = self.hide_active = True
-                    return {
-                        'type': 'ir.actions.client',
-                        'tag': 'display_notification',
-                        'params': {
-                            'type': 'success',
-                            'title': _("Connection Test Succeeded!"),
-                            'message': _("Everything seems properly set up!"),
-                            'sticky': False,
-                        }
-                    }
-                else:
-                    self.active = self.hide_active = False
-                    return {
-                        'type': 'ir.actions.client',
-                        'tag': 'display_notification',
-                        'params': {
-                            'type': 'danger',
-                            'title': _("Connection Test Failed!"),
-                            'message': _("An error occurred while testing the "
-                                         "connection."),
-                            'sticky': False,
-                        }
-                    }
+                info = nc.file_info(current)
+                if info is None:
+                    nc.mkdir(current)
             except Exception:
-                self.active = self.hide_active = False
-                return {
-                    'type': 'ir.actions.client',
-                    'tag': 'display_notification',
-                    'params': {
-                        'type': 'danger',
-                        'title': _("Connection Test Failed!"),
-                        'message': _("An error occurred while testing the "
-                                     "connection."),
-                        'sticky': False,
-                    }
+                # file_info raises when the path does not exist
+                nc.mkdir(current)
+
+    def action_nextcloud(self):
+        """Test Nextcloud connectivity and validate the configured backup
+        folder path.  Uses a single nextcloud_client.Client so that path
+        handling is consistent with the actual backup process.
+        Displays the real exception message on failure so that connection
+        problems can be diagnosed without checking server logs."""
+        if not (self.domain and self.next_cloud_password and
+                self.next_cloud_user_name):
+            return
+        try:
+            nc = nextcloud_client.Client(self.domain)
+            nc.login(self.next_cloud_user_name, self.next_cloud_password)
+            # Basic connectivity check: list the root directory
+            nc.list('/')
+            # Validate / create the configured backup folder (including
+            # nested paths such as 'backup/odoo19')
+            if self.nextcloud_folder_key:
+                self._nc_ensure_folder_path(nc, self.nextcloud_folder_key)
+            self.active = self.hide_active = True
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'type': 'success',
+                    'title': _("Connection Test Succeeded!"),
+                    'message': _("Everything seems properly set up!"),
+                    'sticky': False,
                 }
+            }
+        except Exception as err:
+            self.active = self.hide_active = False
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'type': 'danger',
+                    'title': _("Connection Test Failed!"),
+                    'message': _("Error: %s", str(err)),
+                    'sticky': False,
+                }
+            }
 
     @api.depends('onedrive_redirect_uri', 'gdrive_redirect_uri')
     def _compute_redirect_uri(self):
@@ -878,82 +891,69 @@ class DbBackupConfigure(models.Model):
                         mail_template_failed.send_mail(rec.id, force_send=True)
             elif rec.backup_destination == 'next_cloud':
                 try:
-                    if rec.domain and rec.next_cloud_password and \
-                            rec.next_cloud_user_name:
-                        try:
-                            # Connect to NextCloud using the provided username
-                            # and password
-                            ncx = NextCloud(rec.domain,
-                                            auth=HTTPBasicAuth(
-                                                rec.next_cloud_user_name,
-                                                rec.next_cloud_password))
-                            # Connect to NextCloud again to perform additional
-                            # operations
-                            nc = nextcloud_client.Client(rec.domain)
-                            nc.login(rec.next_cloud_user_name,
-                                     rec.next_cloud_password)
-                            # Get the folder name from the NextCloud folder ID
-                            folder_name = rec.nextcloud_folder_key
-                            # If auto_remove is enabled, remove backup files
-                            # older than specified days
-                            if rec.auto_remove:
-                                folder_path = "/" + folder_name
-                                for item in nc.list(folder_path):
-                                    backup_file_name = item.path.split("/")[-1]
-                                    backup_date_str = \
-                                        backup_file_name.split("_")[1]
-                                    backup_date = datetime.strptime(
-                                        backup_date_str, '%Y-%m-%d').date()
-                                    if (fields.date.today() - backup_date).days \
-                                            >= rec.days_to_remove:
-                                        nc.delete(item.path)
-                            # If notify_user is enabled, send a success email
-                            # notification
-                            if rec.notify_user:
-                                mail_template_success.send_mail(rec.id,
-                                                                force_send=True)
-                        except Exception as error:
-                            rec.generated_exception = error
-                            _logger.info('NextCloud Exception: %s', error)
-                            if rec.notify_user:
-                                # If an exception occurs, send a failed email
-                                # notification
-                                mail_template_failed.send_mail(rec.id,
-                                                               force_send=True)
-                        # Get the list of folders in the root directory of NextCloud
-                        data = ncx.list_folders('/').__dict__
-                        folders = [
-                            [file_name['href'].split('/')[-2],
-                             file_name['file_id']]
-                            for file_name in data['data'] if
-                            file_name['href'].endswith('/')]
-                        # If the folder name is not found in the list of folders,
-                        # create the folder
-                        if folder_name not in [file[0] for file in folders]:
-                            nc.mkdir(folder_name)
-                            # Dump the database to a temporary file
-                            temp = tempfile.NamedTemporaryFile(
-                                suffix='.%s' % rec.backup_format)
-                            with open(temp.name, "wb+") as tmp:
-                                self.dump_data(rec.db_name, tmp,
-                                                        rec.backup_format, rec.backup_frequency)
-                            backup_file_name = temp.name
-                            remote_file_path = f"/{folder_name}/{rec.db_name}_" \
-                                               f"{backup_time}.{rec.backup_format}"
-                            nc.put_file(remote_file_path, backup_file_name)
-                        else:
-                            # Dump the database to a temporary file
-                            temp = tempfile.NamedTemporaryFile(
-                                suffix='.%s' % rec.backup_format)
-                            with open(temp.name, "wb+") as tmp:
-                                self.dump_data(rec.db_name, tmp,
-                                                        rec.backup_format, rec.backup_frequency)
-                            backup_file_name = temp.name
-                            remote_file_path = f"/{folder_name}/{rec.db_name}_" \
-                                               f"{backup_time}.{rec.backup_format}"
-                            nc.put_file(remote_file_path, backup_file_name)
-                except Exception:
-                    raise ValidationError('Please check connection')
+                    # Use a single nextcloud_client.Client throughout so that
+                    # WebDAV path handling is consistent.
+                    nc = nextcloud_client.Client(rec.domain)
+                    nc.login(rec.next_cloud_user_name, rec.next_cloud_password)
+
+                    # Normalise the configured folder path and ensure every
+                    # intermediate directory exists, creating missing ones
+                    # recursively.  This correctly handles nested paths such
+                    # as 'odoobackup/odoo19' without triggering HTTP 405.
+                    folder_path = (rec.nextcloud_folder_key or '').strip('/')
+                    if folder_path:
+                        self._nc_ensure_folder_path(nc, folder_path)
+
+                    # Dump the database to a named temporary file so that
+                    # nextcloud_client can read it by path for the upload.
+                    temp = tempfile.NamedTemporaryFile(
+                        suffix='.%s' % rec.backup_format, delete=False)
+                    try:
+                        with open(temp.name, 'wb+') as tmp:
+                            self.dump_data(
+                                rec.db_name, tmp,
+                                rec.backup_format, rec.backup_frequency)
+                        remote_file_path = (
+                            '/%s/%s' % (folder_path, backup_filename)
+                            if folder_path else '/%s' % backup_filename)
+                        nc.put_file(remote_file_path, temp.name)
+                    finally:
+                        os.unlink(temp.name)
+
+                    # Remove old backups after a successful upload so that a
+                    # cleanup failure does not prevent the backup from being
+                    # recorded as successful.
+                    if rec.auto_remove:
+                        list_path = ('/%s' % folder_path
+                                     if folder_path else '/')
+                        for item in nc.list(list_path):
+                            item_name = item.path.rstrip('/').split('/')[-1]
+                            try:
+                                parts = item_name.split('_')
+                                backup_date = datetime.strptime(
+                                    parts[1], '%Y-%m-%d').date()
+                                if (fields.date.today() -
+                                        backup_date).days >= rec.days_to_remove:
+                                    nc.delete(item.path)
+                            except (IndexError, ValueError):
+                                # Skip files that do not match the expected
+                                # naming pattern.
+                                pass
+
+                    if rec.notify_user:
+                        mail_template_success.send_mail(rec.id,
+                                                        force_send=True)
+
+                except Exception as error:
+                    # Preserve the real error message so it can be inspected
+                    # in the 'Exception' field on the backup configuration
+                    # record and in the server log.
+                    rec.generated_exception = str(error)
+                    _logger.error('NextCloud Backup Error: %s', error,
+                                  exc_info=True)
+                    if rec.notify_user:
+                        mail_template_failed.send_mail(rec.id,
+                                                       force_send=True)
             # Amazon S3 Backup
             elif rec.backup_destination == 'amazon_s3':
                 if rec.aws_access_key and rec.aws_secret_access_key:
