@@ -22,7 +22,7 @@
 
 {
     'name': "Portal Dashboard",
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': """Portal Dashboard to view the my account in dashboard view""",
     'description': 'View of my account in portal view is changed to dashboard '
                    'view for better user experience',
