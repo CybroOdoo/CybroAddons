@@ -19,21 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-{
-    'name': 'Automatic Invoice And Post',
-    'version': "16.0.1.0.2",
-    'depends': ['base', 'sale_management', 'stock', 'account'],
-    'category': 'Sales,Warehouse,Accounting',
-    'summary': """ Auto Invoice from Delivery validate.""",
-    'description': """This module generates and post invoice  while validating the delivery.""",
-    'author': "Cybrosys Techno Solutions",
-    'company': "Cybrosys Techno Solutions",
-    'maintainer': "Cybrosys Techno Solutions",
-    'website': "https://www.cybrosys.com",
-    'data': ['views/res_config_settings_views.xml'],
-    'license': "AGPL-3",
-    'images': ['static/description/banner.png'],
-    'installable': True,
-    'auto_install': False,
-    'application': False
-}
+from . import test_stock_picking
