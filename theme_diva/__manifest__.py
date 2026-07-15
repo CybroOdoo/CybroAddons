@@ -71,16 +71,19 @@
     ],
     'assets': {
         'web.assets_frontend': [
+
             '/theme_diva/static/src/xml/index3_blog.xml',
             '/theme_diva/static/src/xml/index2_blog.xml',
             '/theme_diva/static/src/xml/index_featured_products.xml',
             '/theme_diva/static/src/xml/index_featured_products2.xml',
             '/theme_diva/static/src/xml/index_main_product.xml',
+
             '/theme_diva/static/src/css/style.css',
             'theme_diva/static/src/css/pluginstyle.css',
             '/theme_diva/static/src/css/owl.carousel.min.css',
             '/theme_diva/static/src/css/animate.min.css',
             '/theme_diva/static/src/css/owl.theme.default.min.css',
+
             '/theme_diva/static/src/js/acLazyLoadImage.js',
             '/theme_diva/static/src/js/owl.carousel.js',
             '/theme_diva/static/src/js/owl.carousel.min.js',
