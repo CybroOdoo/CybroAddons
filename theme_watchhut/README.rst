@@ -3,7 +3,7 @@
     :alt: License: LGPL-3
 
 Theme Watchhut
-==============
+==========
 * Design Web Pages with Watchhut
 
 Installation
