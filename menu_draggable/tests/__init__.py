@@ -19,27 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-{
-    'name': "Menu Draggable",
-    'version': '16.0.1.0.1',
-    'category': 'Extra Tools',
-    'summary': """Rearrange the position of menus in each module 
-                accordingly""",
-    'description': 'Change position of Menus in each module',
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'images': ['static/description/banner.png'],
-    'depends': ['base'],
-    'data': ['security/ir.model.access.csv'],
-    'assets': {
-        'web.assets_backend': [
-            '/menu_draggable/static/src/js/draggable_menu.js'
-        ]
-    },
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False
-}
+from . import test_menu_item_draggable
