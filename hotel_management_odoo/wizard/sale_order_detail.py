@@ -39,6 +39,12 @@ class SaleOrderWizard(models.TransientModel):
 
     checkin = fields.Date(help="Choose the Checkin Date", string="Check In")
     checkout = fields.Date(help="Choose the Checkout Date", string="Check Out")
+    state_draft = fields.Boolean(string="Draft")
+    state_reserved = fields.Boolean(string="Reserved")
+    state_check_in = fields.Boolean(string="Check In")
+    state_check_out = fields.Boolean(string="Check Out")
+    state_done = fields.Boolean(string="Done")
+    state_cancel = fields.Boolean(string="Cancelled")
 
     def action_sale_order_pdf(self):
         """Button action for creating Sale Order Pdf Report"""
@@ -76,6 +82,17 @@ class SaleOrderWizard(models.TransientModel):
             domain.append(('checkin_date', '>=', self.checkin), )
         if self.checkout:
             domain.append(('checkout_date', '<', self.checkout + timedelta(days=1)), )
+        state_map = {
+            'draft': self.state_draft,
+            'reserved': self.state_reserved,
+            'check_in': self.state_check_in,
+            'check_out': self.state_check_out,
+            'done': self.state_done,
+            'cancel': self.state_cancel,
+        }
+        selected_states = [state for state, checked in state_map.items() if checked]
+        if selected_states:
+            domain.append(('state', 'in', selected_states))
         room_booking = self.env['room.booking'].search_read(domain=domain,
                                                             fields=[
                                                                 'partner_id',

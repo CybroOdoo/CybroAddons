@@ -19,23 +19,18 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, tools
+from odoo import api, fields, models, tools,_
 from odoo.exceptions import ValidationError
-
-
-class HotelRoom(models.Model):
-    """Model that holds all details regarding hotel room"""
-    _name = 'hotel.room'
-    _description = 'Rooms'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+class ProductTemplate(models.Model):
+    _inherit = "product.template"
+    _description = "Product Template"
 
     @tools.ormcache()
     def _get_default_uom_id(self):
         """Method for getting the default uom id"""
         return self.env.ref('uom.product_uom_unit')
 
-    name = fields.Char(string='Name', help="Name of the Room", index='trigram',
-                       required=True, translate=True)
+    is_room = fields.Boolean(string="Room",help="is room")
     status = fields.Selection([("available", "Available"),
                                ("reserved", "Reserved"),
                                ("occupied", "Occupied")],
@@ -46,20 +41,6 @@ class HotelRoom(models.Model):
                                    help="Check if the room is available")
     list_price = fields.Float(string='Rent', digits='Product Price',
                               help="The rent of the room.")
-    uom_id = fields.Many2one('uom.uom', string='Unit of Measure',
-                             default=_get_default_uom_id, required=True,
-                             help="Default unit of measure used for all stock"
-                                  " operations.")
-    room_image = fields.Image(string="Room Image", max_width=1920,
-                              max_height=1920, help='Image of the room')
-    taxes_ids = fields.Many2many('account.tax',
-                                 'hotel_room_taxes_rel',
-                                 'room_id', 'tax_id',
-                                 help="Default taxes used when selling the"
-                                      " room.", string='Customer Taxes',
-                                 domain=[('type_tax_use', '=', 'sale')],
-                                 default=lambda self: self.env.company.
-                                 account_sale_tax_id)
     room_amenities_ids = fields.Many2many("hotel.amenity",
                                           string="Room Amenities",
                                           help="List of room amenities.")
@@ -81,8 +62,6 @@ class HotelRoom(models.Model):
                                 required=True,
                                 help="Automatically chooses the No. of Persons",
                                 tracking=True)
-    description = fields.Html(string='Description', help="Add description",
-                              translate=True)
 
     @api.constrains("num_person")
     def _check_capacity(self):
@@ -94,7 +73,7 @@ class HotelRoom(models.Model):
     @api.onchange("room_type")
     def _onchange_room_type(self):
         """Based on selected room type, number of person will be updated.
-
+        ----------------------------------------
         @param self: object pointer"""
         if self.room_type == "single":
             self.num_person = 1
@@ -102,3 +81,19 @@ class HotelRoom(models.Model):
             self.num_person = 2
         else:
             self.num_person = 4
+
+    @api.onchange('is_room')
+    def _onchange_is_room(self):
+        """Set product type to consumable if it is a room"""
+        if self.is_room:
+            self.type = 'consu'
+            self.is_storable = False
+
+    @api.constrains('is_room', 'is_storable')
+    def _check_room_type(self):
+        """Room products cannot be storable"""
+        for record in self:
+            if record.is_room and record.is_storable:
+                raise ValidationError(_("Room products cannot be storable. Please disable 'Track Inventory'."))
+
+

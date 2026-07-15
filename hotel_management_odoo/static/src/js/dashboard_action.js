@@ -77,9 +77,10 @@ export class CustomDashBoard extends Component {
         this.action.doAction({
             name: _t("Rooms"),
             type: 'ir.actions.act_window',
-            res_model: 'hotel.room',
+            res_model: 'product.template',
             view_mode: 'list,form',
             views: [[false, 'list'], [false, 'form']],
+            domain: [['is_room', '=', true]],
             target: 'current'
         }, options)
     }
@@ -190,10 +191,10 @@ export class CustomDashBoard extends Component {
         this.action.doAction({
             name: _t("Available Room"),
             type: 'ir.actions.act_window',
-            res_model: 'hotel.room',
+            res_model: 'product.template',
             view_mode: 'list,form',
             views: [[false, 'list'], [false, 'form']],
-            domain: [['status', '=', 'available']],
+            domain: [['is_room', '=', true], ['status', '=', 'available']],
             target: 'current'
         }, options)
     }

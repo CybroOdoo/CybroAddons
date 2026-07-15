@@ -19,6 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+from openpyxl.worksheet import related
+
 from odoo import api, fields, models, tools
 from odoo.exceptions import ValidationError
 
@@ -44,7 +46,7 @@ class RoomBookingLine(models.Model):
                                     help="You can choose the date,"
                                          " Otherwise sets to current Date",
                                     required=True)
-    room_id = fields.Many2one('hotel.room', string="Room",
+    room_id = fields.Many2one('product.template', string="Room",
                               domain=[('status', '=', 'available')],
                               help="Indicates the Room",
                               required=True)
@@ -56,13 +58,14 @@ class RoomBookingLine(models.Model):
                              string="Unit of Measure",
                              help="This will set the unit of measure used",
                              readonly=True)
-    price_unit = fields.Float(related='room_id.list_price', string='Rent',
-                              digits='Product Price',
+    price_unit = fields.Float(string='Rent', digits='Product Price',
+                              compute='_compute_price_unit', store=True,
+                              readonly=False, precompute=True,
                               help="The rent price of the selected room.")
     tax_ids = fields.Many2many('account.tax',
                                'hotel_room_order_line_taxes_rel',
                                'room_id', 'tax_id',
-                               related='room_id.taxes_ids',
+                               related='room_id.taxes_id',
                                string='Taxes',
                                help="Default taxes used when selling the room."
                                , domain=[('type_tax_use', '=', 'sale')])
@@ -89,6 +92,21 @@ class RoomBookingLine(models.Model):
                                           string="Booking Line Visible",
                                           help="If True, then Booking Line "
                                                "will be visible")
+
+    @api.depends('room_id', 'booking_id.pricelist_id', 'uom_qty')
+    def _compute_price_unit(self):
+        """Compute the rent using the booking's pricelist, falling back to
+        the room's list price when there is no pricelist."""
+        for line in self:
+            if not line.room_id:
+                line.price_unit = 0
+                continue
+            pricelist = line.booking_id.pricelist_id
+            if pricelist:
+                line.price_unit = pricelist._get_product_price(
+                    line.room_id, line.uom_qty or 1.0)
+            else:
+                line.price_unit = line.room_id.list_price
 
     @api.onchange("checkin_date", "checkout_date")
     def _onchange_checkin_date(self):

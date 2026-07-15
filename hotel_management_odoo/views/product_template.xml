@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Product Template Form View: Adds the Room flag, and the Room
+            Information & Amenities pages shown only when a product is a room-->
+    <record id="product_template_inherit_form_view" model="ir.ui.view">
+            <field name="name">product.template.inherit.form.view</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="mode">extension</field>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='sale_ok']/." position="before">
+                    <span class="d-inline-flex">
+                        <field name="is_room" nolabel="1"/>
+                        <label for="is_room" string="Room"/>
+                    </span>
+                </xpath>
+                <notebook>
+                    <page string="Information" invisible="is_room != True">
+                        <group>
+                            <group>
+                                <field name="floor_id" string="Floor"/>
+                                <field name="user_id" select="2"
+                                           string="Room Manager"/>
+                            </group>
+                            <group>
+                                    <field name="room_type"/>
+                                    <field name="list_price" widget="monetary"
+                                           string="Rent"/>
+                                    <field name="num_person"/>
+                            </group>
+                        </group>
+                    </page>
+                    <page string="Amenities" invisible="is_room != True">
+                        <group>
+                            <group>
+                                <field name="room_amenities_ids"
+                                       widget="many2many_tags"
+                                       string="Room Amenities"/>
+                            </group>
+                        </group>
+                    </page>
+                </notebook>
+            </field>
+          </record>
+
+    <!--    Rooms Action: Lists only product.template records flagged as a Room-->
+    <record id="action_room_products" model="ir.actions.act_window">
+        <field name="name">Rooms</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_room','=',True)]</field>
+    </record>
+
+    <!--    Rooms Menu-->
+    <menuitem id="menu_product_template" parent="hotel_config_menu" action="action_room_products"/>
+
+</odoo>

@@ -515,7 +515,7 @@ class RoomBooking(models.Model):
         for rec in self.room_line_ids.room_id.ids:
             room_list.append(rec)
         if room_list:
-            room_id = self.env['hotel.room'].search([
+            room_id = self.env['product.template'].search([
                 ('id', 'in', room_list)])
             self.env['maintenance.request'].sudo().create({
                 'name': 'Maintenance Request - %s' % self.name,
@@ -645,11 +645,12 @@ class RoomBooking(models.Model):
     def get_details(self):
         """ Returns different counts for displaying in dashboard"""
         today_date = fields.Date.context_today(self)
-        total_room = self.env['hotel.room'].search_count([])
+        total_room = self.env['product.template'].search_count(
+            [('is_room', '=', True)])
         check_in = self.env['room.booking'].search_count(
             [('state', '=', 'check_in')])
-        available_room = self.env['hotel.room'].search(
-            [('status', '=', 'available')])
+        available_room = self.env['product.template'].search(
+            [('is_room', '=', True), ('status', '=', 'available')])
         reservation = self.env['room.booking'].search_count(
             [('state', '=', 'reserved')])
         check_outs = self.env['room.booking'].search([])

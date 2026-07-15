@@ -37,7 +37,10 @@ class CleaningTeam(models.Model):
                                            'cleaning_team_group_head').id)])
     member_ids = fields.Many2many('res.users',
                                   relation='cleaning_team_member_user_rel',
-                                  column1='team_id',
-                                  column2='user_id',
+                                  column1='team_id', column2='user_id',
                                   string="Member",
-                                  help="Team Members")
+                                  help="Team Members",
+                                  domain=lambda self: [
+                                      ('group_ids', 'in', self.env.ref(
+                                          'hotel_management_odoo.'
+                                          'cleaning_team_group_user').id)])

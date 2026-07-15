@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Hotel Management',
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.3',
     'category': 'Industries',
     'summary': """A complete Hotel Management System that cover all areas of 
      Hotel services""" ,
@@ -40,10 +40,10 @@
         'data/ir_data_sequence.xml',
         'views/account_move_views.xml',
         'views/hotel_menu_views.xml',
+        'views/product_template.xml',
         'views/hotel_amenity_views.xml',
         'views/hotel_service_views.xml',
         'views/hotel_floor_views.xml',
-        'views/hotel_room_views.xml',
         'views/lunch_product_views.xml',
         'views/fleet_vehicle_model_views.xml',
         'views/room_booking_views.xml',

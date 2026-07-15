@@ -40,7 +40,7 @@ class RoomBookingWizard(models.TransientModel):
 
     checkin = fields.Date(help="Choose the Checkin Date", string="Checkin")
     checkout = fields.Date(help="Choose the Checkout Date", string="Checkout")
-    room_id = fields.Many2one("hotel.room", string="Room",
+    room_id = fields.Many2one("product.template", string="Room",
                               help="Choose The Room")
 
     def action_room_booking_pdf(self):
@@ -85,28 +85,20 @@ class RoomBookingWizard(models.TransientModel):
             domain.append(
                 ("checkout_date", "<", self.checkout + timedelta(days=1)),
             )
-        room_booking = self.env["room.booking"].search_read(
-            domain=domain,
-            fields=["partner_id", "name", "checkin_date", "checkout_date"],
-        )
-        for rec in room_booking:
-            rooms = (
-                self.env["room.booking"]
-                .browse(rec["id"])
-                .room_line_ids.room_id.mapped("name")
+        if self.room_id:
+            domain.append(
+                ("room_id", "=", self.room_id.id),
             )
-            rec["partner_id"] = rec["partner_id"][1]
-            for room in rooms:
-                if self.room_id:
-                    if self.room_id.name == room:
-                        rec_copy = rec.copy()
-                        rec_copy["room"] = room  # Ensure this key is added
-                        room_list.append(rec_copy)
-                else:
-                    rec_copy = rec.copy()
-                    rec_copy["room"] = room  # Ensure this key is added
-                    room_list.append(rec_copy)
 
+        room_booking_lines = self.env["room.booking.line"].search(domain)
+        for line in room_booking_lines:
+            room_list.append({
+                "partner_id": line.booking_id.partner_id.name,
+                "name": line.booking_id.name,
+                "checkin_date": line.checkin_date,
+                "checkout_date": line.checkout_date,
+                "room": line.room_id.name
+            })
         return room_list
 
     def _format_datetime(self, value):
