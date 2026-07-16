@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author:Anjhana A K(<https://www.cybrosys.com>)
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -49,7 +49,7 @@ class MasterSearch(models.Model):
                                          'search_id',
                                          'search_id1',
                                          compute="_get_recent_searches",
-                                         limit=1, help='Recent search details')
+                                         help='Recent search details')
     history_count = fields.Integer(string="History Count",
                                    compute="_get_history_count",
                                    help='Recent search History Count')
@@ -80,7 +80,7 @@ class MasterSearch(models.Model):
                                             'count')
     sale_count = fields.Integer(string="Sale Count", compute="_get_sale_count",
                                 help='To fetched  sale search count')
-    purchase_count = fields.Integer(string="Sale Count",
+    purchase_count = fields.Integer(string="Purchase Count",
                                     compute="_get_purchase_count",
                                     help='To fetched  purchase search count')
     account_count = fields.Integer(string="Account Count",
@@ -98,7 +98,7 @@ class MasterSearch(models.Model):
     purchase_ids = fields.Many2many('purchase.order',
                                     'master_search_purchase_details_rel',
                                     'search_id', 'company_id',
-                                    string="Sale", help='To fetch datas of'
+                                    string="Purchase", help='To fetch datas of'
                                                         ' purchase search')
     account_ids = fields.Many2many('account.move',
                                    'master_search_account_details_rel',
@@ -193,6 +193,7 @@ class MasterSearch(models.Model):
             raise UserError(_("Please provide a search string!"))
         search_keys = self.search_string.split(" ")
         self.customer_ids = self.product_ids = self.transaction_ids = False
+        self.sale_ids = self.purchase_ids = self.account_ids = False
         if self.match_entire:
             return self._search_query(self.search_string)
         for key in search_keys:
@@ -201,116 +202,113 @@ class MasterSearch(models.Model):
 
     def _search_query(self, key):
         """ search for the model with given key and update result """
-        company_id = self.env.user.company_id.id
-        if self.search_mode == 'all':
-            active_qry = """ and obj.active in ({},{}) 
-            """.format("'FALSE'", "'TRUE'")
-        elif self.search_mode == 'active':
-            active_qry = """ and obj.active in ({})""".format("'TRUE'")
-        else:
-            active_qry = """ and obj.active in ({})""".format("'FALSE'")
-        self._search_customer(key, active_qry) \
+        company_id = self.env.company.id
+        self._search_customer(key) \
             if self.search_by in ['any', 'customer'] else False
-        self._search_products(key, active_qry, company_id) \
+        self._search_products(key, company_id) \
             if self.search_by in ['any', 'product'] else False
-        self._search_inventory_transactions(key, active_qry, company_id) \
+        self._search_inventory_transactions(key, company_id) \
             if self.search_by in ['any', 'transaction details'] else False
-        self._search_sale_transactions(key, active_qry, company_id) \
+        self._search_sale_transactions(key, company_id) \
             if self.search_by in ['any', 'sale details'] else False
-        self._search_purchase_transactions(key, active_qry, company_id) \
+        self._search_purchase_transactions(key, company_id) \
             if self.search_by in ['any', 'purchase details'] else False
-        self._search_account_transactions(key, active_qry, company_id) \
+        self._search_account_transactions(key, company_id) \
             if self.search_by in ['any', 'account details'] else False
 
-    def _search_account_transactions(self, key, active_qry, company_id):
-        """ Search for all account transactions """
-        sp_query = """ SELECT  am.id from account_move am
-        LEFT JOIN  res_partner p on p.id = am.partner_id
-        WHERE  am.company_id = {op_id} AND  (am.name ILIKE '%{key}%' OR  
-        p.name ILIKE '%{key}%' OR  am.state ILIKE '%{key}%')
-        GROUP BY  am.id,p.name
-        """
-        self._cr.execute(
-            sp_query.format(op_id=company_id, key=key, active=active_qry))
-        moves = self._cr.dictfetchall()
-        move_ids = self.env['account.move'].browse([i['id'] for i in moves])
-        self.account_ids += move_ids
+    def _get_active_domain(self):
+        """ Return active/inactive domain clause based on search_mode """
+        if self.search_mode == 'active':
+            return [('active', '=', True)]
+        elif self.search_mode == 'inactive':
+            return [('active', '=', False)]
+        # 'all' mode: include both active and inactive
+        return ['|', ('active', '=', True), ('active', '=', False)]
 
-    def _search_purchase_transactions(self, key, active_qry, company_id):
-        """ Search for all purchase transactions """
-        sp_query = """ SELECT  po.id from purchase_order po
-        LEFT JOIN  res_partner p on p.id = po.partner_id
-        WHERE  po.company_id = {op_id} AND  (po.name ILIKE '%{key}%' OR  
-        p.name ILIKE '%{key}%' OR  po.state ILIKE '%{key}%')
-        GROUP BY  po.id,p.name
-        """
-        self._cr.execute(
-            sp_query.format(op_id=company_id, key=key, active=active_qry))
-        purchases = self._cr.dictfetchall()
-        purchase_ids = self.env['purchase.order'].browse(
-            [i['id'] for i in purchases])
-        self.purchase_ids += purchase_ids
+    def _search_account_transactions(self, key, company_id):
+        """ Search for all account transactions using ORM domain """
+        like_key = '%{}%'.format(key)
+        domain = [
+            ('company_id', '=', company_id),
+            '|', '|',
+            ('name', 'ilike', like_key),
+            ('partner_id.name', 'ilike', like_key),
+            ('state', 'ilike', like_key),
+        ]
+        moves = self.env['account.move'].with_company(company_id).search(domain)
+        self.account_ids += moves._filter_access_rules('read')
 
-    def _search_sale_transactions(self, key, active_qry, company_id):
-        """ Search for all sale transactions """
-        sp_query = """ SELECT  sl.id from sale_order sl
-        LEFT JOIN res_partner p on p.id = sl.partner_id
-        LEFT JOIN  product_pricelist pl ON  pl.id = sl.pricelist_id
-        LEFT JOIN  account_payment_term pt  ON  pt.id = sl.payment_term_id
-        WHERE  sl.company_id = {op_id} AND  (sl.name ILIKE '%{key}%' OR  
-        p.name ILIKE '%{key}%' OR  sl.state ILIKE '%{key}%' OR  
-        pl.name::text ILIKE '%{key}%')
-        GROUP BY  sl.id,p.name,pl.name,pt.name
-        """
-        self._cr.execute(
-            sp_query.format(op_id=company_id, key=key, active=active_qry))
-        sales = self._cr.dictfetchall()
-        sale_ids = self.env['sale.order'].browse([i['id'] for i in sales])
-        self.sale_ids += sale_ids
+    def _search_purchase_transactions(self, key, company_id):
+        """ Search for all purchase transactions using ORM domain """
+        like_key = '%{}%'.format(key)
+        domain = [
+            ('company_id', '=', company_id),
+            '|', '|',
+            ('name', 'ilike', like_key),
+            ('partner_id.name', 'ilike', like_key),
+            ('state', 'ilike', like_key),
+        ]
+        purchases = self.env['purchase.order'].with_company(
+            company_id).search(domain)
+        self.purchase_ids += purchases._filter_access_rules('read')
 
-    def _search_inventory_transactions(self, key, active_qry, company_id):
-        """ Search for all inventory transactions """
-        sp_query = """ SELECT  sp.id from stock_picking sp
-        LEFT JOIN  res_partner p on p.id = sp.partner_id
-        LEFT JOIN  stock_picking_type t  ON  t.id = sp.picking_type_id
-        WHERE  sp.company_id = {op_id} AND  (sp.name ILIKE '%{key}%' OR 
-        p.name ILIKE '%{key}%'  OR  sp.state ILIKE '%{key}%' OR  
-        t.name::text ILIKE '%{key}%') GROUP BY  sp.id,p.name,t.name
-        """
-        self._cr.execute(
-            sp_query.format(op_id=company_id, key=key, active=active_qry))
-        transactions = self._cr.dictfetchall()
-        transaction_ids = self.env['stock.picking'].browse(
-            [i['id'] for i in transactions])
-        self.transaction_ids += transaction_ids
+    def _search_sale_transactions(self, key, company_id):
+        """ Search for all sale transactions using ORM domain """
+        like_key = '%{}%'.format(key)
+        domain = [
+            ('company_id', '=', company_id),
+            '|', '|',
+            ('name', 'ilike', like_key),
+            ('partner_id.name', 'ilike', like_key),
+            ('state', 'ilike', like_key),
+        ]
+        sales = self.env['sale.order'].with_company(company_id).search(domain)
+        self.sale_ids += sales._filter_access_rules('read')
 
-    def _search_products(self, key, active_qry, company_id):
-        """ search for products """
-        pt_query = """ SELECT pt.id FROM  product_template pt
-        LEFT JOIN  product_category pc ON pc.id = pt.categ_id
-        WHERE  (pt.name::text ILIKE '%{key}%' OR  
-        pt.default_code ILIKE '%{key}%' OR  pt.type ILIKE '%{key}%' OR 
-        pt.description::text ILIKE '%{key}%' OR  pc.name ILIKE '%{key}%')
-    """
-        self._cr.execute(pt_query.format(op_id=company_id, key=key,
-                                         active=active_qry).replace(
-            'obj', 'pt'))
-        template_ids = self._cr.dictfetchall()
-        product_template_ids = self.env['product.template'].browse(
-            [i['id'] for i in template_ids])
-        self.product_ids += product_template_ids
+    def _search_inventory_transactions(self, key, company_id):
+        """ Search for all inventory transactions using ORM domain """
+        like_key = '%{}%'.format(key)
+        domain = [
+            ('company_id', '=', company_id),
+            '|', '|',
+            ('name', 'ilike', like_key),
+            ('partner_id.name', 'ilike', like_key),
+            ('state', 'ilike', like_key),
+        ]
+        transactions = self.env['stock.picking'].with_company(
+            company_id).search(domain)
+        self.transaction_ids += transactions._filter_access_rules('read')
 
-    def _search_customer(self, key, active_qry):
-        """ search for customer """
-        query = """  SELECT  r.id from res_partner r  WHERE  
-        (r.parent_id is NULL )  AND  r.type = 'contact' {active} AND  
-        (r.name ILIKE '%{key}%' OR   r.street ILIKE '%{key}%' OR 
-         r.street2 ILIKE '%{key}%' OR r.city ILIKE '%{key}%' OR 
-         r.zip ILIKE '%{key}%' OR  r.email ILIKE '%{key}%')   """
-        query_params = query.format(key=key, active=active_qry).replace(
-            'obj', 'r')
-        self._cr.execute(query_params)
-        customers = self._cr.dictfetchall()
-        customer_ids = self.env['res.partner'].browse(
-            [i['id'] for i in customers])
-        self.customer_ids += customer_ids
+    def _search_products(self, key, company_id):
+        """ Search for products using ORM domain """
+        like_key = '%{}%'.format(key)
+        active_domain = self._get_active_domain()
+        domain = active_domain + [
+            '|', '|', '|', '|',
+            ('name', 'ilike', like_key),
+            ('default_code', 'ilike', like_key),
+            ('type', 'ilike', like_key),
+            ('description', 'ilike', like_key),
+            ('categ_id.name', 'ilike', like_key),
+        ]
+        products = self.env['product.template'].with_company(
+            company_id).search(domain)
+        self.product_ids += products._filter_access_rules('read')
+
+    def _search_customer(self, key):
+        """ Search for customers using ORM domain """
+        like_key = '%{}%'.format(key)
+        active_domain = self._get_active_domain()
+        domain = active_domain + [
+            ('parent_id', '=', False),
+            ('type', '=', 'contact'),
+            '|', '|', '|', '|', '|',
+            ('name', 'ilike', like_key),
+            ('street', 'ilike', like_key),
+            ('street2', 'ilike', like_key),
+            ('city', 'ilike', like_key),
+            ('zip', 'ilike', like_key),
+            ('email', 'ilike', like_key),
+        ]
+        customers = self.env['res.partner'].search(domain)
+        self.customer_ids += customers._filter_access_rules('read')
