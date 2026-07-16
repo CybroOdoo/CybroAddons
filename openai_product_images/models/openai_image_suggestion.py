@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -22,23 +22,19 @@
 from odoo import fields, models
 
 
-class DalleImageSuggestion(models.Model):
-    """image for product from dalle and save it as record"""
-    _name = 'dalle.image.suggestion'
+class OpenAIImageSuggestion(models.Model):
+    """Store AI-generated images for product templates."""
+    _name = 'openai.image.suggestion'
+    _description = 'Model For Saving AI Generated Product Images'
     _rec_name = 'product_tmpl_id'
-    _description = 'model for save image'
 
     product_image = fields.Binary('Image', attachment=True,
-                                  help="filed to store image")
+                                  help="Field to store the generated image")
     product_tmpl_id = fields.Many2one('product.template', 'Related Product',
-                                      help="filed to store product")
+                                      help="Product associated with this AI-generated image.")
 
     def action_make_as_product_image(self):
-        """Summary:
-              Function to make this image as product image
-           Returns:
-               returns the  product form view image of corresponding product
-        """
+        """Set the generated image as the product's main image."""
         self.product_tmpl_id.image_1920 = self.product_image
         return {
             'name': self.product_tmpl_id.name,

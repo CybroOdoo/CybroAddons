@@ -21,12 +21,11 @@
 ################################################################################
 {
     'name': 'Generate Product Images Using OpenAI',
-    'version': '17.0.1.0.0',
+    'version': '17.0.2.0.0',
     'category': 'Extra Tools',
-    'summary': 'This module helps to generate images for products using '
-               'DALL-E.',
-    'description': 'Odoo Module for Generating Product Images using '
-                   'DALL-E,OpenAI,dalle,chatgpt,odoo chatgpt connector,'
+    'summary': 'This module helps to generate images for products using OpenAI.',
+    'description': 'Odoo module for generating product images using '
+                   'OpenAI,AI Image,openai_image,chatgpt,odoo chatgpt connector,'
                    'odoo chatgpt,openai odoo',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
@@ -36,9 +35,12 @@
     'data': [
         'security/ir.model.access.csv',
         'views/product_template_views.xml',
-        'views/dalle_image_suggestion_views.xml',
+        'views/openai_image_suggestion_views.xml',
         'wizard/image_suggestion_views.xml',
     ],
+    'external_dependencies': {
+       'python': ['openai'],
+    },
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
     'installable': True,

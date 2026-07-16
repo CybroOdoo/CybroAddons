@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -20,21 +20,23 @@
 #
 ################################################################################
 from odoo import models
+from odoo.exceptions import ValidationError
 
 
 class ProductTemplate(models.Model):
-    """To write function for product template buttons """
-
+    """
+    Extend the Product Template model to add actions for
+    generating and viewing AI-generated product images.
+    """
     _inherit = 'product.template'
 
     def action_open_image_prompt_wizard(self):
-        """Summary:
-              Function to view  image suggestion
-           Returns:
-               returns the  image of corresponding product
-        """
+        """Open wizard to generate an AI image prompt for the product."""
+        if len(self) > 1:
+            raise ValidationError(
+                "Please select only one product to generate an image.")
         return {
-            'name': self.name,
+            'name': 'Generate AI Image',
             'view_mode': 'form',
             'res_model': 'image.suggestion',
             'type': 'ir.actions.act_window',
@@ -42,16 +44,12 @@ class ProductTemplate(models.Model):
             'context': {'default_product_tmpl_id': self.id},
         }
 
-    def get_dall_e_image(self):
-        """Summary:
-              Function to view  dalle  image suggestion
-           Returns:
-               returns the created  image of corresponding product
-        """
+    def action_view_ai_images(self):
+        """Open AI generated images related to the product."""
         return {
-            'name': self.name,
-            'view_mode': 'tree,form',
-            'res_model': 'dalle.image.suggestion',
+            'name': 'AI Images',
+            'view_mode': 'list,form',
+            'res_model': 'openai.image.suggestion',
             'type': 'ir.actions.act_window',
             'domain': [('product_tmpl_id', '=', self.id)],
         }

@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU AFFERO
@@ -19,5 +19,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from . import dalle_image_suggestion
+from . import openai_image_suggestion
 from . import product_template
