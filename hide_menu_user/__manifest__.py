@@ -20,7 +20,7 @@
 #
 #############################################################################
 {
-    'name': 'Hide Any Menu User Wise',
+    'name': 'Hide Any Menu User & Group Wise',
     'version': '19.0.2.0.1',
     'category': 'Extra Tools',
     'summary': 'Hide or restrict any menu item per user or per group in Odoo.',
