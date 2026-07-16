@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Website Cart Lines-->
+    <template id="website_cart_inherited"
+              inherit_id="website_sale.cart_lines">
+        <xpath expr="//t[@t-foreach='website_sale_order.website_order_line']"
+               position="replace">
+            <section class="section-shopping-cart-table w-100 float-left mt-4">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12 table-responsive js_cart_lines" id="cart_products"
+                                     t-if="website_sale_order and website_sale_order.website_order_line">
+                            <table class="w-100 float-left tbl-section-shopping-cart">
+                                <thead>
+                                    <th>
+                                        Image
+                                    </th>
+                                    <th>
+                                        Product Name
+                                    </th>
+                                    <th>
+                                        Quantity
+                                    </th>
+                                    <th>
+                                        Unit Price
+                                    </th>
+                                    <th>
+                                        Total
+                                    </th>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="website_sale_order.website_order_line" t-as="line">
+                                        <t t-set="is_combo" t-value="line.product_type == 'combo'"/>
+                                        <div
+                                            class="o_cart_product d-flex gap-3 pb-4"
+                                            t-attf-data-product-id="#{line.product_id and line.product_id.id}"
+                                        >
+                                        <tr>
+                                            <td>
+                                                <div
+                                                    class="o_cart_product_image"
+                                                >
+                                                    <!--
+                                                        Unsellable lines can have unpublished products, but portal users have no
+                                                        access to unpublished product images. To ensure product images are
+                                                        always shown for unsellable lines, we use the raw image data as src
+                                                        (which doesn't require access, unlike the image URL).
+                                                    -->
+                                                    <t t-call="website_sale.cart_line_product_link">
+                                                        <img
+                                                            t-if="not line._is_sellable() and line.product_id.image_128"
+                                                            t-att-src="image_data_uri(line.product_id.image_128)"
+                                                            class="img border rounded"
+                                                            t-att-alt="line.name_short"
+                                                        />
+                                                        <div
+                                                            t-else=""
+                                                            t-field="line.product_id.image_128"
+                                                            t-options="{
+                                                                'widget': 'image',
+                                                                'qweb_img_responsive': False,
+                                                                'class': 'border rounded',
+                                                            }"
+                                                        />
+                                                    </t>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-md-flex flex-md-wrap column-gap-md-1 align-items-md-center">
+                                                                                <t t-call="website_sale.cart_line_product_link">
+                                                                                    <h6
+                                                                                        t-out="line._get_line_header()"
+                                                                                        class="text-wrap mb-1"
+                                                                                    />
+                                                                                </t>
+                                                                                <t t-set="combination_name" t-value="line._get_combination_name()"/>
+                                                                                <span t-if="combination_name" class="d-none d-md-inline h6 text-muted mb-1">-</span>
+                                                                                <div
+                                                                                    t-if="combination_name or line.product_template_id._has_multiple_uoms()"
+                                                                                    class="d-inline-flex flex-wrap column-gap-2 row-gap-1 align-items-center my-1 my-md-0 w-100 w-md-auto"
+                                                                                >
+                                                                                    <span
+                                                                                        t-if="combination_name"
+                                                                                        class="h6 text-muted mb-1"
+                                                                                        t-out="combination_name"
+                                                                                    />
+                                                                                    <span
+                                                                                        t-if="line.product_template_id._has_multiple_uoms()"
+                                                                                        class="badge bg-light mb-1"
+                                                                                        t-out="line.product_uom_id.name"
+                                                                                    />
+                                                                                </div>
+                                                                            </div>
+                                                <t t-call="website_sale.cart_line_description_following_lines"/>
+                                                                        <ul t-if="is_combo" class="list-group">
+                                                                            <t
+                                                                                t-foreach="line.linked_line_ids.filtered('combo_item_id')"
+                                                                                t-as="combo_item_line"
+                                                                            >
+                                                                                <t t-call="website_sale.cart_combo_item_line"/>
+                                                                            </t>
+                                                                        </ul>
+                                            </td>
+                                            <td>
+                                                        <div
+                                                            class="o_cart_product d-flex gap-3 pb-4"
+                                                            t-attf-data-product-id="#{line.product_id and line.product_id.id}"
+                                                        >
+                                                            <div class="d-flex flex-column flex-grow-1 gap-3 min-w-0">
+                                                                <div class="d-flex gap-3">
+                                                                    <div class="flex-grow-1 text-wrap w-100">
+                                                                    </div>
+                                                                    <div t-if="not is_combo" class="d-none d-md-block">
+                                                                        <div class="d-none d-md-block mt-2"><t t-call="website_sale.cart_lines_quantity"/></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div
+                                                                    name="o_wsale_cart_line_button_container_mobile"
+                                                                    class="d-flex d-md-none"
+                                                                >
+                                                                    <div class="d-flex d-md-none align-items-center me-auto">
+                                                                        <t t-call="website_sale.cart_lines_quantity" is_mobile="True"/>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                            </td>
+                                            <td>
+                                                <span t-out="line._get_displayed_unit_price()"
+                                                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                            </td>
+                                            <td>
+                                                <div class="mb-0 h6 fw-bold text-end"
+                                                     name="website_sale_cart_line_price">
+                                                    <t t-if="line.discount">
+                                                        <del t-attf-class="#{'text-muted mr8'}"
+                                                             style="white-space: nowrap;"
+                                                             t-out="line._get_displayed_unit_price() * line.product_uom_qty"
+                                                             t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                    </t>
+                                                    <t t-set="product_price" t-value="line._get_cart_display_price()"/>
+                                                    <t t-call="website_sale.cart_product_price"/>
+                                                    <small t-if="line._is_sellable() and line.product_id.base_unit_price"
+                                                           class="cart_product_base_unit_price d-block text-muted"
+                                                           groups="website_sale.group_show_uom_price">
+                                                        <t t-call='website_sale.base_unit_price'>
+                                                            <t t-set='product' t-value='line.product_id'/>
+                                                            <t t-set='combination_info'
+                                                               t-value="{'base_unit_price': product._get_base_unit_price(product_price/line.product_uom_qty)}"/>
+                                                        </t>
+                                                    </small>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        </div>
+                                        </t>
+                                    </tbody>
+                            </table>
+                            <table class="w-100 table-sub-total">
+                                <tbody>
+                                    <tr
+                                            t-if="website_sale_order._has_deliverable_products() and website_sale_order.carrier_id"
+                                            id="order_delivery"
+                                            style="border: 1px solid #D9D9D9;">
+                                        <td
+                                                style="width: 90%; text-align: right; padding-right: 12px;"
+                                                title="Delivery will be updated after choosing a new delivery method"
+                                        >
+                                            Delivery
+                                        </td>
+                                        <td style="width:10%; text-align: left; border-left: 1px solid #D9D9D9; padding-left: 12px; font-weight: normal;">
+                                            <span
+                                                    t-out="website_sale_order.amount_delivery"
+                                                    class="monetary_field"
+                                                    style="white-space: nowrap;"
+                                                    t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr id="order_total_untaxed" style="border: 1px solid #D9D9D9;">
+                                        <td id="cart_total_subtotal"
+                                            style="width: 90%; text-align: right; padding-right: 12px;">
+                                            Subtotal
+                                        </td>
+                                        <td style="width:10%; text-align: left; border-left: 1px solid #D9D9D9; padding-left: 12px; font-weight: normal;">
+                                            <span t-field="website_sale_order.amount_untaxed"
+                                                  class="monetary_field"
+                                                  style="white-space: nowrap;"
+                                                  t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                    <tr id="order_total_taxes" style="border: 1px solid #D9D9D9;">
+                                        <td style="width: 90%; text-align: right; padding-right: 12px;">Taxes</td>
+                                        <td style="width:10%; text-align: left; border-left: 1px solid #D9D9D9; padding-left: 12px; font-weight: normal;">
+                                            <span t-field="website_sale_order.amount_tax"
+                                                  class="monetary_field"
+                                                  style="white-space: nowrap;"
+                                                  t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                    <tr id="order_total" style="border: 1px solid #D9D9D9;">
+                                        <td style="width: 90%; text-align: right; padding-right: 12px;">
+                                            <strong>Total</strong>
+                                        </td>
+                                        <td style="width:10%; text-align: left; border-left: 1px solid #D9D9D9; padding-left: 12px; font-weight: normal;">
+                                            <strong t-field="website_sale_order.amount_total"
+                                                    class="monetary_field text-end p-0"
+                                                    t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="section-tax-coupen-code w-100 float-left">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <h4 class="mt-5">
+                                <b>What would you like to do next?</b>
+                            </h4>
+                            <p>Choose if you have a discount code or reward points you want to use or would like to
+                                estimate your delivery cost.
+                            </p>
+                            <div id="accordion">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <a class="card-link text-dark" data-bs-toggle="collapse" href="#collapseOne">
+                                            Estimate Shipping and Taxes
+                                        </a>
+                                    </div>
+                                    <div id="collapseOne" class="collapse show" data-bs-parent="#accordion">
+                                        <div class="card-body">
+                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                                            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                                            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                                            consequat.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <a class="collapsed card-link text-dark" data-bs-toggle="collapse"
+                                           href="#collapseTwo">
+                                            Use Coupon Code
+                                        </a>
+                                    </div>
+                                    <div id="collapseTwo" class="collapse" data-bs-parent="#accordion">
+                                        <div class="card-body">
+                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                                            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                                            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                                            consequat.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <a class="collapsed card-link text-dark" data-bs-toggle="collapse"
+                                           href="#collapseThree">
+                                            Use Gift Certificate
+                                        </a>
+                                    </div>
+                                    <div id="collapseThree" class="collapse" data-bs-parent="#accordion">
+                                        <div class="card-body">
+                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                                            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                                            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                                            consequat.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 mt-5">
+                            <div class="d-flex gap-3 justify-content-between  flex-md-row justify-content-between align-items-center cart-action-buttons">
+                                <a href="/shop"
+                                   class="btn cart-btn-secondary px-5 py-3">
+                                    Continue Shopping
+                                </a>
+                                <a name="website_sale_main_button"
+                                   href="/shop/checkout"
+                                   class="btn cart-btn-primary px-5 py-3">
+                                    Checkout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+<!--Cart-->
+    <template id="cart_total_inherited"
+              inherit_id="website_sale.checkout_layout">
+        <xpath expr="//t[@t-call='website_sale.shorter_cart_summary']"
+               position="replace">
+        </xpath>
+    </template>
+</odoo>

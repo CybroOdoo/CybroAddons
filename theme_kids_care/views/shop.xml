@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Custom Shop Header / Banner -->
+    <template id="products_header" inherit_id="website_sale.products" name="Products Header">
+        <xpath expr="//div[hasclass('o_wsale_products_main_row')]" position="before">
+            <div class="shop-header-banner w-100 mb-4" style="background-color: #CB61FB; padding: 30px 0; color: white;">
+                <div class="container-fluid px-5">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                             <a href="#" class="text-white text-decoration-none small mb-1 d-inline-block"><i class="fa fa-circle-thin me-2"/>Back to category</a>
+                             <h1 class="font-weight-bold m-0" style="font-size: 40px;">
+                                <t t-if="category" t-esc="category.name"/>
+                                <t t-else="">Shop</t>
+                             </h1>
+                        </div>
+                        <div class="text-end">
+                            <p class="mb-0 small">
+                                <i class="fa fa-home me-2"/> / 
+                                <t t-if="category">
+                                    <t t-foreach="category.parents_and_self" t-as="cat">
+                                        <t t-esc="cat.name"/> <t t-if="not cat_last"> / </t>
+                                    </t>
+                                </t>
+                                <t t-else="">Shop</t>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+        <!-- Hide default Odoo breadcrumbs and title if any -->
+        <xpath expr="//div[hasclass('o_wsale_products_main_row')]" position="attributes">
+            <attribute name="class" add="mt-4" separator=" "/>
+        </xpath>
+        <!-- Force top-level categories to stay visible in the filmstrip -->
+        <xpath expr="//t[@t-call='website_sale.filmstrip_categories']" position="before">
+            <t t-set="category_entries" t-value="request.env['product.public.category'].sudo().search([('parent_id', '=', False)])"/>
+        </xpath>
+    </template>
+    <!-- Custom Category Sidebar Header -->
+    <template id="products_categories_header_custom" inherit_id="website_sale.products_categories_list" name="Custom Category Header">
+        <xpath expr="//h6" position="replace">
+            <h5 class="font-weight-bold mb-4 sidebar-title-custom">Category</h5>
+        </xpath>
+    </template>
+    <!-- Style the sidebar categories to match mockup -->
+    <template id="products_attributes_custom" inherit_id="website_sale.products" name="Custom Category Sidebar Styling">
+        <xpath expr="//*[@id='products_grid_before']" position="attributes">
+            <attribute name="class">col-lg-3 d-none d-lg-block category-sidebar-wrap border-end</attribute>
+            <attribute name="style">background: #fdfdfd;</attribute>
+        </xpath>
+    </template>
+    <!-- Custom Product Item in Grid -->
+    <template id="products_item_custom" inherit_id="website_sale.products_item" name="Custom Products Item">
+        <xpath expr="//form" position="replace">
+            <form action="/shop/cart/update/http" method="POST" class="card border-0 product-card-custom mb-4 p-4 shadow-sm h-100 text-start" t-att-data-publish="product.website_published and 'on' or 'off'" style="background: #ffffff; border-radius: 10px;">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <div class="card-body p-0 d-flex flex-column">
+                    <div class="text-end mb-1">
+                        <t t-set="in_wish" t-value="(products_in_wishlist and product in products_in_wishlist) or (wishes and product in wishes.product_id.product_tmpl_id)"/>
+                        <button type="button"
+                                t-attf-class="btn p-0 border-0 o_add_wishlist_toggle text-muted #{in_wish and 'o_in_wishlist'}"
+                                t-att-data-product-template-id="product.id"
+                                t-att-data-product-product-id="product.product_variant_id.id"
+                                title="Add to wishlist"
+                                style="background: none; box-shadow: none;">
+                            <i t-attf-class="fa #{in_wish and 'fa-heart text-danger' or 'fa-heart-o'}"/>
+                        </button>
+                    </div>
+                    <div class="product-image-container text-center mb-3">
+                        <a t-att-href="product_href" class="d-block position-relative">
+                            <span t-field="product.image_512" t-options="{'widget': 'image', 'preview_image': 'image_512', 'class': 'img-fluid', 'style': 'max-height: 200px; object-fit: contain;'}"/>
+                        </a>
+                    </div>
+                    <div class="product-info mt-auto">
+                        <h6 class="font-weight-bold mb-0">
+                            <a t-att-href="product_href" class="text-dark text-decoration-none" style="font-size: 18px;" t-field="product.name"/>
+                        </h6>
+                        <p class="text-muted small mb-3 text-uppercase" t-field="product.categ_id.name"/>
+                        <div class="attributes-selection mb-3 small d-flex flex-column gap-2">
+                            <div class="d-flex align-items-center">
+                                <span class="me-2">Size :</span>
+                                <span class="badge border text-dark cur-pointer badge-attr-select px-2 py-1 active" style="font-size: 14px; border-color: #333 !important;">18</span>
+                                <span class="badge border text-dark ms-2 cur-pointer badge-attr-select px-2 py-1" style="font-size: 14px; border-color: #333 !important;">24</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="me-2">Color :</span>
+                                <span class="rounded-circle d-inline-block border cur-pointer color-attr-select active" style="width: 18px; height: 18px; background: #fff; border-color: #333 !important;"/>
+                                <span class="rounded-circle d-inline-block border ms-2 cur-pointer color-attr-select" style="width: 18px; height: 18px; background: #eee;"/>
+                            </div>
+                        </div>
+                        <div class="price-section d-flex flex-column">
+                            <h2 class="font-weight-bold mb-3" style="font-size: 32px; color: #1a1a1a;">
+                                <span t-esc="product.list_price" t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                            </h2>
+                            <input type="hidden" name="product_id" t-att-value="product.product_variant_id.id"/>
+                            <input type="hidden" name="add_qty" value="1"/>
+                            <button type="submit" class="btn w-100 py-3 font-weight-bold text-dark shadow-sm" style="background-color: #F1BD36; border-radius: 50px; border: none; font-size: 16px;">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </xpath>
+    </template>
+</odoo>

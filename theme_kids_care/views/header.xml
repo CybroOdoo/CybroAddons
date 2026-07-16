@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Robust way to add the logo to placeholders -->
+    <template id="header_logo_kids_care" inherit_id="website.placeholder_header_brand" name="Header Logo Kids Care" priority="1000">
+        <xpath expr="." position="inside">
+            <a href="/" class="navbar-brand theme-logo">
+                <img src="/theme_kids_care/static/src/images/logo.png" alt="Baby Toys" title="Baby Toys" style="max-height: 50px;"/>
+            </a>
+        </xpath>
+    </template>
+    <!-- Custom Header Layout to match the image -->
+    <template id="template_header_default_inherit" inherit_id="website.template_header_default" name="Kids Care Custom Header">
+        <xpath expr="//t[@t-call='website.navbar']" position="replace">
+            <t t-call="website.navbar">
+                <t t-set="_navbar_classes" t-valuef="d-none d-lg-block pb-0 pt-0"/>
+                <div id="o_main_nav" class="container d-flex align-items-center justify-content-between">
+                    <!-- Brand/Logo (Left) -->
+                    <div class="header-logo-wrap">
+                        <t t-call="website.placeholder_header_brand"/>
+                    </div>
+                    <!-- Navbar Nav (Center) -->
+                    <div class="header-menu-wrap mx-auto">
+                        <t t-call="website.navbar_nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">HOME</a>
+                            </li>
+                            <t t-set="cat_toys" t-value="request.env['product.public.category'].sudo().search([('name', '=', 'BABY TOYS')], limit=1)"/>
+                            <li class="nav-item">
+                                <a class="nav-link" t-attf-href="/shop/category/#{cat_toys.id if cat_toys else 'baby-toys'}">BABY TOYS</a>
+                            </li>
+                            <t t-set="cat_tshirt" t-value="request.env['product.public.category'].sudo().search([('name', '=', 'BABY T-SHIRT')], limit=1)"/>
+                            <li class="nav-item">
+                                <a class="nav-link" t-attf-href="/shop/category/#{cat_tshirt.id if cat_tshirt else 'baby-t-shirt'}">BABY T-SHIRT</a>
+                            </li>
+                            <t t-set="cat_feeding" t-value="request.env['product.public.category'].sudo().search([('name', '=', 'BABY FEEDING')], limit=1)"/>
+                            <li class="nav-item">
+                                <a class="nav-link" t-attf-href="/shop/category/#{cat_feeding.id if cat_feeding else 'baby-feeding'}">BABY FEEDING</a>
+                            </li>
+                        </t>
+                    </div>
+                    <!-- Search & Cart (Right) -->
+                    <div class="header-right-wrap d-flex align-items-center">
+                        <div class="header-search me-3">
+                            <ul class="navbar-nav">
+                                <t t-call="website_sale_wishlist.header_wishlist_link">
+                                    <t t-set="_icon" t-value="True"/>
+                                </t>
+                            </ul>
+                            <t t-call="website.placeholder_header_search_box">
+                                <t t-set="_classes" t-valuef="m-0"/>
+                            </t>
+                        </div>
+                        <div class="header-cart ms-2">
+                            <ul class="navbar-nav">
+                                <t t-call="website_sale.header_cart_link">
+                                    <t t-set="_icon" t-value="True"/>
+                                    <t t-set="_text" t-value="True"/>
+                                    <t t-set="_link_class" t-valuef="nav-link custom-cart-btn btn"/>
+                                </t>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!-- Custom Mobile Header to filter menu items (Sync with Desktop allowlist) -->
+    <template id="template_header_mobile_inherit" inherit_id="website.template_header_mobile" name="Kids Care Mobile Header Filter">
+        <xpath expr="//t[@t-foreach='website.menu_id.child_id']" position="replace">
+            <!-- Explicitly show the key categories with correct Shop links -->
+            <li class="nav-item border-top">
+                <a class="nav-link p-3" href="/">HOME</a>
+            </li>
+            <t t-set="cat_toys" t-value="request.env['product.public.category'].sudo().search([('name', '=', 'BABY TOYS')], limit=1)"/>
+            <li class="nav-item border-top">
+                <a class="nav-link p-3" t-attf-href="/shop/category/#{cat_toys.id if cat_toys else 'baby-toys'}">BABY TOYS</a>
+            </li>
+            <t t-set="cat_tshirt" t-value="request.env['product.public.category'].sudo().search([('name', '=', 'BABY T-SHIRT')], limit=1)"/>
+            <li class="nav-item border-top">
+                <a class="nav-link p-3" t-attf-href="/shop/category/#{cat_tshirt.id if cat_tshirt else 'baby-t-shirt'}">BABY T-SHIRT</a>
+            </li>
+            <t t-set="cat_feeding" t-value="request.env['product.public.category'].sudo().search([('name', '=', 'BABY FEEDING')], limit=1)"/>
+            <li class="nav-item border-top border-bottom">
+                <a class="nav-link p-3" t-attf-href="/shop/category/#{cat_feeding.id if cat_feeding else 'baby-feeding'}">BABY FEEDING</a>
+            </li>
+        </xpath>
+    </template>
+</odoo>

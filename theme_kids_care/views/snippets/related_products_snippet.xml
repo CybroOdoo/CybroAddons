@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Snippet - Best Sellers -->
+    <template id="kidscare_best_sellers_snippet" inherit_id="website.snippets" name="Best Sellers">
+        <xpath expr="//snippets[@id='snippet_content']"
+               position="inside">
+            <t t-snippet="theme_kids_care.best_sellers_snippet" group="kids_care" t-thumbnail="/theme_kids_care/static/description/img/products.png"
+               string="Best Sellers"/>
+        </xpath>
+    </template>
+    <!-- Best Sellers -->
+    <template id="best_sellers_snippet" name="Best Sellers">
+        <section class="section-best-sellers float-left w-100 py-5" 
+                 data-snippet="theme_kids_care.best_sellers_snippet"
+                 data-name="Best Sellers">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h3 class="h3-best-sellers text-white">
+                            <p class="mb-0 small poppins-regular">All product</p>
+                            <b class="poppins-bold" style="font-size: 36px;">Best Sellers</b>
+                        </h3>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="w-100 float-left text-end container-btn pt-4">
+                            <button class="btn btn-outline-light text-uppercase font-weight-bold" style="border: 1px solid #fff; border-radius: 20px; padding: 5px 25px; font-size: 12px;">
+                                <a href="/shop" style="color: inherit; text-decoration: none;">Show More</a>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 mt-3">
+                        <div class="best-sellers-nav d-flex gap-4 text-white small font-weight-bold text-uppercase poppins-medium">
+                            <span class="cur-pointer">Baby T-Shirt</span>
+                            <span class="cur-pointer opa-5">Baby Care</span>
+                            <span class="cur-pointer opa-5">Baby Feeding</span>
+                            <span class="cur-pointer opa-5">Baby Toys</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <div class="row">
+                            <div class="owl-carousel owl-theme mt-4 best-sellers-carousel">
+                                <t t-set="baby_categ" t-value="request.env['product.category'].sudo().search([('name', '=', 'BABY CARE')], limit=1)"/>
+                                <t t-set="products"
+                                   t-value="request.env['product.template'].sudo().search([('is_published', '=', True), ('categ_id', 'child_of', baby_categ.ids)]) if baby_categ else request.env['product.template'].sudo().search([('is_published', '=', True)], limit=8)"/>
+                                <t t-foreach="products" t-as="product">
+                                      <div class="item">
+                                          <div class="card border-0 mr-4 p-4 position-relative bg-white" style="border-radius: 10px; min-height: 250px;">
+                                              <div class="row g-0">
+                                                  <div class="col-8 pe-2">
+                                                      <div class="d-flex justify-content-between align-items-center mb-1">
+                                                          <h3 class="text-dark mb-0 h5 text-truncate" style="max-width: 150px;">
+                                                              <b><t t-esc="product.name"/></b>
+                                                          </h3>
+                                                      </div>
+                                                      <p class="text-muted small mb-3 text-uppercase poppins-medium" style="font-size: 10px; letter-spacing: 0.5px;"><t t-esc="product.categ_id.name"/></p>
+                                                      <div class="product-attributes mt-2 small">
+                                                          <p class="mb-1" style="font-size: 11px;">Size : 
+                                                              <span class="badge border text-dark ms-1 bg-light" style="border-radius: 0; padding: 4px 8px; font-weight: normal;">18</span>
+                                                              <span class="badge border text-dark ms-1 bg-light" style="border-radius: 0; padding: 4px 8px; font-weight: normal;">24</span>
+                                                          </p>
+                                                          <p class="mb-3" style="font-size: 11px;">Color : 
+                                                              <span class="rounded-circle d-inline-block border ms-1" style="width: 14px; height: 14px; background: #fff;"/>
+                                                              <span class="rounded-circle d-inline-block border ms-1" style="width: 14px; height: 14px; background: #999;"/>
+                                                          </p>
+                                                      </div>
+                                                      <h2 class="text-dark h2 mb-0 poppins-bold pt-1">
+                                                          <b>$<t t-esc="'%.0f' % product.list_price"/></b>
+                                                      </h2>
+                                                  </div>
+                                                  <div class="col-4 text-center d-flex align-items-center justify-content-center">
+                                                       <img t-att-src="'/web/image/product.template/%s/image_128' % product.id" class="img-fluid" t-att-alt="product.name" style="max-height: 90px; object-fit: contain;"/>
+                                                  </div>
+                                              </div>
+                                              <div class="position-absolute" style="bottom: 10px; right: 10px;">
+                                                  <a t-attf-href="/shop/cart/update/http?product_id=#{product.product_variant_id.id}"
+                                                     class="btn btn-primary px-4 py-2" 
+                                                     style="background-color: #F1BD36; border: none; border-radius: 20px; color: #fff; font-weight: bold; font-size: 12px;">
+                                                      Add to Cart
+                                                  </a>
+                                              </div>
+                                          </div>
+                                      </div>
+                                 </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Product Showcase Split Section -->
+                <div class="row mt-5 pt-5 pb-4 align-items-center">
+                    <div class="col-lg-6">
+                        <div class="showcase-large-img pe-lg-4">
+                            <img src="/theme_kids_care/static/src/images/img-section-baby-care.png" class="img-fluid" style="border-radius: 10px; width: 100%;"/>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="showcase-content ps-lg-5 text-white">
+                            <t t-set="showcase_products" t-value="request.env['product.template'].sudo().search([('is_published', '=', True), ('categ_id', 'child_of', baby_categ.ids)], limit=1) if baby_categ else []"/>
+                            <t t-if="showcase_products">
+                                <t t-set="s_product" t-value="showcase_products[0]"/>
+                                <div class="showcase-product-icon mb-4">
+                                    <img t-att-src="'/web/image/product.template/%s/image_512' % s_product.id" class="img-fluid" style="max-height: 220px;"/>
+                                </div>
+                                <h1 class="poppins-bold mb-1" style="font-size: 36px;"><t t-esc="s_product.name"/></h1>
+                                <h6 class="text-white-50 text-uppercase mb-4 poppins-medium" style="letter-spacing: 2px; font-size: 13px;">BABY CARE CATEGORY</h6>
+                                <p class="mb-5 poppins-regular" style="line-height: 1.8; opacity: 0.9; font-size: 15px;">
+                                    Instill good oral hygiene habits from an early age with our fun and effective dental care products. Our toothbrushes, toothpaste, and mouthwash are specially designed for children, making brushing fun.
+                                </p>
+                                <div class="variant-thumbnails d-flex gap-3 mb-5">
+                                     <div class="v-thumb border px-2 py-1 bg-dark cursor-pointer shadow-sm" style="border-radius: 5px; opacity: 0.9;"><img t-att-src="'/web/image/product.template/%s/image_128' % s_product.id" style="height: 35px;"/></div>
+                                     <div class="v-thumb border px-2 py-1 bg-dark cursor-pointer shadow-sm" style="border-radius: 5px; opacity: 0.6;"><img t-att-src="'/web/image/product.template/%s/image_128' % s_product.id" style="height: 35px;"/></div>
+                                     <div class="v-thumb border px-2 py-1 bg-dark cursor-pointer shadow-sm" style="border-radius: 5px; opacity: 0.6;"><img t-att-src="'/web/image/product.template/%s/image_128' % s_product.id" style="height: 35px;"/></div>
+                                </div>
+                                <div class="attributes-showcase mb-5">
+                                     <p class="mb-3 d-flex align-items-center" style="font-size: 14px;">Size : 
+                                         <span class="badge border text-dark ms-3 bg-white size-1 badge-attr-select active" style="border-radius: 0; padding: 6px 12px; font-weight: normal; cursor: pointer;">18</span>
+                                         <span class="badge border text-dark ms-1 size-2 badge-attr-select" style="border-radius: 0; padding: 6px 12px; background: #fff; font-weight: normal; cursor: pointer;">24</span>
+                                     </p>
+                                     <p class="mb-0 d-flex align-items-center" style="font-size: 14px;">Color : 
+                                         <span class="rounded-circle d-inline-block border ms-3 color-attr-select active" style="width: 18px; height: 18px; background: #fff; cursor: pointer;"/>
+                                         <span class="rounded-circle d-inline-block border ms-2 color-attr-select" style="width: 18px; height: 18px; background: #82CBFD; cursor: pointer;"/>
+                                     </p>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between pt-4">
+                                     <h2 class="poppins-bold mb-0" style="font-size: 48px;">
+                                         <b>$<t t-esc="'%.0f' % s_product.list_price"/></b>
+                                     </h2>
+                                     <a t-attf-href="/shop/cart/update/http?product_id=#{s_product.product_variant_id.id}"
+                                        class="btn btn-primary px-5 py-3" 
+                                        style="background-color: #F1BD36; border: none; border-radius: 30px; color: #fff; font-weight: bold; font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                                         Add to Cart
+                                     </a>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+</odoo>
