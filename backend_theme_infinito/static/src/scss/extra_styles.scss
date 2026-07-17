@@ -1,0 +1,674 @@
+/*
+ * ─── Dark-mode canvas (html) ──────────────────────────────────────────────
+ * <html> carries dark-mode for the ENTIRE session once enabled:
+ *   • set by the inline guard script before first paint
+ *   • kept (never removed) by JS while dark mode is active
+ *
+ * It provides a dark CANVAS BACKGROUND that the browser shows during the
+ * GPU compositing gap (the brief window between painting new content and
+ * applying the invert filter on body/.o_web_client).
+ * Having html.dark-mode always present means the user sees a dark surface
+ * instead of white during every SPA navigation / page transition.
+ *
+ * IMPORTANT: no filter here – the filter lives only on body/.o_web_client.
+ * This prevents double-inversion on those elements.
+ */
+html.dark-mode {
+    background-color: #1a1a1a;
+    filter: none !important;
+    /* override any generic .dark-mode filter */
+    color-scheme: dark;
+    /* hint browser to use dark intrinsic colors */
+
+    /*
+     * html.dark-mode carries NO invert filter – it is a canvas background only.
+     * Without this override, the generic .dark-mode img { filter: invert(1) }
+     * rule would also match html.dark-mode img and invert images even when
+     * body/.o_web_client does NOT have the invert filter (i.e. in light mode),
+     * making every image appear dark/inverted in light mode.
+     */
+    img,
+    picture,
+    video,
+    .o_image,
+    .o_m2o_avatar>img,
+    .o_kanban_image,
+    .o_image_64_max,
+    .o_kanban_image_inner_pic,
+    .o_kanban_image_fill_left {
+        filter: none !important;
+    }
+}
+
+/* Dark canvas must also cover body during compositing transitions */
+html.dark-mode body {
+    background-color: #1a1a1a;
+}
+
+/*
+ * ─── Dark-mode filter (body / web-client) ─────────────────────────────────
+ * The actual colour inversion lives here.  Image re-inversion is kept in a
+ * separate block below so the selectors have the right specificity.
+ */
+.dark-mode {
+    filter: invert(100%);
+    background-color: #000;
+}
+
+/*
+ * Re-invert images so they appear in their original colours inside the
+ * inverted page.  Selectors target body.dark-mode / .o_web_client.dark-mode
+ * specifically (not the generic .dark-mode class) because:
+ *
+ *   • html.dark-mode img { filter: none !important }  — specificity (0,1,2)
+ *   • .dark-mode img { filter: invert(1) !important } — specificity (0,1,1) ← loses!
+ *   • body.dark-mode img { filter: invert(1) !important } — specificity (0,1,2)
+ *     + appears AFTER html.dark-mode rule in source → wins on tie ✓
+ *
+ * In recent.apps both html.dark-mode AND body.dark-mode are present.
+ * In light mode only html.dark-mode is present → none rule wins → no inversion ✓
+ */
+body.dark-mode,
+.o_web_client.dark-mode {
+
+    img,
+    picture,
+    video,
+    .o_image,
+    .o_m2o_avatar>img,
+    .o_kanban_image,
+    .o_image_64_max {
+        filter: invert(1) !important;
+    }
+
+    .o_kanban_image_inner_pic {
+        filter: invert(0) !important;
+    }
+
+    .o_kanban_image_fill_left {
+        filter: invert(1) !important;
+    }
+}
+
+/*
+ * Smooth dark↔light toggle (only kicks in after initial paint,
+ * not during the inline-script phase, so first render is instant).
+ */
+body,
+.o_web_client {
+    transition: filter 0.15s ease, background-color 0.15s ease;
+}
+
+.o_home_menu,
+.fullscreen-menu {
+    background-color: var(--main-bg, #f9f9f9);
+}
+
+#tp-wrap * {
+    font-family: arial, sans-serif;
+    box-sizing: border-box;
+}
+
+#tp-wrap *::selection {
+    background: transparent;
+}
+
+#tp-wrap {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s;
+}
+
+#tp-wrap.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#tp-box {
+    position: absolute;
+    top: 78%;
+    left: 40%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    display: flex;
+    flex-wrap: wrap;
+    box-shadow: 0px 0px 20px 5px #888;
+    background: $bg_white !important;
+}
+
+.tp-cell {
+    width: 33.3%;
+    padding: 0 15px;
+    text-align: center;
+}
+
+.tp-up,
+.tp-down {
+    padding: 10px 0;
+    color: $primary_accent;
+    font-size: 32px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.tp-val {
+    width: 100%;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 22px;
+    background: #fff;
+}
+
+#tp-close,
+#tp-set {
+    width: 50%;
+    padding: 15px 0;
+    border: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+}
+
+#tp-close {
+    background: $secondary_btn;
+}
+
+#tp-set {
+    background: $primary_accent;
+}
+
+#tp-wrap.tp-24 #tp-ap {
+    display: none;
+}
+
+#tp-wrap.tp-24 #tp-hr,
+#tp-wrap.tp-24 #tp-min {
+    width: 50%;
+}
+
+.widget-wrap {
+    width: 500px;
+    padding: 30px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.widget-wrap label,
+.widget-wrap input {
+    display: block;
+    padding: 10px;
+    width: 100%;
+}
+
+#hash {
+    width: 100px;
+    height: 100px;
+    background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 640 512" width="100" xmlns="http://www.w3.org/2000/svg"><path d="M496 224c-79.59 0-144 64.41-144 144s64.41 144 144 144 144-64.41 144-144-64.41-144-144-144zm64 150.29c0 5.34-4.37 9.71-9.71 9.71h-60.57c-5.34 0-9.71-4.37-9.71-9.71v-76.57c0-5.34 4.37-9.71 9.71-9.71h12.57c5.34 0 9.71 4.37 9.71 9.71V352h38.29c5.34 0 9.71 4.37 9.71 9.71v12.58zM496 192c5.4 0 10.72.33 16 .81V144c0-25.6-22.4-48-48-48h-80V48c0-25.6-22.4-48-48-48H176c-25.6 0-48 22.4-48 48v48H48c-25.6 0-48 22.4-48 48v80h395.12c28.6-20.09 63.35-32 100.88-32zM320 96H192V64h128v32zm6.82 224H208c-8.84 0-16-7.16-16-16v-48H0v144c0 25.6 22.4 48 48 48h291.43C327.1 423.96 320 396.82 320 368c0-16.66 2.48-32.72 6.82-48z" /></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#code-boxx {
+    font-weight: 600;
+    margin-top: 30px;
+
+    a {
+        display: inline-block;
+        padding: 5px;
+        text-decoration: none;
+        background: #b90a0a;
+        color: #fff;
+    }
+}
+
+// Fix oversized app icons in every rendering context
+.o_app_icon {
+    width: 56px !important;
+    height: 56px !important;
+    max-width: 56px !important;
+    max-height: 56px !important;
+    object-fit: contain;
+}
+
+.o_navbar_apps_menu .o_app_icon,
+.o_main_navbar .o_app_icon {
+    width: 3em !important;
+    height: 3em !important;
+    max-width: 3em !important;
+    max-height: 3em !important;
+}
+
+.sidebar_panel .sidebar_menu .sidebar_img,
+.m-sidebar .sidebar_menu .sidebar_img {
+    width: 24px !important;
+    height: 24px !important;
+    max-width: 24px !important;
+    max-height: 24px !important;
+    object-fit: contain;
+}
+
+.fullscreen-menu .img_wrapper img,
+.apps .img_wrapper img {
+    width: 70px !important;
+    height: 70px !important;
+    max-width: 70px !important;
+    max-height: 70px !important;
+    object-fit: contain;
+}
+
+.btn.btn-bookmark {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #4f6bf8 !important;
+
+    &.active {
+        color: #ffc107 !important;
+    }
+}
+
+.menu-bookmark {
+    position: fixed !important;
+    z-index: 1100 !important;
+    background-color: $bg_white;
+    display: none;
+    right: 0;
+    top: 20vh;
+    width: 5vw;
+    box-shadow: 0px 0px 10px 0px #888;
+    border-radius: 8px;
+    padding: 20px 15px;
+    overflow: hidden;
+    height: auto;
+
+    .menu-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        width: 100%;
+        max-height: 100%;
+        overflow: hidden;
+
+        .heading {
+            padding: 5px 0;
+            color: #253237;
+            width: 100%;
+            font-weight: 700;
+            border: 1px solid;
+            border-color: transparent;
+            border-bottom-color: rgb(193, 193, 193);
+            position: relative;
+            margin-bottom: 15px;
+            letter-spacing: .1rem;
+            flex-shrink: 0;
+
+            &::after {
+                left: 0;
+                content: "";
+                position: absolute;
+                background-color: black;
+                height: 1px;
+                width: 17px;
+                bottom: -1px;
+            }
+        }
+
+        .bookmark-list {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            width: 100%;
+            max-height: 270px; // Limit height to show exactly 7 items
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex-grow: 1;
+
+            // Custom styled scrollbar
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+
+            &::-webkit-scrollbar {
+                width: 4px;
+            }
+            &::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            &::-webkit-scrollbar-thumb {
+                background-color: rgba(0, 0, 0, 0.2);
+                border-radius: 4px;
+            }
+
+            .menu {
+                padding: 5px 10px;
+                color: #181818;
+                margin-bottom: 8px;
+                text-decoration: none;
+                position: relative;
+                width: 100%;
+
+                .full {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                img {
+                    width: 15px;
+                    margin-right: 8px;
+                }
+
+                svg {
+                    fill: #2250fc !important;
+                }
+
+                &::after {
+                    content: " ";
+                    height: 29px;
+                    width: 1px;
+                    background-color: #2250fc;
+                    position: absolute;
+                    left: 1px;
+                    top: 0;
+                    opacity: 0;
+                }
+
+                &:hover {
+                    background-color: #eaeaea;
+
+                    &::after {
+                        opacity: 1;
+                    }
+                }
+
+                .full {
+                    display: none;
+                }
+
+                .small {
+                    display: inline;
+                }
+            }
+        }
+    }
+
+    &:hover {
+        width: 8vw;
+
+        .menu-wrapper {
+            .bookmark-list {
+                .menu {
+                    .full {
+                        display: inline;
+                    }
+
+                    .small {
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// hr_attendance systray status
+// -----------------------------------------------------------------------------
+// Keep the original Odoo round dot in the top bar and prevent the theme from
+// recoloring it to the primary (blue) accent.
+.o_menu_systray i.fa-circle[aria-label="Attendance"].text-success {
+    color: #28a745 !important;
+}
+
+.o_menu_systray i.fa-circle[aria-label="Attendance"].text-danger {
+    color: #dc3545 !important;
+}
+
+// -----------------------------------------------------------------------------
+// Discuss: "Mark all read" button visibility
+// -----------------------------------------------------------------------------
+// Odoo renders this action as a secondary, slightly transparent button.
+// With theme colors it becomes too low-contrast, so we force it to the theme
+// primary (blue) and full opacity.
+.o-mail-Discuss .o-mail-Discuss-headerActions button[name="mark-all-read"] {
+    opacity: 1 !important;
+    background-color: var(--button-bg) !important;
+    color: #fff !important;
+}
+
+.o-mail-Discuss .o-mail-Discuss-headerActions button[name="mark-all-read"][disabled],
+.o-mail-Discuss .o-mail-Discuss-headerActions button[name="mark-all-read"].disabled {
+    opacity: 0.45 !important;
+}
+
+// -----------------------------------------------------------------------------
+// Search facets: prevent hover icon jump
+// -----------------------------------------------------------------------------
+// Theme `style.css` adds `margin-top` to `.fa-cog`, which makes the facet label
+// hover overlay (cog) jump. Keep it aligned like Odoo default.
+.o_searchview_facet_label>span.position-absolute {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.o_searchview_facet_label .fa-cog {
+    margin-top: 0 !important;
+    line-height: 1;
+}
+
+// -----------------------------------------------------------------------------
+// Discuss sidebar: center "Start a meeting" button in compact mode
+// -----------------------------------------------------------------------------
+.o-mail-DiscussSidebar.o-compact .o-mail-DiscussSidebar-top button[data-hotkey="m"] {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    justify-content: center;
+}
+
+// -----------------------------------------------------------------------------
+// Contacts kanban: restore default layout of footer action icons
+// -----------------------------------------------------------------------------
+// The theme's `style.css` forces a fixed width on `.oe_kanban_action`, but Odoo
+// adds `.oe_kanban_action` to all kanban action links (type="object"/"action"),
+// including the Contacts kanban footer icons (opportunities/sales/purchases/...).
+// Fixed widths cause big gaps and misalignment, so revert to default sizing.
+.oe_kanban_action {
+    width: auto !important;
+}
+
+.oe_kanban_action_button {
+    width: auto !important;
+    height: auto !important;
+}
+
+// -----------------------------------------------------------------------------
+// Action dropdown menu: remove bottom horizontal scrollbar
+// -----------------------------------------------------------------------------
+// Odoo sets `.dropdown-menu { overflow: auto; }` globally. If a dropdown gets a
+// narrow width (for example when positioned as `*-fit`), bootstrap's
+// `white-space: nowrap` on items can create a horizontal scrollbar.
+// The action/cog menu dropdowns use `menuClass="lh-base"`, so we target that.
+.o-dropdown--menu.dropdown-menu.lh-base {
+    width: max-content !important;
+    max-width: 90vw !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+
+.o-dropdown--menu.dropdown-menu.lh-base .dropdown-item,
+.o-dropdown--menu.dropdown-menu.lh-base .o-dropdown-item,
+.o-dropdown--menu.dropdown-menu.lh-base .o_menu_item {
+    white-space: normal;
+}
+
+// -----------------------------------------------------------------------------
+// Many2many tags: restore default tag chip sizing (avoid "V..." truncation)
+// -----------------------------------------------------------------------------
+// Odoo limits tag text via `--Tag-max-width` (default 200px). Some theme
+// overrides can accidentally shrink it, causing aggressive ellipsis.
+.o_field_widget.o_field_many2many_tags,
+.o_field_widget.o_field_many2many_tags_avatar {
+    --Tag-max-width: 200px;
+}
+
+.o_field_widget.o_field_many2many_tags .badge .o_badge_text,
+.o_field_widget.o_field_many2many_tags .badge .o_tag_badge_text,
+.o_field_widget.o_field_many2many_tags_avatar .badge .o_badge_text,
+.o_field_widget.o_field_many2many_tags_avatar .badge .o_tag_badge_text {
+    max-width: 200px !important;
+}
+
+// Reduce tag chip size (padding/font) while keeping Odoo layout/behavior.
+.o_field_widget.o_field_many2many_tags .o_tag.o_badge,
+.o_field_widget.o_field_many2many_tags_avatar .o_tag.o_badge {
+    font-size: 12px;
+    padding: 2px 8px;
+}
+
+.o_field_widget.o_field_many2many_tags .o_tag.o_badge .o_delete,
+.o_field_widget.o_field_many2many_tags_avatar .o_tag.o_badge .o_delete {
+    padding-left: 4px !important;
+}
+
+// -----------------------------------------------------------------------------
+// Form statusbar buttons: darker soft accent (match theme better)
+// -----------------------------------------------------------------------------
+// In some databases the action buttons (Create Invoice/Send by Email/Preview/Cancel)
+// and the statusbar steps look too light. Use a darker "soft accent" derived from
+// the main accent color.
+.o_form_view .o_form_statusbar {
+    .o_statusbar_buttons {
+
+        // Keep "secondary" buttons handled by the rule below (darker blue).
+        .btn:not(.btn-primary):not(.btn-danger):not(.btn-success):not(.btn-link):not(.btn-secondary) {
+            background-color: #a8bde8 !important;
+            /* fallback */
+            background-color: color-mix(in srgb, var(--button-bg) 35%, white) !important;
+            border: 1px solid #a6bde8 !important;
+            /* fallback */
+            border-color: color-mix(in srgb, var(--button-bg) 45%, white) !important;
+            color: var(--button-bg-darker) !important;
+        }
+
+        .btn:not(.btn-primary):not(.btn-danger):not(.btn-success):not(.btn-link):not(.btn-secondary):hover {
+            background-color: #a8bde8 !important;
+            /* fallback */
+            background-color: color-mix(in srgb, var(--button-bg) 45%, white) !important;
+        }
+    }
+
+    .o_statusbar_status {
+        .o_arrow_button.btn-secondary:not(.o_arrow_button_current) {
+            background-color: #b8c9ee !important;
+            /* fallback */
+            background-color: color-mix(in srgb, var(--button-bg) 35%, white) !important;
+            color: var(--button-bg-darker) !important;
+        }
+
+        .o_arrow_button.btn-secondary:not(.o_arrow_button_current)::after {
+            border-left-color: #b8c9ee !important;
+            /* fallback */
+            border-left-color: color-mix(in srgb, var(--button-bg) 35%, white) !important;
+        }
+    }
+}
+
+// Make form header action buttons (btn-secondary in the statusbar button area) darker blue.
+// This targets the exact buttons shown in the screenshot: Create Invoice / Send by Email / Preview / Cancel.
+.o_form_view .o_form_statusbar .o_statusbar_buttons {
+    .btn.btn-secondary:not(.btn-link) {
+        background-color: var(--button-bg-dark) !important;
+        border-color: var(--button-bg-dark) !important;
+        color: #fff !important;
+    }
+
+    .btn.btn-secondary:not(.btn-link):hover {
+        background-color: var(--button-bg-darker) !important;
+        border-color: var(--button-bg-darker) !important;
+    }
+
+    .btn.btn-secondary:not(.btn-link):disabled,
+    .btn.btn-secondary:not(.btn-link).disabled {
+        opacity: 0.75;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Form view "New" button: restore outline border (theme `.btn { border: none; }`)
+// -----------------------------------------------------------------------------
+// Odoo renders the control-panel create button as `btn-outline-primary`, but the
+// theme's global `.btn` rule removes borders, so the "New" button looks like plain
+// text. Bring back the 1px outline to match the desired UI.
+.o_form_view {
+
+    .o_control_panel,
+    .o_cp_controller {
+
+        .o_form_button_create.btn-outline-primary,
+        .o_form_buttons_view .o_form_button_create.btn-outline-primary {
+            border: 1px solid var(--button-bg) !important;
+            background-color: transparent !important;
+            color: var(--button-bg) !important;
+        }
+
+        .o_form_button_create.btn-outline-primary:hover,
+        .o_form_buttons_view .o_form_button_create.btn-outline-primary:hover {
+            background-color: var(--button-bg) !important;
+            color: #fff !important;
+        }
+
+        .o_form_button_create.btn-outline-primary:focus,
+        .o_form_button_create.btn-outline-primary:active {
+            box-shadow: none !important;
+        }
+    }
+}
+
+.o_field_widget.o_field_many2many_tags .o_tag.o_badge .o_delete i,
+.o_field_widget.o_field_many2many_tags_avatar .o_tag.o_badge .o_delete i {
+    font-size: 12px;
+}
+
+.scale-up-tr {
+    -webkit-animation: scale-up-tr .4s cubic-bezier(.755, .05, .855, .06) both;
+    animation: scale-up-tr .4s cubic-bezier(.755, .05, .855, .06) both
+}
+
+@-webkit-keyframes scale-up-tr {
+    0% {
+        -webkit-transform: scale(.5);
+        transform: scale(.5);
+        -webkit-transform-origin: 100% 0;
+        transform-origin: 100% 0
+    }
+
+    100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+        -webkit-transform-origin: 100% 0;
+        transform-origin: 100% 0
+    }
+}
+
+@keyframes scale-up-tr {
+    0% {
+        -webkit-transform: scale(.5);
+        transform: scale(.5);
+        -webkit-transform-origin: 100% 0;
+        transform-origin: 100% 0
+    }
+
+    100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+        -webkit-transform-origin: 100% 0;
+        transform-origin: 100% 0
+    }
+}

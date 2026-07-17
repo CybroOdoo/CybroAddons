@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!-- Theme Studio main template for backend customization interface.
+     Includes navigation menu, responsive controls, and dynamic view components. -->
+    <t t-name="backend_theme_infinito.ThemeStudioMenu">
+        <section class="">
+            <link rel="stylesheet"
+                  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
+            <div class="container-fluid">
+                <nav class="navbar navbar-expand-lg infinito-navbar">
+                <!-- LEFT: Brand + Hamburger -->
+                    <div class="navbar_header d-flex align-items-center">
+                        <div id="hamburger"
+                             class="theme_studio_toggle_sidebar"
+                             t-on-click="_onThemeStudioToggleSidebar">
+                            <svg width="40" height="40" viewBox="0 0 100 100">
+                                <path class="line line1"
+                                      d="M 20,29.000046 H 80.000231 ..."/>
+                                <path class="line line2" d="M 20,50 H 80"/>
+                                <path class="line line3"
+                                      d="M 20,70.999954 H 80.000231 ..."/>
+                            </svg>
+                        </div>
+                        <div class="brand_logo">
+                            <img src="/backend_theme_infinito/static/src/img/brand_icon/infinity.svg"/>
+                        </div>
+                        <h6 class="brand_name mb-0">
+                            <a href="#">Infinito</a>
+                        </h6>
+                    </div>
+                        <!-- Bootstrap toggler (mobile menu button) -->
+                    <button class="navbar-toggler"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#navbarNav"
+                            aria-controls="navbarNav"
+                            aria-expanded="false">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <!-- CENTER: Collapsible menu -->
+                    <div class="collapse navbar-collapse ml-3" id="navbarNav">
+                        <ul class="navbar-nav">
+                            <t t-foreach="state.menus" t-as="menu" t-key="menu.id">
+                                <li class="nav-item position-relative">
+                                    <a href="#"
+                                       class="dropdown-toggle nav-link o-no-caret"
+                                       data-bs-toggle="dropdown"
+                                       style="color:white;">
+                                        <t t-esc="menu.name"/>
+                                    </a>
+
+                                    <div class="dropdown-menu" t-if="menu.children">
+                                        <t t-foreach="menu.children" t-as="child" t-key="child.name">
+                                            <a class="dropdown-item"
+                                               t-att-id="child.selector"
+                                               t-on-click="_onButtonClick">
+                                                <t t-esc="child.name"/>
+                                            </a>
+                                        </t>
+                                    </div>
+                                </li>
+                            </t>
+                        </ul>
+                    </div>
+                    <!-- RIGHT: ALWAYS VISIBLE BUTTONS -->
+                    <div class="infinito-btn-group-nav">
+                        <button class="btn btn-reset btn-infinito-reset reset_to_default"
+                                t-on-click="_onResetClick">
+                            Reset
+                        </button>
+
+                        <button class="btn btn-infinito-close backend_theme_studio_close"
+                                t-on-click="_onThemeStudioClose">
+                            Close <i class="fa fa-sign-out"/>
+                        </button>
+                    </div>
+                </nav>
+                <t t-if="state.viewType == 'tree'">
+                    <t t-call="backend_theme_infinito.ThemeStudio_tree"/>
+                </t>
+                <t t-if="state.viewType == 'form'">
+                    <t t-call="backend_theme_infinito.ThemeStudio_form"/>
+                </t>
+                <t t-if="state.viewType == 'kanban'">
+                    <t t-call="backend_theme_infinito.ThemeStudio_kanban"/>
+                </t>
+                <t t-if="state.viewType == 'control_panel'">
+                    <t t-call="backend_theme_infinito.ThemeStudio_control_panel"/>
+                </t>
+                <t t-if="state.viewType == 'button'">
+                    <t t-call="backend_theme_infinito.ThemeStudio_button"/>
+                </t>
+                <t t-if="state.viewType == 'search'">
+                    <t t-call="backend_theme_infinito.ThemeStudio_search"/>
+                </t>
+                <t t-if="state.viewType == 'misc'">
+                    <t t-call="backend_theme_infinito.ThemeStudio_misc"/>
+                </t>
+                <t t-if="state.viewType == 'input'">
+                    <t t-call="backend_theme_infinito.ThemeStudio_input"/>
+                </t>
+                <t t-if="state.viewType == 'tab'">
+                    <t t-call="backend_theme_infinito.ThemeStudio_tab"/>
+                </t>
+                <t t-if="state.viewType == 'progress_bar'">
+                    <t t-call="backend_theme_infinito.ThemeStudio_progress_bar"/>
+                </t>
+            </div>
+        </section>
+    </t>
+    <t t-name="ThemeStudioMenu.MenuItem">
+        <t t-foreach="menu_items" t-as="menu_item">
+            <a class="theme_studio_menu_item dropdown-toggle"
+               data-bs-toggle="dropdown" t-att-title="menu_item.title"
+               t-attf-data-bs-target="##{menu_item.target}">
+                <span t-esc="menu_item.title"/>
+            </a>
+        </t>
+        <t t-foreach="dropdown_menus" t-as="dropdown_menu">
+            <ul class="dropdown_menu" t-att-id="dropdown_menu.id">
+                <t t-foreach="dropdown_menu.items" t-as="item">
+                    <li>
+                        <a t-att-title="item.title">
+                            <span t-esc="item.title"/>
+                        </a>
+                    </li>
+                </t>
+            </ul>
+        </t>
+    </t>
+</templates>
