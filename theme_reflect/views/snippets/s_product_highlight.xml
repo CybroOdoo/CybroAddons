@@ -1,0 +1,64 @@
+<odoo>
+    <!-- Theme Reflect — Product Highlight Snippet-->
+
+    <!-- Public Template for Dynamic Content -->
+    <template id="s_reflect_product_highlight_content" name="Reflect Product Highlight Content">
+        <div class="reflect-product-grid">
+            <t t-foreach="products" t-as="product">
+                <div class="reflect-product-card">
+                    <div class="reflect-product-card-img position-relative">
+                        <img t-if="product.image_1920"
+                             t-att-src="'/web/image/product.template/%s/image_1920' % product.id"
+                             t-att-alt="product.name"
+                             class="w-100"
+                             style="aspect-ratio: 3/4; object-fit: cover;"/>
+                        <img t-else="" src="/theme_reflect/static/src/img/placeholder.jpg" t-att-alt="product.name" style="aspect-ratio: 3/4; object-fit: cover;"/>
+                        
+                        <!-- Wishlist Button -->
+                        <t t-set="in_wish" t-value="products_in_wishlist and product in products_in_wishlist"/>
+                        <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+                        <button t-if="product_variant_id and product.type != 'combo'" type="button" role="button" t-attf-class="btn btn-light rounded-circle reflect-wishlist-btn o_add_wishlist #{'active' if in_wish else ''}" t-att-disabled="in_wish" t-att-data-product-template-id="product.id" t-att-data-product-product-id="product_variant_id" data-action="o_wishlist" title="Add to Wishlist" style="position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 5; border: none; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+                            <i t-attf-class="fa #{'fa-heart text-danger' if in_wish else 'fa-heart-o text-dark'}" role="img" aria-label="Add to wishlist" style="font-size: 13px;"/>
+                        </button>
+                        
+                        <a t-att-href="product.website_url" class="reflect-product-cta">Quick Add</a>
+                    </div>
+                    <div class="reflect-product-info">
+                        <a t-att-href="product.website_url" class="reflect-product-name text-decoration-none" t-esc="product.name"/>
+                        <span class="reflect-product-price"><t t-esc="product.currency_id.symbol"/><t t-esc="'%.2f' % product.list_price"/></span>
+                    </div>
+                    <p class="reflect-product-desc" t-if="product.description_sale" t-esc="product.description_sale"/>
+                </div>
+            </t>
+        </div>
+    </template>
+
+    <template id="s_reflect_product_highlight" name="Reflect Product Highlight">
+        <section class="s_reflect_product_highlight reflect-bg-white o_colored_level oe_website_sale">
+            <div class="reflect-container">
+                <span class="reflect-label">Featured Edit</span>
+                <h2 class="reflect-snippet-title" style="margin-bottom: 2.5rem;">Best Sellers</h2>
+
+                <div class="reflect-product-highlight-container">
+                    <!-- Dynamic content loaded via JS -->
+                    <div class="reflect-product-grid">
+                        <div class="row w-100 m-0">
+                            <div class="col-3"><div class="bg-200" style="aspect-ratio: 3/4;"/></div>
+                            <div class="col-3"><div class="bg-200" style="aspect-ratio: 3/4;"/></div>
+                            <div class="col-3"><div class="bg-200" style="aspect-ratio: 3/4;"/></div>
+                            <div class="col-3"><div class="bg-200" style="aspect-ratio: 3/4;"/></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template id="s_reflect_product_highlight_register" inherit_id="website.snippets">
+        <xpath expr="//snippets[@id='snippet_groups']" position="inside">
+            <t t-snippet="theme_reflect.s_reflect_product_highlight"
+               t-thumbnail="/theme_reflect/static/src/img/snippets/thumb_products.svg"
+               string="Reflect Best Sellers"/>
+        </xpath>
+    </template>
+</odoo>

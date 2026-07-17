@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Theme Reflect — Shop Page / Product List Overrides-->
+    <!-- 1. Shop layout: left-aligned header, visible sidebar, editorial grid -->
+    <template id="reflect_shop_header" inherit_id="website_sale.products" priority="99" name="Reflect Shop Header">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <t t-set="cat" t-value="request.env['product.public.category'].sudo().search([], limit=1)"/>
+        </xpath>
+        <!-- Add our hero section above the shop (left-aligned) -->
+        <xpath expr="//div[hasclass('oe_website_sale')]" position="before">
+            <t t-set="is_new_in" t-value="request.params.get('new_in')"/>
+            <section class="reflect-shop-hero" style="padding: 2.5rem 0 1.5rem;">
+                <div class="container">
+                    <h1 style="font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; color: #111;">
+                        <t t-if="is_new_in">New in</t>
+                        <t t-elif="category" t-esc="category.name"/>
+                        <t t-else="">Shop all</t>
+                    </h1>
+                    <p style="font-size: 14px; color: #666; margin: 0; line-height: 1.5;">
+                        <t t-if="is_new_in">Latest arrivals curated for this week.</t>
+                        <t t-elif="category and category.website_description" t-out="category.website_description"/>
+                        <t t-else="">Explore our entire collection of curated essentials.</t>
+                        (
+                        <t t-esc="search_count"/>
+                        products)
+                    </p>
+                </div>
+            </section>
+        </xpath>
+        <!-- SHOW the sidebar — override to be visible -->
+        <xpath expr="//aside[@id='products_grid_before']" position="attributes">
+            <attribute name="class">d-block position-sticky col-lg-3 px-3 clearfix</attribute>
+            <attribute name="style"></attribute>
+        </xpath>
+        <!-- Product grid stays col-lg-9 when sidebar is present -->
+        <xpath expr="//div[@id='products_grid']" position="attributes">
+            <attribute name="class">col-lg-9</attribute>
+        </xpath>
+        <!-- Hide default category heading (we have our own hero) -->
+        <xpath expr="//div[@id='products_grid']/h1" position="attributes">
+            <attribute name="style">display: none !important;</attribute>
+        </xpath>
+        <!-- Hide category description block -->
+        <xpath expr="//div[@id='category_header']" position="attributes">
+            <attribute name="style">display: none !important;</attribute>
+        </xpath>
+        <!-- Remove filmstrip categories bar -->
+        <xpath expr="//t[@t-if='opt_wsale_categories_top']" position="replace">
+            <t t-if="False"/>
+        </xpath>
+        <!-- Replace the toolbar: only keep Sort by on the right -->
+        <xpath expr="//div[hasclass('products_header')]" position="replace">
+            <div class="reflect-toolbar">
+                <div class="reflect-toolbar__right">
+                    <t t-if="is_view_active('website_sale.sort')" t-call="website_sale.sort">
+                        <t t-set="_classes" t-valuef="reflect-sort-dropdown"/>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- 2. Product Card (Editorial Layout) -->
+    <template id="reflect_products_item" inherit_id="website_sale.products_item" priority="99"
+              name="Reflect Product Item">
+        <xpath expr="//form" position="replace">
+            <t t-set="ribbon" t-value="td_product.get('ribbon') if td_product else False"/>
+            <form action="/shop/cart/update" method="post"
+                  class="oe_product_cart reflect-product-card"
+                  t-att-data-publish="product.website_published and 'on' or 'off'"
+                  itemscope="itemscope" itemtype="http://schema.org/Product">
+                <t t-set="product_href" t-value="product.website_url"/>
+                <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
+                <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+                <!-- Image -->
+                <div class="reflect-product-img-wrap position-relative">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"
+                           t-nocache="The csrf token must always be up to date."/>
+                    <t t-set="bg_color" t-value="ribbon.bg_color if ribbon else ''"/>
+                    <t t-set="text_color" t-value="ribbon.text_color if ribbon else ''"/>
+                    <t t-set="bg_class" t-value="ribbon._get_position_class() if ribbon else ''"/>
+                    <span
+                            t-attf-class="d-none o_ribbon o_not_editable reflect-badge #{bg_class}"
+                            t-attf-style="#{text_color and ('color: %s;' % text_color)} #{bg_color and 'background-color:' + bg_color}"
+                            t-out="ribbon.name if ribbon else ''"
+                    />
+                    <div t-if="product.website_ribbon_id" class="badge" t-out="product.website_ribbon_id.name"/>
+                    <a t-att-href="product_href" class="reflect-product-img-link" itemprop="url">
+                        <span t-field="product.image_1920"
+                              t-options="{'widget': 'image', 'preview_image': 'image_1024', 'class': 'w-100'}"/>
+                    </a>
+                    <!-- Product Actions Container (at the bottom part of the image) -->
+                    <div class="o_wsale_product_btn reflect-product-actions d-flex gap-2">
+                        <!-- Add to Cart Button -->
+                        <t t-if="is_view_active('website_sale.products_add_to_cart')">
+                            <input t-if="product_variant_id" name="product_id" t-att-value="product_variant_id"
+                                   type="hidden" class="product_id"/>
+                            <input name="product_template_id" t-att-value="product.id" type="hidden"
+                                   class="product_template_id"/>
+                            <input name="add_qty" value="1" type="hidden"/>
+                            <a t-if="product_variant_id and product._website_show_quick_add() and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)"
+                               role="button" class="btn btn-light rounded-circle reflect-card-add-to-cart" href="#"
+                               aria-label="Shopping cart" title="Add to cart">
+                                <span class="fa fa-shopping-cart"/>
+                            </a>
+                        </t>
+                        <!-- Wishlist Button -->
+                        <t t-if="is_view_active('website_sale_wishlist.add_to_wishlist')">
+                            <t t-set="in_wish" t-value="product in products_in_wishlist"/>
+                            <button t-if="product_variant_id and product.type != 'combo'" type="button" role="button"
+                                    t-attf-class="btn btn-light rounded-circle o_add_wishlist #{'active' if in_wish else ''}"
+                                    t-att-disabled="in_wish" t-att-data-product-template-id="product.id"
+                                    t-att-data-product-product-id="product_variant_id" data-action="o_wishlist"
+                                    title="Add to Wishlist">
+                                <i t-attf-class="fa #{'fa-heart text-danger' if in_wish else 'fa-heart-o text-dark'}"
+                                   role="img" aria-label="Add to wishlist" style="font-size: 14px;"/>
+                            </button>
+                        </t>
+                    </div>
+                </div>
+                <!-- Name + Price Row -->
+                <div class="reflect-product-meta"
+                     style="display: flex !important; gap: 8px; justify-content: space-between; align-items: baseline;">
+                    <a t-att-href="product_href" itemprop="name" t-att-content="product.name"
+                       class="reflect-product-name fw-bold"
+                       style="font-weight: 700 !important; color: #111; text-decoration: none; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0; min-width: 0;">
+                        <span t-field="product.name"/>
+                    </a>
+                    <span itemprop="price" class="reflect-product-price fw-bold"
+                          style="font-weight: 700 !important; color: #111; font-size: 14px; white-space: nowrap; flex-shrink: 0;">
+                        <t t-esc="template_price_vals['price_reduce']"
+                           t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    </span>
+                </div>
+                <!-- Description (1-line with "see more") -->
+                <div t-if="product.description_sale" class="reflect-product-desc-wrap"
+                     style="font-size: 12px; color: #888; line-height: 1.5; margin-top: 2px;">
+                    <span class="reflect-product-desc-text"
+                          style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
+                        <t t-esc="product.description_sale"/>
+                    </span>
+                    <a href="#" class="reflect-see-more"
+                       style="font-size: 11px; color: #555; text-decoration: underline; margin-top: 2px; display: inline-block;"
+                       onclick="event.preventDefault(); var txt=this.previousElementSibling; if(txt.style.webkitLineClamp === '1'){ txt.style.webkitLineClamp = 'unset'; this.textContent = 'see less'; } else { txt.style.webkitLineClamp = '1'; this.textContent = 'see more'; }">
+                        see more
+                    </a>
+                </div>
+            </form>
+        </xpath>
+    </template>
+</odoo>

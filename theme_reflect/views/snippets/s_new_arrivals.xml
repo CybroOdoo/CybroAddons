@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Public Template for Dynamic Content (Rendered by Controller) -->
+    <template id="s_reflect_new_arrivals_content" name="Reflect New Arrivals Content">
+        <div class="reflect-product-grid">
+            <t t-foreach="products" t-as="product">
+                <div class="reflect-product-card">
+                    <div class="reflect-product-img position-relative">
+                        <img t-if="product.image_1920"
+                             t-att-src="'/web/image/product.template/%s/image_1920' % product.id"
+                             t-att-alt="product.name"
+                             class="w-100"/>
+                        <img t-else="" src="/theme_reflect/static/src/img/placeholder.jpg" t-att-alt="product.name" class="w-100"/>
+                        <!-- Wishlist Button -->
+                        <t t-set="in_wish" t-value="products_in_wishlist and product in products_in_wishlist"/>
+                        <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+                        <button t-if="product_variant_id and product.type != 'combo'" type="button" role="button" t-attf-class="btn btn-light rounded-circle reflect-wishlist-btn o_add_wishlist #{'active' if in_wish else ''}" t-att-disabled="in_wish" t-att-data-product-template-id="product.id" t-att-data-product-product-id="product_variant_id" data-action="o_wishlist" title="Add to Wishlist" style="position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 5; border: none; background: rgba(255,255,255,0.9); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <i t-attf-class="fa #{'fa-heart text-danger' if in_wish else 'fa-heart-o text-dark'}" role="img" aria-label="Add to wishlist" style="font-size: 12px;"/>
+                        </button>
+                        <a t-att-href="product.website_url" class="reflect-product-cta">Quick View</a>
+                    </div>
+                    <div class="reflect-product-info">
+                        <a t-att-href="product.website_url" class="reflect-product-name text-decoration-none" t-esc="product.name"/>
+                        <div class="reflect-product-price">
+                             <span t-esc="product.currency_id.symbol"/><span t-esc="'%.2f' % product.list_price"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </template>
+    <!-- Main Snippet Template -->
+    <template id="s_reflect_new_arrivals" name="Reflect New Arrivals">
+        <section class="s_reflect_new_arrivals o_colored_level oe_website_sale">
+            <div class="container">
+                <span class="reflect-label">Latest Drop</span>
+                <h2 class="reflect-section-title">New Arrivals</h2>
+                <div class="reflect-new-arrivals-container">
+                    <!-- Dynamic content loaded via JS -->
+                    <div class="reflect-product-grid">
+                        <div class="row w-100 m-0">
+                            <div class="col-3"><div class="reflect-product-img bg-200" style="aspect-ratio: 3/4;"/></div>
+                            <div class="col-3"><div class="reflect-product-img bg-200" style="aspect-ratio: 3/4;"/></div>
+                            <div class="col-3"><div class="reflect-product-img bg-200" style="aspect-ratio: 3/4;"/></div>
+                            <div class="col-3"><div class="reflect-product-img bg-200" style="aspect-ratio: 3/4;"/></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+    <!-- Registration -->
+    <template id="s_reflect_new_arrivals_register" inherit_id="website.snippets">
+        <xpath expr="//snippets[@id='snippet_groups']" position="inside">
+            <t t-snippet="theme_reflect.s_reflect_new_arrivals"
+               t-thumbnail="/theme_reflect/static/src/img/snippets/thumb_products.svg"
+               string="Reflect New Arrivals (Dynamic)"/>
+        </xpath>
+    </template>
+</odoo>
