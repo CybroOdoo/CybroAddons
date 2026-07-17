@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <!-- Base ListRenderer Search Row Template -->
+    <t t-name="tree_view_advanced_search.SearchRow">
+        <tr class="o_list_search_row">
+            <th t-if="hasSelectors"/>
+            <t t-foreach="columns" t-as="column" t-key="column.id">
+                <th t-if="column.type === 'field'" class="p-1 align-middle">
+                    <t t-set="field" t-value="fields[column.name]"/>
+                    <!-- Re-applying the fix: Only show search box for searchable and stored fields -->
+                    <t t-if="field and field.searchable !== false and field.store !== false">
+                        <t t-if="field.type === 'char' or field.type === 'text' or field.type === 'integer' or field.type === 'float' or field.type === 'monetary' or field.type === 'many2one'">
+                            <div class="search-input-container">
+                                <div class="d-flex align-items-center">
+                                    <input type="text" 
+                                           class="form-control form-control-sm border-0 bg-transparent shadow-none p-1" 
+                                           t-on-keypress="(ev) => this._onKeyPress(ev, column.name)" 
+                                           t-att-placeholder="column.label"/>
+                                    <i class="fa fa-search text-muted cursor-pointer px-1" t-on-click="(ev) => this._onClick_search(ev, column.name)"/>
+                                </div>
+                                <div class="tags-container d-flex flex-wrap mt-1" t-if="state.searchTags[column.name] and state.searchTags[column.name].length">
+                                    <t t-foreach="state.searchTags[column.name]" t-as="tag" t-key="tag">
+                                        <span class="search-tag d-flex align-items-center me-1 mb-1 px-2 py-1">
+                                            <span class="text-truncate" style="max-width: 60px;" t-esc="tag"/>
+                                            <i class="fa fa-times ms-1 cursor-pointer tag-remove" t-on-click="() => this.removeTag(tag, column.name)"/>
+                                        </span>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                        <t t-elif="field.type === 'date' or field.type === 'datetime'">
+                            <DateRange onFromToChanged="(value) => this.changeDate(column.name, value)"/>
+                        </t>
+                        <t t-elif="field.type === 'selection'">
+                            <!-- Fixed: Removed invalid 'class' prop that caused OwlError -->
+                            <Dropdown>
+                                <button class="btn btn-sm w-100 d-flex justify-content-between align-items-center custom-dropdown-toggle">
+                                    <span class="text-truncate">
+                                        <i class="fa fa-filter me-1"/>
+                                        <t t-if="state.selectedItems[column.name] and state.selectedItems[column.name].length">
+                                            <t t-if="state.selectedItems[column.name].length === 1">
+                                                <t t-set="selLabel" t-value="field.selection.find(s => s[0] === state.selectedItems[column.name][0])"/>
+                                                <t t-esc="selLabel ? selLabel[1] : column.label"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="state.selectedItems[column.name].length"/> Selected
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="column.label"/>
+                                        </t>
+                                    </span>
+                                    <i class="fa fa-caret-down ms-1"/>
+                                </button>
+                                <t t-set-slot="content">
+                                    <t t-foreach="field.selection" t-as="selection" t-key="selection[0]">
+                                        <DropdownItem onSelected="() => this.changeStateSelection(column.name, selection[0])" closingMode="'none'">
+                                            <div class="d-flex justify-content-between align-items-center w-100 px-3 py-1">
+                                                <span t-esc="selection[1]"/>
+                                                <i class="fa fa-check text-success ms-2" t-if="state.selectedItems[column.name] and state.selectedItems[column.name].includes(selection[0])"/>
+                                            </div>
+                                        </DropdownItem>
+                                    </t>
+                                </t>
+                            </Dropdown>
+                        </t>
+                    </t>
+                </th>
+                <th t-else="" class="p-1"/>
+            </t>
+            <th t-if="hasOpenFormViewColumn"/>
+            <th t-if="hasActionsColumn"/>
+        </tr>
+    </t>
+
+    <!-- Extensions for various List Renderers -->
+    <t t-inherit="web.ListRenderer" t-inherit-mode="extension">
+        <xpath expr="//table[@t-ref='table']/thead/tr" position="after">
+            <t t-call="tree_view_advanced_search.SearchRow"/>
+        </xpath>
+    </t>
+
+    <t t-inherit="account.FileUploadListRenderer" t-inherit-mode="extension">
+        <xpath expr="//table[@t-ref='table']/thead/tr" position="after">
+            <t t-call="tree_view_advanced_search.SearchRow"/>
+        </xpath>
+    </t>
+
+    <t t-inherit="account.AccountMoveListRenderer" t-inherit-mode="extension">
+        <xpath expr="//table[@t-ref='table']/thead/tr" position="after">
+            <t t-call="tree_view_advanced_search.SearchRow"/>
+        </xpath>
+    </t>
+
+    <t t-inherit="sale.SaleListRenderer" t-inherit-mode="extension">
+        <xpath expr="//table[@t-ref='table']/thead/tr" position="after">
+            <t t-call="tree_view_advanced_search.SearchRow"/>
+        </xpath>
+    </t>
+
+    <t t-inherit="purchase.ListRenderer" t-inherit-mode="extension">
+        <xpath expr="//table[@t-ref='table']/thead/tr" position="after">
+            <t t-call="tree_view_advanced_search.SearchRow"/>
+        </xpath>
+    </t>
+
+</templates>
