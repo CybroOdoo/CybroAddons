@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Product Card template customisation -->
+    <template id="reflect_product_page" inherit_id="website_sale.product" priority="99" name="Reflect Product Page">
+        <xpath expr="//div[@id='product_detail_main']" position="replace">
+            <div class="row" id="product_detail_main" data-name="Product Page"
+                t-att-data-image_width="website.product_page_image_width"
+                t-att-data-image_layout="website.product_page_image_layout">
+                
+                <!-- 1. Huge Image Column (col-lg-7) -->
+                <div class="col-lg-7 mt-lg-4 o_wsale_product_images position-relative"
+                    t-if="website.product_page_image_width != 'none'"
+                    t-att-data-image-amount="len(product_variant._get_images() if product_variant else product._get_images())">
+                    <t t-call="website_sale.shop_product_images"/>
+                </div>
+
+                <!-- 2. Product Details Column (col-lg-5) -->
+                <div class="col-lg-5 mt-md-4" id="product_details">
+                    <t t-set="base_url" t-value="website.get_base_url()"/>
+                    <span itemprop="url" style="display:none;" t-esc="base_url + product.website_url"/>
+                    <span itemprop="image" style="display:none;" t-esc="base_url + website.image_url(product, 'image_1920')" />
+                    
+                    <t t-if="is_view_active('website_sale.product_comment')">
+                        <a href="#o_product_page_reviews" class="o_product_page_reviews_link text-decoration-none">
+                            <t t-call="portal_rating.rating_widget_stars_static">
+                                <t t-set="rating_avg" t-value="product.rating_avg"/>
+                                <t t-set="trans_text_plural">%s reviews</t>
+                                <t t-set="trans_text_singular">%s review</t>
+                                <t t-set="rating_count" t-value="(trans_text_plural if product.rating_count > 1 else trans_text_singular) % product.rating_count"/>
+                            </t>
+                        </a>
+                    </t>
+
+                    <!-- Title & Price Row -->
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-baseline mb-4 gap-2">
+                        <h1 itemprop="name" t-field="product.name" class="mb-0 fw-bold" style="font-size: clamp(24px, 5vw, 32px); color: #111; letter-spacing: -0.02em;">Product Name</h1>
+                        
+                        <!-- Inline Price -->
+                        <div class="reflect-product-price text-start text-lg-end">
+                            <t t-set="combination_info" t-value="combination_info or product._get_combination_info()"/>
+                            <span class="oe_price h4 fw-bold mb-0" style="color: #111; font-size: 20px;"
+                                  t-esc="combination_info['price']"
+                                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            <t t-if="combination_info['has_discounted_price']">
+                                <del class="text-danger ms-2" style="font-size: 14px;"><span class="oe_price" t-esc="combination_info['list_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/></del>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div t-field="product.description_ecommerce" class="oe_structure text-muted reflect-product-desc mb-4" style="font-size: 14px; line-height: 1.6;"
+                        placeholder="A detailed, formatted description to promote your product on this page. Use '/' to discover more features."/>
+
+                    <!-- Form for variants and add to cart -->
+                    <form t-if="product._is_add_to_cart_possible()" action="/shop/cart/update" method="POST" class="reflect-add-to-cart-form">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()" t-nocache="The csrf token must always be up to date."/>
+                        <div class="js_product js_main_product mb-3">
+                            <t t-placeholder="select">
+                                <input type="hidden" class="product_id" name="product_id" t-att-value="product_variant.id" />
+                                <input type="hidden" class="product_template_id" name="product_template_id" t-att-value="product.id" />
+                                <input t-if="product.public_categ_ids.ids" type="hidden" class="product_category_id" name="product_category_id" t-att-value="product.public_categ_ids.ids[0]" />
+                                
+                                <div class="reflect-variants-wrap mb-4">
+                                    <t t-call="website_sale.variants">
+                                        <t t-set="ul_class" t-valuef="flex-column" />
+                                        <t t-set="parent_combination" t-value="None" />
+                                        <t t-set="combination" t-value="product._get_first_possible_combination()"/>
+                                    </t>
+                                </div>
+                            </t>
+
+                            <p t-if="True" class="css_not_available_msg alert alert-warning">This combination does not exist.</p>
+                            
+                            <!-- Add to cart CTA -->
+                            <div id="o_wsale_cta_wrapper" class="d-flex flex-wrap align-items-center mb-4">
+                                <t t-set="hasQuantities" t-value="false"/>
+                                <t t-set="hasBuyNow" t-value="false"/>
+                                <t t-set="ctaSizeBig" t-value="not hasQuantities or not hasBuyNow"/>
+
+                                <div id="add_to_cart_wrap" t-attf-class="{{'d-none' if combination_info['prevent_zero_price_sale'] else 'd-inline-flex'}} align-items-center w-100 gap-3">
+                                    <!-- Add to cart button -->
+                                    <button type="submit" data-animation-selector=".o_wsale_product_images" id="reflect_add_to_cart" class="btn btn-dark btn-lg flex-grow-1 reflect-btn-add-to-cart fw-bold" style="border-radius: 0; padding: 14px; background-color: #111; color: #fff; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px;">
+                                        Add to cart
+                                    </button>
+
+                                    <!-- Wishlist Button -->
+                                    <t t-if="is_view_active('website_sale_wishlist.add_to_wishlist')">
+                                        <t t-nocache="The wishlist depends on the user and must not be shared with other users.">
+                                            <t t-set="product_variant" t-value="product_variant or product._create_first_product_variant()"/>
+                                            <t t-set="in_wish" t-value="product_variant and product_variant._is_in_wishlist()"/>
+                                            <button t-if="product_variant and product.type != 'combo'" type="button" role="button" t-attf-class="btn btn-outline-dark btn-lg o_add_wishlist_dyn #{'active' if in_wish else ''}" t-att-disabled="in_wish or None" t-att-data-product-template-id="product.id" t-att-data-product-product-id="product_variant.id" data-action="o_wishlist" title="Add to wishlist" style="border-radius: 0; width: 54px; height: 50.5px; padding: 0; display: flex; align-items: center; justify-content: center; border-color: #111;">
+                                                <i t-attf-class="fa #{'fa-heart text-danger' if in_wish else 'fa-heart-o text-dark'}" role="img" aria-label="Add to wishlist" style="font-size: 18px;"/>
+                                            </button>
+                                        </t>
+                                    </t>
+                                </div>
+                                <div id="product_option_block" class="d-flex flex-wrap w-100 mt-2"/>
+                            </div>
+                        </div>
+                    </form>
+                    <p t-elif="not product.active" class="alert alert-warning">
+                        This product is no longer available.
+                    </p>
+                    <p t-else="" class="alert alert-warning">
+                        This product has no valid combination.
+                    </p>
+
+                    <!-- Accordions -->
+                    <div class="reflect-product-accordions border-top mt-5 pt-2">
+                        <!-- Details & Care -->
+                        <div class="reflect-accordion border-bottom">
+                            <a href="#collapseDetails" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center py-3 text-decoration-none text-dark fw-bold" style="font-size: 13px;">
+                                <span>Details &amp; Care</span>
+                                <i class="fa fa-plus text-muted" style="font-size: 10px;"></i>
+                            </a>
+                            <div id="collapseDetails" class="collapse show">
+                                <div class="accordion-body pb-3 text-muted" style="font-size: 13px; line-height: 1.6;">
+                                    <t t-if="product.description_sale">
+                                        <t t-esc="product.description_sale"/>
+                                    </t>
+                                    <t t-else="">
+                                        100% Extrafine material. <br/>
+                                        Dimensions: 180cm x 40cm. <br/>
+                                        Hand wash cold with mild detergent. Dry flat in shade. <br/>
+                                        Do not tumble dry. Dry cleanable.
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Shipping & Returns -->
+                        <div class="reflect-accordion border-bottom">
+                            <a href="#collapseShipping" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center py-3 text-decoration-none text-dark fw-bold collapsed" style="font-size: 13px;">
+                                <span>Shipping &amp; Returns</span>
+                                <i class="fa fa-plus text-muted" style="font-size: 10px;"></i>
+                            </a>
+                            <div id="collapseShipping" class="collapse">
+                                <div class="accordion-body pb-3 text-muted" style="font-size: 13px; line-height: 1.6;">
+                                    Free shipping on all orders over $150. Returns accepted within 30 days of purchase.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sustainability -->
+                        <div class="reflect-accordion border-bottom">
+                            <a href="#collapseSustainability" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center py-3 text-decoration-none text-dark fw-bold collapsed" style="font-size: 13px;">
+                                <span>Sustainability</span>
+                                <i class="fa fa-plus text-muted" style="font-size: 10px;"></i>
+                            </a>
+                            <div id="collapseSustainability" class="collapse">
+                                <div class="accordion-body pb-3 text-muted" style="font-size: 13px; line-height: 1.6;">
+                                    Ethically sourced and minimally processed to retain natural softness and minimize environmental footprint.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

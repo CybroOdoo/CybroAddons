@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Theme Reflect — Shop Page / Product List Overrides -->
+    <!-- 1. Shop layout: left-aligned header, visible sidebar, editorial grid -->
+    <template id="reflect_shop_header" inherit_id="website_sale.products" priority="99" name="Reflect Shop Header">
+        <!-- Add our hero section above the shop (left-aligned) -->
+        <xpath expr="//div[hasclass('oe_website_sale')]" position="before">
+            <section class="reflect-shop-hero" style="padding: 2.5rem 0 1.5rem;">
+                <div class="container">
+                    <h1 style="font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; color: #111;">
+                        <t t-if="category" t-esc="category.name"/>
+                        <t t-else="">Shop all</t>
+                    </h1>
+                    <p style="font-size: 14px; color: #666; margin: 0; line-height: 1.5;">
+                        <t t-if="category and category.website_description" t-esc="category.website_description"/>
+                        <t t-else="">Explore our entire collection of curated essentials.</t>
+                        (
+                        <t t-esc="search_count"/>
+                        products)
+                    </p>
+                </div>
+                <div class="oe_structure"/>
+            </section>
+        </xpath>
+        <!-- SHOW the sidebar — override to be visible -->
+        <xpath expr="//aside[@id='products_grid_before']" position="attributes">
+            <attribute name="class">d-none d-lg-block position-sticky col-lg-3 px-3 clearfix</attribute>
+            <attribute name="style"></attribute>
+        </xpath>
+
+        <!-- Product grid stays col-lg-9 when sidebar is present -->
+        <xpath expr="//div[@id='products_grid']" position="attributes">
+            <attribute name="class">col-lg-9</attribute>
+        </xpath>
+
+        <!-- Hide category description block -->
+        <xpath expr="//div[@id='category_header']" position="attributes">
+            <attribute name="style">display: none !important;</attribute>
+        </xpath>
+
+        <!-- Remove filmstrip categories bar -->
+        <xpath expr="//t[@t-if='opt_wsale_categories_top']" position="replace">
+            <t t-if="False"/>
+        </xpath>
+
+        <!-- Replace the toolbar: only keep Sort by on the right -->
+        <xpath expr="//div[hasclass('products_header')]" position="replace">
+            <div class="reflect-toolbar">
+                <div class="reflect-toolbar__right">
+                    <t t-if="is_view_active('website_sale.sort')" t-call="website_sale.sort">
+                        <t t-set="_classes" t-valuef="reflect-sort-dropdown"/>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+
+    </template>
+
+    <!-- 2. Product Card (Editorial Layout) -->
+    <template id="reflect_products_item" inherit_id="website_sale.products_item" priority="99"
+              name="Reflect Product Item">
+        <xpath expr="//form" position="replace">
+
+            <t t-set="product_href"
+               t-value="keep(product.website_url, page=(pager['page']['num'] if pager['page']['num']&gt;1 else None))"/>
+            <t t-set="image_type" t-value="product._get_suitable_image_size(ppr, td_product['x'], td_product['y'])"/>
+            <t t-set="image_holder" t-value="product._get_image_holder()"/>
+
+            <form action="/shop/cart/update" method="post"
+                  class="oe_product_cart reflect-product-card h-100 d-flex flex-column"
+                  t-att-data-publish="product.website_published and 'on' or 'off'"
+                  t-att-data-product-template-id="product.id"
+                  itemscope="itemscope" itemtype="http://schema.org/Product">
+
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"
+                       t-nocache="The csrf token must always be up to date."/>
+                <input type="hidden" name="product_id" t-att-value="product._get_first_possible_variant_id()"/>
+                <input type="hidden" name="add_qty" value="1"/>
+                <div class="oe_structure"/>
+                <!-- Image Wrapper -->
+                <div class="reflect-product-img-wrap oe_product_image position-relative overflow-hidden">
+
+                    <!-- Ribbon (using base structure) -->
+                    <t t-set="bg_color" t-value="td_product['ribbon']['bg_color'] or ''"/>
+                    <t t-set="text_color" t-value="td_product['ribbon']['text_color']"/>
+                    <t t-set="bg_class" t-value="td_product['ribbon']['html_class']"/>
+                    <span class="o_ribbon"
+                          t-attf-style="#{text_color and ('color: %s; ' % text_color)}#{bg_color and 'background-color:' + bg_color}"
+                          t-field="product.website_ribbon_id.html"/>
+
+                    <!-- Wishlist Button -->
+                    <t t-if="is_view_active('website_sale_wishlist.add_to_wishlist')">
+                        <t t-set="in_wish" t-value="product in products_in_wishlist"/>
+                        <t t-set="product_variant_id" t-value="in_wish or product._get_first_possible_variant_id()"/>
+                        <button t-if="product_variant_id and product.type != 'combo'"
+                                type="button" role="button"
+                                t-attf-class="btn btn-light rounded-circle reflect-wishlist-btn o_add_wishlist #{'active' if in_wish else ''}"
+                                t-att-disabled="in_wish or None"
+                                t-att-data-product-template-id="product.id"
+                                t-att-data-product-product-id="product_variant_id"
+                                data-action="o_wishlist"
+                                title="Add to Wishlist"
+                                style="position:absolute;top:15px;right:15px;width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;z-index:5;border:none;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+                            <i t-attf-class="fa #{'fa-heart text-danger' if in_wish else 'fa-heart-o text-dark'}"
+                               role="img" aria-label="Add to wishlist" style="font-size:14px;"/>
+                        </button>
+                    </t>
+
+                    <!-- Bottom Actions -->
+                    <div class="reflect-product-actions"
+                         style="position:absolute;bottom:15px;left:15px;z-index:5;display:flex;gap:8px;">
+                        <t t-if="is_view_active('website_sale.products_add_to_cart')">
+                            <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+                            <button t-if="product_variant_id and product.type != 'combo'"
+                                    type="button"
+                                    class="btn btn-light reflect-action-btn reflect-add-to-cart-btn"
+                                    title="Add to Cart"
+                                    t-att-data-product-id="product_variant_id"
+                                    t-att-data-product-template-id="product.id"
+                                    style="width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;border:none;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-radius:4px;">
+                                <i class="fa fa-shopping-cart" style="font-size:14px;color:#111;"/>
+                            </button>
+                        </t>
+
+                        <t t-if="is_view_active('website_sale_comparison.add_to_compare')">
+                            <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+                            <button t-if="product_variant_id and product.type != 'combo'"
+                                    type="button" role="button"
+                                    class="btn btn-light reflect-action-btn d-none d-md-flex o_add_compare"
+                                    title="Compare"
+                                    t-att-data-product-product-id="product_variant_id"
+                                    style="width:36px;height:36px;padding:0;align-items:center;justify-content:center;border:none;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-radius:4px;">
+                                <i class="fa fa-exchange" style="font-size:14px;color:#111;"/>
+                            </button>
+                        </t>
+                    </div>
+
+                    <!-- Product Image (using base image_holder) -->
+                    <a t-att-href="product_href" class="reflect-product-img-link d-block h-100" itemprop="url">
+                        <span t-field="image_holder.image_1920"
+                              t-options="{'widget': 'image', 'preview_image': image_type, 'class': 'w-100'}"
+                              class="oe_product_image_img_wrapper"/>
+                    </a>
+                </div>
+                <div class="oe_structure"/>
+                <!-- Product Info -->
+                <div class="o_wsale_product_information reflect-product-information position-relative d-flex flex-column flex-grow-1 flex-shrink-1">
+                    <div class="reflect-product-meta o_wsale_product_information_text"
+                         style="display:flex !important;flex-wrap:nowrap !important;gap:8px;justify-content:space-between;align-items:baseline;margin-top:12px;">
+                        <h6 class="o_wsale_products_item_title mb-0 flex-grow-1" style="min-width:0;">
+                            <a t-att-href="product_href" itemprop="name"
+                               class="reflect-product-name fw-bold"
+                               style="font-weight:700 !important;color:#111;text-decoration:none;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;"
+                               t-att-content="product.name" t-field="product.name"/>
+                        </h6>
+                        <div class="reflect-product-price-wrap product_price text-end"
+                             itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                            <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
+                            <del t-if="'base_price' in template_price_vals and (template_price_vals['base_price'] &gt; template_price_vals['price_reduce'])"
+                                 class="text-muted me-1" style="font-size:12px;font-weight:400;">
+                                <t t-esc="template_price_vals['base_price']"
+                                   t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            </del>
+                            <span itemprop="price" class="reflect-product-price fw-bold"
+                                  style="font-weight:700 !important;color:#111;font-size:14px;white-space:nowrap;">
+                                <t t-esc="template_price_vals['price_reduce']"
+                                   t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            </span>
+                            <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
+                        </div>
+                    </div>
+
+                    <!-- Rating & Description -->
+                    <div class="reflect-product-details o_wsale_product_sub mt-1">
+                        <t t-if="is_view_active('website_sale.product_comment') and product.rating_count &gt; 0">
+                            <div class="reflect-product-rating mb-1" style="font-size:10px;">
+                                <t t-call="portal_rating.rating_widget_stars_static">
+                                    <t t-set="rating_avg" t-value="product.rating_avg"/>
+                                </t>
+                                <span class="text-muted ms-1">(<t t-esc="product.rating_count"/>)
+                                </span>
+                            </div>
+                        </t>
+                        <div t-if="product.description_sale" class="reflect-product-desc-wrap"
+                             style="font-size:12px;color:#888;line-height:1.5;">
+                            <span class="reflect-product-desc-text"
+                                  style="display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;">
+                                <t t-esc="product.description_sale"/>
+                            </span>
+                            <a href="#" class="reflect-see-more"
+                               style="font-size:11px;color:#555;text-decoration:underline;margin-top:2px;display:inline-block;"
+                               onclick="event.preventDefault(); var txt=this.previousElementSibling; if(txt.style.webkitLineClamp==='1'){ txt.style.webkitLineClamp='unset'; this.textContent='see less'; } else { txt.style.webkitLineClamp='1'; this.textContent='see more'; }">
+                                see more
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </xpath>
+    </template>
+</odoo>

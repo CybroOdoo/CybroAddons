@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template of the checkout pages. Should be called in every page of the checkout flow. -->
+    <template id="checkout_layout" inherit_id="website_sale.checkout_layout" name="Reflect Checkout Layout">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap">
+                <t t-set="is_confirmation"
+                   t-value="request and request.httprequest and request.httprequest.path.startswith('/shop/confirmation')"/>
+                <div t-attf-class="oe_website_sale o_website_sale_checkout container-fluid p-0 #{is_confirmation and 'bg-light'}">
+                    <div t-attf-class="row g-0 #{is_confirmation and 'justify-content-center'}">
+                        <!-- Left Column: Checkout Forms -->
+                        <div t-attf-class="col-12 #{is_confirmation and 'col-lg-8' or 'col-lg-7'} reflect-main-col">
+                            <div t-attf-class="container py-5 #{not is_confirmation and 'ms-lg-auto me-lg-0' or 'mx-auto'}"
+                                 t-attf-style="max-width: #{is_confirmation and '800px' or '650px'};">
+                                <!-- Simple Header -->
+                                <div class="co-header-row" t-if="not is_confirmation">
+                                    <h1 class="co-title">Checkout</h1>
+                                    <a role="button" t-att-href="back_url or '/shop/cart'" class="co-return">
+                                        <i class="fa fa-chevron-left"/>
+                                        Return to cart
+                                    </a>
+                                </div>
+
+                                <!-- Main Steps (Address, Shipping, Payment) -->
+                                <div class="oe_cart">
+                                    <t t-out="0"/>
+                                </div>
+
+                                <!-- Navigation Buttons (Pay now / Continue) -->
+                                <div class="reflect-checkout-navigation mt-5" t-if="not is_confirmation">
+                                    <t t-set="step_xmlid"
+                                       t-value="xmlid or (request.httprequest.path == '/shop/payment' and 'website_sale.payment') or (request.httprequest.path in ['/shop/checkout', '/shop/address'] and 'website_sale.checkout') or 'website_sale.cart'"/>
+                                    <t t-call="website_sale.navigation_buttons">
+                                        <t t-set="xmlid" t-value="step_xmlid"/>
+                                        <t t-set="_container_classes" t-valuef="p-0 border-0 mt-0"/>
+                                    </t>
+                                </div>
+
+                                <!-- Footer Links as per reference -->
+                                <div t-attf-class="co-footer-links mt-5 py-4 #{not is_confirmation and 'border-top'}">
+                                    <a href="/help/refund-policy">Refund policy</a>
+                                    <a href="/help/shipping-policy">Shipping policy</a>
+                                    <a href="/help/privacy-policy">Privacy policy</a>
+                                    <a href="/help/terms-of-service">Terms of service</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Order Summary (Sidebar) -->
+                        <div t-if="not is_confirmation" class="col-12 col-lg-5 reflect-summary-col o_wsale_accordion"
+                             id="o_wsale_total_accordion">
+                            <div class="container me-lg-auto ms-lg-0">
+                                <div id="o_wsale_total_accordion_item">
+                                    <div class="accordion-body">
+                                        <!-- Products List -->
+                                        <div class="reflect-order-items mb-4"
+                                             t-if="website_sale_order and website_sale_order.website_order_line">
+                                            <t t-foreach="website_sale_order.website_order_line" t-as="line">
+                                                <div class="reflect-summary-item">
+                                                    <div class="reflect-item-img-wrap">
+                                                        <span t-field="line.product_id.image_128"
+                                                              t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded'}"/>
+                                                        <div class="reflect-item-badge"
+                                                             t-out="int(line.product_uom_qty)"/>
+                                                    </div>
+                                                    <div class="reflect-item-details">
+                                                        <div class="reflect-item-name" t-out="line.name_short"/>
+                                                        <div class="reflect-item-variant"
+                                                             t-if="line.product_id.product_template_variant_value_ids">
+                                                            <t t-foreach="line.product_id.product_template_variant_value_ids"
+                                                               t-as="v">
+                                                                <span t-out="v.name"/>
+                                                                <t t-if="not v_last">/</t>
+                                                            </t>
+                                                        </div>
+                                                    </div>
+                                                    <div class="reflect-item-price">
+                                                        <span t-if="website.show_line_subtotals_tax_selection == 'tax_excluded'"
+                                                              t-field="line.price_subtotal" style="white-space: nowrap;"
+                                                              t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                                        <span t-else=""
+                                                              t-field="line.price_total" style="white-space: nowrap;"
+                                                              t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </div>
+
+                                        <hr class="co-summary-divider"/>
+
+                                        <!-- Totals -->
+                                        <t t-call="website_sale.total"/>
+
+                                        <div class="reflect-secure mt-4">
+                                            <i class="fa fa-lock"/>
+                                            Secure checkout
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Drop area for blocks -->
+                <t t-out="oe_structure"/>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Simplify the Payment step header -->
+    <template id="payment" inherit_id="website_sale.payment">
+        <xpath expr="//h3[last()]" position="replace">
+            <div t-if="not errors and not website_sale_order.amount_total" class="co-section-title">Confirm order</div>
+            <div t-else="" class="co-section-title">Payment</div>
+        </xpath>
+        <xpath expr="//div[@id='address_on_payment']" position="replace">
+            <!-- Contact Information -->
+            <div class="co-section">
+                <div class="co-section-title mb-3">Contact information</div>
+                <div class="mb-3">
+                    <input class="form-control bg-light" type="email" t-att-value="order.partner_id.email" readonly="1"
+                           placeholder="Email"/>
+                </div>
+                <div class="form-check p-0 d-flex align-items-center">
+                    <input class="form-check-input ms-0 me-2 mt-0" type="checkbox" checked="checked" id="emailOffers"
+                           style="width: 16px; height: 16px;"/>
+                    <label class="form-check-label" for="emailOffers" style="font-size: 13px; color: #666;">Email me
+                        with news and offers
+                    </label>
+                </div>
+            </div>
+
+            <!-- Manual Address Entry Style (Show current address as fields) -->
+            <div class="co-section">
+                <div class="co-section-title mb-3">Shipping address</div>
+                <div class="row g-2">
+                    <div class="col-12">
+                        <select class="form-select bg-light" disabled="1">
+                            <t t-if="order.partner_shipping_id.country_id">
+                                <option t-out="order.partner_shipping_id.country_id.name"/>
+                            </t>
+                            <t t-else="">
+                                <option>United States</option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <input class="form-control bg-light" type="text" placeholder="First name"
+                               t-att-value="order.partner_shipping_id.name.split(' ')[0] if order.partner_shipping_id.name else ''"
+                               readonly="1"/>
+                    </div>
+                    <div class="col-6">
+                        <input class="form-control bg-light" type="text" placeholder="Last name"
+                               t-att-value="' '.join(order.partner_shipping_id.name.split(' ')[1:]) if order.partner_shipping_id.name and len(order.partner_shipping_id.name.split(' ')) > 1 else ''"
+                               readonly="1"/>
+                    </div>
+                    <div class="col-12">
+                        <input class="form-control bg-light" type="text" placeholder="Address"
+                               t-att-value="order.partner_shipping_id.street" readonly="1"/>
+                    </div>
+                    <div class="col-12">
+                        <input class="form-control bg-light" type="text" placeholder="Apartment, suite, etc. (optional)"
+                               t-att-value="order.partner_shipping_id.street2" readonly="1"/>
+                    </div>
+                    <div class="col-4">
+                        <input class="form-control bg-light" type="text" placeholder="City"
+                               t-att-value="order.partner_shipping_id.city" readonly="1"/>
+                    </div>
+                    <div class="col-4">
+                        <input class="form-control bg-light" type="text" placeholder="State"
+                               t-att-value="order.partner_shipping_id.state_id.name" readonly="1"/>
+                    </div>
+                    <div class="col-4">
+                        <input class="form-control bg-light" type="text" placeholder="ZIP code"
+                               t-att-value="order.partner_shipping_id.zip" readonly="1"/>
+                    </div>
+                    <div class="col-12">
+                        <input class="form-control bg-light" type="tel" placeholder="Phone (optional)"
+                               t-att-value="order.partner_shipping_id.phone" readonly="1"/>
+                    </div>
+                </div>
+                <!-- Shipping Method Placeholder (Odoo usually handles this in a separate sub-template or step) -->
+                <div id="shipping_method_placeholder" class="mt-4">
+                    <div class="co-section-title mb-3">Shipping method</div>
+                    <!-- This area will be populated by Odoo's delivery module if active -->
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Address on payment card clean up -->
+    <template id="address_on_payment_reflect" inherit_id="website_sale.address_on_payment">
+        <xpath expr="//div[hasclass('card')]" position="attributes">
+            <attribute name="class">border-0 bg-transparent p-0</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('card-body')]" position="attributes">
+            <attribute name="class">p-0</attribute>
+        </xpath>
+    </template>
+
+    <!-- Navigation Buttons Override -->
+    <template id="navigation_buttons" inherit_id="website_sale.navigation_buttons" name="Reflect Navigation Buttons">
+        <!-- Style the main button -->
+        <xpath expr="//a[@name='website_sale_main_button']" position="attributes">
+            <attribute name="class" add="btn-dark w-100 py-3 rounded-0" remove="btn-primary rounded" separator=" "/>
+        </xpath>
+        <xpath expr="//a[i[hasclass('fa-angle-left')]]" position="attributes">
+            <attribute name="class" add="text-dark text-decoration-none pt-2" separator=" "/>
+        </xpath>
+    </template>
+
+    <!-- Payment Submit Button Styling -->
+    <template id="submit_button" inherit_id="payment.submit_button" name="Reflect Payment Button">
+        <xpath expr="//button" position="attributes">
+            <attribute name="class" add="btn-dark w-100 py-3 rounded-0" remove="btn-primary rounded" separator=" "/>
+            <attribute name="style">background-color: #111 !important; border-color: #111 !important; text-transform:
+                none; font-weight: 500; font-size: 16px;
+            </attribute>
+        </xpath>
+    </template>
+
+    <!-- Order Confirmation Design -->
+    <template id="confirmation" inherit_id="website_sale.confirmation" name="Reflect Confirmation">
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']" position="inside">
+            <t t-set="is_confirmation" t-value="True"/>
+            <div class="os-container bg-white p-4 p-md-5">
+                <!-- Checkmark Icon -->
+                <div class="os-check mb-4">
+                    <i class="fa fa-check"/>
+                </div>
+
+                <!-- Title & Status -->
+                <p class="os-order-num text-muted mb-2">Order #
+                    <t t-esc="order.name"/>
+                </p>
+                <h1 class="os-title mb-3">Thank you,<t t-esc="order.partner_id.name.split(' ')[0]"/>!
+                </h1>
+                <p class="os-desc text-muted mb-5">Your order is confirmed. We've accepted your order and we're getting
+                    it ready.
+                </p>
+
+                <!-- Information Grid -->
+                <div class="os-info-card border rounded p-4 mb-5">
+                    <div class="os-info-card-title fw-bold mb-4">Customer information</div>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="os-info-label text-muted small text-uppercase mb-1">Contact information</div>
+                            <div class="os-info-value" t-esc="order.partner_id.email"/>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="os-info-label text-muted small text-uppercase mb-1">Payment method</div>
+                            <div class="os-info-value">
+                                <t t-set="tx_sudo" t-value="order.get_portal_last_transaction()"/>
+                                <t t-if="tx_sudo" t-esc="tx_sudo.provider_id.name"/>
+                                <br/>
+                                <span class="fw-bold" t-field="order.amount_total"
+                                      t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="os-info-label text-muted small text-uppercase mb-1">Shipping address</div>
+                            <div class="os-info-value">
+                                <span t-field="order.partner_shipping_id"
+                                      t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="os-info-label text-muted small text-uppercase mb-1">Shipping method</div>
+                            <div class="os-info-value">
+                                <t t-if="order.carrier_id" t-esc="order.carrier_id.name"/>
+                                <t t-else="">Standard Shipping</t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="mt-5">
+                    <a href="/shop" class="os-continue-btn btn btn-dark py-3 px-5 rounded-0 w-100 w-md-auto">Continue
+                        shopping
+                    </a>
+                </div>
+            </div>
+        </xpath>
+        <!-- Hide original content -->
+        <xpath expr="//div[hasclass('d-flex')]" position="replace"/>
+        <xpath expr="//t[@t-if=&quot;tx_sudo.state == 'done'&quot;]" position="replace"/>
+        <xpath expr="//t[@t-if=&quot;tx_sudo.state != 'done'&quot;]" position="replace"/>
+        <xpath expr="//t[@t-if=&quot;request.env['res.users']._get_signup_invitation_scope() == 'b2c' and request.website.is_public_user()&quot;]"
+               position="replace"/>
+        <xpath expr="//div[@id='oe_structure_website_sale_confirmation_1']" position="replace"/>
+        <xpath expr="//h4" position="replace"/>
+        <xpath expr="//table" position="replace"/>
+        <xpath expr="//t[@t-call='website_sale.payment_confirmation_status']" position="replace"/>
+    </template>
+    <template id="cart_product_price_compat" name="Cart Product Price Compatibility">
+        <span t-esc="product_price"
+              t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+    </template>
+</odoo>
+
