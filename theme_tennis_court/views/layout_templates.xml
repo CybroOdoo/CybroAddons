@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Custom site-wide header replacing Odoo's default header -->
+    <template id="layout_templates_header" inherit_id="website.layout">
+        <xpath expr="//header" position="replace">
+            <header id="top" data-name="Header" class="tc-header o_header_standard o_no_autohide_menu">
+                <nav class="navbar navbar-expand-lg">
+                    <div id="o_main_nav" class="container d-flex align-items-center">
+                        <!-- Brand (Left) -->
+                        <div class="nav-logo d-flex flex-grow-1 flex-lg-grow-0">
+                            <a href="/">
+                                <img src="/theme_tennis_court/static/src/img/logo.svg" alt="Horizon Courts" style="width:200px;"/>
+                            </a>
+                        </div>
+                        <!-- Mobile hamburger toggle -->
+                        <button class="mobile-menu-btn d-lg-none" id="tc_mobile_toggle" aria-label="Open menu">
+                            <span/><span/><span/>
+                        </button>
+                        <!-- Desktop Menu (Center) -->
+                        <div class="desktop-nav d-none d-lg-flex justify-content-center flex-grow-1">
+                            <ul class="nav-links top_menu">
+                                <!-- First 6 menu items shown directly -->
+                                <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                    <t t-if="submenu_index &lt; 6">
+                                        <t t-call="website.submenu" item_class.f="nav-item" link_class.f="nav-link"/>
+                                    </t>
+                                </t>
+                                <!-- "More +" dropdown for items 7 and beyond -->
+                                <t t-if="len(website.menu_id.child_id) &gt; 6">
+                                    <li class="nav-item dropdown tc-more-dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">More +</a>
+                                        <ul class="dropdown-menu">
+                                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                                <t t-if="submenu_index &gt;= 6">
+                                                    <li>
+                                                        <a class="dropdown-item" t-att-href="submenu.url" t-out="submenu.name"/>
+                                                    </li>
+                                                </t>
+                                            </t>
+                                        </ul>
+                                    </li>
+                                </t>
+                            </ul>
+                        </div>
+                        <!-- Actions (Right) -->
+                        <div class="nav-actions d-none d-lg-flex align-items-center flex-lg-grow-0">
+                            <ul class="navbar-nav tc-user-nav">
+                                <t t-call="portal.placeholder_user_sign_in">
+                                    <t t-set="_link_class" t-valuef="btn-primary tc-sign-btn"/>
+                                </t>
+                                <t t-call="portal.user_dropdown">
+                                    <t t-set="_user_name" t-value="True"/>
+                                    <t t-set="_item_class" t-value="'nav-item dropdown'"/>
+                                    <t t-set="_link_class" t-value="'btn-primary tc-sign-btn'"/>
+                                </t>
+                            </ul>
+                            <a href="/join" class="btn-primary desktop-join-btn" style="text-decoration:none;">Become a Member</a>
+                        </div>
+                    </div>
+                </nav>
+                <!-- Mobile slide-out drawer (custom, shown below lg) -->
+                <div class="tc-mobile-menu" id="tc_mobile_menu">
+                    <div class="tc-mobile-menu-header">
+                        <a href="/" class="nav-logo">
+                            <img src="/theme_tennis_court/static/src/img/logo.svg" alt="Horizon Courts" style="width:160px;"/>
+                        </a>
+                        <button class="tc-mobile-close" id="tc_mobile_close" aria-label="Close menu">
+                            <span/><span/>
+                        </button>
+                    </div>
+                    <nav class="tc-mobile-nav o_header_mobile">
+                        <ul>
+                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                <t t-call="website.submenu">
+                                    <t t-set="item_class" t-value="''"/>
+                                    <t t-set="link_class" t-value="''"/>
+                                </t>
+                            </t>
+                        </ul>
+                    </nav>
+                    <div class="tc-mobile-cta">
+                        <ul class="navbar-nav tc-user-nav">
+                            <t t-call="portal.placeholder_user_sign_in">
+                                <t t-set="_link_class" t-valuef="btn-primary tc-sign-btn w-100"/>
+                            </t>
+                            <t t-call="portal.user_dropdown">
+                                <t t-set="_user_name" t-value="True"/>
+                                <t t-set="_item_class" t-value="'nav-item dropdown'"/>
+                                <t t-set="_link_class" t-value="'btn-primary tc-sign-btn w-100'"/>
+                            </t>
+                        </ul>
+                        <a href="/join" class="btn-primary tc-mobile-join-btn" style="text-decoration:none;">Become a Member</a>
+                    </div>
+                </div>
+                <!-- Overlay behind mobile drawer -->
+                <div class="tc-mobile-overlay" id="tc_mobile_overlay"/>
+            </header>
+        </xpath>
+    </template>
+    <!-- Custom site-wide footer replacing Odoo's default footer -->
+    <template id="layout_templates_footer" inherit_id="website.layout">
+        <xpath expr="//div[@id='footer']" position="replace">
+            <footer id="footer" class="footer">
+                <div class="container">
+                    <div class="footer-grid">
+                        <!-- Brand column: logo, tagline, and social icons -->
+                        <div class="footer-brand">
+                            <div class="footer-logo">
+                                <img src="/theme_tennis_court/static/src/img/logo1.svg" alt="Horizon Courts" style="width:200px;"/>
+                            </div>
+                            <p class="footer-desc">The premier destination for tennis enthusiasts. World-class facilities, professional coaching, and a vibrant community.</p>
+                            <div class="footer-socials">
+                                <a t-if="website.social_instagram" t-att-href="website.social_instagram" class="social-icon" target="_blank"><i class="fa fa-instagram"/></a>
+                                <a t-if="website.social_facebook" t-att-href="website.social_facebook" class="social-icon" target="_blank"><i class="fa fa-facebook"/></a>
+                                <a t-if="website.social_twitter" t-att-href="website.social_twitter" class="social-icon" target="_blank"><i class="fa fa-twitter"/></a>
+                                <a t-if="website.social_linkedin" t-att-href="website.social_linkedin" class="social-icon" target="_blank"><i class="fa fa-linkedin"/></a>
+                                <a t-if="website.social_youtube" t-att-href="website.social_youtube" class="social-icon" target="_blank"><i class="fa fa-youtube-play"/></a>
+                            </div>
+                        </div>
+                        <!-- Navigation columns: Programs, Club Info, Location -->
+                        <div class="footer-col">
+                            <h4>Programs</h4>
+                            <ul class="footer-links">
+                                <li><a href="/programs">Junior Academy</a></li>
+                                <li><a href="/programs">Adult Leagues</a></li>
+                                <li><a href="/programs">Private Lessons</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Club Info</h4>
+                            <ul class="footer-links">
+                                <li><a href="/about">About Us</a></li>
+                                <li><a href="/contactus">Contact Us</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Location</h4>
+                            <ul class="footer-links">
+                                <li style="color:rgba(255,255,255,0.7);font-size:14px;line-height:1.6;">
+                                    <span t-field="res_company.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Copyright line and legal links -->
+                    <div class="footer-bottom">
+                        <div>
+                            <span>© </span>
+                            <t t-esc="datetime.datetime.now().year"/>
+                            <span t-esc="res_company.name"/>
+                            <span>. All rights reserved.</span>
+                        </div>
+                        <div class="footer-legal">
+                            <a href="#">Privacy Policy</a>
+                            <a href="#">Terms of Service</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </xpath>
+    </template>
+    <!-- Injects Google Fonts (Inter) into every page head -->
+    <template id="layout_templates_head_assets" inherit_id="website.layout">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+        </xpath>
+    </template>
+    <!-- Hides the Odoo "Powered by" brand promotion bar -->
+    <template id="layout_templates_no_branding" inherit_id="website.layout">
+        <xpath expr="//t[@t-call='web.brand_promotion']" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+    </template>
+</odoo>
