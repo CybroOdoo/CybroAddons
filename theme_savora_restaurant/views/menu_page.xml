@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ─── Menu Page ─── -->
+    <template id="savora_menu_page" name="Dinner Menu">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <!-- MENU HERO -->
+                <section class="menu-hero">
+                    <div class="menu-hero-bg">
+                        <img src="/theme_savora_restaurant/static/img/menu_hero_alt.jpg" alt="Atmospheric Dining Room" />
+                    </div>
+                    <div class="container" style="z-index: 2; position: relative;">
+                        <p class="sv-eyebrow reveal active" style="color: var(--sv-gold); letter-spacing: 0.3em;">Est. 2024</p>
+                        <h1 class="reveal active">Dinner Menu</h1>
+                    </div>
+                </section>
+                <!-- CATEGORY NAV -->
+                <div class="menu-nav">
+                    <div class="menu-tabs">
+                        <t t-if="menu_data">
+                            <t t-foreach="menu_data" t-as="item">
+                                <button t-attf-class="menu-tab #{'active' if item_index == 0 else ''}"
+                                        t-att-data-f="item['top_category'].id">
+                                    <t t-esc="item['top_category'].name"/>
+                                </button>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <div class="text-center py-5 w-100">
+                                <p class="sv-eyebrow" style="color: var(--sv-gold); letter-spacing: 0.2em;">COMING SOON</p>
+                                <h3 style="color: var(--sv-cream); font-family: 'Playfair Display', serif;">Our chefs are preparing something special.</h3>
+                                <p style="color: var(--sv-muted);">Please check back soon for our seasonal selection.</p>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                <!-- MENU CONTENT -->
+                <main class="menu-listing">
+                    <div class="container">
+                        <t t-foreach="menu_data" t-as="item">
+                            <div class="menu-category" t-att-data-c="item['top_category'].id" 
+                                 t-att-style="'display: block;' if item_index == 0 else 'display: none;'">
+                                <t t-foreach="item['sub_categories']" t-as="sub">
+                                    <section class="menu-cat-sec">
+                                        <div class="menu-cat-head">
+                                            <h2 t-esc="sub['category'].name"/>
+                                            <div class="line"/>
+                                        </div>
+                                        <div class="menu-list-grid">
+                                            <t t-foreach="sub['products']" t-as="product">
+                                                <a t-att-href="product.website_url" class="menu-item d-flex align-items-start gap-4 text-decoration-none">
+                                                    <div class="menu-item-img flex-shrink-0" t-if="product.image_128">
+                                                        <img t-attf-src="/web/image/product.template/#{product.id}/image_128" 
+                                                             class="rounded" style="width: 80px; height: 80px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);" 
+                                                             t-att-alt="product.name"/>
+                                                    </div>
+                                                    <div class="menu-item-content flex-grow-1">
+                                                        <div class="menu-item-hd">
+                                                            <span class="menu-item-name" t-field="product.name"/>
+                                                            <span class="menu-item-price" t-field="product.list_price" t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                                        </div>
+                                                        <p class="menu-item-desc" t-field="product.description_sale"/>
+                                                    </div>
+                                                </a>
+                                            </t>
+                                        </div>
+                                    </section>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                </main>
+                <div class="oe_structure"/>
+            </div>
+        </t>
+    </template>
+</odoo>

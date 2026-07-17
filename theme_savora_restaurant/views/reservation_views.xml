@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree view for managing restaurant reservations -->
+    <record id="theme_restaurant_reservation_view_tree" model="ir.ui.view">
+        <field name="name">calendar.event.reservation.view.tree</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <tree string="Reservations">
+                <field name="start" string="Reservation Date &amp; Time"/>
+                <field name="guest_name"/>
+                <field name="party_size"/>
+                <field name="guest_phone"/>
+                <field name="guest_email"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Form view for creating and editing restaurant reservations -->
+    <record id="theme_restaurant_reservation_view_form" model="ir.ui.view">
+        <field name="name">calendar.event.reservation.view.form</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <form string="Reservation">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" string="Reservation Reference"/>
+                        <h1>
+                            <field name="name" placeholder="Table Reservation..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Guest Information">
+                            <field name="guest_name" required="is_restaurant_reservation"/>
+                            <field name="party_size" required="is_restaurant_reservation"/>
+                            <field name="guest_phone"/>
+                            <field name="guest_email"/>
+                        </group>
+                        <group string="Reservation Details">
+                            <field name="start" string="Date &amp; Time" required="1"/>
+                            <field name="stop" string="End Time" required="1"/>
+                            <field name="is_restaurant_reservation" invisible="1"/>
+                            <field name="allday" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="description" placeholder="Any special requests or notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Action to open the restaurant reservations list and form -->
+    <record id="theme_restaurant_reservation_action" model="ir.actions.act_window">
+        <field name="name">Reservations</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">tree,form,calendar</field>
+        <field name="domain">[('is_restaurant_reservation', '=', True)]</field>
+        <field name="context">{'default_is_restaurant_reservation': True, 'default_name': 'Table Reservation:'}</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('theme_restaurant_reservation_view_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('theme_restaurant_reservation_view_form')})]"/>
+    </record>
+    <!-- Menu item for Reservations under Website configuration -->
+    <menuitem id="theme_restaurant_reservation_menu"
+              name="Reservations"
+              parent="website.menu_website_global_configuration"
+              action="theme_restaurant_reservation_action"
+              sequence="20"/>
+</odoo>

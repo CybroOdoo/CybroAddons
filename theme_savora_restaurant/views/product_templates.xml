@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ─── Product Detail Page ─── -->
+  <template id="restaurant_product_page" inherit_id="website_sale.product" name="Savora Product" priority="1000">
+    <xpath expr="//div[@id='wrap']" position="replace">
+      <div id="wrap" class="oe_structure sv-product-page oe_website_sale">
+        <!-- Initialize Standard Odoo Variables -->
+        <t t-set="combination" t-value="combination or product._get_first_possible_combination()"/>
+        <t t-set="combination_info" t-value="product._get_combination_info(combination, product_id, add_qty or 1)"/>
+        <t t-set="product_variant" t-value="product.env['product.product'].browse(combination_info['product_id'])"/>
+        <t t-set="product_images" t-value="product._get_images()"/>
+        <t t-set="ribbon" t-value="product_variant.sudo().ribbon_id or product.sudo().website_ribbon_id"/>
+        <!-- Sanitize combination_info for JSON - Only take essential serializable fields -->
+        <t t-set="combination_info_json" t-value="{
+            'product_id': combination_info['product_id'],
+            'product_template_id': combination_info['product_template_id'],
+            'display_name': combination_info['display_name'],
+            'price': combination_info['price'],
+            'list_price': combination_info['list_price'],
+            'has_discounted_price': combination_info['has_discounted_price'],
+        }"/>
+        <div class="container" id="product_detail">
+          <!-- Breadcrumb -->
+          <nav aria-label="breadcrumb" class="py-3 mb-4">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/" style="color:var(--sv-muted);">Home</a></li>
+              <li class="breadcrumb-item"><a href="/shop" style="color:var(--sv-muted);">Menu</a></li>
+              <li t-if="category" class="breadcrumb-item">
+                <a t-att-href="'/shop/category/%s' % slug(category)" style="color:var(--sv-muted);" t-esc="category.name"/>
+              </li>
+              <li class="breadcrumb-item active"><span t-field="product.name"/></li>
+            </ol>
+          </nav>
+          <div class="row g-5" id="product_detail_main"
+               t-att-data-view-track-stellar="True"
+               t-att-data-product-tracking-info="json.dumps(request.env['website.track']._get_product_tracking_info(product)) if request.env.get('website.track') else '{}'"
+               t-att-data-image_layout="request.env['ir.config_parameter'].sudo().get_param('website_sale.product_page_image_layout') or 'carousel'"
+               t-att-data-image_width="request.env['ir.config_parameter'].sudo().get_param('website_sale.product_page_image_width') or 'none'"
+               t-att-data-combination="json.dumps(combination.ids)"
+               t-att-data-combination-info="json.dumps(combination_info_json)">
+            <!-- Gallery -->
+            <div class="col-lg-6 o_wsale_product_images_list"
+                 t-att-data-image-layout="request.env['ir.config_parameter'].sudo().get_param('website_sale.product_page_image_layout') or 'carousel'">
+              <div class="sv-product-gallery sticky-top" style="top: 100px;">
+                <t t-call="website_sale.shop_product_carousel"/>
+              </div>
+            </div>
+            <!-- Product Info -->
+            <div class="col-lg-6 sv-product-info">
+              <t t-if="category">
+                <p class="sv-eyebrow mb-2"><t t-esc="category.name"/></p>
+              </t>
+              <h1 class="sv-product-title" t-field="product.name"/>
+              <!-- Rating -->
+              <div class="o_website_rating_static mb-3" t-if="product.rating_count">
+                <t t-call="website_rating.rating_widget_stars_static">
+                  <t t-set="rating_avg" t-value="product.rating_avg"/>
+                </t>
+                <span style="color:var(--sv-muted); font-size:13px;" t-esc="'(%d reviews)' % product.rating_count"/>
+              </div>
+              <!-- Price -->
+              <div class="sv-product-price mb-2">
+                <t t-call="website_sale.product_price"/>
+              </div>
+              <!-- SKU and Availability -->
+              <div class="mb-4" style="font-size: 13px; color: var(--sv-muted);">
+                <t t-if="product.default_code">
+                  <span class="me-3">SKU: <t t-esc="product.default_code"/></span>
+                </t>
+                <!-- Safely check for Tags -->
+                <t t-set="tag_view" t-value="request.env.ref('website_sale.product_tags', raise_if_not_found=False)"/>
+                <t t-if="tag_view">
+                  <t t-call="website_sale.product_tags"/>
+                </t>
+                <div class="mt-2">
+                  <!-- Safely check for Store Info -->
+                  <t t-set="store_view" t-value="request.env.ref('website_sale.product_info_store', raise_if_not_found=False)"/>
+                  <t t-if="store_view">
+                    <t t-call="website_sale.product_info_store"/>
+                  </t>
+                </div>
+              </div>
+              <!-- Description -->
+              <div class="sv-product-desc mb-4">
+                <p t-field="product.description_sale" class="text-muted" placeholder="Short description..."/>
+              </div>
+              <!-- Add to Cart Form -->
+              <form t-if="product._is_add_to_cart_possible()" action="/shop/cart/update" method="POST" class="js_add_cart_variants">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <div class="js_product js_main_product" t-att-data-combination="json.dumps(combination.ids)" t-att-data-combination-info="json.dumps(combination_info_json)">
+                  <t t-placeholder="select">
+                    <input type="hidden" class="product_id" name="product_id" t-att-value="combination_info['product_id']"/>
+                    <input type="hidden" class="product_template_id" name="product_template_id" t-att-value="product.id"/>
+                    <t t-call="website_sale.variants">
+                      <t t-set="ul_class" t-valuef="flex-column" />
+                    </t>
+                  </t>
+                  <p t-if="True" class="css_not_available_msg alert alert-warning">This combination does not exist.</p>
+                  <div id="add_to_cart_wrap" class="d-flex align-items-center gap-3 mt-4">
+                    <div class="css_quantity input-group w-auto" contenteditable="false">
+                      <a t-attf-href="javascript:void(0)" class="btn btn-link js_add_cart_json" aria-label="Remove one" title="Remove one">
+                        <i class="fa fa-minus"/>
+                      </a>
+                      <input type="text" class="form-control quantity text-center" data-min="1" name="add_qty" t-att-value="add_qty or 1" style="width: 50px; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);"/>
+                      <a t-attf-href="javascript:void(0)" class="btn btn-link float_left js_add_cart_json" aria-label="Add one" title="Add one">
+                        <i class="fa fa-plus"/>
+                      </a>
+                    </div>
+                    <button type="submit" id="add_to_cart" class="sv-add-to-cart a-submit btn flex-grow-1">
+                      <i class="fa fa-shopping-cart me-2"/> ADD TO CART
+                    </button>
+                    <!-- Wishlist & Comparison -->
+                    <div class="d-flex gap-2">
+                      <t t-if="is_view_active('website_sale_wishlist.add_to_wishlist')">
+                        <t t-call="website_sale_wishlist.add_to_wishlist"/>
+                      </t>
+                      <t t-if="is_view_active('website_sale_comparison.add_to_compare')">
+                        <t t-call="website_sale_comparison.add_to_compare"/>
+                      </t>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              <!-- Extra Actions (Contact Us) -->
+              <div class="mt-3">
+                <t t-if="is_view_active('website_sale.contactus_button')">
+                  <t t-call="website_sale.contactus_button"/>
+                </t>
+              </div>
+              <!-- Terms and Share -->
+              <div id="o_product_terms_and_share" class="mt-5 pt-4 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+                <t t-set="share_view" t-value="request.env.ref('website_sale.share_buttons', raise_if_not_found=False)"/>
+                <t t-if="share_view">
+                  <t t-call="website_sale.share_buttons"/>
+                </t>
+              </div>
+            </div>
+          </div>
+          <!-- Long Description & Tabs -->
+          <div class="sv-product-tabs mt-5 pt-5 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+            <ul class="nav nav-tabs mb-4" id="product_tabs" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="description-tab" data-bs-toggle="tab" href="#description" role="tab">Description</a>
+              </li>
+              <t t-if="is_view_active('website_sale_comparison.product_attributes_body')">
+                <li class="nav-item">
+                  <a class="nav-link" id="spec-tab" data-bs-toggle="tab" href="#specifications" role="tab">Specifications</a>
+                </li>
+              </t>
+            </ul>
+            <div class="tab-content" id="product_tabs_content">
+              <!-- Description Tab -->
+              <div class="tab-pane fade show active" id="description" role="tabpanel">
+                <div t-field="product.website_description" class="oe_structure" id="product_full_description"/>
+              </div>
+              <!-- Specifications Tab -->
+              <div class="tab-pane fade" id="specifications" role="tabpanel">
+                <t t-if="is_view_active('website_sale_comparison.product_attributes_body')">
+                  <t t-call="website_sale_comparison.product_attributes_body"/>
+                </t>
+              </div>
+            </div>
+          </div>
+          <!-- Alternative Products -->
+          <t t-set="rec_view" t-value="request.env.ref('website_sale.recommended_products', raise_if_not_found=False)"/>
+          <div t-if="rec_view" class="mt-5 pt-5 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+            <t t-call="website_sale.recommended_products"/>
+          </div>
+          <div class="oe_structure"/>
+        </div>
+      </div>
+    </xpath>
+  </template>
+</odoo>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Reviews Page Template -->
+    <template id="savora_reviews_page" name="Guest Experiences">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <!-- REVIEWS HERO -->
+                <section class="menu-hero">
+                    <div class="menu-hero-bg">
+                        <img src="/theme_savora_restaurant/static/img/reservation_bg.jpg" alt="Atmospheric Dining Room" />
+                    </div>
+                    <div class="container" style="z-index: 2; position: relative;">
+                        <t t-if="request.params.get('submitted')">
+                            <div class="alert alert-success mb-4" role="alert" style="background:rgba(212,175,55,0.1); border-color:var(--sv-gold); color:var(--sv-gold); text-align:center;">
+                                <h4 class="alert-heading">Thank You!</h4>
+                                <p>Your review has been submitted and is now live on our website.</p>
+                            </div>
+                        </t>
+                        <p class="sv-eyebrow reveal active" style="color: var(--sv-gold); letter-spacing: 0.3em; margin-bottom: 8px;">GUEST EXPERIENCES</p>
+                        <h1 class="reveal active">Reviews</h1>
+                    </div>
+                </section>
+                <!-- SUMMARY SECTION -->
+                <section class="review-summary">
+                    <div class="container">
+                        <div class="summary-content">
+                            <div class="big-rating" t-esc="'%.1f' % average_rating"/>
+                            <div class="summary-stars">
+                                <t t-foreach="range(5)" t-as="i">
+                                    <i t-attf-class="fa fa-star#{'' if i &lt; int(average_rating) else '-o'}"/>
+                                </t>
+                            </div>
+                            <p class="summary-note" t-esc="summary_note"/>
+                        </div>
+                    </div>
+                </section>
+                <!-- REVIEWS GRID -->
+                <main class="review-page-grid" style="padding-bottom: 60px;">
+                    <div class="container">
+                        <t t-if="reviews">
+                            <div class="r-grid">
+                                <t t-foreach="reviews" t-as="review">
+                                    <div t-attf-class="r-card #{'r-hidden' if review_index &gt; 5 else ''}">
+                                        <div class="r-card-top">
+                                            <t t-if="review.image_1920">
+                                                <img t-att-src="'/web/image/theme.restaurant.review/%s/image_1920' % review.id"
+                                                     t-att-alt="review.name"
+                                                     class="r-avatar"/>
+                                            </t>
+                                            <t t-elif="review.avatar_url">
+                                                <img t-att-src="review.avatar_url"
+                                                     t-att-alt="review.name"
+                                                     class="r-avatar"/>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="r-avatar r-avatar-fallback">
+                                                    <t t-esc="(review.name or 'G')[:1].upper()"/>
+                                                </div>
+                                            </t>
+                                            <div class="r-meta">
+                                                <h4 class="r-name" t-esc="review.name"/>
+                                                <p class="r-date" t-esc="review.review_date.strftime('%B %d, %Y')"/>
+                                            </div>
+                                        </div>
+                                        <div class="r-stars">
+                                            <t t-foreach="range(5)" t-as="i">
+                                                <i t-attf-class="fa fa-star#{'' if i &lt; review.rating else '-o'}"/>
+                                            </t>
+                                        </div>
+                                        <p class="r-text">"<t t-esc="review.review_text"/>"</p>
+                                    </div>
+                                </t>
+                            </div>
+                            <t t-if="len(reviews) &gt; 6">
+                                <div class="load-more-wrap">
+                                    <button class="sv-btn-outline js_see_all_reviews" style="padding:15px 40px;">SEE ALL REVIEWS</button>
+                                </div>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <div class="load-more-wrap">
+                                <p class="summary-note">NO GUEST REVIEWS ARE PUBLISHED YET.</p>
+                            </div>
+                        </t>
+                    </div>
+                </main>
+                <!-- SUBMISSION FORM (UNDER THE REVIEWS) -->
+                <section class="sv-review-submission-section" style="background:var(--sv-surface-1, #1a1411); padding:100px 0; border-top:1px solid rgba(255,255,255,0.05);">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-7 text-center mb-5">
+                                <p class="sv-eyebrow mb-2">Feedback</p>
+                                <h2 class="sv-section-title">Share Your Experience</h2>
+                                <p style="color:var(--sv-muted);">We value your thoughts. Tell us about your visit to Savora.</p>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="sv-review-form-card" style="position:relative; top:0; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08);">
+                                    <form action="/reviews/submit" method="post" class="sv-form">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="sv-label">Full Name</label>
+                                                <input type="text" name="name" class="sv-input" required="1" placeholder="Jane Doe"/>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="sv-label">Rating</label>
+                                                <select name="rating" class="sv-input" required="1">
+                                                    <option value="5">5 Stars - Exceptional</option>
+                                                    <option value="4">4 Stars - Great</option>
+                                                    <option value="3">3 Stars - Good</option>
+                                                    <option value="2">2 Stars - Average</option>
+                                                    <option value="1">1 Star - Poor</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label class="sv-label">Review Details</label>
+                                            <textarea name="review_text" class="sv-input" rows="5" required="1" placeholder="Describe your dining experience, the atmosphere, or your favorite dish..."/>
+                                        </div>
+                                        <div class="text-center">
+                                            <button type="submit" class="sv-btn-gold" style="padding:15px 60px;">Post Your Review</button>
+                                            <p class="mt-4 tiny" style="color:var(--sv-muted); font-size:11px;">
+                                                Note: Your review will be published immediately on our website.
+                                            </p>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <div class="oe_structure"/>
+            </div>
+        </t>
+    </template>
+</odoo>

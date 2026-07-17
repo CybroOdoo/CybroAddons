@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ─── Custom Shop Page ─── -->
+  <template id="savora_shop_page" inherit_id="website_sale.products" name="Savora Shop" priority="99">
+    <xpath expr="//div[@id='wrap']" position="replace">
+      <div id="wrap" class="js_sale oe_website_sale o_wsale_products_page sv-shop-wrapper oe_structure">
+        <!-- Identify category context -->
+        <t t-set="is_food" t-value="category and any(c in (category.name or '').lower() for c in ['starters','main','dessert','beverage'])"/>
+        <!-- Page Header -->
+        <t t-if="is_food">
+          <section class="sv-accessories-header">
+            <div class="container">
+              <h1 t-esc="category.name if category else 'Our Menu'"/>
+              <p t-out="(category and category.website_description) or 'Explore our full selection of dishes and beverages.'"/>
+              <!-- Horizontal Filter Bar -->
+              <form class="js_attributes d-flex align-items-center justify-content-between flex-wrap gap-3 py-3 border-top" method="get" style="border-color:rgba(255,255,255,0.08)!important;">
+                <input t-if="request.params.get('search')" type="hidden" name="search" t-att-value="request.params.get('search')"/>
+                <div class="d-flex align-items-center gap-4 flex-wrap">
+                  <div class="dropdown">
+                    <button class="btn dropdown-toggle p-0 border-0 shadow-none fw-bold text-white" type="button" data-bs-toggle="dropdown" style="font-size:13px; text-transform:uppercase; letter-spacing:0.08em;">Category</button>
+                    <div class="dropdown-menu border-0 shadow-lg p-3" style="background:#1a1411; min-width:200px;">
+                      <t t-set="all_cats" t-value="request.env['product.public.category'].search([('parent_id','=',False)])"/>
+                      <t t-foreach="all_cats" t-as="c">
+                        <a t-att-href="keep('/shop/category/' + slug(c), category=0)" class="dropdown-item py-2 rounded" t-esc="c.name" style="color:#efe6db; font-size:13px;"/>
+                      </t>
+                    </div>
+                  </div>
+                  <t t-foreach="attributes" t-as="a">
+                    <div class="dropdown" t-if="a.name in ['Color','Material','Size','Serving','Portion']">
+                      <button class="btn dropdown-toggle p-0 border-0 shadow-none fw-bold text-white" type="button" data-bs-toggle="dropdown" style="font-size:13px; text-transform:uppercase; letter-spacing:0.08em;"><t t-esc="a.name"/></button>
+                      <div class="dropdown-menu border-0 shadow-lg p-3" style="background:#1a1411; min-width:180px;">
+                        <t t-foreach="a.value_ids" t-as="v">
+                          <t t-set="is_active" t-value="v.id in attrib_set"/>
+                          <div class="dropdown-item py-2 d-flex align-items-center gap-3" style="color:#efe6db; font-size:13px;">
+                            <input type="checkbox" name="attrib" class="form-check-input m-0" style="width:15px; height:15px; accent-color:#c78b3a;"
+                                   t-att-checked="is_active"
+                                   t-att-value="'%s-%s' % (a.id, v.id)"
+                                   onchange="this.form.submit()"/>
+                            <label class="mb-0" style="cursor:pointer; color:#efe6db;"><t t-esc="v.name"/></label>
+                          </div>
+                        </t>
+                      </div>
+                    </div>
+                  </t>
+                  <t t-if="attrib_set or min_price > 0 or max_price > 0">
+                    <a href="/shop" style="color:var(--sv-muted); font-size:12px; text-decoration:underline;">Clear All</a>
+                  </t>
+                </div>
+                <div class="d-flex align-items-center gap-4">
+                  <span style="color:var(--sv-muted); font-size:13px;"><t t-esc="search_count"/> items</span>
+                  <div class="dropdown">
+                    <t t-set="curr_sort" t-value="[s for s in website_sale_sortable if s[0] == request.params.get('order')]"/>
+                    <button class="btn dropdown-toggle p-0 border-0 shadow-none fw-bold text-white" type="button" data-bs-toggle="dropdown" style="font-size:13px;">
+                      Sort: <span style="color:var(--sv-muted);" t-esc="curr_sort[0][1] if curr_sort else 'Featured'"/>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end border-0 shadow-lg p-2" style="background:#1a1411;">
+                      <t t-foreach="website_sale_sortable" t-as="sortby">
+                        <a t-att-href="keep('/shop', order=sortby[0])" class="dropdown-item py-2 rounded" t-esc="sortby[1]" style="color:#efe6db; font-size:13px;"/>
+                      </t>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </section>
+        </t>
+        <t t-else="">
+          <section class="sv-shop-header">
+            <div class="container">
+              <div class="d-flex justify-content-between align-items-end flex-wrap gap-4">
+                <div>
+                  <h1 t-esc="category.name if category else 'Shop All'"/>
+                  <p t-out="(category and category.website_description) or 'Explore our entire selection. ('+ str(search_count) +' products)'"/>
+                </div>
+                <div class="dropdown">
+                  <t t-set="curr_sort" t-value="[s for s in website_sale_sortable if s[0] == request.params.get('order')]"/>
+                  <button class="btn btn-outline-secondary dropdown-toggle px-4 py-2" type="button" data-bs-toggle="dropdown" style="background:var(--sv-surface-1); border-color:rgba(255,255,255,0.15); color:var(--sv-cream); font-size:13px;">
+                    Sort: <span class="fw-bold ms-1" t-esc="curr_sort[0][1] if curr_sort else 'Featured'"/>
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-end shadow" style="background:var(--sv-surface-1); border-color:rgba(255,255,255,0.1);">
+                    <t t-foreach="website_sale_sortable" t-as="sortby">
+                      <a t-att-href="keep('/shop', order=sortby[0])" class="dropdown-item" t-esc="sortby[1]" style="color:var(--sv-cream); font-size:13px;"/>
+                    </t>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </t>
+        <!-- Main Content -->
+        <div class="container py-5">
+          <div class="row g-5">
+            <!-- Sidebar (non-food pages) -->
+            <aside t-if="not is_food" class="col-lg-3 sv-shop-sidebar d-none d-lg-block">
+              <t t-call="theme_savora_restaurant.savora_shop_sidebar"/>
+            </aside>
+            <!-- Product Grid -->
+            <main t-attf-class="col-lg-#{'12' if is_food else '9'}">
+              <!-- Mobile Filter Button -->
+              <div t-if="not is_food" class="d-lg-none mb-4 d-flex justify-content-between align-items-center p-3 rounded" style="background:var(--sv-surface-1); border:1px solid rgba(255,255,255,0.08);">
+                <button class="btn d-flex align-items-center gap-2 px-4 py-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#svOffcanvasFilters" style="background:var(--sv-gold); color:#1b0f08; font-size:13px; font-weight:700; border:none;">
+                  <i class="fa fa-filter"/> Filters
+                </button>
+                <div style="color:var(--sv-muted); font-size:13px;"><t t-esc="search_count"/> items</div>
+              </div>
+              <t t-if="bins">
+                <div class="row g-4">
+                  <t t-foreach="bins" t-as="tr_product">
+                    <t t-foreach="tr_product" t-as="td_product">
+                      <t t-if="td_product">
+                        <t t-set="product" t-value="td_product['product']"/>
+                        <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
+                        <t t-set="ribbon" t-value="product.sudo().website_ribbon_id"/>
+                        <t t-set="product_href" t-value="product.website_url"/>
+                        <div t-attf-class="col-6 col-md-4 col-lg-#{'3' if is_food else '4'} position-relative">
+                          <t t-set="combination_info" t-value="product._get_combination_info(only_template=True, add_qty=add_qty or 1)"/>
+                          <div class="sv-product-card h-100">
+                            <div class="sv-card-img position-relative">
+                              <a t-att-href="product_href" class="position-absolute top-0 start-0 w-100 h-100 d-block">
+                                <img t-attf-src="/web/image/product.template/#{product.id}/image_1024"
+                                     class="w-100 h-100"
+                                     t-att-alt="product.name"
+                                     style="object-fit:cover;"/>
+                              </a>
+                              <span t-if="ribbon" class="sv-ribbon">
+                                <t t-out="ribbon.html or ribbon.name"/>
+                              </span>
+                            </div>
+                            <div class="sv-card-body">
+                              <div class="d-flex justify-content-between align-items-baseline mb-1">
+                                <a t-att-href="product_href" class="sv-card-name text-decoration-none text-truncate me-2" t-field="product.name"/>
+                                <span class="sv-card-price" t-esc="combination_info['price']"
+                                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                              </div>
+                              <p class="sv-card-desc text-truncate mb-0" t-field="product.description_sale" t-if="product.description_sale"/>
+                            </div>
+                          </div>
+                        </div>
+                      </t>
+                    </t>
+                  </t>
+                </div>
+              </t>
+              <t t-else="">
+                <div class="text-center py-5">
+                  <i class="fa fa-search mb-4" style="font-size:48px; color:rgba(255,255,255,0.15);"/>
+                  <h3 class="mb-3" style="color:var(--sv-cream);">No items found</h3>
+                  <p class="mb-4" style="color:var(--sv-muted);">Try adjusting your filters or browse our full selection.</p>
+                  <a href="/shop" class="sv-btn-gold">Browse All Items</a>
+                </div>
+              </t>
+              <t t-if="pager">
+                <div class="d-flex justify-content-center mt-5 pt-4" style="border-top:1px solid rgba(255,255,255,0.08);">
+                  <t t-call="website.pager"/>
+                </div>
+              </t>
+            </main>
+          </div>
+        </div>
+        <!-- Mobile Offcanvas Filters -->
+        <div class="offcanvas offcanvas-start sv-offcanvas" tabindex="-1" id="svOffcanvasFilters" aria-labelledby="svOffcanvasFiltersLabel">
+          <div class="offcanvas-header border-bottom py-4 px-4">
+            <h5 class="offcanvas-title fw-bold" id="svOffcanvasFiltersLabel" style="color:var(--sv-cream);">Filters</h5>
+            <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"/>
+          </div>
+          <div class="offcanvas-body p-4">
+            <t t-call="theme_savora_restaurant.savora_shop_sidebar">
+              <t t-set="is_mobile" t-value="True"/>
+            </t>
+            <div class="mt-5 pt-4" style="border-top:1px solid rgba(255,255,255,0.08);">
+              <button type="submit" form="sv_sidebar_form" class="sv-btn-gold d-block w-100 text-center" style="padding:16px;">Apply Filters</button>
+              <div class="text-center mt-3">
+                <a href="/shop" style="color:var(--sv-muted); font-size:12px; text-decoration:underline;">Clear All</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="oe_structure" id="oe_structure_website_sale_products_2"/>
+      </div>
+    </xpath>
+  </template>
+  <!-- ─── Sidebar Filters Template ─── -->
+  <template id="savora_shop_sidebar" name="Savora Shop Sidebar">
+    <t t-set="id_prefix" t-value="'mob-' if is_mobile else 'desk-'"/>
+    <div class="rs-sidebar sv-shop-sidebar">
+      <!-- Categories -->
+      <div class="rs-section">
+        <button type="button" class="rs-section-btn" t-att-data-rs-target="id_prefix + 'cat'">
+          Category <span class="rs-arrow"/>
+        </button>
+        <div class="rs-section-body" t-att-id="id_prefix + 'cat'">
+          <div class="rs-section-body-inner">
+            <t t-set="all_cats" t-value="request.env['product.public.category'].search([])"/>
+            <t t-foreach="all_cats" t-as="c">
+              <t t-set="is_active_cat" t-value="category and category.id == c.id"/>
+              <a t-att-href="keep('/shop' if is_active_cat else '/shop/category/' + slug(c), category=0)" class="text-decoration-none d-block">
+                <label class="rs-filter-item w-100" style="cursor:pointer;">
+                  <input type="checkbox" t-att-checked="'checked' if is_active_cat else None" onchange="window.location.href=this.parentElement.parentElement.href"/>
+                  <span class="rs-box"/>
+                  <span class="rs-label"><t t-esc="c.name"/></span>
+                  <span class="rs-count">(<t t-esc="request.env['product.template'].search_count([('public_categ_ids','child_of',c.id),('is_published','=',True),('sale_ok','=',True)])"/>)</span>
+                </label>
+              </a>
+            </t>
+          </div>
+        </div>
+      </div>
+      <!-- Price -->
+      <div class="rs-section">
+        <button type="button" class="rs-section-btn" t-att-data-rs-target="id_prefix + 'price'">
+          Price <span class="rs-arrow"/>
+        </button>
+        <div class="rs-section-body" t-att-id="id_prefix + 'price'">
+          <div class="rs-section-body-inner">
+            <a t-att-href="keep('/shop', min_price=0, max_price=0)" class="text-decoration-none d-block">
+              <label class="rs-filter-item w-100"><input type="radio" name="sv_price" t-att-checked="'checked' if not min_price and not max_price else None" onchange="window.location.href=this.parentElement.parentElement.href"/><span class="rs-radio-box"/><span class="rs-label">All Prices</span></label>
+            </a>
+            <a t-att-href="keep(min_price=0, max_price=30)" class="text-decoration-none d-block">
+              <label class="rs-filter-item w-100"><input type="radio" name="sv_price" t-att-checked="'checked' if min_price == 0 and max_price == 30 else None" onchange="window.location.href=this.parentElement.parentElement.href"/><span class="rs-radio-box"/><span class="rs-label">Under $30</span></label>
+            </a>
+            <a t-att-href="keep(min_price=30, max_price=60)" class="text-decoration-none d-block">
+              <label class="rs-filter-item w-100"><input type="radio" name="sv_price" t-att-checked="'checked' if min_price == 30 and max_price == 60 else None" onchange="window.location.href=this.parentElement.parentElement.href"/><span class="rs-radio-box"/><span class="rs-label">$30 – $60</span></label>
+            </a>
+            <a t-att-href="keep(min_price=60, max_price=100)" class="text-decoration-none d-block">
+              <label class="rs-filter-item w-100"><input type="radio" name="sv_price" t-att-checked="'checked' if min_price == 60 and max_price == 100 else None" onchange="window.location.href=this.parentElement.parentElement.href"/><span class="rs-radio-box"/><span class="rs-label">$60 – $100</span></label>
+            </a>
+            <a t-att-href="keep(min_price=100, max_price=0)" class="text-decoration-none d-block">
+              <label class="rs-filter-item w-100"><input type="radio" name="sv_price" t-att-checked="'checked' if min_price == 100 and max_price == 0 else None" onchange="window.location.href=this.parentElement.parentElement.href"/><span class="rs-radio-box"/><span class="rs-label">Over $100</span></label>
+            </a>
+          </div>
+        </div>
+      </div>
+      <!-- Dynamic Attributes -->
+      <form id="sv_sidebar_form" class="js_attributes mb-0" method="get" t-att-action="keep(attribute_values=0)">
+        <input t-if="request.params.get('search')" type="hidden" name="search" t-att-value="request.params.get('search')"/>
+        <t t-foreach="attributes" t-as="a">
+          <div class="rs-section">
+            <button type="button" class="rs-section-btn" t-att-data-rs-target="id_prefix + 'attr-' + str(a.id)">
+              <t t-esc="a.name"/> <span class="rs-arrow"/>
+            </button>
+            <div class="rs-section-body" t-att-id="id_prefix + 'attr-' + str(a.id)">
+              <div class="rs-section-body-inner">
+                <t t-foreach="a.value_ids" t-as="v">
+                  <t t-set="is_active" t-value="v.id in attrib_set"/>
+                  <label class="rs-filter-item w-100">
+                    <input type="checkbox" name="attribute_value"
+                           t-att-checked="'checked' if is_active else None"
+                           t-att-value="'%s-%s' % (a.id, v.id)"
+                           onchange="if(window.innerWidth > 991) this.form.submit();"/>
+                    <span class="rs-box"/>
+                    <span class="rs-label"><t t-esc="v.name"/></span>
+                  </label>
+                </t>
+              </div>
+            </div>
+          </div>
+        </t>
+      </form>
+    </div>
+  </template>
+</odoo>

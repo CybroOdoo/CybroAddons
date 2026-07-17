@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    Reservation Page-->
+    <template id="savora_reservation_page" name="Savora Reservation">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure sv-reservation-wrapper">
+                <div class="sv-res-page-wrapper">
+                    <!-- Left: Persistent Atmosphere -->
+                    <div class="sv-res-split-img" style="background-image: url('/theme_savora_restaurant/static/img/reservation_bg.jpg');">
+                        <div class="sv-logo">
+                            <img src="/theme_savora_restaurant/static/img/logo.svg" alt="SAVORA" style="height: 40px;"/>
+                        </div>
+                        <div class="sv-res-contact-info">
+                            <p class="mb-1" style="color:var(--sv-gold); font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;">Visit Us</p>
+                            <p class="mb-4" style="color:var(--sv-cream); font-size:15px;">10 Mercer Avenue, New York, NY 10012<br/>Dinner Daily: <t t-esc="reservation_start_label"/> – <t t-esc="reservation_end_label"/></p>
+                            <p class="mb-0" style="color:rgba(255,255,255,0.6); font-size:14px;">+1 (212) 555-0198 • hello@savorarestaurant.com</p>
+                        </div>
+                    </div>
+                    <!-- Right: Reservation Wizard -->
+                    <div class="sv-res-split-content">
+                        <div class="sv-res-box">
+                            <!-- Step 1: Find a Table -->
+                            <div id="reserveStep1">
+                                <div class="sv-res-header">
+                                    <h2 class="sv-res-title">Find a Table</h2>
+                                    <p class="sv-res-subtitle">Choose your party size, date, and time.</p>
+                                </div>
+                                <div class="sv-res-progress">
+                                    <div class="sv-res-p-dot active" id="resLine1"/>
+                                    <div class="sv-res-p-dot" id="resLine2"/>
+                                    <div class="sv-res-p-dot" id="resLine3"/>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="sv-res-label">Party Size</label>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button class="sv-res-step-btn">1</button>
+                                        <button class="sv-res-step-btn active">2</button>
+                                        <button class="sv-res-step-btn">3</button>
+                                        <button class="sv-res-step-btn">4</button>
+                                        <button class="sv-res-step-btn">5</button>
+                                        <button class="sv-res-step-btn">6+</button>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="sv-res-label">Select Date</label>
+                                    <div class="sv-res-calendar">
+                                        <div class="sv-cal-header d-flex justify-content-between align-items-center mb-3">
+                                            <i class="fa fa-chevron-left sv-cal-prev" style="cursor:pointer; color:var(--sv-gold);"/>
+                                            <span id="calMonthYear" style="font-weight:700; letter-spacing:1px; color:var(--sv-cream);"/>
+                                            <i class="fa fa-chevron-right sv-cal-next" style="cursor:pointer; color:var(--sv-gold);"/>
+                                        </div>
+                                        <div class="sv-cal-days mb-2">
+                                            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                                        </div>
+                                        <div class="sv-cal-grid"/>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="sv-res-label">Available Times</label>
+                                    <div class="sv-res-times"/>
+                                </div>
+                                <button class="sv-btn-gold w-100 mt-2" id="toStep2">Continue to Details</button>
+                            </div>
+                            <!-- Step 2: Guest Details -->
+                            <div id="reserveStep2" style="display:none;">
+                                <div class="sv-res-header">
+                                    <h2 class="sv-res-title">Guest Details</h2>
+                                    <p class="sv-res-subtitle">Please provide your information for the reservation.</p>
+                                </div>
+                                <div class="sv-res-progress">
+                                    <div class="sv-res-p-dot active" id="resLine1_2"/>
+                                    <div class="sv-res-p-dot active" id="resLine2_2"/>
+                                    <div class="sv-res-p-dot" id="resLine3_2"/>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="sv-res-label">First Name</label>
+                                        <input type="text" id="resFirstName" class="sv-form-control" placeholder="Jane"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="sv-res-label">Last Name</label>
+                                        <input type="text" id="resLastName" class="sv-form-control" placeholder="Doe"/>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="sv-res-label">Email Address</label>
+                                    <input type="email" id="resEmail" class="sv-form-control" placeholder="jane.doe@example.com"/>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="sv-res-label">Phone Number</label>
+                                    <input type="tel" id="resPhone" class="sv-form-control" placeholder="+1 (555) 000-0000"/>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="sv-res-label">Special Notes</label>
+                                    <textarea id="resNotes" class="sv-form-control" rows="3" placeholder="Allergies, special occasions..."/>
+                                </div>
+                                <div class="d-flex gap-3">
+                                    <button class="sv-btn-outline" id="backToStep1" style="flex:0 0 100px;">Back</button>
+                                    <button class="sv-btn-gold w-100" id="toStep3">Review Reservation</button>
+                                </div>
+                            </div>
+                            <!-- Step 3: Review Reservation -->
+                            <div id="reserveStep3" style="display:none;">
+                                <div class="sv-res-header">
+                                    <h2 class="sv-res-title">Review Reservation</h2>
+                                    <p class="sv-res-subtitle">Please confirm your reservation details below.</p>
+                                </div>
+                                <div class="sv-res-progress">
+                                    <div class="sv-res-p-dot active" id="resLine1_3"/>
+                                    <div class="sv-res-p-dot active" id="resLine2_3"/>
+                                    <div class="sv-res-p-dot active" id="resLine3_3"/>
+                                </div>
+                                <div class="sv-review-list mb-4">
+                                    <div class="py-2 d-flex justify-content-between border-bottom" style="border-color:rgba(255,255,255,0.06)!important;">
+                                        <span style="color:var(--sv-muted); font-size:13px;">Date</span>
+                                        <span id="reviewDateVal" style="color:var(--sv-cream); font-weight:600;"/>
+                                    </div>
+                                    <div class="py-2 d-flex justify-content-between border-bottom" style="border-color:rgba(255,255,255,0.06)!important;">
+                                        <span style="color:var(--sv-muted); font-size:13px;">Time</span>
+                                        <span id="reviewTimeVal" style="color:var(--sv-cream); font-weight:600;"/>
+                                    </div>
+                                    <div class="py-2 d-flex justify-content-between border-bottom" style="border-color:rgba(255,255,255,0.06)!important;">
+                                        <span style="color:var(--sv-muted); font-size:13px;">Party Size</span>
+                                        <span id="reviewGuestsVal" style="color:var(--sv-cream); font-weight:600;"/>
+                                    </div>
+                                    <div class="py-2 d-flex justify-content-between border-bottom" style="border-color:rgba(255,255,255,0.06)!important;">
+                                        <span style="color:var(--sv-muted); font-size:13px;">Guest</span>
+                                        <span id="reviewNameVal" style="color:var(--sv-cream); font-weight:600;"/>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-3">
+                                    <button class="sv-btn-outline" id="backToStep2" style="flex:0 0 100px;">Back</button>
+                                    <button class="sv-btn-gold w-100" id="toStep4">Confirm Reservation</button>
+                                </div>
+                            </div>
+                            <!-- Step 4: Confirmation -->
+                            <div id="reserveStep4" style="display:none;" class="text-center">
+                                <div class="mb-4 pt-3">
+                                    <div style="width:64px; height:64px; border-radius:50%; border:2px solid var(--sv-gold); display:flex; align-items:center; justify-content:center; margin:0 auto; color:var(--sv-gold); font-size:24px;">
+                                        <i class="fa fa-check"/>
+                                    </div>
+                                </div>
+                                <h2 class="sv-res-title mb-2">Reservation Confirmed</h2>
+                                <p class="sv-res-subtitle mb-5">Thank you. A confirmation email has been sent.</p>
+                                <div class="p-3 mb-5" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:4px;">
+                                    <p class="mb-1" style="color:var(--sv-muted); font-size:11px; text-transform:uppercase;">Booking Reference</p>
+                                    <p style="color:var(--sv-cream); font-weight:700; font-size:18px; letter-spacing:1px; margin:0;">SV-<span t-esc="datetime.datetime.now().strftime('%H%M')"/></p>
+                                </div>
+                                <a href="/" class="sv-btn-gold w-100">Return Home</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

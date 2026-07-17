@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ─── Dynamic Best Sellers Snippet ─── -->
+  <template id="s_savora_best_sellers_dynamic" name="Savora Best Sellers Dynamic">
+    <section class="s_savora_products o_cc o_cc1" data-snippet="s_savora_products"
+             data-name="Savora Best Sellers" style="background:var(--sv-dark,#0f0b09); padding:80px 0;">
+      <div class="container">
+        <t t-set="current_website" t-value="request.env['website'].get_current_website()"/>
+        <t t-set="candidates"
+           t-value="request.env['product.template'].with_context(website_id=current_website.id).search(
+               [('website_published','=',True),('sale_ok','=',True)], limit=12,
+               order='website_sequence asc, id desc')"/>
+        <t t-set="bestsellers" t-value="candidates.sorted(key=lambda p: p.sales_count, reverse=True)[:4]"/>
+        <p class="sv-eyebrow mb-2">Featured Edit</p>
+        <h2 class="sv-section-title mb-5">Best Sellers</h2>
+        <div class="row row-cols-2 row-cols-md-4 g-4">
+          <t t-foreach="bestsellers" t-as="product">
+            <t t-set="display_price" t-value="product.product_variant_id.lst_price or product.list_price"/>
+            <div class="col">
+              <a t-att-href="product.website_url" class="sv-mcard text-decoration-none d-block h-100">
+                <div class="sv-mcard-img">
+                  <img t-if="product.image_512" t-att-src="image_data_uri(product.image_512)" t-att-alt="product.name" class="w-100 h-100" style="object-fit:cover;"/>
+                  <img t-else="" src="/theme_savora_restaurant/static/img/food_placeholder.jpg" t-att-alt="product.name" class="w-100 h-100" style="object-fit:cover;"/>
+                </div>
+                <div class="sv-mcard-body">
+                  <div class="d-flex justify-content-between align-items-baseline mb-1">
+                    <span class="sv-mcard-name" t-field="product.name"/>
+                    <span class="sv-mcard-price" t-esc="display_price"
+                          t-options="{'widget':'monetary','display_currency':product.currency_id}"/>
+                  </div>
+                  <p class="sv-mcard-desc text-truncate" t-field="product.description_sale"/>
+                </div>
+              </a>
+            </div>
+          </t>
+          <t t-if="not bestsellers">
+            <div class="col-12 text-center py-5" style="color:var(--sv-muted);">
+              <p>No featured products yet. <a href="/shop" style="color:var(--sv-gold);">Browse the menu →</a></p>
+            </div>
+          </t>
+        </div>
+      </div>
+    </section>
+  </template>
+  <!-- ─── Dynamic New Arrivals Snippet ─── -->
+  <template id="s_savora_new_arrivals_dynamic" name="Savora New Arrivals Dynamic">
+    <section class="s_savora_new_arrivals o_cc o_cc1" data-snippet="s_savora_new_arrivals"
+             data-name="Savora New Arrivals" style="background:var(--sv-surface-1,#1a1411); padding:80px 0;">
+      <div class="container">
+        <t t-set="current_website" t-value="request.env['website'].get_current_website()"/>
+        <t t-set="new_products"
+           t-value="request.env['product.template'].with_context(website_id=current_website.id).search(
+               [('website_published','=',True),('sale_ok','=',True)], limit=4,
+               order='create_date desc, id desc')"/>
+        <p class="sv-eyebrow mb-2">Fresh From the Kitchen</p>
+        <h2 class="sv-section-title mb-5">New on the Menu</h2>
+        <div class="row row-cols-2 row-cols-md-4 g-4">
+          <t t-foreach="new_products" t-as="product">
+            <t t-set="display_price" t-value="product.product_variant_id.lst_price or product.list_price"/>
+            <div class="col">
+              <a t-att-href="product.website_url" class="sv-mcard text-decoration-none d-block h-100">
+                <div class="sv-mcard-img position-relative">
+                  <span class="sv-ribbon">New</span>
+                  <img t-if="product.image_512" t-att-src="image_data_uri(product.image_512)" t-att-alt="product.name" class="w-100 h-100" style="object-fit:cover;"/>
+                  <img t-else="" src="/theme__savora_restaurant/static/img/food_placeholder.jpg" t-att-alt="product.name" class="w-100 h-100" style="object-fit:cover;"/>
+                </div>
+                <div class="sv-mcard-body">
+                  <div class="d-flex justify-content-between align-items-baseline mb-1">
+                    <span class="sv-mcard-name" t-field="product.name"/>
+                    <span class="sv-mcard-price" t-esc="display_price"
+                          t-options="{'widget':'monetary','display_currency':product.currency_id}"/>
+                  </div>
+                  <p class="sv-mcard-desc text-truncate" t-field="product.description_sale"/>
+                </div>
+              </a>
+            </div>
+          </t>
+          <t t-if="not new_products">
+            <div class="col-12 text-center py-5" style="color:var(--sv-muted);">
+              <p>No new items yet. <a href="/shop" style="color:var(--sv-gold);">Browse the menu →</a></p>
+            </div>
+          </t>
+        </div>
+      </div>
+    </section>
+  </template>
+  <!-- ─── Dynamic Reviews Snippet ─── -->
+  <template id="s_savora_reviews_dynamic" name="Savora Reviews Dynamic">
+    <section class="s_savora_reviews o_cc o_cc1" data-snippet="s_savora_reviews"
+             data-name="Savora Reviews Dynamic"
+             style="background: linear-gradient(rgba(15,11,9,0.9), rgba(15,11,9,0.9)), url('/theme_savora_restaurant/static/img/reservation_bg.jpg') center/cover; padding:100px 0;">
+      <div class="container">
+        <t t-set="current_website" t-value="request.env['website'].get_current_website()"/>
+        <t t-set="latest_reviews"
+           t-value="request.env['theme.restaurant.review'].search(
+               [('is_published','=',True),('rating','>=',4),('website_id','=',current_website.id)],
+               limit=2, order='review_date desc, id desc')"/>
+        <div class="row g-5 align-items-start">
+          <div class="col-lg-7">
+            <p class="sv-eyebrow mb-3">Guest Reviews</p>
+            <h2 class="sv-section-title mb-4">Loved for atmosphere, service, and flavor.</h2>
+            <t t-if="latest_reviews">
+              <t t-foreach="latest_reviews" t-as="review">
+                <div class="sv-review-block mb-4">
+                  <div class="sv-stars mb-3">
+                    <t t-foreach="range(5)" t-as="i">
+                      <i t-attf-class="fa fa-star#{'' if i &lt; review.rating else '-o'}" style="color:var(--sv-gold); margin-right:2px;"/>
+                    </t>
+                  </div>
+                  <p class="sv-review-q">"<t t-esc="review.review_text"/>"</p>
+                  <p class="sv-review-auth"><t t-esc="review.name"/></p>
+                </div>
+              </t>
+            </t>
+            <t t-else="">
+              <p style="color:var(--sv-muted,#9b8f85); margin-bottom:3rem;">No guest reviews yet. Be the first to share your experience!</p>
+            </t>
+            <a href="/reviews" class="sv-btn-outline" style="border-color:rgba(255,255,255,0.2); padding:10px 30px;">View All Reviews</a>
+          </div>
+          <div class="col-lg-5">
+            <div class="sv-res-card">
+              <p class="sv-eyebrow mb-2">Reservation</p>
+              <h3 style="color:var(--sv-cream,#efe6db); font-size:1.4rem; margin-bottom:1rem;">Reserve for dinner, cocktails, or a celebration.</h3>
+              <p style="color:var(--sv-muted,#9b8f85); margin-bottom:1.5rem;">Secure your experience at Savora.</p>
+              <a href="/reservations" class="sv-btn-gold d-block text-center">Book a Table</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </template>
+</odoo>

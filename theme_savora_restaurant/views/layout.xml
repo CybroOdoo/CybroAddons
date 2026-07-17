@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ─── Custom Header ─── -->
+  <template id="savora_header" inherit_id="website.layout" name="Savora Header" priority="99">
+    <xpath expr="//header" position="replace">
+      <header id="top" data-anchor="true" class="sv-header">
+        <div class="container-fluid px-4 px-lg-5">
+          <div class="d-flex align-items-center justify-content-between py-4">
+            <!-- Logo -->
+            <a href="/" class="sv-logo text-decoration-none">
+                <img src="/theme_savora_restaurant/static/img/logo.svg" alt="SAVORA" style="height: 40px;"/>
+            </a>
+            <!-- Desktop Nav -->
+            <nav id="top_menu" class="top_menu d-none d-lg-flex align-items-center gap-4">
+              <a href="/" class="sv-nav-link">HOME</a>
+              <a href="/menu" class="sv-nav-link">MENU</a>
+              <a href="/story" class="sv-nav-link">OUR STORY</a>
+              <a href="/gallery" class="sv-nav-link">GALLERY</a>
+              <a href="/reviews" class="sv-nav-link">REVIEWS</a>
+            </nav>
+            <div class="d-flex align-items-center gap-3">
+              <!-- Mobile toggle -->
+              <div class="sv-nav-icon d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSavoraMenu" style="cursor:pointer;">
+                <i class="fa fa-bars" style="font-size:22px;"/>
+              </div>
+              <!-- Desktop CTA -->
+              <a href="/reservations" class="sv-btn-gold d-none d-lg-block" style="padding:10px 22px; font-size:12px; letter-spacing: 1px; font-weight: 700;">
+                RESERVE TABLE
+              </a>
+              <!-- Cart Toggle -->
+              <div class="sv-nav-icon savora-cart-toggle o_wsale_my_cart position-relative" style="cursor:pointer;">
+                <i class="fa fa-shopping-cart" style="font-size:20px; color:var(--sv-cream,#efe6db);"/>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill my_cart_quantity" style="background-color: var(--sv-gold,#c78b3a); font-size: 10px; padding: 0.25em 0.4em;" t-att-data-order-id="request.session.get('sale_order_id', '')">
+                  <t t-set="website_sale_cart_quantity" t-value="request.session['website_sale_cart_quantity'] if 'website_sale_cart_quantity' in request.session else website.sale_get_order().cart_quantity or 0"/>
+                  <t t-out="website_sale_cart_quantity or '0'"/>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <!-- Mobile Offcanvas -->
+      <div class="offcanvas offcanvas-end sv-mobile-menu" tabindex="-1" id="offcanvasSavoraMenu" aria-labelledby="offcanvasSavoraMenuLabel">
+        <div class="offcanvas-header border-bottom py-4 px-4" style="border-color:rgba(255,255,255,0.1) !important;">
+          <h5 class="offcanvas-title sv-logo mb-0" id="offcanvasSavoraMenuLabel">
+              <img src="/theme_savora_restaurant/static/img/logo.svg" alt="SAVORA" style="height: 30px;"/>
+          </h5>
+          <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"/>
+        </div>
+        <div class="offcanvas-body p-0">
+          <div class="d-flex flex-column h-100">
+            <nav class="p-4">
+              <a href="/" class="sv-mobile-nav-link d-block py-3 border-bottom">HOME</a>
+              <a href="/menu" class="sv-mobile-nav-link d-block py-3 border-bottom">MENU</a>
+              <a href="/story" class="sv-mobile-nav-link d-block py-3 border-bottom">OUR STORY</a>
+              <a href="/gallery" class="sv-mobile-nav-link d-block py-3 border-bottom">GALLERY</a>
+              <a href="/reviews" class="sv-mobile-nav-link d-block py-3 border-bottom">REVIEWS</a>
+            </nav>
+            <div class="mt-auto p-4" style="background:rgba(255,255,255,0.03); border-top:1px solid rgba(255,255,255,0.06);">
+              <a href="/reservations" class="sv-btn-gold d-block text-center" style="padding:16px; font-weight: 700; letter-spacing: 1px;">RESERVE TABLE</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Search Modal -->
+      <div class="modal fade css_editable_mode_hidden" id="o_search_modal" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog modal-lg pt-5">
+          <div class="modal-content mt-5" style="background:var(--sv-surface-1,#1a1411); border:1px solid rgba(255,255,255,0.1);">
+            <t t-call="website.header_search_box_input">
+              <t t-set="_classes" t-value="'input-group-lg'"/>
+            </t>
+          </div>
+        </div>
+      </div>
+    </xpath>
+  </template>
+  <!-- ─── Custom Footer ─── -->
+  <template id="savora_footer" inherit_id="website.layout" name="Savora Footer" priority="99">
+    <xpath expr="//footer" position="replace">
+      <footer class="sv-footer py-0">
+        <!-- Newsletter Strip -->
+        <section style="background:var(--sv-surface-2,#241c18); padding:80px 0; text-align:center;">
+          <div class="container">
+            <p class="sv-eyebrow mb-3">Stay in the Know</p>
+            <h2 style="font-family:'Playfair Display',serif; color:var(--sv-cream,#efe6db); font-size:clamp(24px,4vw,32px); font-weight:500; margin-bottom:16px;">Exclusive access to new menus and events.</h2>
+            <p style="color:var(--sv-muted,#9b8f85); max-width:520px; margin:0 auto 2.5rem; line-height:1.7; font-size:15px;">Early access to seasonal menus, private dining events, and wine pairing evenings.</p>
+            <div class="s_newsletter_subscribe_form s_newsletter_list js_subscribe"
+                 data-vxml="001"
+                 t-att-data-list-id="request.env.ref('theme_savora_restaurant.mailing_list_savora').id"
+                 style="max-width:520px; margin:0 auto;">
+              <div class="js_subscribed_btn d-none" aria-live="polite">
+                <p class="h4-fs text-center py-3" style="color:var(--sv-gold,#c78b3a);"><i class="fa fa-check-circle-o" role="img"/> Thanks for subscribing!</p>
+              </div>
+              <div class="js_subscribe_wrap d-flex flex-column flex-sm-row" style="border:1px solid rgba(255,255,255,0.15); overflow:hidden;">
+                <input type="email" name="email" class="js_subscribe_value form-control w-100" placeholder="Enter your email address"
+                       style="flex:1; border:none; padding:18px 24px; font-size:14px; outline:none; background:rgba(255,255,255,0.04); color:var(--sv-cream,#efe6db); min-height:56px;"/>
+                <button class="js_subscribe_btn o_submit w-100 w-sm-auto"
+                        style="background:var(--sv-gold,#c78b3a); color:#1b0f08; border:none; padding:18px 32px; font-size:14px; font-weight:600; cursor:pointer; text-transform:uppercase; letter-spacing:0.08em; min-height:56px;">Subscribe</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Footer Links -->
+        <div style="background:var(--sv-dark,#0f0b09); padding:80px 0 40px;">
+          <div class="container">
+            <div class="sv-footer-top mb-5">
+              <div class="sv-footer-brand">
+                <div class="mb-4">
+                    <img src="/theme_savora_restaurant/static/img/logo.svg" alt="SAVORA" style="height: 35px;"/>
+                </div>
+                <p style="color:#efe6db !important; line-height:1.7; max-width:280px; font-size:15px; opacity: 0.8;">Fire-led dining in the heart of New York. Dry-aged steaks, amber cocktails, and an atmosphere built for the night.</p>
+              </div>
+              <div class="sv-footer-links">
+                <h4 class="sv-footer-col-title">Dining</h4>
+                <ul class="list-unstyled">
+                  <li class="mb-2"><a href="/menu" class="sv-footer-link">Menu</a></li>
+                  <li class="mb-2"><a href="/reservations" class="sv-footer-link">Reservations</a></li>
+                  <li class="mb-2"><a href="/reservations" class="sv-footer-link">Private Dining</a></li>
+                  <li class="mb-2"><a href="/menu" class="sv-footer-link">Wine List</a></li>
+                </ul>
+              </div>
+              <div class="sv-footer-links">
+                <h4 class="sv-footer-col-title">About</h4>
+                <ul class="list-unstyled">
+                  <li class="mb-2"><a href="/story" class="sv-footer-link">Our Story</a></li>
+                  <li class="mb-2"><a href="/gallery" class="sv-footer-link">Gallery</a></li>
+                  <li class="mb-2"><a href="/story" class="sv-footer-link">Press</a></li>
+                  <li class="mb-2"><a href="/contactus" class="sv-footer-link">Contact</a></li>
+                </ul>
+              </div>
+              <div class="sv-footer-links">
+                <h4 class="sv-footer-col-title">Shop</h4>
+                <ul class="list-unstyled">
+                  <li class="mb-2"><a href="/menu" class="sv-footer-link">All Products</a></li>
+                  <li class="mb-2"><a href="/menu" class="sv-footer-link">Starters</a></li>
+                  <li class="mb-2"><a href="/menu" class="sv-footer-link">Main Course</a></li>
+                  <li class="mb-2"><a href="/menu" class="sv-footer-link">Beverages</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="sv-footer-bottom d-flex justify-content-between align-items-center flex-column flex-md-row gap-3">
+              <p class="mb-0" style="font-size:13px; color:rgba(255,255,255,0.35);">© 2026 Savora. All rights reserved.</p>
+              <div class="d-flex gap-4 flex-wrap justify-content-center">
+                <span style="font-size:13px; color:rgba(255,255,255,0.35);">Privacy Policy</span>
+                <span style="font-size:13px; color:rgba(255,255,255,0.35);">Terms of Service</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </xpath>
+  </template>
+  <!-- ─── Cart Sidebar ─── -->
+  <template id="savora_cart_sidebar" inherit_id="website.layout" name="Savora Cart Sidebar" priority="100">
+    <xpath expr="//div[@id='wrapwrap']" position="inside">
+      <div id="savora_cart_sidebar" class="sv-cart-sidebar">
+        <div class="sv-cart-inner">
+          <div class="sv-cart-header d-flex justify-content-between align-items-center mb-4">
+            <h3 style="font-size:17px; font-weight:600; color:var(--sv-cream,#efe6db);">Your Cart (<span class="sv-sidebar-cart-count">0</span>)</h3>
+            <button class="btn btn-link p-0 sv-close-cart" style="font-size:20px; color:var(--sv-cream,#efe6db);">
+              <i class="fa fa-times"/>
+            </button>
+          </div>
+          <div class="sv-cart-body">
+            <div id="sv_cart_loading" class="text-center py-5 d-none">
+              <div class="spinner-border spinner-border-sm" role="status" style="color:var(--sv-gold,#c78b3a);"/>
+            </div>
+            <div id="sv_cart_list" class="sv-cart-items"/>
+          </div>
+          <div class="sv-cart-footer mt-auto pt-4" style="border-top:1px solid rgba(255,255,255,0.08);">
+            <div class="d-flex justify-content-between mb-2">
+              <span style="color:var(--sv-cream,#efe6db); font-weight:600;">Subtotal</span>
+              <span class="sv-sidebar-cart-total" style="color:var(--sv-gold,#c78b3a); font-weight:700;">$0.00</span>
+            </div>
+            <p style="color:var(--sv-muted,#9b8f85); font-size:12px; margin-bottom:1.5rem;">Shipping and taxes calculated at checkout.</p>
+            <a href="/shop/cart" class="sv-btn-gold d-block text-center" style="padding:16px; font-size:13px;">View Cart</a>
+          </div>
+        </div>
+      </div>
+      <div id="restaurant_cart_backdrop" class="sv-cart-backdrop"/>
+    </xpath>
+  </template>
+</odoo>
