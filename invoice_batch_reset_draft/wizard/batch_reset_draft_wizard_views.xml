@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Wizard form -->
+    <record id="view_invoice_batch_reset_draft_wizard_form" model="ir.ui.view">
+        <field name="name">invoice.batch.reset.draft.wizard.form</field>
+        <field name="model">invoice.batch.reset.draft.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Bulk Operation">
+                <field name="operation" invisible="1"/>
+                <field name="move_ids" invisible="1"/>
+                <field name="eligible_count" invisible="1"/>
+                <div class="alert alert-info" role="alert"
+                     invisible="operation != 'draft'">
+                    The posted / cancelled invoices below will be
+                    <b>reset to Draft</b>.Ineligible records are skipped automatically.
+                </div>
+                <div class="alert alert-warning" role="alert"
+                     invisible="operation != 'cancel'">
+                    The invoices below will be <b>Cancelled</b>.
+                    Ineligible records are skipped automatically.
+                </div>
+                <field name="preview" nolabel="1"/>
+                <group>
+                    <field name="reason"
+                           placeholder="Optional — logged in each invoice's chatter"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object" string="Confirm"
+                            class="btn-primary" invisible="eligible_count == 0"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action menu: Reset to Draft (Bulk) -->
+    <record id="action_batch_reset_draft" model="ir.actions.act_window">
+        <field name="name">Reset to Draft (Bulk)</field>
+        <field name="res_model">invoice.batch.reset.draft.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list</field>
+        <field name="context">{'default_operation': 'draft'}</field>
+        <field name="group_ids"
+               eval="[(4, ref('account.group_account_manager'))]"/>
+    </record>
+
+    <!-- Action menu: Cancel (Bulk) -->
+    <record id="action_batch_cancel" model="ir.actions.act_window">
+        <field name="name">Cancel (Bulk)</field>
+        <field name="res_model">invoice.batch.reset.draft.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list</field>
+        <field name="context">{'default_operation': 'cancel'}</field>
+        <field name="group_ids"
+               eval="[(4, ref('account.group_account_manager'))]"/>
+    </record>
+
+</odoo>
