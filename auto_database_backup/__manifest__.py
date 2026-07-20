@@ -22,7 +22,7 @@
 {
     'name': "Automatic Database Backup To Local Server, Remote Server,"
             "Google Drive, Dropbox, Onedrive, Nextcloud and Amazon S3 Odoo19",
-    'version': '19.0.1.0.2',
+    'version': '19.0.2.0.2',
     'live_test_url': 'https://youtu.be/Q2yMZyYjuTI',
     'category': 'Extra Tools',
     'summary': """Odoo Database Backup, Automatic Backup, Database Backup, 
@@ -40,15 +40,19 @@
     'website': "https://www.cybrosys.com",
     'depends': ['base', 'mail', 'web'],
     'data': [
+        'security/db_backup_security.xml',
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
         'data/mail_template_data.xml',
         'views/db_backup_configure_views.xml',
+        'views/db_backup_history_views.xml',
         'wizard/auto_database_backup_support_views.xml',
         'wizard/dropbox_auth_code_views.xml',
     ],
     'external_dependencies': {
-        'python': ['dropbox', 'pyncclient', 'boto3', 'nextcloud-api-wrapper','paramiko']},
+        'python': ['dropbox', 'pyncclient', 'boto3', 'nextcloud-api-wrapper',
+                   'paramiko', 'azure-storage-blob', 'google-cloud-storage',
+                   'webdavclient3']},
     'assets': {
         'web.assets_backend': [
             'auto_database_backup/static/src/js/auto_database_backup_systray.js',

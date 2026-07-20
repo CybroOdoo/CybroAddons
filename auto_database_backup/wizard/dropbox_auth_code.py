@@ -19,10 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from odoo import api, fields, models, _
-
-GOOGLE_AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/auth'
-GOOGLE_TOKEN_ENDPOINT = 'https://accounts.google.com/o/oauth2/token'
+from odoo import api, fields, models
 
 
 class AuthenticationWizard(models.TransientModel):
@@ -54,5 +51,6 @@ class AuthenticationWizard(models.TransientModel):
         provided authorization code."""
         backup_config = self.env['db.backup.configure'].browse(
             self.env.context.get('active_id'))
-        backup_config.active = backup_config.hide_active= True
-        backup_config.set_dropbox_refresh_token(self.dropbox_authorization_code)
+        backup_config.active = backup_config.hide_active = True
+        backup_config.set_dropbox_refresh_token(
+            self.dropbox_authorization_code)

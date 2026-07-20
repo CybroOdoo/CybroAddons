@@ -19,5 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from . import db_backup_configure
-from . import db_backup_history
+from . import test_db_backup_configure

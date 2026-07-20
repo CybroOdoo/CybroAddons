@@ -12,8 +12,10 @@
 
 - Added option to submit support ticket.
 
-#### 14.07.2026
-#### Version 19.0.1.0.2
-#### UPDT
+#### 20.07.2026
+#### Version 19.0.2.0.2
+#### IMP
 
-- Fixed the issue while generating Nextcloud backup
+- Code Refactored
+- New Features added
+

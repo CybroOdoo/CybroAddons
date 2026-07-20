@@ -41,7 +41,8 @@ class AutoDatabaseBackupSupport(models.TransientModel):
         default=lambda self: self.env.user.name,
         help='Enter name')
     email = fields.Char(
-        string='Email', required=True, default=lambda self: self.env.user.email,
+        string='Email', required=True,
+        default=lambda self: self.env.user.email,
         help='Enter your Email')
     phone = fields.Char(
         string='Phone',
@@ -102,7 +103,9 @@ class AutoDatabaseBackupSupport(models.TransientModel):
     def _build_payload(self, redact_attachments=False):
         self.ensure_one()
         if redact_attachments:
-            count = sum(1 for attachment in self.attachment_ids if attachment.datas)
+            count = sum(
+                1 for attachment in self.attachment_ids
+                if attachment.datas)
             attachments_value = (
                 _('%d attachment') % count if count == 1
                 else _('%d attachments') % count
@@ -194,7 +197,8 @@ class AutoDatabaseBackupSupport(models.TransientModel):
             lines = [_("Your Ticket Created Successfully"), '']
             if ticket_id:
                 lines.append(_("Ticket Reference : %s") % ticket_id)
-            lines.extend(['', _("Save this reference to follow up with Cybrosys.")])
+            lines.extend(
+                ['', _("Save this reference to follow up with Cybrosys.")])
             message = '\n'.join(lines)
 
             return {
