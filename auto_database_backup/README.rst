@@ -78,7 +78,7 @@ Depending on the destinations you use, install the matching packages::
     pip3 install webdavclient3
 
 Configuration
-============
+=============
 - www.odoo.com/documentation/19.0/setup/install.html
 - Install our custom addon
 
