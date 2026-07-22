@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="accounting_dashboard_pro.RevenueExpenseChart">
+        <div class="adp-chart-card">
+            <div class="adp-chart-header">
+                <h3><i class="fa fa-line-chart" style="color:#10b981"/> Revenue vs Expenses</h3>
+            </div>
+            <div class="adp-chart-body">
+                <canvas t-ref="chartCanvas"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="accounting_dashboard_pro.CashflowForecast">
+        <div class="adp-chart-card">
+            <div class="adp-chart-header">
+                <h3><i class="fa fa-area-chart" style="color:#3b82f6"/> Cash Flow Forecast (90 days)</h3>
+            </div>
+            <div class="adp-chart-body">
+                <canvas t-ref="chartCanvas"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="accounting_dashboard_pro.AgingChart">
+        <div class="adp-chart-card">
+            <div class="adp-chart-header">
+                <h3><i class="fa fa-bar-chart" style="color:#f59e0b"/> Aging Analysis</h3>
+            </div>
+            <div class="adp-chart-body">
+                <canvas t-ref="chartCanvas"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="accounting_dashboard_pro.TopExpensesChart">
+        <div class="adp-chart-card">
+            <div class="adp-chart-header">
+                <h3><i class="fa fa-pie-chart" style="color:#8b5cf6"/> Top Expenses</h3>
+            </div>
+            <div class="adp-chart-body" style="min-height:260px">
+                <canvas t-ref="chartCanvas"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="accounting_dashboard_pro.IncomeExpensePie">
+        <div class="adp-chart-card">
+            <div class="adp-chart-header">
+                <h3><i class="fa fa-pie-chart" style="color:#ec4899"/> Income vs Expense</h3>
+            </div>
+            <div class="adp-chart-body" style="min-height:260px">
+                <canvas t-ref="chartCanvas"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="accounting_dashboard_pro.ProfitTrendChart">
+        <div class="adp-chart-card">
+            <div class="adp-chart-header">
+                <h3><i class="fa fa-line-chart" style="color:#818cf8"/> P&amp;L Trend (12 months)</h3>
+            </div>
+            <div class="adp-chart-body">
+                <canvas t-ref="canvas"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="accounting_dashboard_pro.ExpenseBreakdownChart">
+        <div class="adp-chart-card">
+            <div class="adp-chart-header">
+                <h3><i class="fa fa-pie-chart" style="color:#fb923c"/> Expense Breakdown</h3>
+            </div>
+            <div class="adp-chart-body" style="min-height:260px">
+                <canvas t-ref="canvas"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="accounting_dashboard_pro.BudgetVsActualChart">
+        <div class="adp-chart-card">
+            <div class="adp-chart-header">
+                <h3><i class="fa fa-bar-chart" style="color:#22c55e"/> Budget vs Actual</h3>
+            </div>
+            <div class="adp-chart-body">
+                <t t-if="props.data and props.data.available === false">
+                    <div class="adp-chart-placeholder">
+                        <i class="fa fa-info-circle"/>
+                        <span>Budget module not installed</span>
+                    </div>
+                </t>
+                <t t-elif="props.data and props.data.labels and !props.data.labels.length">
+                    <div class="adp-chart-placeholder">
+                        <i class="fa fa-info-circle"/>
+                        <span>No active budgets found</span>
+                    </div>
+                </t>
+                <t t-else="">
+                    <canvas t-ref="canvas"/>
+                </t>
+            </div>
+        </div>
+    </t>
+    <t t-name="accounting_dashboard_pro.MonthlyCashflowBars">
+        <div class="adp-chart-card">
+            <div class="adp-chart-header">
+                <h3><i class="fa fa-exchange" style="color:#38bdf8"/> Monthly Cash Inflow / Outflow</h3>
+            </div>
+            <div class="adp-chart-body">
+                <canvas t-ref="canvas"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="accounting_dashboard_pro.CashflowWaterfallChart">
+        <div class="adp-chart-card">
+            <div class="adp-chart-header">
+                <h3><i class="fa fa-bar-chart" style="color:#0ea5e9"/> Cashflow Waterfall</h3>
+            </div>
+            <div class="adp-chart-body">
+                <canvas t-ref="canvas"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="accounting_dashboard_pro.JournalBalanceChart">
+        <div class="adp-chart-card adp-journal-chart">
+            <!-- Journal selector tabs -->
+            <div class="adp-journal-tabs">
+                <t t-foreach="props.journals" t-as="j" t-key="j.journal_id">
+                    <button t-att-class="'adp-journal-tab ' + (j_index === state.selectedIndex ? 'active' : '') + ' ' + j.journal_type"
+                            t-on-click="() => this.selectJournal(j_index)">
+                        <i t-att-class="'fa ' + (j.journal_type === 'bank' ? 'fa-university' : 'fa-money')"/>
+                        <t t-esc="j.journal_name"/>
+                    </button>
+                </t>
+            </div>
+            <!-- Selected journal header -->
+            <div class="adp-chart-header" t-if="selectedJournal">
+                <h3>
+                    <i t-att-class="'fa ' + (selectedJournal.journal_type === 'bank' ? 'fa-university' : 'fa-money')"
+                       t-att-style="'color:' + (selectedJournal.journal_type === 'bank' ? '#0ea5e9' : '#22c55e')"/>
+                    <t t-esc="selectedJournal.journal_name"/>
+                    <span class="adp-journal-badge" t-att-class="selectedJournal.journal_type">
+                        <t t-esc="selectedJournal.journal_type === 'bank' ? 'Bank' : 'Cash'"/>
+                    </span>
+                </h3>
+                <div class="adp-journal-balance">
+                    <span class="label">Current Balance:</span>
+                    <span class="value" t-esc="props.formatCurrency(selectedJournal.current_balance)"/>
+                </div>
+            </div>
+            <div class="adp-chart-body">
+                <canvas t-ref="canvas"/>
+            </div>
+        </div>
+    </t>
+</templates>
+
+
