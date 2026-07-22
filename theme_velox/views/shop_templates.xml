@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add velox-shop-page class to the shop wrap div -->
+    <template id="velox_shop_wrap" name="Velox Shop Wrap" inherit_id="website_sale.products">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="velox-shop-page" separator=" "/>
+        </xpath>
+    </template>
+    <!--
+      Odoo 17 shop layout: inject the banner before the products grid.
+      In v17 the sidebar+products area sits inside #products_grid_before or
+      directly under the wrap — we target the search/sort bar row which is
+      reliably present in both v17 builds.
+    -->
+    <template id="velox_shop_banner" name="Velox Shop Banner" inherit_id="website_sale.products">
+        <xpath expr="//div[hasclass('o_wsale_products_main_row')]" position="before">
+            <div class="velox-shop-banner">
+                <div class="velox-shop-banner-overlay"/>
+                <div class="container position-relative" style="z-index:1">
+                    <t t-if="category">
+                        <h1 t-esc="category.name"/>
+                        <p t-if="category.website_description" t-out="category.website_description"/>
+                        <p t-else="">Conquer the elements. Engineered for ultimate durability, protection, and
+                            performance.
+                        </p>
+                    </t>
+                    <t t-else="">
+                        <h1>Outdoor Collection</h1>
+                        <p>Conquer the elements. Engineered for ultimate durability, protection, and performance.</p>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Product image wrap -->
+    <template id="velox_product_img" inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('o_wsale_product_sub')]" position="attributes">
+            <attribute name="class" add="velox-product-img-wrap" separator=" "/>
+        </xpath>
+    </template>
+
+    <!-- Product info body -->
+    <template id="velox_product_body" name="Velox Product Body" inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('o_wsale_product_information')]" position="attributes">
+            <attribute name="class" add="velox-product-body" separator=" "/>
+        </xpath>
+    </template>
+
+    <!-- Product detail breadcrumb -->
+    <template id="velox_product_breadcrumb" name="Velox Product Breadcrumb" inherit_id="website_sale.product">
+        <xpath expr="//ol[hasclass('breadcrumb')]" position="attributes">
+            <attribute name="class" add="velox-breadcrumb" separator=" "/>
+        </xpath>
+    </template>
+
+    <!-- Product detail section styling -->
+    <template id="velox_product_detail_style" name="Velox Product Detail Style" inherit_id="website_sale.product">
+        <xpath expr="//section[@id='product_detail']" position="attributes">
+            <attribute name="class" add="velox-product-detail" separator=" "/>
+        </xpath>
+    </template>
+
+    <!-- Add to cart button styling -->
+    <template id="velox_add_to_cart_btn" inherit_id="website_sale.product">
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="attributes">
+            <attribute name="class" add="velox-add-to-cart-btn" separator=" "/>
+        </xpath>
+    </template>
+
+    <!-- Portal layout styling -->
+    <template id="velox_portal_wrap" name="Velox Portal Wrap" inherit_id="portal.portal_layout">
+        <xpath expr="//div[hasclass('o_portal_wrap')]" position="attributes">
+            <attribute name="class" add="velox-portal-wrap" separator=" "/>
+        </xpath>
+    </template>
+
+    <!--
+      Similar products section injected after product detail.
+      Uses Odoo 17's dynamic snippet products component.
+    -->
+    <template id="velox_similar_products" name="Velox Similar Products" inherit_id="website_sale.product">
+        <xpath expr="//section[@id='product_detail']" position="after">
+            <section class="s_dynamic_snippet_products o_colored_level pb64 pt64 velox-similar-products"
+                     data-snippet="s_dynamic_snippet_products"
+                     data-name="Similar Products"
+                     data-template-key="website_sale.dynamic_filter_template_product_product_products_item"
+                     data-product-category-id="all"
+                     data-number-of-elements="4">
+                <div class="container">
+                    <div class="velox-section-header mb40">
+                        <h2 class="s_title velox-section-title">Similar Products</h2>
+                    </div>
+                    <div class="o_not_editable">
+                        <div class="dynamic_snippet_template"/>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+
+    <template id="custom_products_add_to_cart" inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('oe_product_image')]" position="inside">
+            <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+            <input name="product_id" t-att-value="product_variant_id" type="hidden"/>
+            <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
+            <t t-if="product_variant_id and template_price_vals['price_reduce'] or not website.prevent_zero_price_sale">
+                <div class="o_wsale_product_btn">
+                    <a t-if="is_view_active('website_sale.products_add_to_cart')"
+                       href="#"
+                       role="button"
+                       class="product-add-btn a-submit"
+                       aria-label="Shopping cart"
+                       title="Shopping cart">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             width="24"
+                             height="24"
+                             viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                  d="M21 6H7.05L5.94 2.68A1 1 0 0 0 4.99 2h-3v2h2.28l3.54 10.63A2 2 0 0 0 9.71 16h7.59a2 2 0 0 0 1.87-1.3l2.76-7.35c.11-.31.07-.65-.11-.92A1 1 0 0 0 21 6m-3.69 8H9.72l-2-6h11.84zM10 18a2 2 0 1 0 0 4a2 2 0 1 0 0-4m7 0a2 2 0 1 0 0 4a2 2 0 1 0 0-4"/>
+                        </svg>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

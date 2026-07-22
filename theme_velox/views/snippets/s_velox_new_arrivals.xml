@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Velox New Arrivals Template -->
+    <template id="s_velox_new_arrivals_snippet" name="Velox New Arrivals">
+        <section id="new_arrivals" class="s_velox_new_arrivals o_colored_level new-arrivals pb64 pt64"
+                 data-snippet="s_velox_new_arrivals"
+                 data-name="Velox New Arrivals">
+            <div class="container container-fluid">
+                <div class="velox-section-header mb40">
+                    <h2 class="s_title velox-section-title" data-name="Section Title">New Arrivals</h2>
+                    <a href="/shop/new-release" class="velox-section-link">Shop All New Releases</a>
+                </div>
+                <!--
+                  Odoo 17 ribbon xmlid: website_sale.new_ribbon
+                  (same as v18; fallback handled gracefully)
+                -->
+                <t t-set="new_ribbon"
+                   t-value="request.env.ref('website_sale.new_ribbon', False) or request.env.ref('website_sale.ribbon_new', False) or request.env['product.ribbon'].sudo().search([('html', 'ilike', 'new')], limit=1)"/>
+                <t t-set="new_products"
+                   t-value="request.env['product.template'].sudo().search([('is_published', '=', True), ('website_ribbon_id', '=', new_ribbon.id)], order='create_date desc', limit=8) if new_ribbon else request.env['product.template'].sudo().search([('is_published', '=', True)], order='create_date desc', limit=8)"/>
+                <t t-if="new_products">
+                    <div class="row g-3">
+                        <t t-foreach="new_products" t-as="product">
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <t t-call="theme_velox.velox_product_card"/>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+                <t t-else="">
+                    <p class="text-center velox-section-link">No new arrivals yet. Check back soon!</p>
+                </t>
+            </div>
+        </section>
+    </template>
+</odoo>

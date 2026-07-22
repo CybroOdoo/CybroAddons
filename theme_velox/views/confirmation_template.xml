@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Velox Confirmation
+          Defines the structure and styling for Velox Confirmation.
+        -->
+    <template id="velox_confirmation" inherit_id="website_sale.confirmation" name="Velox Confirmation">
+        <xpath expr="//div[contains(@class,'mb-4')][h5/em/span[1][contains(text(),'Order')]]" position="replace">
+            <div class="velox-confirmation-header mb-4 mt-5">
+                <div class="velox-icon-circle mb-4"
+                     style="width:80px;height:80px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#000;font-size:2rem;">
+                    <i class="fa fa-check"/>
+                </div>
+                <h1 class="velox-thank-you text-uppercase mb-3"
+                    style="font-family:var(--font-display);font-weight:700;letter-spacing:0.05em;font-size:2.5rem;">
+                    THANK YOU,<t t-out="order.partner_id.name.split(' ')[0].upper()"/>!
+                </h1>
+                <p class="velox-order-subtitle text-muted" style="line-height:1.6;max-width:600px;">
+                    Your order
+                    <strong>
+                        <t t-out="order.name"/>
+                    </strong>
+                    is confirmed.
+                    <br/>
+                    We've accepted your order and we're getting it ready. A confirmation email has been sent to
+                    <strong>
+                        <t t-out="order.partner_id.email"/>
+                    </strong>
+                    .
+                </p>
+            </div>
+        </xpath>
+
+        <xpath expr="//div[h3[contains(text(),'Thank you for your order.')]]" position="replace"/>
+
+        <xpath expr="//h4[contains(text(),'Payment Information')]" position="replace"/>
+
+        <xpath expr="//table[tbody/tr/td/t[contains(@t-esc,'tx_sudo.provider_id.name')]]" position="replace"/>
+
+        <xpath expr="//t[@t-call='website_sale.payment_confirmation_status']" position="replace"/>
+
+        <xpath expr="//div[@id='address_on_confirmation']" position="replace">
+            <div class="velox-order-details mt-5 pt-5" style="border-top:1px solid rgba(255,255,255,0.2);">
+                <h3 class="mb-5 text-uppercase"
+                    style="font-family:var(--font-cond);font-weight:700;font-size:1.5rem;letter-spacing:0.05em;">
+                    ORDER DETAILS
+                </h3>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="text-uppercase text-muted fw-bold mb-2"
+                               style="font-size:.75rem;letter-spacing:.1em;">
+                            Contact Information
+                        </label>
+                        <div class="text-white">
+                            <t t-out="order.partner_id.email"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="text-uppercase text-muted fw-bold mb-2"
+                               style="font-size:.75rem;letter-spacing:.1em;">
+                            Payment Method
+                        </label>
+                        <div class="text-white">
+                            <t t-if="tx_sudo">
+                                <t t-out="tx_sudo.provider_id.name"/>
+                                <br/>
+                                <t t-out="order.amount_total"
+                                   t-options="{'widget':'monetary','display_currency':order.currency_id}"/>
+                            </t>
+                            <t t-else="">No payment transaction automatically processed.</t>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="text-uppercase text-muted fw-bold mb-2"
+                               style="font-size:.75rem;letter-spacing:.1em;">
+                            Shipping Address
+                        </label>
+                        <div class="text-white" style="line-height:1.6;">
+                            <t t-out="order.partner_shipping_id"
+                               t-options="dict(widget='contact',fields=['name','address'],no_marker=True)"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="text-uppercase text-muted fw-bold mb-2"
+                               style="font-size:.75rem;letter-spacing:.1em;">
+                            Shipping Method
+                        </label>
+                        <div class="text-white" style="line-height:1.6;">
+                            <t t-if="order.carrier_id">
+                                <t t-out="order.carrier_id.name"/>
+                                <br/>
+                                <span class="text-muted">(<t t-out="order.carrier_id.delivery_type"/>)
+                                </span>
+                            </t>
+                            <t t-else="">Standard Shipping</t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="/shop" class="btn btn-primary mt-5 mb-5 a-submit"
+               style="border-radius:4px;font-weight:700;height:48px;min-width:250px;display:inline-flex;align-items:center;justify-content:center;text-transform:uppercase;">
+                CONTINUE SHOPPING
+            </a>
+        </xpath>
+    </template>
+</odoo>

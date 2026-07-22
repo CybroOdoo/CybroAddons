@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Velox Sale Products Template -->
+    <template id="s_velox_sale_products_snippet" name="Velox Sale Products">
+        <section id="sale_products" class="s_velox_sale_products o_colored_level velox-sale-section pb64 pt64"
+                 data-snippet="s_velox_sale_products"
+                 data-name="Velox Sale Products">
+            <div class="container container-fluid">
+                <div class="velox-section-header mb40">
+                    <h2 class="s_title velox-section-title" data-name="Sale Title">
+                        <span style="color:var(--velox-accent)">SALE</span> &#8212; Limited Time
+                    </h2>
+                    <a href="/shop/sale" class="velox-section-link">Shop All Sale</a>
+                </div>
+                <!--
+                  Odoo 17 ribbon xmlid: website_sale.sale_ribbon
+                -->
+                <t t-set="sale_ribbon"
+                   t-value="request.env.ref('website_sale.sale_ribbon', False) or request.env.ref('website_sale.ribbon_sale', False) or request.env['product.ribbon'].sudo().search([('html', 'ilike', 'sale')], limit=1)"/>
+                <t t-set="sale_products"
+                   t-value="request.env['product.template'].sudo().search([('is_published', '=', True), ('website_ribbon_id', '=', sale_ribbon.id)], order='create_date desc', limit=8) if sale_ribbon else request.env['product.template'].sudo().search([('is_published', '=', True)], order='create_date desc', limit=8)"/>
+                <t t-if="sale_products">
+                    <div class="row g-3">
+                        <t t-foreach="sale_products" t-as="product">
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <t t-call="theme_velox.velox_product_card"/>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+                <t t-else="">
+                    <p class="text-center velox-section-link">No sale products at the moment. Check back soon!</p>
+                </t>
+            </div>
+        </section>
+    </template>
+</odoo>

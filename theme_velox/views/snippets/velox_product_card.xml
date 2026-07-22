@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Velox Product Card template  -->
+    <template id="velox_product_card" name="Velox Product Card">
+        <article class="velox-card h-100">
+            <div class="velox-card-img-wrap">
+                <a t-att-href="product.website_url" class="velox-card-img-link d-block text-decoration-none h-100">
+                    <t t-if="product.image_1920">
+                        <img t-attf-src="/web/image/product.template/#{product.id}/image_512/400x500"
+                             t-att-alt="product.name"
+                             class="velox-card-img"
+                             loading="lazy"/>
+                    </t>
+                    <t t-else="">
+                        <img src="/web/static/img/placeholder.png"
+                             t-att-alt="product.name"
+                             class="velox-card-img"
+                             loading="lazy"/>
+                    </t>
+                </a>
+                <t t-if="product.website_ribbon_id">
+                    <span class="velox-card-ribbon" t-out="product.website_ribbon_id.html"/>
+                </t>
+                <t t-elif="product.compare_list_price and product.compare_list_price &gt; product.list_price">
+                    <span class="velox-card-ribbon">SALE</span>
+                </t>
+                <!-- Add to Cart (uses custom click handler to prevent redirection) -->
+                <div class="velox-add-to-cart-form m-0">
+                    <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+                    <input name="product_id" t-att-value="product_variant_id" type="hidden"/>
+                    <button type="button" class="product-add-btn velox-snippet-add-to-cart-btn" title="Add to Cart" aria-label="Add to Cart">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             width="24"
+                             height="24"
+                             viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                  d="M21 6H7.05L5.94 2.68A1 1 0 0 0 4.99 2h-3v2h2.28l3.54 10.63A2 2 0 0 0 9.71 16h7.59a2 2 0 0 0 1.87-1.3l2.76-7.35c.11-.31.07-.65-.11-.92A1 1 0 0 0 21 6m-3.69 8H9.72l-2-6h11.84zM10 18a2 2 0 1 0 0 4a2 2 0 1 0 0-4m7 0a2 2 0 1 0 0 4a2 2 0 1 0 0-4"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="velox-card-body">
+                <p class="velox-card-brand">VELOX</p>
+                <a t-att-href="product.website_url" class="velox-card-name-link text-decoration-none">
+                    <h3 class="velox-card-name" t-esc="product.name"/>
+                </a>
+                <div class="velox-card-price-row">
+                    <t t-if="product.compare_list_price and product.compare_list_price &gt; product.list_price">
+                        <span class="velox-card-price velox-card-price-sale">
+                            <t t-esc="product.currency_id.symbol"/>
+                            <t t-esc="'%.2f' % product.list_price"/>
+                        </span>
+                        <span class="velox-card-price-old">
+                            <t t-esc="product.currency_id.symbol"/>
+                            <t t-esc="'%.2f' % product.compare_list_price"/>
+                        </span>
+                    </t>
+                    <t t-else="">
+                        <span class="velox-card-price">
+                            <t t-esc="product.currency_id.symbol"/>
+                            <t t-esc="'%.2f' % product.list_price"/>
+                        </span>
+                    </t>
+                </div>
+                <a t-att-href="product.website_url" class="btn btn-primary velox-card-btn mt8">View Product</a>
+            </div>
+        </article>
+    </template>
+</odoo>
