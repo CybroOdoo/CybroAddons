@@ -20,13 +20,11 @@
 #
 ##############################################################################
 {
-    'name': 'Odoo MCP Gateway',
+    'name': 'Odoo MCP Server',
     'version': '19.0.1.0.0',
     'category': 'Productivity/AI',
-    'summary': 'Unified AI Provider & MCP Tool Gateway for Odoo',
-    'description': """
-A turnkey solution for connecting AI assistants (Claude Desktop, Cursor, etc.)or Odoo's internal AI features 
-to your business data.
+    'summary': 'Odoo MCP Server, MCP Server, Odoo AI Server',
+    'description': """Odoo MCP Server, Claude Odoo Connector, AI Odoo Connector
 
 Key Features:
 - Unified Provider & Model Management

@@ -1,4 +1,4 @@
-Odoo MCP Gateway
+Odoo MCP Server
 ================
 Unified AI Provider & MCP Tool Gateway for Odoo
 
