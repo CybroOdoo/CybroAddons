@@ -1,4 +1,4 @@
-# Odoo MCP Gateway
+# Odoo MCP Server
 
 A single, turnkey solution for connecting AI assistants (Claude Desktop, Cursor, etc.) or Odoo's internal AI features to your business data.
 

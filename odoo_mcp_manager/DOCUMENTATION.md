@@ -1,4 +1,4 @@
-# Odoo MCP Gateway — Configuration Guide
+# Odoo MCP Server — Configuration Guide
 
 ---
 
