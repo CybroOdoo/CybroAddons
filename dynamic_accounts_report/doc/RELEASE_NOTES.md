@@ -54,3 +54,8 @@
 #### Version 18.0.1.3.3
 #### UPDT
 - Fixed an issue where records were disappearing after applying date filters.
+
+#### 27.07.2026
+#### Version 18.0.1.3.5
+#### UPDT
+- Removed eval() functions to fix security issues during publication.
