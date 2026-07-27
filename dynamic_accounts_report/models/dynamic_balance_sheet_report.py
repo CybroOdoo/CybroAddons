@@ -107,7 +107,7 @@ class ProfitLossReport(models.TransientModel):
                             'parent_state', 'in', target_move),
                             ('date', '>=', f'{current_year - count}-01-01'),
                             ('date', '<=', f'{current_year - count}-12-31')])
-                lists = [{'id': rec.id, 'value': [eval(i) for i in
+                lists = [{'id': rec.id, 'value': [int(i) for i in
                                                   rec.analytic_distribution.keys()]}
                          for rec in account_move_lines if
                          rec.analytic_distribution]
@@ -203,7 +203,7 @@ class ProfitLossReport(models.TransientModel):
                  ('date', '>=', date_from),
                  ('date', '<=', date_to)])
             lists = [{'id': rec.id,
-                      'value': [eval(i) for i in
+                      'value': [int(i) for i in
                                 rec.analytic_distribution.keys()]}
                      for rec in account_move_lines if
                      rec.analytic_distribution]

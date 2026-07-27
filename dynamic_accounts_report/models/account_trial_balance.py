@@ -151,13 +151,13 @@ class AccountTrialBalance(models.TransientModel):
             end_date = end_date_first
             if comparison_number:
                 if comparison_type == 'month':
-                    initial_start_date = subtract(start_date, months=eval(
+                    initial_start_date = subtract(start_date, months=int(
                         comparison_number))
                 elif comparison_type == 'year':
-                    initial_start_date = subtract(start_date, years=eval(
+                    initial_start_date = subtract(start_date, years=int(
                         comparison_number))
                 else:
-                    initial_start_date = subtract(start_date, months=eval(
+                    initial_start_date = subtract(start_date, months=int(
                         comparison_number) * 3)
             else:
                 initial_start_date = start_date
@@ -192,7 +192,7 @@ class AccountTrialBalance(models.TransientModel):
 
             if comparison_number:
                 if comparison_type == 'year':
-                    for i in range(1, eval(comparison_number) + 1):
+                    for i in range(1, int(comparison_number) + 1):
                         com_start_date = subtract(start_date, years=i)
                         com_end_date = subtract(end_date, years=i)
                         domain = [('date', '>=', com_start_date),
@@ -221,7 +221,7 @@ class AccountTrialBalance(models.TransientModel):
                         f"dynamic_date_num{0}"] = self.get_month_name(
                         start_date) + ' ' + str(
                         start_date.year)
-                    for i in range(1, eval(comparison_number) + 1):
+                    for i in range(1, int(comparison_number) + 1):
                         com_start_date = subtract(start_date, months=i)
                         com_end_date = subtract(end_date, months=i)
                         domain = [('date', '>=', com_start_date),
@@ -254,7 +254,7 @@ class AccountTrialBalance(models.TransientModel):
                         f"dynamic_date_num{0}"] = 'Q' + ' ' + str(
                         get_quarter_number(start_date)) + ' ' + str(
                         start_date.year)
-                    for i in range(1, eval(comparison_number) + 1):
+                    for i in range(1, int(comparison_number) + 1):
                         com_start_date = subtract(start_date, months=i * 3)
                         com_end_date = subtract(end_date, months=i * 3)
                         domain = [('date', '>=', com_start_date),
@@ -324,13 +324,13 @@ class AccountTrialBalance(models.TransientModel):
             if comparison_number:
                 if dynamic_date_num:
                     data['dynamic_date_num'] = dynamic_date_num
-                for i in range(1, eval(comparison_number) + 1):
+                for i in range(1, int(comparison_number) + 1):
                     data[f'dynamic_total_debit_{i}'] = dynamic_total_debit.get(
-                        f"dynamic_total_debit_{eval(comparison_number) + 1 - i}",
+                        f"dynamic_total_debit_{int(comparison_number) + 1 - i}",
                         0.0)
                     data[
                         f'dynamic_total_credit_{i}'] = dynamic_total_credit.get(
-                        f"dynamic_total_credit_{eval(comparison_number) + 1 - i}",
+                        f"dynamic_total_credit_{int(comparison_number) + 1 - i}",
                         0.0)
             move_line_list.append(data)
         return move_line_list
