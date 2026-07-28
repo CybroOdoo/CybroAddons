@@ -11,3 +11,10 @@
 #### UPDT
 
 - Added test cases
+
+#### 28.07.2026
+#### Version 19.0.1.0.2
+#### UPDT
+
+- Fixed file upload issue caused by missing file/directory
+- Fixed the issue where multiple files could not be added

@@ -58,10 +58,28 @@ patch(SurveyForm.prototype, {
 
     async _handleUploadFileChange(inputEl) {
         const files = Array.from(inputEl.files || []);
-        const fileNames = files.map((f) => f.name);
-        const dataURLs = [];
+        const isMultiple = inputEl.hasAttribute("multiple");
+
+        let fileNames = [];
+        let dataURLs = [];
+
+        if (isMultiple) {
+            try {
+                fileNames = JSON.parse(inputEl.dataset.oeFileName || "[]");
+                dataURLs = JSON.parse(inputEl.dataset.oeData || "[]");
+            } catch (e) {
+                console.warn("Could not parse existing data:", e);
+            }
+        }
+
         for (const file of files) {
-            dataURLs.push(await readFileAsBase64(file));
+            try {
+                const dataURL = await readFileAsBase64(file);
+                dataURLs.push(dataURL);
+                fileNames.push(file.name);
+            } catch (error) {
+                console.warn(`Could not read file ${file.name}:`, error);
+            }
         }
         inputEl.dataset.oeData = JSON.stringify(dataURLs);
         inputEl.dataset.oeFileName = JSON.stringify(fileNames);
@@ -80,5 +98,18 @@ patch(SurveyForm.prototype, {
             inputEl.dataset.oeFileName = "";
             renderFileList(listEl, [], () => {});
         });
+
+        // Update the input files so that the browser native UI shows the correct file count
+        try {
+            const dt = new DataTransfer();
+            if (fileNames.length > 0) {
+                const countText = fileNames.length === 1 ? "1 file" : `${fileNames.length} files`;
+                dt.items.add(new File([""], countText));
+            }
+            inputEl.files = dt.files;
+        } catch (e) {
+            // Fallback for older browsers
+            inputEl.value = "";
+        }
     },
 });
