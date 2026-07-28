@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="accounting_dashboard_pro.AccountingDashboard">
+        <div t-ref="dashboardRoot" t-att-class="'adp-dashboard ' + themeClass">
+
+            <!-- HEADER -->
+            <div class="adp-header">
+                <div class="adp-header-left">
+                    <h1 class="adp-title">
+                        <i class="fa fa-tachometer"/>
+                        Accounting Dashboard
+                    </h1>
+                </div>
+                <div class="adp-header-right">
+                    <!-- Period -->
+                    <select class="adp-select" t-on-change="onPeriodChange">
+                        <t t-foreach="periodOptions" t-as="opt" t-key="opt.value">
+                            <option t-att-value="opt.value"
+                                    t-att-selected="opt.value === state.period ? 'selected' : undefined">
+                                <t t-esc="opt.label"/>
+                            </option>
+                        </t>
+                    </select>
+                    <!-- Amount Format -->
+                    <select class="adp-select adp-select-sm" t-on-change="onFormatChange">
+                        <t t-foreach="formatOptions" t-as="fmt" t-key="fmt.value">
+                            <option t-att-value="fmt.value"
+                                    t-att-selected="fmt.value === state.amountFormat ? 'selected' : undefined">
+                                <t t-esc="fmt.label"/>
+                            </option>
+                        </t>
+                    </select>
+                    <!-- KPI Settings -->
+                    <button class="adp-settings-btn" t-on-click="toggleKpiSettings" title="KPI Settings">
+                        <i class="fa fa-cog"/>
+                    </button>
+                    <!-- Theme Toggle -->
+                    <button class="adp-theme-btn" t-on-click="toggleTheme" title="Toggle Theme">
+                        <i t-att-class="'fa ' + themeIcon"/>
+                    </button>
+                    <!-- Refresh -->
+                    <button class="adp-btn" t-on-click="onRefresh" title="Refresh">
+                        <i class="fa fa-refresh" t-att-class="{ 'fa-spin': state.loading }"/>
+                    </button>
+                </div>
+            </div>
+
+            <!-- LOADING SKELETON -->
+            <div t-if="state.loading" class="adp-skeleton-container">
+                <div class="adp-skeleton-row">
+                    <div class="adp-skeleton-card" t-foreach="[1,2,3,4,5]" t-as="i" t-key="i"/>
+                </div>
+                <div class="adp-skeleton-row">
+                    <div class="adp-skeleton-chart"/>
+                    <div class="adp-skeleton-list"/>
+                </div>
+            </div>
+
+            <!-- ERROR -->
+            <div t-if="state.error and !state.loading" class="adp-error">
+                <i class="fa fa-exclamation-circle"/>
+                <span t-esc="state.error"/>
+                <button class="adp-btn" t-on-click="onRefresh">Retry</button>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <div t-if="!state.loading and !state.error" class="adp-content">
+
+                <!-- KPI CARDS (dynamic) -->
+                <div class="adp-kpi-row">
+                    <t t-foreach="visibleKpis" t-as="kpi" t-key="kpi.key">
+                        <KpiCard
+                            title="kpi.title"
+                            icon="kpi.icon"
+                            amount="getKpiAmount(kpi)"
+                            changePct="getKpiChangePct(kpi)"
+                            prevAmount="getKpiPrevAmount(kpi)"
+                            subtitle="getKpiSubtitle(kpi)"
+                            color="getKpiColor(kpi)"
+                            formatCurrency="formatCurrency.bind(this)"
+                            onClick="() => this.onKpiClick(kpi.action)"
+                            useRaw="kpi.useRaw || false"
+                            rawSuffix="kpi.rawSuffix || ''"
+                            info="kpi.info || ''"
+                        />
+                    </t>
+                </div>
+
+                <!-- DYNAMIC CHARTS -->
+                <div class="adp-charts-grid">
+                    <t t-foreach="visibleCharts" t-as="chart" t-key="chart.key">
+                        <div class="adp-chart-wrapper">
+                            <!-- Chart Info Button (hover) -->
+                            <span t-if="chart.info" class="adp-chart-info-btn"
+                                  t-on-mouseenter="() => this.state.chartInfoKey = chart.key"
+                                  t-on-mouseleave="() => this.state.chartInfoKey = null">
+                                <i class="fa fa-info-circle"/>
+                            </span>
+                            <!-- Chart Info Tooltip (hover) -->
+                            <div t-if="state.chartInfoKey === chart.key" class="adp-chart-info-tooltip"
+                                 t-on-mouseenter="() => this.state.chartInfoKey = chart.key"
+                                 t-on-mouseleave="() => this.state.chartInfoKey = null">
+                                <div class="adp-info-tooltip-header">
+                                    <i class="fa fa-info-circle"/> <t t-esc="chart.title"/>
+                                </div>
+                                <div class="adp-info-tooltip-body">
+                                    <div class="info-desc" t-esc="chart.info"/>
+                                </div>
+                            </div>
+                            <!-- AgingChart needs special props -->
+                            <t t-if="chart.key === 'aging'">
+                                <AgingChart
+                                    receivableData="state.agingReceivable"
+                                    payableData="state.agingPayable"
+                                    formatCurrency="formatCurrency.bind(this)"
+                                />
+                            </t>
+                            <!-- IncomeExpensePie needs special props -->
+                            <t t-elif="chart.key === 'income_expense_pie'">
+                                <IncomeExpensePie
+                                    revenue="state.kpiData.revenue?.amount || 0"
+                                    expenses="state.kpiData.expenses?.amount || 0"
+                                    formatCurrency="formatCurrency.bind(this)"
+                                />
+                            </t>
+                            <!-- All other charts use standard data prop -->
+                            <t t-else="">
+                                <t t-component="getChartComponent(chart)"
+                                   data="getChartData(chart)"
+                                   formatCurrency="formatCurrency.bind(this)"/>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- DYNAMIC BANK / CASH JOURNAL CHARTS -->
+                <div t-if="state.journalCharts and state.journalCharts.length" class="adp-journal-section">
+                    <h2 class="adp-section-title">
+                        <i class="fa fa-university"/> Bank &amp; Cash Journals
+                    </h2>
+                    <JournalBalanceChart
+                        journals="state.journalCharts"
+                        formatCurrency="formatCurrency.bind(this)"
+                    />
+                </div>
+
+                <!-- LISTS -->
+                <div class="adp-lists-grid">
+                    <OverdueInvoices
+                        data="state.listsData.overdue_invoices || []"
+                        formatCurrency="formatCurrency.bind(this)"
+                        onItemClick="(id) => this.onListItemClick('account.move', id)"
+                    />
+                    <UpcomingBills
+                        data="state.listsData.upcoming_bills || []"
+                        formatCurrency="formatCurrency.bind(this)"
+                        onItemClick="(id) => this.onListItemClick('account.move', id)"
+                    />
+                    <RecentPayments
+                        data="state.listsData.recent_payments || []"
+                        formatCurrency="formatCurrency.bind(this)"
+                        onItemClick="(id) => this.onListItemClick('account.payment', id)"
+                    />
+                    <t t-if="state.userGroups.is_basic and (state.listsData.unreconciled_items || []).length">
+                        <div class="adp-list-card list-unreconciled">
+                            <div class="adp-list-header">
+                                <div class="adp-list-title" style="cursor:pointer" t-on-click="() => this.onAction('reconcile')">
+                                    <i class="fa fa-university"/>
+                                    Unreconciled Items
+                                </div>
+                                <span class="adp-list-badge" t-esc="state.listsData.unreconciled_items.length"/>
+                            </div>
+                            <div class="adp-list-body">
+                                <t t-foreach="state.listsData.unreconciled_items" t-as="item" t-key="item.id">
+                                    <div class="adp-list-item" t-on-click="() => this.onListItemClick('account.bank.statement.line', item.id)">
+                                        <div class="adp-list-item-info">
+                                            <div class="name" t-esc="item.name || 'N/A'"/>
+                                            <div class="partner" t-esc="item.partner_name || 'N/A'"/>
+                                        </div>
+                                        <div class="adp-list-item-right">
+                                            <div t-att-class="'amount ' + (item.amount >= 0 ? 'text-success' : 'text-danger')"
+                                                 t-esc="formatCurrency(item.amount)"/>
+                                            <div class="badge badge-warning" t-esc="item.journal_name"/>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- QUICK ACTIONS + ALERTS -->
+                <div class="adp-bottom-grid">
+                    <t t-if="state.userGroups.is_invoicing or state.userGroups.is_basic or state.userGroups.is_user or state.userGroups.is_manager">
+                        <QuickActions
+                            userGroups="state.userGroups"
+                            onAction="onAction.bind(this)"
+                        />
+                    </t>
+                    <AlertsFeed
+                        alerts="state.alerts"
+                        onAction="onAction.bind(this)"
+                    />
+                </div>
+            </div>
+
+            <!-- SETTINGS PANEL (KPIs + Charts tabs) -->
+            <t t-if="state.showKpiSettings">
+                <div class="adp-settings-overlay" t-on-click="closeKpiSettings"/>
+                <div class="adp-settings-panel">
+                    <div class="adp-settings-header">
+                        <h3><i class="fa fa-cog"/> Dashboard Settings</h3>
+                        <button class="adp-close-btn" t-on-click="closeKpiSettings">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </div>
+                    <!-- Tabs -->
+                    <div class="adp-settings-tabs">
+                        <button t-att-class="'adp-tab ' + (state.settingsTab === 'kpis' ? 'active' : '')"
+                                t-on-click="() => this.switchSettingsTab('kpis')">
+                            <i class="fa fa-th-large"/> KPIs
+                        </button>
+                        <button t-att-class="'adp-tab ' + (state.settingsTab === 'charts' ? 'active' : '')"
+                                t-on-click="() => this.switchSettingsTab('charts')">
+                            <i class="fa fa-bar-chart"/> Charts
+                        </button>
+                    </div>
+                    <div class="adp-settings-body">
+                        <!-- KPI Tab -->
+                        <t t-if="state.settingsTab === 'kpis'">
+                            <t t-foreach="settingsKpis" t-as="kpi" t-key="kpi.key">
+                                <div class="adp-settings-item">
+                                    <div class="adp-settings-drag">
+                                        <button t-on-click="() => this.moveKpiUp(kpi.key)"
+                                                t-att-disabled="kpi_index === 0">
+                                            <i class="fa fa-chevron-up"/>
+                                        </button>
+                                        <button t-on-click="() => this.moveKpiDown(kpi.key)"
+                                                t-att-disabled="kpi_index === settingsKpis.length - 1">
+                                            <i class="fa fa-chevron-down"/>
+                                        </button>
+                                    </div>
+                                    <input type="checkbox"
+                                           t-att-checked="kpi.visible"
+                                           t-on-change="() => this.toggleKpiVisibility(kpi.key)"/>
+                                    <span class="adp-settings-kpi-label">
+                                        <i t-att-class="'fa ' + kpi.icon"/>
+                                        <t t-esc="kpi.title"/>
+                                    </span>
+                                </div>
+                            </t>
+                        </t>
+                        <!-- Charts Tab -->
+                        <t t-if="state.settingsTab === 'charts'">
+                            <t t-foreach="settingsCharts" t-as="chart" t-key="chart.key">
+                                <div class="adp-settings-item">
+                                    <div class="adp-settings-drag">
+                                        <button t-on-click="() => this.moveChartUp(chart.key)"
+                                                t-att-disabled="chart_index === 0">
+                                            <i class="fa fa-chevron-up"/>
+                                        </button>
+                                        <button t-on-click="() => this.moveChartDown(chart.key)"
+                                                t-att-disabled="chart_index === settingsCharts.length - 1">
+                                            <i class="fa fa-chevron-down"/>
+                                        </button>
+                                    </div>
+                                    <input type="checkbox"
+                                           t-att-checked="chart.visible"
+                                           t-on-change="() => this.toggleChartVisibility(chart.key)"/>
+                                    <span class="adp-settings-kpi-label">
+                                        <i t-att-class="'fa ' + chart.icon"/>
+                                        <t t-esc="chart.title"/>
+                                    </span>
+                                </div>
+                            </t>
+                        </t>
+                    </div>
+                </div>
+            </t>
+
+            <!-- REPORT SELECTION MODAL -->
+            <t t-if="state.showReportModal">
+                <div class="adp-modal-overlay" t-on-click="() => this.state.showReportModal = false"/>
+                <div class="adp-modal">
+                    <div class="adp-modal-header">
+                        <h3><i class="fa fa-file-text-o"/> Select Accounting Report</h3>
+                        <button class="adp-close-btn" t-on-click="() => this.state.showReportModal = false">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </div>
+                    <div class="adp-modal-search">
+                        <i class="fa fa-search search-icon"/>
+                        <input type="text"
+                               class="adp-modal-search-input"
+                               placeholder="Search reports..."
+                               t-model="state.searchReportQuery"/>
+                        <button t-if="state.searchReportQuery" 
+                                class="clear-btn" 
+                                t-on-click="() => this.state.searchReportQuery = ''">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </div>
+                    <div class="adp-modal-body">
+                        <div class="adp-report-list">
+                            <t t-if="!filteredReports.length">
+                                <div class="adp-report-empty">
+                                    <i class="fa fa-folder-open-o"/>
+                                    <span>No matching reports found</span>
+                                </div>
+                            </t>
+                            <t t-foreach="filteredReports" t-as="report" t-key="report.id">
+                                <div class="adp-report-item" t-on-click="() => this.openReport(report.id, report.name)">
+                                    <div class="adp-report-icon-wrapper">
+                                        <i class="fa fa-bar-chart"/>
+                                    </div>
+                                    <span class="adp-report-name" t-esc="report.name"/>
+                                    <i class="fa fa-chevron-right adp-report-arrow"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>
