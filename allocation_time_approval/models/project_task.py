@@ -44,6 +44,26 @@ class ProjectTask(models.Model):
                                     help="Task Create Boolean",
                                     default=True)
 
+    def _get_to_approve_stage(self):
+        stage = self.env.ref('allocation_time_approval.task_type_to_approve', raise_if_not_found=False)
+        if not stage:
+            stage = self.env['project.task.type'].search([('name', '=', 'To Approve')], limit=1)
+        return stage or self.env['project.task.type']
+
+    def _get_project_stage(self, stage_xml_id):
+        stage = self.env.ref(stage_xml_id, raise_if_not_found=False)
+        if not stage:
+            name_map = {
+                'project.project_stage_0': 'New',
+                'project.project_stage_1': 'In Progress',
+                'project.project_stage_2': 'Done',
+                'project.project_stage_3': 'Cancelled',
+            }
+            fallback_name = name_map.get(stage_xml_id)
+            if fallback_name:
+                stage = self.env['project.task.type'].search([('name', '=', fallback_name)], limit=1)
+        return stage or self.env['project.task.type']
+
     @api.depends('stage_id')
     def _compute_is_new_stage(self):
         """Set `is_new_stage` to True if the task is not in predefined stages
@@ -53,15 +73,10 @@ class ProjectTask(models.Model):
             # If the task is NOT in a specialized stage (To Approve, In
             # Progress, Done, Cancel),
             # we treat it as being in a 'New' or 'Draft' stage.
-            approve_stage = self.env.ref(
-                "allocation_time_approval.task_type_to_approve",
-                raise_if_not_found=False)
-            progress_stage = self.env.ref("project.project_stage_1",
-                                          raise_if_not_found=False)
-            done_stage = self.env.ref("project.project_stage_2",
-                                      raise_if_not_found=False)
-            cancel_stage = self.env.ref("project.project_stage_3",
-                                        raise_if_not_found=False)
+            approve_stage = rec._get_to_approve_stage()
+            progress_stage = rec._get_project_stage("project.project_stage_1")
+            done_stage = rec._get_project_stage("project.project_stage_2")
+            cancel_stage = rec._get_project_stage("project.project_stage_3")
 
             excluded_stages = [s.id for s in
                                [approve_stage, progress_stage, done_stage,
@@ -74,8 +89,7 @@ class ProjectTask(models.Model):
         When project_task on 'To Approve' stage then To Approve
         boolean field got True"""
         for rec in self:
-            rec.is_approve_stage = True if rec.stage_id.id == rec.env.ref(
-                "allocation_time_approval.task_type_to_approve").id else False
+            rec.is_approve_stage = bool(rec.stage_id) and rec.stage_id.id == rec._get_to_approve_stage().id
 
     @api.depends('stage_id')
     def _compute_is_progress_stage(self):
@@ -83,17 +97,44 @@ class ProjectTask(models.Model):
         When project_task on 'In Progress' stage then In Progress
         boolean field got True"""
         for rec in self:
-            rec.is_progress_stage = True if rec.stage_id.id == rec.env.ref(
-                "project.project_stage_1").id else False
+            rec.is_progress_stage = bool(rec.stage_id) and rec.stage_id.id == rec._get_project_stage(
+                "project.project_stage_1").id
 
     def action_approval(self):
         """ When click on 'Manager Approval' button the
         datas are created in manager_approval module,
         and the stage become 'To Approve'"""
         self.is_create_task = False
+        
+        # Check whether there is a to approve stage
+        stage = self.env.ref('allocation_time_approval.task_type_to_approve', raise_if_not_found=False)
+        if not stage:
+            stage = self.env['project.task.type'].search([('name', '=', 'To Approve')], limit=1)
+            
+        if not stage:
+            # Create it with current project id
+            stage_vals = {
+                'name': 'To Approve',
+                'sequence': 1,
+                'fold': True,
+            }
+            if self.project_id:
+                stage_vals['project_ids'] = [(4, self.project_id.id)]
+            stage = self.env['project.task.type'].create(stage_vals)
+            
+            # Register XML ID so existing references don't break
+            self.env['ir.model.data']._update_xmlids([{
+                'xml_id': 'allocation_time_approval.task_type_to_approve',
+                'record': stage,
+                'noupdate': True,
+            }])
+        else:
+            # Stage exists. If not linked to this project, add the project to the stage
+            if self.project_id and self.project_id not in stage.project_ids:
+                stage.write({'project_ids': [(4, self.project_id.id)]})
+
         self.write({
-            'stage_id': self.env.ref(
-                "allocation_time_approval.task_type_to_approve").id,
+            'stage_id': stage.id,
         })
         if not self.is_create_task:
             users = [rec for rec in self.user_ids.ids]
@@ -121,14 +162,14 @@ class ProjectTask(models.Model):
                     ))
 
             task.sudo().write({
-                'stage_id': self.env.ref('project.project_stage_2').id,
+                'stage_id': self._get_project_stage('project.project_stage_2').id,
             })
             task._update_personal_stages('done')
 
     def action_cancel(self):
         """ When click on 'Cancel' the stage become 'Cancel'"""
         self.sudo().write({
-            'stage_id': self.env.ref("project.project_stage_3").id,
+            'stage_id': self._get_project_stage("project.project_stage_3").id,
         })
         self._update_personal_stages('cancel')
 
@@ -194,60 +235,49 @@ class ProjectTask(models.Model):
         current_stage = self.stage_id.name
         if 'stage_id' in values:
             new_state = values.get('stage_id')
-            if (current_stage == self.env.ref(
-                    "allocation_time_approval.task_type_to_approve").name) and (
+            
+            # Fetch all stages using safe helper methods
+            to_approve_stage = self._get_to_approve_stage()
+            stage_0 = self._get_project_stage("project.project_stage_0")
+            stage_1 = self._get_project_stage("project.project_stage_1")
+            stage_2 = self._get_project_stage("project.project_stage_2")
+            stage_3 = self._get_project_stage("project.project_stage_3")
+
+            if (current_stage == to_approve_stage.name) and (
                     not self.env.user.has_group(
                         'project.group_project_manager')):
-                if new_state in (self.env.ref("project.project_stage_0").id,
-                                 self.env.ref("project.project_stage_1").id,
-                                 self.env.ref("project.project_stage_2").id,
-                                 self.env.ref("project.project_stage_3").id):
+                if new_state in (stage_0.id, stage_1.id, stage_2.id, stage_3.id):
                     raise ValidationError(_(
                         "Only Managers can perform this move!"))
-            if (current_stage == self.env.ref(
-                    "project.project_stage_0").name) and (
+            if (current_stage == stage_0.name) and (
                     not self.env.user.has_group(
                         'project.group_project_manager')):
-                if new_state != self.env.ref(
-                        "allocation_time_approval.task_type_to_approve").id:
+                if new_state != to_approve_stage.id:
                     raise ValidationError(_(
                         "Only Managers can perform this move!"))
-            if (current_stage == self.env.ref(
-                    "project.project_stage_2").name) and (
+            if (current_stage == stage_2.name) and (
                     not self.env.user.has_group(
                         'project.group_project_manager')):
-                if new_state in (self.env.ref(
-                        "allocation_time_approval.task_type_to_approve").id,
-                                 self.env.ref("project.project_stage_0").id,
-                                 self.env.ref("project.project_stage_3").id):
+                if new_state in (to_approve_stage.id, stage_0.id, stage_3.id):
                     raise ValidationError(_(
                         "Only Managers can perform this move!"))
-            if (current_stage == self.env.ref(
-                    "project.project_stage_1").name) and (
+            if (current_stage == stage_1.name) and (
                     not self.env.user.has_group(
                         'project.group_project_manager')):
-                if new_state in (self.env.ref("project.project_stage_0").id,
-                                 self.env.ref(
-                                     "allocation_time_approval.task_type_to_approve").id):
+                if new_state in (stage_0.id, to_approve_stage.id):
                     raise ValidationError(_(
                         "Only Managers can perform this move!"))
-            if (current_stage == self.env.ref(
-                    "project.project_stage_3").name) and (
+            if (current_stage == stage_3.name) and (
                     not self.env.user.has_group(
                         'project.group_project_manager')):
-                if new_state in (self.env.ref('project.project_stage_0').id,
-                                 self.env.ref('project.project_stage_1').id,
-                                 self.env.ref('project.project_stage_2').id,
-                                 self.env.ref(
-                                     'allocation_time_approval.task_type_to_approve').id):
+                if new_state in (stage_0.id, stage_1.id, stage_2.id, to_approve_stage.id):
                     raise ValidationError(_(
                         "Only Managers can perform this move!"))
-            if (new_state == self.env.ref("project.project_stage_0").id) and (
+            if (new_state == stage_0.id) and (
                     not self.env.user.has_group(
                         'project.group_project_manager')):
                 raise ValidationError(_("Only Managers can perform this move!"))
-            if new_state == self.env.ref(
-                    "allocation_time_approval.task_type_to_approve").id:
+            if new_state == to_approve_stage.id:
                 if self.is_create_task:
                     users = [rec for rec in self.user_ids.ids]
                     self.env['manager.approval'].create({
@@ -258,45 +288,36 @@ class ProjectTask(models.Model):
                         'task_id': self.id
                     })
                     self.allocated_hours = 0
-            if (current_stage == self.env.ref(
-                    "project.project_stage_2").name) and (
+            if (current_stage == stage_2.name) and (
                     self.env.user.has_group('project.group_project_manager')):
-                if (new_state == self.env.ref(
-                        "allocation_time_approval.task_type_to_approve").id):
+                if (new_state == to_approve_stage.id):
                     raise ValidationError(_("You can't move this..!"))
-            if (current_stage == self.env.ref(
-                    "allocation_time_approval.task_type_to_approve").name) and (
+            if (current_stage == to_approve_stage.name) and (
                     self.env.user.has_group('project.group_project_manager')):
-                if (new_state == self.env.ref(
-                        "project.project_stage_0").id):
+                if (new_state == stage_0.id):
                     task_name = self.env["manager.approval"].search(
                         [('task', '=', self.name)])
                     task_name.unlink()
-                if (new_state == self.env.ref(
-                        "project.project_stage_2").id):
+                if (new_state == stage_2.id):
                     task_name = self.env["manager.approval"].search(
                         [('task', '=', self.name)])
                     task_name.unlink()
-                if (new_state == self.env.ref(
-                        "project.project_stage_3").id):
+                if (new_state == stage_3.id):
                     task_name = self.env["manager.approval"].search(
                         [('task', '=', self.name)])
                     task_name.is_button_view_cancel = True
-                if (new_state == self.env.ref(
-                        "project.project_stage_1").id):
+                if (new_state == stage_1.id):
                     task_name = self.env["manager.approval"].search(
                         [('task', '=', self.name)])
                     task_name.is_button_view = True
-            if current_stage == self.env.ref("project.project_stage_1").name:
-                if (new_state == self.env.ref(
-                        "project.project_stage_2").id):
+            if current_stage == stage_1.name:
+                if (new_state == stage_2.id):
                     task_name = self.env["manager.approval"].search(
                         [('task', '=', self.name)])
                     task_name.is_button_view = True
                     task_name.is_button_view_cancel = True
-            if current_stage == self.env.ref("project.project_stage_1").name:
-                if (new_state == self.env.ref(
-                        "project.project_stage_3").id):
+            if current_stage == stage_1.name:
+                if (new_state == stage_3.id):
                     task_name = self.env["manager.approval"].search(
                         [('task', '=', self.name)])
                     task_name.is_button_view = True
@@ -307,10 +328,8 @@ class ProjectTask(models.Model):
             new_state_id = values.get('stage_id')
             new_stage = self.env['project.task.type'].sudo().browse(
                 new_state_id)
-            done_stage = self.env.ref("project.project_stage_2",
-                                      raise_if_not_found=False)
-            cancel_stage = self.env.ref("project.project_stage_3",
-                                        raise_if_not_found=False)
+            done_stage = self._get_project_stage("project.project_stage_2")
+            cancel_stage = self._get_project_stage("project.project_stage_3")
 
             if (done_stage and new_state_id == done_stage.id) or (
                     new_stage.name and 'Done' in new_stage.name):

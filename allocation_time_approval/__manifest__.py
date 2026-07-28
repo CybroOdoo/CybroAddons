@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Allocation Time Approval',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Project',
     'summary': """Approve allocated time for project tasks and timesheets.""",
     'description': """This module enables managers to review and approve 
@@ -33,7 +33,6 @@
     'depends': ['hr_timesheet', 'project'],
     'data': [
         'security/ir.model.access.csv',
-        'data/allocation_time_approval_data.xml',
         'views/project_task_views.xml',
         'views/manager_approval_views.xml',
     ],
