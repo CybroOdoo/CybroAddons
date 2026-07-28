@@ -198,7 +198,7 @@ class AccountTrialBalance(models.TransientModel):
                 initial_total_credit = abs(initial_diff)
             if comparison_number:
                 if comparison_type == 'year':
-                    for i in range(1, init(comparison_number) + 1):
+                    for i in range(1, int(comparison_number) + 1):
                         com_start_date = subtract(start_date, years=i)
                         com_end_date = subtract(end_date, years=i)
                         domain = [('date', '>=', com_start_date),
