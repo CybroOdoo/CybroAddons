@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Tree view of amazon dataset for amazon forecasting-->
+    <record id="amazon_dataset_view_tree" model="ir.ui.view">
+        <field name="name">amazon.dataset.view.tree</field>
+        <field name="model">amazon.dataset</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="role_name"/>
+            </tree>
+        </field>
+    </record>
+    <!--Form view of amazon dataset for amazon forecasting-->
+    <record id="amazon_dataset_view_form" model="ir.ui.view">
+        <field name="name">amazon.dataset.view.form</field>
+        <field name="model">amazon.dataset</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_create_table" string="Create Table" type="object" invisible="state != 'table'" class="oe_highlight"/>
+                    <button name="action_create_role" string="Create Role" type="object" invisible="state != 'role'" class="oe_highlight"/>
+                    <button name="action_create_kms" string="Create KMS" type="object" invisible="state != 'kms'" class="oe_highlight"/>
+                    <button name="action_create_policy" string="Create Policy" type="object" invisible="state != 'policy'" class="oe_highlight"/>
+                    <button name="action_create_dataset" string="Create Dataset" type="object" invisible="state != 'dataset'" class="oe_highlight"/>
+                    <button name="action_import_dataset" string="Import Dataset Job" type="object" invisible="state != 'import_dataset'" class="oe_highlight"/>
+                    <button name="action_create_predictor" string="Create Predictor" type="object"  invisible="state != 'predictor'" class="oe_highlight"/>
+                    <button name="action_create_forecast" string="Create Forecast" type="object" invisible="state != 'forecast'" class="oe_highlight"/>
+                    <button name="query_forecast" string="Query Forecast" type="object" invisible="state != 'query_forecast'" class="oe_highlight"/>
+                    <field name="state" widget="statusbar" statusbar_visible="table,import_dataset,query_forecast"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="table_name" />
+                        <field name="table_arn" />
+                        <field name="role_name" invisible="state in ('table')" required="state not in ('table')"/>
+                        <field name="role_arn" invisible="state in ('table')"/>
+                        <field name="bucket_id" invisible="state in ('table', 'role')" required="state not in ('table', 'role')"/>
+                        <field name="kms_alias" invisible="state in ('table', 'role')" required="state not in ('table', 'role')"/>
+                        <field name="kms_arn" invisible="state in ('table', 'role')"/>
+                        <field name="policy_name" invisible="state in ('table', 'role', 'kms')" required="state not in ('table', 'role', 'kms')"/>
+                        <field name="policy_arn" invisible="state in ('table', 'role', 'kms')"/>
+                        <field name="dataset_group" invisible="state in ('table', 'role', 'kms', 'policy')" required="state not in ('table', 'role', 'kms', 'policy')"/>
+                        <field name="dataset_group_arn"  invisible="state in ('table', 'role', 'kms', 'policy','dataset')"/>
+                        <field name="dataset" invisible="state in ('table', 'role', 'kms', 'policy')" required="state not in ('table', 'role', 'kms', 'policy')"/>
+                        <field name="dataset_arn"  invisible="state in ('table', 'role', 'kms', 'policy','dataset')"/>
+                        <field name="forecast_frequency" invisible="state in ('table', 'role', 'kms', 'policy')"/>
+                        <field name="import_job_name" invisible="state in ('table', 'role', 'kms', 'policy', 'dataset')"/>
+                        <field name="import_job_arn" invisible="state in ('table', 'role', 'kms', 'policy', 'dataset')"/>
+                        <field name="predictor_name" invisible="state in ('table', 'role', 'kms', 'policy', 'dataset') "/>
+                        <field name="predictor_algorithm" invisible="state in ('table', 'role', 'kms', 'policy', 'dataset')"/>
+                        <field name="predictor_arn" invisible="state in ('table', 'role', 'kms', 'policy', 'dataset') "/>
+                        <field name="forecast_name" invisible="state in ('table', 'role', 'kms', 'policy', 'dataset', 'import_dataset','predictor')" required="state not in ('table', 'role', 'kms', 'policy', 'dataset', 'import_dataset')"/>
+                        <field name="item_id" invisible="state in ('table', 'role', 'kms', 'policy', 'dataset', 'import_dataset', 'predictor')" required="state not in ('table', 'role', 'kms', 'policy', 'dataset', 'import_dataset', 'predictor')"/>
+                        <field name="forecast_arn" invisible="state in ('table', 'role', 'kms', 'policy', 'dataset', 'import_dataset', 'predictor')"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--Window action for Amazon Dataset -->
+    <record id="action_amazon_dataset" model="ir.actions.act_window">
+        <field name="name">Forecast</field>
+        <field name="res_model">amazon.dataset</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
