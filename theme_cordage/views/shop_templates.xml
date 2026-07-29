@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- =============================================================
+         Explicitly deactivate website_sale.products_add_to_cart.
+         Our tc-pcard template renders the Add to Cart button inline.
+         If products_add_to_cart remains active it tries to inject a
+         second button via xpath and causes a ValueError when it cannot
+         find o_wsale_product_btn in the already-replaced form.
+    ============================================================= -->
+    <record id="website_sale.products_add_to_cart" model="ir.ui.view">
+        <field name="active">False</field>
+    </record>
+    <!-- =============================================================
+         Cordage Shop Page — Hero Band
+         Prepend a page hero section above the container
+    ============================================================= -->
+    <template id="theme_cordage_shop_hero"
+              name="Cordage – Shop Hero Band"
+              inherit_id="website_sale.products"
+              customize_show="False">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <!-- Shop page header band -->
+            <div class="tc-shop-hero">
+                <div class="tc-shop-hero__inner">
+                    <nav class="tc-shop-bc" aria-label="breadcrumb">
+                        <a href="/">Home</a>
+                        <span class="tc-shop-bc__sep">›</span>
+                        <span>Shop</span>
+                    </nav>
+                    <h1 class="tc-shop-hero__title">All Ropes &amp; Rigging</h1>
+                    <p class="tc-shop-hero__sub">
+                        Industrial, marine, fabric &amp; climbing — cut to your exact length,
+                        <span class="tc-shop-hero__sub-hl">dispatched in 48 hours.</span>
+                    </p>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    <!-- =============================================================
+         Cordage Shop – Product Card Reskin
+         Inherits products_item to replace the card structure with
+         the reference design layout (image tall, badge, wishlist,
+         category label, spec pills, star rating, price + add-to-cart).
+    ============================================================= -->
+    <template id="theme_cordage_products_item"
+              name="Cordage – Product Card"
+              inherit_id="website_sale.products_item"
+              customize_show="False">
+        <!-- Wrap the entire oe_product_image area with tc-pcard structure -->
+        <xpath expr="//form[hasclass('oe_product_cart')]" position="replace">
+            <form action="/shop/cart/update" method="post"
+                  class="tc-pcard oe_product_cart"
+                  t-att-data-publish="product.website_published and 'on' or 'off'"
+                  itemscope="itemscope" itemtype="http://schema.org/Product">
+                <input type="hidden" name="csrf_token"
+                       t-att-value="request.csrf_token()"
+                       t-nocache="The csrf token must always be up to date."/>
+                <t t-set="product_href" t-value="keep(product.website_url, page=(pager['page']['num'] if pager['page']['num']>1 else None))"/>
+                <t t-set="image_type" t-value="product._get_suitable_image_size(ppr, td_product['x'], td_product['y'])"/>
+                <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+                <input name="product_id" t-att-value="product_variant_id" type="hidden"/>
+                <!-- IMAGE AREA -->
+                <div class="tc-pcard__media">
+                    <a t-att-href="product_href" class="tc-pcard__media-link" itemprop="url">
+                        <t t-set="image_holder" t-value="product._get_image_holder()"/>
+                        <span t-field="image_holder.image_1920"
+                              t-options="{'widget': 'image', 'preview_image': image_type, 'itemprop': 'image', 'class': 'tc-pcard__img position-absolute w-100 h-100 object-fit-cover'}"
+                              class="tc-pcard__img-wrap position-absolute w-100 h-100"/>
+                    </a>
+                    <!-- Ribbon / Badge (Odoo native) -->
+                    <t t-set="bg_color" t-value="td_product['ribbon']['bg_color'] or ''"/>
+                    <t t-set="text_color" t-value="td_product['ribbon']['text_color']"/>
+                    <t t-set="bg_class" t-value="td_product['ribbon']['html_class']"/>
+                    <span t-attf-class="tc-pcard__badge o_ribbon o_not_editable #{bg_class}"
+                          t-attf-style="#{text_color and ('color: %s; ' % text_color)}#{bg_color and 'background-color:' + bg_color}"
+                          t-out="td_product['ribbon']['html'] or ''"/>
+                    <!-- Wishlist heart -->
+                    <t t-if="is_view_active and is_view_active('website_sale.product_wishlist_button')">
+                        <t t-call="website_sale.product_wishlist_button">
+                            <t t-set="_classes" t-valuef="tc-pcard__wish o_not_editable"/>
+                        </t>
+                    </t>
+                </div>
+                <!-- CARD BODY -->
+                <div class="tc-pcard__body">
+                    <!-- Category label -->
+                    <div class="tc-pcard__cat" t-if="product.categ_id">
+                        <t t-esc="product.categ_id.name"/>
+                    </div>
+                    <!-- Product name -->
+                    <h6 class="tc-pcard__name">
+                        <a t-att-href="product_href" class="tc-pcard__name-link"
+                           itemprop="name" t-att-content="product.name"
+                           t-field="product.name"/>
+                        <a t-if="not product.website_published" role="button"
+                           t-att-href="product_href"
+                           class="btn btn-sm btn-danger ms-1">Unpublished</a>
+                    </h6>
+                    <!-- Attribute/Tag pills from product attribute values -->
+                    <div class="tc-pcard__pills" t-if="product.attribute_line_ids">
+                        <t t-foreach="product.attribute_line_ids[:3]" t-as="al">
+                            <t t-foreach="al.product_template_value_ids[:1]" t-as="av">
+                                <span class="tc-pcard__pill">
+                                    <t t-esc="av.name"/>
+                                </span>
+                            </t>
+                        </t>
+                    </div>
+                    <!-- Footer: price + add-to-cart -->
+                    <div class="tc-pcard__foot">
+                        <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
+                        <div class="tc-pcard__price" itemprop="offers"
+                             itemscope="itemscope" itemtype="http://schema.org/Offer">
+                            <t t-if="'base_price' in template_price_vals and (template_price_vals['base_price'] > template_price_vals['price_reduce']) and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)">
+                                <del class="tc-pcard__price-old text-muted">
+                                    <t t-esc="template_price_vals['base_price']"
+                                       t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                </del>
+                            </t>
+                            <span class="tc-pcard__price-val"
+                                  t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale"
+                                  t-esc="template_price_vals['price_reduce']"
+                                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            <span t-else="" class="tc-pcard__price-val"
+                                  t-field="website.prevent_zero_price_sale_text"/>
+                            <span itemprop="price" style="display:none;"
+                                  t-esc="template_price_vals['price_reduce']"/>
+                            <span itemprop="priceCurrency" style="display:none;"
+                                  t-esc="website.currency_id.name"/>
+                        </div>
+                        <!-- Add to Cart button (AJAX via existing cart.js) -->
+                        <div class="o_wsale_product_btn tc-pcard__atc-wrap">
+                            <t t-if="product_variant_id and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)">
+                                <a t-if="product._website_show_quick_add()"
+                                   href="#" role="button"
+                                   class="btn btn-primary a-submit tc-pcard__atc tc-shop-add-btn"
+                                   aria-label="Add to cart" title="Add to cart"
+                                   data-animation-selector="img">
+                                    Add to Cart
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </xpath>
+    </template>
+    <!-- =============================================================
+         Cordage Shop – Sidebar Styling Classes
+         Adds Cordage class names to the sidebar aside element
+    ============================================================= -->
+    <template id="theme_cordage_shop_sidebar"
+              name="Cordage – Shop Sidebar Classes"
+              inherit_id="website_sale.products"
+              customize_show="False">
+        <!-- Widen the content container to container-fluid with custom padding -->
+        <xpath expr="//div[hasclass('container', 'oe_website_sale')]" position="attributes">
+            <attribute name="class" remove="container" separator=" "/>
+            <attribute name="class" add="container-fluid px-lg-5 px-md-4 px-3" separator=" "/>
+        </xpath>
+        <!-- Set products per row (ppr) to 3 -->
+        <xpath expr="//div[@id='products_grid']" position="before">
+            <t t-set="ppr" t-value="3"/>
+        </xpath>
+        <!-- Narrower Sidebar (col-lg-2) -->
+        <xpath expr="//aside[@id='products_grid_before']" position="attributes">
+            <attribute name="class">tc-shop-sidebar d-none d-lg-block position-sticky col-lg-2 px-0 clearfix</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wsale_products_grid_before_rail')]" position="attributes">
+            <attribute name="class">tc-shop-sidebar__rail vh-100 pt-2 pe-lg-2 pb-lg-5 ps-2 overflow-y-scroll</attribute>
+        </xpath>
+        <!-- Wider Product Grid (col-lg-10) with left padding/gap -->
+        <xpath expr="//div[@id='products_grid']" position="attributes">
+            <attribute name="t-attf-class">#{'o_wsale_layout_list' if layout_mode == 'list' else ''} {{'col-lg-10' if hasLeftColumn else 'col-12'}} ps-lg-4</attribute>
+        </xpath>
+        <!-- Remove default filmstrip categories list placement -->
+        <xpath expr="//t[@t-call='website_sale.filmstrip_categories']" position="replace"/>
+        <!-- Prepend filmstrip categories list inside the products_header toolbar -->
+        <xpath expr="//div[hasclass('products_header')]/*[1]" position="before">
+            <t t-if="opt_wsale_categories_top" t-call="website_sale.filmstrip_categories"/>
+        </xpath>
+        <!-- Reposition Sort dropdown and insert product count -->
+        <xpath expr="//t[@t-call='website_sale.sort']" position="replace">
+            <div class="d-flex align-items-center gap-3 ms-auto o_wsale_sort_count_wrap">
+                <span class="results-count">
+                    <t t-esc="search_count"/> product<t t-if="search_count != 1">s</t>
+                </span>
+                <t t-call="website_sale.sort"/>
+            </div>
+        </xpath>
+    </template>
+    <!-- =============================================================
+         Cordage Categories List Customization
+         Filter categories to show only Cordage rope categories,
+         and reskin headings / labels.
+    ============================================================= -->
+    <template id="theme_cordage_products_categories_list" inherit_id="website_sale.products_categories_list">
+        <!-- Change title to Category -->
+        <xpath expr="//h6/b" position="replace">
+            <b>Category</b>
+        </xpath>
+        <!-- Change All Products to All Ropes -->
+        <xpath expr="//label[hasclass('form-check-label')]" position="replace">
+            <label class="form-check-label fw-normal" t-att-for="all_products">All Ropes</label>
+        </xpath>
+        <!-- Filter root categories to show only Cordage categories -->
+        <xpath expr="//t[@t-foreach='categories']" position="attributes">
+            <attribute name="t-foreach">categories.filtered(lambda c: c.name in ['Industrial', 'Marine', 'Fabric', 'Climbing'])</attribute>
+        </xpath>
+    </template>
+    <!-- =============================================================
+         Cordage Attributes & Price Filter Customization (Desktop)
+         Integrates the price range input fields inside the same GET
+         form as attributes and adds the Apply / Clear buttons.
+    ============================================================= -->
+    <template id="theme_cordage_products_attributes" inherit_id="website_sale.products_attributes">
+        <!-- Replace the entire native attributes form with our clean, customized form -->
+        <xpath expr="//form" position="replace">
+            <form t-if="attributes" class="js_attributes position-relative mb-2" method="get">
+                <input t-if="category" type="hidden" name="category" t-att-value="category.id" />
+                <input type="hidden" name="search" t-att-value="search" />
+                <input type="hidden" name="order" t-att-value="order"/>
+                <!-- Price Range -->
+                <div class="tc-shop-sidebar__price-sec pb-3 mb-3 border-bottom">
+                    <h6 class="mb-3"><b>Price range</b></h6>
+                    <div class="sb-price-row d-flex align-items-center gap-2 mb-2">
+                        <input type="number" name="min_price" id="priceMin" class="form-control"
+                               t-att-value="int(min_price) if isFilteringByPrice else ''"
+                               placeholder="Min" min="0"/>
+                        <span class="sb-price-sep text-muted">–</span>
+                        <input type="number" name="max_price" id="priceMax" class="form-control"
+                               t-att-value="int(max_price) if isFilteringByPrice else ''"
+                               placeholder="Max" min="0"/>
+                    </div>
+                </div>
+                <!-- Attributes loop (filtered to show only Material and Diameter) -->
+                <t t-foreach="attributes.filtered(lambda a: a.name in ['Material', 'Diameter'])" t-as="a">
+                    <div class="accordion-item nav-item mb-1 border-0" t-if="a.value_ids and len(a.value_ids) &gt; 1">
+                        <h6 class="mb-3">
+                            <b class="o_products_attributes_title d-none d-lg-block" t-field="a.name"/>
+                        </h6>
+                        <div t-attf-id="o_products_attributes_{{a.id}}">
+                            <div class="flex-column mb-3">
+                                <t t-foreach="a.value_ids" t-as="v">
+                                    <div class="form-check mb-1">
+                                        <input type="checkbox"
+                                               name="attrib"
+                                               class="form-check-input"
+                                               t-att-id="'%s-%s' % (a.id,v.id)"
+                                               t-att-value="'%s-%s' % (a.id,v.id)"
+                                               t-att-checked="'checked' if v.id in attrib_set else None"/>
+                                        <label class="form-check-label fw-normal" t-att-for="'%s-%s' % (a.id,v.id)" t-field="v.name"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                <!-- Apply Filters and Clear All buttons -->
+                <div class="tc-shop-sidebar__actions mt-3">
+                    <button type="submit" class="tc-shop-sidebar__apply btn btn-primary">Apply filters</button>
+                    <a t-att-href="keep('/shop'+ ('/category/'+slug(category)) if category else None, attrib=0, tags=0, min_price=0, max_price=0)"
+                       class="tc-shop-sidebar__clear mt-2 d-block text-center text-decoration-none">Clear all</a>
+                </div>
+            </form>
+        </xpath>
+    </template>
+    <!-- =============================================================
+         Cordage Attributes & Price Filter Customization (Mobile Offcanvas)
+    ============================================================= -->
+    <template id="theme_cordage_o_wsale_offcanvas" inherit_id="website_sale.o_wsale_offcanvas">
+        <!-- Replace the entire offcanvas attributes form with our custom layout -->
+        <xpath expr="//aside[@id='o_wsale_offcanvas']//form" position="replace">
+            <form t-if="opt_wsale_attributes or opt_wsale_attributes_top"
+                  t-attf-class="js_attributes d-flex flex-column"
+                  method="get">
+                <input t-if="category" type="hidden" name="category" t-att-value="category.id" />
+                <input type="hidden" name="search" t-att-value="search" />
+
+                <!-- Price Range -->
+                <div class="tc-shop-sidebar__price-sec pb-3 mb-3 border-bottom px-4">
+                    <h6 class="mb-3"><b>Price range</b></h6>
+                    <div class="sb-price-row d-flex align-items-center gap-2 mb-2">
+                        <input type="number" name="min_price" id="priceMinMob" class="form-control"
+                               t-att-value="int(min_price) if isFilteringByPrice else ''"
+                               placeholder="Min" min="0"/>
+                        <span class="sb-price-sep text-muted">–</span>
+                        <input type="number" name="max_price" id="priceMaxMob" class="form-control"
+                               t-att-value="int(max_price) if isFilteringByPrice else ''"
+                               placeholder="Max" min="0"/>
+                    </div>
+                </div>
+                <!-- Attributes loop (filtered to show only Material and Diameter) -->
+                <t t-foreach="attributes.filtered(lambda a: a.name in ['Material', 'Diameter'])" t-as="a">
+                    <t t-set="_status" t-value="'inactive'"/>
+                    <t t-foreach="a.value_ids" t-as="v" t-if="v.id in attrib_set" t-set="_status" t-value="'active'"/>
+                    <div t-if="a.value_ids and len(a.value_ids) &gt; 1"
+                         t-attf-class="accordion-item border-top-0 {{(_status == 'active') and 'order-1' or 'order-2'}}">
+                        <h2 class="accordion-header mb-0" t-attf-id="o_wsale_offcanvas_attribute_{{a.id}}_header">
+                            <button t-attf-class="o_wsale_offcanvas_title accordion-button rounded-0 {{ not attrib_values and 'collapsed'}}"
+                                    type="button"
+                                    t-att-data-status="_status"
+                                    data-bs-toggle="collapse"
+                                    t-attf-data-bs-target="#o_wsale_offcanvas_attribute_{{a.id}}"
+                                    t-att-aria-expanded="_status == 'active' and 'True' or 'False'"
+                                    t-attf-aria-controls="o_wsale_offcanvas_attribute_{{a.id}}">
+                                <b t-out="a.name"/>
+                            </button>
+                        </h2>
+                        <div t-attf-id="o_wsale_offcanvas_attribute_{{a.id}}"
+                             t-attf-class="accordion-collapse collapse {{ (_status == 'active') and 'show'}}"
+                             t-att-aria-expanded="(_status == 'active') and 'True' or 'False'"
+                             t-attf-aria-labelledby="o_wsale_offcanvas_attribute_{{a.id}}_header">
+                            <div class="accordion-body pt-0">
+                                <div class="list-group list-group-flush">
+                                    <div t-foreach="a.value_ids" t-as="v" class="list-group-item border-0 ps-0 pb-0">
+                                        <div class="form-check mb-1">
+                                            <input type="checkbox"
+                                                   name="attrib"
+                                                   class="form-check-input"
+                                                   t-att-id="'%s-%s' % (a.id,v.id)"
+                                                   t-att-value="'%s-%s' % (a.id,v.id)"
+                                                   t-att-checked="'checked' if v.id in attrib_set else None"/>
+                                            <label class="form-check-label fw-normal" t-att-for="'%s-%s' % (a.id,v.id)" t-field="v.name"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                <!-- Apply Filters and Clear All buttons -->
+                <div class="tc-shop-sidebar__actions mt-3 px-4 pb-4">
+                    <button type="submit" class="tc-shop-sidebar__apply btn btn-primary">Apply filters</button>
+                    <a t-att-href="keep('/shop'+ ('/category/'+slug(category)) if category else None, attrib=0, tags=0, min_price=0, max_price=0)"
+                       class="tc-shop-sidebar__clear mt-2 d-block text-center text-decoration-none">Clear all</a>
+                </div>
+            </form>
+        </xpath>
+        <!-- Remove Odoo's native offcanvas-body footer with duplicate clear button -->
+        <xpath expr="//aside[@id='o_wsale_offcanvas']/div[hasclass('offcanvas-body')]" position="replace"/>
+    </template>
+    <!-- =============================================================
+         Prepend "All" root category tab to the categories filmstrip
+    ============================================================= -->
+    <template id="theme_cordage_filmstrip_categories" inherit_id="website_sale.filmstrip_categories">
+        <xpath expr="//ul[hasclass('o_wsale_filmstip')]/li[1]" position="before">
+            <li class="d-flex">
+                <a t-att-href="keep('/shop', category=0)"
+                   t-attf-class="btn btn-{{navClass}} d-flex align-items-center px-4 fs-6 fw-normal {{ 'border-primary' if not category else '' }}">
+                    <span>All</span>
+                </a>
+            </li>
+        </xpath>
+    </template>
+</odoo>

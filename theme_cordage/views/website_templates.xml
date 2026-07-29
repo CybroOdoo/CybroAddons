@@ -1,0 +1,937 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- =============================================================
+         Cordage Google Fonts
+    ============================================================= -->
+    <template id="theme_cordage_google_fonts" inherit_id="website.layout">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com"
+                  crossorigin=""/>
+            <link rel="stylesheet"
+                  href="https://fonts.googleapis.com/css2?family=Zain:wght@300;400;700;800;900&amp;display=swap"/>
+        </xpath>
+    </template>
+    <!-- =============================================================
+         Cordage Header Class
+    ============================================================= -->
+    <template id="theme_cordage_header_class" inherit_id="website.layout" name="Cordage Header Class" customize_show="False">
+        <xpath expr="//header" position="attributes">
+            <attribute name="data-cordage-header">true</attribute>
+            <attribute name="class" add="theme-cordage-site-header theme-cordage-header" separator=" "/>
+        </xpath>
+    </template>
+    <!-- =============================================================
+         Cordage Navbar Links
+    ============================================================= -->
+    <template id="theme_cordage_navbar_links" inherit_id="website.navbar_nav" name="Cordage Nav Styling" customize_show="False">
+        <xpath expr="//ul" position="attributes">
+            <attribute name="t-attf-class" add="theme-cordage-header__menu" separator=" "/>
+        </xpath>
+    </template>
+    <!-- =============================================================
+         Cordage Header Brand Logo
+    ============================================================= -->
+    <template id="theme_cordage_option_header_brand_logo" inherit_id="website.option_header_brand_logo" name="Cordage Header Brand Logo">
+        <xpath expr="//span[@t-field='website.logo']" position="replace">
+            <img src="/theme_cordage/static/src/img/logo.png" alt="Cordage" class="theme-cordage-brand__logo"/>
+        </xpath>
+    </template>
+    <!-- =============================================================
+         Cordage Header Default
+    ============================================================= -->
+    <template id="theme_cordage_header_default" inherit_id="website.template_header_default" name="Cordage Custom Header Navigation" customize_show="False">
+        <!-- Add class to inner container -->
+        <xpath expr="//div[@id='o_main_nav']" position="attributes">
+            <attribute name="class" remove="container" separator=" "/>
+            <attribute name="class" add="container-fluid px-lg-5 theme-cordage-header__inner" separator=" "/>
+        </xpath>
+        <!-- Brand Link -->
+        <xpath expr="//t[@t-call='website.placeholder_header_brand']" position="inside">
+            <t t-set="_link_class" t-valuef="theme-cordage-brand"/>
+        </xpath>
+        <!-- Center Menu Links -->
+        <xpath expr="//t[@t-call='website.navbar_nav']//t[@t-set='_nav_class']" position="replace">
+            <t t-set="_nav_class" t-valuef="mx-auto"/>
+        </xpath>
+        <!-- Hide unnecessary header elements to align action links -->
+        <xpath expr="//t[@t-call='website.placeholder_header_text_element']" position="replace"/>
+        <xpath expr="//t[@t-call='website.placeholder_header_social_links']" position="replace"/>
+        <xpath expr="//t[@t-call='website.placeholder_header_language_selector']" position="replace"/>
+        <xpath expr="//t[@t-call='website.placeholder_header_call_to_action']" position="replace"/>
+        <!-- Submenu settings -->
+        <xpath expr="//t[@t-foreach='website.menu_id.child_id']/t[@t-call='website.submenu']" position="inside">
+            <t t-set="link_class" t-valuef="theme-cordage-header__link nav-link"/>
+            <t t-set="dropdown_menu_classes" t-valuef="theme-cordage-header__dropdown"/>
+        </xpath>
+        <!-- Replace default search box placeholder with custom inline search -->
+        <xpath expr="//t[@t-call='website.placeholder_header_search_box']" position="replace">
+            <t t-call="website.placeholder_header_search_box" t-nocache="The searchbox should not cache previous searches.">
+                <t t-set="_layout" t-valuef="modal"/>
+                <t t-set="_item_class" t-valuef="nav-item theme-cordage-search-item"/>
+                <t t-set="_button_classes" t-valuef="theme-cordage-icon-link"/>
+            </t>
+        </xpath>
+        <!-- Tools List Class -->
+        <xpath expr="//div[@id='o_main_nav']/ul" position="attributes">
+            <attribute name="class" add="theme-cordage-header__tools" separator=" "/>
+        </xpath>
+        <!-- Custom Account Sign-In and Dropdown replacement -->
+        <xpath expr="//t[@t-call='portal.placeholder_user_sign_in']" position="replace">
+            <li t-if="user_id._is_public()" class="nav-item theme-cordage-account-item">
+                <a href="/web/login" class="theme-cordage-icon-link" title="Sign In" aria-label="Sign In">
+                    <i class="fa fa-user-o"/>
+                </a>
+            </li>
+        </xpath>
+        <xpath expr="//t[@t-call='portal.user_dropdown']" position="replace">
+            <t t-nocache="Each user is different regardless of the page visited.">
+                <li t-if="not user_id._is_public()" class="nav-item theme-cordage-account-item">
+                    <div class="dropdown">
+                        <button class="theme-cordage-icon-link dropdown-toggle" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="theme-cordage-account-trigger__avatar">
+                                <t t-if="user_id.image_128">
+                                    <img t-attf-src="/web/image/res.users/#{user_id.id}/image_128" class="theme-cordage-account-trigger__avatar-image" alt="User Avatar"/>
+                                </t>
+                                <t t-else="">
+                                    <t t-out="user_id.name[0].upper()"/>
+                                </t>
+                            </div>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end theme-cordage-account-dropdown" aria-labelledby="userMenuDropdown">
+                            <div class="theme-cordage-account-dropdown__head">
+                                <div class="theme-cordage-account-dropdown__avatar">
+                                    <t t-if="user_id.image_128">
+                                        <img t-attf-src="/web/image/res.users/#{user_id.id}/image_128" class="theme-cordage-account-trigger__avatar-image" alt="User Avatar"/>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-out="user_id.name[0].upper()"/>
+                                    </t>
+                                </div>
+                                <div>
+                                    <div class="theme-cordage-account-dropdown__name"><t t-out="user_id.name"/></div>
+                                </div>
+                            </div>
+                            <div class="theme-cordage-account-dropdown__menu">
+                                <a href="/my/home" class="theme-cordage-account-dropdown__item">
+                                    <i class="fa fa-user-circle-o me-2"/>
+                                    <span>My Account</span>
+                                </a>
+                                <a href="/my/orders" class="theme-cordage-account-dropdown__item">
+                                    <i class="fa fa-shopping-bag me-2"/>
+                                    <span>My Orders</span>
+                                </a>
+                                <div class="dropdown-divider"/>
+                                <a href="/web/session/logout?redirect=/" class="theme-cordage-account-dropdown__item theme-cordage-account-dropdown__item--warn">
+                                    <i class="fa fa-sign-out me-2"/>
+                                    <span>Sign Out</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </t>
+        </xpath>
+    </template>
+    <!-- =========================================================
+         Shop page – Enable "Add to Cart" quick button on product grid
+         The default Odoo template (products_add_to_cart) is inactive.
+         We activate it and override the button style to match Cordage.
+         Our cart.js then handles the click via AJAX (no redirect).
+    ========================================================= -->
+    <template id="theme_cordage_shop_add_to_cart"
+              inherit_id="website_sale.products_add_to_cart"
+              active="False"
+              name="Cordage – Shop Quick-Add Cart Button (DEPRECATED – handled by shop_templates.xml)"
+              customize_show="False">
+        <!-- Disabled: button is now rendered in theme_cordage_products_item in shop_templates.xml -->
+    </template>
+    <!-- =========================================================
+         Force "Stay on Page" add-to-cart behavior sitewide.
+         Inherits website.layout directly (same as Odoo's own
+         add_to_cart_redirect) with a higher priority so it runs
+         after the base template initializes HTML_data.
+         Sets data-add2cart-redirect="1" (stay on page / AJAX).
+    ========================================================= -->
+    <template id="theme_cordage_cart_no_redirect"
+              inherit_id="website.layout"
+              name="Cordage – No Cart Redirect"
+              priority="16"
+              customize_show="False">
+        <xpath expr="//html" position="before">
+            <t t-set="html_data"
+               t-value="dict(html_data or {}, **{'data-add2cart-redirect': '1'})"/>
+        </xpath>
+    </template>
+    <!-- =========================================================
+         Custom Mobile Header
+         Inherits website.template_header_mobile with a higher priority
+         to ensure it runs after the base template.
+    ========================================================= -->
+    <template id="theme_cordage_header_mobile" inherit_id="website.template_header_mobile" name="Cordage Custom Mobile Header" customize_show="False">
+        <!-- Add class to mobile nav wrapper -->
+        <xpath expr="//t[@t-call='website.navbar']" position="inside">
+            <t t-set="_navbar_classes" t-valuef="theme-cordage-mobile d-block d-lg-none px-0"/>
+        </xpath>
+        <!-- Add class to inner container -->
+        <xpath expr="//div[hasclass('o_main_nav')]" position="attributes">
+            <attribute name="class" add="theme-cordage-mobile__inner" separator=" "/>
+        </xpath>
+    </template>
+    <!-- =========================================================
+         Custom Mobile Tools
+         Inherits website.template_header_mobile with a higher priority
+         to ensure it runs after the base template.
+    ========================================================= -->
+    <template id="theme_cordage_mobile_buttons" inherit_id="website.template_header_mobile" name="Cordage Mobile Tools" customize_show="False">
+        <xpath expr="//ul[hasclass('o_header_mobile_buttons_wrap')]" position="attributes">
+            <attribute name="class" add="theme-cordage-mobile__actions" separator=" "/>
+        </xpath>
+        <xpath expr="//ul[hasclass('o_header_mobile_buttons_wrap')]//button" position="attributes">
+            <attribute name="class">theme-cordage-icon-link o_not_editable</attribute>
+        </xpath>
+        <xpath expr="//ul[hasclass('o_header_mobile_buttons_wrap')]//span[hasclass('navbar-toggler-icon')]" position="replace">
+            <i class="fa fa-bars"/>
+        </xpath>
+    </template>
+    <!-- =========================================================
+         Custom Mobile Offcanvas
+         Inherits website.template_header_mobile with a higher priority
+         to ensure it runs after the base template.
+    ========================================================= -->
+    <template id="theme_cordage_mobile_offcanvas" inherit_id="website.template_header_mobile" name="Cordage Mobile Offcanvas" customize_show="False">
+        <xpath expr="//div[@id='top_menu_collapse_mobile']" position="attributes">
+            <attribute name="class" add="theme-cordage-mobile__offcanvas" separator=" "/>
+        </xpath>
+        <!-- Remove phone number placeholder from mobile menu -->
+        <xpath expr="//div[@id='top_menu_collapse_mobile']//t[@t-call='website.placeholder_header_text_element']" position="replace"/>
+        <!-- Set classes for dynamic mobile menu -->
+        <xpath expr="//div[@id='top_menu_collapse_mobile']//t[@t-call='website.navbar_nav']" position="inside">
+            <t t-set="_nav_class" t-valuef="theme-cordage-mobile__menu"/>
+        </xpath>
+        <xpath expr="//div[@id='top_menu_collapse_mobile']//t[@t-foreach='website.menu_id.child_id']/t[@t-call='website.submenu']" position="inside">
+            <t t-set="link_class" t-valuef="theme-cordage-mobile__link nav-link"/>
+        </xpath>
+        <!-- Replace mobile search box -->
+        <xpath expr="//div[@id='top_menu_collapse_mobile']//t[@t-call='website.placeholder_header_search_box']" position="replace">
+            <form class="o_searchbar_form o_wait_lazy_js s_searchbar_input theme-cordage-search mb-4" action="/shop" method="get" data-snippet="s_searchbar_input">
+                <div class="theme-cordage-search__group w-100" role="search">
+                    <button type="submit" class="btn oe_search_button theme-cordage-search__submit" aria-label="Search" title="Search">
+                        <i class="oi oi-search"/>
+                    </button>
+                    <input type="search" name="search" class="search-query form-control oe_search_box border-0 bg-transparent theme-cordage-search__input" placeholder="Search products..." t-att-value="search" data-search-type="products" data-limit="5" data-display-image="true" data-display-description="true" data-display-extra-link="true" data-display-detail="true" data-order-by="name asc"/>
+                </div>
+                <input name="order" type="hidden" class="o_search_order_by oe_unremovable" value="name asc"/>
+            </form>
+        </xpath>
+        <!-- Replace mobile login dropdown and links with custom card -->
+        <xpath expr="//div[@id='top_menu_collapse_mobile']//t[@t-call='portal.placeholder_user_sign_in']" position="replace"/>
+        <xpath expr="//div[@id='top_menu_collapse_mobile']//t[@t-call='portal.user_dropdown']" position="replace">
+            <t t-nocache="Each user is different regardless of the page visited.">
+                <div class="theme-cordage-mobile-account mt-auto">
+                    <div class="theme-cordage-mobile-account__head" t-if="not user_id._is_public()">
+                        <div class="theme-cordage-mobile-account__avatar">
+                            <t t-if="user_id.image_128">
+                                <img t-attf-src="/web/image/res.users/#{user_id.id}/image_128" class="theme-cordage-account-trigger__avatar-image" alt="User Avatar"/>
+                            </t>
+                            <t t-else="">
+                                <t t-out="user_id.name[0].upper()"/>
+                            </t>
+                        </div>
+                        <div>
+                            <strong><t t-out="user_id.name"/></strong>
+                        </div>
+                    </div>
+                    <div class="theme-cordage-mobile-account__links">
+                        <a t-if="user_id._is_public()" href="/web/login" class="theme-cordage-mobile-account__link">
+                            <i class="fa fa-sign-in me-2"/>
+                            <span>Sign In</span>
+                        </a>
+                        <t t-else="">
+                            <a href="/my/home" class="theme-cordage-mobile-account__link">
+                                <i class="fa fa-user-circle-o me-2"/>
+                                <span>My Account</span>
+                            </a>
+                            <a href="/my/orders" class="theme-cordage-mobile-account__link">
+                                <i class="fa fa-shopping-bag me-2"/>
+                                <span>My Orders</span>
+                            </a>
+                            <a href="/web/session/logout?redirect=/" class="theme-cordage-mobile-account__link theme-cordage-mobile-account__link--warn">
+                                <i class="fa fa-sign-out me-2"/>
+                                <span>Sign Out</span>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!-- =========================================================
+         Homepage
+         Inherits website.homepage with a higher priority
+         to ensure it runs after the base template.
+    ========================================================= -->
+    <template id="theme_cordage_homepage" inherit_id="website.homepage"
+              name="Cordage Homepage">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap" class="theme-cordage-home">
+                <!-- Top Drop Zone -->
+                <div class="oe_structure">
+                    <!-- Pre-populate with Hero snippet -->
+                    <t t-call="theme_cordage.s_cordage_hero"/>
+                </div>
+                <!-- Products Catalog (Dynamic section outside oe_structure to prevent editor corruption) -->
+                <t t-call="theme_cordage.s_cordage_products"/>
+                <!-- Middle Drop Zone -->
+                <div class="oe_structure">
+                    <!-- Pre-populate with Industries and Testimonials snippets -->
+                    <t t-call="theme_cordage.s_cordage_industries"/>
+                    <t t-call="theme_cordage.s_cordage_testimonials"/>
+                </div>
+                <!-- Quote Request Form (Functional form outside oe_structure to prevent editor corruption/crashes) -->
+                <t t-call="theme_cordage.s_cordage_quote"/>
+                <!-- Bottom Drop Zone -->
+                <div class="oe_structure"/>
+            </div>
+        </xpath>
+    </template>
+    <!-- About Page Template -->
+    <template id="about_template" name="About Us | Cordage" key="theme_cordage.about_template">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <!-- 1. About Hero & Stats -->
+                <section class="s_cordage_about_hero theme-cordage-about-hero py-5" data-snippet="s_cordage_about_hero" data-name="Cordage About Hero">
+                    <div class="container-xl">
+                        <nav class="theme-cordage-about-bc mb-3">
+                            <a href="/">Home</a>
+                            <span class="mx-1">›</span>
+                            <span class="text-active">About</span>
+                        </nav>
+                        <h1 class="display-4 fw-bold mb-3">About CORDAGE</h1>
+                        <p class="lead text-muted mb-0 max-width-620">Supplying certified industrial, marine, fabric and climbing ropes since 1971. Every metre tested, documented, and cut to your exact specification.</p>
+                    </div>
+                    <div class="theme-cordage-about-stats mt-5">
+                        <div class="container-xl">
+                            <div class="row g-4 text-center">
+                                <div class="col-6 col-md-3 theme-cordage-about-stat text-white">
+                                    <i class="fa fa-calendar fa-2x mb-2 opacity-85 d-block"/>
+                                    <strong class="d-block h2 fw-black mb-1">1971</strong>
+                                    <span class="small text-uppercase tracking-wider opacity-85">Year founded</span>
+                                </div>
+                                <div class="col-6 col-md-3 theme-cordage-about-stat text-white">
+                                    <i class="fa fa-cubes fa-2x mb-2 opacity-85 d-block"/>
+                                    <strong class="d-block h2 fw-black mb-1">12,000+</strong>
+                                    <span class="small text-uppercase tracking-wider opacity-85">Orders shipped</span>
+                                </div>
+                                <div class="col-6 col-md-3 theme-cordage-about-stat text-white">
+                                    <i class="fa fa-globe fa-2x mb-2 opacity-85 d-block"/>
+                                    <strong class="d-block h2 fw-black mb-1">40+</strong>
+                                    <span class="small text-uppercase tracking-wider opacity-85">Countries served</span>
+                                </div>
+                                <div class="col-6 col-md-3 theme-cordage-about-stat text-white">
+                                    <i class="fa fa-certificate fa-2x mb-2 opacity-85 d-block"/>
+                                    <strong class="d-block h2 fw-black mb-1">ISO 9001</strong>
+                                    <span class="small text-uppercase tracking-wider opacity-85">Certified quality</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- 2. About Story -->
+                <section class="s_cordage_about_story theme-cordage-about-story py-5" data-snippet="s_cordage_about_story" data-name="Cordage About Story">
+                    <div class="container-xl">
+                        <div class="row g-5 align-items-start">
+                            <div class="col-lg-7">
+                                <h2 class="fw-bold mb-4">50 years of craft.<br/>One standard of quality.</h2>
+                                <p class="text-muted leading-relaxed mb-3">CORDAGE began in 1971 as a small dockside supplier in Portsmouth — coiling and cutting rope for fishermen and harbour workers. Every customer came through the door and knew us by name.</p>
+                                <p class="text-muted leading-relaxed mb-3">Fifty years later, we serve engineers, riggers, marine operators, climbers, and makers across the globe. Our range has grown, but the standard has not moved a millimetre.</p>
+                                <blockquote class="blockquote border-start border-primary border-3 ps-4 py-2 my-4 bg-light rounded-end italic text-dark">
+                                    "If we wouldn't put it on our own boat or rigging, we won't sell it to you."
+                                </blockquote>
+                                <p class="text-muted leading-relaxed mb-0">That principle shapes every buying decision, every supplier audit, and every load test we run. It's why customers who placed their first order in 2002 are still with us today.</p>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="theme-cordage-about-card p-4 border rounded shadow-sm bg-white">
+                                    <div class="theme-cordage-about-card-badge px-3 py-2 rounded mb-4 d-inline-flex align-items-center gap-2">
+                                        <i class="fa fa-anchor"/> Est. Portsmouth, 1971
+                                    </div>
+                                    <div class="theme-cordage-about-fact d-flex gap-3 py-3 border-bottom">
+                                        <i class="fa fa-scissors text-primary fs-5 mt-1"/>
+                                        <div>
+                                            <div class="fw-bold text-dark fs-6">Cut to your exact length</div>
+                                            <div class="small text-muted mt-1">1 metre to unlimited — no minimum, no waste charge</div>
+                                        </div>
+                                    </div>
+                                    <div class="theme-cordage-about-fact d-flex gap-3 py-3 border-bottom">
+                                        <i class="fa fa-file-text-o text-primary fs-5 mt-1"/>
+                                        <div>
+                                            <div class="fw-bold text-dark fs-6">Full certification on every order</div>
+                                            <div class="small text-muted mt-1">CE, ISO, UIAA, EN 13414 documentation included</div>
+                                        </div>
+                                    </div>
+                                    <div class="theme-cordage-about-fact d-flex gap-3 py-3 border-bottom">
+                                        <i class="fa fa-clock-o text-primary fs-5 mt-1"/>
+                                        <div>
+                                            <div class="fw-bold text-dark fs-6">48-hour guaranteed dispatch</div>
+                                            <div class="small text-muted mt-1">All in-stock orders — or we refund the shipping</div>
+                                        </div>
+                                    </div>
+                                    <div class="theme-cordage-about-fact d-flex gap-3 py-3 border-bottom">
+                                        <i class="fa fa-flask text-primary fs-5 mt-1"/>
+                                        <div>
+                                            <div class="fw-bold text-dark fs-6">Batch load-tested</div>
+                                            <div class="small text-muted mt-1">WLL and breaking strength published per product</div>
+                                        </div>
+                                    </div>
+                                    <div class="theme-cordage-about-fact d-flex gap-3 py-3">
+                                        <i class="fa fa-headphones text-primary fs-5 mt-1"/>
+                                        <div>
+                                            <div class="fw-bold text-dark fs-6">Technical support</div>
+                                            <div class="small text-muted mt-1">We spec rope for engineers and riggers daily</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- 3. About Values -->
+                <section class="s_cordage_about_values theme-cordage-about-sec theme-cordage-about-sec--alt py-5" data-snippet="s_cordage_about_values" data-name="Cordage About Values">
+                    <div class="container-xl">
+                        <div class="theme-cordage-about-sec-h text-center mb-5 mx-auto max-width-580">
+                            <h2 class="fw-bold mb-2">How we operate</h2>
+                            <p class="text-muted mb-0">Six principles that shape every decision, from supplier selection to how we answer the phone.</p>
+                        </div>
+                        <div class="row g-4 theme-cordage-about-val-grid">
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-about-val p-4 border rounded bg-white h-100">
+                                    <div class="theme-cordage-about-val-icon mb-3 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-search"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-2">Rigorous testing</h3>
+                                    <p class="text-muted small mb-0">Every batch is load-tested before dispatch. We publish WLL and breaking strength on each product page — no estimates, no guesswork.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-about-val p-4 border rounded bg-white h-100">
+                                    <div class="theme-cordage-about-val-icon mb-3 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-scissors"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-2">Cut to length</h3>
+                                    <p class="text-muted small mb-0">Order exactly what you need — from 1 m to a full reel. We cut with precision at no extra charge.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-about-val p-4 border rounded bg-white h-100">
+                                    <div class="theme-cordage-about-val-icon mb-3 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-file-text-o"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-2">Full certification</h3>
+                                    <p class="text-muted small mb-0">CE, ISO 9001, UIAA 101, EN 13414 documentation ships with every qualified order — ready for site audits.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-about-val p-4 border rounded bg-white h-100">
+                                    <div class="theme-cordage-about-val-icon mb-3 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-truck"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-2">48-hour dispatch</h3>
+                                    <p class="text-muted small mb-0">Every in-stock order is cut, coiled, labelled, and dispatched within two working days — guaranteed.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-about-val p-4 border rounded bg-white h-100">
+                                    <div class="theme-cordage-about-val-icon mb-3 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-leaf"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-2">Responsible sourcing</h3>
+                                    <p class="text-muted small mb-0">Natural fibres from certified sustainable sources. All synthetic fibres meet REACH compliance.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-about-val p-4 border rounded bg-white h-100">
+                                    <div class="theme-cordage-about-val-icon mb-3 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-headphones"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-2">Real support</h3>
+                                    <p class="text-muted small mb-0">Tell us your load, environment, and certification needs. We'll spec the exact rope — usually within one working day.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- 4. Certifications -->
+                <section id="certifications" class="s_cordage_certifications theme-cordage-about-sec py-5" data-snippet="s_cordage_certifications" data-name="Cordage Certifications">
+                    <div class="container-xl">
+                        <div class="theme-cordage-about-sec-h text-center mb-5 mx-auto max-width-580">
+                            <h2 class="fw-bold mb-2">Certifications &amp; standards</h2>
+                            <p class="text-muted mb-0">Independently certified to the standards required by the industries we serve.</p>
+                        </div>
+                        <div class="row g-4 justify-content-center text-center s_nb_column_fixed theme-cordage-certifications-grid">
+                            <div class="col-6 col-sm-4 col-lg theme-cordage-certification-item" data-name="Certification Item">
+                                <div class="theme-cordage-certification-card p-3 border rounded bg-light h-100">
+                                    <i class="fa fa-certificate text-primary fs-2 mb-2 d-block"/>
+                                    <div class="theme-cordage-certification-n fw-bold text-dark mb-1">ISO 9001:2015</div>
+                                    <div class="theme-cordage-certification-d text-muted small leading-normal">Quality management — manufacturing &amp; supply</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4 col-lg theme-cordage-certification-item" data-name="Certification Item">
+                                <div class="theme-cordage-certification-card p-3 border rounded bg-light h-100">
+                                    <i class="fa fa-shield text-primary fs-2 mb-2 d-block"/>
+                                    <div class="theme-cordage-certification-n fw-bold text-dark mb-1">CE Certified</div>
+                                    <div class="theme-cordage-certification-d text-muted small leading-normal">EU safety &amp; performance conformity</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4 col-lg theme-cordage-certification-item" data-name="Certification Item">
+                                <div class="theme-cordage-certification-card p-3 border rounded bg-light h-100">
+                                    <i class="fa fa-compass text-primary fs-2 mb-2 d-block"/>
+                                    <div class="theme-cordage-certification-n fw-bold text-dark mb-1">UIAA 101</div>
+                                    <div class="theme-cordage-certification-d text-muted small leading-normal">Dynamic rope — climbing &amp; mountaineering</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4 col-lg theme-cordage-certification-item" data-name="Certification Item">
+                                <div class="theme-cordage-certification-card p-3 border rounded bg-light h-100">
+                                    <i class="fa fa-file-text-o text-primary fs-2 mb-2 d-block"/>
+                                    <div class="theme-cordage-certification-n fw-bold text-dark mb-1">EN 13414</div>
+                                    <div class="theme-cordage-certification-d text-muted small leading-normal">Steel wire rope sling — industrial lifting</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4 col-lg theme-cordage-certification-item" data-name="Certification Item">
+                                <div class="theme-cordage-certification-card p-3 border rounded bg-light h-100">
+                                    <i class="fa fa-lock text-primary fs-2 mb-2 d-block"/>
+                                    <div class="theme-cordage-certification-n fw-bold text-dark mb-1">EN 1891 Type A</div>
+                                    <div class="theme-cordage-certification-d text-muted small leading-normal">Static kernmantle — access &amp; rescue</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- 5. About Team -->
+                <section class="s_cordage_about_team theme-cordage-about-sec theme-cordage-about-sec--alt py-5" data-snippet="s_cordage_about_team" data-name="Cordage About Team">
+                    <div class="container-xl">
+                        <div class="theme-cordage-about-sec-h text-center mb-5 mx-auto max-width-580">
+                            <h2 class="fw-bold mb-2">The team</h2>
+                            <p class="text-muted mb-0">Engineers, sailors, climbers, and craftspeople — united by a shared obsession with rope quality.</p>
+                        </div>
+                        <div class="row g-4 theme-cordage-about-team-grid text-center">
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="theme-cordage-about-member p-4 border rounded bg-light h-100">
+                                    <div class="theme-cordage-about-av rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center text-white font-weight-black" style="background: linear-gradient(135deg, #e8641a, #f07020);">H</div>
+                                    <h3 class="fw-bold mb-1">Helen Carter</h3>
+                                    <div class="theme-cordage-about-member-role mb-3 small fw-bold text-uppercase tracking-wider">Founder &amp; CEO</div>
+                                    <p class="theme-cordage-about-member-bio text-muted small mb-0">Third-generation rope supplier. Former marine engineer. Still personally approves every new product before it enters the catalogue.</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="theme-cordage-about-member p-4 border rounded bg-light h-100">
+                                    <div class="theme-cordage-about-av rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center text-white font-weight-black" style="background: linear-gradient(135deg, #1a4a80, #2e6898);">T</div>
+                                    <h3 class="fw-bold mb-1">Tom Briggs</h3>
+                                    <div class="theme-cordage-about-member-role mb-3 small fw-bold text-uppercase tracking-wider">Head of Operations</div>
+                                    <p class="theme-cordage-about-member-bio text-muted small mb-0">Runs the cutting floor and dispatch team. Responsible for the 48-hour commitment — and has never missed it in seven years.</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="theme-cordage-about-member p-4 border rounded bg-light h-100">
+                                    <div class="theme-cordage-about-av rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center text-white font-weight-black" style="background: linear-gradient(135deg, #2f7d5b, #3aaa78);">P</div>
+                                    <h3 class="fw-bold mb-1">Priya Singh</h3>
+                                    <div class="theme-cordage-about-member-role mb-3 small fw-bold text-uppercase tracking-wider">Quality &amp; Testing</div>
+                                    <p class="theme-cordage-about-member-bio text-muted small mb-0">Materials engineer. Runs all load tests and manages supplier certification audits. The reason our WLL figures can be trusted.</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="theme-cordage-about-member p-4 border rounded bg-light h-100">
+                                    <div class="theme-cordage-about-av rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center text-white font-weight-black" style="background: linear-gradient(135deg, #6a30a8, #9060d0);">L</div>
+                                    <h3 class="fw-bold mb-1">Luca Ferri</h3>
+                                    <div class="theme-cordage-about-member-role mb-3 small fw-bold text-uppercase tracking-wider">Product Development</div>
+                                    <p class="theme-cordage-about-member-bio text-muted small mb-0">Sources new rope categories and develops the fabric and craft range. Also an avid climber — he tests his own product.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- 6. About Timeline -->
+                <section class="s_cordage_about_timeline theme-cordage-about-sec py-5" data-snippet="s_cordage_about_timeline" data-name="Cordage About Timeline">
+                    <div class="container-xl">
+                        <div class="theme-cordage-about-sec-h text-center mb-5 mx-auto max-width-580">
+                            <h2 class="fw-bold mb-0">Company milestones</h2>
+                        </div>
+                        <div class="theme-cordage-about-timeline mx-auto max-width-660 position-relative ps-4">
+                            <div class="theme-cordage-about-timeline-item position-relative mb-4 pb-2">
+                                <div class="theme-cordage-about-timeline-yr small fw-bold text-uppercase tracking-wider">1971</div>
+                                <h4 class="theme-cordage-about-timeline-title fw-bold mb-2">Founded in Portsmouth</h4>
+                                <p class="theme-cordage-about-timeline-desc text-muted mb-0">Started as a dockside rope supplier serving local fishermen and harbour workers. First year revenue: £4,200.</p>
+                            </div>
+                            <div class="theme-cordage-about-timeline-item position-relative mb-4 pb-2">
+                                <div class="theme-cordage-about-timeline-yr small fw-bold text-uppercase tracking-wider">1989</div>
+                                <h4 class="theme-cordage-about-timeline-title fw-bold mb-2">Synthetic rope manufacturing</h4>
+                                <p class="theme-cordage-about-timeline-desc text-muted mb-0">Expanded into polypropylene and polyester production. Achieved first ISO quality certification.</p>
+                            </div>
+                            <div class="theme-cordage-about-timeline-item position-relative mb-4 pb-2">
+                                <div class="theme-cordage-about-timeline-yr small fw-bold text-uppercase tracking-wider">2002</div>
+                                <h4 class="theme-cordage-about-timeline-title fw-bold mb-2">Online ordering launches</h4>
+                                <p class="theme-cordage-about-timeline-desc text-muted mb-0">First UK rope supplier to offer cut-to-length ordering online. 1,400 orders placed in year one.</p>
+                            </div>
+                            <div class="theme-cordage-about-timeline-item position-relative mb-4 pb-2">
+                                <div class="theme-cordage-about-timeline-yr small fw-bold text-uppercase tracking-wider">2011</div>
+                                <h4 class="theme-cordage-about-timeline-title fw-bold mb-2">ISO 9001 certification</h4>
+                                <p class="theme-cordage-about-timeline-desc text-muted mb-0">Full quality management system certified across manufacturing, testing, and supply operations.</p>
+                            </div>
+                            <div class="theme-cordage-about-timeline-item position-relative mb-4 pb-2">
+                                <div class="theme-cordage-about-timeline-yr small fw-bold text-uppercase tracking-wider">2015</div>
+                                <h4 class="theme-cordage-about-timeline-title fw-bold mb-2">Climbing &amp; safety rope range</h4>
+                                <p class="theme-cordage-about-timeline-desc text-muted mb-0">UIAA-certified dynamic and static ropes added. CE certifications applied across the full catalogue.</p>
+                            </div>
+                            <div class="theme-cordage-about-timeline-item position-relative mb-4 pb-2">
+                                <div class="theme-cordage-about-timeline-yr small fw-bold text-uppercase tracking-wider">2022</div>
+                                <h4 class="theme-cordage-about-timeline-title fw-bold mb-2">Fabric &amp; craft range</h4>
+                                <p class="theme-cordage-about-timeline-desc text-muted mb-0">Cotton, macramé, and coloured rope range launched. Customer base exceeds 8,000 active accounts.</p>
+                            </div>
+                            <div class="theme-cordage-about-timeline-item position-relative">
+                                <div class="theme-cordage-about-timeline-yr small fw-bold text-uppercase tracking-wider">Today</div>
+                                <h4 class="theme-cordage-about-timeline-title fw-bold mb-2">Shipping worldwide</h4>
+                                <p class="theme-cordage-about-timeline-desc text-muted mb-0">12 core products, 40+ countries, 50+ years of expertise. The same principle as 1971.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- 7. CTA -->
+                <section class="s_cordage_cta theme-cordage-cta py-5 text-center text-white" data-snippet="s_cordage_cta" data-name="Cordage Call to Action">
+                    <div class="container-xl">
+                        <h2 class="fw-bold text-white mb-3">Ready to find the right rope?</h2>
+                        <p class="text-white opacity-85 mb-4 mx-auto max-width-500">Browse our full catalogue or speak with our technical team. We'll spec the exact product for your application.</p>
+                        <div class="theme-cordage-cta-btns d-flex align-items-center justify-content-center gap-3">
+                            <a href="/shop" class="theme-cordage-btn-w d-inline-flex align-items-center gap-2 bg-white text-primary rounded-pill border-0 font-weight-bold px-4 py-3 text-decoration-none">
+                                <i class="fa fa-tag"/>Browse products
+                            </a>
+                            <a href="/contactus" class="theme-cordage-btn-o d-inline-flex align-items-center gap-2 bg-transparent text-white rounded-pill border-2 font-weight-bold px-4 py-3 text-decoration-none">
+                                <i class="fa fa-envelope-o"/>Contact our team
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+    <!-- Industries Page Template -->
+    <template id="industries_template" name="Industries | Cordage" key="theme_cordage.industries_template">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <!-- 1. Industries Hero -->
+                <section class="s_cordage_industries_hero theme-cordage-industries-hero py-5" data-snippet="s_cordage_industries_hero" data-name="Cordage Industries Hero">
+                    <div class="container-xl">
+                        <nav class="theme-cordage-industries-bc mb-3">
+                            <a href="/">Home</a>
+                            <span class="mx-1">›</span>
+                            <span class="text-active">Industries</span>
+                        </nav>
+                        <h1 class="display-4 fw-bold mb-3">Industries We Serve</h1>
+                        <p class="lead text-muted mb-4 max-width-620">Certified ropes for six sectors — from offshore platforms to logistics warehouses. Every product load-rated, documented, and cut to your exact length.</p>
+                        <div class="theme-cordage-industries-hstats d-flex gap-4 flex-wrap">
+                            <div class="theme-cordage-industries-hstat d-flex align-items-center gap-2">
+                                <i class="fa fa-industry text-primary"/>
+                                <strong class="text-dark">6</strong>
+                                <span class="text-muted small">Industries</span>
+                            </div>
+                            <div class="theme-cordage-industries-hstat d-flex align-items-center gap-2">
+                                <i class="fa fa-globe text-primary"/>
+                                <strong class="text-dark">40+</strong>
+                                <span class="text-muted small">Countries</span>
+                            </div>
+                            <div class="theme-cordage-industries-hstat d-flex align-items-center gap-2">
+                                <i class="fa fa-certificate text-primary"/>
+                                <strong class="text-dark">ISO 9001</strong>
+                                <span class="text-muted small">Certified</span>
+                            </div>
+                            <div class="theme-cordage-industries-hstat d-flex align-items-center gap-2">
+                                <i class="fa fa-clock-o text-primary"/>
+                                <strong class="text-dark">48 hrs</strong>
+                                <span class="text-muted small">Dispatch</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- 2. Industries Cards -->
+                <section class="s_cordage_industries_cards theme-cordage-about-sec py-5" data-snippet="s_cordage_industries_cards" data-name="Cordage Industries Cards">
+                    <div class="container-xl">
+                        <div class="theme-cordage-about-sec-h text-center mb-5 mx-auto max-width-580">
+                            <h2 class="fw-bold mb-2">Applications by sector</h2>
+                            <p class="text-muted mb-0">Select your industry to browse the right product range, or contact our team for a personalised specification.</p>
+                        </div>
+                        <div class="row g-4 theme-cordage-industries-grid">
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-industry-fullcard p-4 border rounded bg-white h-100 d-flex flex-column gap-3">
+                                    <div class="theme-cordage-industry-card-icon mb-1 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-fire"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-1 text-dark fs-5">Oil &amp; Gas</h3>
+                                    <p class="text-muted small mb-0 flex-grow-1">Offshore and onshore operations require ropes rated for extreme load, chemical exposure, and saltwater corrosion. Full certification supplied with every order.</p>
+                                    <div class="theme-cordage-industry-card-tags d-flex gap-2 flex-wrap mt-2">
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Wire Rope</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Mooring Lines</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Hoist Slings</span>
+                                    </div>
+                                    <a href="/shop?search=oil" class="theme-cordage-industry-card-link text-primary fw-bold text-decoration-none pt-3 mt-auto border-top d-inline-flex align-items-center gap-2">
+                                        Shop industrial <i class="fa fa-arrow-right"/>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-industry-fullcard p-4 border rounded bg-white h-100 d-flex flex-column gap-3">
+                                    <div class="theme-cordage-industry-card-icon mb-1 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-cogs"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-1 text-dark fs-5">Construction</h3>
+                                    <p class="text-muted small mb-0 flex-grow-1">Cranes, hoists, scaffolding, and site lashing — all requiring CE-marked ropes with verifiable WLL ratings and documentation ready for site audits.</p>
+                                    <div class="theme-cordage-industry-card-tags d-flex gap-2 flex-wrap mt-2">
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Hoist Rope</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Cargo Lashing</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Manila</span>
+                                    </div>
+                                    <a href="/shop?search=construction" class="theme-cordage-industry-card-link text-primary fw-bold text-decoration-none pt-3 mt-auto border-top d-inline-flex align-items-center gap-2">
+                                        Shop for construction <i class="fa fa-arrow-right"/>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-industry-fullcard p-4 border rounded bg-white h-100 d-flex flex-column gap-3">
+                                    <div class="theme-cordage-industry-card-icon mb-1 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-anchor"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-1 text-dark fs-5">Maritime</h3>
+                                    <p class="text-muted small mb-0 flex-grow-1">UV-resistant, low-stretch marine braid for mooring and halyards. Shock-absorbing nylon for anchoring. Floating polypropylene for dock and safety lines.</p>
+                                    <div class="theme-cordage-industry-card-tags d-flex gap-2 flex-wrap mt-2">
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Marine Braid</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Anchor Rope</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Dock Lines</span>
+                                    </div>
+                                    <a href="/shop?search=marine" class="theme-cordage-industry-card-link text-primary fw-bold text-decoration-none pt-3 mt-auto border-top d-inline-flex align-items-center gap-2">
+                                        Shop marine <i class="fa fa-arrow-right"/>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-industry-fullcard p-4 border rounded bg-white h-100 d-flex flex-column gap-3">
+                                    <div class="theme-cordage-industry-card-icon mb-1 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-wrench"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-1 text-dark fs-5">Mining</h3>
+                                    <p class="text-muted small mb-0 flex-grow-1">High-WLL hoist ropes for shaft access and haulage. Abrasion-resistant construction for underground environments. Batch-tested and fully traceable.</p>
+                                    <div class="theme-cordage-industry-card-tags d-flex gap-2 flex-wrap mt-2">
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Steel Core</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">High WLL</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Haulage</span>
+                                    </div>
+                                    <a href="/shop?search=mining" class="theme-cordage-industry-card-link text-primary fw-bold text-decoration-none pt-3 mt-auto border-top d-inline-flex align-items-center gap-2">
+                                        Shop for mining <i class="fa fa-arrow-right"/>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-industry-fullcard p-4 border rounded bg-white h-100 d-flex flex-column gap-3">
+                                    <div class="theme-cordage-industry-card-icon mb-1 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-bolt"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-1 text-dark fs-5">Utilities &amp; Access</h3>
+                                    <p class="text-muted small mb-0 flex-grow-1">Work-at-height ropes for tower access, wind turbine maintenance, and infrastructure inspection. CE EN1891 and UIAA certified for insurance compliance.</p>
+                                    <div class="theme-cordage-industry-card-tags d-flex gap-2 flex-wrap mt-2">
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Static Rope</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">CE EN1891</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">UIAA 101</span>
+                                    </div>
+                                    <a href="/shop?search=utility" class="theme-cordage-industry-card-link text-primary fw-bold text-decoration-none pt-3 mt-auto border-top d-inline-flex align-items-center gap-2">
+                                        Shop safety ropes <i class="fa fa-arrow-right"/>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="theme-cordage-industry-fullcard p-4 border rounded bg-white h-100 d-flex flex-column gap-3">
+                                    <div class="theme-cordage-industry-card-icon mb-1 d-flex align-items-center justify-content-center rounded">
+                                        <i class="fa fa-truck"/>
+                                    </div>
+                                    <h3 class="fw-bold mb-1 text-dark fs-5">Logistics &amp; Transport</h3>
+                                    <p class="text-muted small mb-0 flex-grow-1">Lightweight, rot-proof polypropylene for securing cargo in transit by road, rail, or sea. Easy to handle and consistently rated — no minimum order.</p>
+                                    <div class="theme-cordage-industry-card-tags d-flex gap-2 flex-wrap mt-2">
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Cargo Lashing</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Polypropylene</span>
+                                        <span class="theme-cordage-industry-card-tag small px-2 py-1 rounded-pill">Lightweight</span>
+                                    </div>
+                                    <a href="/shop?search=logistics" class="theme-cordage-industry-card-link text-primary fw-bold text-decoration-none pt-3 mt-auto border-top d-inline-flex align-items-center gap-2">
+                                        Shop lashing ropes <i class="fa fa-arrow-right"/>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- 3. Industries Table -->
+                <section class="s_cordage_industries_table theme-cordage-about-sec theme-cordage-about-sec--alt py-5" data-snippet="s_cordage_industries_table" data-name="Cordage Industries Table">
+                    <div class="container-xl">
+                        <div class="theme-cordage-about-sec-h text-center mb-5 mx-auto max-width-580">
+                            <h2 class="fw-bold mb-2">Rope by industry — quick reference</h2>
+                            <p class="text-muted mb-0">The most commonly specified products across each sector.</p>
+                        </div>
+                        <div class="theme-cordage-industries-tbl-wrap border rounded overflow-hidden shadow-sm bg-white">
+                            <table class="theme-cordage-industries-tbl w-100 text-muted">
+                                <thead>
+                                    <tr class="bg-light text-dark fw-bold border-bottom">
+                                        <th class="p-3 text-start">Rope product</th>
+                                        <th class="p-3 text-center">Oil &amp; Gas</th>
+                                        <th class="p-3 text-center">Construction</th>
+                                        <th class="p-3 text-center">Maritime</th>
+                                        <th class="p-3 text-center">Mining</th>
+                                        <th class="p-3 text-center">Utilities</th>
+                                        <th class="p-3 text-center">Logistics</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-bottom">
+                                        <td class="p-3 text-start fw-bold text-dark">Steel-Core Hoist Rope</td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                    </tr>
+                                    <tr class="border-bottom">
+                                        <td class="p-3 text-start fw-bold text-dark">Industrial Manila Rope</td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                    </tr>
+                                    <tr class="border-bottom">
+                                        <td class="p-3 text-start fw-bold text-dark">Polypropylene Utility Rope</td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                    </tr>
+                                    <tr class="border-bottom">
+                                        <td class="p-3 text-start fw-bold text-dark">Marine Double-Braid</td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                    </tr>
+                                    <tr class="border-bottom">
+                                        <td class="p-3 text-start fw-bold text-dark">Nylon Anchor Rope</td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                    </tr>
+                                    <tr class="border-bottom">
+                                        <td class="p-3 text-start fw-bold text-dark">Static Rigging Rope</td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 text-start fw-bold text-dark">Dynamic Climbing Rope</td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                        <td class="p-3 text-center"><div class="ic-y text-primary"><i class="fa fa-check"/></div></td>
+                                        <td class="p-3 text-center"><div class="ic-n text-muted">—</div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <!-- 4. Certifications -->
+                <section class="s_cordage_certifications theme-cordage-about-sec py-5" data-snippet="s_cordage_certifications" data-name="Cordage Certifications">
+                    <div class="container-xl">
+                        <div class="theme-cordage-about-sec-h text-center mb-5 mx-auto max-width-580">
+                            <h2 class="fw-bold mb-2">Certifications &amp; standards</h2>
+                            <p class="text-muted mb-0">Independently certified to the standards required by the industries we serve.</p>
+                        </div>
+                        <div class="row g-4 justify-content-center text-center s_nb_column_fixed theme-cordage-certifications-grid">
+                            <div class="col-6 col-sm-4 col-lg theme-cordage-certification-item" data-name="Certification Item">
+                                <div class="theme-cordage-certification-card p-3 border rounded bg-light h-100">
+                                    <i class="fa fa-certificate text-primary fs-2 mb-2 d-block"/>
+                                    <div class="theme-cordage-certification-n fw-bold text-dark mb-1">ISO 9001:2015</div>
+                                    <div class="theme-cordage-certification-d text-muted small leading-normal">Quality management — manufacturing &amp; supply</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4 col-lg theme-cordage-certification-item" data-name="Certification Item">
+                                <div class="theme-cordage-certification-card p-3 border rounded bg-light h-100">
+                                    <i class="fa fa-shield text-primary fs-2 mb-2 d-block"/>
+                                    <div class="theme-cordage-certification-n fw-bold text-dark mb-1">CE Certified</div>
+                                    <div class="theme-cordage-certification-d text-muted small leading-normal">EU safety &amp; performance conformity</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4 col-lg theme-cordage-certification-item" data-name="Certification Item">
+                                <div class="theme-cordage-certification-card p-3 border rounded bg-light h-100">
+                                    <i class="fa fa-compass text-primary fs-2 mb-2 d-block"/>
+                                    <div class="theme-cordage-certification-n fw-bold text-dark mb-1">UIAA 101</div>
+                                    <div class="theme-cordage-certification-d text-muted small leading-normal">Dynamic rope — climbing &amp; mountaineering</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4 col-lg theme-cordage-certification-item" data-name="Certification Item">
+                                <div class="theme-cordage-certification-card p-3 border rounded bg-light h-100">
+                                    <i class="fa fa-file-text-o text-primary fs-2 mb-2 d-block"/>
+                                    <div class="theme-cordage-certification-n fw-bold text-dark mb-1">EN 13414</div>
+                                    <div class="theme-cordage-certification-d text-muted small leading-normal">Steel wire rope sling — industrial lifting</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4 col-lg theme-cordage-certification-item" data-name="Certification Item">
+                                <div class="theme-cordage-certification-card p-3 border rounded bg-light h-100">
+                                    <i class="fa fa-lock text-primary fs-2 mb-2 d-block"/>
+                                    <div class="theme-cordage-certification-n fw-bold text-dark mb-1">EN 1891 Type A</div>
+                                    <div class="theme-cordage-certification-d text-muted small leading-normal">Static kernmantle — access &amp; rescue</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- 5. CTA -->
+                <section class="s_cordage_cta theme-cordage-cta py-5 text-center text-white" data-snippet="s_cordage_cta" data-name="Cordage Call to Action">
+                    <div class="container-xl">
+                        <h2 class="fw-bold text-white mb-3">Ready to find the right rope?</h2>
+                        <p class="text-white opacity-85 mb-4 mx-auto max-width-500">Browse our full catalogue or speak with our technical team. We'll spec the exact product for your application.</p>
+                        <div class="theme-cordage-cta-btns d-flex align-items-center justify-content-center gap-3">
+                            <a href="/shop" class="theme-cordage-btn-w d-inline-flex align-items-center gap-2 bg-white text-primary rounded-pill border-0 font-weight-bold px-4 py-3 text-decoration-none">
+                                <i class="fa fa-tag"/>Browse products
+                            </a>
+                            <a href="/contactus" class="theme-cordage-btn-o d-inline-flex align-items-center gap-2 bg-transparent text-white rounded-pill border-2 font-weight-bold px-4 py-3 text-decoration-none">
+                                <i class="fa fa-envelope-o"/>Contact our team
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+    <!-- Page Records -->
+    <data>
+        <record id="about_page" model="theme.website.page">
+            <field name="url">/about-us</field>
+            <field name="view_id" ref="theme_cordage.about_template"/>
+            <field name="is_published">True</field>
+        </record>
+        <record id="industries_page" model="theme.website.page">
+            <field name="url">/industries</field>
+            <field name="view_id" ref="theme_cordage.industries_template"/>
+            <field name="is_published">True</field>
+        </record>
+        <record id="contactus_thankyou_page" model="theme.website.page">
+            <field name="url">/cordage/contact/thankyou</field>
+            <field name="view_id" ref="theme_cordage.contactus_thankyou_template"/>
+            <field name="is_published">True</field>
+        </record>
+    </data>
+</odoo>

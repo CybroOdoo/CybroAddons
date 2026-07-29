@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         Product Templates
+    ================================================================= -->
+    <!-- Prepend category label above product title -->
+    <template id="theme_cordage_product_category_label" inherit_id="website_sale.product" name="Cordage – Product Category Label">
+        <xpath expr="//h1[@itemprop='name']" position="before">
+            <div class="tc-prod-cat text-uppercase fw-bold mb-2" t-if="category or product.public_categ_ids">
+                <span t-out="category.name if category else product.public_categ_ids[0].name"/>
+            </div>
+        </xpath>
+    </template>
+    <!-- Custom specifications table: hide from details column (we render it in the tabs section instead) -->
+    <template id="theme_cordage_product_specs_table" inherit_id="website_sale.product" name="Cordage – Product Specs Table">
+        <xpath expr="//div[@id='product_attributes_simple']" position="replace">
+            <!-- Hidden from details column, rendered in the Specifications tab pane -->
+        </xpath>
+    </template>
+    <!-- Main product page layout: width, columns, breadcrumbs and description relocation -->
+    <template id="theme_cordage_product_layout" inherit_id="website_sale.product" name="Cordage – Product Detail Layout Override">
+        <!-- Widen overall container -->
+        <xpath expr="//section[@id='product_detail']" position="attributes">
+            <attribute name="t-attf-class">container-fluid px-lg-5 px-md-4 px-3 py-4 oe_website_sale #{'discount' if combination_info['has_discounted_price'] else ''}</attribute>
+        </xpath>
+        <!-- Set image column to 6/12 using contains on t-attf-class -->
+        <xpath expr="//div[contains(@t-attf-class, 'o_wsale_product_images')]" position="attributes">
+            <attribute name="t-attf-class">col-lg-6 mt-lg-4 o_wsale_product_images position-relative</attribute>
+        </xpath>
+        <!-- Set info details column to 6/12 and add padding start -->
+        <xpath expr="//div[@id='product_details']" position="attributes">
+            <attribute name="t-attf-class">col-lg-6 mt-md-4 ps-lg-5</attribute>
+        </xpath>
+        <!-- Replace the breadcrumb row to hide search/pricelist and expand breadcrumbs to col-12 -->
+        <xpath expr="//section[@id='product_detail']/div[contains(@class, 'row')][1]" position="replace">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <ol class="breadcrumb p-0 mb-0 bg-transparent">
+                        <li class="breadcrumb-item o_not_editable">
+                            <a href="/">Home</a>
+                        </li>
+                        <li class="breadcrumb-item o_not_editable">
+                            <a href="/shop">Shop</a>
+                        </li>
+                        <li t-nocache="The category does not have to be cached, as the product can be accessed via different paths."
+                            t-if="category" class="breadcrumb-item">
+                            <a t-att-href="keep('/shop/category/%s' % slug(category), category=0)" t-field="category.name" />
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <span t-field="product.name" />
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </xpath>
+        <!-- Relocate only description_sale to inside the form right after price (remove description_ecommerce from details) -->
+        <xpath expr="//p[@t-field='product.description_sale']" position="replace"/>
+        <xpath expr="//div[@t-field='product.description_ecommerce']" position="replace"/>
+        <xpath expr="//form[@action='/shop/cart/update']//div[contains(@class, 'js_product')]/div[1]" position="after">
+            <p t-field="product.description_sale" class="text-muted my-3" placeholder="A short description that will also appear on documents." />
+        </xpath>
+    </template>
+    <!-- Prepend "Qty" label before the quantity input group -->
+    <template id="theme_cordage_product_qty_label" inherit_id="website_sale.product_quantity" name="Cordage – Product Qty Label">
+        <xpath expr="//div[contains(@t-attf-class, 'css_quantity')]" position="before">
+            <span class="tc-qty-label align-self-center me-2">Qty</span>
+        </xpath>
+    </template>
+    <!-- Append Perks checklist inside the product details column, after the CTA wrapper -->
+    <template id="theme_cordage_product_perks" inherit_id="website_sale.product" name="Cordage – Product Perks Checklist">
+        <xpath expr="//div[@id='o_wsale_cta_wrapper']" position="after">
+            <ul class="tc-prod-perks ps-0">
+                <li>Cut to your exact length</li>
+                <li>Dispatched within 48 hours</li>
+                <li>Free shipping over $150</li>
+                <li>30-day no-fuss returns</li>
+            </ul>
+        </xpath>
+    </template>
+    <!-- Tabs Section at the bottom of PDP -->
+    <template id="theme_cordage_product_tabs" inherit_id="website_sale.product" name="Cordage – Product Detail Tabs">
+        <xpath expr="//section[@id='product_detail']/div[@id='product_detail_main']" position="after">
+            <section class="tc-pdp-tabs-section mt-5">
+                <div class="tc-pdp-tabs-inner">
+                    <!-- Tab navigation headers -->
+                    <div class="tc-pdp-tab-bar">
+                        <button class="tc-pdp-tab-btn active" data-tab="description" type="button">Description</button>
+                        <button class="tc-pdp-tab-btn" data-tab="specifications" type="button">Specifications</button>
+                        <button t-if="is_view_active('website_sale.product_comment')" class="tc-pdp-tab-btn" data-tab="reviews" type="button">Reviews</button>
+                    </div>
+                    <!-- Tab contents -->
+                    <div class="tc-pdp-tab-content">
+                        <div class="tc-pdp-tab-pane active" id="tab-description">
+                            <div t-field="product.description_ecommerce" class="oe_structure" placeholder="A detailed, formatted description to promote your product on this page. Use '/' to discover more features."/>
+                        </div>
+                        <div class="tc-pdp-tab-pane" id="tab-specifications">
+                            <table class="tc-specs-table">
+                                <t t-foreach="product.valid_product_template_attribute_line_ids" t-as="ptal">
+                                    <tr>
+                                        <td class="tc-spec-name"><span t-field="ptal.attribute_id.name"/></td>
+                                        <td class="tc-spec-value">
+                                            <t t-set="has_match" t-value="False"/>
+                                            <t t-foreach="ptal.product_template_value_ids._only_active()" t-as="val">
+                                                <t t-if="val in combination">
+                                                    <span t-field="val.name"/>
+                                                    <t t-set="has_match" t-value="True"/>
+                                                </t>
+                                            </t>
+                                            <t t-if="not has_match">
+                                                <t t-foreach="ptal.product_template_value_ids._only_active()" t-as="val">
+                                                    <span t-field="val.name"/><t t-if="not val_last">, </t>
+                                                </t>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </table>
+                        </div>
+                        <div t-if="is_view_active('website_sale.product_comment')" class="tc-pdp-tab-pane" id="tab-reviews">
+                            <t t-call="portal.message_thread">
+                                <t t-set="object" t-value="product"/>
+                                <t t-set="display_rating" t-value="True"/>
+                                <t t-set="message_per_page" t-value="5"/>
+                                <t t-set="two_columns" t-value="true"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+    <!-- Deactivate Odoo's default reviews placement -->
+    <template id="theme_cordage_product_comment_deactivate" inherit_id="website_sale.product_comment" name="Cordage – Deactivate Default Reviews Position">
+        <xpath expr="//div[hasclass('o_shop_discussion_rating')]" position="replace">
+            <!-- Replaced/Deactivated since we handle it inside the reviews tab panel -->
+        </xpath>
+    </template>
+    <!-- Hide non-purchasing attributes from the variant selection area -->
+    <template id="theme_cordage_variants_filter" inherit_id="website_sale.variants" name="Cordage – Filter Variant Attributes">
+        <xpath expr="//li[@t-att-data-attribute_id]" position="attributes">
+            <attribute name="t-attf-class">variant_attribute #{
+                'd-none' if ptal.attribute_id.name.lower() not in ['material', 'diameter', 'colour', 'color', 'length'] else ''
+            } #{
+                'd-none' if len(ptal.product_template_value_ids._only_active()) == 1
+                and not ptal.product_template_value_ids._only_active()[0].is_custom else ''
+            }</attribute>
+        </xpath>
+    </template>
+    <!-- "You Might Also Like" Related Products Section -->
+    <template id="theme_cordage_product_related" inherit_id="theme_cordage.theme_cordage_product_tabs" name="Cordage – You Might Also Like">
+        <xpath expr="//section[hasclass('tc-pdp-tabs-section')]" position="after">
+            <section class="tc-related-products-section mt-5 pb-5">
+                <h3 class="tc-related-title mb-4 text-start fw-bold" style="color: var(--cordage-navy); font-family: 'Zain', sans-serif; font-size: 1.6rem; letter-spacing: -0.02em;">You Might Also Like</h3>
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+                    <t t-set="related_products" t-value="product._get_you_might_also_like_products(limit=4)"/>
+                    <t t-foreach="related_products" t-as="rel_product">
+                        <div class="col">
+                            <form action="/shop/cart/update" method="post"
+                                  class="tc-pcard oe_product_cart h-100"
+                                  t-att-data-publish="rel_product.website_published and 'on' or 'off'"
+                                  itemscope="itemscope" itemtype="http://schema.org/Product">
+                                <input type="hidden" name="csrf_token"
+                                       t-att-value="request.csrf_token()"
+                                       t-nocache="The csrf token must always be up to date."/>
+                                <t t-set="rel_product_href" t-value="rel_product.website_url"/>
+                                <t t-set="rel_product_variant_id" t-value="rel_product._get_first_possible_variant_id()"/>
+                                <input name="product_id" t-att-value="rel_product_variant_id" type="hidden"/>
+                                <!-- IMAGE AREA -->
+                                <div class="tc-pcard__media">
+                                    <a t-att-href="rel_product_href" class="tc-pcard__media-link" itemprop="url">
+                                        <t t-set="rel_image_holder" t-value="rel_product._get_image_holder()"/>
+                                        <span t-field="rel_image_holder.image_1920"
+                                              t-options="{'widget': 'image', 'preview_image': 'image_512', 'itemprop': 'image', 'class': 'tc-pcard__img position-absolute w-100 h-100 object-fit-cover'}"
+                                              class="tc-pcard__img-wrap position-absolute w-100 h-100"/>
+                                    </a>
+                                    <!-- Ribbon / Badge (Odoo native) -->
+                                    <t t-if="rel_product.website_ribbon_id" t-set="rel_ribbon" t-value="rel_product.website_ribbon_id"/>
+                                    <span t-if="rel_product.website_ribbon_id" t-attf-class="tc-pcard__badge o_ribbon o_not_editable #{rel_ribbon.html_class}"
+                                          t-attf-style="#{rel_ribbon.text_color and ('color: %s; ' % rel_ribbon.text_color)}#{rel_ribbon.bg_color and 'background-color:' + rel_ribbon.bg_color}"
+                                          t-out="rel_ribbon.html or ''"/>
+                                </div>
+                                <!-- CARD BODY -->
+                                <div class="tc-pcard__body">
+                                    <!-- Category label -->
+                                    <div class="tc-pcard__cat" t-if="rel_product.public_categ_ids">
+                                        <t t-esc="rel_product.public_categ_ids[0].name"/>
+                                    </div>
+                                    <div class="tc-pcard__cat" t-elif="rel_product.categ_id">
+                                        <t t-esc="rel_product.categ_id.name"/>
+                                    </div>
+                                    <!-- Product name -->
+                                    <h6 class="tc-pcard__name">
+                                        <a t-att-href="rel_product_href" class="tc-pcard__name-link"
+                                           itemprop="name" t-field="rel_product.name"/>
+                                    </h6>
+                                    <!-- Footer: price + add-to-cart -->
+                                    <div class="tc-pcard__foot mt-auto">
+                                        <t t-set="rel_price_vals" t-value="rel_product._get_combination_info(only_template=True)"/>
+                                        <div class="tc-pcard__price" itemprop="offers"
+                                             itemscope="itemscope" itemtype="http://schema.org/Offer">
+                                            <t t-if="rel_price_vals['has_discounted_price'] and (rel_price_vals['list_price'] > rel_price_vals['price'])">
+                                                <del class="tc-pcard__price-old text-muted">
+                                                    <t t-esc="rel_price_vals['list_price']"
+                                                       t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                </del>
+                                            </t>
+                                            <span class="tc-pcard__price-val"
+                                                  t-esc="rel_price_vals['price']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                            <!-- Base unit price suffix (like /15m) if available -->
+                                            <t t-if="rel_product.uom_id and rel_product.uom_id.name not in ['Units', 'Unit(s)']">
+                                                / <span t-field="rel_product.uom_id.name"/>
+                                            </t>
+                                        </div>
+                                        <!-- Add to Cart button (AJAX via existing cart.js or standard Odoo) -->
+                                        <div class="o_wsale_product_btn tc-pcard__atc-wrap">
+                                            <a t-if="rel_product._website_show_quick_add()"
+                                               href="#" role="button"
+                                               class="btn btn-primary a-submit tc-pcard__atc tc-shop-add-btn"
+                                               aria-label="Add to cart" title="Add to cart"
+                                               data-animation-selector="img">
+                                                Add
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </t>
+                </div>
+            </section>
+        </xpath>
+    </template>
+</odoo>
