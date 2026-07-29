@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ============================================================
+         SNIPPET: Similar Vehicles
+         Shows other published vehicles. Editors can control the heading
+         and intro text. The card grid is dynamically rendered server-side
+         via the controller passing `similar_vehicles` to the template.
+    ============================================================ -->
+    <template id="drivex_similar_vehicles" name="DriveX Similar Vehicles">
+        <section class="similar-section s_drivex_similar_vehicles"
+                 data-snippet="theme_drivex.drivex_similar_vehicles"
+                 data-name="Similar Vehicles">
+            <!-- Fetch 3 published vehicles. Exclude the current vehicle if we are on the car detail page. -->
+            <t t-set="sim_domain" t-value="[('is_available_on_website', '=', True)]"/>
+            <t t-if="vehicle">
+                <t t-set="sim_domain" t-value="sim_domain + [('id', '!=', vehicle.id)]"/>
+            </t>
+            <t t-set="similar_vehicles" t-value="request.env['fleet.vehicle'].sudo().search(sim_domain, limit=3)"/>
+            <div class="container" t-if="similar_vehicles">
+                <h2 class="o_editable">Similar Vehicles</h2>
+                <p class="o_editable" style="color:var(--text-muted);margin-bottom:32px;">Explore more vehicles that might interest you.</p>
+                <div class="similar-grid">
+                    <t t-foreach="similar_vehicles" t-as="sim_v">
+                        <div class="fc-card">
+                            <div class="fc-image">
+                                <span class="fc-badge" t-if="sim_v.category_id">
+                                    <t t-esc="sim_v.category_id.name"/>
+                                </span>
+                                <img t-attf-src="/web/image/fleet.vehicle/#{sim_v.id}/image_128" t-att-alt="sim_v.model_id.name"/>
+                            </div>
+                            <div class="fc-body">
+                                <div class="fc-head">
+                                    <div>
+                                        <h3><t t-esc="sim_v.model_id.brand_id.name"/> <t t-esc="sim_v.model_id.name"/></h3>
+                                        <p class="fc-sub">
+                                            <t t-if="sim_v.category_id"><t t-esc="sim_v.category_id.name"/> · </t>
+                                            <t t-if="sim_v.horsepower"><t t-esc="sim_v.horsepower"/> HP</t>
+                                        </p>
+                                    </div>
+                                    <div class="fc-price">$<t t-esc="sim_v.daily_rate"/><span>/day</span></div>
+                                </div>
+                                <div class="fc-specs">
+                                    <span><i class="fa-solid fa-sliders"/> <t t-esc="sim_v.transmission and sim_v.transmission.capitalize() or 'Auto'"/></span>
+                                    <span><i class="fa-solid fa-users"/> <t t-esc="sim_v.seats"/> Seats</span>
+                                    <span><i class="fa-solid fa-gas-pump"/> <t t-esc="sim_v.fuel_type and sim_v.fuel_type.capitalize() or 'Petrol'"/></span>
+                                </div>
+                                <div class="fc-footer">
+                                    <a t-attf-href="/car-detail/#{sim_v.id}" class="fc-detail">View Details <i class="fa-solid fa-arrow-right"/></a>
+                                    <a t-attf-href="/booking/#{sim_v.id}" class="fc-rent">Rent Now</a>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+            <!-- Empty state for editor -->
+            <div class="container" t-else="">
+                <h2 class="o_editable">Similar Vehicles</h2>
+                <div class="alert alert-info">Publish more vehicles in the backend to see them here!</div>
+            </div>
+        </section>
+    </template>
+</odoo>

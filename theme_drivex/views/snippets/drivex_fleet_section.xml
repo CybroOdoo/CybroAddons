@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ============================================================
+         SNIPPET: Fleet Section
+    ============================================================ -->
+    <template id="drivex_fleet_section" name="DriveX Fleet Section">
+        <section class="fleet-section" id="fleet" data-snippet="theme_drivex.drivex_fleet_section" data-name="Fleet Section">
+            <div class="fleet-header">
+                <span class="section-badge o_editable">Our Fleet</span>
+                <h2 class="o_editable">Premium Vehicles for Every Journey</h2>
+                <p class="o_editable">Choose from our wide selection of high-end vehicles, perfectly<br/>maintained and ready for your next adventure.</p>
+            </div>
+            <t t-set="demo_fallback" t-value="not request.env['fleet.vehicle'].sudo().search_count([('is_available_on_website', '=', True)])"/>
+            <div class="fleet-filter">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <t t-if="not demo_fallback">
+                    <t t-set="all_categories" t-value="request.env['fleet.vehicle.model.category'].sudo().search([])"/>
+                    <t t-foreach="all_categories" t-as="cat">
+                        <button class="filter-btn" t-att-data-filter="cat.name.lower()"><t t-esc="cat.name"/></button>
+                    </t>
+                </t>
+                <t t-else="">
+                    <button class="filter-btn" data-filter="luxury">Luxury</button>
+                    <button class="filter-btn" data-filter="sports">Sports</button>
+                    <button class="filter-btn" data-filter="electric">Electric</button>
+                    <button class="filter-btn" data-filter="suv">SUV</button>
+                    <button class="filter-btn" data-filter="supercar">Supercar</button>
+                    <button class="filter-btn" data-filter="economy">Economy</button>
+                </t>
+            </div>
+            <div class="fleet-grid">
+                <t t-if="not demo_fallback">
+                    <t t-set="vehicles" t-value="request.env['fleet.vehicle'].sudo().search([('is_available_on_website', '=', True)], limit=3)"/>
+                    <t t-foreach="vehicles" t-as="v">
+                        <div class="car-card" t-att-data-category="v.category_id.name.lower() if v.category_id else ''">
+                            <div class="car-image">
+                                <span class="car-badge"><t t-esc="v.category_id.name" t-if="v.category_id"/></span>
+                                <img t-attf-src="/web/image/fleet.vehicle/#{v.id}/image_128" t-att-alt="v.model_id.name"/>
+                            </div>
+                            <div class="car-info">
+                                <div class="car-title-row">
+                                    <h3 class="o_editable"><t t-esc="v.model_id.brand_id.name"/> <t t-esc="v.model_id.name"/></h3>
+                                    <div class="price o_editable">$<t t-esc="v.daily_rate"/> <span>/ day</span></div>
+                                </div>
+                                <p class="car-type"><i class="fa-solid fa-tag"/> <t t-esc="v.category_id.name" t-if="v.category_id"/></p>
+                                <div class="car-specs">
+                                    <span><i class="fa-solid fa-sliders"/> <t t-esc="v.transmission and v.transmission.capitalize() or 'Auto'"/></span>
+                                    <span><i class="fa-solid fa-users"/> <t t-esc="v.seats"/> Seats</span>
+                                    <span><i class="fa-solid fa-gas-pump"/> <t t-esc="v.fuel_type and v.fuel_type.capitalize() or 'Petrol'"/></span>
+                                </div>
+                                <div class="card-footer">
+                                    <a t-attf-href="/car-detail/#{v.id}" class="view-link"><i class="fa-solid fa-arrow-right"/> View Details</a>
+                                    <a t-attf-href="/booking/#{v.id}" class="rent-btn">Rent Now</a>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+                <t t-else="">
+                    <div class="car-card" data-category="luxury sports">
+                    <div class="car-image">
+                        <span class="car-badge">Luxury Sports</span>
+                        <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&amp;w=800&amp;auto=format&amp;fit=crop" alt="BMW M4 Competition"/>
+                    </div>
+                    <div class="car-info">
+                        <div class="car-title-row">
+                            <h3 class="o_editable">BMW M4 Competition</h3>
+                            <div class="price o_editable">$180 <span>/ day</span></div>
+                        </div>
+                        <p class="car-type"><i class="fa-solid fa-tag"/> Luxury Sports</p>
+                        <div class="car-specs">
+                            <span><i class="fa-solid fa-sliders"/> Auto</span>
+                            <span><i class="fa-solid fa-users"/> 4 Seats</span>
+                            <span><i class="fa-solid fa-gas-pump"/> Petrol</span>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/car-detail" class="view-link"><i class="fa-solid fa-arrow-right"/> View Details</a>
+                            <a href="/booking" class="rent-btn">Rent Now</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="car-card" data-category="electric">
+                    <div class="car-image">
+                        <span class="car-badge car-badge--electric">Electric</span>
+                        <img src="https://images.unsplash.com/photo-1560958089-b8a1929cea89?q=80&amp;w=800&amp;auto=format&amp;fit=crop" alt="Tesla Model 3"/>
+                    </div>
+                    <div class="car-info">
+                        <div class="car-title-row">
+                            <h3 class="o_editable">Tesla Model 3</h3>
+                            <div class="price o_editable">$110 <span>/ day</span></div>
+                        </div>
+                        <p class="car-type"><i class="fa-solid fa-bolt"/> Electric Sedan</p>
+                        <div class="car-specs">
+                            <span><i class="fa-solid fa-sliders"/> Auto</span>
+                            <span><i class="fa-solid fa-users"/> 5 Seats</span>
+                            <span><i class="fa-solid fa-bolt"/> Electric</span>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/car-detail" class="view-link"><i class="fa-solid fa-arrow-right"/> View Details</a>
+                            <a href="/booking" class="rent-btn">Rent Now</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="car-card" data-category="luxury sports">
+                    <div class="car-image">
+                        <span class="car-badge">Luxury Sports</span>
+                        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&amp;w=800&amp;auto=format&amp;fit=crop" alt="Porsche 911"/>
+                    </div>
+                    <div class="car-info">
+                        <div class="car-title-row">
+                            <h3 class="o_editable">Porsche 911 Carrera</h3>
+                            <div class="price o_editable">$250 <span>/ day</span></div>
+                        </div>
+                        <p class="car-type"><i class="fa-solid fa-tag"/> Luxury Sports</p>
+                        <div class="car-specs">
+                            <span><i class="fa-solid fa-sliders"/> Auto</span>
+                            <span><i class="fa-solid fa-users"/> 2 Seats</span>
+                            <span><i class="fa-solid fa-gas-pump"/> Petrol</span>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/car-detail" class="view-link"><i class="fa-solid fa-arrow-right"/> View Details</a>
+                            <a href="/booking" class="rent-btn">Rent Now</a>
+                        </div>
+                    </div>
+                </div>
+                </t>
+            </div>
+            <div class="fleet-cta">
+                <a href="/fleet" class="btn-outline-white">View All Vehicles <i class="fa-solid fa-arrow-right"/></a>
+            </div>
+        </section>
+    </template>
+</odoo>

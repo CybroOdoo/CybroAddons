@@ -1,0 +1,1321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    DriveX Fleet-->
+    <template id="drivex_fleet_page" name="DriveX Fleet">
+        <t t-call="website.layout">
+            <t t-set="title">Our Fleet — DriveX</t>
+            <div id="wrap" class="fleet-page oe_structure">
+                <section class="page-hero fleet-hero">
+                    <div class="page-hero-overlay"/>
+                    <div class="container page-hero-content">
+                        <nav class="breadcrumb">
+                            <a href="/">Home</a>
+                            <i class="fa-solid fa-chevron-right"/>
+                            <span>Fleet</span>
+                        </nav>
+                        <h1>Our Premium
+                            <span class="hero-accent">Fleet</span>
+                        </h1>
+                        <p>20+ vehicles across every category — luxury, sports, electric and everyday.</p>
+                        <div class="fleet-hero-stats">
+                            <span>
+                                <strong>20+</strong>
+                                Cars
+                            </span>
+                            <span class="hs-dot"/>
+                            <span>
+                                <strong>6</strong>
+                                Categories
+                            </span>
+                            <span class="hs-dot"/>
+                            <span>
+                                <strong>Instant</strong>
+                                Booking
+                            </span>
+                        </div>
+                    </div>
+                </section>
+                <div class="filter-bar-wrap" id="filterBarWrap">
+                    <div class="container filter-bar">
+                        <div class="fb-search">
+                            <i class="fa-solid fa-magnifying-glass"/>
+                            <input type="text" id="carSearch" placeholder="Search by name or model…"/>
+                        </div>
+                        <div class="fb-cats" id="fbCats">
+                            <button class="fb-cat active" data-cat="all">All Vehicles</button>
+                            <t t-if="not demo_fallback">
+                                <t t-foreach="categories" t-as="cat">
+                                    <button class="fb-cat" t-att-data-cat="cat.name.lower()">
+                                        <t t-esc="cat.name"/>
+                                    </button>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <button class="fb-cat" data-cat="luxury">Luxury</button>
+                                <button class="fb-cat" data-cat="sports">Sports</button>
+                                <button class="fb-cat" data-cat="electric">Electric</button>
+                                <button class="fb-cat" data-cat="suv">SUV</button>
+                                <button class="fb-cat" data-cat="supercar">Supercar</button>
+                                <button class="fb-cat" data-cat="economy">Economy</button>
+                            </t>
+                        </div>
+                        <div class="fb-right">
+                            <select id="sortSelect" class="fb-sort">
+                                <option value="default">Sort: Featured</option>
+                                <option value="price-asc">Price: Low → High</option>
+                                <option value="price-desc">Price: High → Low</option>
+                                <option value="rating">Top Rated</option>
+                                <option value="newest">Newest</option>
+                            </select>
+                            <div class="fb-view">
+                                <button class="fv-btn active" id="gridView" data-view="grid" title="Grid view">
+                                    <i class="fa-solid fa-grip"/>
+                                </button>
+                                <button class="fv-btn" id="listView" data-view="list" title="List view">
+                                    <i class="fa-solid fa-list"/>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <section class="fleet-section fleet-main">
+                    <div class="container">
+                        <div class="results-bar">
+                            <span id="resultsCount">Showing <strong>20</strong> vehicles
+                            </span>
+                            <div class="active-filters" id="activeFilters"/>
+                        </div>
+                        <div class="fc-grid" id="fleetGrid">
+                            <t t-if="not demo_fallback">
+                                <t t-if="vehicles">
+                                    <t t-foreach="vehicles" t-as="v">
+                                        <div class="fc-card"
+                                             t-att-data-cat="v.category_id.name.lower() if v.category_id else 'all'"
+                                             t-att-data-price="v.daily_rate" data-rating="5.0"
+                                             t-att-data-year="v.model_year or ''">
+                                            <div class="fc-image">
+                                                <t t-if="v.category_id">
+                                                    <span class="fc-badge">
+                                                        <t t-esc="v.category_id.name"/>
+                                                    </span>
+                                                </t>
+                                                <t t-if="v.model_year">
+                                                    <span class="fc-year-tag">
+                                                        <t t-esc="v.model_year"/>
+                                                    </span>
+                                                </t>
+                                                <img t-attf-src="/web/image/fleet.vehicle/#{v.id}/image_128"
+                                                     t-att-alt="v.model_id.name" loading="lazy"/>
+                                                <button class="fc-heart" aria-label="Wishlist">
+                                                    <i class="fa-regular fa-heart"/>
+                                                </button>
+                                            </div>
+                                            <div class="fc-body">
+                                                <div class="fc-head">
+                                                    <div>
+                                                        <h3>
+                                                            <t t-esc="v.model_id.brand_id.name"/>
+                                                            <t t-esc="v.model_id.name"/>
+                                                        </h3>
+                                                        <p class="fc-sub">
+                                                            <t t-if="v.category_id">
+                                                                <t t-esc="v.category_id.name"/>
+                                                                ·
+                                                            </t>
+                                                            <t t-if="v.horsepower">
+                                                                <t t-esc="v.horsepower"/>
+                                                                HP
+                                                            </t>
+                                                        </p>
+                                                    </div>
+                                                    <div class="fc-price">
+                                                        $
+                                                        <t t-esc="v.daily_rate"/>
+                                                        <span>/day</span>
+                                                    </div>
+                                                </div>
+                                                <div class="fc-rating">
+                                                    <i class="fa-solid fa-star"/>
+                                                    <i class="fa-solid fa-star"/>
+                                                    <i class="fa-solid fa-star"/>
+                                                    <i class="fa-solid fa-star"/>
+                                                    <span>5.0 reviews</span>
+                                                </div>
+                                                <div class="fc-specs">
+                                                    <span>
+                                                        <i class="fa-solid fa-sliders"/>
+                                                        <t t-esc="v.transmission and v.transmission.capitalize() or 'Auto'"/>
+                                                    </span>
+                                                    <span>
+                                                        <i class="fa-solid fa-users"/>
+                                                        <t t-esc="v.seats"/>
+                                                        Seats
+                                                    </span>
+                                                    <span>
+                                                        <i class="fa-solid fa-gas-pump"/>
+                                                        <t t-esc="v.fuel_type and v.fuel_type.capitalize() or 'Petrol'"/>
+                                                    </span>
+                                                    <span>
+                                                        <i class="fa-solid fa-door-open"/>
+                                                        <t t-esc="v.doors"/>
+                                                        Doors
+                                                    </span>
+                                                </div>
+                                                <div class="fc-tags">
+                                                    <t t-foreach="v.feature_ids" t-as="feat">
+                                                        <span>
+                                                            <t t-esc="feat.name"/>
+                                                        </span>
+                                                    </t>
+                                                </div>
+                                                <div class="fc-footer">
+                                                    <a t-attf-href="/car-detail/#{v.id}#{query_string}"
+                                                       class="fc-detail">View Details
+                                                        <i class="fa-solid fa-arrow-right"/>
+                                                    </a>
+                                                    <a t-attf-href="/booking/#{v.id}#{query_string}" class="fc-rent">
+                                                        Rent Now
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <!-- 1 — BMW M4 Competition -->
+                                <div class="fc-card" data-cat="luxury sports" data-price="180" data-rating="4.9"
+                                     data-year="2023">
+                                    <div class="fc-image">
+                                        <span class="fc-badge">Luxury Sports</span>
+                                        <span class="fc-year-tag">2023</span>
+                                        <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="BMW M4 Competition" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>BMW M4 Competition</h3>
+                                                <p class="fc-sub">Luxury Sports · 503 HP</p>
+                                            </div>
+                                            <div class="fc-price">$180
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <span>4.9 (128 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                4 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                4 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>GPS</span>
+                                            <span>Sunroof</span>
+                                            <span>M Sport Brakes</span>
+                                            <span>HUD</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 2 — Tesla Model 3 -->
+                                <div class="fc-card" data-cat="electric" data-price="110" data-rating="4.8"
+                                     data-year="2024">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--electric">Electric</span>
+                                        <span class="fc-year-tag">2024</span>
+                                        <img src="https://images.unsplash.com/photo-1560958089-b8a1929cea89?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Tesla Model 3" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Tesla Model 3</h3>
+                                                <p class="fc-sub">Electric Sedan · 358 mi Range</p>
+                                            </div>
+                                            <div class="fc-price">$110
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <span>4.8 (214 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                5 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-bolt"/>
+                                                Electric
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                4 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>Autopilot</span>
+                                            <span>15" Screen</span>
+                                            <span>OTA Updates</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 3 — Porsche 911 Carrera S -->
+                                <div class="fc-card" data-cat="sports luxury" data-price="250" data-rating="5.0"
+                                     data-year="2023">
+                                    <div class="fc-image">
+                                        <span class="fc-badge">Luxury Sports</span>
+                                        <span class="fc-year-tag">2023</span>
+                                        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Porsche 911 Carrera S" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Porsche 911 Carrera S</h3>
+                                                <p class="fc-sub">Luxury Sports · 444 HP</p>
+                                            </div>
+                                            <div class="fc-price">$250
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <span>5.0 (96 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                PDK Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                2+2 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                2 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>Sport Chrono</span>
+                                            <span>PASM</span>
+                                            <span>PCM</span>
+                                            <span>Launch Ctrl</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 4 — Mercedes-Benz S-Class -->
+                                <div class="fc-card" data-cat="luxury" data-price="230" data-rating="4.9"
+                                     data-year="2023">
+                                    <div class="fc-image">
+                                        <span class="fc-badge">Luxury Sedan</span>
+                                        <span class="fc-year-tag">2023</span>
+                                        <img src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Mercedes-Benz S-Class" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Mercedes-Benz S-Class</h3>
+                                                <p class="fc-sub">Luxury Sedan · 496 HP</p>
+                                            </div>
+                                            <div class="fc-price">$230
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <span>4.9 (87 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                9G-Tronic
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                5 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                4 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>Burmester 4D</span>
+                                            <span>AR HUD</span>
+                                            <span>Massage Seats</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 5 — Range Rover Sport -->
+                                <div class="fc-card" data-cat="suv luxury" data-price="195" data-rating="4.8"
+                                     data-year="2024">
+                                    <div class="fc-image">
+                                        <span class="fc-badge">Luxury SUV</span>
+                                        <span class="fc-year-tag">2024</span>
+                                        <img src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Range Rover Sport" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Range Rover Sport</h3>
+                                                <p class="fc-sub">Luxury SUV · 395 HP</p>
+                                            </div>
+                                            <div class="fc-price">$195
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star-half-stroke"/>
+                                            <span>4.8 (112 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                5 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Diesel
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                5 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>4WD</span>
+                                            <span>Terrain Response</span>
+                                            <span>Meridian Audio</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 6 — Lamborghini Huracán EVO -->
+                                <div class="fc-card" data-cat="supercar sports" data-price="450" data-rating="5.0"
+                                     data-year="2023">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--super">Supercar</span>
+                                        <span class="fc-year-tag">2023</span>
+                                        <img src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Lamborghini Huracán EVO" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Lamborghini Huracán EVO</h3>
+                                                <p class="fc-sub">Supercar · 640 HP</p>
+                                            </div>
+                                            <div class="fc-price">$450
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <span>5.0 (54 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                7-spd DCT
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                2 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                2 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>Carbon Fiber</span>
+                                            <span>Lift System</span>
+                                            <span>ALA 2.0</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 7 — Ferrari Roma -->
+                                <div class="fc-card" data-cat="supercar sports" data-price="380" data-rating="5.0"
+                                     data-year="2023">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--super">Supercar</span>
+                                        <span class="fc-year-tag">2023</span>
+                                        <img src="https://images.unsplash.com/photo-1592198084033-aade902d1aae?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Ferrari Roma" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Ferrari Roma</h3>
+                                                <p class="fc-sub">Supercar · 612 HP</p>
+                                            </div>
+                                            <div class="fc-price">$380
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <span>5.0 (48 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                8-spd DCT
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                2+2 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                2 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>Manettino Dial</span>
+                                            <span>Race Mode</span>
+                                            <span>Carbon Seats</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 8 — Rolls-Royce Ghost -->
+                                <div class="fc-card" data-cat="luxury supercar" data-price="650" data-rating="5.0"
+                                     data-year="2023">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--ultra">Ultra Luxury</span>
+                                        <span class="fc-year-tag">2023</span>
+                                        <img src="https://images.unsplash.com/photo-1631295868223-63265b40d9e4?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Rolls-Royce Ghost" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Rolls-Royce Ghost</h3>
+                                                <p class="fc-sub">Ultra Luxury · 563 HP</p>
+                                            </div>
+                                            <div class="fc-price">$650
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <span>5.0 (33 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                8-spd Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                5 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                4 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>Starlight Roof</span>
+                                            <span>Bespoke Audio</span>
+                                            <span>Champagne Cooler</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 9 — Audi Q8 -->
+                                <div class="fc-card" data-cat="suv luxury" data-price="165" data-rating="4.7"
+                                     data-year="2024">
+                                    <div class="fc-image">
+                                        <span class="fc-badge">Luxury SUV</span>
+                                        <span class="fc-year-tag">2024</span>
+                                        <img src="/images/q8.jpg" alt="Audi Q8" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Audi Q8 S-Line</h3>
+                                                <p class="fc-sub">Luxury SUV · 335 HP</p>
+                                            </div>
+                                            <div class="fc-price">$165
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star-half-stroke"/>
+                                            <span>4.7 (103 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                Tiptronic
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                5 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                5 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>Quattro AWD</span>
+                                            <span>B&amp;O Sound</span>
+                                            <span>Air Suspension</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 11 — Ford Mustang GT -->
+                                <div class="fc-card" data-cat="sports" data-price="140" data-rating="4.6"
+                                     data-year="2023">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--sports">Sports</span>
+                                        <span class="fc-year-tag">2023</span>
+                                        <img src="/images/ford.jpg" alt="Ford Mustang GT" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Ford Mustang GT</h3>
+                                                <p class="fc-sub">Muscle Sports · 450 HP</p>
+                                            </div>
+                                            <div class="fc-price">$140
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star-half-stroke"/>
+                                            <span>4.6 (178 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                10-spd Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                4 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                2 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>Launch Ctrl</span>
+                                            <span>B&amp;O Sound</span>
+                                            <span>MagneRide</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 12 — Jeep Wrangler Rubicon -->
+                                <div class="fc-card" data-cat="suv" data-price="125" data-rating="4.5" data-year="2024">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--offroad">Off-road</span>
+                                        <span class="fc-year-tag">2024</span>
+                                        <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Jeep Wrangler Rubicon" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Jeep Wrangler Rubicon</h3>
+                                                <p class="fc-sub">Off-road SUV · 285 HP</p>
+                                            </div>
+                                            <div class="fc-price">$125
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star-half-stroke"/>
+                                            <span>4.5 (162 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                5 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                4 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>4×4 Rock-Trac</span>
+                                            <span>Removable Top</span>
+                                            <span>Skid Plates</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 13 — Tesla Model S Plaid -->
+                                <div class="fc-card" data-cat="electric luxury" data-price="200" data-rating="4.9"
+                                     data-year="2024">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--electric">Electric</span>
+                                        <span class="fc-year-tag">2024</span>
+                                        <img src="https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Tesla Model S Plaid" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Tesla Model S Plaid</h3>
+                                                <p class="fc-sub">Electric Luxury · 1,020 HP</p>
+                                            </div>
+                                            <div class="fc-price">$200
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <span>4.9 (76 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                1-spd Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                5 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-bolt"/>
+                                                Electric
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                4 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>396 mi Range</span>
+                                            <span>17" Screen</span>
+                                            <span>Autopilot</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 14 — Jaguar F-Type R -->
+                                <div class="fc-card" data-cat="sports" data-price="275" data-rating="4.8"
+                                     data-year="2023">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--sports">Sports</span>
+                                        <span class="fc-year-tag">2023</span>
+                                        <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Jaguar F-Type R" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Jaguar F-Type R</h3>
+                                                <p class="fc-sub">Sports Coupe · 575 HP</p>
+                                            </div>
+                                            <div class="fc-price">$275
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <span>4.8 (67 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                8-spd Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                2 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                2 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>Meridian Sound</span>
+                                            <span>SVD Mode</span>
+                                            <span>Carbon Pack</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 15 — BMW X5 M50i -->
+                                <div class="fc-card" data-cat="suv sports" data-price="185" data-rating="4.7"
+                                     data-year="2024">
+                                    <div class="fc-image">
+                                        <span class="fc-badge">Performance SUV</span>
+                                        <span class="fc-year-tag">2024</span>
+                                        <img src="https://images.unsplash.com/photo-1566473965997-3de9c817e938?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="BMW X5 M50i" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>BMW X5 M50i</h3>
+                                                <p class="fc-sub">Performance SUV · 530 HP</p>
+                                            </div>
+                                            <div class="fc-price">$185
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star-half-stroke"/>
+                                            <span>4.7 (93 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                8-spd Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                5 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                5 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>xDrive AWD</span>
+                                            <span>Harman Kardon</span>
+                                            <span>Active Steering</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 17 — Toyota Fortuner -->
+                                <div class="fc-card" data-cat="suv" data-price="85" data-rating="4.4" data-year="2024">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--suv">SUV</span>
+                                        <span class="fc-year-tag">2024</span>
+                                        <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Toyota Fortuner" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Toyota Fortuner Legender</h3>
+                                                <p class="fc-sub">Family SUV · 204 HP</p>
+                                            </div>
+                                            <div class="fc-price">$85
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-regular fa-star"/>
+                                            <span>4.4 (234 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                6-spd Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                7 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Diesel
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                5 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>4WD</span>
+                                            <span>9" Touchscreen</span>
+                                            <span>Android Auto</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 18 — Hyundai Creta -->
+                                <div class="fc-card" data-cat="suv economy" data-price="65" data-rating="4.3"
+                                     data-year="2024">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--suv">Compact SUV</span>
+                                        <span class="fc-year-tag">2024</span>
+                                        <img src="https://images.unsplash.com/photo-1609521263047-f8f205293f24?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Hyundai Creta" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Hyundai Creta SX(O)</h3>
+                                                <p class="fc-sub">Compact SUV · 138 HP</p>
+                                            </div>
+                                            <div class="fc-price">$65
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-regular fa-star"/>
+                                            <span>4.3 (307 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                DCT Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                5 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                5 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>Sunroof</span>
+                                            <span>BOSE Sound</span>
+                                            <span>360° Camera</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 19 — Honda City -->
+                                <div class="fc-card" data-cat="economy" data-price="48" data-rating="4.2"
+                                     data-year="2024">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--eco">Economy</span>
+                                        <span class="fc-year-tag">2024</span>
+                                        <img src="https://images.unsplash.com/photo-1471444928139-48c5bf5173f8?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Honda City" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Honda City ZX CVT</h3>
+                                                <p class="fc-sub">Economy Sedan · 121 HP</p>
+                                            </div>
+                                            <div class="fc-price">$48
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-regular fa-star"/>
+                                            <span>4.2 (419 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                CVT Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                5 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                4 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>8" Touchscreen</span>
+                                            <span>ADAS Suite</span>
+                                            <span>LaneWatch</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 20 — Maruti Baleno -->
+                                <div class="fc-card" data-cat="economy" data-price="35" data-rating="4.1"
+                                     data-year="2024">
+                                    <div class="fc-image">
+                                        <span class="fc-badge fc-badge--eco">Economy</span>
+                                        <span class="fc-year-tag">2024</span>
+                                        <img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?q=80&amp;w=800&amp;auto=format&amp;fit=crop"
+                                             alt="Maruti Baleno" loading="lazy"/>
+                                        <button class="fc-heart" aria-label="Wishlist">
+                                            <i class="fa-regular fa-heart"/>
+                                        </button>
+                                    </div>
+                                    <div class="fc-body">
+                                        <div class="fc-head">
+                                            <div>
+                                                <h3>Maruti Baleno Alpha CVT</h3>
+                                                <p class="fc-sub">Premium Hatchback · 90 HP</p>
+                                            </div>
+                                            <div class="fc-price">$35
+                                                <span>/day</span>
+                                            </div>
+                                        </div>
+                                        <div class="fc-rating">
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-solid fa-star"/>
+                                            <i class="fa-regular fa-star"/>
+                                            <span>4.1 (528 reviews)</span>
+                                        </div>
+                                        <div class="fc-specs">
+                                            <span>
+                                                <i class="fa-solid fa-sliders"/>
+                                                CVT Auto
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-users"/>
+                                                5 Seats
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-gas-pump"/>
+                                                Petrol
+                                            </span>
+                                            <span>
+                                                <i class="fa-solid fa-door-open"/>
+                                                5 Doors
+                                            </span>
+                                        </div>
+                                        <div class="fc-tags">
+                                            <span>SmartPlay Pro</span>
+                                            <span>Apple CarPlay</span>
+                                            <span>360° Camera</span>
+                                        </div>
+                                        <div class="fc-footer">
+                                            <a href="/car-detail" class="fc-detail">View Details
+                                                <i class="fa-solid fa-arrow-right"/>
+                                            </a>
+                                            <a href="/booking" class="fc-rent">Rent Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                        <div class="no-results" id="noResults" style="display:none;">
+                            <i class="fa-solid fa-car-burst"/>
+                            <h3>No vehicles found</h3>
+                            <p>Try adjusting your filters or search term.</p>
+                            <button class="btn-red" onclick="resetFilters()">Reset Filters</button>
+                        </div>
+                    </div>
+                </section>
+                <section class="cta-banner">
+                    <div class="container cta-content">
+                        <div class="cta-text">
+                            <h2>Ready to Hit the Road?</h2>
+                            <p>Book your dream car in under 60 seconds.</p>
+                        </div>
+                        <div class="cta-actions">
+                            <a href="/booking" class="btn-red">
+                                <i class="fa-solid fa-calendar-check"/>
+                                Book Now
+                            </a>
+                            <a href="/contact" class="btn-outline-white">
+                                <i class="fa-solid fa-headset"/>
+                                Get Help
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+<!--DriveX Fleet link-->
+    <record id="drivex_fleet_page_page" model="website.page">
+        <field name="name">DriveX Fleet</field>
+        <field name="url">/fleet</field>
+        <field name="view_id" ref="drivex_fleet_page"/>
+        <field name="is_published" eval="True"/>
+        <field name="website_indexed" eval="True"/>
+    </record>
+</odoo>

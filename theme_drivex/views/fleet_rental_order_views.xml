@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Fleet Rental Order Views -->
+    <record id="fleet_rental_location_view_tree" model="ir.ui.view">
+        <field name="name">fleet.rental.location.tree</field>
+        <field name="model">fleet.rental.location</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="code"/>
+            </tree>
+        </field>
+    </record>
+    <!--Fleet location action-->
+    <record id="action_fleet_rental_location" model="ir.actions.act_window">
+        <field name="name">Locations</field>
+        <field name="res_model">fleet.rental.location</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--    Tree view - fleet insurance-->
+    <record id="fleet_rental_insurance_view_tree" model="ir.ui.view">
+        <field name="name">fleet.rental.insurance.tree</field>
+        <field name="model">fleet.rental.insurance</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="price_per_day"/>
+                <field name="is_default"/>
+            </tree>
+        </field>
+    </record>
+    <!--Insurance action-->
+    <record id="action_fleet_rental_insurance" model="ir.actions.act_window">
+        <field name="name">Insurance Plans</field>
+        <field name="res_model">fleet.rental.insurance</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--    Fleet rental addon tree view-->
+    <record id="fleet_rental_addon_view_tree" model="ir.ui.view">
+        <field name="name">fleet.rental.addon.tree</field>
+        <field name="model">fleet.rental.addon</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="charge_type"/>
+                <field name="price"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Action fleet rental action-->
+    <record id="action_fleet_rental_addon" model="ir.actions.act_window">
+        <field name="name">Add-ons</field>
+        <field name="res_model">fleet.rental.addon</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--    Fleet rental order-->
+    <record id="fleet_rental_order_view_form" model="ir.ui.view">
+        <field name="name">fleet.rental.order.form</field>
+        <field name="model">fleet.rental.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm Booking" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_pickup" type="object" string="Pick Up Vehicle" class="oe_highlight"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_return" type="object" string="Return Vehicle" class="oe_highlight"
+                            invisible="state != 'picked_up'"/>
+                    <button name="action_cancel" type="object" string="Cancel Booking"
+                            invisible="state in ('returned', 'cancelled')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,picked_up,returned"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="driver_name" string="Customer"/>
+                            <field name="vehicle_id"/>
+                        </group>
+                        <group>
+                            <field name="create_date" string="Order Date" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Pricing Breakdown" name="pricing">
+                            <group name="note_group" col="6" class="mt-2 mt-md-0">
+                                <group colspan="4">
+                                    <field name="insurance_id"/>
+                                    <field name="addon_ids" widget="many2many_tags"/>
+                                </group>
+                                <group class="oe_subtotal_footer oe_right" colspan="2" name="rental_total">
+                                    <field name="amount_base" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="amount_insurance" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="amount_addons" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                        <label for="amount_total"/>
+                                    </div>
+                                    <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator"
+                                           widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                </group>
+                                <div class="oe_clear"/>
+                            </group>
+                        </page>
+                        <page string="Vehicle Details" name="vehicle_details">
+                            <group>
+                                <group>
+                                    <field name="pickup_datetime"/>
+                                    <field name="pickup_location_id"/>
+                                </group>
+                                <group>
+                                    <field name="return_datetime"/>
+                                    <field name="return_location_id"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Driver Information" name="driver_info">
+                            <group>
+                                <group>
+                                    <field name="driver_name"/>
+                                    <field name="driver_email"/>
+                                    <field name="driver_phone"/>
+                                </group>
+                                <group>
+                                    <field name="driver_license"/>
+                                    <field name="driver_age"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--Fleet rental order tree view-->
+    <record id="fleet_rental_order_view_tree" model="ir.ui.view">
+        <field name="name">fleet.rental.order.tree</field>
+        <field name="model">fleet.rental.order</field>
+        <field name="arch" type="xml">
+            <tree decoration-info="state == 'draft'" decoration-success="state == 'confirmed'"
+                  decoration-warning="state == 'picked_up'" decoration-muted="state in ('returned', 'cancelled')">
+                <field name="name"/>
+                <field name="driver_name"/>
+                <field name="vehicle_id"/>
+                <field name="pickup_datetime"/>
+                <field name="return_datetime"/>
+                <field name="amount_total"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'"
+                       decoration-success="state == 'confirmed'" decoration-warning="state == 'picked_up'"
+                       decoration-muted="state in ('returned', 'cancelled')"/>
+            </tree>
+        </field>
+    </record>
+    <!--Booking Action-->
+    <record id="action_fleet_rental_order" model="ir.actions.act_window">
+        <field name="name">Bookings</field>
+        <field name="res_model">fleet.rental.order</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--    Menu item-->
+    <menuitem id="menu_rental_bookings" name="Bookings" parent="fleet.menu_root" action="action_fleet_rental_order"
+              sequence="2"/>
+    <!--Rental Location-->
+    <menuitem id="menu_rental_locations" name="Rental Locations" parent="fleet.fleet_configuration"
+              action="action_fleet_rental_location" sequence="100"/>
+    <!--Insurance Plan-->
+    <menuitem id="menu_rental_insurance" name="Insurance Plans" parent="fleet.fleet_configuration"
+              action="action_fleet_rental_insurance" sequence="110"/>
+    <!--Add-ons-->
+    <menuitem id="menu_rental_addons" name="Add-ons" parent="fleet.fleet_configuration"
+              action="action_fleet_rental_addon" sequence="120"/>
+</odoo>

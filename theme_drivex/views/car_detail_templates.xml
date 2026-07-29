@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        DriveX Car Detail Page
+        ======================
+        Architecture:
+        • Hero + Gallery Strip  →  Dynamic (from fleet.vehicle backend record)
+        • Booking sidebar       →  Dynamic (price, dates, Reserve Now link)
+        • Body content zones    →  oe_structure drop zones pre-filled with
+                                   snippet defaults. Editors can add, remove,
+                                   reorder, or edit each block in the website
+                                   builder without touching backend data.
+
+        Snippets included by default (all fully editable on website):
+          - drivex_vehicle_specs    : Specification grid
+          - drivex_vehicle_features : Features &amp; Equipment list
+          - drivex_vehicle_about    : Rich-text description block
+          - drivex_rental_terms     : Rental conditions list
+    -->
+    <template id="drivex_car_detail_page" name="DriveX Car Detail">
+        <t t-call="website.layout">
+            <t t-set="title">
+                <t t-esc="vehicle.model_id.name if vehicle else 'Car Detail'"/>
+                — DriveX
+            </t>
+            <div id="wrap" class="detail-page oe_structure">
+                <!-- ═══════════════════════════════════════════════
+                     DYNAMIC HERO  (backend data, not editable)
+                ═══════════════════════════════════════════════ -->
+                <section class="detail-hero" t-if="not demo_fallback">
+                    <img t-attf-src="/web/image/fleet.vehicle/#{vehicle.id}/image_128"
+                         t-att-alt="vehicle.model_id.name" class="detail-hero-img" id="heroImg"/>
+                    <div class="detail-hero-overlay"/>
+                    <div class="detail-hero-content container">
+                        <nav class="breadcrumb">
+                            <a href="/">Home</a>
+                            <i class="fa-solid fa-chevron-right"/>
+                            <a href="/fleet">Fleet</a>
+                            <i class="fa-solid fa-chevron-right"/>
+                            <span>
+                                <t t-esc="vehicle.model_id.name"/>
+                            </span>
+                        </nav>
+                        <div class="detail-meta">
+                            <div class="detail-title">
+                                <h1>
+                                    <t t-esc="vehicle.model_id.brand_id.name"/>
+                                    <t t-esc="vehicle.model_id.name"/>
+                                </h1>
+                                <div class="dt-sub">
+                                    <span class="dt-badge" t-if="vehicle.category_id">
+                                        <t t-esc="vehicle.category_id.name"/>
+                                    </span>
+                                    <span>
+                                        <i class="fa-solid fa-star" style="color:#f59e0b"/>
+                                        5.0 &#160;·&#160; (0 reviews)
+                                    </span>
+                                    <span t-if="vehicle.model_year">
+                                        <t t-esc="vehicle.model_year"/>
+                                        Model
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="detail-price-box">
+                                <p class="dp-from">STARTING FROM</p>
+                                <div class="dp-amount">$
+                                    <t t-esc="vehicle.daily_rate"/>
+                                </div>
+                                <p class="dp-per">per day · taxes included</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- ═══════════════════════════════════════════════
+                     GALLERY STRIP  (backend images, not editable)
+                ═══════════════════════════════════════════════ -->
+                <div class="gallery-strip" t-if="not demo_fallback">
+                    <div class="container">
+                        <div class="gallery-thumbs">
+                            <div class="gallery-thumb active"
+                                 t-attf-data-src="/web/image/fleet.vehicle/#{vehicle.id}/image_128">
+                                <img t-attf-src="/web/image/fleet.vehicle/#{vehicle.id}/image_128" alt="Main"/>
+                            </div>
+                            <t t-foreach="vehicle.vehicle_image_ids" t-as="img">
+                                <div class="gallery-thumb"
+                                     t-attf-data-src="/web/image/fleet.vehicle.image/#{img.id}/image">
+                                    <img t-attf-src="/web/image/fleet.vehicle.image/#{img.id}/image"
+                                         t-att-alt="img.name"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                <!-- ═══════════════════════════════════════════════
+                     DETAIL BODY  (two-column layout)
+                     LEFT  → oe_structure snippet drop zone
+                     RIGHT → dynamic booking sidebar
+                ═══════════════════════════════════════════════ -->
+                <section class="detail-body" t-if="not demo_fallback">
+                    <div class="detail-body-inner">
+                        <!-- LEFT COLUMN: snippet drop zone ──────── -->
+                        <div class="detail-content-col"
+                             id="detail_content_zone"
+                             t-att-data-vehicle-id="vehicle.id"
+                             t-att-data-horsepower="vehicle.horsepower or ''"
+                             t-att-data-transmission="vehicle.transmission or 'auto'"
+                             t-att-data-seats="vehicle.seats or 5"
+                             t-att-data-doors="vehicle.doors or 4"
+                             t-att-data-fuel="vehicle.fuel_type or 'petrol'"
+                             t-att-data-co2="vehicle.co2 or ''">
+                            <!-- oe_structure allows reordering / adding
+                                 snippets in the website builder -->
+                            <div class="oe_structure" id="oe_structure_drivex_car_detail">
+                                <!-- ── Specs snippet (preloaded, editable) ── -->
+                                <t t-call="theme_drivex.drivex_vehicle_specs"/>
+                                <!-- ── Features snippet (preloaded, editable) ── -->
+                                <t t-if="vehicle.feature_ids">
+                                    <section class="detail-features-section s_drivex_vehicle_features"
+                                             data-snippet="theme_drivex.drivex_vehicle_features"
+                                             data-name="Features &amp; Equipment">
+                                        <div class="container">
+                                            <h2><i class="fa-solid fa-star"
+                                                   style="color:var(--accent);margin-right:10px"/>Features &amp;
+                                                Equipment
+                                            </h2>
+                                            <div class="features-grid o_editable">
+                                                <t t-foreach="vehicle.feature_ids" t-as="feat">
+                                                    <div class="feat-item">
+                                                        <i t-attf-class="fa-solid #{feat.icon or 'fa-check'}"/>
+                                                        <t t-esc="feat.name"/>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </t>
+                                <t t-else="">
+                                    <t t-call="theme_drivex.drivex_vehicle_features"/>
+                                </t>
+                                <!-- ── About snippet (preloaded, editable) ── -->
+                                <t t-if="vehicle.website_description">
+                                    <section class="detail-desc-section s_drivex_vehicle_about"
+                                             data-snippet="theme_drivex.drivex_vehicle_about"
+                                             data-name="About This Vehicle">
+                                        <div class="container">
+                                            <h2 class="o_editable"><i class="fa-solid fa-circle-info"
+                                                                      style="color:var(--accent);margin-right:10px"/>
+                                                About This Vehicle
+                                            </h2>
+                                            <div class="detail-desc" t-field="vehicle.website_description"/>
+                                        </div>
+                                    </section>
+                                </t>
+                                <t t-else="">
+                                    <t t-call="theme_drivex.drivex_vehicle_about"/>
+                                </t>
+                                <!-- ── Rental Terms snippet (preloaded, editable) ── -->
+                                <t t-call="theme_drivex.drivex_rental_terms"/>
+                            </div>
+                            <!-- /oe_structure -->
+                        </div>
+                        <!-- /LEFT COLUMN -->
+                        <!-- RIGHT COLUMN: dynamic booking sidebar ─ -->
+                        <div class="booking-sidebar" t-att-data-vehicle-id="vehicle.id">
+                            <div class="booking-card">
+                                <h3><i class="fa-solid fa-calendar-check" style="color:var(--accent);margin-right:8px"/>
+                                    Book This Vehicle
+                                </h3>
+                                <div class="booking-field">
+                                    <label>Pickup Location</label>
+                                    <select id="bookLocation" class="bookLocation">
+                                        <option value="">Select a location…</option>
+                                        <t t-foreach="locations" t-as="loc">
+                                            <option t-att-value="loc.id">
+                                                <t t-esc="loc.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <!-- Pickup Date — custom DriveX datepicker -->
+                                <div class="booking-field">
+                                    <label>Pickup Date &amp; Time</label>
+                                    <div class="date-field bookPickupField">
+                                        <div class="date-display placeholder" id="bookPickupDisplay">
+                                            <span class="dd-day">DD</span>
+                                            <span class="dd-month">Mon</span>
+                                            <span class="dd-year">YYYY</span>
+                                            <span class="dd-sep">·</span>
+                                            <span class="dd-time">HH:MM</span>
+                                        </div>
+                                        <div class="dp-panel" id="bookPickupPanel">
+                                            <div class="dp-header">
+                                                <button class="dp-prev" type="button">&#8249;</button>
+                                                <span class="dp-my"/>
+                                                <button class="dp-next" type="button">&#8250;</button>
+                                            </div>
+                                            <div class="dp-weekdays">
+                                                <span>Su</span>
+                                                <span>Mo</span>
+                                                <span>Tu</span>
+                                                <span>We</span>
+                                                <span>Th</span>
+                                                <span>Fr</span>
+                                                <span>Sa</span>
+                                            </div>
+                                            <div class="dp-grid"/>
+                                            <div class="dp-time">
+                                                <div class="dp-time-col">
+                                                    <button class="dp-tc" type="button">▲</button>
+                                                    <span class="dp-hh">12</span>
+                                                    <button class="dp-tc" type="button">▼</button>
+                                                </div>
+                                                <span class="dp-tsep">:</span>
+                                                <div class="dp-time-col">
+                                                    <button class="dp-tc" type="button">▲</button>
+                                                    <span class="dp-mm">00</span>
+                                                    <button class="dp-tc" type="button">▼</button>
+                                                </div>
+                                            </div>
+                                            <button class="dp-confirm-btn" type="button">Confirm</button>
+                                        </div>
+                                        <!-- hidden value carrier read by JS -->
+                                        <input type="hidden" class="bookPickup" id="bookPickup"/>
+                                    </div>
+                                </div>
+                                <!-- Return Date — custom DriveX datepicker -->
+                                <div class="booking-field">
+                                    <label>Return Date &amp; Time</label>
+                                    <div class="date-field bookReturnField">
+                                        <div class="date-display placeholder" id="bookReturnDisplay">
+                                            <span class="dd-day">DD</span>
+                                            <span class="dd-month">Mon</span>
+                                            <span class="dd-year">YYYY</span>
+                                            <span class="dd-sep">·</span>
+                                            <span class="dd-time">HH:MM</span>
+                                        </div>
+                                        <div class="dp-panel" id="bookReturnPanel">
+                                            <div class="dp-header">
+                                                <button class="dp-prev" type="button">&#8249;</button>
+                                                <span class="dp-my"/>
+                                                <button class="dp-next" type="button">&#8250;</button>
+                                            </div>
+                                            <div class="dp-weekdays">
+                                                <span>Su</span>
+                                                <span>Mo</span>
+                                                <span>Tu</span>
+                                                <span>We</span>
+                                                <span>Th</span>
+                                                <span>Fr</span>
+                                                <span>Sa</span>
+                                            </div>
+                                            <div class="dp-grid"/>
+                                            <div class="dp-time">
+                                                <div class="dp-time-col">
+                                                    <button class="dp-tc" type="button">▲</button>
+                                                    <span class="dp-hh">12</span>
+                                                    <button class="dp-tc" type="button">▼</button>
+                                                </div>
+                                                <span class="dp-tsep">:</span>
+                                                <div class="dp-time-col">
+                                                    <button class="dp-tc" type="button">▲</button>
+                                                    <span class="dp-mm">00</span>
+                                                    <button class="dp-tc" type="button">▼</button>
+                                                </div>
+                                            </div>
+                                            <button class="dp-confirm-btn" type="button">Confirm</button>
+                                        </div>
+                                        <input type="hidden" class="bookReturn" id="bookReturn"/>
+                                    </div>
+                                </div>
+                                <div class="booking-field">
+                                    <label>Insurance Plan</label>
+                                    <select id="insurancePlan" class="insurancePlan">
+                                        <t t-if="insurances">
+                                            <t t-foreach="insurances" t-as="ins">
+                                                <option t-att-value="ins.id"
+                                                        t-att-data-price="ins.price_per_day"
+                                                        t-att-selected="'selected' if ins.is_default else None">
+                                                    <t t-esc="ins.name"/>
+                                                    <t t-if="ins.price_per_day == 0">(Included)</t>
+                                                    <t t-else="">(+$<t t-esc="ins.price_per_day"/>/day)
+                                                    </t>
+                                                </option>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <option value="0" data-price="0">Basic (Included)</option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="booking-total"
+                                     t-att-data-daily-rate="vehicle.daily_rate">
+                                    <div class="bt-row">
+                                        <span>Base rate</span>
+                                        <span>$<t t-esc="vehicle.daily_rate"/>/day
+                                        </span>
+                                    </div>
+                                    <div class="bt-row insuranceLine" style="display:none">
+                                        <span>Insurance</span>
+                                        <span class="insuranceVal">+$0/day</span>
+                                    </div>
+                                    <div class="bt-row">
+                                        <span>Duration</span>
+                                        <span class="daysVal">1 day</span>
+                                    </div>
+                                    <div class="bt-row">
+                                        <span>Taxes &amp; fees</span>
+                                        <span>Included</span>
+                                    </div>
+                                    <div class="bt-total">
+                                        <span>Total</span>
+                                        <strong class="totalVal">$
+                                            <t t-esc="vehicle.daily_rate"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <a t-attf-href="/booking/#{vehicle.id}#{query_string}" class="booking-btn"
+                                   id="detailReserveBtn">
+                                    <i class="fa-solid fa-bolt"/>
+                                    Reserve Now
+                                </a>
+                                <p class="booking-note">
+                                    <i class="fa-solid fa-shield-halved"/>
+                                    Free cancellation · No card fee
+                                </p>
+                            </div>
+                        </div>
+                        <!-- /RIGHT COLUMN -->
+                    </div>
+                </section>
+                <!-- ═══════════════════════════════════════════════
+                     SIMILAR VEHICLES  (Dynamic snippet)
+                ═══════════════════════════════════════════════ -->
+                <t t-if="demo_fallback">
+                    <section class="detail-hero">
+                        <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&amp;w=1600&amp;auto=format&amp;fit=crop"
+                             alt="BMW M4 Competition" class="detail-hero-img" id="heroImg"/>
+                        <div class="detail-hero-overlay"/>
+                        <div class="detail-hero-content container">
+                            <nav class="breadcrumb">
+                                <a href="/">Home</a>
+                                <i class="fa-solid fa-chevron-right"/>
+                                <a href="/fleet">Fleet</a>
+                                <i class="fa-solid fa-chevron-right"/>
+                                <span>BMW M4 Competition</span>
+                            </nav>
+                            <div class="detail-meta">
+                                <div class="detail-title">
+                                    <h1>BMW M4 Competition</h1>
+                                    <div class="dt-sub">
+                                        <span class="dt-badge">Luxury Sports</span>
+                                        <span>
+                                            <i class="fa-solid fa-star" style="color:#f59e0b"/>
+                                            4.9 &#160;(128 reviews)
+                                        </span>
+                                        <span>2023 Model</span>
+                                    </div>
+                                </div>
+                                <div class="detail-price-box">
+                                    <p class="dp-from">STARTING FROM</p>
+                                    <div class="dp-amount">$180</div>
+                                    <p class="dp-per">per day · taxes included</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <div class="gallery-strip">
+                        <div class="container">
+                            <div class="gallery-thumbs">
+                                <div class="gallery-thumb active"
+                                     data-src="https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&amp;w=1600&amp;auto=format&amp;fit=crop">
+                                    <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&amp;w=300&amp;auto=format&amp;fit=crop"
+                                         alt="BMW M4 Front"/>
+                                </div>
+                                <div class="gallery-thumb"
+                                     data-src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&amp;w=1600&amp;auto=format&amp;fit=crop">
+                                    <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&amp;w=300&amp;auto=format&amp;fit=crop"
+                                         alt="BMW M4 Side"/>
+                                </div>
+                                <div class="gallery-thumb"
+                                     data-src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&amp;w=1600&amp;auto=format&amp;fit=crop">
+                                    <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&amp;w=300&amp;auto=format&amp;fit=crop"
+                                         alt="BMW M4 Angle"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <section class="detail-body">
+                        <div class="detail-body-inner">
+                            <!-- LEFT: specs, features, description -->
+                            <div class="detail-content-col">
+                                <div class="detail-specs-section">
+                                    <h2><i class="fa-solid fa-gauge-high"
+                                           style="color:var(--accent);margin-right:10px"/>Vehicle Specifications
+                                    </h2>
+                                    <div class="spec-grid">
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-engine"/>
+                                            <strong>3.0L Twin-Turbo</strong>
+                                            <span>Engine</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-horse"/>
+                                            <strong>503 HP</strong>
+                                            <span>Power</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-bolt"/>
+                                            <strong>479 lb-ft</strong>
+                                            <span>Torque</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-sliders"/>
+                                            <strong>8-speed Auto</strong>
+                                            <span>Transmission</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-road"/>
+                                            <strong>0–60 in 3.8s</strong>
+                                            <span>Acceleration</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-gauge"/>
+                                            <strong>180 mph</strong>
+                                            <span>Top Speed</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-users"/>
+                                            <strong>4 Seats</strong>
+                                            <span>Capacity</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-door-open"/>
+                                            <strong>4 Doors</strong>
+                                            <span>Configuration</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-gas-pump"/>
+                                            <strong>Petrol</strong>
+                                            <span>Fuel Type</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-droplet"/>
+                                            <strong>22 mpg</strong>
+                                            <span>Fuel Economy</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-weight-hanging"/>
+                                            <strong>1,725 kg</strong>
+                                            <span>Kerb Weight</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <i class="fa-solid fa-palette"/>
+                                            <strong>Isle Blue</strong>
+                                            <span>Colour</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-features-section">
+                                    <h2><i class="fa-solid fa-star" style="color:var(--accent);margin-right:10px"/>
+                                        Features &amp; Equipment
+                                    </h2>
+                                    <div class="features-grid">
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            M Sport Brakes (Red Calipers)
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            Adaptive M Suspension
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            M Carbon Ceramic Brakes
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            Active M Differential
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            Harman Kardon Surround Sound
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            Head-Up Display (HUD)
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            BMW Live Cockpit Pro
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            Wireless Apple CarPlay
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            Merino Full Leather Interior
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            Carbon Fibre Interior Trim
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            M Multifunction Steering Wheel
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            Front + Rear Parking Sensors
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            Reversing Camera
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            Heated Front Seats
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            M Drive Professional
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check"/>
+                                            Launch Control
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-desc-section">
+                                    <h2><i class="fa-solid fa-circle-info"
+                                           style="color:var(--accent);margin-right:10px"/>About This Vehicle
+                                    </h2>
+                                    <p class="detail-desc">
+                                        The BMW M4 Competition is the pinnacle of performance and luxury in a sports
+                                        coupe package. Powered by a hand-assembled 3.0-liter twin-turbocharged
+                                        straight-six engine producing 503 hp, it delivers an exhilarating 0–60 mph
+                                        sprint in just 3.8 seconds.
+                                        <br/>
+                                        <br/>
+                                        Behind the wheel, you command M-specific driving dynamics — an adaptive M
+                                        suspension that transforms from comfort to racetrack-ready at the twist of a
+                                        dial, and a rear-wheel-drive chassis with an Active M Differential that gives
+                                        you precise control through every corner.
+                                        <br/>
+                                        <br/>
+                                        Inside, the M4 Competition wraps you in Merino leather, carbon fiber trim, and
+                                        BMW's stunning Live Cockpit Pro dual-screen interface. Every detail has been
+                                        engineered for drivers who demand the extraordinary.
+                                    </p>
+                                </div>
+                                <!-- Rental Terms -->
+                                <div class="detail-desc-section" style="margin-top:36px">
+                                    <h2><i class="fa-solid fa-file-contract"
+                                           style="color:var(--accent);margin-right:10px"/>Rental Terms
+                                    </h2>
+                                    <div style="display:flex;flex-direction:column;gap:10px">
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check" style="color:var(--accent)"/>
+                                            Minimum rental age: 25 years
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check" style="color:var(--accent)"/>
+                                            Driving license held for 3+ years
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check" style="color:var(--accent)"/>
+                                            Security deposit: $800 (fully refundable)
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check" style="color:var(--accent)"/>
+                                            Comprehensive insurance included
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check" style="color:var(--accent)"/>
+                                            300 km/day included (₹12/km extra)
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check" style="color:var(--accent)"/>
+                                            24/7 roadside assistance
+                                        </div>
+                                        <div class="feat-item">
+                                            <i class="fa-solid fa-check" style="color:var(--accent)"/>
+                                            Free cancellation up to 24 hrs
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- RIGHT: Booking sidebar -->
+                            <div class="booking-sidebar">
+                                <div class="booking-card">
+                                    <h3><i class="fa-solid fa-calendar-check"
+                                           style="color:var(--accent);margin-right:8px"/>Book This Vehicle
+                                    </h3>
+                                    <div class="booking-field">
+                                        <label>Pickup Location</label>
+                                        <select>
+                                            <option>Mumbai — BKC Branch</option>
+                                            <option>Mumbai — Airport</option>
+                                            <option>Delhi — Connaught Place</option>
+                                            <option>Bangalore — MG Road</option>
+                                        </select>
+                                    </div>
+                                    <div class="booking-field">
+                                        <label>Pickup Date</label>
+                                        <input type="date" id="bookPickup" min=""/>
+                                    </div>
+                                    <div class="booking-field">
+                                        <label>Return Date</label>
+                                        <input type="date" id="bookReturn" min=""/>
+                                    </div>
+                                    <div class="booking-field">
+                                        <label>Insurance Plan</label>
+                                        <select id="insurancePlan" onchange="updateTotal()">
+                                            <option value="basic">Basic (included)</option>
+                                            <option value="comprehensive">Comprehensive (+$20/day)</option>
+                                            <option value="premium">Premium Zero Excess (+$40/day)</option>
+                                        </select>
+                                    </div>
+                                    <div class="booking-total">
+                                        <div class="bt-row">
+                                            <span>Base rate</span>
+                                            <span>$180/day</span>
+                                        </div>
+                                        <div class="bt-row" id="insuranceLine" style="display:none">
+                                            <span>Insurance</span>
+                                            <span id="insuranceVal">+$0</span>
+                                        </div>
+                                        <div class="bt-row">
+                                            <span>Duration</span>
+                                            <span id="daysVal">1 day</span>
+                                        </div>
+                                        <div class="bt-row">
+                                            <span>Taxes &amp; fees</span>
+                                            <span>Included</span>
+                                        </div>
+                                        <div class="bt-total">
+                                            <span>Total</span>
+                                            <strong id="totalVal">$180</strong>
+                                        </div>
+                                    </div>
+                                    <a href="/booking" class="booking-btn">
+                                        <i class="fa-solid fa-bolt"/> &#160;Reserve Now
+                                    </a>
+                                    <p class="booking-note">
+                                        <i class="fa-solid fa-shield-halved"/>
+                                        Free cancellation · No card fee
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </t>
+                <t t-call="theme_drivex.drivex_similar_vehicles"/>
+            </div>
+        </t>
+    </template>
+    <!--    DriveX Car Detail-->
+    <record id="drivex_car_detail_page_page" model="website.page">
+        <field name="name">DriveX Car Detail</field>
+        <field name="url">/car-detail</field>
+        <field name="view_id" ref="drivex_car_detail_page"/>
+        <field name="is_published" eval="True"/>
+        <field name="website_indexed" eval="True"/>
+    </record>
+</odoo>
