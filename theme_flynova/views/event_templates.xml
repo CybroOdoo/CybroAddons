@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Flynova Packages List -->
+    <template id="flynova_event_index" inherit_id="website_event.index" name="Flynova Packages List">
+        <!-- Force non-transparent header -->
+        <xpath expr="//t[@t-call='website.layout']" position="before">
+            <t t-set="header_class" t-value="'bg-white shadow-sm'"/>
+            <t t-set="no_header_overlay" t-value="True"/>
+        </xpath>
+        
+        <xpath expr="//t[@t-call='website_event.index_topbar']" position="replace"/>
+        
+        <xpath expr="//div[hasclass('o_wevent_events_list')]" position="replace">
+            <t t-set="active_filters" t-value="active_filters or {}"/>
+            <t t-set="destinations" t-value="destinations or []"/>
+            <t t-set="available_durations" t-value="available_durations or []"/>
+            <t t-set="tags" t-value="tags or []"/>
+            <div class="o_wevent_events_list">
+                <!-- Banner Section -->
+                <div class="position-relative w-100" style="height: 300px; overflow: hidden; background: url('/theme_flynova/static/src/img/images/about.jpg') no-repeat center center; background-size: cover;">
+                    <div class="position-absolute w-100 h-100 top-0 left-0" style="background: rgba(0,0,0,0.2);"></div>
+                    <div class="position-absolute w-100 h-100 top-0 left-0 d-flex align-items-center justify-content-center">
+                        <h1 class="text-white font-weight-bold" style="font-size: 3.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">Our Packages</h1>
+                    </div>
+                    <div class="position-absolute d-flex gap-3" style="bottom: 30px; right: 50px; color: white; font-size: 1.5rem;">
+                        <i class="fa fa-th-large" style="cursor:pointer;"/>
+                        <i class="fa fa-list ml-3" style="cursor:pointer; opacity: 0.7;"/>
+                    </div>
+                </div>
+
+                <div class="container-fluid cmpad py-5">
+                    <div class="row">
+                        <!-- Filter Sidebar -->
+                        <div class="col-lg-3">
+                            <form action="/packages" method="get" class="bg-white p-4 rounded shadow-sm border mb-4 flynova-listing-filter" id="flynova_filter_form">
+                                <h6 class="font-weight-bold mb-3">Select your destination :</h6>
+                                <select name="destination" class="form-control mb-4 bg-light border-0" style="border-radius: 10px;">
+                                    <option value="All Destinations">All Destinations</option>
+                                    <t t-foreach="destinations" t-as="dest">
+                                        <option t-att-value="dest" t-att-selected="dest == active_filters.get('destination')" t-esc="dest"/>
+                                    </t>
+                                </select>
+
+                                <h6 class="font-weight-bold mb-3">Select your date :</h6>
+                                <input type="text" class="form-control mb-4 bg-light border-0" placeholder="DD/MM/YY" style="border-radius: 10px;"/>
+
+                                <h6 class="font-weight-bold mb-3">Typologies :</h6>
+                                <div class="row mb-4">
+                                    <t t-foreach="tags" t-as="tag">
+                                        <div class="col-6 mb-2">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" name="type" class="custom-control-input" t-attf-id="tag_#{tag.id}" t-att-value="tag.name" t-att-checked="tag.name in active_filters.get('type', [])"/>
+                                                <label class="custom-control-label small text-muted" t-attf-for="tag_#{tag.id}" t-esc="tag.name"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+
+                                <h6 class="font-weight-bold mb-3 d-flex justify-content-between">
+                                    Max Price : <span class="text-dark">$ <span class="flynova-price-display"><t t-esc="active_filters.get('max_price', 5000)"/></span></span>
+                                </h6>
+                                <input type="range" name="max_price" class="custom-range mb-4" min="0" max="5000" t-att-value="active_filters.get('max_price', 5000)"/>
+
+                                <div class="custom-control custom-checkbox mb-4">
+                                    <input type="checkbox" class="custom-control-input" id="promo"/>
+                                    <label class="custom-control-label small text-muted" for="promo">See only promotions</label>
+                                </div>
+
+                                <h6 class="font-weight-bold mb-3">Durations :</h6>
+                                <div class="row mb-2">
+                                    <t t-foreach="available_durations" t-as="dur">
+                                        <div class="col-6 mb-2">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" name="duration" class="custom-control-input" t-attf-id="dur_#{dur_index}" t-att-value="dur" t-att-checked="dur in active_filters.get('duration', [])"/>
+                                                <label class="custom-control-label small text-muted" t-attf-for="dur_#{dur_index}" t-esc="dur"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Packages Grid -->
+                        <div class="col-lg-9">
+                            <div class="row">
+                                <t t-if="events">
+                                    <t t-foreach="events" t-as="event">
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card border-0 rounded-lg shadow-sm h-100 overflow-hidden package-card transition-card" style="border-radius: 20px !important; background: #fff; border: 1px solid #eee !important;">
+                                                <div class="card-body p-4 d-flex flex-column">
+                                                    <!-- Top Row: Duration and Icons -->
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <div t-if="event.duration" class="d-flex align-items-center font-weight-bold" style="color: #6f42c1 !important;">
+                                                            <i class="fa fa-clock-o mr-2" style="font-size: 1.1rem;"/>
+                                                            <span t-esc="event.duration"/>
+                                                        </div>
+                                                        <div class="d-flex gap-3">
+                                                            <i class="fa fa-envelope-o" style="color: #6f42c1; font-size: 1.1rem; cursor: pointer;"/>
+                                                            <i class="fa fa-exchange ml-3" style="color: #6f42c1; font-size: 1.1rem; cursor: pointer;"/>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Title and Location -->
+                                                    <h3 class="font-weight-bold mb-2" t-field="event.name" style="font-size: 1.6rem; color: #222;"/>
+                                                    <div class="text-muted mb-3 d-flex align-items-center">
+                                                        <i class="fa fa-map-marker text-primary mr-2" style="font-size: 1.1rem;"/> 
+                                                        <span t-esc="event.location_name or 'Global Destination'"/>
+                                                    </div>
+                                                    
+                                                    <!-- Description -->
+                                                    <div class="text-muted small mb-4 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; min-height: 60px;">
+                                                        <t t-out="event.description" t-options="{'widget': 'html'}"/>
+                                                    </div>
+                                                    
+                                                    <!-- Footer: Button and Price -->
+                                                    <div class="d-flex justify-content-between align-items-end mt-auto pt-3 border-top">
+                                                        <a t-attf-href="/package/{{ slug(event) }}" class="btn btn-primary rounded-pill px-4 py-2 font-weight-bold shadow-sm details-btn" style="background: #6f42c1; border: none; font-size: 0.9rem;">Details</a>
+                                                        <div class="text-right">
+                                                            <div class="small text-muted mb-n1" style="font-size: 0.8rem;">From</div>
+                                                            <div class="h2 font-weight-bold mb-0" style="color: #6f42c1; font-size: 2rem;">
+                                                                <t t-set="min_price" t-value="min(event.event_ticket_ids.mapped('price')) if event.event_ticket_ids else 0"/>
+                                                                $ <t t-esc="'%.0f' % min_price"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <div class="col-12 text-center py-5">
+                                        <h4 class="text-muted">No packages match your search.</h4>
+                                        <a href="/packages" class="btn btn-link mt-2">Clear all filters</a>
+                                    </div>
+                                </t>
+                            </div>
+                            
+                            <!-- Real Pagination -->
+                            <div class="d-flex justify-content-center mt-5">
+                                <t t-call="website.pager"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Bottom Sections from Screenshot -->
+                
+
+                <!-- Discover Paradise Section -->
+                <div class="container-fluid cmpad py-5">
+                    <div class="position-relative rounded-xl overflow-hidden shadow-lg" style="height: 300px; border-radius: 30px !important; background: url('/theme_flynova/static/src/img/images/img3.png') no-repeat center center; background-size: cover;">
+                        <div class="position-absolute w-100 h-100 top-0 left-0" style="background: rgba(0,0,0,0.2);"></div>
+                        <div class="row h-100 align-items-center px-5">
+                            <div class="col-md-6 text-white">
+                                <h2 class="font-weight-bold" style="font-size: 3rem;">Discover paradise</h2>
+                                <h4 class="font-weight-bold mb-4">GET 30% OFF</h4>
+                                <a href="/contactus" class="btn btn-light btn-lg rounded-pill px-5 py-3 font-weight-bold text-dark">Get Register</a>
+                            </div>
+                            <div class="col-md-6 text-white text-right">
+                                <p class="mb-4" style="font-size: 1.1rem; line-height: 1.6;">Lorem ipsum dolor sit amet consectetur adipisicing elit. Obcaecati adipisci sunt in, provident facere ipsam?</p>
+                                <div class="d-inline-flex bg-white rounded-pill p-1" style="width: 100%; max-width: 450px;">
+                                    <input type="email" class="form-control border-0 rounded-pill px-4" placeholder="Enter your email" style="box-shadow: none;"/>
+                                    <button class="btn btn-primary rounded-pill px-4 py-2" style="background: #6f42c1; border: none;">Subscribe</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                    .transition-card {
+                        transition: all 0.3s ease;
+                    }
+                    .transition-card:hover {
+                        transform: translateY(-10px);
+                        box-shadow: 0 15px 30px rgba(111, 66, 193, 0.15) !important;
+                        border-color: #6f42c1 !important;
+                    }
+                    .details-btn {
+                        transition: all 0.3s ease;
+                    }
+                    .package-card:hover .details-btn {
+                        padding-left: 2rem !important;
+                        padding-right: 2rem !important;
+                    }
+                    .cmpad {
+                        padding-left: 8% !important;
+                        padding-right: 8% !important;
+                    }
+                    @media (max-width: 768px) {
+                        .cmpad {
+                            padding-left: 15px !important;
+                            padding-right: 15px !important;
+                        }
+                    }
+                    .rounded-xl {
+                        border-radius: 30px !important;
+                    }
+                </style>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Flynova Package Detail -->
+    <template id="flynova_event_detail" inherit_id="website_event.event_details" name="Flynova Package Detail">
+        <xpath expr="//div[@name='event']" position="replace">
+            <div class="o_wevent_event">
+                <!-- Hero Section -->
+                <div class="position-relative w-100" style="height: 450px; overflow: hidden;">
+                    <img t-if="event.image_1920" t-attf-src="/web/image/event.event/#{event.id}/image_1920" class="w-100 h-100 object-fit-cover" alt="Cover"/>
+                    <img t-if="not event.image_1920" src="/theme_flynova/static/src/img/images/img1.png" class="w-100 h-100 object-fit-cover" alt="Cover"/>
+                    <div class="position-absolute w-100 h-100 top-0 left-0" style="background: rgba(0,0,0,0.3);"></div>
+                    <div class="position-absolute w-100 h-100 top-0 left-0 d-flex align-items-center justify-content-center">
+                        <div class="text-center">
+                            <h1 class="text-white font-weight-bold" style="font-size: 4rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);" t-field="event.name"/>
+                            <div class="text-white h4 mt-3" t-if="event.location_name">
+                                <i class="fa fa-map-marker mr-2"/> <t t-esc="event.location_name"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="container-fluid cmpad py-5">
+                    <div class="row">
+                        <!-- Left Column: Itinerary and Details -->
+                        <div class="col-lg-8" style="padding-right:40px;">
+                            <div class="d-flex align-items-center mb-4">
+                                <h2 class="section-title mb-0 mr-4 font-weight-bold">Itinerary &amp; Details</h2>
+                                <span class="badge badge-pill badge-primary px-3 py-2" t-if="event.duration" style="background: #6f42c1;">
+                                    <i class="fa fa-clock-o mr-1"/> <t t-esc="event.duration"/>
+                                </span>
+                            </div>
+                            <div class="section-text lead" t-field="event.description"/>
+                            
+                            <t t-if="event.tag_ids">
+                                <h4 class="mt-5 mb-3 font-weight-bold">Tags / Features</h4>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <t t-foreach="event.tag_ids" t-as="tag">
+                                        <span class="badge bg-light border px-3 py-2 mr-2 mb-2 text-dark font-weight-normal" style="border-radius: 8px;" t-esc="tag.name"/>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+                        
+                        <!-- Ticket variable setup (backported from v19) -->
+                        <t t-set="available_tickets" t-value="event.event_ticket_ids.filtered(lambda t: not t.is_expired)"/>
+                        <t t-set="hotel_tickets" t-value="available_tickets.filtered(lambda t: t.product_id and t.product_id.flynova_listing_type == 'hotel')"/>
+                        <t t-set="tour_tickets" t-value="available_tickets - hotel_tickets"/>
+
+                        <!-- Right Column: Booking Panel -->
+                        <div class="col-lg-4">
+                            <div class="booking-panel p-4 rounded shadow border bg-white" style="position: sticky; top: 120px; border-radius: 24px !important;">
+                                <h3 class="font-weight-bold mb-4">Book Your Experience</h3>
+                                
+                                <form t-attf-action="/flynova/event/#{slug(event)}/registration/new" method="post" id="registration_form">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    
+                                    <!-- Tour Tickets -->
+                                    <t t-if="tour_tickets">
+                                        <h6 class="font-weight-bold text-muted text-uppercase small mb-3 letter-spacing-1">Select Tour</h6>
+                                        <div class="mb-4">
+                                            <t t-foreach="tour_tickets" t-as="ticket">
+                                                <div class="card mb-2 border shadow-sm" style="border-radius: 12px;">
+                                                    <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h6 class="mb-1 font-weight-bold" t-esc="ticket.name"/>
+                                                            <span class="text-primary font-weight-bold" style="color: #6f42c1 !important;">$<t t-esc="'%.2f' % ticket.price"/></span>
+                                                        </div>
+                                                        <div class="input-group" style="width: 80px;">
+                                                            <select t-attf-name="nb_register-#{ticket.id}" class="form-control border-0 bg-light rounded font-weight-bold">
+                                                                <option value="0">0</option>
+                                                                <t t-foreach="range(1, (ticket.seats_available or 10) + 1)" t-as="qty">
+                                                                    <option t-att-value="qty" t-esc="qty"/>
+                                                                </t>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </t>
+                                    
+                                    <!-- Hotel Tickets -->
+                                    <t t-if="hotel_tickets">
+                                        <h6 class="font-weight-bold text-muted text-uppercase small mb-3 letter-spacing-1">Select Hotel/Room</h6>
+                                        <div class="mb-4">
+                                            <t t-foreach="hotel_tickets" t-as="ticket">
+                                                <div class="card mb-2 border shadow-sm" style="border-radius: 12px;">
+                                                    <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h6 class="mb-1 font-weight-bold" t-esc="ticket.name"/>
+                                                            <span class="text-primary font-weight-bold" style="color: #6f42c1 !important;">$<t t-esc="'%.2f' % ticket.price"/></span>
+                                                        </div>
+                                                        <div class="input-group" style="width: 80px;">
+                                                            <select t-attf-name="nb_register-#{ticket.id}" class="form-control border-0 bg-light rounded font-weight-bold">
+                                                                <option value="0">0</option>
+                                                                <t t-foreach="range(1, (ticket.seats_available or 5) + 1)" t-as="qty">
+                                                                    <option t-att-value="qty" t-esc="qty"/>
+                                                                </t>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </t>
+                                    
+                                    <button type="submit" class="btn btn-primary btn-lg w-100 py-3 mt-2 shadow-lg" style="background: #6f42c1; border: none; border-radius: 14px; font-weight: bold; font-size: 1.1rem;">
+                                        Book Now
+                                    </button>
+                                    <p class="text-center text-muted small mt-4 mb-0">No booking fees • Secure transaction</p>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

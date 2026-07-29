@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action: opens the Traveller Photos manager with kanban as the default view.
+         Includes an empty-state help message for first-time use. -->
+    <record id="flynova_traveller_photo_action" model="ir.actions.act_window">
+        <field name="name">Traveller Photos</field>
+        <field name="res_model">flynova.traveller.photo</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create the photos that appear in the traveller photo section.
+            </p>
+        </field>
+    </record>
+
+    <!-- List view: shows handle, name, and thumbnail columns ordered by sequence. -->
+    <record id="flynova_traveller_photo_view_list" model="ir.ui.view">
+        <field name="name">flynova.traveller.photo.view.list</field>
+        <field name="model">flynova.traveller.photo</field>
+        <field name="arch" type="xml">
+            <tree string="Traveller Photos" default_order="sequence, id">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="image_1920" widget="image" options="{'preview_image': 'image_128'}"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Kanban view: displays each photo as a card with its image and traveller name. -->
+    <record id="flynova_traveller_photo_view_kanban" model="ir.ui.view">
+        <field name="name">flynova.traveller.photo.view.kanban</field>
+        <field name="model">flynova.traveller.photo</field>
+        <field name="arch" type="xml">
+            <kanban default_order="sequence, id" class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="image_1920"/>
+                <field name="sequence"/>
+                <templates>
+                    <t t-name="kanban-box" class="d-flex flex-column">
+                        <div class="oe_kanban_global_click">
+                            <field name="image_1920" widget="image" class="w-100"/>
+                            <strong class="o_kanban_record_title d-block mt-2">
+                                <field name="name"/>
+                            </strong>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Form view: two-column layout — left for metadata (name, sequence, active),
+         right for the photo avatar. -->
+    <record id="flynova_traveller_photo_view_form" model="ir.ui.view">
+        <field name="name">flynova.traveller.photo.view.form</field>
+        <field name="model">flynova.traveller.photo</field>
+        <field name="arch" type="xml">
+            <form string="Traveller Photo">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'image_128'}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view: filter by name; includes an 'Archived' filter to show
+         inactive records (active = False). -->
+    <record id="flynova_traveller_photo_view_search" model="ir.ui.view">
+        <field name="name">flynova.traveller.photo.view.search</field>
+        <field name="model">flynova.traveller.photo</field>
+        <field name="arch" type="xml">
+            <search string="Traveller Photos">
+                <field name="name"/>
+                <filter string="Archived" name="active" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+</odoo>
