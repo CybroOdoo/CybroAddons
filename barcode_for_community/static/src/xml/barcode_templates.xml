@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!--    templates for the Barcode views-->
+    <t t-name="barcode_for_community.Barcode" owl="1">
+        <div class="o_custom_barcode_main" t-ref="BarcodeRoot">
+            <div class="d-flex align-items-center sidebar-toggler">
+                <t t-call="web.NavBar.AppsMenu">
+                  <t t-set="apps" t-value="menuService.getApps()"/>
+                </t>
+            </div>
+
+            <div class="container-fluid barcode_board">
+                <div class="row custom-barcode_section">
+                    <div class="barcode-header-container is-small">
+                                <t t-call="web.NavBar.AppsMenu">
+                                    <t t-set="apps"
+                                       t-value="menuService.getApps()"/>
+                                </t>
+                        <div class="custom-barcode--header ms-1">Barcode Scanner</div>
+                        </div>
+                    <div class="custom-barcode--container">
+                        <div class="barcode-header-container">
+                            <div class="custom-barcode--header ms-1">Barcode Scanner</div>
+                        </div>
+                        <div>
+                        <div class="custom-barcode__scanner-section">
+                            <div class="barcode-reader">
+                                <img src="/barcode_for_community/static/src/img/ReadBarcode.gif"
+                                     t-on-click="_onClickScanProduct" alt=""/>
+                                <span class="info-text"><i class="fa fa-camera" />
+                                    Click here to open camera</span>
+                            </div>
+                            <ul class="barcode-point__list">
+                                <li class="custom-barcode-point--list_item">Scan an <b>operation</b> type
+                                    to create a new
+                                    transfer.</li>
+                                <li class="custom-barcode-point--list_item">Scan a <b>location</b> to
+                                    create a new transfer
+                                    from this location.</li>
+                                <li class="custom-barcode-point--list_item">Scan a <b>product</b> to
+                                    show its location and
+                                    quantity.</li>
+                                <li class="custom-barcode-point--list_item">Scan a <b>document</b> to
+                                    open it.</li>
+                            </ul>
+
+                        </div>
+                            </div>
+                        <t t-if="isSmall">
+                            <div class="mt-3"/>
+                            <t t-call="barcode_for_community.operation_button"/>
+                            <t t-call="barcode_for_community.move_operations_small"/>
+                        </t>
+                        <t t-else="">
+                            <t t-call="barcode_for_community.move_operations"/>
+                            <t t-call="barcode_for_community.operation_button"/>
+                        </t>
+
+                    </div>
+                </div>
+                <div id="BarcodeMainModal" class="barcode-modal">
+                    <!-- Modal content -->
+                    <div class="barcode-modal-content">
+                        <div class="custom-barcode--header">Operation</div>
+                        <i class="fa fa-close barcode-close"
+                           t-on-click="() => this.root.el.querySelector('#BarcodeMainModal').style.display = 'none'"/>
+                        <div class="custom-barcode_option--container operation_modal">
+                            <t t-foreach="state.types" t-as="type"
+                               t-key="type.id">
+                                <div class="custom-barcode_option--box">
+                                    <h3 class="barcode_option-head"
+                                        t-esc="type.name"/>
+                                    <div class="custom-barcode_state-container">
+                                        <div class="d-flex-mobile-view">
+                                            <div class="custom-barcode__state">
+                                                <span class="">Draft</span>
+                                                <span class="custom-barcode__state-count custom-barcode__draft"
+                                                      t-esc="type.PickingDraft"/>
+                                            </div>
+                                            <div class="custom-barcode__state">
+                                                <span>Ready</span>
+                                                <span class="custom-barcode__state-count custom-barcode__ready"
+                                                      t-esc="type.PickingReady"/>
+                                            </div>
+                                            <div class="custom-barcode__state">
+                                                <span>Done</span>
+                                                <span class="custom-barcode__state-count custom-barcode__done"
+                                                      t-esc="type.PickingDone"/>
+                                            </div>
+                                        </div>
+                                        <button class="custom-barcode__btn "
+                                                t-on-click="(ev) => this._onClickOperation(type.id, type.name)">
+                                            <t t-esc="type.name"/>
+                                            <i class="ri-arrow-right-s-line"/>
+                                        </button>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+    <t t-name="barcode_for_community.move_operations_small">
+         <div class="custom-barcode_option--container"
+              style="min-height:240px !important;">
+            <t t-if="availableOperations.length > 0">
+                <t t-foreach="availableOperations" t-as="type" t-key="type.id">
+                    <div class="custom-barcode_option--box">
+                        <h3 class="barcode_option-head" t-esc="type.name"/>
+                        <div class="custom-barcode_state-container">
+                            <div class="d-flex-mobile-view">
+                                <div class="custom-barcode__state">
+                                    <span class="">Draft</span>
+                                    <span class="custom-barcode__state-count custom-barcode__draft"
+                                          t-esc="type.PickingDraft"/>
+                                </div>
+                                <div class="custom-barcode__state">
+                                    <span>Ready</span>
+                                    <span class="custom-barcode__state-count custom-barcode__ready"
+                                          t-esc="type.PickingReady"/>
+                                </div>
+                                <div class="custom-barcode__state">
+                                    <span>Done</span>
+                                    <span class="custom-barcode__state-count custom-barcode__done"
+                                          t-esc="type.PickingDone"/>
+                                </div>
+                            </div>
+                            <button class="custom-barcode__btn"
+                                    t-on-click="(ev) => this._onClickOperation(type.id, type.name)">
+                                View
+                                <t t-esc="type.name"/>
+                                <i class="ri-arrow-right-s-line"/>
+                            </button>
+                        </div>
+                    </div>
+                </t>
+            </t>
+             <t t-else="">
+                <div class="custom-barcode_option_skeleton custom-barcode_option--box"/>
+                 <div class="custom-barcode_option_skeleton custom-barcode_option--box"/>
+                 <div class="custom-barcode_option_skeleton custom-barcode_option--box"/>
+                 <div class="custom-barcode_option_skeleton custom-barcode_option--box"/>
+            </t>
+        </div>
+        <div class="custom-barcode-view-more" t-if="hasShowMore">
+            <button class="custom-barcode-viemore-btn"
+                    t-on-click="handleShowMore"><i class="fa fa-chevron-circle-down" />
+                More operations</button>
+        </div>
+
+    </t>
+    <t t-name="barcode_for_community.move_operations">
+        <div class="custom-barcode_option--container"
+             style="min-height:240px !important;">
+            <t t-set="i" t-value="0"/>
+            <t t-if="state.types.length > 0">
+                <t t-foreach="state.types" t-as="type" t-key="type.id">
+                    <t t-if="i lt 4">
+                        <div class="custom-barcode_option--box">
+                            <h3 class="barcode_option-head" t-esc="type.name"/>
+                            <div class="custom-barcode_state-container">
+                                <div class="d-flex-mobile-view">
+                                    <div class="custom-barcode__state">
+                                        <span class="">Draft</span>
+                                        <span class="custom-barcode__state-count custom-barcode__draft"
+                                              t-esc="type.PickingDraft"/>
+                                    </div>
+                                    <div class="custom-barcode__state">
+                                        <span>Ready</span>
+                                        <span class="custom-barcode__state-count custom-barcode__ready"
+                                              t-esc="type.PickingReady"/>
+                                    </div>
+                                    <div class="custom-barcode__state">
+                                        <span>Done</span>
+                                        <span class="custom-barcode__state-count custom-barcode__done"
+                                              t-esc="type.PickingDone"/>
+                                    </div>
+                                </div>
+                                <button class="custom-barcode__btn"
+                                        t-on-click="(ev) => this._onClickOperation(type.id, type.name)">
+                                    View
+                                    <t t-esc="type.name"/>
+                                    <i class="ri-arrow-right-s-line"/>
+                                </button>
+                            </div>
+                        </div>
+                        <t t-set="i" t-value="i + 1"/>
+                    </t>
+                </t>
+            </t>
+            <t t-else="">
+                <div class="custom-barcode_option_skeleton custom-barcode_option--box"/>
+                <div class="custom-barcode_option_skeleton custom-barcode_option--box"/>
+                <div class="custom-barcode_option_skeleton custom-barcode_option--box"/>
+                <div class="custom-barcode_option_skeleton custom-barcode_option--box"/>
+            </t>
+        </div>
+        <div class="custom-barcode-view-more" t-if="hasShowMore">
+            <button class="custom-barcode-viemore-btn"
+                    t-on-click="handleShowMore"><i class="fa fa-chevron-circle-down" />
+                More operations</button>
+        </div>
+    </t>
+    <t t-name="barcode_for_community.operation_button">
+        <div class="d-flex">
+            <button type="button"
+                    class="btn btn-secondary w-50 col-md-4 mr-3 main-barcode-button"
+                    t-on-click="_onClickOpenInventoryAdjustment">Inventory Adjustment</button>
+            <button type="button"
+                    class="btn btn-secondary w-50 main-barcode-button"
+                    t-on-click="_onClickOpenBatch">Batch Transfer</button>
+        </div>
+    </t>
+</templates>

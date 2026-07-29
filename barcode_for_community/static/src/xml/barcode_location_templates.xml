@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!-- templates for the BarcodeLocation views-->
+    <t t-name="barcode_for_community.BarcodeLocation" owl="1">
+        <div class="container-fluid o_custom_barcode_location p-0" t-ref="BarcodeLocationRoot">
+            <div class="d-flex w-100 p-0 m-0 bg-white border-bottom">
+                <nav class="navbar navbar-light w-100 justify-content-between barcode-custom-primary">
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex barcode_header_container">
+                            <div t-on-click="actionGoBack" class="arrow-line-go-back">
+                                <i class="ri-arrow-left-s-line"/>
+                            </div>
+                            <span class="navbar-brand text-light" t-esc="state.data.name"/>
+                        </div>
+                    </div>
+                    <form class="form-inline d-flex gap-3">
+                        <button class="btn custom_barcode_main_scanner" type="button"
+                                t-on-click="_onClickScanProduct"><i class="fa fa-barcode barcode-icon" /></button>
+                        <button class="btn go-back-big-screen btn-outline-light my-2 my-sm-0" type="button"
+                                t-on-click="backToMain">
+                            <i class="fa fa-sign-out"/></button>
+                    </form>
+                </nav>
+            </div>
+            <div t-if="state.data.state != 'done'">
+                 <div class="justify-content-center d-flex border-bottom" t-att-class="{'p-2': !env.isSmall}">
+                     <a class="navbar-brand text-dark adjustment_location_header"
+                        t-att-class="{marquee: state.navHasLargeText}"><span  t-att-class="{'marquee-text': state.navHasLargeText}"><t t-out="nextInstruction"/><i
+                             class='ms-1 fa fa-barcode'/></span></a>
+                </div>
+            </div>
+            <div class="d-flex flex-column">
+                    <div t-if="state.data.state != 'done'" class="flex-grow-1">
+                        <div class="custom-card-grid custom-reset">
+                            <t t-foreach="state.transfer" t-as="transfer" t-key="transfer_index">
+                                <CustomBarcodeLocationLines transfer="transfer" destination="state.data.destination"
+                                                           type="type" notify.bind="notify" showNotification.bind="showNotification"/>
+                            </t>
+                        </div>
+                    </div>
+                <div t-else="" class="custom-barcode_section align-items-start">
+                    <div class="custom-barcode--container custom_barcode-verify-container mt-5">
+                        <div class="custom-barcode-img_container">
+                            <img src="/barcode_for_community/static/src/img/box.svg" alt="verified product"
+                                 class="custom-validate-img"/>
+                        </div>
+                        <h2 class="custom-barcode-verifyheader">This picking is already done !</h2>
+                        <p class="custom-barcode-verfy-descripition">You can create return order by clicking below button.</p>
+                        <button class="btn custom-button-stroke return-btn"
+                                t-on-click="OpenMainScreen"><i class="ri-arrow-left-line" />Return</button>
+                    </div>
+                </div>
+                <div class="position-absolute w-100 bottom-0 bg-white p-0">
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-secondary w-100 border-radius-unset"
+                                style="padding: 12px 20px; font-size: 16px !important;" type="button"
+                                t-on-click="action_put_in_pack">Put in Pack</button>
+                        <button class="btn btn-primary w-100 border-radius-unset"
+                                style="padding: 12px 20px; font-size: 16px !important;" type="button"
+                                t-on-click="_onClickApplyPicking">Validate</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+    <!-- templates for the BarcodeLocationLines views-->
+    <t t-name="barcode_for_community.BarcodeLocationLines" owl="1">
+        <div t-ref="root-LocationLines">
+            <div class="custom-card h-100">
+                <div class="custom-card-image-wrapper">
+                    <img t-if="state.transfer.image" t-attf-src="data:image/png;base64,{{state.transfer.image}}"
+                         alt="Image" class="custom-card-image"/>
+                    <img t-else="" src="/barcode_for_community/static/src/img/box.svg" alt="Image" class="custom-card-image"/>
+                </div>
+                <div class="custom-card-content">
+                    <div class="d-flex justify-content-between w-100 align-items-start mb-1">
+                        <h2 class="custom-card-heading" t-out="state.transfer.product_name"/>
+                        <Dropdown class="'border_unset_button custom-barcode-toggle'">
+                            <t t-set-slot="toggler">
+                                <span class="fa fa-ellipsis-v mt-0" style="vertical-align: top;"/>
+                            </t>
+                            <DropdownItem class="'dropdown-item-style'" onSelected.bind="handleEditLine">
+                                <i class="fa fa-pencil fa-fw" style="margin-right: 8px;"/>
+                                Edit
+                            </DropdownItem>
+                            <DropdownItem class="'dropdown-item-style'" onSelected.bind="_onclickCancel">
+                                <i class="fa fa-trash fa-fw" style="margin-right: 8px;"/>
+                                Delete
+                            </DropdownItem>
+                        </Dropdown>
+                    </div>
+                    <p class="custom-card-subheading"><i class="ri-focus-3-fill me-1" />
+                        <span t-out="state.transfer.source"/>
+                    </p>
+                    <p class="custom-card-subheading"><i class="fa fa-map-marker me-1" />
+                        <span t-out="state.transfer.destination"/>
+                    </p>
+                    <p t-if="state.transfer.product_code" class="custom-card-subheading"><i class="fa fa-tag me-1" />
+                        <span t-out="state.transfer.product_code"/>
+                    </p>
+                    <p t-if="state.transfer.lot_name" class="custom-card-subheading"><i class="ri-barcode-line me-1" />
+                        <span t-out="state.transfer.lot_name"/>
+                    </p>
+                    <p t-if="state.transfer.package_name" class="custom-card-subheading"><i class="ri-box-2-line me-1" />
+                        <span t-out="state.transfer.package_name"/>
+                    </p>
+                    <div class="mb-2 d-flex justify-content-between w-90 qty-update-barcode-card">
+                        <div class="card-text d-flex align-items-center">
+                            <i class="fa fa-cubes"/>
+                            <div class="ms-2 inv-quick-adj-barcode">
+                                <button class="fa btn fa-minus btn-secondary"
+                                        t-on-click="() => this._onClickExternalOperation('minus')"
+                                        t-if="state.transfer.tracking == 'none'"/>
+                                    <span class="custom-value"><span t-esc="state.transfer.line_quantity" />
+                                        /
+                                        <span class="barcode-denominator" t-esc="state.transfer.product_uom_qty"/>
+                                </span>
+                                    <button class="fa btn fa-plus btn-secondary"
+                                            t-on-click="() => this._onClickExternalOperation('add')"
+                                            t-if="state.transfer.tracking == 'none'"/>
+                            </div>
+                        </div>
+                        <div data-tooltip="Shows the overall counted quantity of the move (counted/demanded)" class="button-round-pin">
+                            <span class="me-1" t-out="state.transfer.overall_qty"/> / <span class="ms-1" t-out="state.transfer.product_uom_qty"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

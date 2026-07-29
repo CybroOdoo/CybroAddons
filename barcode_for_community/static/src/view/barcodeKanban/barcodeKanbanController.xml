@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-name="BarcodeKanbanController" t-inherit="web.KanbanView" t-inherit-mode="primary">
+        <xpath expr="//Layout[last()]" position="inside">
+            <button type="button" class="btn btn-primary o-kanban-button-new" accesskey="c"
+                    t-on-click="() => this.createRecord()" data-bounce-button="" hidden="True">New
+            </button>
+            <t t-if="canCreate" t-set-slot="control-panel-cy-form-cogs">
+                <CogMenuList
+                        canCreate="!model.root.editedRecord and canCreate and (!model.root.isGrouped or !editable) and !env.inDialog"
+                        canEdit="!!model.root.editedRecord"
+                        isSelected="!!nbSelected"
+                        model="model"
+                        create.bind="createRecord"
+                        onActionExecuted="() => model.load({ resId: model.root.resId, resIds: model.root.resIds })"
+                        isDomainSelected="model.root.isDomainSelected"
+                        getActiveIds="() => model.root.isNew ? [] : [model.root.resId]"
+                        context="props.context"
+                        resModel="model.root.resModel"
+                        domain="props.domain"
+                        items="props.info.actionMenus ? actionMenuItems : {}"/>
+            </t>
+            <t t-if="env.searchModel.resModel == 'ir.module.module' or canCreate"
+               t-set-slot="control-panel-cy-form-cogs">
+                <div class="d-flex gap-3 align-items-center">
+                    <div class="go-back-barcode" t-on-click="handleGoBack" data-tooltip="Go Back">
+                        <i class="ri-arrow-left-s-line"/>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

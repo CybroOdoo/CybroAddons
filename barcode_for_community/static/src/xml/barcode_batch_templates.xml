@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!--    templates for the BarcodeBatchTransfer views-->
+    <t t-name="barcode_for_community.BarcodeBatchTransfer" owl="1">
+        <div class="o_custom_barcode_batch ">
+            <div class="d-flex w-100 p-0 m-0 bg-white border-bottom">
+                <nav class="navbar navbar-light w-100 justify-content-between barcode-custom-primary">
+                    <span class="navbar-brand text-light">Batch Transfer</span>
+                    <form class="form-inline d-flex gap-3">
+                        <button class="btn custom_barcode_main_scanner" type="button"
+                                t-on-click="_onClickScanProduct"><i class="fa fa-barcode barcode-icon" /></button>
+                        <button class="btn go-back-big-screen btn-outline-light my-2 my-sm-0"
+                                type="button"
+                                t-on-click="handleGoBack"><i class="fa fa-sign-out"/></button>
+                    </form>
+                </nav>
+            </div>
+            <div class="container"
+                 style="max-height: 90.5vh; overflow-y: auto;">
+                <div class="card-columns row" style="padding-bottom: 10px;">
+                <div class="col-sm-4" style="margin: 10px 0;"
+                     t-foreach="this.state.batches" t-as="batch"
+                     t-key="batch.id">
+                    <div class="card"
+                         t-on-click="() => this._onClickOpenTransfer(batch.id, batch.name)">
+                      <div class="card-body">
+                          <div class="badge-stock-picking">Ready</div>
+                          <div class="row">
+                            <h4 class="card-title d-flex col-sm-9"
+                                t-esc="batch.name"/>
+                              <i class="btn fa fa-desktop col-sm-3 d-flex justify-content-end"
+                                 t-on-click="(ev) => this.OpenBatchTransfer(ev, batch.id, batch.name)"/>
+                              <p class="text-muted col-sm-8"
+                                 t-esc="batch.picking_type_id[1]"/>
+                              <t t-set="date"
+                                 t-value="batch.scheduled_date.split(' ')"/>
+                              <p class="text-muted col-sm-4 d-flex justify-content-end"
+                                 t-esc="date[0]"/>
+                          </div>
+                      </div>
+                    </div>
+                  </div>
+                  </div>
+            </div>
+        </div>
+    </t>
+    <!--    templates for the BarcodeBatchTransferLines views-->
+    <t t-name="barcode_for_community.BarcodeBatchTransferLines" owl="1">
+        <div class="o_custom_barcode_batch_line position-relative"
+             t-ref="BarcodeTransferLine-Root">
+            <div class="d-flex w-100 p-0 m-0 bg-white border-bottom">
+                <nav class="navbar navbar-light w-100 justify-content-between barcode-custom-primary">
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex barcode_header_container">
+                            <div t-on-click="_onClickExit" class="arrow-line-go-back">
+                                <i class="ri-arrow-left-s-line"/>
+                            </div>
+                            <span class="navbar-brand text-light"
+                                  t-esc="state.data.name"/>
+                        </div>
+                    </div>
+                    <form class="form-inline d-flex gap-3">
+                        <button class="btn custom_barcode_main_scanner" type="button"
+                                t-on-click="_onClickScanProduct"><i class="fa fa-barcode barcode-icon" /></button>
+                        <button class="btn go-back-big-screen btn-outline-light my-2 my-sm-0"
+                                type="button" style="margin-right: 10px"
+                                t-on-click="() => this.actionService.doAction('barcode_for_community.custom_barcode_action')"><i class="fa fa-sign-out"/></button>
+                    </form>
+                </nav>
+            </div>
+            <t t-if="state.data.state != 'done'">
+                <div class="justify-content-center d-flex border-bottom" t-att-class="{'p-2': !env.isSmall}">
+                     <a class="navbar-brand text-dark adjustment_location_header"
+                        t-att-class="{marquee: state.navHasLargeText}"><span  t-att-class="{'marquee-text': state.navHasLargeText}"><t t-out="nextInstruction"/><i
+                             class='ms-1 fa fa-barcode'/></span></a>
+                </div>
+                <div class="container custom-barcode-adjustment-container">
+                    <div class="card-columns row" style="padding-bottom: 10px;">
+                        <div class="dummy-top"/>
+                        <div class="col-sm-4" style="margin: 10px 0;"
+                             t-foreach="this.state.move_line" t-as="move_line"
+                             t-key="move_line.id">
+                            <CustomBarcodeMoveLines line="move_line" picking_type="this.state.data.picking_type"/>
+                          </div>
+                    </div>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="row custom-barcode_section">
+                <div class="custom-barcode--container custom_barcode-verify-container">
+                    <div class="custom-barcode-img_container">
+                        <img src="/barcode_for_community/static/src/img/box.svg" alt="verified product"
+                             class="custom-validate-img"/>
+                    </div>
+
+                    <h2 class="custom-barcode-verifyheader">This Batch Transfer is Validated !</h2>
+                </div>
+                </div>
+            </t>
+            <div class="position-absolute bottom-0 w-100 row d-flex m-0"
+                 t-if="state.data.state != 'done'">
+            <div class="col-md-6 col-sm-6 btn-adjustment put_in_pack justify-content-center align-items-center d-flex border-top bg-light"
+                 t-on-click="_onClickActionPackage"
+                 t-if="group_stock_tracking_lot" style="height:43px;">
+                Put In Pack
+            </div>
+                <div t-attf-class="btn-adjustment justify-content-center barcode-custom-primary align-items-center text-light d-flex {{this.group_stock_tracking_lot ? 'col-md-6 col-sm-6 ' : ''}}"
+                     t-on-click="_onClickActionValidate" style="height:43px;">
+                    Validate
+            </div>
+        </div>
+        </div>
+    </t>
+    <!--    templates for the CustomBarcodeMoveLines views-->
+    <t t-name="barcode_for_community.CustomBarcodeMoveLines" owl="1">
+        <div class="card barcode-move-line" style="min-height: 100%;" t-ref="MoveLine-root">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <p t-if="this.props.picking_type === 'incoming'"> <i
+                            class="fa fa-sign-out" style="padding-right: 10px;"/>
+                        <span t-esc="props.line.location_dest_id[1]"/> </p>
+                    <p t-if="this.props.picking_type === 'outgoing'"> <i
+                            class="fa fa-sign-out" style="padding-right: 10px;"/>
+                        <span t-esc="props.line.location_id[1]"/> </p>
+                    <h4 class="card-title d-flex "> <i class="fa fa-tags" style="padding-right: 10px;"/>
+                        <span t-esc="props.line.product_id[1]"/></h4>
+                    <t t-log="'propsss', props"/>
+                    <p t-if="props.line.lot_id[1]"><i class="ri-barcode-line me-1" style="padding-right: 10px;"/>
+                        <span t-out="props.line.lot_id[1]"/>
+                    </p>
+                    <p t-if="props.line.result_package_id[1]"><i class="ri-box-2-line me-1" style="padding-right: 10px;"/>
+                        <span t-out="props.line.result_package_id[1]"/>
+                    </p>
+                    <p><i class="fa fa-cube" style="padding-right: 10px;"/>
+                        <t t-log="'scannedddd',props.line"/>
+                        <span t-if="props.line.is_barcode_scanned">
+                            <t t-esc="props.line.quantity_product_uom"/>
+                        </span>
+                        <span t-else="">
+                            0
+                        </span>
+                        /
+                        <t t-esc="props.line.move_id[0].product_uom_qty"/>
+                        </p>
+                    <p><i class="fa fa-truck" style="padding-right: 10px;"/>
+                        <t t-esc="props.line.picking_id[1]"/></p>
+                </div>
+                <div class="row" style="min-height: 33px;padding: 0 10px;">
+                    <div class="col-md-6 col-sm-6 border justify-content-center align-items-center d-flex btn"
+                         t-if="state.line.qty_done == 0"
+                         t-on-click="() => this._onClickApplyChanges(props.line.quantity_product_uom)">
+                        + <t t-esc="props.line.quantity_product_uom"/>
+                    </div>
+                    <div class="d-flex action-buttons">
+                        <div t-attf-class="btn-adjustment edit-button-batch justify-content-center barcode-custom-primary btn align-items-center text-light d-flex {{state.line.qty_done == 0 ? 'col-md-6 col-sm-6 ' : ''}}"
+                            t-on-click="() => this.handleEdit()"
+                            title="Edit Item">
+                            <i class="fa fa-pencil"></i>
+                        </div>
+                        <div
+                            class="delete-button align-items-center d-flex justify-content-center text-light"
+                            title="Delete Item"
+                            t-on-click="() => this.handleDelete()">
+                            <i class="fa fa-trash"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

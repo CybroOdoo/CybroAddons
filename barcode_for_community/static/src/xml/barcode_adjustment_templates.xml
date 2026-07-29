@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!--    templates for the BarcodeAdjustment views-->
+    <t t-name="barcode_for_community.BarcodeAdjustment" owl="1">
+        <div class="container-fluid o_custom_barcode_adjustment p-0" t-ref="BarcodeAdjustmentRoot">
+            <div class="d-flex w-100 p-0 m-0 bg-white border-bottom">
+                <nav class="navbar navbar-light w-100 justify-content-between barcode-custom-primary">
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex barcode_header_container">
+                            <div t-on-click="handleGoBack" class="arrow-line-go-back">
+                                <i class="ri-arrow-left-s-line"/>
+                            </div>
+                            <div class="inv-adj-nav-header navbar-brand ">Inventory Adjustment</div>
+                        </div>
+                    </div>
+                    <form class="form-inline d-flex gap-3">
+                        <button class="btn custom_barcode_main_scanner" type="button"
+                                    t-on-click="_onClickScanProduct"><i class="fa fa-barcode barcode-icon" /></button>
+                            <button class="btn go-back-big-screen btn-outline-light my-2 my-sm-0" type="button"
+                                t-on-click="handleGoBack"><i class="fa fa-sign-out" /></button>
+                    </form>
+                </nav>
+            </div>
+            <div class="justify-content-center d-flex border-bottom" t-att-class="{'p-2': !env.isSmall}">
+                <a class="navbar-brand text-dark adjustment_location_header marquee">Scan Product/Location <i class="fa fa-barcode" /></a>
+            </div>
+            <div class="d-flex flex-column">
+                <div class="flex-grow-1">
+                    <div class="dummy-top"/>
+                    <div class="custom-card-grid custom-reset">
+                        <t t-foreach="this.state.adjust_stock" t-as="stock" t-key="stock['id']">
+                            <CustomBarcodeAdjustmentLines stock="stock"/>
+                        </t>
+                    </div>
+                </div>
+            </div>
+            <div class="position-absolute custom_barcode_adjustment_bottom bottom-0 w-100 d-flex"
+                 t-att-disabled="state.selected_stock.length &lt;= 0">
+                <div class="col-md-6 btn-adjustment-clear justify-content-center align-items-center text-dark d-flex border-top"
+                     t-on-click="() => this._onClickCancelSelected(this.state.selected_stock)" style="height:50px;"
+                     t-att-disabled="state.adjust_stock.length &lt;= 0">
+                    Clear
+                </div>
+                <div class="col-md-6 btn-adjustment justify-content-center barcode-custom-primary align-items-center  d-flex"
+                     t-on-click="_onClickApplySelected" style="height:50px;">
+                    Apply
+                    <t t-esc="'('+this.state.selected_stock.length+')'"
+                       t-att-disabled="state.adjust_stock.length &lt;= 0"/>
+                </div>
+            </div>
+            </div>
+    </t>
+    <!--    templates for the BarcodeAdjustmentLines views-->
+    <t t-name="barcode_for_community.BarcodeAdjustmentLines" owl="1">
+        <div t-ref="root-AdjustmentLines">
+            <div class="custom-card h-100" t-on-click="_onSelectCards" t-att-class="getClassName">
+                <div class="custom-card-image-wrapper">
+                    <img class="custom-card-image"
+                         t-attf-src="/web/image/product.product/{{props.stock.product}}/image_1920"/>
+                </div>
+                <div class="custom-card-content">
+                    <div class="d-flex justify-content-between w-100 align-items-start">
+                        <h2 class="custom-card-heading" t-out="state.stock?.product_name" />
+                            <Dropdown class="'border_unset_button custom-barcode-toggle'">
+                                <t t-set-slot="toggler">
+                                    <span class="fa fa-ellipsis-v mt-0"  style="vertical-align: top;"/>
+                                </t>
+                                <DropdownItem class="'dropdown-item-style'" onSelected.bind="handleEdit">
+                                    <i class="fa fa-pencil fa-fw" style="margin-right: 8px;" />
+                                    Edit
+                                </DropdownItem>
+                                <DropdownItem class="'dropdown-item-style'" onSelected.bind.stop="_onclickCancel">
+                                    <i class="fa fa-trash fa-fw" style="margin-right: 8px;" />
+                                    Delete
+                                </DropdownItem>
+                            </Dropdown>
+                        </div>
+                        <p class="custom-card-subheading"><i class="fa fa-map-marker me-1" />
+                            <span t-out="state.stock.location" />
+                        </p>
+                        <p t-if="state.stock.product_code" class="custom-card-subheading"><i class="fa fa-tag me-1" />
+                            <span t-out="state.stock.product_code" />
+                        </p>
+                        <div class="custom-card-controls">
+                        <div class="mb-2 card-text d-flex align-items-center">
+                            <i class="fa fa-cubes"/>
+                            <div class="ms-2 inv-quick-adj-barcode">
+                                <button class="fa btn fa-minus btn-secondary"
+                                        t-on-click.stop="(ev) => this._onClickExternalOperation('minus')"/>
+                                <span t-esc="state.stock.inv_quantity"/>
+                                /
+                                <span class="barcode-denominator" t-esc="state.stock.quantity"/>
+                                <button class="fa btn fa-plus btn-secondary"
+                                        t-on-click.stop="(ev) => this._onClickExternalOperation('add')"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="AdjustmentLinesModal" class="barcode-modal custom-Barcode-modal">
+                <!-- Modal content -->
+                <div class="barcode-modal-content">
+                    <i class="fa fa-times barcode-close" t-on-click="_onClickDiscardChanges"/>
+                    <div class="barcode-adjustment-line-content d-grid justify-content-center">
+                        <h4 class="card-text text-dark"><i class="fa fa-tags" />
+                            <span class="btn" t-esc="state.stock.product_name"
+                                  t-on-click="() => this._onClickOpenWizard('product.product', state.stock.product)"/>
+                        </h4>
+                        <div class="d-flex" style="margin: 6px 0;"><i class="fa fa-cubes text-dark" style="font-size: 23px;padding-top: 3px;" />
+                            <input type="number" min="0" class="form-control input_for_quantity"
+                                   t-att-value="state.stock.inv_quantity" style="margin-left:3px;"/>
+                            <div style="border-top-right-radius: 7px;border-bottom-right-radius: 7px;width: 42px;"
+                                 class=" align-items-center d-flex justify-content-center barcode-custom-primary"
+                                 t-esc="state.stock.quantity"/>
+                        </div>
+                        <div id="barcode-numpad-container">
+                            <ul id="barcode-numpad-keyboard">
+                                <li class="letter" t-on-click="() => this._onclickNumber('1')">1</li>
+                                <li class="letter" t-on-click="() => this._onclickNumber('2')">2</li>
+                                <li class="letter" t-on-click="() => this._onclickNumber('3')">3</li>
+                                <li class="letter barcode-numpad-clearl"
+                                    t-on-click="() => this._onclickNumber('4')">4</li>
+                                <li class="letter" t-on-click="() => this._onclickNumber('5')">5</li>
+                                <li class="letter" t-on-click="() => this._onclickNumber('6')">6</li>
+                                <li class="letter barcode-numpad-clearl"
+                                    t-on-click="() => this._onclickNumber('7')">7</li>
+                                <li class="letter" t-on-click="() => this._onclickNumber('8')">8</li>
+                                <li class="letter" t-on-click="() => this._onclickNumber('9')">9</li>
+                                <li class="letter" t-on-click="() => this._onClickDialOperation('minus')">-1</li>
+                                <li class="letter  barcode-numpad-clearl" t-on-click="_onClickDialDecimal">.</li>
+                                <li class="letter" t-on-click="() => this._onclickNumber('0')">0</li>
+                                <li class="letter" t-on-click="() => this._onClickDialRemove"><i class="fa fa-long-arrow-left" /></li>
+                                <li class="letter" t-on-click="() => this._onClickDialOperation('add')">+1</li>
+                            </ul>
+                        </div>
+                        <h4 class="card-text text-dark"><i class="fa fa-map-marker me-1" />
+                            <span t-esc="state.stock.location" class="btn"
+                                  t-on-click="() => this._onClickOpenWizard('stock.location', state.stock.location_id)"/>
+                        </h4>
+                    </div>
+                    <div class="row barcode-modal-buttons" style="justify-content: space-between !important; padding:1px; gap:6px;">
+                        <div class="col-md-6 btn-adjustment-clear justify-content-center align-items-center text-dark d-flex border"
+                             t-on-click="_onClickDiscardChanges">
+                            Discard
+                        </div>
+                        <div class="col-md-6 btn-adjustment justify-content-center barcode-custom-primary align-items-center  d-flex"
+                             t-on-click="() => this._onClickApplyChanges(this.root.el.querySelector('.input_for_quantity').value)">
+                            Apply
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
