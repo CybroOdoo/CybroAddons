@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Wizard Form View -->
+    <record id="view_contacts_mass_update_form" model="ir.ui.view">
+        <field name="name">contacts.mass.update.form</field>
+        <field name="model">contacts.mass.update</field>
+        <field name="arch" type="xml">
+            <form string="Bulk Tag Assignment">
+                <field name="step" invisible="1"/>
+
+                <!-- Step 1: Filter Selection -->
+                <group invisible="step != 'select'">
+                    <group class="w-100">
+                        <div class="alert alert-info" role="alert">
+                            <strong>Step 1:</strong>
+                            Select filters to identify partners for tag assignment.
+                        </div>
+                    </group>
+
+                    <group string="Partner Type">
+                        <field name="partner_type" widget="radio"/>
+                        <field name="include_inactive"/>
+                    </group>
+
+                    <group string="Location Filters">
+                        <field name="filter_by_location"/>
+                        <field name="country_ids" widget="many2many_tags"
+                               invisible="not filter_by_location"
+                               options="{'no_create': True}"/>
+                        <field name="state_ids" widget="many2many_tags"
+                               domain="[('country_id', 'in', country_ids)]"
+                               invisible="not filter_by_location"
+                               options="{'no_create': True}"/>
+                    </group>
+
+                    <group class="w-100">
+                        <div class="alert alert-success" role="alert">
+                            <strong>
+                                <field name="partner_count"/>
+                                partner(s)
+                            </strong>
+                            match your criteria.
+                        </div>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_next" string="Next: update fields"
+                            type="object" class="btn-primary" invisible="step != 'select'"/>
+                </footer>
+
+
+                <!-- Step 2: Confirmation & Tag Selection -->
+                <group invisible="step != 'confirm'">
+                    <group class="w-100">
+                        <div class="alert alert-info" role="alert">
+                            <strong>Step 2:</strong>
+                            Review partners and select tags to assign.
+                        </div>
+                    </group>
+
+                    <group string="Tag Assignment Options" class="w-100">
+                        <field name="tag_ids" widget="many2many_tags"
+                               options="{'color_field': 'color', 'no_create_edit': True}"
+                               placeholder="Select tags to assign..."/>
+                        <field name="replace_tags"/>
+                        <div class="text-muted" invisible="not replace_tags">
+                            Warning: This will remove all existing tags from selected partners.
+                        </div>
+                    </group>
+
+                    <group string="Sales" class="w-50">
+                        <field name="user_id" placeholder="Select salesperson to assign..."/>
+                        <field name="property_payment_term_id"
+                               placeholder="Select property payment term to assign..."/>
+                        <field name="property_inbound_payment_method_line_id"
+                               placeholder="Select property payment method to assign..."/>
+                        <field name="property_product_pricelist"
+                               placeholder="Select price list to assign..."/>
+                    </group>
+
+                    <group string="Purchase" class="w-50">
+                        <field name="property_supplier_payment_term_id"
+                               placeholder="Select purchase payment term to assign..."/>
+                        <field name="property_outbound_payment_method_line_id"
+                               placeholder="Select purchase payment method to assign..."/>
+                    </group>
+
+                    <group string="Other Info" class="w-100">
+                        <field name="company_id"
+                               placeholder="Select company to assign..."/>
+                        <field name="property_account_position_id"
+                               placeholder="Select fiscal position to assign..."/>
+                    </group>
+
+                    <group string="Preview" class="w-100">
+                        <group class="w-100">
+                            <div class="alert alert-warning" role="alert">
+                                <strong>
+                                    <field name="partner_count"/>
+                                    partner(s)
+                                </strong>
+                                will be updated.
+                            </div>
+                        </group>
+                        <field name="preview_partner_ids" nolabel="1"
+                               widget="many2many"
+                               readonly="1">
+                            <list limit="10" decoration-muted="not active">
+                                <field name="display_name"/>
+                                <field name="category_id" widget="many2many_tags"/>
+                                <field name="active" invisible="1"/>
+                                <field name="user_id" optional="hide"/>
+                                <field name="property_payment_term_id" optional="hide"/>
+                                <field name="property_inbound_payment_method_line_id" optional="hide"/>
+                                <field name="property_product_pricelist" optional="hide"/>
+                                <field name="property_supplier_payment_term_id" optional="hide"/>
+                                <field name="property_outbound_payment_method_line_id" optional="hide"/>
+                                <field name="property_account_position_id" optional="hide"/>
+                                <field name="company_id" optional="hide"/>
+                            </list>
+                        </field>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_update_partner" string="Update Partners"
+                            type="object" class="btn-primary" invisible="step != 'confirm'"
+                            confirm="Are you sure you want to proceed with partner modification?"/>
+                    <button name="action_back" string="Back"
+                            type="object" class="btn-secondary" invisible="step != 'confirm'"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+
+            </form>
+        </field>
+    </record>
+</odoo>
