@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tours Listing -->
+    <template id="flynova_tour_index" name="Flynova Tours Listing">
+        <t t-call="website.layout">
+            <t t-set="is_inpage" t-value="True"/>
+            <t t-set="header_class" t-value="'bg-white shadow-sm'"/>
+            <t t-set="no_header_overlay" t-value="True"/>
+
+            <div id="wrap" class="oe_structure oe_empty">
+                <!-- Banner Section -->
+                <div class="position-relative w-100"
+                     style="height: 300px; overflow: hidden; background: url('/theme_flynova/static/src/img/images/about.jpg') no-repeat center center; background-size: cover;">
+                    <div class="position-absolute w-100 h-100 top-0 left-0" style="background: rgba(0,0,0,0.2);"></div>
+                    <div class="position-absolute w-100 h-100 top-0 left-0 d-flex align-items-center justify-content-center">
+                        <h1 class="text-white font-weight-bold"
+                            style="font-size: 3.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">Our Tours
+                        </h1>
+                    </div>
+                </div>
+
+                <div class="container-fluid cmpad py-5">
+                    <div class="row">
+                        <!-- Filter Sidebar -->
+                        <div class="col-lg-3">
+                            <form t-attf-action="/tours" method="get" class="flynova-filter-sidebar flynova-listing-filter bg-white p-4 rounded shadow-sm border mb-4"
+                                  id="flynova_filter_form">
+                                <h6 class="font-weight-bold mb-3">Select your destination :</h6>
+                                <select name="destination" class="form-control mb-4 bg-light border-0"
+                                        style="border-radius: 10px;">
+                                    <option value="All Destinations">All Destinations</option>
+                                    <t t-foreach="destinations" t-as="dest">
+                                        <option t-att-value="dest"
+                                                t-att-selected="dest == active_filters.get('destination')"
+                                                t-esc="dest"/>
+                                    </t>
+                                </select>
+
+                                <h6 class="font-weight-bold mb-3">Package :</h6>
+                                <select name="package" class="form-control mb-4 bg-light border-0"
+                                        style="border-radius: 10px;">
+                                    <option value="">All Packages</option>
+                                    <t t-foreach="packages" t-as="pkg">
+                                        <option t-att-value="pkg.id"
+                                                t-att-selected="pkg.id == active_filters.get('package')"
+                                                t-esc="pkg.name"/>
+                                    </t>
+                                </select>
+
+                                <h6 class="font-weight-bold mb-3 d-flex justify-content-between">
+                                    Max Price :
+                                    <span class="text-dark">$<span id="max_price_val" class="flynova-price-display"><t t-esc="active_filters.get('max_price', 5000)"/></span></span>
+                                </h6>
+                                <input type="range" name="max_price" class="custom-range mb-4" min="0" max="5000"
+                                       t-att-value="active_filters.get('max_price', 5000)"/>
+
+                                <h6 class="font-weight-bold mb-3">Durations :</h6>
+                                <div class="row mb-2">
+                                    <t t-foreach="available_durations" t-as="dur">
+                                        <div class="col-6 mb-2">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" name="duration" class="custom-control-input"
+                                                       t-attf-id="dur_#{dur_index}" t-att-value="dur"
+                                                       t-att-checked="dur in active_filters.get('duration', [])"/>
+                                                <label class="custom-control-label small text-muted"
+                                                       t-attf-for="dur_#{dur_index}" t-esc="dur"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Tours Grid -->
+                        <div class="col-lg-9">
+                            <div class="row">
+                                <t t-if="products">
+                                    <t t-foreach="products" t-as="product">
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card border-0 rounded-lg shadow-sm h-100 overflow-hidden package-card transition-card"
+                                                 style="border-radius: 20px !important; background: #fff; border: 1px solid #eee !important;">
+                                                <div class="card-body p-4 d-flex flex-column">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <div class="d-flex align-items-center font-weight-bold"
+                                                             style="color: #6f42c1 !important;">
+                                                            <i class="fa fa-clock-o mr-2" style="font-size: 1.1rem;"/>
+                                                            <span t-esc="product.duration or 'Flexible'"/>
+                                                        </div>
+                                                    </div>
+
+                                                    <h3 class="font-weight-bold mb-2" t-field="product.name"
+                                                        style="font-size: 1.6rem; color: #222;"/>
+                                                    <div class="text-muted mb-3 d-flex align-items-center">
+                                                        <i class="fa fa-map-marker text-primary mr-2"
+                                                           style="font-size: 1.1rem;"/>
+                                                        <span t-esc="product.location_name or 'Global Destination'"/>
+                                                    </div>
+
+                                                    <div class="text-muted small mb-4 overflow-hidden"
+                                                         style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; min-height: 60px;">
+                                                        <t t-esc="product.description_sale"/>
+                                                    </div>
+
+                                                    <div class="d-flex justify-content-between align-items-end mt-auto pt-3 border-top">
+                                                        <a t-attf-href="/tour/{{ slug(product) }}"
+                                                           class="btn flynova-btn-primary rounded-pill px-4 py-2 font-weight-bold shadow-sm details-btn"
+                                                           style="background: #6f42c1; border: none; font-size: 0.9rem;">
+                                                            Details
+                                                        </a>
+                                                        <div class="text-right">
+                                                            <div class="small text-muted mb-n1"
+                                                                 style="font-size: 0.8rem;">From
+                                                            </div>
+                                                            <div class="h2 font-weight-bold mb-0"
+                                                                 style="color: #6f42c1; font-size: 2rem;">
+                                                                <t t-esc="product.list_price"
+                                                                   t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <div class="col-12 text-center py-5">
+                                        <h3 class="text-muted">No tours found.</h3>
+                                    </div>
+                                </t>
+                            </div>
+                            <!-- Pagination -->
+                            <div class="d-flex justify-content-center mt-5">
+                                <t t-call="website.pager"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="oe_structure"/>
+        </t>
+    </template>
+
+    <!-- Tour Detail -->
+    <template id="flynova_tour_detail" name="Flynova Tour Detail">
+        <t t-call="website.layout">
+            <t t-set="is_inpage" t-value="True"/>
+            <t t-set="header_class" t-value="'bg-white shadow-sm'"/>
+            <t t-set="no_header_overlay" t-value="True"/>
+
+            <div id="wrap" class="oe_structure oe_empty">
+                <section class="position-relative py-5">
+                    <div class="container-fluid cmpad pt-5">
+                        <!-- Tour Title & Destination -->
+                        <div class="mb-4">
+                            <h1 class="font-weight-bold mb-1" style="font-size: 2.2rem; color: #222;"
+                                t-field="product.name"/>
+                            <div class="d-flex align-items-center text-muted" style="font-size: 1rem;">
+                                <i class="fa fa-map-marker mr-2" style="color: #6f42c1;"/>
+                                <span t-if="product.location_name" t-field="product.location_name"/>
+                                <span t-else="">Destination not specified</span>
+                            </div>
+                        </div>
+                        <div class="top-section">
+                            <div class="image-gallery mb-5 mb-lg-0">
+                                <div class="main-image">
+                                    <img t-attf-src="/web/image/product.template/{{ product.id }}/image_1920"
+                                         alt="Main Image" id="main_booking_image"/>
+                                </div>
+                                <div class="thumbnail-grid">
+                                    <div class="thumbnail booking-thumbnail active">
+                                        <img t-attf-src="/web/image/product.template/{{ product.id }}/image_1920"
+                                             alt="Thumb"/>
+                                    </div>
+                                    <t t-foreach="product.gallery_image_ids" t-as="img">
+                                        <div class="thumbnail booking-thumbnail">
+                                            <img t-attf-src="/web/image/ir.attachment/{{ img.id }}/datas" alt="Thumb"/>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <div class="booking-panel">
+                                <form action="/booking/slot/submit" method="post" id="booking_form">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="product_id" t-att-value="product.id"/>
+                                    <input type="hidden" name="adult_qty" id="adult_qty_input" value="1"/>
+                                    <input type="hidden" name="child_qty" id="child_qty_input" value="0"/>
+
+                                    <div class="price-section d-flex justify-content-between">
+                                        <div>
+                                            <div class="price-label">Price</div>
+                                            <div class="price-label" style="font-weight: 700;">From</div>
+                                        </div>
+                                        <div class="price-amount" t-field="product.list_price"
+                                             t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Date</label>
+                                        <div class="date-input">
+                                            <input type="date" name="date_begin" class="form-input"
+                                                   required="required"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="counter-group">
+                                            <div class="counter-info">
+                                                <div class="counter-label">Adults</div>
+                                                <div class="counter-sublabel">Over 18 (
+                                                    <t t-esc="product.list_price"
+                                                       t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                                    )
+                                                </div>
+                                            </div>
+                                            <div class="counter-controls" data-type="adult">
+                                                <button type="button" class="counter-btn minus">-</button>
+                                                <div class="counter-value">1</div>
+                                                <button type="button" class="counter-btn plus">+</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="counter-group">
+                                            <div class="counter-info">
+                                                <div class="counter-label">Children</div>
+                                                <div class="counter-sublabel">Under 18 (
+                                                    <t t-esc="product.list_price * 0.5"
+                                                       t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                                    )
+                                                </div>
+                                            </div>
+                                            <div class="counter-controls" data-type="child">
+                                                <button type="button" class="counter-btn minus">-</button>
+                                                <div class="counter-value">0</div>
+                                                <button type="button" class="counter-btn plus">+</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Extra Services -->
+                                    <t t-if="extra_services">
+                                        <div class="extra-services-section mb-4">
+                                            <div class="extra-services-label">Extra Services</div>
+                                            <div class="extra-services-sublabel">Add extra services on your reservation</div>
+                                            <div class="extra-services-list mt-2">
+                                                <t t-foreach="extra_services" t-as="svc">
+                                                    <label class="extra-service-item">
+                                                        <input type="checkbox"
+                                                               t-attf-name="extra_service_{{ svc.id }}"
+                                                               t-att-value="svc.id"
+                                                               class="extra-service-checkbox"
+                                                               t-att-data-price="svc.price"
+                                                               checked="checked"/>
+                                                        <span class="extra-service-check-icon">
+                                                            <i class="fa fa-check"/>
+                                                        </span>
+                                                        <span class="extra-service-name">
+                                                            <t t-esc="svc.name"/>
+                                                            <t t-if="svc.description">
+                                                                - <t t-esc="svc.description"/>
+                                                            </t>
+                                                        </span>
+                                                        <span class="extra-service-price">
+                                                            ( $<t t-esc="'%.0f' % svc.price"/> )
+                                                        </span>
+                                                    </label>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </t>
+
+                                    <button type="submit" class="book-btn w-100 py-3 bttn" style="border: none;"
+                                            id="tour_book_btn">BOOK NOW FOR
+                                        $<span id="tour_total_price"
+                                               t-att-data-adult-price="product.list_price"
+                                               t-att-data-child-price="product.list_price * 0.5"><t t-esc="'%.0f' % product.list_price"/></span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="content-section mt-5">
+                            <h2 class="section-title">Enjoy the Adventure</h2>
+                            <div class="section-text" t-field="product.description_sale"/>
+                        </div>
+
+                        <div class="content-section" t-if="product.included_details or product.excluded_details">
+                            <h2 class="section-title">Included / Excluded</h2>
+                            <p class="section-text">
+                                To help you plan your trip, we've put together a list of what's included and what's not
+                                included in your tour package.
+                            </p>
+
+                            <div class="features-grid">
+                                <div class="features-column" t-if="product.included_details">
+                                    <t t-foreach="product.included_details.split('\n')" t-as="item">
+                                        <div class="feature-item feature-included">
+                                            <t t-esc="item"/>
+                                        </div>
+                                    </t>
+                                </div>
+                                <div class="features-column" t-if="product.excluded_details">
+                                    <t t-foreach="product.excluded_details.split('\n')" t-as="item">
+                                        <div class="feature-item feature-excluded">
+                                            <t t-esc="item"/>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="position-relative mainbg py-2 py-md-5" t-if="product.gallery_image_ids">
+                    <div class="container-fluid cmpad py-3">
+                        <div class="row">
+                            <div class="col-md-12 text-center">
+                                <h2 class="mainhead mb-3">Gallery</h2>
+                                <div class="flynova-carousel" data-carousel-autoplay="true"
+                                     data-carousel-interval="2500">
+                                    <div class="flynova-carousel-header">
+                                        <button type="button"
+                                                class="flynova-carousel-control flynova-carousel-control--prev">
+                                            <i class="fa fa-angle-left"/>
+                                        </button>
+                                        <button type="button"
+                                                class="flynova-carousel-control flynova-carousel-control--next">
+                                            <i class="fa fa-angle-right"/>
+                                        </button>
+                                    </div>
+                                    <div class="flynova-carousel-viewport">
+                                        <div class="flynova-carousel-track">
+                                            <t t-foreach="product.gallery_image_ids" t-as="img">
+                                                <div class="flynova-carousel-slide">
+                                                    <div class="destination-card">
+                                                        <div class="card-image1">
+                                                            <img t-attf-src="/web/image/ir.attachment/{{ img.id }}/datas"
+                                                                 alt="Gallery Image"
+                                                                 class="w-100 h-100 object-fit-cover"/>
+                                                            <div class="image-overlay1"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="position-relative py-2 py-md-5">
+                    <div class="container-fluid cmpad py-3">
+                        <div class="row">
+                            <div class="col-md-12 text-center">
+                                <div class="banner">
+                                    <div class="content">
+                                        <div class="left-content text-left">
+                                            <h1 class="title">Discover paradise</h1>
+                                            <p class="discount">GET 30% OFF</p>
+                                            <button class="get-register-btn">Get Register</button>
+                                        </div>
+                                        <div class="right-content text-left">
+                                            <p class="description">
+                                                Join our newsletter to stay updated with our latest offers and travel
+                                                inspiration across the globe.
+                                            </p>
+                                            <div class="email-signup">
+                                                <input type="email" class="email-input" placeholder="Enter your email"/>
+                                                <a href="#" class="bttn">Subscribe</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="oe_structure"/>
+        </t>
+    </template>
+
+</odoo>

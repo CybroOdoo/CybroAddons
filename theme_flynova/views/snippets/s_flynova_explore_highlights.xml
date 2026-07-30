@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Website builder snippet defining the destination highlights section shown on the Flynova Explore page. -->
+<odoo>
+    <template id="s_flynova_explore_highlights" name="Flynova Explore Highlights">
+        <section class="s_flynova_explore_highlights py-4 py-md-5" data-snippet="s_flynova_explore_highlights" data-name="Flynova Explore Highlights">
+            <t t-set="explore_highlights" t-value="request.env['product.template'].sudo().search([
+                ('flynova_listing_type', 'in', ['hotel','tour']),
+                ('image_1920', '!=', False),
+            ], limit=4)"/>
+
+            <div class="container-fluid cmpad">
+                <div class="row conwidth mb-4">
+                    <div class="col-12">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3">
+                            <div>
+                                <span class="flynova-kicker">Popular Places</span>
+                                <h2 class="mainhead mb-0">Beautiful Places Around The World</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row conwidth g-4">
+                    <t t-foreach="explore_highlights" t-as="spot">
+                        <div class="col-xl-3 col-lg-3 col-md-6">
+                            <a t-attf-href="/#{'tour' if spot.flynova_listing_type == 'tour' else 'hotel'}/#{slug(spot)}"
+                               class="explore-destination-card">
+                                <div class="explore-destination-card__media">
+                                    <span t-field="spot.image_1920"
+                                          class="explore-destination-card__image d-block w-100 h-100"
+                                          t-options="{
+                                              'widget': 'image',
+                                              'preview_image': 'image_1024',
+                                              'class': 'w-100 h-100',
+                                              'alt-field': 'name',
+                                          }"/>
+                                    <div class="explore-destination-card__overlay"></div>
+                                    <div class="explore-destination-card__content">
+                                        <h3 t-esc="spot.location_name or spot.name"/>
+                                        <span t-esc="spot.name"/>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </template>
+</odoo>

@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Flynova Registration Form -->
+    <template id="flynova_registration" inherit_id="website_event.registration_attendee_details"
+              name="Flynova Registration Form">
+        <xpath expr="//html" position="attributes">
+            <attribute name="t-att-data-main-object">
+                "'%s,%s' % (event._name, event.id)"
+            </attribute>
+        </xpath>
+        <xpath expr="//form[@id='attendee_registration']" position="replace">
+            <form id="attendee_registration" t-attf-action="/event/#{slug(event)}/registration/confirm"
+                  method="post" class="container-fluid cmpad py-5">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="bg-white p-5 rounded shadow-sm border">
+                            <h2 class="font-weight-bold mb-4">Guest Details</h2>
+
+                            <!-- Tickets Summary / Selector as Cards -->
+                            <div class="mb-5">
+                                <h4 class="mb-3">Selected Tickets</h4>
+                                <div class="row">
+                                    <t t-set="counter" t-value="0"/>
+                                    <t t-foreach="tickets" t-as="ticket">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card border-primary h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title text-primary"
+                                                        t-esc="ticket['ticket'].name"/>
+                                                    <p class="card-text mb-0">Quantity:
+                                                        <strong t-esc="ticket['quantity']"/>
+                                                    </p>
+                                                    <p class="card-text">Price: $
+                                                        <t t-esc="'%.2f' % ticket['ticket'].price"/>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <t t-foreach="range(ticket['quantity'])" t-as="att_idx">
+                                            <t t-set="counter" t-value="counter + 1"/>
+                                            <t t-if="counter == 1">
+                                                <div class="row">
+                                                    <div class="col-md-12 mb-3">
+                                                        <label class="form-label font-weight-bold">Full Name *
+                                                        </label>
+                                                        <input type="text" t-attf-name="#{counter}-name"
+                                                               class="form-control form-control-lg"
+                                                               required="required"
+                                                               t-att-value="default_first_attendee.get('name', '') if default_first_attendee else ''"/>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label font-weight-bold">Email *</label>
+                                                        <input type="email" t-attf-name="#{counter}-email"
+                                                               class="form-control form-control-lg"
+                                                               required="required"
+                                                               t-att-value="default_first_attendee.get('email', '') if default_first_attendee else ''"/>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label font-weight-bold">Phone *</label>
+                                                        <input type="tel" t-attf-name="#{counter}-phone"
+                                                               class="form-control form-control-lg"
+                                                               required="required"
+                                                               t-att-value="default_first_attendee.get('phone', '') if default_first_attendee else ''"/>
+                                                    </div>
+                                                    <div class="col-md-12 mb-3">
+                                                        <label class="form-label font-weight-bold">Special
+                                                            Requests
+                                                        </label>
+                                                        <textarea class="form-control form-control-lg" rows="3"
+                                                                  placeholder="Any dietary requirements or special needs?"></textarea>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                            <t t-else="">
+                                                <input type="hidden" t-attf-name="#{counter}-name" value="Guest"/>
+                                                <input type="hidden" t-attf-name="#{counter}-email"
+                                                       value="guest@example.com"/>
+                                                <input type="hidden" t-attf-name="#{counter}-phone" value=""/>
+                                            </t>
+                                            <input type="hidden" t-attf-name="#{counter}-event_ticket_id"
+                                                   t-att-value="ticket['ticket'].id"/>
+                                        </t>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <!-- Extra Services Section -->
+                            <t t-set="extra_services"
+                               t-value="request.env['flynova.extra.service'].sudo().search([])"/>
+                            <t t-if="extra_services">
+                                <div class="mb-5">
+                                    <h4 class="mb-1">Extra Services</h4>
+                                    <p class="text-muted mb-3">Add extra services to your reservation</p>
+                                    <div class="row">
+                                        <t t-foreach="extra_services" t-as="service">
+                                            <div class="col-md-6 mb-3">
+                                                <div class="card h-100 flynova-extra-service-card"
+                                                     style="border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s;">
+                                                    <div class="card-body d-flex align-items-start p-3">
+                                                        <div class="mr-3 mt-1">
+                                                            <input
+                                                                    class="flynova-service-checkbox"
+                                                                    type="checkbox"
+                                                                    t-attf-name="extra_service_#{service.id}"
+                                                                    t-attf-id="service_#{service.id}"
+                                                                    t-att-value="service.id"
+                                                                    style="width:20px; height:20px; accent-color:#7c3aed; cursor:pointer;"
+                                                            />
+                                                        </div>
+                                                        <label t-attf-for="service_#{service.id}"
+                                                               style="cursor:pointer; margin-bottom:0; flex:1;">
+                                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <span class="font-weight-bold"
+                                                                      style="font-size:1rem;">
+                                                                    <i t-attf-class="fa #{service.icon} mr-1 text-primary"/>
+                                                                    <t t-esc="service.name"/>
+                                                                </span>
+                                                                <span class="font-weight-bold text-primary"
+                                                                      style="font-size:1rem; white-space:nowrap;">
+                                                                    $&#160;<t t-esc="'%.0f' % service.price"/>
+                                                                </span>
+                                                            </div>
+                                                            <p class="text-muted mb-0" style="font-size:0.85rem;"
+                                                               t-esc="service.description"/>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <button type="submit"
+                                    class="btn flynova-btn-primary btn-lg w-100 py-3 book-btn font-weight-bold">
+                                Proceed to Payment
+                                <i class="fa fa-arrow-right ml-2"/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </xpath>
+    </template>
+
+    <!-- Flynova Confirmation Form -->
+    <template id="flynova_confirmation" inherit_id="website_event.registration_complete"
+              name="Flynova Confirmation">
+        <xpath expr="//div[hasclass('o_wevent_registration_complete')]" position="replace">
+            <div class="o_wevent_registration_complete container-fluid cmpad py-5 text-center">
+                <div class="row justify-content-center">
+                    <div class="col-lg-6">
+                        <div class="bg-white p-5 rounded shadow-sm border">
+                            <div class="mb-4 text-success">
+                                <i class="fa fa-check-circle" style="font-size: 5rem;"/>
+                            </div>
+                            <h1 class="font-weight-bold mb-3">Booking Confirmed!</h1>
+                            <p class="lead text-muted mb-4">Thank you for booking with Flynova. Your reservation has
+                                been successfully processed.
+                            </p>
+
+                            <div class="card bg-light border-0 mb-4 text-left">
+                                <div class="card-body p-4">
+                                    <h4 class="font-weight-bold mb-3 border-bottom pb-2">Booking Summary</h4>
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">Package</div>
+                                        <div class="col-7 font-weight-bold" t-esc="event.name"/>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">Dates</div>
+                                        <div class="col-7 font-weight-bold">
+                                            <span t-field="event.date_begin" t-options="{'widget': 'date'}"/>
+                                            -
+                                            <span t-field="event.date_end" t-options="{'widget': 'date'}"/>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">Attendees</div>
+                                        <div class="col-7 font-weight-bold">
+                                            <t t-esc="len(attendees)"/>
+                                            Guests
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <t t-if="attendees">
+                                <a t-attf-href="/event/#{slug(event)}/registration/new"
+                                   class="btn btn-outline-primary btn-lg px-4 mr-2">
+                                    Book Another
+                                </a>
+                                <a target="_blank"
+                                   t-attf-href="/report/pdf/event.report_event_registration_badge/#{','.join([str(a.id) for a in attendees])}"
+                                   class="btn flynova-btn-primary btn-lg px-4 book-btn">
+                                    <i class="fa fa-download mr-2"/>
+                                    Download PDF
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Flynova Standalone Registration Page (rendered by HTTP controller) -->
+    <template id="flynova_registration_page" name="Flynova Registration Page">
+        <t t-call="website.layout">
+            <t t-set="main_object" t-value="event"/>
+            <form id="attendee_registration"
+                  t-attf-action="/event/#{slug(event)}/registration/confirm"
+                  method="post"
+                  class="container-fluid cmpad py-5">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="bg-white p-5 rounded shadow-sm border">
+                            <h2 class="font-weight-bold mb-4">Guest Details</h2>
+
+                            <!-- Tickets Summary -->
+                            <div class="mb-5">
+                                <h4 class="mb-3">Selected Tickets</h4>
+                                <div class="row">
+                                    <t t-set="counter" t-value="0"/>
+                                    <t t-foreach="tickets" t-as="ticket">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card border-primary h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title text-primary"
+                                                        t-esc="ticket['ticket'].name"/>
+                                                    <p class="card-text mb-0">Quantity:
+                                                        <strong t-esc="ticket['quantity']"/>
+                                                    </p>
+                                                    <p class="card-text">Price: $
+                                                        <t t-esc="'%.2f' % ticket['ticket'].price"/>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <t t-foreach="range(ticket['quantity'])" t-as="att_idx">
+                                            <t t-set="counter" t-value="counter + 1"/>
+                                            <t t-if="counter == 1">
+                                                <div class="row">
+                                                    <div class="col-md-12 mb-3">
+                                                        <label class="form-label font-weight-bold">Full Name *
+                                                        </label>
+                                                        <input type="text" t-attf-name="#{counter}-name"
+                                                               class="form-control form-control-lg"
+                                                               required="required"
+                                                               t-att-value="default_first_attendee.get('name', '') if default_first_attendee else ''"/>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label font-weight-bold">Email *</label>
+                                                        <input type="email" t-attf-name="#{counter}-email"
+                                                               class="form-control form-control-lg"
+                                                               required="required"
+                                                               t-att-value="default_first_attendee.get('email', '') if default_first_attendee else ''"/>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label font-weight-bold">Phone *</label>
+                                                        <input type="tel" t-attf-name="#{counter}-phone"
+                                                               class="form-control form-control-lg"
+                                                               required="required"
+                                                               t-att-value="default_first_attendee.get('phone', '') if default_first_attendee else ''"/>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                            <t t-else="">
+                                                <input type="hidden" t-attf-name="#{counter}-name" value="Guest"/>
+                                                <input type="hidden" t-attf-name="#{counter}-email"
+                                                       value="guest@example.com"/>
+                                                <input type="hidden" t-attf-name="#{counter}-phone" value=""/>
+                                            </t>
+                                            <input type="hidden" t-attf-name="#{counter}-event_ticket_id"
+                                                   t-att-value="ticket['ticket'].id"/>
+                                        </t>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <!-- Extra Services -->
+                            <t t-set="extra_services"
+                               t-value="request.env['flynova.extra.service'].sudo().search([])"/>
+                            <t t-if="extra_services">
+                                <div class="mb-5">
+                                    <h4 class="mb-1">Extra Services</h4>
+                                    <p class="text-muted mb-3">Add extra services to your reservation</p>
+                                    <div class="row">
+                                        <t t-foreach="extra_services" t-as="service">
+                                            <div class="col-md-6 mb-3">
+                                                <div class="card h-100 flynova-extra-service-card"
+                                                     style="border:2px solid #e0e0e0;border-radius:10px;cursor:pointer;">
+                                                    <div class="card-body d-flex align-items-start p-3">
+                                                        <div class="mr-3 mt-1">
+                                                            <input class="flynova-service-checkbox" type="checkbox"
+                                                                   t-attf-name="extra_service_#{service.id}"
+                                                                   t-attf-id="service_reg_#{service.id}"
+                                                                   t-att-value="service.id"
+                                                                   style="width:20px;height:20px;accent-color:#7c3aed;cursor:pointer;"/>
+                                                        </div>
+                                                        <label t-attf-for="service_reg_#{service.id}"
+                                                               style="cursor:pointer;margin-bottom:0;flex:1;">
+                                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <span class="font-weight-bold"
+                                                                      style="font-size:1rem;">
+                                                                    <i t-attf-class="fa #{service.icon} mr-1 text-primary"/>
+                                                                    <t t-esc="service.name"/>
+                                                                </span>
+                                                                <span class="font-weight-bold text-primary"
+                                                                      style="font-size:1rem;white-space:nowrap;">
+                                                                    $&#160;<t t-esc="'%.0f' % service.price"/>
+                                                                </span>
+                                                            </div>
+                                                            <p class="text-muted mb-0" style="font-size:0.85rem;"
+                                                               t-esc="service.description"/>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <button type="submit"
+                                    class="btn flynova-btn-primary btn-lg w-100 py-3 book-btn font-weight-bold">
+                                Proceed to Payment
+                                <i class="fa fa-arrow-right ml-2"/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </t>
+    </template>
+</odoo>
