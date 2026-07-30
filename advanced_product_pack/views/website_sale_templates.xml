@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Product Page Button & Modal -->
+    <template id="product_bundle_details" inherit_id="website_sale.product" name="Product Bundle Details">
+        <xpath expr="//t[@t-call='website_sale.product_price']" position="after">
+            <t t-if="product.is_bundle">
+                <div class="mt-2 mb-3">
+                    <button type="button" class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#bundlePackModal" style="background-color: #7c1d6f; border-color: #7c1d6f;">
+                        Pack Details
+                    </button>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//section[@id='product_detail']" position="after">
+            <t t-if="product.is_bundle">
+                <!-- Bundle Details Modal -->
+                <div class="modal fade" id="bundlePackModal" tabindex="-1" aria-labelledby="bundlePackModalLabel" aria-hidden="true" style="z-index: 99999 !important;">
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px; overflow: hidden;">
+                            <div class="modal-header border-0 pb-0" style="background-color: #fff; padding: 2rem 2.5rem 1rem;">
+                                <h2 class="modal-title fw-bold text-center w-100" id="bundlePackModalLabel" style="font-size: 2.5rem; color: #333;">
+                                    Products Bundle Details
+                                </h2>
+                                <button type="button" class="btn-close position-absolute" data-bs-dismiss="modal" aria-label="Close" style="top: 1.5rem; right: 1.5rem;"/>
+                            </div>
+                            <div class="modal-body" style="padding: 1rem 2.5rem 1.5rem;">
+                                <p class="text-center text-muted mb-5" style="font-size: 1rem; max-width: 800px; margin: 0 auto 2.5rem;">
+                                    Details of all the products of the bundle will be displayed like unit price and quantities in the bundle
+                                </p>
+                                <div class="table-responsive">
+                                    <table class="table align-middle" style="border-collapse: separate;">
+                                        <thead>
+                                            <tr class="text-uppercase text-muted" style="font-size: 0.8rem; letter-spacing: 0.5px;">
+                                                <th class="border-0 ps-0">Product</th>
+                                                <th class="border-0 text-center">Quantity</th>
+                                                <th class="border-0 text-end">Unit Price</th>
+                                                <th class="border-0 text-end pe-0">Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="product.bundle_line_ids" t-as="line">
+                                                <tr style="border-bottom: 1px solid #eee;">
+                                                    <td class="ps-0 py-3" style="border: 0; border-bottom: 1px solid #f0f0f0;">
+                                                        <div class="d-flex align-items-center">
+                                                            <img t-if="line.product_id.image_128" t-att-src="image_data_uri(line.product_id.image_128)" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover; border: 1px solid #eee;"/>
+                                                            <div>
+                                                                <div class="fw-bold text-dark" style="font-size: 1.1rem;" t-field="line.product_id.display_name"/>
+                                                                <div t-if="line.product_id.default_code" class="text-muted small" t-field="line.product_id.default_code"/>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center py-3" style="border: 0; border-bottom: 1px solid #f0f0f0;">
+                                                        <span class="badge rounded-pill bg-light text-dark px-3 py-2" style="font-size: 0.9rem; font-weight: normal;">
+                                                            <t t-esc="int(line.quantity) if line.quantity % 1 == 0 else line.quantity"/>
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end py-3 px-4" style="border: 0; border-bottom: 1px solid #f0f0f0;">
+                                                        <div class="fw-bold text-dark" t-field="line.product_id.list_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                    </td>
+                                                    <td class="text-end pe-0 py-3" style="border: 0; border-bottom: 1px solid #f0f0f0;">
+                                                        <div class="fw-bold" style="color: #7c1d6f;" t-esc="line.quantity * line.product_id.list_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 pb-4 pe-4">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="background: #f8f9fa; border: 1px solid #eee; padding: 0.5rem 1.5rem;">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>
