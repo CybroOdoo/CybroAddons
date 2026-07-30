@@ -1,0 +1,88 @@
+<templates xml:space="preserve">
+    <t t-name="many2many_attachment_preview.Many2ManyAttachmentPreview" owl="1">
+        <div t-attf-class="oe_fileupload {{ props.className || '' }}">
+            <div class="o_attachments o_attachments_widget">
+                <t t-foreach="files" t-as="file" t-key="file.id">
+                    <t t-call="many2many_attachment_preview.image_preview"/>
+                </t>
+            </div>
+            <div t-if="!props.readonly" class="oe_add">
+                <FileInput
+                        acceptedFileExtensions="props.acceptedFileExtensions"
+                        multiUpload="true"
+                        onUpload.bind="onFileUploaded"
+                        resModel="props.record.resModel"
+                        resId="props.record.resId or 0">
+                    <button class="btn btn-secondary o_attach">
+                        <span class="fa fa-paperclip"/>
+                        <t t-esc="uploadText"/>
+                    </button>
+                </FileInput>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="many2many_attachment_preview.image_preview" owl="1">
+        <t t-set="editable" t-value="!props.readonly"/>
+        <div class="o_attachment_wrap">
+            <t t-set="ext" t-value="getExtension(file)"/>
+            <t t-set="url" t-value="getUrl(file.id)"/>
+            <div class="o_image_box">
+                <a href="#" t-on-click="(ev) => this.onFileClick(file, ev)">
+                    <img
+                            t-if="isImage(file)"
+                            class="o_preview_image o_hover object-fit-cover"
+                            t-att-src="'/web/image/' + file.id"
+                            style="max-width:120px; max-height:100px; object-fit:cover; border-radius:4px;"
+                    />
+                    <span t-else="" class="o_image o_preview_image o_hover"
+                          t-att-data-mimetype="file.mimetype" t-att-data-ext="ext"/>
+                </a>
+            </div>
+            <div class="caption">
+                <a href="#" t-on-click="(ev) => this.onFileClick(file, ev)">
+                    <t t-esc="file.name"/>
+                </a>
+            </div>
+            <div t-if="editable" class="o_attachment_delete" t-on-click.stop="() => this.onFileRemove(file.id)">
+                ×
+            </div>
+        </div>
+    </t>
+
+    <t t-name="many2many_attachment_preview.FilePreviewDialog" owl="1">
+        <Dialog size="'xl'" contentClass="'o_file_preview_dialog'" title="props.file.name">
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="downloadFile">
+                    <i class="fa fa-download"/> Download
+                </button>
+                <button class="btn btn-primary" t-on-click="props.close">
+                    Close
+                </button>
+            </t>
+
+            <div class="o_document_preview" style="min-height: 70vh;">
+                <t t-if="isPreviewable(props.file)">
+                    <iframe t-if="isPDF(props.file)"
+                            t-att-src="getUrl(props.file.id)"
+                            style="width: 100%; height: 70vh; border: none;"/>
+                    <div t-if="isImage(props.file)"
+                         class="d-flex align-items-center justify-content-center bg-dark"
+                         style="min-height: 70vh;">
+                        <img t-att-src="getUrl(props.file.id)"
+                             t-att-alt="props.file.name"
+                             style="max-width: 100%; max-height: 70vh; object-fit: contain;"/>
+                    </div>
+                </t>
+                <div t-else="" class="d-flex flex-column align-items-center justify-content-center" style="min-height: 70vh;">
+                    <i class="fa fa-file-o fa-5x text-muted mb-3"/>
+                    <h4>Preview not available</h4>
+                    <p class="text-muted">This file type cannot be previewed</p>
+                    <button class="btn btn-primary" t-on-click="downloadFile">
+                        <i class="fa fa-download"/> Download File
+                    </button>
+                </div>
+            </div>
+        </Dialog>
+    </t>
+</templates>
