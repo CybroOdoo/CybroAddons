@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Offline Sales Login Integration
+        This template extends the standard Odoo login and TOTP
+        authentication pages to automatically launch the Offline
+        Sales Terminal in a separate browser window when a user
+        successfully submits their login credentials-->
+    <template id="login_offline_launch" inherit_id="web.login" name="Login Offline Launch">
+        <xpath expr="//form" position="inside">
+            <script>
+                (function() {
+                    if (document.querySelector('form.oe_login_form')) {
+                        document.querySelector('form.oe_login_form').addEventListener('submit', function() {
+                            window.open('/offline_sale/ui', 'OfflineSalesTerminal');
+                        });
+                    }
+                })();
+            </script>
+        </xpath>
+    </template>
+     <!--TOTP Authentication Form Extension
+        Adds a submit event listener to the two-factor authentication
+        form. After successful verification, the Offline Sales Terminal
+        is opened in a separate browser window-->
+    <template id="totp_offline_launch" inherit_id="auth_totp.auth_totp_form" name="TOTP Offline Launch">
+        <xpath expr="//div[contains(@class, 'oe_login_form')]" position="inside">
+            <script>
+                (function() {
+                    var form = document.querySelector('form');
+                    if (form) {
+                        form.addEventListener('submit', function() {
+                            window.open('/offline_sale/ui', 'OfflineSalesTerminal');
+                        });
+                    }
+                })();
+            </script>
+        </xpath>
+    </template>
+</odoo>

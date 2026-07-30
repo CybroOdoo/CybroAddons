@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Offline Sales Application Entry Page
+        This template serves as the main entry point for the Offline Sales
+        application. It renders a standalone web page that hosts the Offline -->
+    <template id="offline_sale_index" name="Offline Sales Index">
+        &lt;!DOCTYPE html&gt;
+        <html style="height: 100%;">
+            <head>
+                <title>Offline Sales</title>
+                <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+                <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+                <link rel="manifest" href="/offline_sale/manifest.json" crossorigin="use-credentials"/>
+                <meta name="theme-color" content="#004f45"/>
+                
+                <script type="text/javascript">
+                    if ('serviceWorker' in navigator) {
+                        window.addEventListener('load', () => {
+                            navigator.serviceWorker.register('/offline_sale/sw.js')
+                                .catch(err => console.error('SW Registration failing', err));
+                        });
+                    }
+                </script>
+                
+                <!-- Tailwind & Fonts (Keeping external for easy UI styling in custom templates) -->
+                <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+                <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+                <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+                
+                <script type="text/javascript">
+                    window.odoo = {
+                        __session_info__: <t t-out="json.dumps(session_info)"/>,
+                        csrf_token: "<t t-out="request.csrf_token()"/>",
+                        debug: "<t t-out="debug"/>",
+                    };
+                    window.odoo.loadMenusPromise = Promise.resolve();
+                </script>
+
+                <!-- Modern Odoo 19 asset bundles -->
+                <t t-call-assets="web.assets_web" t-js="false"/>
+                <t t-call-assets="offline_sale.assets" t-js="false"/>
+                
+                <t t-call-assets="web.assets_web" t-css="false"/>
+                <t t-call-assets="offline_sale.assets" t-css="false"/>
+
+                <style>
+                    /* Suppress any standard Odoo backend chrome that the WebClient may try to mount on this page. */
+                    html, body { background-color: #f7faf8 !important; }
+                    body > .o_navbar,
+                    body > header.o_navbar,
+                    body > .o_action_manager,
+                    body > .o_home_menu_background,
+                    body > .o_home_menu,
+                    body > .database_expiration_panel,
+                    body > .o-main-components-container > .o_notification_manager,
+                    body > .o_main_navbar,
+                    body > nav.o_main_navbar { display: none !important; }
+                    body.o_home_menu_background { background-color: #f7faf8 !important; }
+                    /* Make our offline root cover the viewport so nothing leaks through. */
+                    #offline_sale_root {
+                        position: fixed;
+                        inset: 0;
+                        z-index: 2147483646;
+                        background-color: #f7faf8;
+                    }
+                </style>
+            </head>
+            <body style="height: 100%; margin: 0; background-color: #f7faf8;">
+                <div id="offline_sale_root" style="height: 100%; width: 100%; overflow: hidden;">
+                    <div style="height: 100%; display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center;">
+                            <i class="fa fa-circle-o-notch fa-spin fa-3x text-primary" style="margin-bottom: 1rem;"></i>
+                            <p style="color: #6c757d;">Initializing Sales UI...</p>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </html>
+    </template>
+</odoo>
