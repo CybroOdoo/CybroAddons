@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adding library to Excalidraw…</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .msg {
+            text-align: center;
+            background: white;
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .msg h2 { margin: 0 0 0.5rem; color: #6965db; }
+        .msg p  { margin: 0; color: #666; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="msg">
+        <h2>✓ Library Added</h2>
+        <p>This window will close automatically…</p>
+    </div>
+    <script>
+        (function () {
+            /*
+             * This page is the libraryReturnUrl target.
+             * The external library site (libraries.excalidraw.com) redirects
+             * this tab here with the hash:
+             *   #addLibrary=<encoded-library-json-url>&token=<token>
+             *
+             * We parse that, persist the URL to localStorage, then close the
+             * tab.  The original Odoo tab has a 'storage' event listener that
+             * picks up the key and calls excalidrawAPI.updateLibrary().
+             */
+            var hash = window.location.hash || '';
+            var params = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : hash);
+            var libraryUrl = params.get('addLibrary');
+
+            if (libraryUrl) {
+                try {
+                    localStorage.setItem('excalidraw_pending_library', JSON.stringify({
+                        libraryUrl: libraryUrl,
+                        token: params.get('token') || '',
+                        ts: Date.now()
+                    }));
+                } catch (e) {
+                    console.error('[Excalidraw redirect] failed to write localStorage', e);
+                }
+            }
+
+            // Close the popup tab after a short delay so the user sees the
+            // confirmation message briefly.
+            setTimeout(function () { window.close(); }, 800);
+        })();
+    </script>
+</body>
+</html>
