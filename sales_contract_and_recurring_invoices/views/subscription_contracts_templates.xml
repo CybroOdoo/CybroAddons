@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Template for my contracts menu in portal -->
+    <template id="portal_my_home_contracts_new" name="My Contracts"
+              customize_show="True" inherit_id="portal.portal_my_home">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <div class="o_portal_index_card col-md-6 order-2">
+                <a href="/my/contracts" title="My Contracts" class="d-flex gap-2 gap-md-3 py-3 pe-2 px-md-3 h-100 rounded text-decoration-none bg-100">
+                    <div class="alert-link text-primary">
+                        <div class="mt-0 mb-1 fs-5 fw-normal lh-1 d-flex gap-2">
+                            <t t-esc="contract_count or 0"/>
+                            <span class="d-none" data-placeholder_count="contract_count"/>
+                            <span>My Contracts</span>
+                        </div>
+                        <div class="opacity-75">
+                            Follow your subscription contracts
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_menu_contract" name="Portal layout : Contract Menu"
+              inherit_id="portal.portal_breadcrumbs" priority="30">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'contracts'" class="breadcrumb-item active">
+                My Contracts
+            </li>
+            <li t-if="page_name == 'contract_details'" class="breadcrumb-item">
+                <a t-attf-href="/my/contracts">My Contracts</a>
+            </li>
+            <li t-if="page_name == 'contract_details'" class="breadcrumb-item active">
+                <t t-esc="records.name"/>
+            </li>
+        </xpath>
+    </template>
+
+
+    <!-- Template for my contracts -->
+    <template id="tmp_contract_details" name="My Contracts">
+        <t t-call="portal.portal_layout">
+            <div class="oe_structure">
+                <br/>
+                <center>
+                    <h3>My Contracts</h3>
+                </center>
+                <br/>
+                <table class="table-striped table">
+                    <thead style="font-size: 23px;">
+                        <tr>
+                            <th>Contract Name</th>
+                            <th>Customer Name</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Date of Next Invoice</th>
+                            <th>Stage</th>
+                            <th>Print</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="records" t-as="order">
+                            <tr>
+                                <td>
+                                    <a t-attf-href='/contracts/{{order.id}}/'
+                                       t-esc="order.name"/>
+                                </td>
+                                <td>
+                                    <span t-esc="order.partner_id.name"/>
+                                </td>
+                                <td>
+                                    <span t-esc="order.date_start"/>
+                                </td>
+                                <td>
+                                    <span t-esc="order.date_end"/>
+                                </td>
+                                <td>
+                                    <span t-esc="order.next_invoice_date"/>
+                                </td>
+                                <td>
+                                    <span t-esc="order.state"/>
+                                </td>
+                                <td>
+                                    <a t-attf-class='btn btn-success'
+                                       t-attf-href='/report/pdf/{{order.id}}'>
+                                        Report
+                                    </a>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <!-- Template for Subscription contract details -->
+    <template id="contract_details" name="Subscription contract details">
+        <t t-call="portal.portal_layout">
+            <div class="container" style="margin-bottom: 50px; width: 70%">
+                <div class="page">
+                    <h2>
+                        <t t-esc='records.name'/>
+                    </h2>
+                </div>
+                <table class="table table-striped">
+                    <tr>
+                        <th>Customer:</th>
+                        <td>
+                            <t t-if="records.partner_id.name">
+                                <t t-esc="records.partner_id.name"/>
+                            </t>
+                        </td>
+                        <th>Reference:</th>
+                        <td>
+                            <t t-if="records.reference">
+                                <t t-esc="records.reference"/>
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Recurring Period:</th>
+                        <td>
+                            <t t-if="records.recurring_period">
+                                <t t-esc="records.recurring_period"/>
+                                <t t-esc="records.recurring_period_interval"/>
+                            </t>
+                        </td>
+                        <th>Company:</th>
+                        <td>
+                            <t t-if="records.company_id">
+                                <t t-esc="records.company_id.name"/>
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Start Date:</th>
+                        <td>
+                            <t t-if="records.date_start">
+                                <t t-esc="records.date_start"/>
+                            </t>
+                        </td>
+                        <th>End Date:</th>
+                        <td>
+                            <t t-if="records.date_end">
+                                <t t-esc="records.date_end"/>
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Stage:</th>
+                        <td>
+                            <t t-if="records.state">
+                                <t t-esc="records.state"/>
+                            </t>
+                        </td>
+                        <th>Date of Next Invoice:</th>
+                        <td>
+                            <t t-if="records.next_invoice_date">
+                                <t t-esc="records.next_invoice_date"/>
+                            </t>
+                        </td>
+                    </tr>
+                </table>
+
+                <h2>Contract Lines</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr style="font-size: 1.5rem; font-weight: bold;">
+                            <th scope="col">Product</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Order Qty</th>
+                            <th scope="col">Unit Price</th>
+                            <th scope="col">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="records.contract_line_ids" t-as='res'>
+                            <tr>
+                                <td>
+                                    <t t-esc="res.product_id.name"/>
+                                </td>
+                                <td>
+                                    <t t-esc="res.description"/>
+                                </td>
+                                <td>
+                                    <t t-esc="res.qty_ordered"/>
+                                    <t t-esc='res.product_uom_id.name'/>
+                                </td>
+                                <td>
+                                    <t t-esc="res.price_unit"
+                                       t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
+                                </td>
+                                <td>
+                                    <t t-esc="res.sub_total"
+                                       t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>
