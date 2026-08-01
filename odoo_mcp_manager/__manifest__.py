@@ -20,11 +20,13 @@
 #
 ##############################################################################
 {
-    'name': 'Odoo MCP Server',
-    'version': '19.0.1.0.0',
+    'name': 'Odoo MCP Manager',
+    'version': '19.0.2.0.0',
     'category': 'Productivity/AI',
-    'summary': 'Odoo MCP Server, MCP Server, Odoo AI Server',
-    'description': """Odoo MCP Server, Claude Odoo Connector, AI Odoo Connector
+    'summary': 'MCP Manager, MCP Connector, Odoo MCP, Odoo Claude Connector, Claude Odoo, MCP Odoo, AI Odoo Connector, AI Odoo',
+    'description': """
+A turnkey solution for connecting AI assistants (Claude Desktop, Cursor, etc.)or Odoo's internal AI features 
+to your business data.
 
 Key Features:
 - Unified Provider & Model Management
@@ -51,6 +53,7 @@ Key Features:
         'views/ai_provider_views.xml',
         'views/ai_model_views.xml',
         'views/ai_tool_views.xml',
+        'views/ai_tool_access_views.xml',
         'views/ai_resource_views.xml',
         'views/ai_session_views.xml',
         'views/ai_tool_log_views.xml',
@@ -60,6 +63,7 @@ Key Features:
         'views/ai_hub_dashboard_views.xml',
         'views/menus.xml',
         'views/bot_conversation_views.xml',
+        'data/default_ai_tool_access.xml',
         'wizards/fetch_model_wizard_views.xml',
         'wizards/generate_mcp_key_views.xml',
 
@@ -80,7 +84,5 @@ Key Features:
     'license': 'LGPL-3',
     'installable': True,
     'application': True,
-
-
     'auto_install': False,
 }

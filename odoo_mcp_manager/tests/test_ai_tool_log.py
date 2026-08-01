@@ -28,16 +28,16 @@ class TestAiToolLog(TransactionCase):
         super(TestAiToolLog, self).setUp()
         self.tool = self.env['ai.tool'].create({
             'name': 'logging_tool',
+            'description': 'Tool used for log tests',
             'implementation': 'builtin',
-            'builtin_action': 'search_records',
         })
         self.log = self.env['ai.tool.log'].create({
             'tool_id': self.tool.id,
             'status': 'success',
         })
 
-    def test_01_name_get(self):
+    def test_01_display_name(self):
         """Test log record naming convention."""
-        name = self.log.name_get()[0][1]
+        name = self.log.display_name
         self.assertIn('logging_tool', name)
         self.assertIn(str(self.log.timestamp.date()), name)

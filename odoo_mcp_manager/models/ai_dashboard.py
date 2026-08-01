@@ -63,7 +63,7 @@ class AiDashboard(models.Model):
                 [('active', '=', True)]
             )
             rec.custom_tool_count = self.env['ai.tool'].search_count(
-                [('active', '=', True), ('implementation', '=', 'python')]
+                [('active', '=', True), ('implementation', '=', 'builtin')]
             )
             rec.session_count = self.env['ai.session'].search_count(
                 [('state', '=', 'initialized')]
@@ -164,7 +164,7 @@ class AiDashboard(models.Model):
         all_tools = self.env['ai.tool'].search([])
         enabled_tools = all_tools.filtered(lambda t: t.active)
         custom_tools = all_tools.filtered(
-            lambda t: t.active and t.implementation == 'python'
+            lambda t: t.active and t.implementation == 'builtin'
         )
 
         # ── Log stats ────────────────────────────────────────────────────

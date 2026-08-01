@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class AiToolLog(models.Model):
@@ -29,6 +29,7 @@ class AiToolLog(models.Model):
     _description = 'AI Tool Execution Log'
     _order = 'timestamp desc'
 
+    display_name = fields.Char(compute='_compute_display_name')
     tool_id = fields.Many2one('ai.tool', string='Tool', ondelete='cascade')
     user_id = fields.Many2one('res.users', string='Executed By')
     timestamp = fields.Datetime(default=fields.Datetime.now, string='Execution Time')
@@ -61,6 +62,8 @@ class AiToolLog(models.Model):
         help='Complete Python traceback for debugging.',
     )
 
-    def name_get(self) -> list:
-        """Return a display name combining tool name and execution timestamp."""
-        return [(rec.id, f'{rec.tool_id.name} - {rec.timestamp}') for rec in self]
+    @api.depends('tool_id.name', 'timestamp')
+    def _compute_display_name(self) -> None:
+        """Display name combining tool name and execution timestamp (Odoo 19)."""
+        for rec in self:
+            rec.display_name = f'{rec.tool_id.name} - {rec.timestamp}'

@@ -1,4 +1,4 @@
-# Odoo MCP Srver — Configuration Guide
+# Odoo MCP Gateway — Configuration Guide
 
 ---
 
@@ -23,6 +23,10 @@
    - 3.3 [WhatsApp Bot](#33-whatsapp-bot)
    - 3.4 [Discord Bot](#34-discord-bot)
    - 3.5 [Web Chat Widget](#35-web-chat-widget)
+4. [Tool Access & Permissions](#section-4-tool-access--permissions)
+   - 4.1 [How Tool Permissions Work](#41-how-tool-permissions-work)
+   - 4.2 [Tool Access Rules (Allow-list)](#42-tool-access-rules-allow-list)
+   - 4.3 [Enabling Write / Delete Operations](#43-enabling-write--delete-operations)
 
 ---
 
@@ -65,6 +69,8 @@ Each user who connects a platform needs their own API key. To generate one:
    - **Setup Instructions** — step-by-step guide for the selected platform.
 
 > If you lose the key, you must generate a new one. Old keys remain active until manually revoked from Settings → Technical → API Keys.
+
+> **Important — what the AI can actually touch.** An API key acts on behalf of a specific Odoo user, so the AI only sees and changes data that user is allowed to. On top of that, a **Tool Access allow-list** controls which models and operations the tools may use. Out of the box, the AI can **read** common models (partners, users, products, sales, etc.) but **cannot create, update or delete** anything until an administrator enables it. See [Section 4: Tool Access & Permissions](#section-4-tool-access--permissions).
 
 ---
 
@@ -1252,3 +1258,91 @@ Go to **MCP Gateway → Bot Channels** to see the status of all channels.
 | Error | The last **Connect** attempt failed — the **Error Message** field shows the reason |
 
 To disconnect a channel, open it and click **Disconnect**. This removes the webhook from the platform (where supported) and sets the status back to **Not Connected**.
+
+---
+
+---
+
+# Section 4: Tool Access & Permissions
+
+Every AI client and chat bot ultimately runs the same set of Odoo tools. Two
+independent layers decide what those tools are allowed to do — the connecting
+user's own Odoo access rights, and an administrator-managed **Tool Access
+allow-list**. This section explains both and how to grant more access safely.
+
+---
+
+## 4.1 How Tool Permissions Work
+
+When a tool runs, it acts **as a specific Odoo user** — the user attached to the
+MCP API key (for AI clients) or the Bot MCP API Key (for chat bots). Because of
+that:
+
+- The AI can only read or change records that user is allowed to, honouring all
+  standard Odoo access rights and record rules.
+- Giving the AI broader reach is simply a matter of using an API key whose user
+  has the appropriate groups — never more.
+
+On top of the user's rights, the **Tool Access allow-list** adds a second,
+coarser gate that applies specifically to the generic built-in tools
+(`search_records`, `create_record`, `update_record`, `delete_record`,
+`unlink_record`) and the MCP resource reader. Both layers must allow an action
+for it to succeed.
+
+> The consent gate is a third, optional layer: any tool can be flagged to
+> require explicit approval from a **Consent Approver** before each run
+> (MCP Gateway → Operations → Consents).
+
+---
+
+## 4.2 Tool Access Rules (Allow-list)
+
+Go to **MCP Gateway → Configuration → Tool Access Rules** (visible to
+administrators). Each rule maps one Odoo model to the operations the AI tools
+may perform on it:
+
+| Field | Meaning |
+|---|---|
+| Model | The Odoo model the rule applies to (e.g. `res.partner`) |
+| Read / Search | Allow `search_records`, `analyze_records` and resource reads |
+| Create | Allow `create_record` |
+| Update | Allow `update_record` |
+| Delete | Allow `delete_record` |
+| Unlink Relations | Allow `unlink_record` (remove many2many / many2one links) |
+| Active | Uncheck to disable the rule without deleting it |
+
+**Defaults on install:** a set of common models (partners, users, companies,
+groups, products, sales, and more where installed) are seeded with **Read only**.
+A model that has no rule — or whose rule is inactive — is denied for every
+operation. Destructive operations are off everywhere until you turn them on.
+
+**Enforcement toggle:** administrators can turn the whole allow-list off under
+**Settings → MCP Gateway → Tool Security → Enforce Tool Access Allow-list**.
+Leaving it enabled is strongly recommended; disabling it lets the tools reach any
+model (still bounded by the user's own access rights).
+
+---
+
+## 4.3 Enabling Write / Delete Operations
+
+By default the AI can answer questions and read data, but attempts to create or
+modify records return a message such as:
+
+```
+AI tools are not allowed to 'create' records of model 'res.partner'.
+An administrator can enable it under MCP Gateway → Configuration → Tool Access Rules.
+```
+
+To let the AI create or change records:
+
+1. Go to **MCP Gateway → Configuration → Tool Access Rules**.
+2. Open the rule for the model (or create one — pick the model, e.g.
+   `crm.lead`).
+3. Tick the operations you want to allow (Create, Update, Delete, Unlink).
+4. Save. The change takes effect immediately — no reconnect needed.
+
+> **Safety tip.** Enable destructive operations only on the specific models you
+> trust the AI to modify, and connect clients with an API key whose Odoo user
+> has a suitably limited role. The two layers together give you precise control:
+> the allow-list decides *which models/operations*, and the user's groups decide
+> *which records*.

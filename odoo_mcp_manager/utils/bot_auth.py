@@ -43,6 +43,7 @@ Production note:
           return count <= RATE_LIMIT
 """
 
+import hmac
 import time
 import logging
 from collections import defaultdict
@@ -55,8 +56,26 @@ _logger = logging.getLogger(__name__)
 RATE_LIMIT  = 30   # maximum requests allowed
 RATE_WINDOW = 60   # per sliding window (seconds)
 
+# Drop IP buckets that have been idle for this long, so the in-memory store
+# cannot grow unbounded under a spray of distinct source addresses.
+_RATE_STORE_MAX_IDLE = RATE_WINDOW * 10
+
 # In-memory store: { ip_address: [epoch_timestamp, ...] }
+# NOTE: per-process only. For multi-worker deployments replace with a shared
+# backend (e.g. Redis) — see the module docstring for a drop-in example.
 _rate_store: dict = defaultdict(list)
+
+
+def secure_compare(provided: str, expected: str) -> bool:
+    """
+    Constant-time comparison of two secrets.
+
+    Wraps :func:`hmac.compare_digest` and guards against ``None``/empty inputs
+    so callers never leak length or content through timing or exceptions.
+    """
+    if not provided or not expected:
+        return False
+    return hmac.compare_digest(str(provided), str(expected))
 
 
 def validate_bot_api_key(env, provided_key: str) -> bool:
@@ -65,7 +84,7 @@ def validate_bot_api_key(env, provided_key: str) -> bool:
 
     The secret is stored in ir.config_parameter under key
     'bot_gateway.webhook_secret'.  An empty or missing secret always
-    rejects all requests (fail-closed).
+    rejects all requests (fail-closed). The comparison is constant-time.
     """
     if not provided_key:
         _logger.debug("BotAuth: no API key provided")
@@ -81,10 +100,18 @@ def validate_bot_api_key(env, provided_key: str) -> bool:
         )
         return False
 
-    valid = provided_key == expected
+    valid = secure_compare(provided_key, expected)
     if not valid:
         _logger.warning("BotAuth: invalid webhook secret from client")
     return valid
+
+
+def _evict_idle_ips(now: float) -> None:
+    """Remove IP buckets whose most recent hit is older than the idle cutoff."""
+    cutoff = now - _RATE_STORE_MAX_IDLE
+    stale = [ip for ip, hits in _rate_store.items() if not hits or hits[-1] <= cutoff]
+    for ip in stale:
+        del _rate_store[ip]
 
 
 def check_rate_limit(ip: str) -> bool:
@@ -96,6 +123,10 @@ def check_rate_limit(ip: str) -> bool:
     """
     now = time.monotonic()
     window_start = now - RATE_WINDOW
+
+    # Opportunistically evict long-idle IP buckets to bound memory use.
+    if len(_rate_store) > 1024:
+        _evict_idle_ips(now)
 
     # Evict timestamps older than the window
     _rate_store[ip] = [t for t in _rate_store[ip] if t > window_start]

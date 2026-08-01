@@ -21,17 +21,22 @@
 ##############################################################################
 import json
 import logging
-from odoo import http, api
+from odoo import http, api, _
+from odoo.exceptions import UserError
 from odoo.http import request
 from .. import utils
+from ..utils.bot_auth import check_rate_limit
 
 _logger = logging.getLogger(__name__)
+
+# Reject JSON-RPC bodies larger than this (bytes) before parsing, to bound memory.
+_MAX_BODY_BYTES = 512 * 1024
 
 _CORS_HEADERS = [
     ('Access-Control-Allow-Origin', '*'),
     ('Access-Control-Allow-Methods', 'POST, GET, OPTIONS'),
     ('Access-Control-Allow-Headers',
-     'Content-Type, Authorization, X-Odoo-MCP-Source, mcp-session-id'),
+     'Content-Type, Authorization, X-Odoo-MCP-Source, Mcp-Session-Id'),
     ('Access-Control-Max-Age', '86400'),
 ]
 
@@ -66,8 +71,18 @@ class MCPController(http.Controller):
                 ] + _CORS_HEADERS,
                 status=405,
             )
+
+        # Basic abuse protection: per-IP rate limit and body-size cap.
+        if not check_rate_limit(request.httprequest.remote_addr):
+            return self._make_error_response(-32000, 'Too many requests')
+        content_length = request.httprequest.content_length
+        raw_body = request.httprequest.data or b''
+        if (content_length is not None and content_length > _MAX_BODY_BYTES) \
+                or len(raw_body) > _MAX_BODY_BYTES:
+            return self._make_error_response(-32600, 'Request body too large')
+
         try:
-            data = json.loads(request.httprequest.data)
+            data = json.loads(raw_body)
         except json.JSONDecodeError as e:
             _logger.error('MCP Parse error: %s', str(e))
             return self._make_error_response(-32700, 'Parse error')
@@ -111,10 +126,20 @@ class MCPController(http.Controller):
                 )
             self._log_mcp_call(user, method, params, status='success')
             return self._make_success_response(result, request_id)
-        except Exception as e:
-            _logger.exception('MCP Handler Error for %s', method)
+        except UserError as e:
+            # UserError messages are meant for the caller (validation, consent,
+            # not-found, permission) — safe to surface verbatim.
+            _logger.info('MCP Handler UserError for %s: %s', method, e)
             self._log_mcp_call(user, method, params, status='error', error_message=str(e))
             return self._make_error_response(-32603, str(e), request_id)
+        except Exception as e:
+            # Unexpected internal error — log full detail server-side but return a
+            # generic message so model/field/stack internals are not leaked.
+            _logger.exception('MCP Handler Error for %s', method)
+            self._log_mcp_call(user, method, params, status='error', error_message=str(e))
+            return self._make_error_response(
+                -32603, 'Internal server error', request_id
+            )
 
 
     def _authenticate(self, auth_header: str, api_key_param: str = '') -> int | None:
@@ -368,16 +393,15 @@ class MCPController(http.Controller):
             [('name', '=', name), ('active', '=', True)], limit=1
         )
         if not tool:
-            raise Exception(f"Tool '{name}' not found")
+            raise UserError(_("Tool '%s' not found") % name)
         if tool.requires_user_consent:
             self._check_or_request_consent(tool, user, arguments)
 
         mcp_source = request.httprequest.headers.get('X-Odoo-MCP-Source', 'mcp')
-        # Use sudo() so Odoo's internal mail/ORM operations (e.g. writing
-        # message_partner_ids which internally reads res.partner) are not
-        # blocked by the Public-user session that auth='public' creates.
-        # The authenticated user's identity is preserved via mcp_user_id in
-        # context so logs still record the correct owner.
+        # The tool *config* is read with elevated rights (the route runs as the
+        # Public user), but the authenticated user is passed via mcp_user_id so
+        # that ai.tool.execute() performs the actual data operations AS THAT USER
+        # — enforcing their ACLs and record rules (see AiTool._user_model).
         result = tool.sudo().with_context(
             mcp_source=mcp_source,
             mcp_user_id=user.id,
@@ -411,21 +435,21 @@ class MCPController(http.Controller):
                 'state': 'pending',
                 'request_payload': json.dumps(arguments, indent=2, default=str),
             })
-            raise Exception(
-                f"Consent required for tool '{tool.name}'. "
+            raise UserError(_(
+                "Consent required for tool '%s'. "
                 'A request has been created in Odoo under MCP Gateway > Operations > '
                 'AI Tool Consents. Please ask an approver to grant consent, then retry.'
-            )
+            ) % tool.name)
         if consent.state == 'pending':
-            raise Exception(
-                f"Consent for tool '{tool.name}' is still pending approval. "
+            raise UserError(_(
+                "Consent for tool '%s' is still pending approval. "
                 'Please ask a Consent Approver to review it in Odoo and retry once granted.'
-            )
+            ) % tool.name)
         if consent.state == 'denied':
-            raise Exception(
-                f"Consent for tool '{tool.name}' was denied by the approver. "
+            raise UserError(_(
+                "Consent for tool '%s' was denied by the approver. "
                 'This action cannot be executed.'
-            )
+            ) % tool.name)
         consent.sudo().write({
             'state': 'pending',
             'request_payload': json.dumps(arguments, indent=2, default=str),
@@ -440,11 +464,21 @@ class MCPController(http.Controller):
         """Read records from the Odoo model addressed by the given odoo:// URI."""
         uri = params.get('uri', '')
         if not uri.startswith('odoo://'):
-            raise Exception('Invalid resource URI')
+            raise UserError(_('Invalid resource URI'))
         model_name = uri[len('odoo://'):]
         if model_name not in request.env:
-            raise Exception(f'Model {model_name} not found')
+            raise UserError(_('Model %s not found') % model_name)
 
+        # Coarse allow-list gate (same rules as the built-in read tool), layered
+        # on top of the per-user ACL enforcement below.
+        tool_model = request.env['ai.tool'].sudo()
+        if tool_model._allowlist_enforced() and not \
+                request.env['ai.tool.access'].is_allowed(model_name, 'read'):
+            raise UserError(_(
+                "Reading model '%s' via MCP resources is not allowed. An "
+                "administrator can enable it under MCP Gateway → Configuration "
+                "→ Tool Access Rules."
+            ) % model_name)
         model_obj = request.env[model_name].with_user(user)
         fields_to_read = params.get('fields')
         if not fields_to_read:

@@ -59,6 +59,7 @@ class AiResource(models.Model):
         for rec in self:
             rec.uri = f'odoo://{rec.model_name}' if rec.model_name else ''
 
+    @api.depends('model_name')
     def _compute_model_exists(self) -> None:
         """Set model_exists to True when the model is installed in this environment."""
         for rec in self:

@@ -37,11 +37,12 @@ def dumps(value):
 
 
 # Bot-gateway-specific helpers (imported lazily to avoid circular imports)
-from .bot_auth import validate_bot_api_key, check_rate_limit  # noqa: E402
+from .bot_auth import validate_bot_api_key, check_rate_limit, secure_compare  # noqa: E402
 
 __all__ = [
     'json_default',
     'dumps',
     'validate_bot_api_key',
     'check_rate_limit',
+    'secure_compare',
 ]

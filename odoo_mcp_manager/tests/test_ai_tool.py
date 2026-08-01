@@ -37,6 +37,20 @@ class TestAiTool(TransactionCase):
         self.test_record = self.env['res.groups'].create({
             'name': 'Test Group',
         })
+        # Grant the built-in tools full access to res.groups for these mechanic
+        # tests (the allow-list itself is covered by dedicated tests). Reuse any
+        # rule the default seeding may already have created.
+        access_model = self.env['ai.tool.access']
+        model_id = self.env['ir.model']._get_id('res.groups')
+        grant = {
+            'allow_read': True, 'allow_create': True, 'allow_update': True,
+            'allow_delete': True, 'allow_unlink': True,
+        }
+        rule = access_model.search([('model_id', '=', model_id)], limit=1)
+        if rule:
+            rule.write(grant)
+        else:
+            access_model.create(dict(grant, model_id=model_id))
 
     def test_01_compute_tool_definition(self):
         """Test if the MCP tool definition is correctly computed."""

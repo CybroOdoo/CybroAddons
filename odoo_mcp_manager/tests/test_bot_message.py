@@ -28,6 +28,7 @@ class TestBotMessage(TransactionCase):
         super(TestBotMessage, self).setUp()
         self.conversation = self.env['ai.bot.conversation'].create({
             'session_key': 'test_session',
+            'platform': 'telegram',
             'platform_user_id': 'user123',
         })
 

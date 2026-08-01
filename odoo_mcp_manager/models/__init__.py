@@ -25,6 +25,7 @@ from . import ai_model
 from . import ai_tool_log
 from . import ai_consent
 from . import ai_tool
+from . import ai_tool_access
 from . import ai_resource
 from . import ai_session
 from . import mail_message

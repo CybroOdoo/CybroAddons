@@ -29,9 +29,9 @@ class TestAiConsent(TransactionCase):
         super(TestAiConsent, self).setUp()
         self.tool = self.env['ai.tool'].create({
             'name': 'consensus_tool',
+            'description': 'Tool used for consent tests',
             'implementation': 'builtin',
-            'builtin_action': 'search_records',
-            'require_user_consent': True,
+            'requires_user_consent': True,
         })
         self.consent = self.env['ai.consent'].create({
             'tool_id': self.tool.id,
@@ -42,7 +42,7 @@ class TestAiConsent(TransactionCase):
     def test_01_grant_denied_access(self):
         """Test that non-approvers cannot grant/deny."""
         # Non-approver
-        self.env.user.groups_id = [(3, self.approver_group.id)]
+        self.env.user.group_ids = [(3, self.approver_group.id)]
         with self.assertRaises(AccessError):
             self.consent.action_grant()
         with self.assertRaises(AccessError):
@@ -50,12 +50,12 @@ class TestAiConsent(TransactionCase):
 
     def test_02_grant_success(self):
         """Test successful grant by approver."""
-        self.env.user.groups_id = [(4, self.approver_group.id)]
+        self.env.user.group_ids = [(4, self.approver_group.id)]
         self.consent.action_grant()
         self.assertEqual(self.consent.state, 'granted')
 
     def test_03_deny_success(self):
         """Test successful deny by approver."""
-        self.env.user.groups_id = [(4, self.approver_group.id)]
+        self.env.user.group_ids = [(4, self.approver_group.id)]
         self.consent.action_deny()
         self.assertEqual(self.consent.state, 'denied')

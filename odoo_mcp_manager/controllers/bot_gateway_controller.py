@@ -19,16 +19,24 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+import binascii
 import json
 import logging
-from odoo import http
+from concurrent.futures import ThreadPoolExecutor
+
+import requests
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+
+import odoo
+from odoo import api, http
 from odoo.http import request
 from .telegram_adapter import TelegramAdapter
 from .web_adapter import WebAdapter
 from .whatsapp_adapter import WhatsAppAdapter
 from .discord_adapter import DiscordAdapter
 from ..services.bot_gateway_service import BotGatewayService
-from ..utils.bot_auth import check_rate_limit, validate_bot_api_key
+from ..utils.bot_auth import check_rate_limit, validate_bot_api_key, secure_compare
 
 _logger = logging.getLogger(__name__)
 
@@ -38,6 +46,17 @@ _ADAPTERS = {
     'web': WebAdapter(),
     'discord': DiscordAdapter(),
 }
+
+# Bounded pool for Discord's deferred-reply background work, so a burst of
+# interactions cannot spawn unbounded threads (each opens a DB cursor and does
+# LLM + HTTP work). Replies are best-effort; overflow queues rather than fans out.
+_DISCORD_MAX_WORKERS = 4
+_discord_executor = ThreadPoolExecutor(
+    max_workers=_DISCORD_MAX_WORKERS, thread_name_prefix='mcp-discord'
+)
+
+# Reject webhook bodies larger than this (bytes) before parsing, to bound memory.
+_MAX_BODY_BYTES = 256 * 1024
 
 
 class BotGatewayController(http.Controller):
@@ -64,7 +83,7 @@ class BotGatewayController(http.Controller):
         expected = request.env['ir.config_parameter'].sudo().get_param(
             'bot_gateway.webhook_secret', ''
         )
-        if hub_mode == 'subscribe' and hub_verify == expected:
+        if hub_mode == 'subscribe' and secure_compare(hub_verify, expected):
             _logger.info('BotGateway: WhatsApp webhook verified successfully')
             return request.make_response(
                 hub_challenge or '', headers=[('Content-Type', 'text/plain')]
@@ -92,8 +111,12 @@ class BotGatewayController(http.Controller):
           3. All other interactions → return {type: 5} (DEFERRED) immediately.
           4. Background thread processes message and POSTs follow-up reply.
         """
-        import json as _json
-        import threading
+        ip = request.httprequest.remote_addr
+        if not check_rate_limit(ip):
+            _logger.warning('BotGateway Discord: rate limit hit from %s', ip)
+            return self._json({'error': 'Too many requests'}, status=429)
+        if self._body_too_large():
+            return self._json({'error': 'Payload too large'}, status=413)
 
         body_bytes = request.httprequest.data or b''
         signature = request.httprequest.headers.get('X-Signature-Ed25519', '')
@@ -126,8 +149,8 @@ class BotGatewayController(http.Controller):
             return self._json({'error': 'Invalid request signature'}, status=401)
 
         try:
-            raw = _json.loads(body_bytes or b'{}')
-        except _json.JSONDecodeError:
+            raw = json.loads(body_bytes or b'{}')
+        except json.JSONDecodeError:
             return self._json({'error': 'Invalid JSON body'}, status=400)
 
         # Acknowledge Discord ownership PING immediately
@@ -142,71 +165,80 @@ class BotGatewayController(http.Controller):
         # Resolve the active bot channel
         bot_message.setdefault('metadata', {})['bot_channel_id'] = channel.id if channel else False
 
-        # Capture everything needed for the background thread
+        # Capture only plain values needed by the background worker — never the
+        # request env, cursor or recordsets (they are invalid once the request
+        # ends). The worker opens its own registry cursor and environment.
         application_id = bot_message['metadata'].get('application_id', '')
         interaction_token = bot_message['metadata'].get('interaction_token', '')
-        bot_token = (channel.api_token or '').strip() if channel else ''
-        env = request.env
+        db_name = request.env.cr.dbname
+        uid = request.env.uid
+        context = dict(request.env.context)
 
-        def _process_and_reply():
-            """Process the Discord interaction and send the follow-up reply."""
-            from ..services.bot_gateway_service import BotGatewayService
-            import requests as _req
-            try:
-                with env.registry.cursor() as new_cr:
-                    new_env = env(cr=new_cr)
-                    response = BotGatewayService(new_env).process(bot_message)
-                    text = (response.get('text') or '(no response)')[:2000]
-            except Exception:
-                _logger.exception('BotGateway Discord: background processing failed')
-                text = 'Sorry, something went wrong. Please try again.'
-
-            # Send follow-up reply via Discord webhook
-            followup_url = (
-                f'https://discord.com/api/v10/webhooks/{application_id}/{interaction_token}'
-            )
-            try:
-                resp = _req.post(
-                    followup_url,
-                    json={'content': text},
-                    timeout=15,
-                )
-                if resp.status_code not in (200, 204):
-                    _logger.error(
-                        'BotGateway Discord follow-up failed: HTTP %s — %s',
-                        resp.status_code, resp.text,
-                    )
-                else:
-                    _logger.info('BotGateway Discord: follow-up reply sent successfully')
-            except Exception as exc:
-                _logger.error('BotGateway Discord: follow-up network error — %s', exc)
-
-        # Spawn background thread and immediately return DEFERRED to Discord
-        threading.Thread(target=_process_and_reply, daemon=True).start()
+        _discord_executor.submit(
+            self._process_discord_reply,
+            db_name, uid, context, bot_message, application_id, interaction_token,
+        )
 
         # Type 5 = DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
         # Discord shows "App is thinking..." until the follow-up arrives
         return self._json({'type': 5})
 
     @staticmethod
+    def _process_discord_reply(
+        db_name, uid, context, bot_message, application_id, interaction_token
+    ) -> None:
+        """Process a Discord interaction in a worker thread and post the reply.
+
+        Runs on a bounded executor with a freshly opened registry cursor and
+        environment, fully detached from the originating request.
+        """
+        try:
+            registry = odoo.registry(db_name)
+            with registry.cursor() as cr:
+                env = api.Environment(cr, uid, context)
+                response = BotGatewayService(env).process(bot_message)
+                text = (response.get('text') or '(no response)')[:2000]
+                cr.commit()
+        except Exception:
+            _logger.exception('BotGateway Discord: background processing failed')
+            text = 'Sorry, something went wrong. Please try again.'
+
+        followup_url = (
+            f'https://discord.com/api/v10/webhooks/{application_id}/{interaction_token}'
+        )
+        try:
+            resp = requests.post(followup_url, json={'content': text}, timeout=15)
+            if resp.status_code not in (200, 204):
+                _logger.error(
+                    'BotGateway Discord follow-up failed: HTTP %s — %s',
+                    resp.status_code, resp.text,
+                )
+            else:
+                _logger.info('BotGateway Discord: follow-up reply sent successfully')
+        except requests.RequestException as exc:
+            _logger.error('BotGateway Discord: follow-up network error — %s', exc)
+
+    @staticmethod
     def _verify_discord_signature(
         public_key_hex: str, signature_hex: str, timestamp: str, body: bytes
     ) -> bool:
-        """Verify a Discord Ed25519 request signature."""
-        try:
-            from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-            from cryptography.exceptions import InvalidSignature
-            import binascii
+        """Verify a Discord Ed25519 request signature.
 
+        Returns False on an invalid signature or any malformed input
+        (bad hex, wrong key length) rather than raising.
+        """
+        try:
             pub_key_bytes = binascii.unhexlify(public_key_hex)
             sig_bytes = binascii.unhexlify(signature_hex)
             message = timestamp.encode() + body
-
             public_key = Ed25519PublicKey.from_public_bytes(pub_key_bytes)
             public_key.verify(sig_bytes, message)
             return True
-        except (InvalidSignature, Exception) as e:
-            _logger.debug('Discord sig verification failed: %s', e)
+        except InvalidSignature:
+            _logger.warning('Discord: Ed25519 signature mismatch — rejected')
+            return False
+        except (binascii.Error, ValueError) as err:
+            _logger.warning('Discord: malformed signature input — %s', err)
             return False
 
     @http.route('/bot/health', type='http', auth='none', methods=['GET'], csrf=False)
@@ -230,6 +262,9 @@ class BotGatewayController(http.Controller):
         if not check_rate_limit(ip):
             _logger.warning('BotGateway: rate limit hit from %s', ip)
             return self._json({'error': 'Too many requests'}, status=429)
+
+        if self._body_too_large():
+            return self._json({'error': 'Payload too large'}, status=413)
 
         key = (
             request.httprequest.headers.get('X-Bot-Secret')
@@ -277,6 +312,15 @@ class BotGatewayController(http.Controller):
         if adapter.send_reply(channel, response):
             return self._json({'ok': True})
         return self._json(adapter.format_response(response))
+
+    @staticmethod
+    def _body_too_large() -> bool:
+        """Return True if the incoming request body exceeds the size cap."""
+        length = request.httprequest.content_length
+        if length is not None and length > _MAX_BODY_BYTES:
+            return True
+        data = request.httprequest.data or b''
+        return len(data) > _MAX_BODY_BYTES
 
     @staticmethod
     def _json(data: dict, status: int = 200) -> object:

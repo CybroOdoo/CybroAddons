@@ -19,9 +19,9 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import logging
 import secrets
-from odoo import fields, models
+from odoo import _, fields, models
+
 
 class ResConfigSettings(models.TransientModel):
     """Adds Bot Gateway configuration fields to the standard Settings form."""
@@ -31,6 +31,7 @@ class ResConfigSettings(models.TransientModel):
     bot_webhook_secret = fields.Char(
         string='Webhook Secret',
         config_parameter='bot_gateway.webhook_secret',
+        groups='base.group_system',
         help=(
             'Shared secret appended to all bot webhook URLs as ?secret=. '
             'Auto-generated on first bot connect.'
@@ -39,7 +40,16 @@ class ResConfigSettings(models.TransientModel):
     bot_mcp_api_key = fields.Char(
         string='Bot MCP API Key',
         config_parameter='bot_gateway.mcp_api_key',
+        groups='base.group_system',
         help='API key used by the bot gateway to call internal MCP tools.',
+    )
+    mcp_enforce_tool_allowlist = fields.Boolean(
+        string='Enforce Tool Access Allow-list',
+        config_parameter='mcp_gateway.enforce_allowlist',
+        default=True,
+        help='When enabled, the generic built-in AI tools may only read or '
+             'modify models listed under Configuration → Tool Access Rules. '
+             'Disabling lets tools touch any model (not recommended).',
     )
 
     def action_generate_webhook_secret(self) -> dict:
@@ -53,8 +63,9 @@ class ResConfigSettings(models.TransientModel):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': 'Webhook Secret Generated',
-                'message': 'A new secret has been saved. Re-connect any active bot channels.',
+                'title': _('Webhook Secret Generated'),
+                'message': _('A new secret has been saved. '
+                             'Re-connect any active bot channels.'),
                 'type': 'warning',
                 'sticky': False,
             },
@@ -69,8 +80,9 @@ class ResConfigSettings(models.TransientModel):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': 'MCP API Key Generated',
-                'message': 'Key created and saved. The bot can now call internal MCP tools.',
+                'title': _('MCP API Key Generated'),
+                'message': _('Key created and saved. '
+                             'The bot can now call internal MCP tools.'),
                 'type': 'success',
                 'sticky': False,
             },

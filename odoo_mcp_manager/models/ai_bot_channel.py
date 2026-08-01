@@ -22,7 +22,7 @@
 import logging
 import secrets
 import requests
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -30,6 +30,7 @@ _logger = logging.getLogger(__name__)
 _PLATFORM_LABELS = {
     'telegram': 'Telegram',
     'whatsapp': 'WhatsApp',
+    'discord': 'Discord',
     'web': 'Web Widget',
 }
 
@@ -51,10 +52,27 @@ class AiBotChannel(models.Model):
         ('telegram', 'Telegram'),
         ('whatsapp', 'WhatsApp'),
         ('discord', 'Discord'),
+        ('web', 'Web Widget'),
     ], required=True, default='telegram')
     api_token = fields.Char(
         string='Bot Token / API Key',
+        groups='base.group_system',
         help='Telegram: token from @BotFather\nWhatsApp: permanent access token',
+    )
+    whatsapp_app_secret = fields.Char(
+        string='WhatsApp App Secret',
+        groups='base.group_system',
+        help='Meta App Secret, used to verify the X-Hub-Signature-256 signature '
+             'on incoming WhatsApp webhooks. Found in Meta App Dashboard → '
+             'Settings → Basic → App Secret. Leave blank to fall back to the '
+             'shared webhook secret only.',
+    )
+    telegram_secret_token = fields.Char(
+        string='Telegram Secret Token',
+        groups='base.group_system',
+        readonly=True,
+        help='Per-channel secret token registered with Telegram on connect and '
+             'verified via the X-Telegram-Bot-Api-Secret-Token header.',
     )
     status = fields.Selection([
         ('draft', 'Not Connected'),
@@ -136,24 +154,24 @@ class AiBotChannel(models.Model):
         url = (self.custom_webhook_base or '').rstrip('/') or \
               self.env['ir.config_parameter'].sudo().get_param('web.base.url', '').rstrip('/')
         if not url:
-            raise UserError(
+            raise UserError(_(
                 'No base URL is configured.\n\n'
                 'Either:\n'
                 '  • Fill in the \'Public HTTPS Base URL\' field on this channel, OR\n'
                 '  • Set web.base.url in Settings → Technical → System Parameters\n\n'
                 'The URL must be publicly reachable over HTTPS for webhooks.'
-            )
+            ))
         if require_https and not url.startswith('https://'):
-            raise UserError(
-                f'Telegram and WhatsApp require an HTTPS URL for webhooks.\n\n'
-                f'Current URL: {url}\n\n'
+            raise UserError(_(
+                'Telegram and WhatsApp require an HTTPS URL for webhooks.\n\n'
+                'Current URL: %s\n\n'
                 'Options:\n'
                 "  1. Fill in the 'Public HTTPS Base URL' field with your HTTPS address.\n"
                 '  2. Update web.base.url in Settings → Technical → System Parameters.\n\n'
                 'For local testing use ngrok:\n'
                 '  ngrok http 8018\n'
                 "  Copy the https://...ngrok.io URL into the 'Public HTTPS Base URL' field."
-            )
+            ) % url)
         return url
 
     def action_connect(self) -> dict:
@@ -194,27 +212,26 @@ class AiBotChannel(models.Model):
         """Validate the Telegram token and register the webhook."""
         token = (self.api_token or '').strip()
         if not token:
-            raise UserError(
+            raise UserError(_(
                 'Enter your Telegram Bot Token.\n'
                 'Get one from @BotFather → /newbot'
-            )
+            ))
         try:
             me = requests.get(
                 f'https://api.telegram.org/bot{token}/getMe', timeout=15
             ).json()
         except requests.exceptions.RequestException as exc:
             self._set_error(str(exc))
-            raise UserError(f'Cannot reach Telegram API: {exc}') from exc
+            raise UserError(_('Cannot reach Telegram API: %s') % exc) from exc
 
         if not me.get('ok'):
-            msg = (
-                f"Telegram rejected the token: {me.get('description', 'Unknown error')}\n\n"
+            self._set_error(me.get('description', ''))
+            raise UserError(_(
+                'Telegram rejected the token: %s\n\n'
                 'Get a valid token from @BotFather:\n'
                 '  /mybots → select your bot → API Token\n'
                 '  or /newbot to create a new one'
-            )
-            self._set_error(me.get('description', ''))
-            raise UserError(msg)
+            ) % me.get('description', 'Unknown error'))
 
         bot_info = me.get('result', {})
         username = bot_info.get('username', '')
@@ -233,13 +250,12 @@ class AiBotChannel(models.Model):
             raise UserError(f'Cannot reach Telegram API: {exc}') from exc
 
         if not resp.get('ok'):
-            msg = (
-                f"Webhook registration failed: {resp.get('description', 'Unknown error')}\n\n"
-                f'Make sure your Odoo URL is reachable from the internet over HTTPS:\n'
-                f'{webhook_url}'
-            )
             self._set_error(resp.get('description', ''))
-            raise UserError(msg)
+            raise UserError(_(
+                'Webhook registration failed: %(err)s\n\n'
+                'Make sure your Odoo URL is reachable from the internet over HTTPS:\n'
+                '%(url)s'
+            ) % {'err': resp.get('description', 'Unknown error'), 'url': webhook_url})
 
         self.write({
             'status': 'active',
@@ -272,15 +288,15 @@ class AiBotChannel(models.Model):
     def _connect_whatsapp(self) -> dict:
         """Validate WhatsApp credentials and show the webhook registration instructions."""
         if not self.api_token:
-            raise UserError(
+            raise UserError(_(
                 'Enter your WhatsApp permanent access token.\n'
                 'Meta Developer Console → WhatsApp → API Setup → Permanent Token'
-            )
+            ))
         if not self.whatsapp_phone_id:
-            raise UserError(
+            raise UserError(_(
                 'Enter the Phone Number ID.\n'
                 'Meta Developer Console → WhatsApp → API Setup → Phone Number ID'
-            )
+            ))
         secret = self._ensure_webhook_secret()
         webhook_url = f'{self._base_url(require_https=True)}/bot/whatsapp/verify'
         self.write({'status': 'active', 'bot_username': self.whatsapp_phone_id, 'error_message': False})
@@ -319,16 +335,15 @@ class AiBotChannel(models.Model):
         The webhook URL (https://<base>/bot/discord) must be registered in the
         Discord Developer Portal → Bot → Interactions Endpoint URL.
         """
-        import requests as _req
         token = (self.api_token or '').strip()
         if not token:
-            raise UserError(
+            raise UserError(_(
                 'Enter your Discord Bot Token.\n'
                 'Discord Developer Portal → Application → Bot → Reset Token'
-            )
+            ))
         # Verify the token by calling the Discord /users/@me endpoint
         try:
-            me = _req.get(
+            me = requests.get(
                 'https://discord.com/api/v10/users/@me',
                 headers={'Authorization': f'Bot {token}'},
                 timeout=15,
@@ -336,15 +351,15 @@ class AiBotChannel(models.Model):
             if me.status_code != 200:
                 err = me.json().get('message', 'Unknown error')
                 self._set_error(err)
-                raise UserError(
-                    f'Discord rejected the bot token: {err}\n\n'
+                raise UserError(_(
+                    'Discord rejected the bot token: %s\n\n'
                     'Get a valid token from the Discord Developer Portal:\n'
                     '  Applications → <your app> → Bot → Reset Token'
-                )
+                ) % err)
             bot_info = me.json()
-        except _req.exceptions.RequestException as exc:
+        except requests.exceptions.RequestException as exc:
             self._set_error(str(exc))
-            raise UserError(f'Cannot reach Discord API: {exc}') from exc
+            raise UserError(_('Cannot reach Discord API: %s') % exc) from exc
 
         secret = self._ensure_webhook_secret()
         webhook_url = f'{self._base_url(require_https=True)}/bot/discord?secret={secret}'
