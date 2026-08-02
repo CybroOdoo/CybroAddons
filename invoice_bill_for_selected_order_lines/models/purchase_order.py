@@ -53,30 +53,34 @@ class PurchaseOrder(models.Model):
             pending_section = None
             # Invoice values.
             invoice_vals = order._prepare_invoice()
+            selected_lines = order.order_line.filtered(
+                lambda line: line.is_product_select
+                and not line.display_type
+                and not float_is_zero(
+                    line.qty_to_invoice, precision_digits=precision))
+            lines_to_invoice = selected_lines or order.order_line
             # Invoice line values (keep only necessary sections).
             for line in order.order_line:
-                if ((line.is_product_select is True) or True not in
-                        order.order_line.mapped('is_product_select')):
-                    if line.display_type == 'line_section':
-                        pending_section = line
-                        continue
-                    if not float_is_zero(line.qty_to_invoice,
-                                         precision_digits=precision):
-                        if pending_section:
-                            line_vals = (
-                                pending_section._prepare_account_move_line())
-                            line_vals.update({'sequence': sequence})
-                            invoice_vals['invoice_line_ids'].append(
-                                (0, 0, line_vals))
-                            sequence += 1
-                            pending_section = None
-                        line_vals = line._prepare_account_move_line()
+                if line.display_type == 'line_section':
+                    pending_section = line
+                    continue
+                if line not in lines_to_invoice:
+                    continue
+                if not float_is_zero(line.qty_to_invoice,
+                                     precision_digits=precision):
+                    if pending_section:
+                        line_vals = (
+                            pending_section._prepare_account_move_line())
                         line_vals.update({'sequence': sequence})
                         invoice_vals['invoice_line_ids'].append(
                             (0, 0, line_vals))
                         sequence += 1
-                else:
-                    line.is_product_select = True
+                        pending_section = None
+                    line_vals = line._prepare_account_move_line()
+                    line_vals.update({'sequence': sequence})
+                    invoice_vals['invoice_line_ids'].append(
+                        (0, 0, line_vals))
+                    sequence += 1
             invoice_vals_list.append(invoice_vals)
         if not invoice_vals_list:
             raise UserError(_('There is no invoice-able line. If a product has'
@@ -124,6 +128,7 @@ class PurchaseOrder(models.Model):
         # is actually negative or not
         moves.filtered(lambda m: m.currency_id.round(m.amount_total) < 0) \
             .action_switch_invoice_into_refund_credit_note()
+        self.order_line.write({'is_product_select': False})
         return self.action_view_invoice(moves)
 
 
