@@ -28,6 +28,7 @@ from odoo.exceptions import UserError, ValidationError
 
 class EmployeeDetails(models.Model):
     _name = 'employee.details'
+    _description = 'Employee Details'
 
     name = fields.Char(string='Name', required=True)
     user_id = fields.Many2one(
@@ -44,7 +45,7 @@ class EmployeeDetails(models.Model):
     base_salary = fields.Monetary(string='Base Salary')
     last_salary_date = fields.Date(string='Last Payment On', copy=False)
     insurance_ids = fields.One2many('insurance.details', 'employee_id',
-                                    string='Last Payment On', readonly=True)
+                                    string='Insurances', readonly=True)
     note_field = fields.Html(string='Comment')
     invoice_id = fields.Many2one(
         'account.move', string='Last payment', copy=False, readonly=True)
@@ -77,7 +78,7 @@ class EmployeeDetails(models.Model):
             'claim_id': self.id,
             'invoice_origin': self.name,
             'invoice_line_ids': [(0, 0, {
-                'name': 'Invoice For Insurance Claim',
+                'name': _('Invoice For Insurance Claim'),
                 'quantity': 1,
                 'price_unit': amount,
                 'account_id': 41,
