@@ -127,7 +127,7 @@ class ProductVisibilityCon(WebsiteSale):
         # supering shop***
 
         if not available_categ and not available_products:
-            return super(ProductVisibilityCon, self).shop(page, category, search, ppg, **post)
+            return super(ProductVisibilityCon, self).shop(page=page, category=category, search=search, ppg=ppg, **post)
         add_qty = int(post.get('add_qty', 1))
 
         if category:
