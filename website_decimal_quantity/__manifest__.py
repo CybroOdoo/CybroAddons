@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Website Decimal Quantity',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Website/Website',
     'summary': 'The app allows to select quantity in decimal for products in Website/Shop',
     'description': """
