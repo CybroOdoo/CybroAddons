@@ -20,7 +20,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-import datetime
 import calendar
 
 from odoo import models, fields, api
