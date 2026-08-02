@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Invoice Or Bill For Selected Order Lines",
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'category': 'Accounting,Purchases,Sales',
     'summary': 'Can use only selected products to invoice as well as bills.',
     'description': 'We can create invoice for the selected products from order'
