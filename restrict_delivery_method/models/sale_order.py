@@ -51,7 +51,7 @@ class SaleOrder(models.Model):
         """From this function the controller gets the
         restricted methods value"""
         address = self.delivery_method_ids
-        return self.env['delivery.carrier'].sudo().search(
-            [('website_published', '=', True),
-             ('id', 'not in', address.ids)]).available_carriers(
-            address)
+        availables = self._get_delivery_methods()
+        pickables = availables - address
+        
+        return pickables.available_carriers(self.partner_id)
