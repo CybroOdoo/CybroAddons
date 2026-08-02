@@ -65,7 +65,8 @@ class RoomBookingLine(models.Model):
     tax_ids = fields.Many2many('account.tax',
                                'hotel_room_order_line_taxes_rel',
                                'room_id', 'tax_id',
-                               related='room_id.taxes_id',
+                               compute='_compute_tax_ids', store=True,
+                               readonly=False, precompute=True,
                                string='Taxes',
                                help="Default taxes used when selling the room."
                                , domain=[('type_tax_use', '=', 'sale')])
@@ -92,6 +93,11 @@ class RoomBookingLine(models.Model):
                                           string="Booking Line Visible",
                                           help="If True, then Booking Line "
                                                "will be visible")
+    company_id = fields.Many2one('res.company', string="Company",
+                                 help="Choose the Company",
+                                 required=True, index=True,
+                                 default=lambda self: self.env.company)
+
 
     @api.depends('room_id', 'booking_id.pricelist_id', 'uom_qty')
     def _compute_price_unit(self):
@@ -123,6 +129,7 @@ class RoomBookingLine(models.Model):
             if diffdate.total_seconds() > 0:
                 qty = qty + 1
             self.uom_qty = qty
+
 
     @api.depends('uom_qty', 'price_unit', 'tax_ids')
     def _compute_price_subtotal(self):
@@ -157,3 +164,14 @@ class RoomBookingLine(models.Model):
             },
         )
 
+    @api.depends('room_id', 'company_id')
+    def _compute_tax_ids(self):
+        """Compute default taxes safely filtering by company"""
+        for line in self:
+            if not line.room_id:
+                line.tax_ids = False
+                continue
+            taxes = line.room_id.sudo().taxes_id.filtered(
+                lambda t: not t.company_id or t.company_id == line.company_id
+            )
+            line.tax_ids = taxes

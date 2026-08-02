@@ -165,5 +165,3 @@ class MaintenanceRequest(models.Model):
     def action_verify(self):
         """Button action for changing the state to done"""
         self.state = 'done'
-        if self.vehicle_maintenance_id:
-            self.vehicle_maintenance_id.status = 'available'
