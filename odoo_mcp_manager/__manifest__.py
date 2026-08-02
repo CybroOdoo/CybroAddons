@@ -20,10 +20,10 @@
 #
 ##############################################################################
 {
-    'name': 'Odoo MCP Manager',
+    'name': 'Odoo MCP Server',
     'version': '19.0.2.0.0',
     'category': 'Productivity/AI',
-    'summary': 'MCP Manager, MCP Connector, Odoo MCP, Odoo Claude Connector, Claude Odoo, MCP Odoo, AI Odoo Connector, AI Odoo',
+    'summary': 'MCP Server, MCP Connector, Odoo MCP, Odoo Claude Connector, Claude Odoo, MCP Odoo, AI Odoo Connector, AI Odoo',
     'description': """
 A turnkey solution for connecting AI assistants (Claude Desktop, Cursor, etc.)or Odoo's internal AI features 
 to your business data.

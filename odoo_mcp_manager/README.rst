@@ -2,7 +2,7 @@
     :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
-Odoo MCP Gateway
+Odoo MCP Server
 ================
 Unified AI Provider & MCP Tool Gateway for Odoo — connect external AI assistants
 (Claude Desktop, Claude Code, claude.ai, Cursor, OpenAI Codex) and chat bots
