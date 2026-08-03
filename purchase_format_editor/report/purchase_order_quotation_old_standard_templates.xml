@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    This template is used to display a purchase quotation report in an
+            old standard format. It includes the header section with the company logo
+            and details, such as partner information, address, and VAT number. -->
+    <template id="old_std_report_purchase_quotation_document">
+        <t t-if="o and 'company_id' in o">
+            <t t-set="company" t-value="o.company_id"/>
+        </t>
+        <t t-if="not o or not 'company_id' in o">
+            <t t-set="company" t-value="res_company"/>
+        </t>
+
+        <!-- Company Info Section -->
+        <div class="header row mt32 mb32">
+            <div class="page-header col-12">
+                <div style="float: left;">
+                    <img t-if="company.logo" t-attf-src="data:image/png;base64,{{ company.logo }}" style="max-height: 80px;"/>
+                </div>
+                <div style="float: right; text-align: right; font:14px lucida-console,sans-serif;">
+                    <span t-field="company.partner_id"/><br/>
+                    <span t-field="company.partner_id.street"/><br/>
+                    <span t-field="company.partner_id.street2"/><br/>
+                    <span t-field="company.partner_id.city"/><br/>
+                    <span t-field="company.partner_id.country_id"/><br/>
+                </div>
+            </div>
+        </div>
+
+        <t t-call="web.external_layout">
+            <div class="pt-5">
+                <!-- Partner Info Section -->
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col-6">
+                        <span t-field="o.partner_id" style="font-weight: bold;"/><br/>
+                        <span t-field="o.partner_id.state_id"/><br/>
+                        <span t-field="o.partner_id.country_id"/>
+                    </div>
+                </div>
+
+                <!-- Orange Header Section -->
+                <div style="background-color: #f26522; color: white; padding: 20px;">
+                    <h3>Request for Quotation:
+                        <span t-field="o.name"/></h3>
+                    <p><strong>Date Deadline:
+                    </strong> <span t-field="o.date_order"/></p>
+                    <p><strong>Purchase Representative:
+                    </strong> <span t-field="o.user_id"/></p>
+                </div>
+
+                <!-- Line Items Table -->
+                <table class="table table-sm o_main_table" style="margin-top: 20px;">
+                    <thead style="background-color: #f26522; color: white; margin-top: 20px;">
+                        <tr>
+                            <th>Product</th>
+                            <th>Date Req.</th>
+                            <th class="text-right">Qty</th>
+                            <th class="text-right">Unit Price</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.order_line" t-as="line">
+                            <tr t-if="not line.display_type">
+                                <td><span t-field="line.product_id.name"/></td>
+                                <td><span t-field="line.date_planned"/></td>
+                                <td class="text-right">
+                                    <span t-field="line.product_qty"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.price_unit"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.price_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- Total Section -->
+                <div class="row justify-content-end">
+                    <div class="col-4">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td class="text-right">
+                                    <span t-field="o.amount_untaxed" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
