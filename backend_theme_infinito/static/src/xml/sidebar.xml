@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This XML template extends the web.NavBar template to customize the navigation bar layout and functionalities.
+Fixed sidebar navigation to properly open apps instead of messaging menu.
+-->
+<templates id="template" xml:space="preserve">
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension" owl="1">
+        <xpath expr="//t[@t-else]"
+               position="replace">
+            <t t-else="">
+                <div class="o_navbar_apps_menu me-3">
+                    <t t-if="sidebarEnabled or fullScreenApp">
+                        <t t-if="state.flag == false">
+                        <div class="d-flex justify-content-center align-items-center o_main-menu-button p-2"
+                             t-on-click="OnClickMainMenu">
+                            <i class="oi oi-apps"
+                               style="font-size: 18px !important; color: var(--button-bg); margin-top: 3px;"/>
+                        </div>
+                        </t>
+                        <t t-if="state.flag == true">
+                        <div class="d-flex justify-content-center align-items-center o_main-menu-button p-2"
+                             t-on-click="OnClickCloseMainMenu">
+                            <i class="oi oi-apps"
+                               style="font-size: 18px !important; color: var(--button-bg); margin-top: 3px;"/>
+                        </div>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <Dropdown class="'o_navbar_apps_menu me-3'" title="'Apps'">
+                            <button class="btn p-0 border-0" title="Apps" style="background: none;">
+                                <i class="oi oi-apps" style="font-size: 18px !important; color: var(--button-bg); margin-top: 3px;"/>
+                            </button>
+                            <t t-set-slot="content">
+                                <t t-foreach="apps" t-as="app" t-key="app.id">
+                                    <DropdownItem
+                                        class="'dropdown-item d-flex align-items-center py-2'"
+                                        onSelected="() => this.onNavBarDropdownItemSelection(app)"
+                                        attrs="{ href: getMenuItemHref(app), 'data-menu-xmlid': app.xmlid, 'data-section': app.id }"
+                                    >
+                                        <t t-if="app.webIconData">
+                                            <img class="o_app_icon" style="height: 20px; width: 20px; margin-right: 10px; object-fit: contain;" t-att-src="app.webIconData"/>
+                                        </t>
+                                        <t t-else="">
+                                            <i class="o_app_icon" t-att-class="app.webIcon" style="font-size: 20px; margin-right: 10px; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center;"/>
+                                        </t>
+                                        <span class="o_app_name" t-esc="app.name"/>
+                                    </DropdownItem>
+                                </t>
+                            </t>
+                        </Dropdown>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+    </t>
+
+    <t t-inherit="web.NavBar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//nav[hasclass('o_main_navbar')]" position="replace">
+            <nav class="o_main_navbar" t-att-class="FullScreenEnabled"
+                 data-command-category="navbar">
+                <div class="top_heading">
+                    <!-- Apps Menu -->
+                    <t t-if="sidebarEnabled">
+                        <t t-call="backend_theme_infinito.Sidebar">
+                            <t t-set="apps" t-value="menuService.getApps()"/>
+                        </t>
+                    </t>
+                    <t t-elif="fullScreenApp">
+                        <t t-call="backend_theme_infinito.AppsMenu">
+                            <t t-set="apps" t-value="menuService.getApps()"/>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <t t-call="web.NavBar.AppsMenu">
+                            <t t-set="apps" t-value="menuService.getApps()"/>
+                        </t>
+                    </t>
+                    <!-- App Brand -->
+                    <DropdownItem
+                            t-if="currentApp"
+                            t-esc="currentApp.name"
+                            class="'o_menu_brand d-none d-md-block'"
+                            onSelected="() => this.onNavBarDropdownItemSelection(currentApp)"
+                            attrs="{ href: getMenuItemHref(currentApp), 'data-menu-xmlid': currentApp.xmlid, 'data-section': currentApp.id }"
+                    />
+
+                    <div class="o_navbar_breadcrumbs d-contents"/>
+
+                    <t t-if="currentAppSections.length"
+                       t-call="web.NavBar.SectionsMenu">
+                        <t t-set="sections" t-value="currentAppSections"/>
+                    </t>
+                </div>
+
+                <!-- Systray -->
+                <div class="o_menu_systray d-flex flex-shrink-0 ms-auto"
+                     role="menu">
+              <t t-foreach="systrayItems" t-as="item" t-key="item.key">
+                <!-- This ensures the correct order of the systray items -->
+                  <div t-att-data-index="item.index"/>
+                  <ErrorHandler
+                          onError="error => this.handleItemError(error, item)">
+                    <t t-component="item.Component" t-props="item.props"/>
+                </ErrorHandler>
+              </t>
+            </div>
+
+            </nav>
+            <div class="sidebar_panel"
+                 t-attf-class="{{ sidebarResize }} {{ rtl }}"
+                 t-attf-style="display: {{ state.sidebarOpen ? 'block' : 'none' }};"
+                 id="sidebar_panel">
+                <div class="sidebar" t-att-class="sidebarCompanyLogo">
+                    <div class="sidebar_close">
+                        <a id="closeSidebar" style="cursor: pointer;">
+                            <img src="/backend_theme_infinito/static/src/img/close.png"
+                                 style="filter: invert();"/>
+                        </a>
+                    </div>
+                    <t t-if="sidebarCompany">
+                        <div class="sidebar_logo">
+                            <img src="/web/binary/company_logo"
+                                 class="logo_img x-logo"/>
+                        </div>
+                    </t>
+                    <div t-if="sidebarUser" class="o_menu_systray" role="menu">
+                      <t t-foreach="systrayItems" t-as="item" t-key="item.key">
+                        <!-- This ensures the correct order of the systray items -->
+                          <div t-att-data-index="item.index"/>
+                          <t t-component="item.Component" t-props="item.props"/>
+                      </t>
+                    </div>
+                    <ul class="sidebar_menu">
+                        <t t-foreach="menuService.getApps()" t-as="app" t-key="app.id">
+                            <li>
+                                <a role="menuitem"
+                                   t-attf-href="#menu_id={{app.id}}"
+                                   class="nav-link sidebar-app-link"
+                                   t-att-data-menu-id="app.id"
+                                   t-att-data-menu-xmlid="app.xmlid"
+                                   t-att-data-action-id="app.actionID"
+                                   t-on-click="onClick">
+                                     <t t-if="app.webIconData">
+                                         <img class="sidebar_img"
+                                              style="width:20px;height:20px;object-fit:contain;flex-shrink:0;"
+                                              t-att-src="app.webIconData"
+                                              t-att-title="app.name"/>
+                                     </t>
+                                     <t t-else="">
+                                         <i class="sidebar_img"
+                                            style="font-size:20px;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"
+                                            t-att-class="app.webIcon"/>
+                                     </t>
+
+                                    <span class="sidebar_app_name">
+                                        <t t-esc="app.name"/>
+                                    </span>
+                                </a>
+                            </li>
+                        </t>
+                    </ul>
+                </div>
+            </div>
+        </xpath>
+    </t>
+    <t t-name="backend_theme_infinito.Sidebar" owl="1">
+        <span class="dropdown" style="padding: 10px;">
+            <a id="openSidebar" t-att-style="state.sidebarOpen ? 'display: none; cursor: pointer;' : 'display: block; cursor: pointer;'" t-on-click="toggleSidebar">
+                <i class="oi oi-apps" style="font-size: 18px !important; color: var(--button-bg); margin-top: 3px;"/>
+            </a>
+            <a id="closeSidebar" t-att-style="state.sidebarOpen ? 'display: block; cursor: pointer;' : 'display: none; cursor: pointer;'" t-on-click="toggleSidebar">
+                <i class="oi oi-apps" style="font-size: 18px !important; color: var(--button-bg); margin-top: 3px;"/>
+            </a>
+        </span>
+    </t>
+    <t t-name="backend_theme_infinito.AppsMenu">
+        <span class="dropdown d-flex justify-content-center align-items-center"
+              t-on-click="OnclickFullScreenMenu">
+            <a class="full" data-bs-toggle="dropdown" data-display="static"
+               href="#" style="padding:0 16px">
+                <i class="fa fa-th-large"
+                   style="font-size: 18px !important; color: white; margin-top: 3px;"/>
+            </a>
+            <section class="dropdown-menu fullscreen-menu landing" role="menu">
+                <div class="wrapper">
+                    <div class="container">
+                        <div class="user_img">
+                            <img class="infinito-user_img" src="" alt=""/>
+                        </div>
+                        <p class="greeting infinito-greeting"/>
+                        <div class="search_bar">
+                            <div class="search-input"
+                                 t-on-input="_searchMenusSchedule">
+                                <div class="input-group">
+                                    <input type="search" class="form-control"
+                                           placeholder="Search for an app, setting or contact"
+                                           autocomplete="off"
+                                           aria-label="Recipient's username"
+                                           aria-describedby="basic-addon2"/>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary"
+                                                type="button">
+                                            <span>
+                                                <img src="/backend_theme_infinito/static/src/img/landing_page/search.svg"
+                                                     alt=""
+                                                     style="height: 20px; width:20px;"/>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="search-results col-md-10 ml-auto"/>
+                        </div>
+                        <div class="apps">
+                            <ul>
+                                <t t-foreach="menuService.getApps()" t-as="app"
+                                   t-key="app_index">
+                                    <li>
+                                        <a t-attf-href="#menu_id={{app.id}}"
+                                           class="fullscreen-app-link"
+                                           t-att-data-menu-id="app.id"
+                                           t-att-data-menu-xmlid="app.xmlid"
+                                           t-att-data-action-id="app.actionID"
+                                           t-on-click="onClick">
+                                             <div class="img_wrapper">
+                                                 <t t-if="app.webIconData">
+                                                     <img t-att-title="app.name"
+                                                          style="width: 70px !important;height: 70px !important;border-radius: 10px !important;margin: 5px 5px 5px -5px;"
+                                                          t-att-src="app.webIconData"/>
+                                                 </t>
+                                                 <t t-else="">
+                                                     <i t-att-title="app.name"
+                                                        style="font-size: 70px !important; border-radius: 10px !important; margin: 5px 5px 5px -5px; width: 70px !important; height: 70px !important; display: inline-flex; align-items: center; justify-content: center;"
+                                                        t-att-class="app.webIcon"/>
+                                                 </t>
+                                             </div>
+                                            <p><t t-esc="app.name"/></p>
+                                        </a>
+                                    </li>
+                                </t>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </span>
+    </t>
+    <t t-name="backend_theme_infinito.SearchResults">
+        <t t-foreach="results" t-as="result" t-key="result_index">
+            <div class="search_icons">
+                <a t-attf-class="o-menu-search-result dropdown-item col-12 ml-auto mr-auto #{result_first ? 'active' : ''}"
+                   t-attf-style="background-image:url('data:image/png;base64,#{result.webIconData}')"
+                   t-attf-href="#menu_id=#{result.id}&amp;action_id=#{result.actionID}"
+                   t-att-data-menu-id="result.id"
+                   t-att-data-action-id="result.actionID"
+                   t-raw="result.name"/>
+            </div>
+        </t>
+    </t>
+</templates>

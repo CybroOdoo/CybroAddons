@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <!-- Adds responsive viewport settings to the web layout.
+         Improves mobile and tablet display compatibility. -->
+    <template id="infinito_responsive_layout" inherit_id="web.layout" name="Infinito Responsive Layout">
+        <xpath expr="//meta[@content='IE=edge']" position="after">
+            <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+        </xpath>
+        <!--
+            Inline dark-mode guard: runs synchronously in <head> before any
+            content is painted.  If the user had dark mode active in their last
+            session we immediately add 'dark-mode' to <html> so the first paint
+            is already dark – eliminating the white-to-black flash entirely.
+            The JS bundle will later transfer the class to <body> / .o_web_client
+            and remove it from <html> in the same synchronous tick (no double flash).
+        -->
+        <xpath expr="//head" position="inside">
+            <link rel="stylesheet" type="text/css" href="/backend_theme_infinito/dynamic_styles.css"/>
+            <script type="text/javascript">
+            (function () {
+                try {
+                    if (localStorage.getItem('infinito_dark_mode') === '1') {
+                        document.documentElement.classList.add('dark-mode');
+                    }
+                } catch (e) {}
+            })();
+            </script>
+        </xpath>
+    </template>
+</odoo>
