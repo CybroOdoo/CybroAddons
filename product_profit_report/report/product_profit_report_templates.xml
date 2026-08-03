@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Template for PDF report-->
+    <template id="product_profit_report">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+
+                    <!-- Report Title -->
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <h2 style="color: #2c3e50; font-size: 26px; font-weight: 700;">
+                            Product Profit Report
+                        </h2>
+                    </div>
+
+                    <!-- Filter Summary -->
+                    <table style="border-collapse: collapse; margin-bottom: 20px; font-size: 16px;">
+                        <t t-if="data['from_date']">
+                            <tr>
+                                <td style="border: 1px solid #333; padding: 4px 10px;">
+                                    <strong>From Date: </strong>
+                                    <span t-esc="data['from_date']"/>
+                                </td>
+                            </tr>
+                        </t>
+                        <t t-if="data['to_date']">
+                            <tr>
+                                <td style="border: 1px solid #333; padding: 4px 10px;">
+                                    <strong>To Date: </strong>
+                                    <span t-esc="data['to_date']"/>
+                                </td>
+                            </tr>
+                        </t>
+                        <t t-if="data['categ_id']">
+                            <tr>
+                                <td style="border: 1px solid #333; padding: 4px 10px;">
+                                    <strong>Product Category: </strong>
+                                    <span t-esc="data['categ_id'][1]"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </table>
+
+                    <!-- Data Table -->
+                    <t t-if="groups">
+                        <table class="table table-condensed" style="font-size: 15px;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: center; width: 5%;">No</th>
+                                    <th style="text-align: left;">Product</th>
+                                    <th style="text-align: right;">Qty</th>
+                                    <th style="text-align: left;">Unit</th>
+                                    <th style="text-align: right;">Cost</th>
+                                    <th style="text-align: right;">Sale Amount</th>
+                                    <th style="text-align: right; padding-right: 14px;">Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="i" t-value="1"/>
+                                <t t-set="sum_expense" t-value="0.00"/>
+                                <t t-set="sum_sales" t-value="0.00"/>
+                                <t t-set="sum_profit" t-value="0.00"/>
+                                <t t-foreach="groups" t-as="group">
+                                    <tr t-if="groups[group]['qty'] != 0.0">
+                                        <td style="text-align: center;">
+                                            <span t-esc="i"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="groups[group]['name']"/>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <span t-esc="groups[group]['qty']"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="groups[group]['unit']"/>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <t t-if="groups[group]['expense'] == 0.0">
+                                                <span style="color: #e60000;"
+                                                      t-esc="groups[group]['expense']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </t>
+                                            <t t-if="groups[group]['expense'] != 0.0">
+                                                <span t-esc="groups[group]['expense']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </t>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <span t-esc="groups[group]['sales']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                        </td>
+                                        <td style="text-align: right; padding-right: 14px;">
+                                            <t t-if="groups[group]['profit'] &lt; 0">
+                                                <span style="color: #FF0000;"
+                                                      t-esc="groups[group]['profit']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </t>
+                                            <t t-if="groups[group]['profit'] &gt;= 0">
+                                                <span t-esc="groups[group]['profit']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                            </t>
+                                        </td>
+                                        <t t-set="i" t-value="i + 1"/>
+                                        <t t-set="sum_expense" t-value="sum_expense + groups[group]['expense']"/>
+                                        <t t-set="sum_sales" t-value="sum_sales + groups[group]['sales']"/>
+                                        <t t-set="sum_profit" t-value="sum_profit + groups[group]['profit']"/>
+                                    </tr>
+                                </t>
+
+                                <!-- Totals Row -->
+                                <tr>
+                                    <td/><td/><td/><td/>
+                                    <td style="font-weight: bold; text-align: right;">
+                                        <span t-esc="sum_expense"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td style="font-weight: bold; text-align: right;">
+                                        <span t-esc="sum_sales"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td style="font-weight: bold; text-align: right; padding-right: 14px;">
+                                        <span t-esc="sum_profit"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Report Date -->
+                        <t t-if="report_date">
+                            <div style="font-size: 15px; margin-top: 10px;">
+                                <strong>Report Date: </strong>
+                                <span t-esc="report_date"/>
+                            </div>
+                        </t>
+                    </t>
+
+                    <!-- No Data -->
+                    <t t-if="not groups">
+                        <span style="font-size: 20px;">No Data available...!!!</span>
+                    </t>
+
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
