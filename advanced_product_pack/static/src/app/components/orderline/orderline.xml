@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!-- List the individual components below a bundle's POS order line. -->
+    <t t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//ul[hasclass('info-list')]" position="inside">
+            <t t-if="line.is_bundle and line.bundleDetails and line.bundleDetails.length and !line.comboParent">
+                <t t-set="line_qty" t-value="line.qty or '1'"/>
+                <li class="bundle-pack-details ms-2 mt-1">
+                    <t t-foreach="line.bundleDetails" t-as="item" t-key="item_index">
+                        <div class="bundle-item my-1">
+                            <div class="item-name text-dark fw-normal"><t t-esc="item.name"/></div>
+                            <div class="item-values text-muted small ms-2">
+                                <t t-esc="item.qty"/> x <t t-esc="item.uom or 'Units'"/> at <t t-esc="env.utils.formatCurrency(item.price)"/> / <t t-esc="item.uom or 'Units'"/>
+                            </div>
+                        </div>
+                    </t>
+                </li>
+            </t>
+        </xpath>
+    </t>
+</templates>

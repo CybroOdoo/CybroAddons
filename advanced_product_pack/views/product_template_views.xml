@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Adds is_bundle checkbox, variants page tweaks, and Bundle Pack tab-->
+    <record id="product_template_only_form_view" model="ir.ui.view">
+        <field name="name">product.template.view.form.inherit.advanced.product.pack</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <span class="d-inline-block">
+                    <field name="is_bundle"/>
+                    <label for="is_bundle"/>
+                </span>
+            </xpath>
+            <xpath expr="//page[@name='variants']" position="after">
+                <page string="Bundle Pack" invisible="not is_bundle">
+                    <group>
+                        <group>
+                            <field name="calc_pack_price"/>
+                        </group>
+                        <group>
+                            <field name="calc_pack_cost"/>
+                        </group>
+                    </group>
+                    <!--
+                        No inline <list> here. The standalone list view defined in
+                        product_bundle_line_views.xml is loaded via tree_view_ref.
+                        This prevents Odoo's view validator from walking into the
+                        subview and mistakenly validating product_id against
+                        product.template instead of product.bundle.line.
+                    -->
+                    <field name="bundle_line_ids"
+                           context="{'tree_view_ref': 'advanced_product_pack.product_bundle_line_list_view'}"/>
+                </page>
+            </xpath>
+            <xpath expr="//page[@name='variants']//field[@name='attribute_line_ids']" position="attributes">
+                <attribute name="invisible">is_bundle</attribute>
+            </xpath>
+            <xpath expr="//page[@name='variants']//p[hasclass('oe_edit_only')]" position="attributes">
+                <attribute name="invisible">is_bundle</attribute>
+            </xpath>
+            <xpath expr="//page[@name='variants']" position="inside">
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100"
+                     invisible="not is_bundle" style="min-height: 400px;">
+                    <h1 class="fw-bold text-dark text-center" style="font-size: 3.5rem; opacity: 0.9;">
+                        You cannot create variants of the Pack
+                    </h1>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product Template Search Inheritance -->
+    <record id="product_template_search_view" model="ir.ui.view">
+        <field name="name">product.template.view.search.inherit.advanced.product.pack</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_to_sell']" position="after">
+                <filter string="Product Pack" name="product_pack" domain="[('is_bundle', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action for Product Pack -->
+    <record id="product_template_action" model="ir.actions.act_window">
+        <field name="name">Product Pack</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('is_bundle', '=', True)]</field>
+        <field name="context">{'default_is_bundle': True, 'search_default_product_pack': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Product Pack
+            </p>
+            <p>
+                Product packs allow you to group multiple products together and calculate their joint price and cost.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu for Product Pack -->
+    <menuitem id="product_template_menu"
+              name="Product Pack"
+              action="product_template_action"
+              parent="sale.product_menu_catalog"
+              sequence="10"/>
+
+</odoo>
