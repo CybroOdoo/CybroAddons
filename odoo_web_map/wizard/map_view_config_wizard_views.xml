@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Map View Configuration Wizard List -->
+    <record id="view_map_view_config_wizard_tree" model="ir.ui.view">
+        <field name="name">map.view.config.wizard.tree</field>
+        <field name="model">map.view.config.wizard</field>
+        <field name="arch" type="xml">
+            <tree string="Configure Map View">
+                <field name="model_id"/>
+                <field name="view_position"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Map View Configuration Wizard Form -->
+    <record id="view_map_view_config_wizard_form" model="ir.ui.view">
+        <field name="name">map.view.config.wizard.form</field>
+        <field name="model">map.view.config.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Configure Map View">
+                <header>
+                    <button name="action_create_map_view"
+                            string="Create Map View" type="object"
+                            class="btn-primary"
+                            invisible="id == False"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Target Configuration">
+                            <field name="model_id"
+                                   options="{'no_create': True}"/>
+                            <field name="model_name" invisible="1"/>
+                            <field name="action_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="view_position"/>
+                        </group>
+                        <group string="Map View Settings">
+                            <field name="partner_field_ids" invisible="1"/>
+                            <field name="partner_field_id"
+                                   placeholder="Select partner field..."
+                                   domain="[('id', 'in', partner_field_ids)]"/>
+                            <field name="lat_field"/>
+                            <field name="lng_field"/>
+                            <field name="address_field"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Help">
+                            <group colspan="2">
+                                <div class="alert alert-info oe_text_left" role="alert" colspan="2">
+                                    <h4>How to use this wizard:</h4>
+                                    <ol>
+                                        <li>
+                                            <strong>Select Model:</strong>
+                                            Choose the model you want to add a
+                                            map view to (e.g., Sale Order,
+                                            Project Task)
+                                        </li>
+                                        <li>
+                                            <strong>Select Actions:</strong>
+                                            Choose one or more window actions
+                                            that will display the map view
+                                        </li>
+                                        <li>
+                                            <strong>Configure Fields:</strong>
+                                            <ul>
+                                                <li>
+                                                    <strong>Partner Field:
+                                                    </strong>
+                                                    If your model has a Many2one
+                                                    to res.partner (e.g.,
+                                                    'partner_id'), specify it
+                                                    here. The map will use the
+                                                    partner's coordinates.
+                                                </li>
+                                                <li>
+                                                    <strong>Latitude/Longitude
+                                                        Fields:
+                                                    </strong>
+                                                    If your model has direct
+                                                    coordinate fields, specify
+                                                    their names (defaults:
+                                                    partner_latitude,
+                                                    partner_longitude)
+                                                </li>
+                                                <li>
+                                                    <strong>Address Field:
+                                                    </strong>
+                                                    Field to display in the
+                                                    popup (default:
+                                                    contact_address)
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <strong>View Position:</strong>
+                                            Choose where the map view should
+                                            appear in the view switcher
+                                        </li>
+                                        <li>Click <strong>Create Map View
+                                        </strong> to apply
+                                        </li>
+                                    </ol>
+                                    <p>
+                                        <strong>Example for Sale Orders:
+                                        </strong>
+                                    </p>
+                                    <ul>
+                                        <li>Model: Sale Order (sale.order)</li>
+                                        <li>Action: Quotations / Sales Orders
+                                        </li>
+                                        <li>Partner Field: partner_id</li>
+                                        <li>Leave other fields as default</li>
+                                    </ul>
+                                </div>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button name="action_create_map_view"
+                            string="Create Map View" type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action to open the wizard -->
+    <record id="action_map_view_config_wizard" model="ir.actions.act_window">
+        <field name="name">Configure Map View</field>
+        <field name="res_model">map.view.config.wizard</field>
+        <field name="view_mode">tree,form</field>
+        <field name="target">current</field>
+        <field name="binding_model_id" ref="base.model_ir_ui_view"/>
+    </record>
+
+    <!-- Menu item in Technical section User Interface -->
+    <menuitem id="menu_map_view_config_wizard"
+              name="Configure Map View"
+              parent="base.next_id_2"
+              action="action_map_view_config_wizard"
+              sequence="100"
+              groups="base.group_system"/>
+
+</odoo>
