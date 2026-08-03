@@ -21,7 +21,7 @@
 ##############################################################################
 import json
 import logging
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 import requests
 from markupsafe import Markup
@@ -150,6 +150,14 @@ class ClientSupport(models.TransientModel):
             SUPPORT_ENDPOINT_PARAM)
         return (endpoint or '').strip() or DEFAULT_SUPPORT_ENDPOINT
 
+    @api.model
+    def _get_tracking_url(self):
+        """Public /track-ticket URL on the same host as the support endpoint."""
+        parts = urlsplit(self._get_support_endpoint())
+        if parts.scheme and parts.netloc:
+            return '%s://%s/track-ticket' % (parts.scheme, parts.netloc)
+        return 'https://support.cybrosys.com/track-ticket'
+
     def _submit_support_request(self):
         self.ensure_one()
         response = requests.post(
@@ -210,14 +218,18 @@ class ClientSupport(models.TransientModel):
                 self._fields['priority'].selection
             ).get(self.priority, '')
 
-            # display_notification escapes HTML in `message`, so build the
-            # body as plain text. Newlines render as line breaks because
-            # the matching CSS rule applies white-space: pre-line.
+            # Newlines render as line breaks because the matching CSS rule
+            # applies white-space: pre-line. The final "%s" is replaced by a
+            # clickable tracking link by the display_notification action.
+            track_url = self._get_tracking_url()
             lines = [_("Your Ticket Created Successfully"), '']
             if ticket_id:
                 lines.append(_("Ticket Reference : %s") % ticket_id)
-            lines.extend(['',
-                        _("Save this reference to follow up with Cybrosys."),
+            lines.extend([
+                '',
+                _("Save this reference to follow up with Cybrosys."),
+                '',
+                _("Track your ticket status here: %s"),
             ])
             message = '\n'.join(lines)
 
@@ -226,6 +238,7 @@ class ClientSupport(models.TransientModel):
                 'tag': 'display_notification',
                 'params': {
                     'message': message,
+                    'links': [{'label': track_url, 'url': track_url}],
                     'type': 'success',
                     'sticky': True,
                     'className': 'o_cybrosys_ticket_notification',
