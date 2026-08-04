@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--this is used to show deducted loyalty points in the Receipt -->
+<templates id="template" xml:space="preserve">
+    <t t-name="advanced_loyalty_management.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('pos-receipt')]//div[hasclass('before-footer')]" position="inside">
+            <t t-set="deductedPointsList" t-value="props.order.deductLoyaltyPoints()"/>
+            <t t-if="deductedPointsList and deductedPointsList.length">
+                <t t-foreach="deductedPointsList" t-as="deductedPoints" t-key="deductedPoints.programName">
+                    <t t-if="deductedPoints.isRefund and deductedPoints.lostPoint > 0">
+                        <div class="pt-3 loyalty">
+                            <div class="pos-receipt-title" t-out="deductedPoints.programName"/>
+                            <div class="d-flex" style="font-size: 75%;">
+                                <span>Points Lost:</span>
+                                <span class="ms-auto"><t t-out="deductedPoints.lostPoint"/></span>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </xpath>
+    </t>
+</templates>
