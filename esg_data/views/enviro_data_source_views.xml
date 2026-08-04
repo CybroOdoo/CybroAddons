@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="enviro_data_source_view_list" model="ir.ui.view">
+        <field name="name">enviro.data.source.list</field>
+        <field name="model">enviro.data.source</field>
+        <field name="arch" type="xml">
+            <list string="Data Sources">
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="enviro_data_source_view_form" model="ir.ui.view">
+        <field name="name">enviro.data.source.form</field>
+        <field name="model">enviro.data.source</field>
+        <field name="arch" type="xml">
+            <form string="Data Source">
+                <header>
+                    <button name="action_test_connection"
+                            string="Test Connection"
+                            type="object"
+                            class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <group>
+                        <group string="General">
+                            <field name="name"/>
+                            <field name="provider"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="API">
+                            <field name="api_key" widget="password"
+                                   invisible="not provider"
+                                   placeholder="Leave blank if not required by provider"/>
+                            <field name="url" placeholder="Leave blank for provider default"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="enviro_data_source_view_search" model="ir.ui.view">
+        <field name="name">enviro.data.source.search</field>
+        <field name="model">enviro.data.source</field>
+        <field name="arch" type="xml">
+            <search string="Data Sources">
+                <field name="name"/>
+                <filter string="Archived" name="archived"
+                        domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Provider" name="group_provider"
+                            context="{'group_by': 'provider'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="enviro_data_source_action" model="ir.actions.act_window">
+        <field name="name">Data Sources</field>
+        <field name="res_model">enviro.data.source</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No data sources configured yet.
+            </p>
+            <p>
+                Install a provider module (e.g. Enviro Data — Climatiq) and
+                create a data source record here to enable third-party integrations.
+            </p>
+        </field>
+    </record>
+</odoo>
