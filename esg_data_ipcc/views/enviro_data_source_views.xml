@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="enviro_data_source_ipcc_form" model="ir.ui.view">
+        <field name="name">enviro.data.source.ipcc.form</field>
+        <field name="model">enviro.data.source</field>
+        <field name="inherit_id" ref="esg_data.enviro_data_source_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Import and Update buttons — IPCC only -->
+            <xpath expr="//header/button[@name='action_test_connection']" position="after">
+                <button name="action_ipcc_import"
+                        string="Import New Factors"
+                        type="object"
+                        class="btn-primary"
+                        invisible="provider != 'ipcc'"/>
+                <button name="action_ipcc_update"
+                        string="Import &amp; Update"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="provider != 'ipcc'"/>
+            </xpath>
+
+            <!-- Hide api_key for IPCC (no key needed) but keep the group so url is visible -->
+            <xpath expr="//field[@name='api_key']" position="attributes">
+                <attribute name="invisible">provider == 'ipcc'</attribute>
+            </xpath>
+
+            <!-- IPCC Sync Status -->
+            <xpath expr="//field[@name='notes']/.." position="before">
+                <group>
+                    <group string="IPCC Filters" invisible="provider != 'ipcc'">
+                        <field name="ipcc_region"/>
+                        <field name="ipcc_country_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    </group>
+                    <group string="Import Status" invisible="provider != 'ipcc'">
+                        <field name="ipcc_last_import"/>
+                        <field name="ipcc_imported_count"/>
+                    </group>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
