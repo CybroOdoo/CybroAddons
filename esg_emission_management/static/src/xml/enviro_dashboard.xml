@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="esg_emission_management.EnviroDashboard">
+        <div class="o_enviro_dashboard pb-5 h-100 overflow-auto">
+            <div class="px-3 px-md-4 mt-4 mt-md-5">
+
+                <!-- TOP BAR -->
+                <div class="row mb-4 align-items-center">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <h1 class="h3 fw-bold mb-1">ESG Dashboard</h1>
+                        <p class="text-muted m-0"><t t-esc="periodSubtitle"/> · Current companies</p>
+                    </div>
+                    
+                    <div class="col-md-6 d-flex flex-wrap gap-2 justify-content-md-end o_enviro_filters">
+
+                        <!-- Period picker -->
+                        <div class="o_enviro_period_picker" t-on-click="stopProp">
+
+                            <button class="o_enviro_nav_btn"
+                                    t-if="state.filter.mode !== 'custom'"
+                                    t-on-click="() => this.navigate(-1)">&#8249;</button>
+
+                            <button class="o_enviro_period_btn" t-on-click="toggleDropdown">
+                                <i class="fa fa-calendar-o"/>
+                                <t t-esc="periodLabel"/>
+                            </button>
+
+                            <button class="o_enviro_nav_btn"
+                                    t-if="state.filter.mode !== 'custom'"
+                                    t-on-click="() => this.navigate(1)">&#8250;</button>
+
+                            <!-- Dropdown -->
+                            <div class="o_enviro_period_dropdown" t-if="state.filter.open">
+
+                                <!-- Month row -->
+                                <div t-att-class="'o_enviro_period_row' + (state.filter.mode === 'month' ? ' o_active' : '')"
+                                     t-on-click="(ev) => this.setMode('month', ev)">
+                                    <i t-att-class="state.filter.mode === 'month' ? 'fa fa-check' : 'fa fa-fw'"/>
+                                    <span>Month</span>
+                                    <button class="o_enviro_row_nav" t-on-click="(ev) => this.navigateRow('month', -1, ev)">&#8249;</button>
+                                    <span class="o_enviro_row_val" t-esc="rowLabel('month')"/>
+                                    <button class="o_enviro_row_nav" t-on-click="(ev) => this.navigateRow('month', 1, ev)">&#8250;</button>
+                                </div>
+
+                                <!-- Quarter row -->
+                                <div t-att-class="'o_enviro_period_row' + (state.filter.mode === 'quarter' ? ' o_active' : '')"
+                                     t-on-click="(ev) => this.setMode('quarter', ev)">
+                                    <i t-att-class="state.filter.mode === 'quarter' ? 'fa fa-check' : 'fa fa-fw'"/>
+                                    <span>Quarter</span>
+                                    <button class="o_enviro_row_nav" t-on-click="(ev) => this.navigateRow('quarter', -1, ev)">&#8249;</button>
+                                    <span class="o_enviro_row_val" t-esc="rowLabel('quarter')"/>
+                                    <button class="o_enviro_row_nav" t-on-click="(ev) => this.navigateRow('quarter', 1, ev)">&#8250;</button>
+                                </div>
+
+                                <!-- Year row -->
+                                <div t-att-class="'o_enviro_period_row' + (state.filter.mode === 'year' ? ' o_active' : '')"
+                                     t-on-click="(ev) => this.setMode('year', ev)">
+                                    <i t-att-class="state.filter.mode === 'year' ? 'fa fa-check' : 'fa fa-fw'"/>
+                                    <span>Year</span>
+                                    <button class="o_enviro_row_nav" t-on-click="(ev) => this.navigateRow('year', -1, ev)">&#8249;</button>
+                                    <span class="o_enviro_row_val" t-esc="rowLabel('year')"/>
+                                    <button class="o_enviro_row_nav" t-on-click="(ev) => this.navigateRow('year', 1, ev)">&#8250;</button>
+                                </div>
+
+                                <div class="o_enviro_period_divider"/>
+
+                                <!-- Custom Dates row -->
+                                <div t-att-class="'o_enviro_period_row' + (state.filter.mode === 'custom' ? ' o_active' : '')"
+                                     t-on-click="(ev) => this.setMode('custom', ev)">
+                                    <i t-att-class="state.filter.mode === 'custom' ? 'fa fa-check' : 'fa fa-fw'"/>
+                                    <span>Custom Dates</span>
+                                </div>
+
+                                <div class="o_enviro_custom_dates" t-if="state.filter.mode === 'custom'">
+                                    <input type="date" t-att-value="state.filter.customFrom" t-on-change="onCustomFrom"/>
+                                    <span>–</span>
+                                    <input type="date" t-att-value="state.filter.customTo" t-on-change="onCustomTo"/>
+                                    <button class="btn btn-primary btn-sm" t-on-click.stop="() => this.applyCustom()">Apply</button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Scope filter -->
+                        <div class="o_enviro_scope_picker" t-on-click="stopProp">
+                            <button class="btn btn-light border bg-white o_enviro_scope_btn shadow-sm" t-on-click="toggleScopeDropdown">
+                                <t t-esc="scopeLabel"/>
+                                <i class="fa fa-caret-down ms-1"/>
+                            </button>
+                            <div class="o_enviro_scope_dropdown" t-if="state.filter.scopesOpen">
+                                <div t-att-class="'o_enviro_scope_item' + (state.filter.scopes.scope1 ? ' o_checked' : '')"
+                                     t-on-click="(ev) => this.toggleScope('scope1', ev)">
+                                    <i t-att-class="state.filter.scopes.scope1 ? 'fa fa-check' : 'fa fa-fw'"/>
+                                    Direct
+                                </div>
+                                <div t-att-class="'o_enviro_scope_item' + (state.filter.scopes.scope2 ? ' o_checked' : '')"
+                                     t-on-click="(ev) => this.toggleScope('scope2', ev)">
+                                    <i t-att-class="state.filter.scopes.scope2 ? 'fa fa-check' : 'fa fa-fw'"/>
+                                    Indirect
+                                </div>
+                                <div t-att-class="'o_enviro_scope_item' + (state.filter.scopes.scope3 ? ' o_checked' : '')"
+                                     t-on-click="(ev) => this.toggleScope('scope3', ev)">
+                                    <i t-att-class="state.filter.scopes.scope3 ? 'fa fa-check' : 'fa fa-fw'"/>
+                                    Other
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center justify-content-between gap-3 mb-4 rounded-2 overflow-hidden o_enviro_alert_banner cursor-pointer"
+                    t-if="state.data.missing_count"
+                    t-on-click="() => this.openEntries([['state', '=', 'missing']])"
+                >
+                    <div class="d-flex align-items-center gap-2 m-0 text-dark">
+                        <i class="fa fa-exclamation-triangle text-warning"/> 
+                        <span class="fw-bold"><t t-esc="state.data.missing_count"/> entries are missing emission factors</span>
+                        <span class="text-muted small ms-2 border-start ps-2 border-dark-subtle"><t t-esc="periodLabel"/> totals may be understated.</span>
+                    </div>
+                    <strong class="text-decoration-underline text-warning small pe-1">Fix now</strong>
+                </div>
+
+            <!-- BIG KPI SUMMARY -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-lg-3">
+                    <div t-att-class="'card shadow-sm border-0 h-100 o_enviro_card ' + (state.data.total > 0 ? 'cursor-pointer' : '')"
+                         t-on-click="() => state.data.total > 0 &amp;&amp; this.openEntries(this._filterDomain())">
+                        <div class="card-body">
+                            <h6 class="text-muted mb-2 font-weight-bold">Total Emissions</h6>
+                            <h3 class="mb-2"><t t-esc="state.data.total"/> <small class="text-muted fs-6">tCO2e</small></h3>
+                            <span t-att-class="'badge rounded-pill ' + (state.data.total_diff_pct &gt; 0 ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success')">
+                                <t t-esc="state.data.total_diff_pct &gt; 0 ? '▲' : '▼'"/> <t t-esc="Math.abs(state.data.total_diff_pct)"/>% vs prev period
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div t-att-class="'card shadow-sm border-0 h-100 o_enviro_card ' + (state.data.total > 0 ? 'cursor-pointer' : '')"
+                         t-on-click="() => state.data.total > 0 &amp;&amp; this.openEntries(this._filterDomain())">
+                        <div class="card-body">
+                            <h6 class="text-muted mb-2 font-weight-bold">Net Emissions</h6>
+                            <h3 class="mb-2"><t t-esc="state.data.net_total"/> <small class="text-muted fs-6">tCO2e</small></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div t-att-class="'card shadow-sm border-0 h-100 o_enviro_card ' + (state.data.missing_count > 0 ? 'cursor-pointer' : '')"
+                         t-on-click="() => state.data.missing_count > 0 &amp;&amp; this.openEntries([...this._periodDomain(), ['state', '=', 'missing']])">
+                        <div class="card-body">
+                            <h6 class="text-muted mb-2 font-weight-bold">Missing Factors</h6>
+                            <h3 class="mb-2"><t t-esc="state.data.missing_count"/> <small class="text-muted fs-6">Entries</small></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div t-att-class="'card shadow-sm border-0 h-100 o_enviro_card ' + (state.data.active_initiatives_count > 0 ? 'cursor-pointer' : '')"
+                         t-on-click="() => state.data.active_initiatives_count > 0 &amp;&amp; this.openInitiatives([['state', 'in', ['planned', 'in_progress']]])">
+                        <div class="card-body">
+                            <h6 class="text-muted mb-2 font-weight-bold">Active Initiatives</h6>
+                            <h3 class="mb-2"><t t-esc="state.data.active_initiatives_count"/> <small class="text-muted fs-6">Initiatives</small></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <!-- Monthly Trend Chart -->
+                <div class="col-12 col-xl-6">
+                    <div class="card shadow-sm border-0 h-100 o_enviro_card cursor-pointer" t-on-click="() => this.openReports()">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4 px-4 pb-0">
+                            <h5 class="mb-0 font-weight-bold">Monthly Trend</h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted small">tCO2e / month</span>
+                                <button class="btn btn-sm btn-light border-0" t-on-click="(ev) => this.downloadChart('monthChart', 'Monthly Trend', ev)">
+                                    <i class="fa fa-download"/>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <div style="height: 250px; width: 100%; position: relative;">
+                                <canvas t-ref="monthChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Scope Doughnut -->
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card shadow-sm border-0 h-100 o_enviro_card">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4 px-4 pb-0">
+                            <h5 class="mb-0 font-weight-bold">Emissions by Scope</h5>
+                            <button class="btn btn-sm btn-light border-0" t-on-click="(ev) => this.downloadChart('scopeChart', 'Scope Emissions', ev)">
+                                <i class="fa fa-download"/>
+                            </button>
+                        </div>
+                        <div class="card-body px-4 pb-4 d-flex align-items-center justify-content-center">
+                            <div style="height: 250px; width: 100%; position: relative;">
+                                <canvas t-ref="scopeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Categories Doughnut -->
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card shadow-sm border-0 h-100 o_enviro_card">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4 px-4 pb-0">
+                            <h5 class="mb-0 font-weight-bold">Emissions by Source</h5>
+                            <button class="btn btn-sm btn-light border-0" t-on-click="(ev) => this.downloadChart('categoryChart', 'Source Emissions', ev)">
+                                <i class="fa fa-download"/>
+                            </button>
+                        </div>
+                        <div class="card-body px-4 pb-4 d-flex align-items-center justify-content-center">
+                            <div style="height: 250px; width: 100%; position: relative;">
+                                <canvas t-ref="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <!-- Target Progress -->
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="card shadow-sm border-0 h-100 o_enviro_card">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4 px-4 pb-0">
+                            <h5 class="mb-0 font-weight-bold">Annual Target Progress</h5>
+                            <span class="text-muted small">vs baseline</span>
+                        </div>
+                        <div class="card-body px-4 pb-4 text-center">
+                            <div class="o_enviro_gauge mx-auto" t-att-style="targetGaugeStyle">
+                                <div>
+                                    <strong><t t-esc="state.data.target_progress"/>%</strong>
+                                    <span>of <t t-esc="state.data.target_reduction_pct"/>% reduction target</span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-around mt-4">
+                                <div class="text-center cursor-pointer" t-on-click.stop="() => this.openEntries(this._filterDomain())">
+                                    <span class="text-muted d-block small">Net total</span>
+                                    <strong class="text-success fs-5"><t t-esc="state.data.net_total"/> t</strong>
+                                </div>
+                                <div class="text-center text-muted">
+                                    <span class="d-block small">Offsets retired</span>
+                                    <strong class="text-info fs-5"><t t-esc="state.data.retired_offsets"/> t</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Entries -->
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div t-att-class="'card shadow-sm border-0 h-100 o_enviro_card d-flex flex-column ' + (state.data.recent_entries.length ? 'cursor-pointer' : '')"
+                         t-on-click="() => state.data.recent_entries.length &amp;&amp; this.openEntries(this._filterDomain())">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4 px-4 pb-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="mb-0 font-weight-bold">Recent Entries</h5>
+                                <span class="badge bg-light text-dark o_enviro_period_badge"><t t-esc="periodLabel"/></span>
+                            </div>
+                            <button t-if="state.data.recent_entries.length" class="btn btn-sm btn-link text-decoration-none" t-on-click.stop="() => this.openEntries(this._filterDomain())">View All</button>
+                        </div>
+                        <div class="card-body px-4 flex-grow-1 overflow-auto">
+                            <div t-if="state.data.recent_entries.length" class="d-flex flex-column gap-3 mt-2">
+                                <div t-foreach="state.data.recent_entries" t-as="entry" t-key="entry.id" class="d-flex align-items-center gap-3">
+                                    <div t-att-class="'flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle shadow-sm o_entry_' + (entry.scope || 'missing')" style="width: 36px; height: 36px;">
+                                        <i t-att-class="entry.scope === 'scope1' ? 'fa fa-industry text-success' : (entry.scope === 'scope2' ? 'fa fa-bolt text-primary' : (entry.scope === 'scope3' ? 'fa fa-truck text-warning' : 'fa fa-asterisk text-danger'))"/>
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <strong class="d-block text-truncate text-dark"><t t-esc="entry.name"/></strong>
+                                        <span class="d-block text-muted small"><t t-esc="entry.date"/></span>
+                                    </div>
+                                    <div class="text-end flex-shrink-0">
+                                        <b class="d-block text-dark"><t t-if="entry.co2e_tonnes"><t t-esc="entry.co2e_tonnes"/> t</t><t t-else="">-</t></b>
+                                        <em t-att-class="'badge fw-normal o_state_' + entry.state"><t t-esc="entry.state"/></em>
+                                    </div>
+                                </div>
+                            </div>
+                            <div t-else="" class="text-center text-muted py-5">No entries yet.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Initiatives -->
+                <div class="col-12 col-xl-4">
+                    <div class="card shadow-sm border-0 h-100 o_enviro_card">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4 px-4 pb-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="mb-0 font-weight-bold">Active Initiatives</h5>
+                                <span class="badge bg-light text-dark o_enviro_period_badge"><t t-esc="periodLabel"/></span>
+                            </div>
+                        </div>
+                        <div class="card-body px-4">
+                            <div t-if="state.data.recent_initiatives.length" class="d-flex flex-column gap-4 mt-2">
+                                <button t-foreach="state.data.recent_initiatives" t-as="initiative" t-key="initiative.name + initiative.state"
+                                        class="btn p-0 text-start border-0 bg-transparent w-100"
+                                        t-on-click.stop="() => this.openInitiatives([['state', 'in', ['planned', 'in_progress']]])">
+                                    <div class="d-flex justify-content-between align-items-baseline mb-1">
+                                        <strong class="text-dark text-truncate pe-2"><t t-esc="initiative.name"/></strong>
+                                        <b class="text-success small whitespace-nowrap"><t t-esc="initiative.actual_saving_tonnes"/> / <t t-esc="initiative.expected_saving_tonnes"/> t saved</b>
+                                    </div>
+                                    <t t-set="barPct" t-value="initiative.expected_saving_tonnes > 0 ? Math.min(Math.round((initiative.actual_saving_tonnes / initiative.expected_saving_tonnes) * 100), 100) : initiative.progress"/>
+                                    <t t-set="barColor" t-value="barPct >= 75 ? '#1f9d75' : (barPct >= 40 ? '#2f80d8' : '#f59d23')"/>
+                                    <!-- Custom progress track -->
+                                    <div style="height: 7px; border-radius: 99px; background: rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 4px;">
+                                        <div t-attf-style="height: 100%; border-radius: 99px; width: {{barPct}}%; background: {{barColor}}; transition: width 0.6s ease;"/>
+                                    </div>
+                                    <span class="text-muted small d-flex align-items-center gap-1 mt-1">
+                                        <t t-esc="barPct"/>% complete
+                                    </span>
+                                </button>
+                                <hr class="my-2"/>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted font-weight-bold">Total Expected Savings</span>
+                                    <strong class="text-success fs-5"><t t-esc="state.data.initiative_expected_saving"/> tCO2e</strong>
+                                </div>
+                            </div>
+                            <div t-else="" class="text-center text-muted py-5">No active initiatives.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <!-- Initiatives Savings -->
+                <div class="col-12 col-xl-6">
+                    <div t-att-class="'card shadow-sm border-0 h-100 o_enviro_card ' + (state.data.recent_initiatives.length ? 'cursor-pointer' : '')"
+                         t-on-click="() => state.data.recent_initiatives.length &amp;&amp; this.openInitiatives([])">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4 px-4 pb-0">
+                            <h5 class="mb-0 font-weight-bold">Initiatives Savings</h5>
+                            <span class="text-muted small">actual vs expected</span>
+                        </div>
+                        <div class="card-body px-4 position-relative pt-4">
+                            <!-- Background Grid Lines -->
+                            <div class="position-absolute h-100 w-100 d-flex pt-3" style="left: 0; top: 0; padding-left: 30%; pointer-events: none; z-index: 1;">
+                                <div class="border-end flex-grow-1 h-100 opacity-25"></div>
+                                <div class="border-end flex-grow-1 h-100 opacity-25"></div>
+                                <div class="border-end flex-grow-1 h-100 opacity-25"></div>
+                                <div class="border-end flex-grow-1 h-100 opacity-25"></div>
+                                <div class="flex-grow-1 h-100"></div>
+                            </div>
+                            
+                            <div t-if="state.data.recent_initiatives.length" class="d-flex flex-column gap-3 position-relative" style="z-index: 2;">
+                                <div t-foreach="state.data.recent_initiatives" t-as="initiative" t-key="initiative.name" class="d-flex align-items-center">
+                                    <div class="text-truncate text-muted small pe-3" style="width: 30%;"><t t-esc="initiative.name"/></div>
+                                    <div class="position-relative" style="width: 70%; height: 28px;">
+                                        <!-- Expected Bar (light green) -->
+                                        <div class="position-absolute bg-success-subtle rounded text-transparent"
+                                             t-attf-style="width: {{this.initiativeSavingWidth(initiative, 'expected_saving_tonnes')}}; height: 10px; top: 16px; left: 0;"></div>
+                                        <!-- Actual Bar (dark green) -->
+                                        <div class="position-absolute bg-success rounded shadow-sm text-transparent"
+                                             t-attf-style="width: {{this.initiativeSavingWidth(initiative, 'actual_saving_tonnes')}}; height: 10px; top: 2px; left: 0;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div t-else="" class="text-center text-muted py-5 position-relative" style="z-index: 2;">No data.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Emission Sources -->
+                <div class="col-12 col-xl-6">
+                    <div class="card shadow-sm border-0 h-100 o_enviro_card">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4 px-4 pb-0">
+                            <h5 class="mb-0 font-weight-bold">Highest Sources</h5>
+                            <span class="text-muted small">by category</span>
+                        </div>
+                        <div class="card-body px-4 pt-4">
+                            <div t-if="state.data.categories and state.data.categories.length" class="d-flex flex-column gap-3 mt-1">
+                                <t t-foreach="state.data.categories.slice(0, 4)" t-as="cat" t-key="cat.label">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1 min-w-0">
+                                            <strong class="d-block text-truncate text-dark" style="font-size: 14px;"><t t-esc="cat.label"/></strong>
+                                            <div class="progress rounded-pill bg-light mt-1" style="height: 6px;">
+                                                <div class="progress-bar rounded-pill" style="background-color: #8b5cf6;" role="progressbar" t-attf-style="width: {{ Math.max((cat.value / (state.data.total || 1)) * 100, 1) }}%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="text-end ms-3 flex-shrink-0" style="min-width: 60px;">
+                                            <b class="d-block text-dark"><t t-esc="Math.round(cat.value * 10) / 10"/> t</b>
+                                            <span class="text-muted" style="font-size: 11px;"><t t-esc="Math.round((cat.value / (state.data.total || 1)) * 100)"/>%</span>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                            <div t-else="" class="text-center text-muted py-5">No source data.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SITE & ACTIVITY TILES -->
+            <div class="row g-4 mb-4">
+                <!-- Site Chart -->
+                <div class="col-12 col-xl-6">
+                    <div class="card shadow-sm border-0 h-100 o_enviro_card">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4 px-4 pb-0">
+                            <h5 class="mb-0 font-weight-bold">Emissions by Facility/Site</h5>
+                            <button class="btn btn-sm btn-light border-0" t-on-click="(ev) => this.downloadChart('siteChart', 'Site Emissions', ev)">
+                                <i class="fa fa-download"/>
+                            </button>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <div style="height: 250px; width: 100%; position: relative;">
+                                <canvas t-ref="siteChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Activity Doughnut -->
+                <div class="col-12 col-xl-6">
+                    <div class="card shadow-sm border-0 h-100 o_enviro_card">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4 px-4 pb-0">
+                            <h5 class="mb-0 font-weight-bold">Emissions by Activity Type</h5>
+                            <button class="btn btn-sm btn-light border-0" t-on-click="(ev) => this.downloadChart('activityChart', 'Activity Emissions', ev)">
+                                <i class="fa fa-download"/>
+                            </button>
+                        </div>
+                        <div class="card-body px-4 pb-4 d-flex align-items-center justify-content-center">
+                            <div style="height: 250px; width: 100%; position: relative;">
+                                <canvas t-ref="activityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<!--            <div class="d-flex flex-wrap gap-2 pt-2 mb-4">-->
+<!--                <button class="btn btn-primary px-4 rounded-pill shadow-sm" t-on-click="() => this.openFactors()">Emission Factors</button>-->
+<!--                <button class="btn btn-light px-4 rounded-pill shadow-sm border" t-on-click="() => this.openEntries([['state', '=', 'draft']])">Draft Entries</button>-->
+<!--                <button class="btn btn-light px-4 rounded-pill shadow-sm border" t-on-click="() => this.openEntries([['state', '=', 'missing']])">Needs Review</button>-->
+<!--                <button class="btn btn-light px-4 rounded-pill shadow-sm border" t-on-click="() => this.openInitiatives([['state', 'in', ['planned', 'in_progress']]])">Active Initiatives</button>-->
+<!--            </div>-->
+
+            </div> <!-- Closes .px-3 -->
+        </div> <!-- Closes .o_enviro_dashboard -->
+    </t>
+</templates>

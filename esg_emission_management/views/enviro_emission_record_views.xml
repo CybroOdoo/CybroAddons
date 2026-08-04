@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="enviro_emission_record_view_list" model="ir.ui.view">
+        <field name="name">enviro.emission.record.list</field>
+        <field name="model">enviro.emission.record</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'cancelled'" decoration-warning="state == 'missing'" decoration-success="state == 'logged'">
+                <field name="date"/>
+                <field name="name"/>
+                <field name="factor_id"/>
+                <field name="enviro_activity_type_id"/>
+                <field name="scope" string="Reporting Class"/>
+                <field name="category"/>
+                <field name="reporting_period_id" optional="show"/>
+                <field name="site_id" optional="show"/>
+                <field name="quantity"/>
+                <field name="uom_id"/>
+                <field name="amount" optional="hide"/>
+                <field name="co2e_kg" sum="Total kgCO2e"/>
+                <field name="co2e_tonnes" sum="Total tCO2e"/>
+                <field name="source_type"/>
+                <field name="state" widget="badge"/>
+                <field name="company_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="enviro_emission_record_view_form" model="ir.ui.view">
+        <field name="name">enviro.emission.record.form</field>
+        <field name="model">enviro.emission.record</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_log" type="object" string="Log" class="btn-primary" invisible="state not in ('draft', 'missing')"/>
+                    <button name="action_reset_to_draft" type="object" string="Reset to Draft" invisible="state == 'draft'"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state == 'cancelled'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,logged,missing,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Electricity - HQ January"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="company_id"/>
+                            <field name="date"/>
+                            <field name="reporting_period_id"/>
+                            <field name="site_id"/>
+                            <field name="factor_id"/>
+                            <field name="enviro_activity_type_id"/>
+                            <field name="scope" string="Reporting Class"/>
+                            <field name="category"/>
+                            <field name="source_type"/>
+                        </group>
+                        <group>
+                            <field name="quantity" invisible="calculation_type == 'amount'"/>
+                            <field name="uom_id" invisible="calculation_type == 'amount'" required="calculation_type == 'quantity'"/>
+                            <field name="currency_id" invisible="calculation_type != 'amount'"/>
+                            <field name="amount" invisible="calculation_type != 'amount'"/>
+                            <field name="co2e_kg" readonly="1"/>
+                            <field name="co2e_tonnes" readonly="1"/>
+                            <field name="uncertainty_kg" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Accounting Link">
+                        <field name="account_move_id"/>
+                        <field name="account_move_line_id"/>
+                        <field name="partner_id"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="enviro_emission_record_view_kanban" model="ir.ui.view">
+        <field name="name">enviro.emission.record.kanban</field>
+        <field name="model">enviro.emission.record</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <field name="name" class="fw-bold"/>
+                            <field name="state" widget="badge"/>
+                        </div>
+                        <div class="text-muted">
+                            <field name="date"/> · <field name="scope"/>
+                        </div>
+                        <footer>
+                            <field name="factor_id"/>
+                            <span class="ms-auto"><field name="co2e_tonnes"/> tCO2e</span>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <record id="enviro_emission_record_view_search" model="ir.ui.view">
+        <field name="name">enviro.emission.record.search</field>
+        <field name="model">enviro.emission.record</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="factor_id"/>
+                <field name="enviro_activity_type_id"/>
+                <field name="reporting_period_id"/>
+                <field name="site_id"/>
+                <field name="account_move_id"/>
+                <filter name="logged" string="Logged" domain="[('state', '=', 'logged')]"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="missing" string="Missing Factor" domain="[('state', '=', 'missing')]"/>
+                <separator/>
+                <filter name="scope1" string="Direct (Scope 1)" domain="[('scope', '=', 'scope1')]"/>
+                <filter name="scope2" string="Indirect Energy (Scope 2)" domain="[('scope', '=', 'scope2')]"/>
+                <filter name="scope3" string="Other Indirect (Scope 3)" domain="[('scope', '=', 'scope3')]"/>
+                <separator/>
+                <filter name="date" string="Date" date="date"/>
+                <group>
+                    <filter name="group_scope" string="Reporting Class" context="{'group_by': 'scope'}"/>
+                    <filter name="group_category" context="{'group_by': 'category'}"/>
+                    <filter name="group_period" string="Reporting Period" context="{'group_by': 'reporting_period_id'}"/>
+                    <filter name="group_site" string="Site" context="{'group_by': 'site_id'}"/>
+                    <filter name="group_factor" context="{'group_by': 'factor_id'}"/>
+                    <filter name="group_activity" context="{'group_by': 'enviro_activity_type_id'}"/>
+                    <filter name="group_month" context="{'group_by': 'date:month'}"/>
+                    <filter name="group_source_type" context="{'group_by': 'source_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="enviro_emission_record_view_pivot" model="ir.ui.view">
+        <field name="name">enviro.emission.record.pivot</field>
+        <field name="model">enviro.emission.record</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="scope" string="Reporting Class" type="row"/>
+                <field name="enviro_activity_type_id" type="row"/>
+                <field name="category" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="co2e_tonnes" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="enviro_emission_record_view_graph" model="ir.ui.view">
+        <field name="name">enviro.emission.record.graph</field>
+        <field name="model">enviro.emission.record</field>
+        <field name="arch" type="xml">
+            <graph type="bar">
+                <field name="date" interval="month"/>
+                <field name="scope" string="Reporting Class"/>
+                <field name="co2e_tonnes" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    <record id="enviro_emission_record_action" model="ir.actions.act_window">
+        <field name="name">Emission Records</field>
+        <field name="res_model">enviro.emission.record</field>
+        <field name="view_mode">list,form,kanban,pivot,graph</field>
+        <field name="context">{'search_default_logged': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Log your first emission record</p>
+            <p>Capture activity data and let Enviro Management calculate kgCO2e and tCO2e.</p>
+        </field>
+    </record>
+    <record id="enviro_emission_record_reporting_action" model="ir.actions.act_window">
+        <field name="name">ESG Reports</field>
+        <field name="res_model">enviro.emission.record</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="context">{'search_default_logged': 1}</field>
+    </record>
+</odoo>

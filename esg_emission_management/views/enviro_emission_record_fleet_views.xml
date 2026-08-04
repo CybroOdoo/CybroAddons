@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend emission record form: fleet-aware field visibility + Fleet group -->
+    <record id="enviro_emission_record_view_form_fleet" model="ir.ui.view">
+        <field name="name">enviro.emission.record.form.fleet</field>
+        <field name="model">enviro.emission.record</field>
+        <field name="inherit_id" ref="esg_emission_management.enviro_emission_record_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Hide factor_id for fleet records — vehicle.co2 is used instead -->
+            <xpath expr="//field[@name='factor_id']" position="attributes">
+                <attribute name="invisible">source_type == 'fleet'</attribute>
+            </xpath>
+
+            <!-- Hide activity type for fleet records -->
+            <xpath expr="//field[@name='enviro_activity_type_id']" position="attributes">
+                <attribute name="invisible">source_type == 'fleet'</attribute>
+            </xpath>
+
+            <!-- Hide the Accounting Link group for fleet records -->
+            <xpath expr="//field[@name='account_move_id']/.." position="attributes">
+                <attribute name="invisible">source_type == 'fleet'</attribute>
+            </xpath>
+
+            <!-- Fleet group: shown only for fleet records, supports manual entry -->
+            <xpath expr="//notebook" position="before">
+                <group string="Fleet" invisible="source_type != 'fleet'">
+                    <group>
+                        <field name="fleet_vehicle_id"
+                               readonly="fleet_assignation_log_id != False"/>
+                        <field name="fleet_employee_id" readonly="1"/>
+                        <field name="vehicle_co2_gkm"
+                               readonly="fleet_assignation_log_id != False"/>
+                    </group>
+                    <group>
+                        <field name="fleet_assignation_log_id" readonly="1"
+                               invisible="not fleet_assignation_log_id"/>
+                        <field name="fleet_commuting_period_start" readonly="1"
+                               invisible="not fleet_assignation_log_id"/>
+                        <field name="fleet_commuting_period_end" readonly="1"
+                               invisible="not fleet_assignation_log_id"/>
+                    </group>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Extend emission record list: fleet columns (optional, hidden by default) -->
+    <record id="enviro_emission_record_view_list_fleet" model="ir.ui.view">
+        <field name="name">enviro.emission.record.list.fleet</field>
+        <field name="model">enviro.emission.record</field>
+        <field name="inherit_id" ref="esg_emission_management.enviro_emission_record_view_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='source_type']" position="after">
+                <field name="fleet_vehicle_id" optional="hide" readonly="1"/>
+                <field name="fleet_employee_id" optional="hide" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

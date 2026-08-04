@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="enviro_offset_view_list" model="ir.ui.view">
+        <field name="name">enviro.offset.list</field>
+        <field name="model">enviro.offset</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'retired'" decoration-muted="state == 'cancelled'">
+                <field name="purchase_date"/>
+                <field name="name"/>
+                <field name="provider"/>
+                <field name="project_type"/>
+                <field name="vintage_year"/>
+                <field name="tonnes" sum="Credits"/>
+                <field name="retired_tonnes" sum="Retired"/>
+                <field name="available_tonnes" sum="Available"/>
+                <field name="state" widget="badge"/>
+                <field name="company_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="enviro_offset_view_form" model="ir.ui.view">
+        <field name="name">enviro.offset.form</field>
+        <field name="model">enviro.offset</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_retire_all" type="object" string="Retire All" class="btn-primary" invisible="state == 'retired'"/>
+                    <button name="action_update_state" type="object" string="Update State"/>
+                    <field name="state" widget="statusbar" statusbar_visible="available,partially_retired,retired,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Reforestation Credits 2026"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="company_id"/>
+                            <field name="provider"/>
+                            <field name="project_name"/>
+                            <field name="project_type"/>
+                            <field name="vintage_year"/>
+                            <field name="certificate_number"/>
+                        </group>
+                        <group>
+                            <field name="purchase_date"/>
+                            <field name="tonnes"/>
+                            <field name="retired_tonnes"/>
+                            <field name="available_tonnes"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Certificates">
+                            <field name="attachment_ids" widget="many2many_attachment"/>
+                        </page>
+                        <page string="Notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="enviro_offset_action" model="ir.actions.act_window">
+        <field name="name">Offsets</field>
+        <field name="res_model">enviro.offset</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

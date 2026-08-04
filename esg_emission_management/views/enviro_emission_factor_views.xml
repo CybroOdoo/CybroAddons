@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="enviro_emission_factor_view_list" model="ir.ui.view">
+        <field name="name">enviro.emission.factor.list</field>
+        <field name="model">enviro.emission.factor</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="scope" string="Reporting Class"/>
+                <field name="category"/>
+                <field name="calculation_type"/>
+                <field name="kg_co2e_per_unit"/>
+                <field name="use_gas_breakdown"/>
+                <field name="gas_breakdown_kg_co2e_per_unit" optional="hide"/>
+                <field name="uom_id"/>
+                <field name="currency_id" optional="hide"/>
+                <field name="source"/>
+                <field name="code" optional="hide"/>
+                <field name="region" optional="hide"/>
+                <field name="valid_from" optional="hide"/>
+                <field name="valid_to" optional="hide"/>
+                <field name="company_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="enviro_emission_factor_view_form" model="ir.ui.view">
+        <field name="name">enviro.emission.factor.form</field>
+        <field name="model">enviro.emission.factor</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_entries" type="object" class="oe_stat_button" icon="fa-leaf">
+                            <field name="entry_count" widget="statinfo" string="Records"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Diesel Fuel"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="scope" string="Reporting Class"/>
+                            <field name="category"/>
+                            <field name="calculation_type"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="use_gas_breakdown"/>
+                            <field name="kg_co2e_per_unit" readonly="use_gas_breakdown"/>
+                            <field name="gas_breakdown_kg_co2e_per_unit" readonly="1" invisible="not use_gas_breakdown"/>
+                            <field name="uom_id" invisible="calculation_type == 'amount'" required="calculation_type == 'quantity'"/>
+                            <field name="currency_id" invisible="calculation_type == 'quantity'" required="calculation_type == 'amount'"/>
+                            <field name="uncertainty_pct"/>
+                            <field name="source"/>
+                            <field name="code"/>
+                            <field name="region"/>
+                            <field name="valid_from"/>
+                            <field name="valid_to"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Gas Emissions" invisible="not use_gas_breakdown">
+                            <field name="gas_line_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="gas_id"/>
+                                    <field name="gas_quantity_kg"/>
+                                    <field name="global_warming_potential"/>
+                                    <field name="kg_co2e_per_unit" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="enviro_emission_factor_view_search" model="ir.ui.view">
+        <field name="name">enviro.emission.factor.search</field>
+        <field name="model">enviro.emission.factor</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="source"/>
+                <filter name="gas_breakdown" string="Gas Breakdown" domain="[('use_gas_breakdown', '=', True)]"/>
+                <filter name="scope1" string="Direct (Scope 1)" domain="[('scope', '=', 'scope1')]"/>
+                <filter name="scope2" string="Indirect Energy (Scope 2)" domain="[('scope', '=', 'scope2')]"/>
+                <filter name="scope3" string="Other Indirect (Scope 3)" domain="[('scope', '=', 'scope3')]"/>
+                <separator/>
+                <filter name="quantity" string="Quantity Based" domain="[('calculation_type', '=', 'quantity')]"/>
+                <filter name="amount" string="Amount Based" domain="[('calculation_type', '=', 'amount')]"/>
+                <separator/>
+                <group>
+                    <filter name="group_scope" string="Reporting Class" context="{'group_by': 'scope'}"/>
+                    <filter name="group_category" context="{'group_by': 'category'}"/>
+                    <filter name="group_source" context="{'group_by': 'source'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="enviro_emission_factor_action" model="ir.actions.act_window">
+        <field name="name">Emission Factors</field>
+        <field name="res_model">enviro.emission.factor</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create emission factors</p>
+            <p>Define how activity data converts into kgCO2e.</p>
+        </field>
+    </record>
+</odoo>
