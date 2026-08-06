@@ -22,6 +22,7 @@
     'name': 'Hotel Management for Odoo Online',
     'version': 'saas~19.4.1.0.0',
     'category': 'Industries',
+    'summary': 'Hotel for Odoo Online, Hotel Management for Odoo Online, Odoo Online Custom Module, Hotel SaaS'
     'description': 'Hotel Management for Odoo Online SaaS19.4, module featuring a unified dashboard,'
                    ' booking pipelines, automatically generated sequences, '
                    'customer invoicing, room maintenance tracking,'
