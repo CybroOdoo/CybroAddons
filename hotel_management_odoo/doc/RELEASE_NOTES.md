@@ -5,22 +5,8 @@
 #### ADD
 - Initial commit for Hotel Management
 
-#### 29.03.2024
-#### Version 17.0.1.0.1
-#### UPDATE
- - Add a validation for timezone in dashboard.
 
-#### 27.06.2024
-#### Version 17.0.1.0.2
-#### UPDATE
- - Corrected the work flow of deleting and canceling records in room booking model
-
-#### 04.07.2024
-#### Version 17.0.1.1.3
-#### UPDATE
- - Updated the workflow maintenance request and cleaning request model(removed a field from each)
-
-#### 14.10.2024
-#### Version 17.0.1.2.4
-#### UPDATE
-- Updated the invisible condition of 'create invoice' button in room booking model
+#### 10.08.2026
+#### Version 17.0.1.0.0
+#### UPDT
+- Bug fix- Report

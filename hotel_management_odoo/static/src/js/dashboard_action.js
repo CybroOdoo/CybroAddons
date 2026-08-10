@@ -33,7 +33,6 @@ async onMounted() {
 }
 fetch_data() {
        var self = this;
-       console.log("dafdaafdfadf", this)
        //RPC call for retrieving data for displaying on dashboard tiles
        var def1= jsonrpc('/web/dataset/call_kw/room.booking/get_details'
        ,{ model:'room.booking',
@@ -75,7 +74,6 @@ fetch_data() {
         e.stopPropagation();
         e.preventDefault();
         var options={on_reverse_breadcrum:this.on_reverse_breadcrum,};
-        console.log(this.action.doAction)
                 this.action.doAction({
                     name: _t("Rooms"),
                     type:'ir.actions.act_window',

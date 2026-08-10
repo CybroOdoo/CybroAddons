@@ -138,7 +138,7 @@ class RoomBookingWizard(models.TransientModel):
         for i in data["booking"]:
             sheet.write(row, column, value, body)
             sheet.write(row, column + 1, i["partner_id"], body)
-            sheet.write(row, column + 2, i["room"], body)
+            sheet.write(row, column + 2, i["room_id"], body)
             sheet.write(row, column + 3, i["checkin_date"], body)
             sheet.write(row, column + 4, i["checkout_date"], body)
             sheet.write(row, column + 5, i["name"], body)
