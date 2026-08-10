@@ -19,8 +19,8 @@
 #
 ################################################################################
 {
-    'name': 'Product Brand Management for Odoo online (SaaS 19.4)',
-    'version': 'saas~19.4.1.0.0',
+    'name': 'Product Brand Management for Odoo Online (SaaS 19.4)',
+    'version': '1.4',
     'category': 'Services',
     'summary': """Brand for Odoo Online, Product Brand for Odoo Online, Band Management, Odoo Online Custom Modules""",
     'description': """
