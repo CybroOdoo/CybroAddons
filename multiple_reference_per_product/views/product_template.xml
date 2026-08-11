@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!--Multiple References In Product Template-->
+    <record id="product_template_only_form_view" model="ir.ui.view">
+        <field name="name">
+            product.template.view.form.inherit.multiple.reference.per.product
+        </field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <field name="default_code" position="replace">
+                <label for="default_code" invisible="product_variant_count>1"/>
+                <div invisible="product_variant_count>1" class="o_row">
+                    <span style="display:contents!important">
+                        <field name="default_code"/>
+                    </span>
+                    <button type="object" title="Multiple References"
+                            name="multiple_references_list" string="Add More"
+                            class="oe_highlight"/>
+                </div>
+                <field name="multiple_references_count" invisible="1"/>
+                <field name="multiple_product_references_ids" widget="many2many_tags" invisible="multiple_references_count == 0"/>
+            </field>
+        </field>
+    </record>
+    <!--Search with multiple reference inside product view-->
+    <record id="product_template_search_view" model="ir.ui.view">
+        <field name="name">
+            product.product.view.search.inherit.multiple.reference.product
+        </field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <field name="name" position="replace">
+                <field name="name" string="Product"
+                       filter_domain="['|','|','|',('default_code','ilike',self),('name','ilike',self),('barcode','ilike',self),('multiple_references_code','ilike',self)]"/>
+                <field name="multiple_references_code"/>
+            </field>
+        </field>
+    </record>
+</odoo>
