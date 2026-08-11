@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="ai_connector_agent.AiChatWindow">
+        <div class="ai_chat_window" t-on-click.stop="">
+            <div class="ai_chat_header">
+                <div class="ai_header_info" t-on-click="toggleModelSwitcher">
+                    <i class="fa fa-robot me-2"/>
+                    <span class="ai_name"><t t-esc="state.activeAgentName"/></span>
+                    <i t-attf-class="fa fa-chevron-{{state.showModelSwitcher ? 'up' : 'down'}} ms-2" style="font-size: 10px; opacity: 0.8;"/>
+                </div>
+
+                <!-- Model Switcher Dropdown -->
+                <div t-if="state.showModelSwitcher" class="ai_model_switcher">
+                    <div class="ai_switcher_header">
+                        <t t-if="state.selectedSwitcherProviderId">
+                            <span class="ai_back_btn" t-on-click="backToProviders">
+                                <i class="fa fa-arrow-left me-1"/> Back
+                            </span>
+                            <span class="ms-1">Select <t t-esc="state.providers.find(p => p.id === state.selectedSwitcherProviderId).name"/> Model</span>
+                        </t>
+                        <t t-else="">
+                            Select AI Agent
+                        </t>
+                    </div>
+                    <div class="ai_switcher_body">
+                        <!-- Step 1: Select AI Agent -->
+                        <t t-if="!state.selectedSwitcherProviderId">
+                            <t t-foreach="state.providers" t-as="provider" t-key="provider.id">
+                                <div class="ai_provider_item" t-on-click="() => this.selectProvider(provider.id)">
+                                    <div class="ai_provider_main">
+                                        <i class="fa fa-microchip me-2"/>
+                                        <span class="ai_provider_name"><t t-esc="provider.name"/></span>
+                                    </div>
+                                    <i class="fa fa-chevron-right" style="font-size: 10px; opacity: 0.5;"/>
+                                </div>
+                            </t>
+                        </t>
+                        
+                        <!-- Step 2: Select AI Model -->
+                        <t t-else="">
+                            <t t-set="selectedProvider" t-value="state.providers.find(p => p.id === state.selectedSwitcherProviderId)"/>
+                            <div class="ai_model_list">
+                                <t t-foreach="selectedProvider.models" t-as="model" t-key="model.id">
+                                    <div class="ai_model_item" 
+                                         t-att-class="{'active': state.activeModelId === model.id}"
+                                         t-on-click.stop="() => this.selectModel(selectedProvider, model)">
+                                        <t t-esc="model.name"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <div class="ai_header_actions">
+                    <button class="ai_action_btn" t-on-click="enlargeChat" title="Enlarge">
+                        <i class="fa fa-expand"/>
+                    </button>
+                    <button class="ai_action_btn" t-on-click="closeWindow" title="Close">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="ai_chat_body">
+                <div class="ai_messages_container" t-ref="messagesContainer">
+                    <t t-foreach="state.messages" t-as="msg" t-key="msg.id">
+                        <div t-att-class="'ai_msg_row ' + (msg.type === 'user' ? 'user' : 'ai')">
+                            <div class="ai_msg_bubble">
+                                <div class="ai_msg_content">
+                                    <t t-if="msg.type === 'ai'">
+                                        <div t-out="formatMarkdown(msg.content)" class="markdown-content ai-markdown"/>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-esc="msg.content"/>
+                                    </t>
+                                    <div t-if="msg.attachments and msg.attachments.length" class="msg_attachments">
+                                        <t t-foreach="msg.attachments" t-as="attach" t-key="attach.id">
+                                            <div class="msg_attachment_item" t-on-click="() => this.openAttachment(attach)">
+                                                <img t-att-src="attach.url" t-att-alt="attach.name" loading="lazy"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="ai_msg_meta">
+                                    <t t-esc="formatTime(msg.timestamp)"/>
+                                </div>
+                            </div>
+                            <t t-if="msg.type === 'user'">
+                                <img class="ui_avatar" src="/web/static/img/user_menu_avatar.png" alt="User avatar"/>
+                            </t>
+                        </div>
+                    </t>
+                    
+                    <div class="ai_typing_indicator" t-if="state.isTyping">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+                
+                <div class="ai_chat_input">
+                    <div t-if="state.attachments.length" class="attachment_preview_container">
+                        <t t-foreach="state.attachments" t-as="attach" t-key="attach.id || attach.name">
+                            <div class="attachment_preview_item">
+                                <img t-att-src="attach.data" />
+                                <button class="remove_attachment" t-on-click="() => this.removeAttachment(attach)">
+                                    <i class="fa fa-times"/>
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="input_wrapper">
+                        <button class="attachment_btn" title="Attach Image" t-on-click="triggerFileInput">
+                            <i class="fa fa-paperclip"/>
+                        </button>
+                        <input type="file" 
+                               t-ref="fileInput" 
+                               style="display: none;" 
+                               accept="image/*" 
+                               multiple="true" 
+                               t-on-change="onFileChange"/>
+                        <textarea 
+                            t-ref="messageInput"
+                            placeholder="Message AI..."
+                            t-on-keydown="onKeyDown"
+                            t-on-click.stop=""
+                            rows="1"
+                            autofocus="autofocus"
+                        />
+                        <button class="send_btn" t-on-click="sendMessage">
+                            <i class="fa fa-paper-plane"/>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
