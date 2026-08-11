@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+  <record id="hotel_management_saas.create_folio_64799b61-b2a1-4b7d-84af-a1babc3d1712" model="ir.actions.server" context="{'studio': True}" forcecreate="1">
+    <field name="code"><![CDATA[existing_folio = env['x_folios'].search([
+    ('x_studio_booking', '=', record.id)
+], limit=1)
+
+vals = {
+    'x_studio_booking': record.id,
+    'x_studio_partner_id': record.x_studio_partner_id.id,
+    'x_studio_room': record.x_studio_room_no.id,
+    'x_studio_check_in_1': record.x_studio_check_in,
+    'x_studio_check_out': record.x_studio_check_out,
+    'x_studio_value': record.x_studio_value,
+    'x_studio_no_of_childs': record.x_studio_no_of_childs,
+    'x_studio_no_of_adults': record.x_studio_no_of_adults,
+}
+
+if existing_folio:
+    existing_folio.write(vals)
+else:
+    vals['x_name'] = 'New'
+    env['x_folios'].create(vals)]]></field>
+    <field name="model_id" ref="hotel_management_saas.booking_265e663e-692e-4f5f-a292-b449b1ecc856"/>
+    <field name="state">code</field>
+    <field name="name">create Folio</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="hotel_management_saas.create_invoice_888b8aa4-8903-480a-8ef5-bde805a49f34" model="ir.actions.server" context="{'studio': True}" forcecreate="1">
+    <field name="code"><![CDATA[existing_invoice = env['account.move'].search([
+    ('move_type', '=', 'out_invoice'),
+    ('x_studio_booking_1', '=', record.id)
+], limit=1)
+
+if not existing_invoice:
+    invoice = env['account.move'].create({
+        'move_type': 'out_invoice',
+        'partner_id': record.x_studio_partner_id.id,
+        'x_studio_booking_1': record.id,
+        'invoice_line_ids': [(0, 0, {
+            'name': record.x_name,
+            'quantity': 1,
+            'price_unit': record.x_studio_value,
+        })]
+    })
+
+    record.write({
+        'x_studio_invoice': invoice.id
+    })
+else:
+    # Keep the existing invoice linked to the booking
+    record.write({
+        'x_studio_invoice': existing_invoice.id
+    })]]></field>
+    <field name="model_id" ref="hotel_management_saas.booking_265e663e-692e-4f5f-a292-b449b1ecc856"/>
+    <field name="state">code</field>
+    <field name="name">Create invoice</field>
+  </record>
+  <record id="send_thanks_mail_b082e26a-1a0a-4f17-9d8b-763910bcb2bf" model="ir.actions.server" context="{'studio': True}">
+    <field name="binding_model_id" ref="hotel_management_saas.booking_265e663e-692e-4f5f-a292-b449b1ecc856"/>
+    <field name="model_id" ref="hotel_management_saas.booking_265e663e-692e-4f5f-a292-b449b1ecc856"/>
+    <field name="state">mail_post</field>
+    <field name="template_id" ref="hotel_management_saas.thanks_mail_6ff9b180-587f-492e-9d48-e6d44308f044"/>
+    <field name="name">Send Thanks Mail</field>
+  </record>
+  <record id="hotel_management_saas.action_set_booking_sequence" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[if not record.x_name or record.x_name in ('/', 'New', 'Booking'):
+  record.write({'x_name': env['ir.sequence'].next_by_code('x_booking.sequence') or '/'})]]></field>
+    <field name="model_id" ref="hotel_management_saas.booking_265e663e-692e-4f5f-a292-b449b1ecc856"/>
+    <field name="state">code</field>
+    <field name="name">Set Booking Sequence</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="hotel_management_saas.action_set_folio_sequence" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[if not record.x_name or record.x_name in ('/', 'New', 'Folio') or (record.x_studio_booking and record.x_name == record.x_studio_booking.x_name):
+  record.write({'x_name': env['ir.sequence'].next_by_code('x_folios.sequence') or '/'})]]></field>
+    <field name="model_id" ref="hotel_management_saas.folios_9bb40db2-2a3a-4a10-9367-00c4829454be"/>
+    <field name="state">code</field>
+    <field name="name">Set Folio Sequence</field>
+    <field name="usage">base_automation</field>
+  </record>
+</odoo>
+

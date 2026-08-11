@@ -1,0 +1,669 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+  <record id="default_list_view_fo_2e138507-4842-4549-9856-cb4c23ea7ec1" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <list>
+        <field name="x_studio_sequence" widget="handle"/>
+        <field name="x_name"/>
+        <field name="x_color" widget="color_picker"/>
+      </list>
+    </field>
+    <field name="key">product_brand_saas.default_list_view_fo_2e138507-4842-4549-9856-cb4c23ea7ec1</field>
+    <field name="model">x_brands</field>
+    <field name="name">Default list view for x_brands</field>
+    <field name="type">list</field>
+  </record>
+  <record id="default_form_view_fo_7b5cd4b8-78d7-478d-8f62-ddff93d17046" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <form>
+        <header>
+          <field name="x_studio_stage_id" widget="statusbar" options="{'clickable': '1'}"/>
+        </header>
+        <sheet string="Brands">
+          <field name="x_studio_kanban_state" widget="state_selection"/>
+          <widget name="web_ribbon" text="Archived" bg_color="text-bg-danger" invisible="x_active"/>
+          <field name="x_active" invisible="1"/>
+          <field class="oe_avatar" widget="image" name="x_studio_image"/>
+          <div class="oe_title">
+            <h1>
+              <field name="x_name" required="1" placeholder="Name..."/>
+            </h1>
+          </div>
+          <group name="studio_group_e6ee60">
+            <group name="studio_group_e6ee60_left"/>
+            <group name="studio_group_e6ee60_right"/>
+          </group>
+          <notebook>
+            <page string="Details" name="lines">
+              <field name="x_brands_line_ids_7130b"/>
+            </page>
+          </notebook>
+        </sheet>
+        <chatter/>
+      </form>
+    </field>
+    <field name="key">product_brand_saas.default_form_view_fo_7b5cd4b8-78d7-478d-8f62-ddff93d17046</field>
+    <field name="model">x_brands</field>
+    <field name="name">Default form view for x_brands</field>
+    <field name="type">form</field>
+  </record>
+  <record id="default_search_view__257e3e9a-c1b0-4768-9cc3-869aa665e927" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <search>
+        <field name="x_name"/>
+        <filter invisible="1" string="My Activities" name="filter_activities_my" domain="[['activity_user_id', '=', uid]]"/>
+        <separator/>
+        <filter invisible="1" string="Late Activities" name="activities_overdue" domain="[('my_activity_date_deadline', '&lt;', 'today')]"/>
+        <filter invisible="1" string="Today Activities" name="activities_today" domain="[('my_activity_date_deadline', '=', 'today')]"/>
+        <filter invisible="1" string="Future Activities" name="activities_upcoming_all" domain="[('my_activity_date_deadline', '&gt;', 'today')]"/>
+        <separator/>
+        <separator/>
+        <filter string="Archived" name="archived_x_brands" domain="[['x_active', '=', False]]"/>
+        <separator/>
+        <filter name="x_studio_stage_id" string="Stage" context="{'group_by': 'x_studio_stage_id'}" domain="[]"/>
+      </search>
+    </field>
+    <field name="key">product_brand_saas.default_search_view__257e3e9a-c1b0-4768-9cc3-869aa665e927</field>
+    <field name="model">x_brands</field>
+    <field name="name">Default search view for x_brands</field>
+    <field name="type">search</field>
+  </record>
+  <record id="default_kanban_view__938cf313-db2e-4bce-897e-eec7eb89fd10" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <kanban default_group_by="x_studio_stage_id" highlight_color="x_color" sample="1">
+        <field name="x_color"/>
+        <field name="x_studio_brand_code"/>
+        <field name="x_studio_category"/>
+        <field name="x_studio_many2many_1"/>
+        <field name="x_x_studio_brands_product_template_count"/>
+        <field name="activity_ids"/>
+        <field name="activity_state"/>
+        <progressbar field="x_studio_kanban_state" colors="{&quot;normal&quot;: &quot;200&quot;, &quot;done&quot;: &quot;success&quot;, &quot;blocked&quot;: &quot;danger&quot;}"/>
+        <templates>
+          <t t-name="menu">
+            <a t-if="widget.editable" role="menuitem" type="open" class="dropdown-item">Edit</a>
+            <a t-if="widget.deletable" role="menuitem" type="delete" class="dropdown-item">Delete</a>
+            <field widget="kanban_color_picker" name="x_color"/>
+          </t>
+          <t t-name="card" class="flex-row">
+            <aside class="pe-2">
+              <field name="x_studio_image" widget="image" options="{&quot;zoom&quot;: true, &quot;background&quot;: true, &quot;preventClicks&quot;: false}" class="o_kanban_image_large"/>
+            </aside>
+            <main class="w-100 ps-1">
+              <div name="studio_auto_kanban_header" class="d-flex align-items-baseline justify-content-between mb-1">
+                <div class="d-flex align-items-center gap-1">
+                  <span class="h5 fw-bold text-truncate mb-0"><field name="x_name"/></span>
+                </div>
+                <span class="badge text-bg-light border text-muted" style="font-size: 0.7rem; font-weight: 500;" t-if="record.x_studio_brand_code.raw_value">
+                  <field name="x_studio_brand_code"/>
+                </span>
+              </div>
+              <div class="mb-1 text-muted" style="font-size: 0.85rem;" t-if="record.x_studio_category.raw_value">
+                <i class="fa fa-folder-open-o me-1" title="Category"/>
+                <field name="x_studio_category"/>
+              </div>
+              <div class="mb-2" t-if="record.x_studio_many2many_1.raw_value">
+                <field name="x_studio_many2many_1" widget="many2many_tags"/>
+              </div>
+              <footer class="d-flex align-items-center justify-content-between pt-1 border-top">
+                <div class="d-flex align-items-center gap-1 text-primary" style="font-size: 0.82rem; font-weight: 500;" t-if="record.x_x_studio_brands_product_template_count.raw_value">
+                  <i class="fa fa-cubes" title="Products Count"/>
+                  <span class="fw-bold"><field name="x_x_studio_brands_product_template_count"/></span> products
+                </div>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                  <field name="activity_ids" widget="kanban_activity"/>
+                  <field name="x_studio_kanban_state" widget="state_selection"/>
+                </div>
+              </footer>
+            </main>
+          </t>
+        </templates>
+      </kanban>
+    </field>
+    <field name="key">product_brand_saas.default_kanban_view__938cf313-db2e-4bce-897e-eec7eb89fd10</field>
+    <field name="model">x_brands</field>
+    <field name="name">Default kanban view for x_brands</field>
+    <field name="type">kanban</field>
+  </record>
+  <record id="default_pivot_view_f_4425a7f5-c33e-44ea-919e-a73f8156500b" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <pivot sample="1">
+        <field name="x_x_studio_brands_product_template_count" type="measure"/>
+        <field name="x_studio_stage_id" type="col"/>
+      </pivot>
+    </field>
+    <field name="key">product_brand_saas.default_pivot_view_f_4425a7f5-c33e-44ea-919e-a73f8156500b</field>
+    <field name="model">x_brands</field>
+    <field name="name">Default pivot view for x_brands</field>
+    <field name="type">pivot</field>
+  </record>
+  <record id="default_graph_view_f_71e7dafc-b10a-4871-a63c-2de34814a52b" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <graph sample="1">
+        <field name="x_x_studio_brands_product_template_count" type="measure"/>
+        <field name="create_date" type="row"/>
+      </graph>
+    </field>
+    <field name="key">product_brand_saas.default_graph_view_f_71e7dafc-b10a-4871-a63c-2de34814a52b</field>
+    <field name="model">x_brands</field>
+    <field name="name">Default graph view for x_brands</field>
+    <field name="type">graph</field>
+  </record>
+  <record id="default_list_view_fo_531679bc-16ba-4e40-9b9c-b4a3d6d32903" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <list editable="bottom" default_order="x_studio_sequence asc,id desc">
+        <field name="x_studio_sequence" widget="handle"/>
+        <field name="x_name"/>
+      </list>
+    </field>
+    <field name="key">product_brand_saas.default_list_view_fo_531679bc-16ba-4e40-9b9c-b4a3d6d32903</field>
+    <field name="model">x_brands_line_f4885</field>
+    <field name="name">Default list view for x_brands_line_f4885</field>
+    <field name="type">list</field>
+  </record>
+  <record id="default_form_view_fo_d05e391b-48d4-454b-9e6e-6fa1c3291bd3" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <form>
+        <header/>
+        <sheet string="brands_line">
+          <div class="oe_title">
+            <h1>
+              <field name="x_name" required="1" placeholder="Name..."/>
+            </h1>
+          </div>
+          <group name="studio_group_d0447b">
+            <group name="studio_group_d0447b_left"/>
+            <group name="studio_group_d0447b_right"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+    <field name="key">product_brand_saas.default_form_view_fo_d05e391b-48d4-454b-9e6e-6fa1c3291bd3</field>
+    <field name="model">x_brands_line_f4885</field>
+    <field name="name">Default form view for x_brands_line_f4885</field>
+    <field name="type">form</field>
+  </record>
+  <record id="default_search_view__8bdd7b19-3216-4fa9-ad69-3c3c018e8d49" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <search>
+        <field name="x_name"/>
+      </search>
+    </field>
+    <field name="key">product_brand_saas.default_search_view__8bdd7b19-3216-4fa9-ad69-3c3c018e8d49</field>
+    <field name="model">x_brands_line_f4885</field>
+    <field name="name">Default search view for x_brands_line_f4885</field>
+    <field name="type">search</field>
+  </record>
+  <record id="default_list_view_fo_41dbf57d-9d10-4ced-b8f6-38ba7cb13e50" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <list editable="bottom">
+        <field name="x_studio_sequence" widget="handle"/>
+        <field name="x_name"/>
+      </list>
+    </field>
+    <field name="key">product_brand_saas.default_list_view_fo_41dbf57d-9d10-4ced-b8f6-38ba7cb13e50</field>
+    <field name="model">x_brands_stage</field>
+    <field name="name">Default list view for x_brands_stage</field>
+    <field name="type">list</field>
+  </record>
+  <record id="default_form_view_fo_bd70e29f-616e-4979-948c-0380c9d582e4" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <form>
+        <header/>
+        <sheet string="Brands Stages">
+          <div class="oe_title">
+            <h1>
+              <field name="x_name" required="1" placeholder="Name..."/>
+            </h1>
+          </div>
+          <group name="studio_group_567b1c">
+            <group name="studio_group_567b1c_left"/>
+            <group name="studio_group_567b1c_right"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+    <field name="key">product_brand_saas.default_form_view_fo_bd70e29f-616e-4979-948c-0380c9d582e4</field>
+    <field name="model">x_brands_stage</field>
+    <field name="name">Default form view for x_brands_stage</field>
+    <field name="type">form</field>
+  </record>
+  <record id="default_search_view__5671f8ae-ac2f-42fb-b6e2-5dc7465950ee" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <search>
+        <field name="x_name"/>
+      </search>
+    </field>
+    <field name="key">product_brand_saas.default_search_view__5671f8ae-ac2f-42fb-b6e2-5dc7465950ee</field>
+    <field name="model">x_brands_stage</field>
+    <field name="name">Default search view for x_brands_stage</field>
+    <field name="type">search</field>
+  </record>
+  <record id="odoo_studio_default__fc49f9a2-817a-47a7-ac62-b3d9f8f45ea0" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <data>
+        <xpath expr="/form//field[@name='x_studio_kanban_state']" position="before">
+          <div name="button_box" class="oe_button_box">
+            <button class="oe_stat_button" icon="fa-diamond" type="action" name="product_brand_saas.products_7800372e-20b5-4d82-a36c-723e3c7e2260">
+              <field widget="statinfo" name="x_x_studio_brands_product_template_count" string="products"/>
+            </button>
+          </div>
+        </xpath>
+        <xpath expr="/form//field[@name='x_name']" position="attributes">
+          <attribute name="string">Brand Name</attribute>
+        </xpath>
+        <xpath expr="/form//group[@name='studio_group_e6ee60_left']" position="inside">
+          <field name="x_studio_category" options="{'create_name_field': 'x_name'}"/>
+          <field name="x_studio_many2many_1" widget="many2many_tags_color_dot" string="Brand Tags"/>
+        </xpath>
+        <xpath expr="/form//group[@name='studio_group_e6ee60_right']" position="inside">
+          <field name="x_studio_brand_code"/>
+        </xpath>
+        <xpath expr="/form//field[@name='x_brands_line_ids_7130b']" position="replace">
+          <field name="x_studio_products" widget="many2many"/>
+        </xpath>
+        <xpath expr="/form//page[@name='lines']" position="attributes">
+          <attribute name="string">products</attribute>
+        </xpath>
+      </data>
+    </field>
+    <field name="inherit_id" ref="default_form_view_fo_7b5cd4b8-78d7-478d-8f62-ddff93d17046"/>
+    <field name="key">product_brand_saas.odoo_studio_default__fc49f9a2-817a-47a7-ac62-b3d9f8f45ea0</field>
+    <field name="mode">extension</field>
+    <field name="model">x_brands</field>
+    <field name="name">Odoo Studio: Default form view for x_brands customization</field>
+    <field name="priority">99</field>
+    <field name="type">form</field>
+  </record>
+  <record id="default_list_view_fo_c124df1a-597b-4422-9f8b-62f24cc27b71" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <list>
+        <field name="x_studio_sequence" widget="handle"/>
+        <field name="x_name"/>
+      </list>
+    </field>
+    <field name="key">product_brand_saas.default_list_view_fo_c124df1a-597b-4422-9f8b-62f24cc27b71</field>
+    <field name="model">x_brand_category</field>
+    <field name="name">Default list view for x_brand_category</field>
+    <field name="type">list</field>
+  </record>
+  <record id="default_form_view_fo_104ad343-6c6c-492c-bf53-ea9b81de92fb" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <form>
+        <header/>
+        <sheet string="Brand Category">
+          <widget name="web_ribbon" text="Archived" bg_color="text-bg-danger" invisible="x_active"/>
+          <field name="x_active" invisible="1"/>
+          <div class="oe_title">
+            <h1>
+              <field name="x_name" required="1" placeholder="Name..."/>
+            </h1>
+          </div>
+          <group name="studio_group_ca981c">
+            <group name="studio_group_ca981c_left"/>
+            <group name="studio_group_ca981c_right"/>
+          </group>
+        </sheet>
+        <chatter/>
+      </form>
+    </field>
+    <field name="key">product_brand_saas.default_form_view_fo_104ad343-6c6c-492c-bf53-ea9b81de92fb</field>
+    <field name="model">x_brand_category</field>
+    <field name="name">Default form view for x_brand_category</field>
+    <field name="type">form</field>
+  </record>
+  <record id="default_search_view__69856106-9877-4f6d-9e1a-41f87c2e94ac" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <search>
+        <field name="x_name"/>
+        <filter invisible="1" string="My Activities" name="filter_activities_my" domain="[['activity_user_id', '=', uid]]"/>
+        <separator/>
+        <filter invisible="1" string="Late Activities" name="activities_overdue" domain="[('my_activity_date_deadline', '&lt;', 'today')]"/>
+        <filter invisible="1" string="Today Activities" name="activities_today" domain="[('my_activity_date_deadline', '=', 'today')]"/>
+        <filter invisible="1" string="Future Activities" name="activities_upcoming_all" domain="[('my_activity_date_deadline', '&gt;', 'today')]"/>
+        <separator/>
+        <separator/>
+        <filter string="Archived" name="archived_x_brand_category" domain="[['x_active', '=', False]]"/>
+        <separator/>
+      </search>
+    </field>
+    <field name="key">product_brand_saas.default_search_view__69856106-9877-4f6d-9e1a-41f87c2e94ac</field>
+    <field name="model">x_brand_category</field>
+    <field name="name">Default search view for x_brand_category</field>
+    <field name="type">search</field>
+  </record>
+  <record id="default_list_view_fo_56c90575-c959-48bb-ad51-ff993593cde4" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <list>
+        <field name="x_studio_sequence" widget="handle"/>
+        <field name="x_name"/>
+      </list>
+    </field>
+    <field name="key">product_brand_saas.default_list_view_fo_56c90575-c959-48bb-ad51-ff993593cde4</field>
+    <field name="model">x_brand_tags</field>
+    <field name="name">Default list view for x_brand_tags</field>
+    <field name="type">list</field>
+  </record>
+  <record id="default_form_view_fo_33fb7ac8-5015-4d5b-928f-46da8467131f" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <form>
+        <header/>
+        <sheet string="Brand Tags">
+          <widget name="web_ribbon" text="Archived" bg_color="text-bg-danger" invisible="x_active"/>
+          <field name="x_active" invisible="1"/>
+          <div class="oe_title">
+            <h1>
+              <field name="x_name" required="1" placeholder="Name..."/>
+            </h1>
+          </div>
+          <group name="studio_group_8dd267">
+            <group name="studio_group_8dd267_left"/>
+            <group name="studio_group_8dd267_right"/>
+          </group>
+        </sheet>
+        <chatter/>
+      </form>
+    </field>
+    <field name="key">product_brand_saas.default_form_view_fo_33fb7ac8-5015-4d5b-928f-46da8467131f</field>
+    <field name="model">x_brand_tags</field>
+    <field name="name">Default form view for x_brand_tags</field>
+    <field name="type">form</field>
+  </record>
+  <record id="default_search_view__39b8d24b-1da0-46c0-9b3d-c4e778f30951" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <search>
+        <field name="x_name"/>
+        <filter invisible="1" string="My Activities" name="filter_activities_my" domain="[['activity_user_id', '=', uid]]"/>
+        <separator/>
+        <filter invisible="1" string="Late Activities" name="activities_overdue" domain="[('my_activity_date_deadline', '&lt;', 'today')]"/>
+        <filter invisible="1" string="Today Activities" name="activities_today" domain="[('my_activity_date_deadline', '=', 'today')]"/>
+        <filter invisible="1" string="Future Activities" name="activities_upcoming_all" domain="[('my_activity_date_deadline', '&gt;', 'today')]"/>
+        <separator/>
+        <separator/>
+        <filter string="Archived" name="archived_x_brand_tags" domain="[['x_active', '=', False]]"/>
+        <separator/>
+      </search>
+    </field>
+    <field name="key">product_brand_saas.default_search_view__39b8d24b-1da0-46c0-9b3d-c4e778f30951</field>
+    <field name="model">x_brand_tags</field>
+    <field name="name">Default search view for x_brand_tags</field>
+    <field name="type">search</field>
+  </record>
+  <record id="odoo_studio_default__74021076-73a1-4af1-8d03-120281b13bf6" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <data>
+        <xpath expr="/form//widget[@name='web_ribbon']" position="before">
+          <div name="button_box" class="oe_button_box">
+            <button class="oe_stat_button" icon="fa-minus-square" type="action" name="product_brand_saas.brands_f2ba658e-6c78-4ea5-9243-ab6f64f51ba9">
+              <field widget="statinfo" name="x_x_studio_category_x_brands_count" string="Brands"/>
+            </button>
+          </div>
+        </xpath>
+        <xpath expr="/form//group[@name='studio_group_ca981c']" position="after">
+          <notebook name="studio_notebook_3eq_1juhbmf2c">
+            <page string="Brands" name="studio_page_3eq">
+              <group name="studio_group_3eq">
+                <group name="studio_group_3eq_left"/>
+                <group name="studio_group_3eq_right"/>
+              </group>
+              <field name="x_studio_one2many_1" widget="many2many"/>
+            </page>
+          </notebook>
+        </xpath>
+        <xpath expr="/form//group[@name='studio_group_ca981c_left']" position="inside">
+          <field name="x_studio_parent_category"/>
+        </xpath>
+        <xpath expr="/form[1]/sheet[1]/notebook[1]/page[1]/field[1]" position="inside">
+          <list>
+            <field name="x_studio_sequence" widget="handle"/>
+            <field name="x_name"/>
+            <field name="x_color" widget="color_picker"/>
+          </list>
+        </xpath>
+      </data>
+    </field>
+    <field name="inherit_id" ref="default_form_view_fo_104ad343-6c6c-492c-bf53-ea9b81de92fb"/>
+    <field name="key">product_brand_saas.odoo_studio_default__74021076-73a1-4af1-8d03-120281b13bf6</field>
+    <field name="mode">extension</field>
+    <field name="model">x_brand_category</field>
+    <field name="name">Odoo Studio: Default form view for x_brand_category customization</field>
+    <field name="priority">99</field>
+    <field name="type">form</field>
+  </record>
+  <record id="odoo_studio_product__d4958ed9-89e1-403d-83e4-82da862fe8dd" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <data>
+        <xpath expr="/form[@name='Product Template']/sheet[@name='product_form']/notebook/page[@name='general_information']/group/group[@name='group_general']/field[@name='is_storable']" position="after">
+          <field name="x_studio_brands" options="{'create_name_field': 'x_name'}"/>
+        </xpath>
+      </data>
+    </field>
+    <field name="inherit_id" ref="product.product_template_only_form_view"/>
+    <field name="key">product_brand_saas.odoo_studio_product__d4958ed9-89e1-403d-83e4-82da862fe8dd</field>
+    <field name="mode">extension</field>
+    <field name="model">product.template</field>
+    <field name="name">Odoo Studio: product.template.product.form customization</field>
+    <field name="priority">160</field>
+    <field name="type">form</field>
+  </record>
+  <record id="odoo_studio_product__3be079ac-0423-4c06-ad8f-0fa389cbc177" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <data>
+        <xpath expr="/search/separator[6]" position="attributes">
+          <attribute name="invisible">True</attribute>
+        </xpath>
+        <xpath expr="/search/field[@name='categ_id']" position="after">
+          <field name="x_studio_brands" string="Brand"/>
+        </xpath>
+        <xpath expr="/search/filter[@name='inactive']" position="before">
+          <filter string="With Brand" name="with_brand" domain="[('x_studio_brands', '!=', False)]"/>
+          <filter string="Without Brand" name="without_brand" domain="[('x_studio_brands', '=', False)]"/>
+          <separator/>
+        </xpath>
+        <xpath expr="/search//filter[@name='group_by_product_properties']" position="after">
+          <filter name="studio_group_by_5cl_1juhdaufu" string="Brands" context="{'group_by': 'x_studio_brands'}"/>
+        </xpath>
+      </data>
+    </field>
+    <field name="inherit_id" ref="product.product_template_search_view"/>
+    <field name="key">product_brand_saas.odoo_studio_product__3be079ac-0423-4c06-ad8f-0fa389cbc177</field>
+    <field name="mode">extension</field>
+    <field name="model">product.template</field>
+    <field name="name">Odoo Studio: product.template.search customization</field>
+    <field name="priority">160</field>
+    <field name="type">search</field>
+  </record>
+  <record id="studio_report_docume_63802c4f-e81b-4238-85be-cef4ef79329d" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <t t-name="studio_report_document">
+        <t t-call="web.external_layout">
+          <div class="page">
+            <div class="oe_structure"/>
+          </div>
+        </t>
+      </t>
+    </field>
+    <field name="key">product_brand_saas.studio_report_docume_63802c4f-e81b-4238-85be-cef4ef79329d_document</field>
+    <field name="name">product_brand_saas.studio_report_docume_63802c4f-e81b-4238-85be-cef4ef79329d_document</field>
+    <field name="type">qweb</field>
+  </record>
+  <record id="studio_main_report_aee3b860-809e-4e88-b429-0a14ab1d5539" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <t t-name="studio_main_report">
+        <t t-call="web.html_container">
+          <t t-foreach="docs" t-as="doc">
+            <t t-call="product_brand_saas.studio_report_docume_63802c4f-e81b-4238-85be-cef4ef79329d_document"/>
+          </t>
+        </t>
+      </t>
+    </field>
+    <field name="key">product_brand_saas.studio_report_docume_63802c4f-e81b-4238-85be-cef4ef79329d</field>
+    <field name="name">product_brand_saas.studio_report_docume_63802c4f-e81b-4238-85be-cef4ef79329d</field>
+    <field name="type">qweb</field>
+  </record>
+  <record id="odoo_studio_studio_c_dd9980de-bcff-4aae-b3da-c66465372c8c" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <data>
+        <xpath expr="/t[@t-name='studio_report_document']//t[@t-call='web.external_layout']/div/div" position="after" meta-class="oe_structure">
+          <div class="oe_structure">
+            <br/>
+          </div>
+          <table class="table table-sm">
+            <tbody>
+              <tr class="border-bottom border-top-0 border-start-0 border-end-0 border-2 border-dark fw-bold">
+                <td>products</td>
+              </tr>
+              <tr t-foreach="doc.x_studio_products" t-as="x2many_record">
+                <td>Insert a field...</td>
+              </tr>
+            </tbody>
+          </table>
+        </xpath>
+        <xpath expr="/t[@t-name='studio_report_document']//t[@t-call='web.external_layout']/div/div" position="inside" meta-class="oe_structure">
+          <span t-field="doc.x_name" data-oe-demo="Brand Name"/>
+        </xpath>
+      </data>
+    </field>
+    <field name="inherit_id" ref="studio_report_docume_63802c4f-e81b-4238-85be-cef4ef79329d"/>
+    <field name="key">web_studio.report_editor_customization_diff.view._product_brand_saas.studio_report_docume_63802c4f-e81b-4238-85be-cef4ef79329d_document</field>
+    <field name="mode">extension</field>
+    <field name="name">Odoo Studio: product_brand_saas.studio_report_docume_63802c4f-e81b-4238-85be-cef4ef79329d_document report customization</field>
+    <field name="priority">9999999</field>
+    <field name="type">qweb</field>
+  </record>
+  <record id="studio_report_docume_17f922ce-9ac0-4648-982a-8f80573f72e1" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <t t-name="studio_report_document">
+        <t t-call="web.external_layout">
+          <div class="page">
+            <div class="oe_structure"/>
+          </div>
+        </t>
+      </t>
+    </field>
+    <field name="key">product_brand_saas.studio_report_docume_17f922ce-9ac0-4648-982a-8f80573f72e1_document</field>
+    <field name="name">product_brand_saas.studio_report_docume_17f922ce-9ac0-4648-982a-8f80573f72e1_document</field>
+    <field name="type">qweb</field>
+  </record>
+  <record id="studio_main_report_655aea45-3b83-45d2-9612-a5991454aad0" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <t t-name="studio_main_report">
+        <t t-call="web.html_container">
+          <t t-foreach="docs" t-as="doc">
+            <t t-call="product_brand_saas.studio_report_docume_17f922ce-9ac0-4648-982a-8f80573f72e1_document"/>
+          </t>
+        </t>
+      </t>
+    </field>
+    <field name="key">product_brand_saas.studio_report_docume_17f922ce-9ac0-4648-982a-8f80573f72e1</field>
+    <field name="name">product_brand_saas.studio_report_docume_17f922ce-9ac0-4648-982a-8f80573f72e1</field>
+    <field name="type">qweb</field>
+  </record>
+  <record id="odoo_studio_studio_c_980c2e55-0ba3-4369-8257-25ef90326602" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <data>
+        <xpath expr="/t[@t-name='studio_report_document']//t[@t-call='web.external_layout']" position="replace" meta-t-call="web.external_layout">
+          <t t-call="web.external_layout">
+            <div class="page">
+              <!-- Standard Studio drop zone -->
+              <div class="oe_structure"/>
+              <!-- Standard Odoo Header Title -->
+              <h2 class="mt-4 mb-4">Brand Details: 
+                <span t-field="doc.x_name"/>
+        </h2>
+              <!-- Standard Odoo Info Grid -->
+              <div class="row mt32 mb32" id="informations">
+                <!-- Brand Name -->
+                <div t-if="doc.x_name" class="col-auto col-3 mw-100 mb-2">
+                  <strong>Brand Name:</strong>
+                  <p class="m-0" t-field="doc.x_name"/>
+                </div>
+                <!-- Brand Code -->
+                <div t-if="doc.x_studio_brand_code" class="col-auto col-3 mw-100 mb-2">
+                  <strong>Brand Code:</strong>
+                  <p class="m-0" t-field="doc.x_studio_brand_code"/>
+                </div>
+                <!-- Category -->
+                <div t-if="doc.x_studio_category" class="col-auto col-3 mw-100 mb-2">
+                  <strong>Category:</strong>
+                  <p class="m-0" t-field="doc.x_studio_category"/>
+                </div>
+                <!-- Brand Tags -->
+                <div t-if="doc.x_studio_many2many_1" class="col-auto col-3 mw-100 mb-2">
+                  <strong>Brand Tags:</strong>
+                  <div class="mt-1">
+                    <t t-foreach="doc.x_studio_many2many_1" t-as="tag">
+                      <span class="badge rounded-pill bg-light text-dark border px-2 py-1 me-1 mb-1" style="font-size: 0.85rem; font-weight: 500;">
+                        <span t-field="tag.display_name"/>
+                      </span>
+                    </t>
+                  </div>
+                </div>
+              </div>
+              <!-- Standard Studio drop zone -->
+              <div class="oe_structure"/>
+              <!-- Associated Products Section Title with a Divider Line -->
+              <h4 class="mt-4 mb-3" style="font-weight: bold; border-bottom: 2px solid #dee2e6; padding-bottom: 8px; color: #212529;">
+            Associated Products
+        </h4>
+              <!-- Professional Table Layout -->
+              <table class="table table-sm o_main_table mt-3">
+                <thead>
+                  <!-- bg-100 adds a standard light-gray block background for the headers -->
+                  <tr class="bg-100">
+                    <th name="th_index" class="text-center" style="width: 10%; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; color: #495057;">#</th>
+                    <th name="th_product" class="text-start" style="font-weight: bold; text-transform: uppercase; font-size: 0.8rem; color: #495057;">Product</th>
+                  </tr>
+                </thead>
+                <tbody class="tbody">
+                  <t t-foreach="doc.x_studio_products" t-as="product">
+                    <tr class="align-middle">
+                      <!-- Centered and muted index number -->
+                      <td class="text-center text-muted" style="font-size: 0.95rem; font-weight: 500;">
+                        <span t-esc="product_index + 1"/>
+                      </td>
+                      <!-- Clean, clear product name -->
+                      <td class="text-start" style="font-size: 0.95rem; font-weight: 500; color: #212529;">
+                        <span t-field="product.display_name"/>
+                      </td>
+                    </tr>
+                  </t>
+                </tbody>
+              </table>
+              <!-- Standard Studio drop zone -->
+              <div class="oe_structure"/>
+            </div>
+          </t>
+        </xpath>
+      </data>
+    </field>
+    <field name="inherit_id" ref="studio_report_docume_17f922ce-9ac0-4648-982a-8f80573f72e1"/>
+    <field name="key">web_studio.report_editor_customization_diff.view.product_brand_saas.studio_report_docume_17f922ce-9ac0-4648-982a-8f80573f72e1_document</field>
+    <field name="mode">extension</field>
+    <field name="name">Odoo Studio: product_brand_saas.studio_report_docume_17f922ce-9ac0-4648-982a-8f80573f72e1_document report customization</field>
+    <field name="priority">9999999</field>
+    <field name="type">qweb</field>
+  </record>
+  <record id="product_template_kanban_view_inherit" model="ir.ui.view" context="{'studio': True}">
+    <field name="arch" type="xml">
+      <xpath expr="//kanban" position="inside">
+        <field name="x_studio_brands"/>
+      </xpath>
+      <xpath expr="//main" position="inside">
+        <div t-if="record.x_studio_brands.raw_value" class="mt-1">
+          <span class="badge text-bg-secondary" style="font-size: 0.72rem; padding: 0.25em 0.5em; font-weight: 500;">
+            <i class="fa fa-tag me-1" title="Brand"/>
+            <field name="x_studio_brands"/>
+          </span>
+        </div>
+      </xpath>
+    </field>
+    <field name="inherit_id" ref="product.product_template_kanban_view"/>
+    <field name="key">product_brand_saas.product_template_kanban_view_inherit</field>
+    <field name="mode">extension</field>
+    <field name="model">product.template</field>
+    <field name="name">product.template.kanban.view.inherit</field>
+    <field name="priority">99</field>
+    <field name="type">kanban</field>
+  </record>
+</odoo>
