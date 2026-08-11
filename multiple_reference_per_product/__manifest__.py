@@ -1,4 +1,4 @@
-q# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,7 +21,7 @@ q# -*- coding: utf-8 -*-
 ###############################################################################
 {
     'name': "Multiple Reference Per Product",
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.0',
     'summary': 'Allowing multiple references for each product.',
     'description': "Add multiple reference code for a product template or "
                    "product variant. Easily manage between the "
@@ -31,11 +31,11 @@ q# -*- coding: utf-8 -*-
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'depends': ['stock'],
-    'website': "https://cybrosys.com/",
+    'website': 'https://www.cybrosys.com',
     'data': [
         'security/ir.model.access.csv',
         'views/multiple_reference_per_product.xml',
-        'viewhttp://3.6.78.233/my/timeoff/successhttp://3.6.78.233/my/timeoff/successhttp://3.6.78.233/my/timeoff/successhttp://3.6.78.233/my/timeoff/successhttp://3.6.78.233/my/timeoff/successhttp://3.6.78.233/my/timeoff/successhttp://3.6.78.233/my/timeoff/successs/product_product.xml',
+        'views/product_product.xml',
         'views/product_template.xml',
     ],
     'images': ['static/description/banner.jpg'],

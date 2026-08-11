@@ -23,7 +23,8 @@ from odoo import api, fields, models
 
 
 class ProductProductInherit(models.Model):
-    """Inherit the 'product_product' model to include Multiple References in the form view."""
+    """Inherit the 'product_product' model to include Multiple References in
+    the form view."""
     _inherit = 'product.product'
 
     multiple_references_ids = fields.One2many("multiple.reference.per.product",
@@ -59,7 +60,8 @@ class ProductProductInherit(models.Model):
                 references: references.multiple_references_name != self.default_code).ids
 
     def multiple_references_list(self):
-        """ Function to open the Multiple References form and tree view when clicking the 'Add More' button."""
+        """Function to open the Multiple References form and tree view
+        when clicking the 'Add More' button."""
         return {
             'name': "Multiple References",
             'type': 'ir.actions.act_window',
