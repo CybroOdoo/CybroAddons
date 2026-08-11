@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Custom wizard view -->
+    <record id="inventory_report_view" model="ir.ui.view">
+        <field name="name">stock.quantity.history.inherit</field>
+        <field name="model">stock.quantity.history</field>
+        <field name="inherit_id" ref="stock.view_stock_quantity_history"/>
+        <field name="arch" type="xml">
+
+            <field name="inventory_datetime" position="after">
+                <field name="location" widget="many2many_tags"/>
+                <field name="category" widget="many2many_tags"/>
+            </field>
+
+            <xpath expr="//button[@name='open_at_date']" position="after">
+                <button
+                    name="action_print_pdf"
+                    string="PDF"
+                    type="object"
+                    class="btn-primary"/>
+
+                <button
+                    name="action_xlsx_report"
+                    string="Excel"
+                    type="object"
+                    class="btn-primary"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Custom action -->
+    <record id="action_stock_quantity_history_report"
+            model="ir.actions.act_window">
+        <field name="name">Inventory At Date</field>
+        <field name="res_model">stock.quantity.history</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="inventory_report_view"/>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Readonly list -->
+    <record id="view_stock_quant_tree_inherit" model="ir.ui.view">
+        <field name="name">stock.quant.list.inherit</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="before">
+                <header>
+                    <button
+                        name="%(report_stock_inventory.action_stock_quantity_history_report)d"
+                        string="Inventory at Date"
+                        type="action"
+                        class="btn-primary"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Editable list -->
+    <record id="view_stock_quant_tree_editable_inherit" model="ir.ui.view">
+        <field name="name">stock.quant.list.editable.inherit</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_editable"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/header" position="inside">
+                <button
+                    name="%(report_stock_inventory.action_stock_quantity_history_report)d"
+                    string="Inventory at Date"
+                    type="action"
+                    class="btn-primary"
+                    display="always"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
