@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-name="CashFlowReportTemplate" owl="1">
+        <table class="table table-hover">
+            <thead>
+                <tr style="font-weight: bold;font-size: 18px;background-color: #8080801f;">
+                    <th>Name</th>
+                    <th>Cash In</th>
+                    <th>Cash Out</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-foreach="state.data" t-as="line" t-key="line.code">
+                    <tr>
+                        <td>
+                            <!-- LEVEL 1 -->
+                            <Dropdown>
+                                <button class="btn btn-link text-start p-0"
+                                        style="text-decoration: none;">
+                                    <t t-esc="line.code"/>
+                                    <t t-esc="line.account"/>
+                                    <span class="mx-2 fa fa-caret-down"/>
+                                </button>
+
+                                <t t-set-slot="content">
+                                    <t t-foreach="line.journal_lines" t-as="journal"
+                                       t-key="journal.id">
+                                        <!-- LEVEL 2 -->
+                                        <Dropdown>
+                                            <button class="dropdown-item"
+                                                    style="padding-left: 20px;">
+                                                <t t-esc="journal.name"/>
+                                                <span class="mx-2 fa fa-caret-down"/>
+                                            </button>
+
+                                            <t t-set-slot="content">
+                                                <!-- LEVEL 3 - Move Lines -->
+                                                <t t-foreach="line.move_lines.filter(move => move.name === journal.name)"
+                                                   t-as="move"
+                                                   t-key="move.id">
+                                                    <DropdownItem>
+                                                        <div class="row align-items-center py-2 px-3 move-line-row">
+                                                            <div class="col-6">
+                                                                <t t-esc="move.move_name"/>
+                                                            </div>
+                                                            <div class="col-6 text-end">
+                                                                <button type="button"
+                                                                        class="btn btn-primary btn-sm show-journal-btn"
+                                                                        t-on-click="() => this.gotoJournalEntry(move)"
+                                                                        t-att-data-id="move.account_id">
+                                                                    <i class="fa fa-arrow-right me-1"/>
+                                                                    Show Journal Entry
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </DropdownItem>
+
+                                                </t>
+                                            </t>
+                                        </Dropdown>
+                                    </t>
+                                </t>
+                            </Dropdown>
+                        </td>
+
+                        <td>
+                            <t t-esc="line.total_debit"/>
+                        </td>
+                        <td>
+                            <t t-esc="line.total_credit"/>
+                        </td>
+                        <td>
+                            <t t-esc="line.total_debit - line.total_credit"/>
+                        </td>
+                    </tr>
+                </t>
+
+                <!-- TOTAL -->
+                <tr class="table-primary">
+                    <td>
+                        <strong>Total</strong>
+                    </td>
+                    <td>
+                        <strong>
+                            <t t-esc="state.data.reduce((s, l) => s + l.total_debit, 0).toFixed(4)"/>
+                        </strong>
+                    </td>
+                    <td>
+                        <strong>
+                            <t t-esc="state.data.reduce((s, l) => s + l.total_credit, 0).toFixed(4)"/>
+                        </strong>
+                    </td>
+                    <td>
+                        <strong>
+                            <t t-esc="state.data.reduce((s, l) => s + (l.total_debit - l.total_credit), 0).toFixed(4)"/>
+                        </strong>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </t>
+</templates>

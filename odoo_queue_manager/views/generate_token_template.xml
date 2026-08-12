@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--View of the webpage Refer and Earn, also provide an interface to share their Referral code -->
+<odoo>
+    <!--Template for token generation form where users enter details and select department-->
+    <template id="generate_token">
+        <html>
+            <head>
+                <title>Generate Token</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+                      rel="stylesheet"/>
+            </head>
+            <body style="
+            background: linear-gradient(135deg, #f0f4f8, #cfd9df);
+            min-height: 100vh;
+            padding: 30px 10px;
+            font-family: Arial, sans-serif;
+        ">
+                <!-- Close Button -->
+                <div style="
+                max-width: 1000px;
+                margin: auto;
+                display: flex;
+                justify-content: flex-end;
+                margin-bottom: 20px;
+            ">
+                    <a t-attf-href="/web#action={{action}}&amp;model=token.interface&amp;view_type=kanban"
+                       style="
+                       padding: 8px 18px;
+                       background: #dc3545;
+                       color: white;
+                       text-decoration: none;
+                       border-radius: 6px;
+                       font-weight: 600;
+                       transition: 0.3s;
+                   "
+                       onmouseover="this.style.background='#bb2d3b'"
+                       onmouseout="this.style.background='#dc3545'">
+                        Close
+                    </a>
+                </div>
+                <!-- Main Card -->
+                <div style="
+                max-width: 500px;
+                margin: auto;
+            ">
+                    <div class="card" style="
+                    padding: 25px;
+                    border-radius: 12px;
+                    background: #ffffff;
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+                ">
+                        <div class="card-body">
+                            <h3 style="
+                            text-align: center;
+                            margin-bottom: 25px;
+                            color: #2c3e50;
+                            font-weight: 600;
+                        ">
+                                Generate Token
+                            </h3>
+                            <t t-if="error">
+                                <div class="alert alert-danger alert-dismissible fade show"
+                                     role="alert"
+                                     id="error-alert">
+                                    <t t-esc="error"/>
+                                    <button type="button"
+                                            class="btn-close"
+                                            aria-label="Close"
+                                            onclick="document.getElementById('error-alert').style.display='none';">
+                                    </button>
+                                </div>
+                            </t>
+                            <!-- Form -->
+                            <form action="/create/token" method="POST">
+                                <input type="hidden"
+                                       name="csrf_token"
+                                       t-att-value="request.csrf_token()"/>
+                                <!-- Name -->
+                                <div style="margin-bottom: 18px;">
+                                    <label style="
+                                    font-weight: 600;
+                                    margin-bottom: 6px;
+                                    display: block;
+                                ">
+                                        Name
+                                    </label>
+                                    <input type="text"
+                                           name="name"
+                                           required=""
+                                           class="form-control"
+                                           t-att-value="form_data.get('name', '') if form_data else ''"
+                                           style="
+                                           border-radius: 6px;
+                                           padding: 9px 12px;
+                                       "/>
+                                </div>
+                                <!-- Mobile -->
+                                <div style="margin-bottom: 18px;">
+                                    <label style="
+                                    font-weight: 600;
+                                    margin-bottom: 6px;
+                                    display: block;
+                                ">
+                                        Mobile Number
+                                    </label>
+                                    <input type="tel"
+                                           name="mobile"
+                                           required="required"
+                                           placeholder="+1 (605) 691-3277"
+                                           class="form-control"
+                                           pattern="\+?[0-9()\-\s]{7,20}"
+                                           t-att-value="form_data.get('mobile', '') if form_data else ''"
+                                           title="Enter a valid phone number"
+                                           style="border-radius: 6px;padding: 9px 12px;"/>
+                                </div>
+                                <!-- Department -->
+                                <div style="margin-bottom: 25px;">
+                                    <label style="
+                                    font-weight: 600;
+                                    margin-bottom: 6px;
+                                    display: block;
+                                ">
+                                        Department
+                                    </label>
+                                    <select name="department"
+                                            class="form-control"
+                                            required="1"
+                                            style="
+                                            border-radius: 6px;
+                                            padding: 9px 12px;
+                                            ">
+                                        <option value=""
+                                                t-att-selected="not form_data or not form_data.get('department')"
+                                                disabled="disabled">
+                                            Select Department
+                                        </option>
+                                        <t t-foreach="department" t-as="dept">
+                                            <option t-att-value="dept.id"
+                                                    t-att-selected="'selected' if form_data and form_data.get('department') == str(dept.id) else None">
+                                                <t t-esc="dept.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <!-- Submit -->
+                                <div style="text-align: center;">
+                                    <button type="submit"
+                                            style="
+                                            width: 100%;
+                                            max-width: 220px;
+                                            padding: 10px;
+                                            background: #0d6efd;
+                                            color: white;
+                                            border: none;
+                                            border-radius: 6px;
+                                            font-weight: 600;
+                                            font-size: 16px;
+                                            cursor: pointer;
+                                            transition: 0.3s;
+                                        "
+                                            onmouseover="this.style.background='#0b5ed7'"
+                                            onmouseout="this.style.background='#0d6efd'">
+                                        Generate Token
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </html>
+    </template>
+
+    <!-- Template to display generated token details including position and current token -->
+    <template id="token_detail">
+        <html>
+            <head>
+                <title>Token Details</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+                      rel="stylesheet"/>
+            </head>
+            <body style="
+            background: linear-gradient(135deg, #f0f4f8, #cfd9df);
+            min-height: 100vh;
+            padding: 30px 10px;
+            font-family: Arial, sans-serif;
+            position: relative;
+        ">
+                <!-- Close Button -->
+                <div style="
+                max-width: 1000px;
+                margin: auto;
+                display: flex;
+                justify-content: flex-end;
+                margin-bottom: 20px;
+            ">
+                    <a t-attf-href="/web#action={{action}}&amp;model=token.interface&amp;view_type=kanban"
+                       style="
+                       padding: 8px 18px;
+                       background: #dc3545;
+                       color: white;
+                       text-decoration: none;
+                       border-radius: 6px;
+                       font-weight: 600;
+                       transition: 0.3s;
+                   "
+                       onmouseover="this.style.background='#bb2d3b'"
+                       onmouseout="this.style.background='#dc3545'">
+                        Close
+                    </a>
+                </div>
+                <!-- Center Card -->
+                <div style="
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: calc(100vh - 100px);
+            ">
+                    <div class="card" style="
+                    width: 100%;
+                    max-width: 350px;
+                    padding: 25px 20px;
+                    border-radius: 12px;
+                    background: #ffffff;
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+                    text-align: center;
+                ">
+                        <div class="card-body">
+                            <h4 style="
+                            margin-bottom: 15px;
+                            color: #2c3e50;
+                            font-weight: 600;
+                        ">
+                                Token Details
+                            </h4>
+                            <!-- Customer Info -->
+                            <p style="margin-bottom: 8px;">
+                                <strong>Name:</strong>
+                                <t t-esc="name"/>
+                            </p>
+                            <p style="margin-bottom: 15px;">
+                                <strong>Department:</strong>
+                                <t t-esc="department.name"/>
+                            </p>
+                            <!-- Token Number -->
+                            <div style="
+                            background: #f8f9fa;
+                            border-radius: 8px;
+                            padding: 15px;
+                            margin-bottom: 20px;
+                        ">
+                                <h2 style="
+                                margin: 0;
+                                color: #0d6efd;
+                                font-weight: 700;
+                                letter-spacing: 2px;
+                            ">
+                                    <t t-esc="token"/>
+                                </h2>
+                            </div>
+                            <!-- Your Position -->
+                            <div style="
+                                background: #fff3cd;
+                                border-radius: 8px;
+                                padding: 12px;
+                                margin-bottom: 15px;
+                            ">
+                                <p style="margin: 0;">
+                                    <strong>Your Position:</strong>
+                                    <span style="font-size: 18px; color: #856404;">
+                                        <t t-esc="position"/>
+                                    </span>
+                                </p>
+                            </div>
+                            <!-- Now Attending -->
+                            <div style="
+                                background: #e2f0ff;
+                                border-radius: 8px;
+                                padding: 12px;
+                                margin-bottom: 20px;
+                            ">
+                                <p style="margin: 0;">
+                                    <strong>Now Attending:</strong>
+                                    <t t-if="current_token">
+                                        <span style="font-size: 18px; color: #0d6efd;">
+                                            <t t-esc="department.code"/>
+                                            -
+                                            <t t-esc="current_token.token"/>
+                                        </span>
+                                    </t>
+                                    <t t-else="">
+                                        <span style="color: #6c757d;">Not Started Yet
+                                        </span>
+                                    </t>
+                                </p>
+                            </div>
+                            <!-- Print Button -->
+                            <a t-attf-href="/action/print/{{token_id}}"
+                               style="
+                               display: inline-block;
+                               width: 100%;
+                               padding: 10px;
+                               background: #198754;
+                               color: white;
+                               text-decoration: none;
+                               border-radius: 6px;
+                               font-weight: 600;
+                               transition: 0.3s;
+                           "
+                               onmouseover="this.style.background='#157347'"
+                               onmouseout="this.style.background='#198754'">
+                                Print Token
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </html>
+    </template>
+
+    <!-- Template for counter interface to call and manage tokens in a department -->
+    <template id="queue_counter">
+        <html>
+            <head>
+                <title>Token Counter</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+                      rel="stylesheet"/>
+            </head>
+            <body style="
+            background: linear-gradient(135deg, #eef2f7, #cfd9df);
+            min-height: 100vh;
+            padding: 40px 10px;
+            font-family: Arial, sans-serif;
+        ">
+                <!-- Main Container -->
+                <div style="
+                max-width: 1100px;
+                margin: auto;
+            ">
+                    <!-- Counter Info Card -->
+                    <div class="card" style="
+                    max-width: 500px;
+                    margin: auto;
+                    margin-bottom: 30px;
+                    padding: 20px;
+                    border-radius: 12px;
+                    background: #ffffff;
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+                ">
+                        <div class="card-body" style="text-align: center;">
+                            <h3 style="margin-bottom: 15px; color:#2c3e50;">
+                                Counter:
+                                <span style="font-weight:600;">
+                                    <t t-esc="counter.name"/>
+                                </span>
+                            </h3>
+                            <h4 style="margin-bottom: 15px;">
+                                Department:
+                                <span style="color:#dc3545; font-weight:600;">
+                                    <t t-esc="department"/>
+                                </span>
+                            </h4>
+                            <p style="margin-bottom: 10px;">
+                                <strong>User:</strong>
+                                <t t-esc="user"/>
+                            </p>
+                            <p style="margin-bottom: 20px;">
+                                <strong>Date:</strong>
+                                <t t-esc="datetime.datetime.now().strftime('%d-%m-%y')"/>
+                            </p>
+                            <!-- Call Next Button -->
+                            <t t-if="not token_next.id">
+                                <a t-attf-href="/empty/token"
+                                   style="
+                                   display: inline-block;
+                                   padding: 10px 25px;
+                                   background: #0d6efd;
+                                   color: white;
+                                   text-decoration: none;
+                                   border-radius: 6px;
+                                   font-weight: 600;
+                                   transition: 0.3s;
+                               "
+                                   onmouseover="this.style.background='#0b5ed7'"
+                                   onmouseout="this.style.background='#0d6efd'">
+                                    Call Next
+                                </a>
+                            </t>
+                            <t t-else="">
+                                <a t-attf-href="/process/individual/token/{{token_next.id}}/{{counter.id}}"
+                                   style="
+                                   display: inline-block;
+                                   padding: 10px 25px;
+                                   background: #198754;
+                                   color: white;
+                                   text-decoration: none;
+                                   border-radius: 6px;
+                                   font-weight: 600;
+                                   transition: 0.3s;
+                               "
+                                   onmouseover="this.style.background='#157347'"
+                                   onmouseout="this.style.background='#198754'">
+                                    Call Next
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+                    <!-- Queue Listing -->
+                    <div class="card" style="
+                    padding: 20px;
+                    border-radius: 12px;
+                    background: #ffffff;
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+                ">
+                        <div class="card-body">
+                            <h4 style="
+                            text-align: center;
+                            margin-bottom: 20px;
+                            color: #2c3e50;
+                            font-weight: 600;
+                        ">
+                                Queue Listing
+                            </h4>
+                            <div style="overflow-x: auto;">
+                                <table class="table table-bordered table-hover"
+                                       style="
+                                       min-width: 900px;
+                                       text-align: center;
+                                       vertical-align: middle;
+                                   ">
+                                    <thead style="
+                                    background: #0d6efd;
+                                    color: white;
+                                ">
+                                        <tr>
+                                            <th>Sl. No</th>
+                                            <th>Counter</th>
+                                            <th>Customer</th>
+                                            <th>Token</th>
+                                            <th>Called By</th>
+                                            <th>State</th>
+                                            <th class="invisible-column"
+                                                style="display:none;">
+                                                Hidden
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="tokens" t-as="token">
+                                            <tr style="background:#fafafa;">
+                                                <td><t t-esc="token_index + 1"/></td>
+                                                <td>
+                                                    <t t-esc="counter.id"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="token.customer_name"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="token.token"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="env.user.name"/>
+                                                </td>
+                                                <!-- State -->
+                                                <td>
+                                                    <t t-if="token.state in ['recall', 'in_progress']">
+                                                        <a t-att-href="'/process/individual/token/%d/%d' % (token.id, counter.id)"
+                                                           style="
+                                                           color:#0d6efd;
+                                                           font-weight:600;
+                                                           text-decoration:none;
+                                                       ">
+                                                            Recall
+                                                        </a>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span style="
+                                                        font-weight:600;
+                                                        color:#6c757d;
+                                                    ">
+                                                            <t t-esc="token.state"/>
+                                                        </span>
+                                                    </t>
+                                                </td>
+                                                <!-- Hidden -->
+                                                <td class="invisible-column"
+                                                    style="display:none;">
+                                                    <t t-esc="token.id"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </html>
+    </template>
+
+    <!-- Template for public display screen showing current and waiting tokens -->
+    <template id="queue_display_screen">
+        <t t-call="website.layout">
+            <meta http-equiv="refresh" content="5"/>
+            <div class="container text-center mt32">
+                <h1>
+                    <t t-esc="counter.name"/>
+                </h1>
+                <hr/>
+                <!-- NOW SERVING -->
+                <div class="card p-4 mt32">
+                    <h2>Now Serving</h2>
+                    <t t-if="current_token">
+                        <h1 style="font-size:70px;color:#0d6efd;">
+                            <t t-esc="current_token.token"/>
+                        </h1>
+                    </t>
+                    <t t-else="">
+                        <h3 class="text-muted">Waiting</h3>
+                    </t>
+                </div>
+                <!-- WAITING QUEUE -->
+                <div class="card p-4 mt32">
+                    <h3>Waiting Queue</h3>
+                    <t t-foreach="waiting_tokens" t-as="t">
+                        <span class="badge bg-secondary p-3 m-2"
+                              style="font-size:20px;">
+                            <t t-esc="t.token"/>
+                        </span>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Template for processing individual token with customer interaction form -->
+    <template id="individual_queue_processing">
+        <html>
+            <head>
+                <title>Individual Token Processing</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+                      rel="stylesheet"/>
+            </head>
+            <body style="
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        ">
+                <div class="card" style="
+                width: 100%;
+                max-width: 500px;
+                padding: 25px;
+                border-radius: 12px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+                background: #ffffff;
+            ">
+                    <div class="card-body">
+                        <h3 class="text-center mb-4">
+                            Customer Details
+                        </h3>
+                        <!-- Info -->
+                        <div class="mb-3 p-3 bg-light rounded">
+                            <p>
+                                <b>Name:</b>
+                                <t t-esc="current_token.customer_name"/>
+                            </p>
+                            <p>
+                                <b>Token:</b>
+                                <t t-esc="current_token.token"/>
+                            </p>
+                            <p>
+                                <b>Mobile:</b>
+                                <t t-esc="current_token.mobile"/>
+                            </p>
+                            <p>
+                                <b>Department:</b>
+                                <t t-esc="current_token.department_id.name"/>
+                            </p>
+                        </div>
+                        <!-- FORM -->
+                        <form method="post"
+                              t-att-action="'/queue/submit/%s/%s' % (current_token.id, counter_id)">
+                            <!-- CSRF -->
+                            <input type="hidden"
+                                   name="csrf_token"
+                                   t-att-value="request.csrf_token()"/>
+                            <!-- Query -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    Customer Query
+                                </label>
+                                <textarea class="form-control"
+                                          name="customer_query"
+                                          rows="3"/>
+                            </div>
+                            <!-- Feedback -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    Feedback
+                                </label>
+                                <textarea class="form-control"
+                                          name="feedback"
+                                          rows="3"/>
+                            </div>
+                            <!-- Status -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    Status
+                                </label>
+                                <select class="form-control"
+                                        name="token_state"
+                                        required="1">
+                                    <option value="">Select</option>
+                                    <option value="recall">Recall</option>
+                                    <option value="done">Done</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            <!-- Submit -->
+                            <button type="submit"
+                                    class="btn btn-primary w-100">
+                                Submit
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </body>
+        </html>
+    </template>
+
+    <!-- Template shown when there are no tokens available in the queue -->
+    <template id="page_empty_queue" name="Empty Queue Page">
+        <t t-call="website.layout">
+            <div id="wrap"
+                 style="min-height:100vh;
+                    background:#f8f9fa;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-family:Inter,Arial,sans-serif;">
+                <div style="background:#ffffff;
+                        padding:40px 35px;
+                        border-radius:14px;
+                        box-shadow:0 6px 20px rgba(0,0,0,.12);
+                        max-width:480px;
+                        width:100%;
+                        text-align:center;">
+                    <!-- Icon -->
+                    <div style="font-size:48px;
+                            margin-bottom:15px;
+                            color:#714B67;">
+                        ⚠️
+                    </div>
+                    <!-- Title -->
+                    <div style="font-size:24px;
+                            font-weight:600;
+                            margin-bottom:12px;
+                            color:#212529;">
+                        Queue is Empty
+                    </div>
+                    <!-- Message -->
+                    <div style="font-size:15px;
+                            color:#6c757d;
+                            line-height:1.6;
+                            margin-bottom:25px;">
+                        Sorry! There are currently no customers waiting in the queue.
+                        <br/>
+                        Please generate a new token to continue.
+                    </div>
+                    <!-- Button -->
+                    <a href="/generate/token"
+                       style="display:inline-block;
+                          background:#714B67;
+                          color:#ffffff;
+                          padding:10px 26px;
+                          border-radius:25px;
+                          text-decoration:none;
+                          font-size:14px;
+                          font-weight:500;
+                          transition:all .2s ease;"
+                       onmouseover="this.style.background='#5e3f56'"
+                       onmouseout="this.style.background='#714B67'">
+                        ← Go Back
+                    </a>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

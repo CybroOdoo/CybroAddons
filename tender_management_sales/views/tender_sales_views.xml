@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <!--        action to view tender form-->
+        <record id="action_sale_tender_list" model="ir.actions.act_window">
+            <field name="name">Quotations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('tender_id','=',active_id)]</field>
+            <field name="context">{
+                "default_tender_id":active_id,
+                }
+            </field>
+        </record>
+        <!--        action to view sale order from tender form-->
+        <record id="sale_tender_action_so" model="ir.actions.act_window">
+            <field name="name">Quotation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_mode">form,list</field>
+            <field name="domain">[('tender_id','=',active_id)]</field>
+            <field name="context">{
+                "default_tender_id":active_id,
+                }
+            </field>
+        </record>
+        <!--        sale tender form-->
+        <record id="view_sale_tender_form" model="ir.ui.view">
+            <field name="name">sale.tender.form</field>
+            <field name="model">sale.tender</field>
+            <field name="arch" type="xml">
+                <form string="Sale Agreements">
+                    <field name="company_id" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <header>
+                        <button name="%(sale_tender_action_so)d"
+                                type="action"
+                                string="New Quotation" class="btn-primary"
+                                context="{'default_currency_id': currency_id, 'default_user_id': user_id}"
+                                invisible="state not in ('open')"/>
+                        <button name="action_in_progress"
+                                string="Confirm" type="object"
+                                class="btn-primary" invisible="state not in ('draft')"/>
+                        <button name="action_open" invisible="state != 'in_progress'"
+                                string="Validate" type="object" class="btn-primary"/>
+                        <button name="action_done" string="Close"
+                                class="btn btn-primary"  type="object"
+                                invisible="state in ('draft','in_progress', 'cancel', 'done') or exclusive == 'exclusive'"/>
+                        <button name="action_cancel"
+                                string="Cancel" type="object" invisible="state in ('cancel')"/>
+                        <button name="action_reset_to_draft" string="Reset to Draft"
+                                class="btn btn-primary"  type="object" invisible="state not in ('cancel')"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,in_progress,open,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="%(action_sale_tender_list)d"
+                                    type="action" class="oe_stat_button"
+                                    icon="fa-list-alt"
+                                    invisible="state in ('draft')"
+                                    context="{'default_currency_id': currency_id}">
+                                <field name="order_count" widget="statinfo"
+                                       string="Quotations/Orders"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <label for="name" class="oe_inline"/>
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="user_id"
+                                       readonly="state not in ('draft','in_progress','open')"
+                                       domain="[('share', '=', False)]"/>
+                                <field name="type_id"
+                                       readonly="state not in ('draft')"/>
+                                <field name="customer_id"
+                                       context="{'res_partner_search_mode': 'customer'}"
+                                       readonly="state not in ('draft')"/>
+                                <field name="currency_id"/>
+                            </group>
+                            <group>
+                                <field name="date_end"
+                                       readonly="state not in ('draft','in_progress','open')"/>
+                                <field name="ordering_date"
+                                       readonly="state not in ('draft','in_progress','open')"/>
+                                <field name="schedule_date"
+                                       readonly="state not in ('draft','in_progress','open')"/>
+                                <field name="company_id"
+                                       options="{'no_create': True}"
+                                       readonly="state not in ('draft')"/>
+                                <field name="exclusive" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Products" name="products">
+                                <field name="line_ids">
+                                    <list string="Products" editable="bottom">
+                                        <field name="product_id"
+                                               domain="[('sale_ok', '=', True), '|', ('company_id', '=', False), ('company_id', '=', parent.company_id)]"/>
+                                        <field name="product_description_variants"
+                                               readonly="parent.state not in ('draft')"/>
+                                        <field name="product_qty"/>
+                                        <field name="product_uom_category_id"
+                                               invisible="1"/>
+                                        <field name="product_uom_id"
+                                               string="UoM"
+                                               groups="uom.group_uom"
+                                               optional="show"
+                                               required="not product_id"/>
+                                        <field name="schedule_date"
+                                               optional="hide"/>
+                                        <field name="analytic_distribution"
+                                               widget="analytic_distribution"
+                                               optional="hide"
+                                               groups="analytic.group_analytic_accounting"
+                                               options="{'product_field': 'product_id', 'business_domain': 'purchase_order'}"/>
+                                        <field name="price_unit"/>
+                                    </list>
+                                    <form string="Products">
+                                        <group>
+                                            <field name="product_id"
+                                                   domain="[('sale_ok', '=', True), '|', ('company_id', '=', False), ('company_id', '=', parent.company_id)]"/>
+                                            <field name="product_qty"/>
+                                            <field name="product_uom_category_id"
+                                                   invisible="1"/>
+                                            <field name="product_uom_id"
+                                                   groups="uom.group_uom"/>
+                                            <field name="schedule_date"/>
+                                            <field name="analytic_distribution"
+                                                   widget="analytic_distribution"
+                                                   groups="analytic.group_analytic_accounting"
+                                                   options="{'product_field': 'product_id', 'business_domain': 'sale_order'}"/>
+                                            <field name="company_id"
+                                                   groups="base.group_multi_company"
+                                                   options="{'no_create': True}"/>
+                                        </group>
+                                    </form>
+                                </field>
+                                <separator string="Terms and Conditions"/>
+                                <field name="description"
+                                       class="oe-bordered-editor"
+                                       readonly="state not in ('draft','in_progress','open')"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+        <!--        list view-->
+        <record id="view_sale_tender_tree" model="ir.ui.view">
+            <field name="name">sale.tender.list</field>
+            <field name="model">sale.tender</field>
+            <field name="arch" type="xml">
+                <list string="Sale Agreements" sample="1">
+                    <field name="name" decoration-bf="1"/>
+                    <field name="user_id" decoration-bf="1"/>
+                    <field name="type_id" decoration-bf="1"/>
+                    <field name="customer_id" decoration-bf="1"/>
+                    <field name="ordering_date" decoration-bf="1"/>
+                    <field name="date_end" decoration-bf="1"/>
+                    <field name="company_id" decoration-bf="1"/>
+                    <field name="state" widget="badge"
+                       decoration-success="state == 'in_progress'"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'open'"
+                       decoration-danger="state == 'cancel'"
+                       decoration-muted="state == 'closed'"/>
+                </list>
+            </field>
+        </record>
+        <!--        action for the tender-->
+        <record id="sale_tender_action" model="ir.actions.act_window">
+            <field name="name">Sale Tenders</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.tender</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Start a new Sale agreement
+                </p>
+            </field>
+        </record>
+        <!--        menu item for the tender -->
+        <menuitem id="sale_tender_menu" sequence="10" parent="sale.sale_order_menu"
+                  action="sale_tender_action"/>
+    </data>
+</odoo>
