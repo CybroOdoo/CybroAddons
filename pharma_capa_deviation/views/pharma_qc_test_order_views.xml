@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Adds deviation links to the QC test order form. -->
+    <record id="pharma_qc_test_order_form_capa" model="ir.ui.view">
+        <field name="name">pharma.qc.test.order.form.capa</field>
+        <field name="model">pharma.qc.test.order</field>
+        <field name="inherit_id" ref="pharmaceutical_base.pharma_qc_test_order_view_form"/>
+        <field name="arch" type="xml">
+
+            <button name="action_view_oos_investigations" position="after">
+                <button name="action_view_deviations" type="object"
+                        class="oe_stat_button" icon="fa-exclamation-triangle"
+                        invisible="deviation_count == 0">
+                    <field name="deviation_count" widget="statinfo" string="Deviations"/>
+                </button>
+            </button>
+
+            <xpath expr="//page[@name='oos_investigations']" position="after">
+                <page name="deviations" string="Deviations" invisible="deviation_count == 0">
+                    <field name="deviation_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="classification"/>
+                            <field name="stage"/>
+                            <field name="status" widget="badge" decoration-danger="status == 'open'" decoration-success="status == 'closed'"/>
+                        </list>
+                    </field>
+                </page>
+                <page name="capas" string="CAPAs" invisible="not capa_ids">
+                    <field name="capa_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="capa_type"/>
+                            <field name="status" widget="badge" decoration-success="status == 'closed'" decoration-danger="status == 'open'"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

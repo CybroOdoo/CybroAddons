@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form view for a CAPA. -->
+    <record id="pharma_capa_form" model="ir.ui.view">
+        <field name="name">pharma.capa.form</field>
+        <field name="model">pharma.capa</field>
+        <field name="arch" type="xml">
+            <form string="CAPA" create="0">
+                <header>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="open,in_progress,verified,closed"/>
+
+                    <button name="action_start" type="object"
+                            string="Start" class="btn-primary"
+                            invisible="status != 'open'"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <button name="action_verify" type="object"
+                            string="Mark Verified" class="btn-primary"
+                            invisible="status != 'in_progress'"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <button name="action_close" type="object"
+                            string="Close CAPA" class="btn-success"
+                            invisible="status != 'verified'"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                </header>
+
+                <sheet>
+                    <div name="button_box" class="oe_button_box">
+                        <button name="action_view_deviation" type="object"
+                                class="oe_stat_button" icon="fa-exclamation-triangle"
+                                invisible="deviation_count == 0">
+                            <field name="deviation_count" widget="statinfo" string="Deviation"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" string="CAPA"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Reference">
+                            <field name="deviation_id" readonly="status == 'closed'"/>
+                            <field name="capa_type" readonly="status == 'closed'"/>
+                            <field name="assigned_to" readonly="status == 'closed'"/>
+                            <field name="due_date" readonly="status == 'closed'"/>
+                        </group>
+                        <group string="Closure" invisible="status not in ('verified', 'closed')">
+                            <field name="closed_by" readonly="1"/>
+                            <field name="closed_on" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page name="analysis" string="Root Cause &amp; Action">
+                            <group string="Root Cause Analysis">
+                                <field name="root_cause" nolabel="1" colspan="2"
+                                       readonly="status == 'closed'"
+                                       placeholder="5-Why / Ishikawa root cause analysis…"/>
+                            </group>
+                            <group string="Action Plan">
+                                <field name="action_plan" nolabel="1" colspan="2"
+                                       readonly="status == 'closed'"
+                                       placeholder="What will be done, by whom, and by when…"/>
+                            </group>
+                        </page>
+                        <page name="effectiveness" string="Effectiveness Check">
+                            <group>
+                                <field name="effectiveness_check" nolabel="1"
+                                       readonly="status == 'closed'"
+                                       placeholder="Evidence that the CAPA actually fixed the problem…"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- List view for CAPAs. -->
+    <record id="pharma_capa_list" model="ir.ui.view">
+        <field name="name">pharma.capa.list</field>
+        <field name="model">pharma.capa</field>
+        <field name="arch" type="xml">
+            <list string="CAPAs" create="0"
+                  decoration-muted="status == 'closed'"
+                  decoration-danger="status == 'open'">
+                <field name="name"/>
+                <field name="deviation_id"/>
+                <field name="capa_type" widget="badge"
+                       decoration-info="capa_type == 'corrective'"
+                       decoration-warning="capa_type == 'preventive'"/>
+                <field name="assigned_to"/>
+                <field name="due_date"/>
+                <field name="closed_by" optional="show"/>
+                <field name="closed_on" optional="show"/>
+                <field name="status" widget="badge"
+                       decoration-danger="status == 'open'"
+                       decoration-info="status == 'in_progress'"
+                       decoration-warning="status == 'verified'"
+                       decoration-success="status == 'closed'"/>
+            </list>
+        </field>
+    </record>
+    <!-- Search view for CAPAs. -->
+    <record id="pharma_capa_search" model="ir.ui.view">
+        <field name="name">pharma.capa.search</field>
+        <field name="model">pharma.capa</field>
+        <field name="arch" type="xml">
+            <search string="Search CAPAs">
+                <field name="name"/>
+                <field name="deviation_id"/>
+                <field name="assigned_to"/>
+                <filter string="Open" name="open" domain="[('status','=','open')]"/>
+                <filter string="In Progress" name="in_progress"
+                        domain="[('status','=','in_progress')]"/>
+                <filter string="Verified" name="verified"
+                        domain="[('status','=','verified')]"/>
+                <filter string="Closed" name="closed" domain="[('status','=','closed')]"/>
+                <separator/>
+                <filter string="Corrective" name="corrective"
+                        domain="[('capa_type','=','corrective')]"/>
+                <filter string="Preventive" name="preventive"
+                        domain="[('capa_type','=','preventive')]"/>
+                <group name="group_by">
+                    <filter string="Status" name="grp_status" context="{'group_by': 'status'}"/>
+                    <filter string="Assigned To" name="grp_assigned"
+                            context="{'group_by': 'assigned_to'}"/>
+                    <filter string="CAPA Type" name="grp_type"
+                            context="{'group_by': 'capa_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Action opening CAPAs. -->
+    <record id="pharma_capa_action" model="ir.actions.act_window">
+        <field name="name">CAPAs</field>
+        <field name="res_model">pharma.capa</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_capa_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No CAPAs to display. A CAPA is auto-raised when a deviation moves
+                to Under Investigation.
+            </p>
+        </field>
+    </record>
+</odoo>
