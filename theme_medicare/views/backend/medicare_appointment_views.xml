@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Backend form and tree views for managing patient appointment requests. -->
+    <data>
+        <!-- Appointment Form View -->
+        <record id="view_medicare_appointment_form" model="ir.ui.view">
+            <field name="name">medicare.appointment.form</field>
+            <field name="model">medicare.appointment</field>
+            <field name="arch" type="xml">
+                <form string="Appointment">
+                    <header>
+                        <button name="action_confirm" string="Confirm" type="object" class="oe_highlight" invisible="state != 'draft' or (date and date &lt; current_date)"/>
+                        <button name="action_done" string="Mark as Done" type="object" class="oe_highlight" invisible="state != 'confirmed'"/>
+                        <button name="action_cancel" string="Cancel" type="object" invisible="state in ('done', 'cancelled')"/>
+                        <button name="action_draft" string="Reset to Draft" type="object" invisible="state != 'cancelled'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Patient Details">
+                                <field name="patient_name"/>
+                                <field name="date_of_birth"/>
+                                <field name="gender"/>
+                                <field name="phone"/>
+                                <field name="email"/>
+                            </group>
+                            <group string="Appointment Details">
+                                <field name="department_id"/>
+                                <field name="doctor_id" domain="[('department_id', '=', department_id)]"/>
+                                <field name="appointment_type"/>
+                                <field name="visit_mode"/>
+                                <field name="date"/>
+                                <field name="preferred_time"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Medical Notes">
+                                <group>
+                                    <group>
+                                        <field name="insurance_provider"/>
+                                        <field name="insurance_id"/>
+                                    </group>
+                                    <group>
+                                        <field name="current_medications"/>
+                                    </group>
+                                </group>
+                                <separator string="Chief Complaint / Reason for Visit"/>
+                                <field name="chief_complaint" placeholder="Describe symptoms, concerns, or reason for this appointment..."/>
+                                <separator string="Additional Notes"/>
+                                <field name="notes" placeholder="Additional notes..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- Appointment Tree View -->
+        <record id="view_medicare_appointment_list" model="ir.ui.view">
+            <field name="name">medicare.appointment.list</field>
+            <field name="model">medicare.appointment</field>
+            <field name="arch" type="xml">
+                <tree string="Appointments" decoration-info="state == 'draft'" decoration-success="state == 'confirmed'">
+                    <field name="name"/>
+                    <field name="patient_name"/>
+                    <field name="date"/>
+                    <field name="doctor_id"/>
+                    <field name="state" widget="badge"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Appointment Action -->
+        <record id="action_medicare_appointment" model="ir.actions.act_window">
+            <field name="name">Appointments</field>
+            <field name="res_model">medicare.appointment</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+    </data>
+</odoo>

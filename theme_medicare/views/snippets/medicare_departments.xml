@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="s_medicare_departments" name="Medicare Departments">
+            <section class="section-pad bg-white s_medicare_departments" data-snippet="theme_medicare.s_medicare_departments" data-name="Medicare Departments">
+                <div class="container-fluid px-5">
+                    <div class="d-flex justify-content-between align-items-end mb-5">
+                        <div>
+                            <div class="section-label">Our Departments</div>
+                            <h2 class="section-title">Medical Specialties</h2>
+                            <p class="section-subtitle">World-class expertise across 30+ medical disciplines</p>
+                        </div>
+                        <a href="/departments" class="btn btn-outline-view">
+                            View All Departments
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 12h14m-7-7l7 7l-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+                    <t t-set="departments" t-value="request.env['medicare.department'].sudo().search([('active', '=', True)], limit=8)"/>
+                    <div class="row g-3">
+                        <t t-foreach="departments" t-as="dept">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                <a t-attf-href="/doctors?department_id=#{dept.id}" class="specialty-card">
+                                    <div class="specialty-icon-wrap">
+                                        <img t-if="dept.icon" t-attf-src="data:image/png;base64,{{dept.icon.decode('utf-8')}}" style="width: 24px; height: 24px; filter: invert(0.5) sepia(1) saturate(5) hue-rotate(175deg);"/>
+                                        <svg t-else="" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676a.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
+                                        </svg>
+                                    </div>
+                                    <div class="specialty-body">
+                                        <h5 class="specialty-name" t-esc="dept.name"/>
+                                        <p class="specialty-desc" t-esc="dept.description or 'Specialized medical care'"/>
+                                    </div>
+                                    <div class="specialty-footer">
+                                        <span class="specialty-count">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                                <circle cx="12" cy="7" r="4" />
+                                            </svg>
+                                            <t t-esc="request.env['medicare.doctor'].sudo().search_count([('department_id', '=', dept.id), ('active', '=', True)])"/> Doctors
+                                        </span>
+                                        <span class="specialty-arrow">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="m9 18l6-6l-6-6" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                </a>
+                            </div>
+                        </t>
+                        <t t-if="not departments">
+                            <div class="col-12 text-center text-muted py-5">
+                                No departments available.
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </section>
+        </template>
+    </data>
+</odoo>

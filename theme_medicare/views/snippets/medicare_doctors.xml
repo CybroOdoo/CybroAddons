@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="s_medicare_doctors" name="Medicare Doctors">
+            <section class="section-pad section-muted s_medicare_doctors" data-snippet="theme_medicare.s_medicare_doctors" data-name="Medicare Doctors">
+                <div class="container-fluid px-5">
+                    <div class="text-center mb-5">
+                        <div class="section-label">Our Specialists</div>
+                        <h2 class="section-title">Meet Our Expert Doctors</h2>
+                        <p class="section-subtitle">Highly qualified professionals dedicated to your care</p>
+                    </div>
+                    <t t-set="doctors" t-value="request.env['medicare.doctor'].sudo().search([('active', '=', True)], limit=4)"/>
+                    <div class="row g-3">
+                        <t t-foreach="doctors" t-as="doctor">
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <div class="doctor-card">
+                                    <div class="doctor-img-wrap">
+                                        <img t-if="doctor.image" t-attf-src="data:image/png;base64,{{doctor.image.decode('utf-8')}}" t-att-alt="doctor.name" class="doctor-img" />
+                                        <img t-else="" src="/theme_medicare/static/src/img/avatar-male-35-50-South-Asian-1.jpg" t-att-alt="doctor.name" class="doctor-img" />
+                                        <span class="doctor-specialty-badge" t-esc="doctor.department_id.name if doctor.department_id else doctor.specialization"/>
+                                    </div>
+                                    <div class="doctor-info">
+                                        <h5 class="doctor-name" t-esc="doctor.name"/>
+                                        <p class="doctor-exp" t-esc="doctor.specialization"/>
+                                        <div class="doctor-rating">
+                                            <span class="stars">★★★★★</span>
+                                            <span class="rating-val">4.9</span>
+                                        </div>
+                                        <a t-attf-href="/appointment?doctor_id=#{doctor.id}" class="btn btn-doctor-book">Book Appointment</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                        <t t-if="not doctors">
+                            <div class="col-12 text-center text-muted py-5">
+                                No doctors available.
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </section>
+        </template>
+    </data>
+</odoo>

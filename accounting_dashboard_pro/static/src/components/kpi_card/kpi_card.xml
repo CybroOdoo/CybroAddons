@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="accounting_dashboard_pro.KpiCard">
+        <div t-att-class="'adp-kpi-card kpi-' + (props.color || 'blue')"
+             t-on-click="props.onClick">
+            <div class="adp-kpi-inner">
+                <div class="adp-kpi-top">
+                    <span class="adp-kpi-label" t-esc="props.title"/>
+                    <div class="adp-kpi-top-right">
+                        <span t-if="props.info" class="adp-info-btn"
+                              t-on-mouseenter="onInfoEnter"
+                              t-on-mouseleave="onInfoLeave">
+                            <i class="fa fa-info-circle"/>
+                        </span>
+                        <div class="adp-kpi-icon">
+                            <i t-att-class="'fa ' + props.icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="adp-kpi-amount" t-ref="amount">—</div>
+                <div class="adp-kpi-bottom">
+                    <span class="adp-kpi-subtitle" t-if="props.subtitle" t-esc="props.subtitle"/>
+                    <span t-if="props.changePct !== undefined and props.changePct !== 0"
+                          t-att-class="'adp-kpi-change ' + changeClass">
+                        <i t-att-class="'fa ' + changeIcon"/>
+                        <t t-esc="Math.abs(props.changePct) + '%'"/>
+                    </span>
+                </div>
+                <!-- Previous period comparison -->
+                <div class="adp-kpi-comparison" t-if="hasPrev">
+                    <span class="prev-label">vs prev:</span>
+                    <span class="prev-value" t-esc="props.formatCurrency(props.prevAmount)"/>
+                </div>
+            </div>
+            <!-- Hover info tooltip overlay -->
+            <div t-if="infoState.show" class="adp-info-tooltip"
+                 t-on-mouseenter="onInfoEnter"
+                 t-on-mouseleave="onInfoLeave">
+                <div class="adp-info-tooltip-header">
+                    <i class="fa fa-info-circle"/> <t t-esc="props.title"/>
+                </div>
+                <div class="adp-info-tooltip-body">
+                    <t t-foreach="infoLines" t-as="line" t-key="line_index">
+                        <div t-att-class="line_index === 0 ? 'info-desc' : 'info-formula'" t-esc="line"/>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

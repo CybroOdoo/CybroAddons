@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Report action for computed bill report -->
+    <record id="action_report_combined_bill" model="ir.actions.report">
+        <field name="name">Combined Bill</field>
+        <field name="model">compute.bill</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hotel_pos_extension.report_combined_bill</field>
+        <field name="report_file">hotel_pos_extension.report_combined_bill</field>
+        <field name="print_report_name">('%s - %s' % ('Combined Bill' if object.bill_type == 'combined' else 'Isolated Bill', object.booking_id.name))</field>
+        <field name="binding_model_id" eval="False"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!-- QWeb template for combined and isolated bill report -->
+    <template id="report_combined_bill">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        
+                        <div class="row mt32">
+                            <div class="col-12 text-center">
+                                <h2 style="font-size: 28px; color: #000; font-weight: bold;">
+                                    Computed Bill Invoice
+                                </h2>
+                            </div>
+                        </div>
+
+                        <div class="row mt16">
+                            <div class="col-12">
+                                <h3 style="font-size: 24px;">
+                                    Booking # <span t-field="o.booking_id.name"/>
+                                </h3>
+                            </div>
+                        </div>
+
+                        <div class="row mt16 mb32" style="border-top: 1px solid #EEE; padding-top: 10px;">
+                            <div class="col-3">
+                                <strong>Check In Date:</strong><br/>
+                                <span t-field="o.booking_id.checkin_date" t-options='{"widget": "date"}'/>
+                            </div>
+                            <div class="col-3">
+                                <strong>Check out Date:</strong><br/>
+                                <span t-field="o.booking_id.checkout_date" t-options='{"widget": "date"}'/>
+                            </div>
+                            <div class="col-3">
+                                <strong>Manager:</strong><br/>
+                                <span t-field="o.booking_id.user_id.name"/>
+                            </div>
+                            <div class="col-3 text-right">
+                                <strong>Customer:</strong><br/>
+                                <span t-field="o.partner_id.name"/>
+                            </div>
+                        </div>
+
+                        <!-- Combined Bill Summary (Unified Table) -->
+                        <t t-if="o.bill_type == 'combined'">
+                            <div style="margin-bottom: 30px;">
+                                <table class="table table-sm mt32" style="border: 1px solid #000;">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid #000;">
+                                            <th style="border-right: 1px solid #000;">Reference No</th>
+                                            <th style="border-right: 1px solid #000;">Order No</th>
+                                            <th style="border-right: 1px solid #000;">Order Date</th>
+                                            <th class="text-right">Total Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="o.booking_id.get_bill_summary_lines()" t-as="l">
+                                            <tr>
+                                                <td style="border-right: 1px solid #000; border-bottom: 1px solid #000;"><span t-esc="l['reference']"/></td>
+                                                <td style="border-right: 1px solid #000; border-bottom: 1px solid #000;"><span t-esc="l['order_no']"/></td>
+                                                <td style="border-right: 1px solid #000; border-bottom: 1px solid #000;"><span t-esc="l['date']" t-options='{"widget": "datetime"}'/></td>
+                                                <td class="text-right" style="border-bottom: 1px solid #000;">
+                                                    <span t-esc="l['total']" t-options='{"widget": "monetary", "display_currency": o.booking_id.currency_id}'/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="row justify-content-end mt16">
+                                <div class="col-4">
+                                    <table class="table table-sm">
+                                        <tr class="border-black">
+                                            <td style="font-size: 18px;"><strong>Subtotal</strong></td>
+                                            <td class="text-right" style="font-size: 18px;">
+                                                <strong><span t-field="o.booking_id.amount_total" t-options='{"widget": "monetary", "display_currency": o.booking_id.currency_id}'/></strong>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Isolated Bill Summary -->
+                        <t t-else="">
+                            <!-- Folio Page -->
+                            <h3 style="color: #666; margin-bottom: 20px;">Isolated Bill - Folio</h3>
+                            <div style="margin-bottom: 30px;">
+                                <table class="table table-sm mt32" style="border: 1px solid #000;">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid #000;">
+                                            <th style="border-right: 1px solid #000;">Reference No</th>
+                                            <th style="border-right: 1px solid #000;">Order No</th>
+                                            <th style="border-right: 1px solid #000;">Order Date</th>
+                                            <th class="text-right">Total Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="border-right: 1px solid #000; border-bottom: 1px solid #000;"><span t-field="o.booking_id.name"/></td>
+                                            <td style="border-right: 1px solid #000; border-bottom: 1px solid #000;"><span t-field="o.booking_id.name"/></td>
+                                            <td style="border-right: 1px solid #000; border-bottom: 1px solid #000;"><span t-field="o.booking_id.date_order" t-options='{"widget": "datetime"}'/></td>
+                                            <td class="text-right" style="border-bottom: 1px solid #000;">
+                                                <t t-set="folio_only_total" t-value="sum(o.booking_id.room_line_ids.mapped('price_total')) + sum(o.booking_id.food_order_line_ids.mapped('price_total')) + sum(o.booking_id.service_line_ids.mapped('price_total')) + sum(o.booking_id.vehicle_line_ids.mapped('price_total')) + sum(o.booking_id.event_line_ids.mapped('price_total'))"/>
+                                                <span t-esc="folio_only_total" t-options='{"widget": "monetary", "display_currency": o.booking_id.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="row justify-content-end mt16">
+                                <div class="col-4">
+                                    <table class="table table-sm">
+                                        <tr class="border-black">
+                                            <td style="font-size: 18px;"><strong>Subtotal</strong></td>
+                                            <td class="text-right" style="font-size: 18px;">
+                                                <strong><span t-esc="folio_only_total" t-options='{"widget": "monetary", "display_currency": o.booking_id.currency_id}'/></strong>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- POS Orders Page (if any) -->
+                            <t t-if="o.pos_order_ids">
+                                <p style="page-break-before:always;"/>
+                                <h3 style="color: #666; margin-bottom: 20px;">Isolated Bill - POS Orders</h3>
+                                <div style="margin-bottom: 30px;">
+                                    <table class="table table-sm mt32" style="border: 1px solid #000;">
+                                        <thead>
+                                            <tr style="border-bottom: 2px solid #000;">
+                                                <th style="border-right: 1px solid #000;">Reference No</th>
+                                                <th style="border-right: 1px solid #000;">Order No</th>
+                                                <th style="border-right: 1px solid #000;">Order Date</th>
+                                                <th class="text-right">Total Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="o.pos_order_ids" t-as="line">
+                                                <tr>
+                                                    <td style="border-right: 1px solid #000; border-bottom: 1px solid #000;"><span t-field="line.name"/></td>
+                                                    <td style="border-right: 1px solid #000; border-bottom: 1px solid #000;"><span t-field="line.pos_reference"/></td>
+                                                    <td style="border-right: 1px solid #000; border-bottom: 1px solid #000;"><span t-field="line.date_order" t-options='{"widget": "datetime"}'/></td>
+                                                    <td class="text-right" style="border-bottom: 1px solid #000;"><span t-field="line.amount_total"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="row justify-content-end mt16">
+                                    <div class="col-4">
+                                        <table class="table table-sm">
+                                            <tr class="border-black">
+                                                <td style="font-size: 18px;"><strong>Subtotal</strong></td>
+                                                <td class="text-right" style="font-size: 18px;">
+                                                    <strong><span t-esc="sum(o.pos_order_ids.mapped('amount_total'))" t-options='{"widget": "monetary", "display_currency": o.booking_id.currency_id}'/></strong>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

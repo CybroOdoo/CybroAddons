@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Standalone list view for hotel.pos.line used inside the room.booking One2many tab -->
+    <record id="hotel_pos_line_view_list" model="ir.ui.view">
+        <field name="name">hotel.pos.line.view.list</field>
+        <field name="model">hotel.pos.line</field>
+        <field name="arch" type="xml">
+            <tree create="0" delete="0" edit="0">
+                <field name="pos_order_id" string="Order Ref"/>
+                <field name="session_id"/>
+                <field name="date_order"/>
+                <field name="pos_reference" string="Receipt Number"/>
+                <field name="partner_id"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="amount_total" sum="Total POS Amount"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="hotel_pos_status" widget="badge"
+                       decoration-info="hotel_pos_status == 'draft'"
+                       decoration-success="hotel_pos_status in ('paid', 'done')"
+                       decoration-warning="hotel_pos_status == 'invoiced'"
+                       decoration-danger="hotel_pos_status == 'cancel'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Inherits the Room Booking form view to integrate POS-related features
+     such as POS invoice stat button and POS Orders tab with order details and total amount -->
+    <record id="room_booking_view_form_inherit_hotel_pos" model="ir.ui.view">
+        <field name="name">room.booking.view.form.inherit.hotel.pos</field>
+        <field name="model">room.booking</field>
+        <field name="inherit_id" ref="hotel_management_odoo.room_booking_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_compute_bill" string="COMPUTE BILL"
+                        invisible="state not in ['check_in', 'check_out', 'done'] or has_pos_orders == False"
+                        type="object" class="btn-primary"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_pos_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="pos_invoice_count == 0">
+                    <field name="pos_invoice_count" widget="statinfo" string="POS Inv..."/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <field name="has_pos_orders" invisible="1"/>
+                <page string="POS Orders" name="pos_orders" invisible="not has_pos_orders">
+                    <field name="pos_order_line_ids" readonly="1"/>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="amount_total_pos" widget="monetary"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

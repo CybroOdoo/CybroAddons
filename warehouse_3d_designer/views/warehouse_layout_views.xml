@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Warehouse Layout: Form, List, Search views and window action -->
+<odoo>
+
+    <!-- Warehouse Layout: Form View -->
+    <record id="warehouse_layout_view_form" model="ir.ui.view">
+        <field name="name">warehouse.layout.form</field>
+        <field name="model">warehouse.layout</field>
+        <field name="arch" type="xml">
+            <form string="Warehouse Layout">
+                <header>
+                    <button name="action_open_designer"
+                            string="Open Designer"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-pencil-square-o"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Main Warehouse Floor 1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Warehouse">
+                            <field name="warehouse_id" options="{'no_create': True}"/>
+                            <field name="floor_level"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Canvas Settings">
+                            <label for="canvas_width" string="Canvas Size"/>
+                            <div class="o_row">
+                                <field name="canvas_width" nolabel="1" class="oe_inline" style="width: 60px;"/>
+                                <span> × </span>
+                                <field name="canvas_height" nolabel="1" class="oe_inline" style="width: 60px;"/>
+                                <span> grid cells</span>
+                            </div>
+                            <label for="grid_size" string="Grid Cell Size"/>
+                            <div class="o_row">
+                                <field name="grid_size" nolabel="1" class="oe_inline" style="width: 60px;"/>
+                                <span> pixels</span>
+                            </div>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Floor Plan">
+                            <field name="background_image" widget="image" class="oe_avatar"/>
+                        </group>
+                        <group string="Statistics">
+                            <field name="location_count"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1" colspan="2" placeholder="Optional notes about this layout..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Warehouse Layout: List View -->
+    <record id="warehouse_layout_view_list" model="ir.ui.view">
+        <field name="name">warehouse.layout.list</field>
+        <field name="model">warehouse.layout</field>
+        <field name="arch" type="xml">
+            <tree string="Warehouse Layouts">
+                <field name="name"/>
+                <field name="warehouse_id"/>
+                <field name="floor_level"/>
+                <field name="canvas_width" optional="hide"/>
+                <field name="canvas_height" optional="hide"/>
+                <field name="location_count"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Warehouse Layout: Search View -->
+    <record id="warehouse_layout_view_search" model="ir.ui.view">
+        <field name="name">warehouse.layout.search</field>
+        <field name="model">warehouse.layout</field>
+        <field name="arch" type="xml">
+            <search string="Warehouse Layouts">
+                <field name="name"/>
+                <field name="warehouse_id"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Warehouse" name="group_warehouse" domain="[]" context="{'group_by': 'warehouse_id'}"/>
+                    <filter string="Floor Level" name="group_floor" domain="[]" context="{'group_by': 'floor_level'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Warehouse Layout: Action -->
+    <record id="action_warehouse_layout" model="ir.actions.act_window">
+        <field name="name">Warehouse Layouts</field>
+        <field name="res_model">warehouse.layout</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first warehouse layout
+            </p>
+            <p>
+                A layout is a floor plan for your warehouse. Create one for each floor
+                or zone, then open the Designer to drag and drop your locations onto it.
+            </p>
+        </field>
+    </record>
+
+</odoo>

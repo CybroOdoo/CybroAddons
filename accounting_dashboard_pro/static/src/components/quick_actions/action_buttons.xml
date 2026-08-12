@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="accounting_dashboard_pro.QuickActions">
+        <div class="adp-quick-actions">
+            <div class="adp-card-header">
+                <h3><i class="fa fa-bolt"/> Quick Actions</h3>
+            </div>
+            <div class="adp-actions-grid">
+                <!-- Billing Clerk & higher -->
+                <t t-if="props.userGroups.is_invoicing">
+                    <button class="adp-action-btn adp-action-blue" t-on-click="() => props.onAction('new_invoice')">
+                        <i class="fa fa-plus-circle"/>
+                        <span>New Invoice</span>
+                    </button>
+                    <button class="adp-action-btn adp-action-green" t-on-click="() => props.onAction('new_payment')">
+                        <i class="fa fa-money"/>
+                        <span>New Payment</span>
+                    </button>
+                </t>
+                <!-- Jr. Accountant & higher -->
+                <t t-if="props.userGroups.is_basic">
+                    <button class="adp-action-btn adp-action-purple" t-on-click="() => props.onAction('reconciliation')">
+                        <i class="fa fa-check-circle"/>
+                        <span>Reconcile Bank</span>
+                    </button>
+                    <button class="adp-action-btn adp-action-indigo" t-on-click="() => props.onAction('journal_entry')">
+                        <i class="fa fa-list-alt"/>
+                        <span>New Journal Entry</span>
+                    </button>
+                </t>
+                <!-- Accountant & higher -->
+                <t t-if="props.userGroups.is_user">
+                    <button class="adp-action-btn adp-action-blue" t-on-click="() => props.onAction('lock_date')">
+                        <i class="fa fa-lock"/>
+                        <span>Lock Period</span>
+                    </button>
+                    <button class="adp-action-btn adp-action-green" t-on-click="() => props.onAction('generate_reports')">
+                        <i class="fa fa-file-text-o"/>
+                        <span>Generate Reports</span>
+                    </button>
+                </t>
+                <!-- CFO & higher -->
+                <t t-if="props.userGroups.is_manager">
+                    <button class="adp-action-btn adp-action-orange" t-on-click="() => props.onAction('configure_settings')">
+                        <i class="fa fa-cog"/>
+                        <span>Configure Settings</span>
+                    </button>
+                    <button class="adp-action-btn adp-action-indigo" t-on-click="() => props.onAction('export_all_data')">
+                        <i class="fa fa-download"/>
+                        <span>Export All Data</span>
+                    </button>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="accounting_dashboard_pro.AlertsFeed">
+        <div class="adp-alerts-feed">
+            <div class="adp-card-header">
+                <h3><i class="fa fa-bell"/> Smart Alerts</h3>
+                <span class="adp-badge-info" t-if="props.alerts.length">
+                    <t t-esc="props.alerts.length"/>
+                </span>
+            </div>
+            <div class="adp-alerts-list">
+                <t t-if="!props.alerts.length">
+                    <div class="adp-list-empty">
+                        <i class="fa fa-check-circle text-success" style="font-size:28px;display:block;margin-bottom:8px"/>
+                        <span>All clear — no alerts!</span>
+                    </div>
+                </t>
+                <t t-foreach="props.alerts" t-as="alert" t-key="alert_index">
+                    <div t-att-class="'adp-alert-item adp-alert-' + alert.type" t-on-click="() => props.onAction(alert.action, true)">
+                        <div class="adp-alert-icon">
+                            <i t-att-class="'fa ' + alert.icon"/>
+                        </div>
+                        <div class="adp-alert-content">
+                            <div class="adp-alert-title" t-esc="alert.title"/>
+                            <div class="adp-alert-subtitle" t-esc="alert.subtitle"/>
+                        </div>
+                        <div class="adp-alert-arrow">
+                            <i class="fa fa-chevron-right"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>

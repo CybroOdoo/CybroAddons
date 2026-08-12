@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--layout template -->
+    <template id="layout" inherit_id="website.layout" name="Solarion Layout">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
+            <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&amp;family=Inter:wght@300;400;500;600;700;800&amp;display=swap"
+                  rel="stylesheet"/>
+        </xpath>
+        <xpath expr="//main" position="attributes">
+            <attribute name="class" add="solarion-theme" separator=" "/>
+        </xpath>
+        <xpath expr="//header" position="replace">
+            <header id="top">
+                <div class="solarion-theme">
+                    <nav class="nav headerNav" id="nav">
+                        <a href="/" class="nav__logo">
+                            <img src="/theme_solarion/static/src/images/logo.png" alt="Solarion" class="nav__logo-img"/>
+                        </a>
+
+                        <!-- Mobile drawer / Center Nav section -->
+                        <div class="nav__drawer" id="navDrawer">
+                            <div class="nav__drawer-header">
+                                <img src="/theme_solarion/static/src/images/logo.png" alt="Solarion"
+                                     class="nav__logo-img"/>
+                            </div>
+                            <ul class="nav__links" id="navLinks">
+                                <t t-set="all_menus" t-value="website.menu_id.child_id"/>
+                                <t t-set="overflow_count" t-value="max(0, len(all_menus) - 5)"/>
+
+                                <!-- Show first 5 menu items by default -->
+                                <t t-foreach="all_menus[:5]" t-as="nav_item">
+                                    <li>
+                                        <a t-att-href="nav_item.url"
+                                           t-att-class="'nav__menu-link' + (' active' if nav_item.url == request.httprequest.path else '')">
+                                            <span class="nav__link-num">
+                                                <t t-esc="'%02d' % (nav_item_index + 1)"/>
+                                            </span>
+                                            <t t-esc="nav_item.name"/>
+                                        </a>
+                                    </li>
+                                </t>
+                                <!-- Plus (+) overflow item for rest of menus -->
+                                <t t-if="overflow_count > 0">
+                                    <li class="nav__overflow-item">
+                                        <button class="nav__overflow-btn" id="navOverflowBtn" type="button"
+                                                aria-label="More pages">
+                                            +
+                                            <t t-esc="overflow_count"/>
+                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="2.5">
+                                                <polyline points="6 9 12 15 18 9"/>
+                                            </svg>
+                                        </button>
+                                        <div class="nav__overflow-dropdown" id="navOverflowDropdown">
+                                            <t t-foreach="all_menus[5:]" t-as="extra_item">
+                                                <a t-att-href="extra_item.url"
+                                                   t-att-class="'nav__overflow-link' + (' active' if extra_item.url == request.httprequest.path else '')">
+                                                    <span class="nav__link-num">
+                                                        <t t-esc="'%02d' % (extra_item_index + 6)"/>
+                                                    </span>
+                                                    <t t-esc="extra_item.name"/>
+                                                </a>
+                                            </t>
+                                        </div>
+                                    </li>
+                                </t>
+                            </ul>
+
+                            <!-- Mobile view user sign-in / sign-out -->
+                            <div class="nav__drawer-user">
+                                <t t-if="request.env.user._is_public()">
+                                    <a href="/web/login" class="nav__drawer-signin">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                             stroke-linejoin="round">
+                                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                                            <polyline points="10 17 15 12 10 7"/>
+                                            <line x1="15" y1="12" x2="3" y2="12"/>
+                                        </svg>
+                                        Sign In
+                                    </a>
+                                </t>
+                                <t t-else="">
+                                    <div class="nav__drawer-userinfo">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                             stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                            <circle cx="12" cy="7" r="4"/>
+                                        </svg>
+                                        <span class="nav__drawer-username">
+                                            <t t-esc="request.env.user.name"/>
+                                        </span>
+                                    </div>
+                                    <a href="/my/home" class="nav__drawer-link">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                             stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                            <circle cx="12" cy="7" r="4"/>
+                                        </svg>
+                                        My Account
+                                    </a>
+                                    <a href="/web/session/logout" class="nav__drawer-link nav__drawer-link--danger">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                             stroke-linejoin="round">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                            <polyline points="16 17 21 12 16 7"/>
+                                            <line x1="21" y1="12" x2="9" y2="12"/>
+                                        </svg>
+                                        Sign Out
+                                    </a>
+                                </t>
+                            </div>
+
+                            <div class="nav__drawer-footer">
+                                <a href="/contactus" class="nav__drawer-cta">Get a Quote →</a>
+                            </div>
+                        </div>
+
+                        <!-- Desktop view right section: user sign-in / sign-out + CTA -->
+                        <div class="nav__right">
+                            <t t-if="request.env.user._is_public()">
+                                <a href="/web/login" class="nav__user-btn">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                                        <polyline points="10 17 15 12 10 7"/>
+                                        <line x1="15" y1="12" x2="3" y2="12"/>
+                                    </svg>
+                                    Sign In
+                                </a>
+                            </t>
+                            <t t-else="">
+                                <div class="nav__user-menu">
+                                    <button class="nav__user-btn nav__user-btn--account" id="navUserBtn" type="button">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                             stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                            <circle cx="12" cy="7" r="4"/>
+                                        </svg>
+                                        <t t-esc="request.env.user.name"/>
+                                        <svg class="nav__user-caret" width="12" height="12" viewBox="0 0 24 24"
+                                             fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <polyline points="6 9 12 15 18 9"/>
+                                        </svg>
+                                    </button>
+                                    <div class="nav__user-dropdown" id="navUserDropdown">
+                                        <a href="/my/home" class="nav__user-drop-item">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="2">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                                <circle cx="12" cy="7" r="4"/>
+                                            </svg>
+                                            My Account
+                                        </a>
+                                        <a href="/web" class="nav__user-drop-item">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="3" width="7" height="7"/>
+                                                <rect x="14" y="3" width="7" height="7"/>
+                                                <rect x="14" y="14" width="7" height="7"/>
+                                                <rect x="3" y="14" width="7" height="7"/>
+                                            </svg>
+                                            Dashboard
+                                        </a>
+                                        <div class="nav__user-drop-divider"/>
+                                        <a href="/web/session/logout"
+                                           class="nav__user-drop-item nav__user-drop-item--danger">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="2">
+                                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                                <polyline points="16 17 21 12 16 7"/>
+                                                <line x1="21" y1="12" x2="9" y2="12"/>
+                                            </svg>
+                                            Sign Out
+                                        </a>
+                                    </div>
+                                </div>
+                            </t>
+                            <a href="/contactus" class="nav__login">Get a Quote →</a>
+                        </div>
+
+                        <button class="nav__toggle" id="navToggle" aria-label="Menu">
+                            <span/>
+                            <span/>
+                            <span/>
+                        </button>
+                    </nav>
+                </div>
+            </header>
+        </xpath>
+        <xpath expr="//footer" position="replace">
+            <footer id="bottom">
+                <div class="solarion-theme">
+                    <div class="footer">
+                        <div class="footer__top-band"/>
+                        <div class="container">
+                            <div class="footer__main">
+                                <div class="footer__brand">
+                                    <a href="/" class="footer__logo">
+                                        <div class="nav__logo-icon">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                                <circle cx="12" cy="12" r="4.5" fill="#fff"/>
+                                                <line x1="12" y1="2" x2="12" y2="5.5" stroke="#fff" stroke-width="2"
+                                                      stroke-linecap="round"/>
+                                                <line x1="12" y1="18.5" x2="12" y2="22" stroke="#fff" stroke-width="2"
+                                                      stroke-linecap="round"/>
+                                                <line x1="2" y1="12" x2="5.5" y2="12" stroke="#fff" stroke-width="2"
+                                                      stroke-linecap="round"/>
+                                                <line x1="18.5" y1="12" x2="22" y2="12" stroke="#fff" stroke-width="2"
+                                                      stroke-linecap="round"/>
+                                                <line x1="4.93" y1="4.93" x2="7.05" y2="7.05" stroke="#fff"
+                                                      stroke-width="2" stroke-linecap="round"/>
+                                                <line x1="16.95" y1="16.95" x2="19.07" y2="19.07" stroke="#fff"
+                                                      stroke-width="2" stroke-linecap="round"/>
+                                                <line x1="4.93" y1="19.07" x2="7.05" y2="16.95" stroke="#fff"
+                                                      stroke-width="2" stroke-linecap="round"/>
+                                                <line x1="16.95" y1="7.05" x2="19.07" y2="4.93" stroke="#fff"
+                                                      stroke-width="2" stroke-linecap="round"/>
+                                            </svg>
+                                        </div>
+                                        <span class="nav__logo-text">SOLARION</span>
+                                    </a>
+                                    <p>Powering humanity's future with intelligent, clean solar energy systems built for
+                                        the next century.
+                                    </p>
+                                    <div class="footer__social">
+                                        <a href="#" class="social-link" aria-label="Twitter">𝕏</a>
+                                        <a href="#" class="social-link" aria-label="LinkedIn">in</a>
+                                        <a href="#" class="social-link" aria-label="YouTube">▶</a>
+                                        <a href="#" class="social-link" aria-label="Instagram">◎</a>
+                                    </div>
+                                </div>
+                                <div class="footer__cols">
+                                    <div class="footer__col">
+                                        <h4>Solutions</h4>
+                                        <ul>
+                                            <li>
+                                                <a href="/solutions">Quantum Panels</a>
+                                            </li>
+                                            <li>
+                                                <a href="/solutions">Neural Grid</a>
+                                            </li>
+                                            <li>
+                                                <a href="/solutions">Smart City</a>
+                                            </li>
+                                            <li>
+                                                <a href="/solutions">Monitoring</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="footer__col">
+                                        <h4>Company</h4>
+                                        <ul>
+                                            <li>
+                                                <a href="/about">About Us</a>
+                                            </li>
+                                            <li>
+                                                <a href="/technology">Technology</a>
+                                            </li>
+                                            <li>
+                                                <a href="/impact">Impact</a>
+                                            </li>
+                                            <li>
+                                                <a href="/contactus">Contact</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="footer__col">
+                                        <h4>Resources</h4>
+                                        <ul>
+                                            <li>
+                                                <a href="#">Documentation</a>
+                                            </li>
+                                            <li>
+                                                <a href="#">Case Studies</a>
+                                            </li>
+                                            <li>
+                                                <a href="#">Blog</a>
+                                            </li>
+                                            <li>
+                                                <a href="#">Support</a>
+                                            </li>
+                                            <li>
+                                                <a href="#">API</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="footer__col footer__col--newsletter">
+                                        <h4>Stay Updated</h4>
+                                        <p>Get our latest solar insights and product updates.</p>
+                                        <form class="footer__newsletter">
+                                            <input type="email" placeholder="your@email.com"/>
+                                            <button type="submit">→</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="footer__bottom">
+                                <span>© 2026 Solarion Energy Systems. All rights reserved.</span>
+                                <div class="footer__bottom-links">
+                                    <a href="#">Privacy Policy</a>
+                                    <a href="#">Terms of Service</a>
+                                    <a href="#">Cookies</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </xpath>
+    </template>
+</odoo>

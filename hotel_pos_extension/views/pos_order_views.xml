@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <!-- Extend POS order form to add hotel booking field -->
+    <record id="pos_order_view_form_inherit_hotel" model="ir.ui.view">
+        <field name="name">pos.order.view.form.inherit.hotel</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="booking_id" readonly="state != 'draft'"/>
+            </xpath>
+        </field>
+    </record>
+        <!-- Extend POS order list to show hotel-specific status -->
+    <record id="pos_order_view_tree_inherit_hotel" model="ir.ui.view">
+        <field name="name">pos.order.view.tree.inherit.hotel</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="replace">
+                <field name="state" column_invisible="True"/>
+                <field name="hotel_pos_status" widget="badge"
+                       decoration-info="hotel_pos_status == 'draft'"
+                       decoration-success="hotel_pos_status != 'draft' and hotel_pos_status != 'cancel'"
+                       decoration-danger="hotel_pos_status == 'cancel'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
