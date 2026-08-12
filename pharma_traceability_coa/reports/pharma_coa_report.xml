@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Paper format used by the CoA report. -->
+    <record id="paperformat_pharma_coa" model="report.paperformat">
+        <field name="name">Pharma COA Paperformat</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">8</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Report action printing the CoA as PDF. -->
+    <record id="action_report_pharma_coa" model="ir.actions.report">
+        <field name="name">Certificate of Analysis</field>
+        <field name="model">pharma.coa</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pharma_traceability_coa.report_pharma_coa_document</field>
+        <field name="report_file">pharma_traceability_coa.report_pharma_coa_document</field>
+        <field name="print_report_name">'CoA - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_pharma_coa"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_pharma_coa"/>
+    </record>
+
+    <!-- QWeb template of the CoA document. -->
+    <template id="report_pharma_coa_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+                    <div class="page">
+                        <style>
+                            /* Page margins */
+                            @page { margin-top: 10mm; margin-bottom: 12mm; margin-left: 12mm; margin-right: 12mm; }
+
+                            /* Hide default header */
+                            #wkhtmltopdf-header, .header, header { display: none !important; height: 0 !important; }
+
+                            .page { padding-top: 0 !important; margin-top: 0 !important; }
+
+                            * { box-sizing: border-box; }
+                            body, .page { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #000; }
+
+                            /* Prevent boxes from breaking mid-content across page splits */
+                            table, tr, td, th, div, .remarks-box, .checkbox-row, .sig-table, .sig-header-table, .system-info, .section-block {
+                                page-break-inside: avoid !important;
+                            }
+
+                            /* Global Table Cell Padding and Alignment with generous spacing */
+                            .page table th,
+                            .page table td {
+                                padding-left: 8px !important;
+                                padding-right: 8px !important;
+                                padding-top: 6px !important;
+                                padding-bottom: 6px !important;
+                                vertical-align: middle;
+                                line-height: 1.35;
+                                word-break: normal !important;
+                                word-wrap: break-word !important;
+                                overflow-wrap: break-word !important;
+                            }
+
+                            .coa-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
+                            .coa-table th, .coa-table td { border: 1px solid #000; }
+                            .coa-table th { background-color: #f0f0f0; font-weight: bold; font-size: 9pt; }
+
+                            .doc-header { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; }
+                            .doc-header td { border: 1px solid #000; }
+                            .company-logo-cell { width: 65px; text-align: center; font-weight: bold; font-size: 14pt; border: 2px solid #000 !important; padding: 6px !important; }
+                            .company-name-cell { font-weight: bold; font-size: 11pt; padding-left: 12px !important; }
+                            .doc-meta-cell { font-size: 8.5pt; padding: 6px 10px !important; }
+                            .doc-meta-label { font-weight: bold; display: inline-block; min-width: 110px; }
+
+                            .coa-title { text-align: center; font-size: 16pt; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; margin: 12px 0 6px 0; }
+
+                            .section-heading { font-weight: bold; font-size: 9pt; background-color: #e8e8e8; padding-left: 10px !important; }
+
+                            .qc-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
+                            .qc-table th {
+                                background-color: #e0e0e0;
+                                font-weight: bold;
+                                font-size: 8.5pt;
+                                text-transform: uppercase;
+                                word-break: normal !important;
+                                word-wrap: normal !important;
+                                overflow-wrap: normal !important;
+                                padding-left: 6px !important;
+                                padding-right: 6px !important;
+                                padding-top: 7px !important;
+                                padding-bottom: 7px !important;
+                            }
+                            .qc-table td {
+                                border: 1px solid #000;
+                                padding-left: 6px !important;
+                                padding-right: 6px !important;
+                                padding-top: 5px !important;
+                                padding-bottom: 5px !important;
+                                font-size: 8.5pt;
+                            }
+                            .qc-table td.sl { text-align: center; padding-left: 3px !important; padding-right: 3px !important; }
+
+                            .remarks-box { border: 1px solid #000; padding: 10px 14px !important; font-size: 8.5pt; margin-bottom: 0; line-height: 1.5; }
+                            .checkbox-row { border: 1px solid #000; border-top: none; padding: 8px 14px !important; }
+                            .checkbox-item { display: inline-block; font-size: 8.5pt; font-weight: bold; }
+
+                            .sig-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+                            .sig-table td { border: 1px solid #000; padding: 8px 12px !important; vertical-align: top; width: 33.33%; }
+                            .sig-label { font-weight: bold; font-size: 8.5pt; }
+                            .sig-role  { font-size: 8pt; color: #444; margin-top: 2px; }
+                            .sig-date  { font-size: 8pt; margin-top: 28px; }
+
+                            .sig-header-table { width: 100%; border-collapse: collapse; }
+                            .sig-header-table td { border: 1px solid #000; border-bottom: none; padding: 6px 12px !important; background-color: #e8e8e8; font-weight: bold; font-size: 8.5pt; width: 33.33%; }
+
+                            .system-info { border: 1px solid #000; padding: 10px 14px !important; font-size: 8pt; line-height: 1.6; margin-top: 10px; }
+                            .section-gap { margin-top: 10px; }
+                        </style>
+
+                        <!-- DOCUMENT HEADER -->
+                        <table class="doc-header">
+                            <tr>
+                                <td class="company-logo-cell" rowspan="3">
+                                    <t t-if="o.env.company.logo">
+                                        <img t-att-src="image_data_uri(o.env.company.logo)" style="max-width:55px; max-height:55px;"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="''.join([w[0].upper() for w in (o.env.company.name or 'CO').split()[:2]])"/>
+                                    </t>
+                                </td>
+                                <td class="company-name-cell" rowspan="3" style="padding-left:12px;">
+                                    <div style="font-size:12pt; font-weight:bold;"><span t-out="o.env.company.name"/></div>
+                                    <div style="font-size:8.5pt; font-weight:normal; margin-top:4px;">
+                                        <span t-out="o.env.company.street or ''"/>
+                                        <t t-if="o.env.company.street2">, <span t-out="o.env.company.street2"/></t><br/>
+                                        <t t-if="o.env.company.city"><span t-out="o.env.company.city"/></t>
+                                        <t t-if="o.env.company.state_id">, <span t-out="o.env.company.state_id.name"/></t>
+                                        <t t-if="o.env.company.zip"> <span t-out="o.env.company.zip"/></t>
+                                        <t t-if="o.env.company.country_id">, <span t-out="o.env.company.country_id.name"/></t>
+                                    </div>
+                                </td>
+                            </tr>
+                            <td class="doc-meta-cell">
+                                    <span class="doc-meta-label">CERTIFICATE NO</span>
+                                    <span t-field="o.name"/>
+                                </td>
+                            <tr>
+                                <td class="doc-meta-cell">
+                                    <span class="doc-meta-label">EFFECTIVE DATE</span>
+                                    <span t-field="o.release_date"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- MAIN TITLE -->
+                        <div class="coa-title">Certificate of Analysis</div>
+
+                        <!-- PRODUCT INFORMATION -->
+                        <table class="coa-table">
+                            <colgroup>
+                                <col style="width:22%;"/>
+                                <col style="width:28%;"/>
+                                <col style="width:24%;"/>
+                                <col style="width:26%;"/>
+                            </colgroup>
+                            <tr>
+                                <td class="section-heading">Product name</td>
+                                <td><span t-field="o.product_id.name"/></td>
+                                <td class="section-heading">Product code</td>
+                                <td><span t-field="o.product_id.default_code"/></td>
+                            </tr>
+                            <tr>
+                                <td class="section-heading">Product stage</td>
+                                <td>Finished Goods</td>
+                                <td class="section-heading">Pharmacopoeial standard</td>
+                                <td><span t-field="o.product_id.pharmacopoeial_ref"/></td>
+                            </tr>
+                            <tr>
+                                <td class="section-heading">Batch / Lot no.</td>
+                                <td><span t-field="o.batch_id.name"/> / <span t-field="o.lot_id.name"/></td>
+                                <td class="section-heading">Batch size</td>
+                                <td><span t-field="o.batch_id.product_qty"/> <span t-field="o.batch_id.product_uom_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td class="section-heading">Date of manufacture</td>
+                                <td><span t-field="o.lot_id.manufacture_date"/></td>
+                                <td class="section-heading">Date of expiry</td>
+                                <td><span t-field="o.lot_id.expiry_date"/></td>
+                            </tr>
+                            <tr>
+                                <td class="section-heading">Storage conditions</td>
+                                <td colspan="3"><span t-field="o.product_id.storage_conditions"/></td>
+                            </tr>
+                            <tr>
+                                <td class="section-heading">Released by</td>
+                                <td><span t-field="o.released_by.name"/></td>
+                                <td class="section-heading">Release date</td>
+                                <td><span t-field="o.release_date"/></td>
+                            </tr>
+                        </table>
+
+                        <!-- QUALITY CONTROL RESULTS -->
+                        <div class="section-gap">
+                            <table class="qc-table" style="width:100% !important; table-layout:fixed !important;">
+                                <colgroup>
+                                    <col style="width:4%;"/>
+                                    <col style="width:15%;"/>
+                                    <col style="width:11%;"/>
+                                    <col style="width:15%;"/>
+                                    <col style="width:17%;"/>
+                                    <col style="width:11%;"/>
+                                    <col style="width:7%;"/>
+                                    <col style="width:10%;"/>
+                                    <col style="width:10%;"/>
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:center;">SL.</th>
+                                        <th>TEST ORDER</th>
+                                        <th>STAGE</th>
+                                        <th>PARAMETER</th>
+                                        <th>SPECIFICATION</th>
+                                        <th>RESULT OBTAINED</th>
+                                        <th style="text-align:center;">UNIT</th>
+                                        <th style="text-align:center;">RESULT STATUS</th>
+                                        <th style="text-align:center;">TEST STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.qc_result_ids" t-as="line">
+                                        <tr>
+                                            <td class="sl"><t t-esc="line_index + 1"/></td>
+                                            <td><span t-field="line.test_order_id.name"/></td>
+                                            <td><span t-field="line.test_stage"/></td>
+                                            <td style="font-weight:bold;"><span t-field="line.parameter"/></td>
+                                            <td>
+                                                <t t-if="line.expected_min and line.expected_max">
+                                                    <span t-field="line.expected_min"/> &#8211; <span t-field="line.expected_max"/>
+                                                </t>
+                                                <t t-elif="line.expected_min">
+                                                    &#8805; <span t-field="line.expected_min"/>
+                                                </t>
+                                                <t t-elif="line.expected_max">
+                                                    &#8804; <span t-field="line.expected_max"/>
+                                                </t>
+                                            </td>
+                                            <td><span t-field="line.actual_value"/></td>
+                                            <td style="text-align:center;"><span t-field="line.uom"/></td>
+                                            <td style="text-align:center; font-weight:bold;">
+                                                <t t-if="line.status == 'pass'">Pass</t>
+                                                <t t-elif="line.status == 'fail'">Fail</t>
+                                                <t t-else="">OOS</t>
+                                            </td>
+                                            <td style="text-align:center;">
+                                                <span t-field="line.test_status"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- OOS INVESTIGATIONS -->
+                        <t t-if="o.oos_ids">
+                            <div class="section-gap" style="page-break-inside: avoid;">
+                                <table class="qc-table">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="5" style="border-bottom: 1.5px solid #000 !important; background-color: #d8d8d8 !important;">OOS INVESTIGATIONS</th>
+                                        </tr>
+                                        <tr>
+                                            <th>INVESTIGATION NO.</th>
+                                            <th>PHASE</th>
+                                            <th>CONCLUSION</th>
+                                            <th>DISPOSITION</th>
+                                            <th>CLOSED ON</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="o.oos_ids" t-as="oos">
+                                            <tr>
+                                                <td><span t-field="oos.name"/></td>
+                                                <td><span t-field="oos.phase"/></td>
+                                                <td><span t-field="oos.conclusion"/></td>
+                                                <td><span t-field="oos.disposition"/></td>
+                                                <td><span t-field="oos.closed_on"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </t>
+
+                        <!-- DEVIATIONS + CAPAs side by side -->
+                        <t t-set="report_deviations" t-value="o._get_report_deviations()"/>
+                        <t t-set="report_capas"      t-value="o._get_report_capas()"/>
+                        <t t-if="report_deviations or report_capas">
+                            <div class="section-gap" style="page-break-inside: avoid;">
+                                <table style="width:100% !important; border-collapse:collapse; table-layout:fixed !important;">
+                                    <colgroup>
+                                        <col style="width:50% !important;"/>
+                                        <col style="width:50% !important;"/>
+                                    </colgroup>
+                                    <tr>
+                                        <td style="width:50% !important; min-width:50% !important; max-width:50% !important; vertical-align:top; padding-right:4px !important; padding-left:0 !important; border:none !important;">
+                                            <t t-if="report_deviations">
+                                                <table class="qc-table" style="margin-bottom:0; width:100% !important; table-layout:fixed !important;">
+                                                    <colgroup>
+                                                        <col style="width:28%;"/>
+                                                        <col style="width:26%;"/>
+                                                        <col style="width:24%;"/>
+                                                        <col style="width:22%;"/>
+                                                    </colgroup>
+                                                    <thead>
+                                                        <tr><th colspan="4" style="border-bottom: 1.5px solid #000 !important; background-color: #d8d8d8 !important;">DEVIATION</th></tr>
+                                                        <tr>
+                                                            <th>DEV. NO.</th>
+                                                            <th>STAGE</th>
+                                                            <th>CLASS</th>
+                                                            <th>STATUS</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="report_deviations" t-as="dev">
+                                                            <tr>
+                                                                <td><span t-field="dev.name"/></td>
+                                                                <td><span t-field="dev.stage"/></td>
+                                                                <td><span t-field="dev.classification"/></td>
+                                                                <td><span t-field="dev.status"/></td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </t>
+                                        </td>
+                                        <td style="width:50% !important; min-width:50% !important; max-width:50% !important; vertical-align:top; padding-left:4px !important; padding-right:0 !important; border:none !important;">
+                                            <t t-if="report_capas">
+                                                <table class="qc-table" style="margin-bottom:0; width:100% !important; table-layout:fixed !important;">
+                                                    <colgroup>
+                                                        <col style="width:35%;"/>
+                                                        <col style="width:20%;"/>
+                                                        <col style="width:27%;"/>
+                                                        <col style="width:18%;"/>
+                                                    </colgroup>
+                                                    <thead>
+                                                        <tr><th colspan="4" style="border-bottom: 1.5px solid #000 !important; background-color: #d8d8d8 !important;">CAPA</th></tr>
+                                                        <tr>
+                                                            <th>CAPA NO.</th>
+                                                            <th>TYPE</th>
+                                                            <th>ASSIGNED TO</th>
+                                                            <th>STATUS</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="report_capas" t-as="capa">
+                                                            <tr>
+                                                                <td><span t-field="capa.name"/></td>
+                                                                <td><span t-field="capa.capa_type"/></td>
+                                                                <td><span t-field="capa.assigned_to.name"/></td>
+                                                                <td><span t-field="capa.status"/></td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </t>
+
+                        <!-- FOOTER BLOCK (REMARKS + SIGNATURES + SYSTEM INFO) -->
+                        <div class="section-block" style="page-break-inside: avoid !important;">
+                            <!-- REMARKS / QUALITY CONCLUSION -->
+                            <div class="section-gap" style="page-break-inside: avoid !important;">
+                                <div class="remarks-box">
+                                    <strong>QUALITY CONCLUSION:</strong> All tests have been performed according to the approved quality
+                                    control specification and comply with the applicable pharmacopoeial requirements.
+                                </div>
+                                <div class="checkbox-row">
+                                   <p class="text-center" style="margin-bottom:0;">RESULT: <span class="checkbox-item"> APPROVED FOR RELEASE</span></p>
+                                </div>
+                            </div>
+
+                            <!-- SIGNATURE / AUTHORIZATION TABLE -->
+                            <div class="section-gap" style="page-break-inside: avoid !important;">
+                                <table class="sig-header-table">
+                                    <tr>
+                                        <td>ANALYSED BY</td>
+                                        <td>REVIEWED BY</td>
+                                        <td>APPROVED &amp; RELEASED BY</td>
+                                    </tr>
+                                </table>
+                                <table class="sig-table" style="border-top:none;">
+                                    <tr>
+                                        <td>
+                                            <div class="sig-label">QC Officer</div>
+                                            <div class="sig-role">Quality Control</div>
+                                        </td>
+                                        <td>
+                                            <div class="sig-label">Asst. Manager, QC</div>
+                                            <div class="sig-role">Quality Control</div>
+                                        </td>
+                                        <td>
+                                            <div class="sig-label"><span t-field="o.released_by.name"/></div>
+                                            <div class="sig-role">QA Manager</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><div class="sig-date">Signature &amp; date</div></td>
+                                        <td><div class="sig-date">Signature &amp; date</div></td>
+                                        <td><div class="sig-date">Signature &amp; date &#183; <span t-field="o.release_date"/></div></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- SYSTEM INFORMATION -->
+                            <div class="system-info section-gap" style="page-break-inside: avoid !important;">
+                                <strong>SYSTEM INFORMATION</strong><br/>
+                                Source QC Test Orders : <span t-esc="', '.join(o.qc_test_ids.mapped('name'))"/>
+                                <t t-if="report_deviations"><br/>Source Deviations : <span t-esc="', '.join(report_deviations.mapped('name'))"/></t>
+                                <t t-if="report_capas"><br/>Source CAPAs : <span t-esc="', '.join(report_capas.mapped('name'))"/></t>
+                                <br/>Generated From : Pharmaceutical ERP<br/>
+                                This Certificate of Analysis is system generated from approved quality control results and
+                                becomes read-only immediately after release. No manual modification is permitted.<br/>
+                                <strong>END OF CERTIFICATE</strong>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

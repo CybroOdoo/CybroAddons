@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view for QA releases. -->
+    <record id="pharma_qa_release_view_list" model="ir.ui.view">
+        <field name="name">pharma.qa.release.list</field>
+        <field name="model">pharma.qa.release</field>
+        <field name="arch" type="xml">
+            <list string="QA Release Queue" create="0">
+                <field name="name"/>
+                <field name="production_id"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'released'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view for a QA release. -->
+    <record id="pharma_qa_release_view_form" model="ir.ui.view">
+        <field name="name">pharma.qa.release.form</field>
+        <field name="model">pharma.qa.release</field>
+        <field name="arch" type="xml">
+            <form string="QA Release" create="0">
+                <header>
+                    <button name="action_confirm" string="Confirm &amp; Release" type="object"
+                            class="oe_highlight" invisible="state != 'draft'"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_view_genealogy" string="View Genealogy" type="object"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,released"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_bmr" type="object" class="oe_stat_button" icon="fa-file-text-o">
+                            <field name="bmr_count" widget="statinfo" string="BMR"/>
+                        </button>
+                        <button name="action_view_qc_tests" type="object" class="oe_stat_button" icon="fa-flask">
+                            <field name="qc_test_count" widget="statinfo" string="QC Test Orders"/>
+                        </button>
+                        <button name="action_view_deviations" type="object" class="oe_stat_button" icon="fa-exclamation-triangle">
+                            <field name="deviation_count" widget="statinfo" string="Deviations"/>
+                        </button>
+                        <button name="action_view_capas" type="object" class="oe_stat_button" icon="fa-wrench">
+                            <field name="capa_count" widget="statinfo" string="CAPAs"/>
+                        </button>
+                        <button name="action_view_coa" type="object" class="oe_stat_button" icon="fa-certificate">
+                            <field name="coa_count" widget="statinfo" string="CoA"/>
+                        </button>
+                        <button name="action_view_genealogy" type="object" class="oe_stat_button" icon="fa-sitemap">
+                            <span class="o_stat_text">Genealogy</span>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="name" string="Batch Number"/>
+                            <field name="lot_id" string="Lot Number"/>
+                            <field name="production_id"/>
+                        </group>
+                        <group>
+                            <field name="manufacturing_date"/>
+                            <field name="expiry_date"/>
+                            <field name="formula_version"/>
+                            <field name="manufactured_by"/>
+                            <field name="company_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Release Checklist" name="release_checklist">
+                            <group>
+                                <group>
+                                    <field name="bmr_completed"/>
+                                    <field name="fg_qc_passed"/>
+                                    <field name="no_open_deviations"/>
+                                    <field name="no_open_capas"/>
+                                    <field name="yield_within_threshold"/>
+                                </group>
+                                <group>
+                                    <field name="all_bmr_steps_completed"/>
+                                    <field name="all_ipqc_passed"/>
+                                    <field name="stability_sampling_completed" readonly="state == 'released'"/>
+                                    <field name="regulatory_docs_verified" readonly="state == 'released'"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="overall_status" widget="badge" decoration-success="overall_status == 'all_clear'" decoration-warning="overall_status == 'pending'"/>
+                            </group>
+                        </page>
+                        <page string="Finished Goods QC &amp; Yield Info" name="fg_qc_yield">
+                            <group>
+                                <group string="Finished Goods QC">
+                                    <field name="fg_qc_test_id"/>
+                                    <field name="fg_qc_status" widget="badge" decoration-success="fg_qc_status == 'passed'" decoration-danger="fg_qc_status == 'failed'"/>
+                                    <field name="fg_qc_stage"/>
+                                    <field name="fg_qc_reviewed_by"/>
+                                    <button name="action_view_qc_tests" string="View QC Results" type="object" class="oe_highlight"/>
+                                </group>
+                                <group string="Yield Information">
+                                    <field name="expected_yield"/>
+                                    <field name="actual_yield"/>
+                                    <field name="yield_percentage" widget="percentage"/>
+                                    <field name="yield_flag" widget="badge" decoration-success="yield_flag == 'Within Limit'" decoration-danger="yield_flag != 'Within Limit'"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view for QA releases. -->
+    <record id="pharma_qa_release_view_search" model="ir.ui.view">
+        <field name="name">pharma.qa.release.search</field>
+        <field name="model">pharma.qa.release</field>
+        <field name="arch" type="xml">
+            <search string="QA Release Queue">
+                <field name="name"/>
+                <field name="production_id"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <filter name="to_release" string="To Release" domain="[('state', '=', 'draft')]"/>
+                <filter name="released" string="Released" domain="[('state', '=', 'released')]"/>
+                <group>
+                    <filter name="group_state" string="Status" domain="[]" context="{'group_by': 'state'}"/>
+                    <filter name="group_product" string="Product" domain="[]" context="{'group_by': 'product_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action opening the QA release queue. -->
+    <record id="pharma_qa_release_action" model="ir.actions.act_window">
+        <field name="name">QA Release Queue</field>
+        <field name="res_model">pharma.qa.release</field>
+        <field name="view_mode">list,form</field>
+        <!-- Explicitly empty: removing the field would leave the previous draft-only domain stored in the DB, so released records would keep disappearing after confirmation. -->
+        <field name="domain">[]</field>
+        <field name="search_view_id" ref="pharma_qa_release_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No QA Release records yet.
+            </p>
+            <p>Records awaiting release and already-released batches both appear here.
+               Use the <b>To Release</b> / <b>Released</b> filters to narrow the list.</p>
+        </field>
+    </record>
+</odoo>

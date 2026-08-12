@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view for certificates of analysis. -->
+    <record id="view_pharma_coa_list" model="ir.ui.view">
+        <field name="name">pharma.coa.list</field>
+        <field name="model">pharma.coa</field>
+        <field name="arch" type="xml">
+            <list string="Certificates of Analysis" create="0" delete="0">
+                <field name="name"/>
+                <field name="batch_id"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="release_date"/>
+                <field name="released_by"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view for a certificate of analysis. -->
+    <record id="view_pharma_coa_form" model="ir.ui.view">
+        <field name="name">pharma.coa.form</field>
+        <field name="model">pharma.coa</field>
+        <field name="arch" type="xml">
+            <form string="Certificate of Analysis" create="0" edit="0" delete="0">
+                <header>
+                    <button name="%(pharma_traceability_coa.action_report_pharma_coa)d" string="Print PDF" type="action"
+                            class="btn-primary" icon="fa-print"/>
+                </header>
+                <sheet>
+                    <!-- Smart buttons for the batch's Deviations / CAPAs; shown only when records exist. -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_coa_deviations" type="object"
+                                class="oe_stat_button" icon="fa-exclamation-triangle"
+                                invisible="deviation_count == 0">
+                            <field name="deviation_count" widget="statinfo" string="Deviations"/>
+                        </button>
+                        <button name="action_view_coa_capas" type="object"
+                                class="oe_stat_button" icon="fa-wrench"
+                                invisible="capa_count == 0">
+                            <field name="capa_count" widget="statinfo" string="CAPAs"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="batch_id" readonly="1"/>
+                            <field name="product_id" readonly="1"/>
+                            <field name="lot_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="qc_test_order_id" readonly="1"/>
+                            <field name="released_by" readonly="1"/>
+                            <field name="release_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="QC Tests" invisible="not qc_result_ids">
+                            <field name="qc_result_ids" readonly="1">
+                                <list create="0" edit="0" delete="0">
+                                    <field name="test_order_id"/>
+                                    <field name="test_stage"/>
+                                    <field name="parameter"/>
+                                    <field name="expected_min"/>
+                                    <field name="expected_max"/>
+                                    <field name="actual_value"/>
+                                    <field name="uom"/>
+                                    <field name="status" widget="badge"
+                                           decoration-success="status == 'pass'"
+                                           decoration-danger="status == 'fail'"/>
+                                    <field name="test_status" widget="badge"
+                                           decoration-success="test_status == 'passed'"
+                                           decoration-danger="test_status == 'failed'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="IPQC Checks" invisible="not ipqc_ids">
+                            <field name="ipqc_ids" readonly="1">
+                                <list create="0" edit="0" delete="0">
+                                    <field name="step_id"/>
+                                    <field name="parameter_id"/>
+                                    <field name="expected_min"/>
+                                    <field name="expected_max"/>
+                                    <field name="actual_value"/>
+                                    <field name="result" widget="badge"
+                                           decoration-success="result == 'pass'"
+                                           decoration-danger="result == 'fail'"/>
+                                    <field name="signed_by"/>
+                                    <field name="signed_on"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="OOS Investigations" invisible="not oos_ids">
+                            <field name="oos_ids" readonly="1">
+                                <list create="0" edit="0" delete="0">
+                                    <field name="name"/>
+                                    <field name="phase"/>
+                                    <field name="conclusion"/>
+                                    <field name="disposition"/>
+                                    <field name="closed_on"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Deviations" invisible="not deviation_ids">
+                            <field name="deviation_ids" readonly="1">
+                                <list create="0" edit="0" delete="0">
+                                    <field name="name"/>
+                                    <field name="stage"/>
+                                    <field name="classification" widget="badge"/>
+                                    <field name="status" widget="badge" decoration-success="status == 'closed'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="CAPAs" invisible="not capa_ids">
+                            <field name="capa_ids" readonly="1">
+                                <list create="0" edit="0" delete="0">
+                                    <field name="name"/>
+                                    <field name="capa_type"/>
+                                    <field name="assigned_to"/>
+                                    <field name="status" widget="badge" decoration-success="status == 'closed'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action opening certificates of analysis. -->
+    <record id="action_pharma_coa" model="ir.actions.act_window">
+        <field name="name">Certificates of Analysis</field>
+        <field name="res_model">pharma.coa</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

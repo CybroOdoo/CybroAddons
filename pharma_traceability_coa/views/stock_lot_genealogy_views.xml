@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Adds genealogy columns to the lot list. -->
+    <record id="stock_lot_genealogy_list" model="ir.ui.view">
+        <field name="name">stock.lot.genealogy.list</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_tree"/>
+        <field name="mode">primary</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="create">0</attribute>
+                <attribute name="delete">0</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Form view showing the lot genealogy tree. -->
+    <record id="stock_lot_genealogy_form" model="ir.ui.view">
+        <field name="name">stock.lot.genealogy.form</field>
+        <field name="model">stock.lot</field>
+        <field name="arch" type="xml">
+            <form string="Batch Genealogy" create="0" edit="0" delete="0">
+                <sheet>
+                    <!-- Smart buttons for the lot's Deviations / CAPAs; shown only when records exist. -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_lot_deviations" type="object"
+                                class="oe_stat_button" icon="fa-exclamation-triangle"
+                                invisible="deviation_count == 0">
+                            <field name="deviation_count" widget="statinfo" string="Deviations"/>
+                        </button>
+                        <button name="action_view_lot_capas" type="object"
+                                class="oe_stat_button" icon="fa-wrench"
+                                invisible="capa_count == 0">
+                            <field name="capa_count" widget="statinfo" string="CAPAs"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name" string="Batch No" readonly="1"/>
+                            <field name="product_id" string="Product" readonly="1"/>
+                            <field name="produced_production_ids" string="MO" widget="many2many_tags" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="bmr_ids" string="BMR" widget="many2many_tags" readonly="1"/>
+                            <field name="lot_status" string="Status" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Raw Material Traceability">
+                            <field name="consumed_lot_ids" nolabel="1" readonly="1">
+                                <list>
+                                    <field name="name" string="RM Lot"/>
+                                    <field name="product_id" string="Material"/>
+                                    <field name="vendor_ids" string="Vendor" widget="many2many_tags"/>
+                                    <field name="purchase_order_ids" string="PO" widget="many2many_tags"/>
+                                    <field name="lot_status" string="QC Status"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Manufacturing">
+                            <field name="bmr_ids" nolabel="1" readonly="1">
+                                <list>
+                                    <field name="name" string="BMR"/>
+                                    <field name="yield_percentage" string="Yield"/>
+                                    <field name="status" string="Status"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Quality">
+                            <group>
+                                <group>
+                                    <field name="incoming_qc_ids" string="Incoming QC" widget="many2many_tags" readonly="1" placeholder="No Incoming QC..."/>
+                                    <field name="ipqc_ids" string="IPQC" widget="many2many_tags" readonly="1" placeholder="No IPQC..."/>
+                                    <field name="fg_qc_ids" string="FG QC" widget="many2many_tags" readonly="1" placeholder="No FG QC..."/>
+                                </group>
+                                <group>
+                                    <field name="oos_investigation_ids" string="OOS Investigations" widget="many2many_tags" readonly="1" placeholder="No OOS..."/>
+                                    <field name="deviation_ids" string="Deviations" widget="many2many_tags" readonly="1" placeholder="No Deviations..."/>
+                                    <field name="capa_ids" string="CAPAs" widget="many2many_tags" readonly="1" placeholder="No CAPAs..."/>
+                                    <field name="coa_ids" string="CoAs" widget="many2many_tags" readonly="1" placeholder="No CoAs..."/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Release">
+                            <group>
+                                <group>
+                                    <field name="status_changed_by" string="Released By" readonly="1"/>
+                                    <field name="status_changed_on" string="Release Date" readonly="1"/>
+                                    <field name="coa_ids" string="CoA" widget="many2many_tags" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Action opening batch genealogy. -->
+    <record id="pharma_batch_genealogy_action" model="ir.actions.act_window">
+        <field name="name">Batch Genealogy</field>
+        <field name="res_model">stock.lot</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('pharma_traceability_coa.stock_lot_genealogy_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('pharma_traceability_coa.stock_lot_genealogy_form')})
+        ]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No lots found.
+            </p>
+        </field>
+    </record>
+</odoo>
