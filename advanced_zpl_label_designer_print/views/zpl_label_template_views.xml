@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- zpl.label.template list view -->
+    <record id="view_zpl_label_template_tree" model="ir.ui.view">
+        <field name="name">zpl.label.template.tree</field>
+        <field name="model">zpl.label.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="width"/>
+                <field name="height"/>
+                <field name="unit"/>
+                <field name="dpi"/>
+            </list>
+        </field>
+    </record>
+    <!-- zpl.label.template form view -->
+    <record id="view_zpl_label_template_form" model="ir.ui.view">
+        <field name="name">zpl.label.template.form</field>
+        <field name="model">zpl.label.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_preview" string="Preview ZPL" type="object" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="E.g. Product Label 4x6"/></h1>
+                    </div>
+                    <group>
+                        <group name="dimensions" string="Settings">
+                            <field name="model_id" options="{'no_create': True}"/>
+                            <field name="dpi"/>
+                        </group>
+                        <group name="size" string="Size">
+                            <label for="width"/>
+                            <div class="o_row">
+                                <field name="width" class="oe_inline"/>
+                                <span class="mx-2">x</span>
+                                <field name="height" class="oe_inline"/>
+                                <field name="unit" class="oe_inline"/>
+                            </div>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="designer" string="Designer">
+                            <div class="o_zpl_designer_container">
+                                <field name="element_ids" widget="zpl_designer_widget" nolabel="1" context="{'default_template_id': id}"/>
+                            </div>
+                        </page>
+                        <page name="elements_list" string="Elements List">
+                            <field name="element_ids" nolabel="1" context="{'default_template_id': id}"/>
+                        </page>
+                        <page name="zpl_code" string="ZPL Code">
+                            <field name="zpl_content" readonly="1" font="monospace"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- zpl.label.template action -->
+    <record id="action_zpl_label_template" model="ir.actions.act_window">
+        <field name="name">ZPL Label Templates</field>
+        <field name="res_model">zpl.label.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+   <!-- zpl.label.template menu -->
+    <menuitem id="menu_zpl_designer_root" name="ZPL Designer" sequence="10" web_icon="advanced_zpl_label_designer_print,static/description/Icon.png"/>
+    <menuitem id="menu_zpl_label_template" name="Templates" parent="menu_zpl_designer_root" action="action_zpl_label_template" sequence="10"/>
+</odoo>

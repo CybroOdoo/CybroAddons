@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    This file contains the XML data record for the Mail Template for Rental Booking Confirmation in the DriveX website theme.
+-->
+<odoo>
+    <data noupdate="1">
+        <record id="email_template_rental_booking_confirmation" model="mail.template">
+            <field name="name">Rental Booking: Confirmation Email</field>
+            <field name="model_id" ref="theme_drivex.model_fleet_rental_order"/>
+            <field name="subject">Booking Confirmed: {{ object.name }}</field>
+            <field name="email_from">{{ (object.env.company.email or 'noreply@yourcompany.com') }}</field>
+            <field name="email_to">{{ object.driver_email }}</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Dear <t t-out="object.driver_name or 'Customer'"/>,
+                        <br/><br/>
+                        Your car rental booking has been successfully confirmed.
+                        <br/><br/>
+                        <strong>Booking Reference:</strong> <t t-out="object.name"/><br/>
+                        <strong>Vehicle:</strong> <t t-out="object.vehicle_id.model_id.brand_id.name"/> <t t-out="object.vehicle_id.model_id.name"/><br/>
+                        <strong>Pickup Date:</strong> <t t-out="object.pickup_datetime"/><br/>
+                        <strong>Return Date:</strong> <t t-out="object.return_datetime"/><br/>
+                        <strong>Total Amount:</strong> $<t t-out="object.amount_total"/><br/>
+                        <br/>
+                        We look forward to seeing you at <t t-out="object.pickup_location_id.name"/>.
+                        <br/><br/>
+                        If you have any questions, feel free to reply to this email.
+                        <br/><br/>
+                        Best regards,
+                        <br/>
+                        <t t-out="object.env.company.name"/>
+                    </p>
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>

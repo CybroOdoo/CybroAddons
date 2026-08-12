@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    This file contains the XML templates, data records for the Car Detail Templates of the DriveX website theme.
+-->
+<odoo>
+    <!--
+        DriveX Car Detail Page
+    -->
+    <template id="drivex_car_detail_page" name="DriveX Car Detail">
+        <t t-call="website.layout">
+            <t t-set="title"><t t-esc="vehicle.model_id.name if vehicle else 'Car Detail'"/> — DriveX</t>
+            <div id="wrap" class="detail-page oe_structure">
+
+                <!-- ═══════════════════════════════════════════════
+                     DYNAMIC HERO  (backend data, not editable)
+                ═══════════════════════════════════════════════ -->
+                <section class="detail-hero" t-if="not demo_fallback">
+                    <img t-attf-src="/web/image/fleet.vehicle/#{vehicle.id}/image_128"
+                         t-att-alt="vehicle.model_id.name" class="detail-hero-img" id="heroImg"/>
+                    <div class="detail-hero-overlay"/>
+                    <div class="detail-hero-content container">
+                        <nav class="breadcrumb">
+                            <a href="/">Home</a>
+                            <i class="fa-solid fa-chevron-right"/>
+                            <a href="/fleet">Fleet</a>
+                            <i class="fa-solid fa-chevron-right"/>
+                            <span><t t-esc="vehicle.model_id.name"/></span>
+                        </nav>
+                        <div class="detail-meta">
+                            <div class="detail-title">
+                                <h1><t t-esc="vehicle.model_id.brand_id.name"/> <t t-esc="vehicle.model_id.name"/></h1>
+                                <div class="dt-sub">
+                                    <span class="dt-badge" t-if="vehicle.category_id"><t t-esc="vehicle.category_id.name"/></span>
+                                    <span><i class="fa-solid fa-star" style="color:#f59e0b"/> 5.0 &#160;·&#160; (0 reviews)</span>
+                                    <span t-if="vehicle.model_year"><t t-esc="vehicle.model_year"/> Model</span>
+                                </div>
+                            </div>
+                            <div class="detail-price-box">
+                                <p class="dp-from">STARTING FROM</p>
+                                <div class="dp-amount">$<t t-esc="vehicle.daily_rate"/></div>
+                                <p class="dp-per">per day · taxes included</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- ═══════════════════════════════════════════════
+                     GALLERY STRIP  (backend images, not editable)
+                ═══════════════════════════════════════════════ -->
+                <div class="gallery-strip" t-if="not demo_fallback">
+                    <div class="container">
+                        <div class="gallery-thumbs">
+                            <div class="gallery-thumb active"
+                                 t-attf-data-src="/web/image/fleet.vehicle/#{vehicle.id}/image_128">
+                                <img t-attf-src="/web/image/fleet.vehicle/#{vehicle.id}/image_128" alt="Main"/>
+                            </div>
+                            <t t-foreach="vehicle.vehicle_image_ids" t-as="img">
+                                <div class="gallery-thumb"
+                                     t-attf-data-src="/web/image/fleet.vehicle.image/#{img.id}/image">
+                                    <img t-attf-src="/web/image/fleet.vehicle.image/#{img.id}/image"
+                                         t-att-alt="img.name"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                <!-- ═══════════════════════════════════════════════
+                     DETAIL BODY  (two-column layout)
+                     LEFT  → oe_structure snippet drop zone
+                     RIGHT → dynamic booking sidebar
+                ═══════════════════════════════════════════════ -->
+                <section class="detail-body" t-if="not demo_fallback">
+                    <div class="detail-body-inner">
+                        <!-- LEFT COLUMN: snippet drop zone ──────── -->
+                        <div class="detail-content-col"
+                             id="detail_content_zone"
+                             t-att-data-vehicle-id="vehicle.id"
+                             t-att-data-horsepower="vehicle.horsepower or ''"
+                             t-att-data-transmission="vehicle.transmission or 'auto'"
+                             t-att-data-seats="vehicle.seats or 5"
+                             t-att-data-doors="vehicle.doors or 4"
+                             t-att-data-fuel="vehicle.fuel_type or 'petrol'"
+                             t-att-data-co2="vehicle.co2 or ''">
+                            <!-- oe_structure allows reordering / adding
+                                 snippets in the website builder -->
+                            <div class="oe_structure" id="oe_structure_drivex_car_detail">
+                                <!-- ── Specs snippet (pre-loaded, editable) ── -->
+                                <t t-call="theme_drivex.drivex_vehicle_specs"/>
+                                <!-- ── Features snippet (pre-loaded, editable) ── -->
+                                <t t-if="vehicle.feature_ids">
+                                    <section class="detail-features-section s_drivex_vehicle_features"
+                                             data-snippet="theme_drivex.drivex_vehicle_features"
+                                             data-name="Features &amp; Equipment">
+                                        <div class="container">
+                                            <h2><i class="fa-solid fa-star" style="color:var(--accent);margin-right:10px"/>Features &amp; Equipment</h2>
+                                            <div class="features-grid o_editable">
+                                                <t t-foreach="vehicle.feature_ids" t-as="feat">
+                                                    <div class="feat-item">
+                                                        <i t-attf-class="fa-solid #{feat.icon or 'fa-check'}"/>
+                                                        <t t-esc="feat.name"/>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </t>
+                                <t t-else="">
+                                    <t t-call="theme_drivex.drivex_vehicle_features"/>
+                                </t>
+                                <!-- ── About snippet (pre-loaded, editable) ── -->
+                                <t t-if="vehicle.website_description">
+                                    <section class="detail-desc-section s_drivex_vehicle_about"
+                                             data-snippet="theme_drivex.drivex_vehicle_about"
+                                             data-name="About This Vehicle">
+                                        <div class="container">
+                                            <h2 class="o_editable"><i class="fa-solid fa-circle-info" style="color:var(--accent);margin-right:10px"/>About This Vehicle</h2>
+                                            <div class="detail-desc" t-field="vehicle.website_description"/>
+                                        </div>
+                                    </section>
+                                </t>
+                                <t t-else="">
+                                    <t t-call="theme_drivex.drivex_vehicle_about"/>
+                                </t>
+                                <!-- ── Rental Terms snippet (pre-loaded, editable) ── -->
+                                <t t-call="theme_drivex.drivex_rental_terms"/>
+                            </div>
+                            <!-- /oe_structure -->
+                        </div>
+                        <!-- /LEFT COLUMN -->
+                        <!-- RIGHT COLUMN: dynamic booking sidebar ─ -->
+                        <div class="booking-sidebar" t-att-data-vehicle-id="vehicle.id">
+                            <div class="booking-card">
+                                <h3><i class="fa-solid fa-calendar-check" style="color:var(--accent);margin-right:8px"/>Book This Vehicle</h3>
+                                <div class="booking-field">
+                                    <label>Pickup Location</label>
+                                    <select id="bookLocation" class="bookLocation">
+                                        <option value="">Select a location…</option>
+                                        <t t-foreach="locations" t-as="loc">
+                                            <option t-att-value="loc.id"><t t-esc="loc.name"/></option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <!-- Pickup Date — custom DriveX datepicker -->
+                                <div class="booking-field">
+                                    <label>Pickup Date &amp; Time</label>
+                                    <div class="date-field bookPickupField">
+                                        <div class="date-display placeholder" id="bookPickupDisplay">
+                                            <span class="dd-day">DD</span> <span class="dd-month">Mon</span> <span class="dd-year">YYYY</span>
+                                            <span class="dd-sep">·</span>
+                                            <span class="dd-time">HH:MM</span>
+                                        </div>
+                                        <div class="dp-panel" id="bookPickupPanel">
+                                            <div class="dp-header">
+                                                <button class="dp-prev" type="button">&#8249;</button>
+                                                <span class="dp-my"></span>
+                                                <button class="dp-next" type="button">&#8250;</button>
+                                            </div>
+                                            <div class="dp-weekdays"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+                                            <div class="dp-grid"></div>
+                                            <div class="dp-time">
+                                                <div class="dp-time-col">
+                                                    <button class="dp-tc" type="button">▲</button>
+                                                    <span class="dp-hh">12</span>
+                                                    <button class="dp-tc" type="button">▼</button>
+                                                </div>
+                                                <span class="dp-tsep">:</span>
+                                                <div class="dp-time-col">
+                                                    <button class="dp-tc" type="button">▲</button>
+                                                    <span class="dp-mm">00</span>
+                                                    <button class="dp-tc" type="button">▼</button>
+                                                </div>
+                                            </div>
+                                            <button class="dp-confirm-btn" type="button">Confirm</button>
+                                        </div>
+                                        <!-- hidden value carrier read by JS -->
+                                        <input type="hidden" class="bookPickup" id="bookPickup"/>
+                                    </div>
+                                </div>
+                                <!-- Return Date — custom DriveX datepicker -->
+                                <div class="booking-field">
+                                    <label>Return Date &amp; Time</label>
+                                    <div class="date-field bookReturnField">
+                                        <div class="date-display placeholder" id="bookReturnDisplay">
+                                            <span class="dd-day">DD</span> <span class="dd-month">Mon</span> <span class="dd-year">YYYY</span>
+                                            <span class="dd-sep">·</span>
+                                            <span class="dd-time">HH:MM</span>
+                                        </div>
+                                        <div class="dp-panel" id="bookReturnPanel">
+                                            <div class="dp-header">
+                                                <button class="dp-prev" type="button">&#8249;</button>
+                                                <span class="dp-my"></span>
+                                                <button class="dp-next" type="button">&#8250;</button>
+                                            </div>
+                                            <div class="dp-weekdays"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+                                            <div class="dp-grid"></div>
+                                            <div class="dp-time">
+                                                <div class="dp-time-col">
+                                                    <button class="dp-tc" type="button">▲</button>
+                                                    <span class="dp-hh">12</span>
+                                                    <button class="dp-tc" type="button">▼</button>
+                                                </div>
+                                                <span class="dp-tsep">:</span>
+                                                <div class="dp-time-col">
+                                                    <button class="dp-tc" type="button">▲</button>
+                                                    <span class="dp-mm">00</span>
+                                                    <button class="dp-tc" type="button">▼</button>
+                                                </div>
+                                            </div>
+                                            <button class="dp-confirm-btn" type="button">Confirm</button>
+                                        </div>
+                                        <input type="hidden" class="bookReturn" id="bookReturn"/>
+                                    </div>
+                                </div>
+                                <div class="booking-field">
+                                    <label>Insurance Plan</label>
+                                    <select id="insurancePlan" class="insurancePlan">
+                                        <t t-if="insurances">
+                                            <t t-foreach="insurances" t-as="ins">
+                                                <option t-att-value="ins.id"
+                                                        t-att-data-price="ins.price_per_day"
+                                                        t-att-selected="'selected' if ins.is_default else None">
+                                                    <t t-esc="ins.name"/>
+                                                    <t t-if="ins.price_per_day == 0"> (Included)</t>
+                                                    <t t-else=""> (+$<t t-esc="ins.price_per_day"/>/day)</t>
+                                                </option>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <option value="0" data-price="0">Basic (Included)</option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="booking-total"
+                                     t-att-data-daily-rate="vehicle.daily_rate">
+                                    <div class="bt-row">
+                                        <span>Base rate</span>
+                                        <span>$<t t-esc="vehicle.daily_rate"/>/day</span>
+                                    </div>
+                                    <div class="bt-row insuranceLine" style="display:none">
+                                        <span>Insurance</span><span class="insuranceVal">+$0/day</span>
+                                    </div>
+                                    <div class="bt-row">
+                                        <span>Duration</span><span class="daysVal">1 day</span>
+                                    </div>
+                                    <div class="bt-row">
+                                        <span>Taxes &amp; fees</span><span>Included</span>
+                                    </div>
+                                    <div class="bt-total">
+                                        <span>Total</span>
+                                        <strong class="totalVal">$<t t-esc="vehicle.daily_rate"/></strong>
+                                    </div>
+                                </div>
+                                <a t-attf-href="/booking/#{vehicle.id}#{query_string}" class="booking-btn"
+                                   id="detailReserveBtn">
+                                    <i class="fa-solid fa-bolt"/> Reserve Now
+                                </a>
+                                <p class="booking-note">
+                                    <i class="fa-solid fa-shield-halved"/> Free cancellation · No card fee
+                                </p>
+                            </div>
+                        </div>
+                        <!-- /RIGHT COLUMN -->
+                    </div>
+                </section>
+                <!-- ═══════════════════════════════════════════════
+                     SIMILAR VEHICLES  (Dynamic snippet)
+                ═══════════════════════════════════════════════ -->
+                <t t-if="demo_fallback">
+                    <section class="vehicle-unavailable-section">
+                        <div class="container" style="text-align:center;padding:80px 20px;">
+                            <i class="fa-solid fa-car" style="font-size:3rem;color:#ccc;margin-bottom:20px;display:block;"/>
+                            <h2 style="font-size:1.6rem;font-weight:700;color:#222;margin-bottom:12px;">No Vehicles Available</h2>
+                            <p style="font-size:1rem;color:#666;max-width:480px;margin:0 auto;">
+                                No vehicles have been configured yet. Please add and publish vehicles from the Fleet module in the backend to display them here.
+                            </p>
+                        </div>
+                    </section>
+                </t>
+                <t t-call="theme_drivex.drivex_similar_vehicles"/>
+            </div>
+        </t>
+    </template>
+    <record id="drivex_car_detail_page_page" model="website.page">
+        <field name="name">DriveX Car Detail</field>
+        <field name="url">/car-detail</field>
+        <field name="type">qweb</field>
+        <field name="key">theme_drivex.drivex_car_detail_page</field>
+        <field name="is_published" eval="True"/>
+        <field name="website_indexed" eval="True"/>
+        <field name="arch" type="xml">
+            <t t-call="theme_drivex.drivex_car_detail_page"/>
+        </field>
+    </record>
+</odoo>

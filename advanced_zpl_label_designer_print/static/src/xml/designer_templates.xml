@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="zpl_label_designer.DesignerWidget">
+        <div class="o_zpl_designer">
+            <!-- TOOLBAR: This is where buttons live -->
+            <div class="o_zpl_designer_toolbar card shadow-sm mb-3">
+                <div class="card-body d-flex gap-2">
+                    <button class="btn btn-primary" t-on-click="onAddText">
+                        <i class="fa fa-font"/> Add Text
+                    </button>
+                    
+                    <div class="o_zpl_field_selector_wrapper d-flex gap-2 align-items-center position-relative">
+                        <div class="flex-grow-1" style="min-width: 250px;">
+                            <input type="text" 
+                                   class="form-control" 
+                                   placeholder="Type to search field..." 
+                                   t-model="state.searchText"
+                                   t-on-focus="() => state.showDropdown = true"/>
+                        </div>
+                            
+                            <div t-if="state.showDropdown" 
+                                 class="o_zpl_search_results shadow-lg border rounded bg-white position-absolute w-100 mt-1"
+                                 style="z-index: 1050; max-height: 300px; overflow-y: auto;">
+                                <t t-if="getFilteredFields().length > 0">
+                                    <t t-foreach="getFilteredFields()" t-as="f" t-key="f.id">
+                                        <div class="o_zpl_field_item p-2 border-bottom cursor-pointer" 
+                                             t-on-click="() => this.selectField(f)"
+                                             style="cursor: pointer;">
+                                            <strong><t t-esc="f.field_description"/></strong>
+                                            <div class="text-muted small"><t t-esc="'(' + f.name + ')'"/></div>
+                                        </div>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <div class="p-3 text-center text-muted">
+                                        <i class="fa fa-info-circle mb-2"/><br/>
+                                        No fields found. <br/>
+                                        <small>Please ensure a <strong>Model</strong> is selected above.</small>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-outline-primary" t-on-click="onAddField" title="Add as Text">
+                            <i class="fa fa-plus-circle"/>
+                        </button>
+                        <button class="btn btn-outline-primary" t-on-click="onAddBarcodeFromField" title="Add as Barcode">
+                            <i class="fa fa-barcode"/>
+                        </button>
+                        <button class="btn btn-outline-primary" t-on-click="onAddQRCodeFromField" title="Add as QR Code">
+                            <i class="fa fa-qrcode"/>
+                        </button>
+
+                    <div class="vr mx-2"/>
+
+                    <button class="btn btn-primary" t-on-click="onAddBarcode">
+                        <i class="fa fa-barcode"/> Empty Barcode
+                    </button>
+                    <button class="btn btn-primary" t-on-click="onAddRect">
+                        <i class="fa fa-square-o"/> Add Rectangle
+                    </button>
+                    <button class="btn btn-primary" t-on-click="onAddQRCode">
+                        <i class="fa fa-qrcode"/> Add QR Code
+                    </button>
+                    <button class="btn btn-primary" t-on-click="onAddLine">
+                        <i class="fa fa-minus"/> Add Line
+                    </button>
+                    <div class="vr mx-2"/>
+                    <button class="btn btn-danger" t-on-click="onDeleteSelected">
+                        <i class="fa fa-trash"/> Delete
+                    </button>
+                    <button class="btn btn-success ms-auto" t-on-click="onSaveDesign">
+                        <i class="fa fa-save"/> Save Design
+                    </button>
+                </div>
+            </div>
+
+            <div class="o_zpl_designer_main d-flex flex-grow-1 overflow-hidden">
+                <div class="o_zpl_canvas_container flex-grow-1 position-relative p-0 d-flex align-items-center justify-content-center bg-light overflow-auto">
+                    <!-- CANVAS AREA -->
+                    <div class="shadow-lg bg-white p-0 border" style="width: 502px; height: 602px;">
+                        <canvas id="zpl_designer_canvas"/>
+                    </div>
+                </div>
+
+                <!-- Properties Sidebar -->
+                <div class="o_zpl_properties_sidebar border-start bg-white p-3 shadow-sm overflow-auto" style="width: 320px; min-width: 320px;">
+                    <div t-if="!state.selectedObject" class="text-center text-muted mt-5">
+                        <i class="fa fa-mouse-pointer fa-3x mb-3"/><br/>
+                        Select an element to edit its properties
+                    </div>
+
+                    <div t-else="">
+                        <h4 class="mb-4 d-flex align-items-center">
+                            <i t-if="state.selectedObject.type == 'text'" class="fa fa-font me-2 text-primary"/>
+                            <i t-if="state.selectedObject.type == 'barcode'" class="fa fa-barcode me-2 text-primary"/>
+                            <i t-if="state.selectedObject.type == 'qrcode'" class="fa fa-qrcode me-2 text-primary"/>
+                            <i t-if="state.selectedObject.type == 'rect'" class="fa fa-square-o me-2 text-primary"/>
+                            <i t-if="state.selectedObject.type == 'line'" class="fa fa-minus me-2 text-primary"/>
+                            <span class="text-capitalize"><t t-esc="state.selectedObject.type"/> Properties</span>
+                        </h4>
+
+                        <!-- Common: Data Field Linking (Only for data-bearing elements) -->
+                        <div class="mb-3" t-if="['barcode', 'qrcode'].includes(state.selectedObject.type)">
+                            <label class="form-label fw-bold small">Link to Odoo Field</label>
+                            <select class="form-select form-select-sm" 
+                                    t-att-value="state.selectedObject.field_id"
+                                    t-on-change="(ev) => this.updateSelectedObjectProperty('field_id', ev.target.value)">
+                                <option value="">-- Static Value --</option>
+                                <t t-foreach="state.fields" t-as="f" t-key="f.id">
+                                    <option t-att-value="f.id"><t t-esc="f.field_description + ' (' + f.name + ')'"/></option>
+                                </t>
+                            </select>
+                            <div class="form-text x-small">If selected, this field's data will be used on the label.</div>
+                        </div>
+
+                        <!-- Text/Val: Content -->
+                        <div class="mb-3" t-if="['text', 'barcode', 'qrcode'].includes(state.selectedObject.type)">
+                            <label class="form-label fw-bold small">Display Value / Static Text</label>
+                            <textarea class="form-control form-control-sm" rows="2"
+                                      t-att-value="state.selectedObject.text"
+                                      t-on-input="(ev) => this.updateSelectedObjectProperty('text', ev.target.value)"/>
+                        </div>
+
+                        <!-- Barcode Specific: Type -->
+                        <div class="mb-3" t-if="state.selectedObject.type == 'barcode'">
+                            <label class="form-label fw-bold small">Barcode Type</label>
+                            <select class="form-select form-select-sm"
+                                    t-att-value="state.selectedObject.barcode_type"
+                                    t-on-change="(ev) => this.updateSelectedObjectProperty('barcode_type', ev.target.value)">
+                                <option value="code128">Code 128</option>
+                                <option value="code39">Code 39</option>
+                                <option value="ean13">EAN 13</option>
+                                <option value="upca">UPC-A</option>
+                            </select>
+                        </div>
+
+                        <!-- Style: Size & Appearance -->
+                        <hr class="my-3"/>
+                        <h6 class="mb-3 text-uppercase text-muted x-small fw-bold">Styling &amp; Formatting</h6>
+                        
+                        <div class="row g-2 mb-3" t-if="['text', 'barcode'].includes(state.selectedObject.type)">
+                            <div class="col-12">
+                                <label class="form-label small">Font / Barcode Height</label>
+                                <input type="range" class="form-range" min="10" max="200" step="5"
+                                       t-att-value="state.selectedObject.fontSize"
+                                       t-on-input="(ev) => this.updateSelectedObjectProperty('fontSize', ev.target.value)"/>
+                                <div class="text-end small"><t t-esc="state.selectedObject.fontSize"/>px</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" t-if="['rect', 'line'].includes(state.selectedObject.type)">
+                            <label class="form-label small">Stroke Thickness</label>
+                            <input type="number" class="form-control form-control-sm" 
+                                   t-att-value="state.selectedObject.strokeWidth"
+                                   t-on-input="(ev) => this.updateSelectedObjectProperty('strokeWidth', ev.target.value)"/>
+                        </div>
+
+                        <div class="mb-3" t-if="state.selectedObject.type == 'rect'">
+                            <label class="form-label small">Corner Rounding</label>
+                            <input type="number" class="form-control form-control-sm" 
+                                   t-att-value="state.selectedObject.rounding"
+                                   t-on-input="(ev) => this.updateSelectedObjectProperty('rounding', ev.target.value)"/>
+                        </div>
+
+                        <div class="mt-5 pt-3 border-top">
+                            <button class="btn btn-danger w-100 btn-sm" t-on-click="onDeleteSelected">
+                                <i class="fa fa-trash-o me-1"/> Delete Element
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

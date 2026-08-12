@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- FORM VIEW -->
+    <record id="helpdesk_ticket_view_form" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.view.form.inherit.customer.success.sentiment.tracker</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Customer Sentiment">
+
+                    <group>
+                        <group>
+                            <field name="sentiment_human"
+                                   widget="badge"
+                                   decoration-danger="sentiment_percent &lt;= 30"
+                                   decoration-warning="sentiment_percent &lt;= 45"
+                                   decoration-success="sentiment_percent &gt; 70"/>
+
+                            <field name="sentiment_percent"/>
+                        </group>
+
+                        <group>
+                            <field name="risk_level"
+                                   widget="badge"
+                                   decoration-danger="risk_level == 'high'"
+                                   decoration-warning="risk_level == 'medium'"
+                                   decoration-success="risk_level == 'low'"/>
+
+                            <field name="is_high_risk"
+                                   widget="boolean_toggle"/>
+                        </group>
+                    </group>
+
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <!-- List VIEW -->
+
+    <record id="helpdesk_tickets_view_tree" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.view.tree.inherit.customer.success.sentiment.tracker</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_tickets_view_tree"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//list" position="attributes">
+                <attribute name="decoration-danger">risk_level == 'high'</attribute>
+                <attribute name="decoration-warning">risk_level == 'medium'</attribute>
+            </xpath>
+
+            <xpath expr="//list/field[@name='name']" position="after">
+                <field name="sentiment_human"/>
+                <field name="sentiment_percent"/>
+                <field name="risk_level"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

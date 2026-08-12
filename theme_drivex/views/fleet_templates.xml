@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    This file contains the XML templates, data records for the Fleet page of the DriveX website theme.
+-->
+<odoo>
+    <template id="drivex_fleet_page" name="DriveX Fleet">
+        <t t-call="website.layout">
+            <t t-set="title">Our Fleet — DriveX</t>
+            <div id="wrap" class="fleet-page oe_structure">
+                <section class="page-hero fleet-hero">
+                    <div class="page-hero-overlay"/>
+                    <div class="container page-hero-content">
+                        <nav class="breadcrumb">
+                            <a href="/">Home</a>
+                            <i class="fa-solid fa-chevron-right"/>
+                            <span>Fleet</span>
+                        </nav>
+                        <h1>Our Premium
+                            <span class="hero-accent">Fleet</span>
+                        </h1>
+                        <p>20+ vehicles across every category — luxury, sports, electric and everyday.</p>
+                        <div class="fleet-hero-stats">
+                            <span>
+                                <strong>20+</strong>
+                                Cars
+                            </span>
+                            <span class="hs-dot"/>
+                            <span>
+                                <strong>6</strong>
+                                Categories
+                            </span>
+                            <span class="hs-dot"/>
+                            <span>
+                                <strong>Instant</strong>
+                                Booking
+                            </span>
+                        </div>
+                    </div>
+                </section>
+                <div class="filter-bar-wrap" id="filterBarWrap">
+                    <div class="container filter-bar">
+                        <div class="fb-search">
+                            <i class="fa-solid fa-magnifying-glass"/>
+                            <input type="text" id="carSearch" placeholder="Search by name or model…"/>
+                        </div>
+                        <div class="fb-cats" id="fbCats">
+                            <button class="fb-cat active" data-cat="all">All Vehicles</button>
+                            <t t-if="not demo_fallback">
+                                <t t-foreach="categories" t-as="cat">
+                                    <button class="fb-cat" t-att-data-cat="cat.name.lower()">
+                                        <t t-esc="cat.name"/>
+                                    </button>
+                                </t>
+                            </t>
+                        </div>
+                        <div class="fb-right">
+                            <select id="sortSelect" class="fb-sort">
+                                <option value="default">Sort: Featured</option>
+                                <option value="price-asc">Price: Low → High</option>
+                                <option value="price-desc">Price: High → Low</option>
+                                <option value="rating">Top Rated</option>
+                                <option value="newest">Newest</option>
+                            </select>
+                            <div class="fb-view">
+                                <button class="fv-btn active" id="gridView" data-view="grid" title="Grid view">
+                                    <i class="fa-solid fa-grip"/>
+                                </button>
+                                <button class="fv-btn" id="listView" data-view="list" title="List view">
+                                    <i class="fa-solid fa-list"/>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <section class="fleet-section fleet-main">
+                    <div class="container">
+                        <div class="results-bar">
+                            <span id="resultsCount">Showing <strong>20</strong> vehicles
+                            </span>
+                            <div class="active-filters" id="activeFilters"/>
+                        </div>
+                        <div t-att-class="'fc-grid' if (not demo_fallback and vehicles) else ''" id="fleetGrid">
+
+                            <t t-if="not demo_fallback">
+                                <t t-if="vehicles">
+                                    <t t-foreach="vehicles" t-as="v">
+                                        <div class="fc-card"
+                                             t-att-data-cat="v.category_id.name.lower() if v.category_id else 'all'"
+                                             t-att-data-price="v.daily_rate" data-rating="5.0"
+                                             t-att-data-year="v.model_year or ''">
+                                            <div class="fc-image">
+                                                <t t-if="v.category_id">
+                                                    <span class="fc-badge">
+                                                        <t t-esc="v.category_id.name"/>
+                                                    </span>
+                                                </t>
+                                                <t t-if="v.model_year">
+                                                    <span class="fc-year-tag">
+                                                        <t t-esc="v.model_year"/>
+                                                    </span>
+                                                </t>
+                                                <img t-attf-src="/web/image/fleet.vehicle/#{v.id}/image_128"
+                                                     t-att-alt="v.model_id.name" loading="lazy"/>
+                                                <button class="fc-heart" aria-label="Wishlist">
+                                                    <i class="fa-regular fa-heart"/>
+                                                </button>
+                                            </div>
+                                            <div class="fc-body">
+                                                <div class="fc-head">
+                                                    <div>
+                                                        <h3>
+                                                            <t t-esc="v.model_id.brand_id.name"/>
+                                                            <t t-esc="v.model_id.name"/>
+                                                        </h3>
+                                                        <p class="fc-sub">
+                                                            <t t-if="v.category_id">
+                                                                <t t-esc="v.category_id.name"/>
+                                                                ·
+                                                            </t>
+                                                            <t t-if="v.horsepower">
+                                                                <t t-esc="v.horsepower"/>
+                                                                HP
+                                                            </t>
+                                                        </p>
+                                                    </div>
+                                                    <div class="fc-price">
+                                                        $
+                                                        <t t-esc="v.daily_rate"/>
+                                                        <span>/day</span>
+                                                    </div>
+                                                </div>
+                                                <div class="fc-rating">
+                                                    <i class="fa-solid fa-star"/>
+                                                    <i class="fa-solid fa-star"/>
+                                                    <i class="fa-solid fa-star"/>
+                                                    <i class="fa-solid fa-star"/>
+                                                    <span>5.0 reviews</span>
+                                                </div>
+                                                <div class="fc-specs">
+                                                    <span>
+                                                        <i class="fa-solid fa-sliders"/>
+                                                        <t t-esc="v.transmission and v.transmission.capitalize() or 'Auto'"/>
+                                                    </span>
+                                                    <span>
+                                                        <i class="fa-solid fa-users"/>
+                                                        <t t-esc="v.seats"/>
+                                                        Seats
+                                                    </span>
+                                                    <span>
+                                                        <i class="fa-solid fa-gas-pump"/>
+                                                        <t t-esc="v.fuel_type and v.fuel_type.capitalize() or 'Petrol'"/>
+                                                    </span>
+                                                    <span>
+                                                        <i class="fa-solid fa-door-open"/>
+                                                        <t t-esc="v.doors"/>
+                                                        Doors
+                                                    </span>
+                                                </div>
+                                                <div class="fc-tags">
+                                                    <t t-foreach="v.feature_ids" t-as="feat">
+                                                        <span>
+                                                            <t t-esc="feat.name"/>
+                                                        </span>
+                                                    </t>
+                                                </div>
+                                                <div class="fc-footer">
+                                                    <a t-attf-href="/car-detail/#{v.id}#{query_string}"
+                                                       class="fc-detail">View Details
+                                                        <i class="fa-solid fa-arrow-right"/>
+                                                    </a>
+                                                    <a t-attf-href="/booking/#{v.id}#{query_string}" class="fc-rent">
+                                                        Rent Now
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+                            </t>
+
+                            <t t-else="">
+                                <section class="">
+                                    <div class="container" style="text-align:center;padding:80px 20px;">
+                                        <i class="fa-solid fa-car"
+                                           style="font-size:3rem;color:#ccc;margin-bottom:20px;display:block;"/>
+                                        <h2 style="font-size:1.6rem;font-weight:700;color:#222;margin-bottom:12px;">No
+                                            Vehicles Available
+                                        </h2>
+                                        <p style="font-size:1rem;color:#666;max-width:480px;margin:0 auto 28px;">
+                                            No vehicles have been configured yet. Please add and publish vehicles from
+                                            the Fleet module in the backend to display them here.
+                                        </p>
+                                    </div>
+                                </section>
+                            </t>
+
+                        </div>
+                        <div class="no-results" id="noResults" style="display:none;">
+                            <i class="fa-solid fa-car"/>
+                            <h3>No vehicles found</h3>
+                            <p>Try adjusting your filters or search term.</p>
+                            <button class="btn-red" onclick="resetFilters()">Reset Filters</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="cta-banner">
+                    <div class="container cta-content">
+                        <div class="cta-text">
+                            <h2>Ready to Hit the Road?</h2>
+                            <p>Book your dream car in under 60 seconds.</p>
+                        </div>
+                        <div class="cta-actions">
+                            <a href="/booking" class="btn-red">
+                                <i class="fa-solid fa-calendar-check"/>
+                                Book Now
+                            </a>
+                            <a href="/contactus" class="btn-outline-white">
+                                <i class="fa-solid fa-headset"/>
+                                Get Help
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                <div class="oe_structure"/>
+            </div>
+        </t>
+    </template>
+    <record id="drivex_fleet_page_page" model="website.page">
+        <field name="name">DriveX Fleet</field>
+        <field name="url">/fleet</field>
+        <field name="is_published" eval="True"/>
+        <field name="website_indexed" eval="True"/>
+        <field name="type">qweb</field>
+        <field name="key">theme_drivex.drivex_fleet_page</field>
+        <field name="arch" type="xml">
+            <t t-call="theme_drivex.drivex_fleet_page"/>
+        </field>
+    </record>
+</odoo>

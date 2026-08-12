@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="accounting_dashboard_pro.OverdueInvoices">
+        <div class="adp-list-card list-overdue">
+            <div class="adp-list-header">
+                <div class="adp-list-title">
+                    <i class="fa fa-exclamation-triangle"/>
+                    Overdue Invoices
+                </div>
+                <span class="adp-list-badge" t-if="props.data.length" t-esc="props.data.length"/>
+            </div>
+            <div class="adp-list-body">
+                <t t-if="!props.data.length">
+                    <div class="adp-list-empty">
+                        <i class="fa fa-check-circle" style="color:#34d399;font-size:22px;display:block;margin-bottom:6px"/>
+                        No overdue invoices!
+                    </div>
+                </t>
+                <t t-foreach="props.data" t-as="item" t-key="item.id">
+                    <div class="adp-list-item" t-on-click="() => this.onClick(item.id)">
+                        <div class="adp-list-item-info">
+                            <div class="name" t-esc="item.name"/>
+                            <div class="partner" t-esc="item.partner_name || 'N/A'"/>
+                        </div>
+                        <div class="adp-list-item-right">
+                            <div class="amount" t-esc="props.formatCurrency(item.amount)"/>
+                            <div class="badge badge-danger">
+                                <t t-esc="item.days_overdue"/> days
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="accounting_dashboard_pro.UpcomingBills">
+        <div class="adp-list-card list-bills">
+            <div class="adp-list-header">
+                <div class="adp-list-title">
+                    <i class="fa fa-calendar-check-o"/>
+                    Upcoming Bills
+                </div>
+                <span class="adp-list-badge" t-if="props.data.length" t-esc="props.data.length"/>
+            </div>
+            <div class="adp-list-body">
+                <t t-if="!props.data.length">
+                    <div class="adp-list-empty">
+                        <i class="fa fa-check-circle" style="color:#34d399;font-size:22px;display:block;margin-bottom:6px"/>
+                        No upcoming bills this week
+                    </div>
+                </t>
+                <t t-foreach="props.data" t-as="item" t-key="item.id">
+                    <div class="adp-list-item" t-on-click="() => this.onClick(item.id)">
+                        <div class="adp-list-item-info">
+                            <div class="name" t-esc="item.name"/>
+                            <div class="partner" t-esc="item.partner_name || 'N/A'"/>
+                        </div>
+                        <div class="adp-list-item-right">
+                            <div class="amount" t-esc="props.formatCurrency(item.amount)"/>
+                            <div class="badge badge-warning">
+                                in <t t-esc="item.days_until_due"/> days
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="accounting_dashboard_pro.RecentPayments">
+        <div class="adp-list-card list-payments">
+            <div class="adp-list-header">
+                <div class="adp-list-title">
+                    <i class="fa fa-credit-card"/>
+                    Recent Payments
+                </div>
+            </div>
+            <div class="adp-list-body">
+                <t t-if="!props.data.length">
+                    <div class="adp-list-empty">
+                        <i class="fa fa-info-circle" style="font-size:22px;display:block;margin-bottom:6px"/>
+                        No recent payments
+                    </div>
+                </t>
+                <t t-foreach="props.data" t-as="item" t-key="item.id">
+                    <div class="adp-list-item" t-on-click="() => this.onClick(item.id)">
+                        <div class="adp-list-item-info">
+                            <div class="name" t-esc="item.name"/>
+                            <div class="partner" t-esc="item.partner_name || 'N/A'"/>
+                        </div>
+                        <div class="adp-list-item-right">
+                            <div t-att-class="'amount ' + (item.payment_type === 'inbound' ? 'text-success' : 'text-danger')">
+                                <t t-if="item.payment_type === 'inbound'">+</t>
+                                <t t-else="">-</t>
+                                <t t-esc="props.formatCurrency(item.amount)"/>
+                            </div>
+                            <div class="badge badge-info" t-esc="item.journal_name"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>

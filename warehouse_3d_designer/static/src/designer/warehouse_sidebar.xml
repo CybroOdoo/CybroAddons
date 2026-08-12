@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- OWL template: Warehouse Sidebar panel component -->
+<templates xml:space="preserve">
+
+    <t t-name="warehouse_3d_designer.WarehouseSidebar">
+        <div class="o_warehouse_sidebar d-flex flex-column">
+            <!-- Header -->
+            <div class="o_sidebar_header">
+                <h6>
+                    <i class="fa fa-info-circle me-1"/>
+                    <t t-if="selectedLoc">Location Details</t>
+                    <t t-else="">Warehouse Panel</t>
+                </h6>
+            </div>
+
+            <div class="o_sidebar_body flex-grow-1 overflow-auto">
+
+                <!-- Unit Selector -->
+                <div class="o_unit_selector">
+                    <label class="form-label small fw-bold text-muted">
+                        <i class="fa fa-ruler me-1"/>Measurement Unit
+                    </label>
+                    <select class="form-select form-select-sm"
+                            t-on-change="onUnitChange">
+                        <option value="m" t-att-selected="props.measurementUnit === 'm'">Meters (m)</option>
+                        <option value="cm" t-att-selected="props.measurementUnit === 'cm'">Centimeters (cm)</option>
+                        <option value="inch" t-att-selected="props.measurementUnit === 'inch'">Inches (″)</option>
+                    </select>
+                </div>
+
+                <!-- Selected Location Details -->
+                <t t-if="selectedLoc">
+                    <div class="o_location_detail">
+                        <div class="o_loc_header">
+                            <h6 class="o_loc_name" t-esc="selectedLoc.name"/>
+                            <p class="o_loc_path" t-esc="selectedLoc.complete_name"/>
+                        </div>
+
+                        <!-- Shape Picker (admin only) -->
+                        <div t-if="props.isAdmin" class="o_loc_section">
+                            <label class="form-label small fw-bold text-muted">Shape</label>
+                            <select class="form-select form-select-sm"
+                                    t-on-change="onShapeChange">
+                                <t t-foreach="shapeOptions" t-as="opt" t-key="opt.value">
+                                    <option t-att-value="opt.value"
+                                            t-att-selected="selectedLoc.location_shape === opt.value">
+                                        <t t-esc="opt.icon"/> <t t-esc="opt.label"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+                        <div t-else="" class="o_loc_section">
+                            <span class="badge bg-secondary rounded-pill">
+                                <t t-esc="selectedLoc.location_shape"/>
+                            </span>
+                        </div>
+
+                        <!-- Dimensions -->
+                        <div class="o_dimensions_panel">
+                            <t t-if="selectedLoc.location_shape === 'dock' and props.isAdmin">
+                                <div class="d-flex justify-content-between small mb-2 align-items-center">
+                                    <span class="text-muted">Rotation</span>
+                                    <select class="form-select form-select-sm text-end p-0 px-2 fw-bold text-info bg-transparent border-0 w-auto"
+                                            t-on-change="onRotationChange">
+                                        <option value="0" t-att-selected="selectedLoc.location_rotation === 0">0° (Face Front)</option>
+                                        <option value="90" t-att-selected="selectedLoc.location_rotation === 90">90° (Face Right)</option>
+                                        <option value="180" t-att-selected="selectedLoc.location_rotation === 180">180° (Face Back)</option>
+                                        <option value="270" t-att-selected="selectedLoc.location_rotation === 270">270° (Face Left)</option>
+                                    </select>
+                                </div>
+                            </t>
+                            <div class="d-flex justify-content-between small">
+                                <span class="text-muted">Width</span>
+                                <span class="fw-bold" t-esc="convertSize(selectedLoc.size_x || 2)"/>
+                            </div>
+                            <div class="d-flex justify-content-between small">
+                                <span class="text-muted">Height</span>
+                                <span class="fw-bold" t-esc="convertSize(selectedLoc.size_y || 1)"/>
+                            </div>
+                            <t t-if="selectedLoc.location_shape === 'zone' or selectedLoc.location_shape === 'floor'">
+                                <div class="d-flex justify-content-between small mt-1 pt-1 border-top">
+                                    <span class="text-muted">Area</span>
+                                    <span class="fw-bold text-primary" t-esc="getArea()"/>
+                                </div>
+                            </t>
+                            <t t-if="selectedLoc.location_shape === 'shelf'">
+                                <div class="d-flex justify-content-between small mt-1 pt-1 border-top align-items-center">
+                                    <span class="text-muted">Rows</span>
+                                    <t t-if="props.isAdmin">
+                                        <input type="number"
+                                               class="form-control form-control-sm text-end p-0 px-1 text-info fw-bold bg-transparent border-0"
+                                               style="width: 40px;"
+                                               t-att-value="selectedLoc.shelf_rows || 1"
+                                               min="1"
+                                               max="20"
+                                               t-on-change="onRowsChange"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="fw-bold text-info" t-esc="selectedLoc.shelf_rows || 1"/>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- Children info -->
+                        <t t-if="selectedLoc.children and selectedLoc.children.length > 0">
+                            <div class="o_children_info mt-2 mb-2">
+                                <label class="form-label small fw-bold text-muted mb-1">
+                                    <i class="fa fa-sitemap me-1"/>Child Locations (<t t-esc="selectedLoc.children.length"/>)
+                                </label>
+                                <div class="list-group list-group-flush" style="max-height: 120px; overflow-y: auto;">
+                                    <t t-foreach="selectedLoc.children" t-as="child" t-key="child.id">
+                                        <div class="list-group-item py-1 px-2 small d-flex align-items-center"
+                                             style="cursor: pointer;"
+                                             t-att-data-loc-id="child.id"
+                                             t-on-click="onSelectPlacedLocation">
+                                            <span class="me-1" t-esc="_shapeIcon(child.location_shape || 'rack')"/>
+                                            <span class="text-truncate" t-esc="child.name || ('Child #' + child.id)"/>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Color swatch -->
+                        <div class="d-flex align-items-center small mb-2">
+                            <span class="me-2 text-muted">Color</span>
+                            <span class="o_color_swatch rounded-circle border"
+                                  t-attf-style="background:{{selectedLoc.location_color || '#4A90D9'}}; width:18px; height:18px; display:inline-block;"/>
+                            <span class="ms-2 small" style="color:#64748b" t-esc="selectedLoc.location_color || '#4A90D9'"/>
+                        </div>
+
+                        <!-- Heatmap info -->
+                        <t t-if="props.heatmapEnabled and props.heatmapData[selectedLoc.id]">
+                            <div class="o_heatmap_info">
+                                <small class="fw-bold" style="color:#cbd5e1;">Stock Fill</small>
+                                <div class="progress mt-1" style="height: 6px;">
+                                    <div class="progress-bar"
+                                         t-attf-style="width:{{props.heatmapData[selectedLoc.id].fill_pct}}%; background: hsl({{120 - (props.heatmapData[selectedLoc.id].fill_pct / 100) * 120}}, 80%, 45%);"
+                                         role="progressbar"/>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small class="text-muted">
+                                        <t t-esc="props.heatmapData[selectedLoc.id].fill_pct"/>% full
+                                    </small>
+                                </div>
+                                <div class="o_heatmap_metrics mt-2">
+                                    <div class="d-flex justify-content-between small">
+                                        <span class="text-muted">Quantity</span>
+                                        <span class="fw-bold" t-esc="props.heatmapData[selectedLoc.id].qty"/>
+                                    </div>
+                                    <div class="d-flex justify-content-between small">
+                                        <span class="text-muted">Products</span>
+                                        <span class="fw-bold" t-esc="props.heatmapData[selectedLoc.id].product_count"/>
+                                    </div>
+                                    <div class="d-flex justify-content-between small">
+                                        <span class="text-muted">Weight</span>
+                                        <span class="fw-bold">
+                                            <t t-esc="props.heatmapData[selectedLoc.id].weight"/> kg
+                                        </span>
+                                    </div>
+                                </div>
+                                <!-- Child-level heatmap -->
+                                <t t-if="selectedLoc.children and selectedLoc.children.length > 0">
+                                    <div class="o_heatmap_children mt-2 pt-2" style="border-top: 1px solid rgba(255,255,255,0.08);">
+                                        <small class="fw-bold" style="color:#94a3b8;">Child Locations</small>
+                                        <t t-foreach="selectedLoc.children" t-as="child" t-key="child.id">
+                                            <t t-if="props.heatmapData[child.id]">
+                                                <div class="d-flex align-items-center gap-2 mt-1">
+                                                    <div class="flex-grow-1">
+                                                        <small class="text-truncate d-block" style="max-width:140px;" t-esc="child.name"/>
+                                                    </div>
+                                                    <div class="progress flex-shrink-0" style="height: 4px; width: 60px;">
+                                                        <div class="progress-bar"
+                                                             t-attf-style="width:{{props.heatmapData[child.id].fill_pct}}%; background: hsl({{120 - (props.heatmapData[child.id].fill_pct / 100) * 120}}, 80%, 45%);"
+                                                             role="progressbar"/>
+                                                    </div>
+                                                    <small class="text-muted" style="min-width:32px; text-align:right;">
+                                                        <t t-esc="props.heatmapData[child.id].fill_pct"/>%
+                                                    </small>
+                                                </div>
+                                            </t>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+
+                        <!-- Actions -->
+                        <div class="o_loc_actions">
+                            <button class="btn btn-sm btn-outline-primary flex-grow-1"
+                                    t-on-click="() => this.props.onOpenLocation(selectedLoc.id)">
+                                <i class="fa fa-external-link me-1"/>Open
+                            </button>
+                            <button t-if="props.isAdmin"
+                                    class="btn btn-sm btn-outline-danger flex-grow-1"
+                                    t-on-click="() => this.props.onLocationRemoved(selectedLoc.id)">
+                                <i class="fa fa-times me-1"/>Remove
+                            </button>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Product Search Results -->
+                <t t-if="props.productSearchResults.length > 0">
+                    <div class="o_search_results">
+                        <label class="form-label small fw-bold text-muted">
+                            <i class="fa fa-search me-1"/>Product Locations
+                        </label>
+                        <div class="list-group list-group-flush">
+                            <t t-foreach="props.productSearchResults" t-as="result" t-key="result.product_id + '_' + result.location_id">
+                                <a class="list-group-item list-group-item-action"
+                                   t-att-data-loc-id="result.location_id"
+                                   t-on-click="onClickResult"
+                                   t-attf-class="list-group-item list-group-item-action {{props.highlightedLocationId === result.location_id ? 'active' : ''}}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <small class="fw-bold" t-esc="result.product_name"/>
+                                            <br/>
+                                            <small class="text-muted" t-esc="result.location_name"/>
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">
+                                            <t t-esc="result.qty"/> <t t-esc="result.uom"/>
+                                        </span>
+                                    </div>
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ============================================ -->
+                <!-- Placed Locations — Browse + Search            -->
+                <!-- ============================================ -->
+                <div class="o_placed_locations mt-2">
+                    <label class="form-label small fw-bold text-muted mb-1">
+                        <i class="fa fa-th-list me-1"/>Placed Locations
+                        <span class="badge bg-secondary ms-1 rounded-pill" t-esc="props.locations.length"/>
+                    </label>
+
+                    <!-- Filter input -->
+                    <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text"><i class="fa fa-filter"/></span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Filter locations..."
+                               t-att-value="filterState.query"
+                               t-on-input="onFilterInput"
+                               t-on-keydown="onFilterKeydown"/>
+                        <button t-if="filterState.query"
+                                class="btn btn-outline-secondary"
+                                type="button"
+                                t-on-click="onFilterClear">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </div>
+
+                    <div class="list-group list-group-flush o_placed_list" style="max-height: 250px; overflow-y: auto;">
+                        <t t-foreach="filteredLocations" t-as="loc" t-key="loc.id">
+                            <div t-attf-class="list-group-item list-group-item-action py-1 px-2 d-flex align-items-center {{props.selectedLocationId === loc.id ? 'active' : ''}}"
+                                 style="cursor: pointer; font-size: 0.82rem;"
+                                 t-att-data-loc-id="loc.id"
+                                 t-on-click="onSelectPlacedLocation">
+                                <span class="me-1" style="font-size: 0.75rem;" t-esc="_shapeIcon(loc.location_shape)"/>
+                                <div class="flex-grow-1 text-truncate">
+                                    <span class="fw-semibold" t-esc="loc.name"/>
+                                    <t t-if="loc.children and loc.children.length > 0">
+                                        <span class="badge bg-info ms-1 rounded-pill" style="font-size: 0.65rem;"
+                                              t-att-title="loc.children.length + ' children'">
+                                            <t t-esc="loc.children.length"/> <i class="fa fa-sitemap"/>
+                                        </span>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                        <t t-if="filteredLocations.length === 0">
+                            <div class="text-center text-muted py-2 small">
+                                <i class="fa fa-search me-1"/>No matching locations
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Unplaced Locations (admin only) -->
+                <t t-if="props.isAdmin and props.unplacedLocations.length > 0">
+                    <div class="o_unplaced_locations">
+                        <label class="form-label small fw-bold text-muted">
+                            <i class="fa fa-map-marker me-1"/>Unplaced Locations
+                        </label>
+                        <div class="list-group list-group-flush">
+                            <t t-foreach="props.unplacedLocations" t-as="loc" t-key="loc.id">
+                                <div class="list-group-item list-group-item-action d-flex align-items-center"
+                                     draggable="true"
+                                     t-att-data-loc-id="loc.id"
+                                     t-on-dragstart="onDragStart">
+                                    <i class="fa fa-arrows text-muted me-2"/>
+                                    <div>
+                                        <small class="fw-bold" t-esc="loc.name"/>
+                                        <br/>
+                                        <small class="text-muted" t-esc="loc.complete_name"/>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Map Objects (Decorations) for Admin -->
+                <t t-if="props.isAdmin">
+                    <div class="o_map_objects mt-2 mb-3">
+                        <label class="form-label small fw-bold text-muted">
+                            <i class="fa fa-cubes me-1"/>Decorations &amp; Structures
+                        </label>
+                        <div class="list-group list-group-flush o_objects_list">
+                            <t t-foreach="mapObjectOptions" t-as="mobj" t-key="mobj.value">
+                                <div class="list-group-item list-group-item-action d-flex align-items-center py-1 px-2 cursor-pointer"
+                                     draggable="true"
+                                     t-att-data-obj-type="mobj.value"
+                                     t-on-dragstart="onDragStart"
+                                     style="font-size: 0.85rem;">
+                                    <i class="fa fa-arrows text-muted me-2" style="font-size: 0.75rem;"/>
+                                    <span class="me-2" t-esc="mobj.icon"/>
+                                    <span t-esc="mobj.label"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Empty state -->
+                <t t-if="!selectedLoc and props.productSearchResults.length === 0 and props.locations.length === 0 and !(props.isAdmin and props.unplacedLocations.length > 0)">
+                    <div class="text-center text-muted py-4">
+                        <i class="fa fa-hand-pointer-o fa-2x mb-2"/>
+                        <p class="small">Click a location on the map to view details</p>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>
