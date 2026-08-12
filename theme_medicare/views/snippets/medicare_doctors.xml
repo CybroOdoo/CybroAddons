@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="s_medicare_doctors" name="Medicare Doctors">
+            <section class="section-pad section-muted s_medicare_doctors" data-snippet="theme_medicare.s_medicare_doctors" data-name="Medicare Doctors">
+                <!-- Fetch up to 4 active doctors from the database -->
+                <t t-set="home_doctors" t-value="request.env['medicare.doctor'].sudo().search([('active', '=', True)], limit=4)"/>
+                <div class="container-fluid px-5">
+                    <div class="text-center mb-5">
+                        <div class="section-label">Our Specialists</div>
+                        <h2 class="section-title">Meet Our Expert Doctors</h2>
+                        <p class="section-subtitle">Highly qualified professionals dedicated to your care</p>
+                    </div>
+
+                    <t t-if="home_doctors">
+                        <div class="row g-3">
+                            <t t-foreach="home_doctors" t-as="doctor">
+                                <div class="col-12 col-md-6 col-lg-3">
+                                    <div class="doctor-card">
+                                        <div class="doctor-img-wrap">
+                                            <img t-if="doctor.image"
+                                                 t-attf-src="data:image/png;base64,{{doctor.image.decode('utf-8')}}"
+                                                 t-att-alt="doctor.name"
+                                                 class="doctor-img" />
+                                            <img t-else=""
+                                                 src="/theme_medicare/static/src/img/avatar-male-35-50-South-Asian-1.jpg"
+                                                 t-att-alt="doctor.name"
+                                                 class="doctor-img" />
+                                            <span class="doctor-specialty-badge"
+                                                  t-esc="doctor.department_id.name if doctor.department_id else (doctor.specialization or 'Specialist')"/>
+                                        </div>
+                                        <div class="doctor-info">
+                                            <h5 class="doctor-name" t-esc="doctor.name"/>
+                                            <p class="doctor-exp" t-esc="doctor.specialization or ''"/>
+                                            <div class="doctor-rating">
+                                                <span class="stars">★★★★★</span>
+                                            </div>
+                                            <!-- Prefill doctor_id and department_id on the appointment page -->
+                                            <a t-attf-href="/appointment?doctor_id=#{doctor.id}&amp;department_id=#{doctor.department_id.id if doctor.department_id else ''}"
+                                               class="btn btn-doctor-book">Book Appointment</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+
+                    <!-- Fallback: no doctors in DB yet -->
+                    <t t-else="">
+                        <div class="text-center py-4">
+                            <p class="text-muted">No doctors available at the moment. Please check back soon.</p>
+                        </div>
+                    </t>
+
+                    <div class="text-center mt-5">
+                        <a href="/doctors" class="btn btn-outline-view">View All Doctors
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7l7 7l-7 7"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </template>
+    </data>
+</odoo>
