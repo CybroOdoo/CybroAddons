@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates xml:space="preserve">
+    <t t-name="personal_organiser.mini_calendar">
+        <div class="mini-calendar">
+            <div class="calendar-header">
+                <h3>
+                    <t t-esc="currentDate.toLocaleString('default', { month: 'long' })"/>
+                    <t t-esc="currentDate.getFullYear()"/>
+                </h3>
+            </div>
+            <div class="calendar-days">
+                <t t-if="state.daysInMonth.length > 0">
+                    <t t-foreach="state.daysInMonth" t-as="day" t-key="day.date.getTime()">
+                        <div
+                            class="calendar-day"
+                            t-att-class="day.hasEvent ? 'calendar-event' : ''"
+                            t-on-click="() => this.selectDay(day)"
+                            style="cursor: pointer;"
+                        >
+                            <t t-esc="day.date.getDate()"/>
+                        </div>
+                    </t>
+                </t>
+                <t t-else="">
+                    <p>No days to display.</p>
+                </t>
+            </div>
+        </div>
+
+        <!-- Display events for the selected day -->
+        <t t-if="state.selectedDayEvents.length > 0">
+            <div class="events-list">
+                <br/>
+                <h4>Events on <t t-esc="state.selectedDate.toLocaleDateString()"/></h4>
+                <div class="event-cards">
+                    <t t-foreach="state.selectedDayEvents" t-as="event" t-key="event.id">
+                        <div class="card mb-2" style="max-width: 20rem;">
+                            <div class="card-body">
+                                <h5 class="card-title" t-esc="event.name"/>
+                                <small class="text-muted" t-esc="new Date(event.start_date).toLocaleDateString()"/>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+        <t t-else="">
+            <p><br/>No events for this day.</p>
+        </t>
+    </t>
+</templates>
