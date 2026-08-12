@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Mail template sending the questionnaire link. -->
+        <record id="email_template_vendor_questionnaire" model="mail.template">
+            <field name="name">Vendor Qualification: Questionnaire</field>
+            <field name="model_id" ref="model_pharma_vendor_qualification"/>
+            <field name="subject">Vendor Qualification Questionnaire - {{ object.vendor_id.name }}</field>
+            <field name="email_from">{{ object.env.company.catchall_formatted or object.env.user.email_formatted }}</field>
+            <field name="partner_to">{{ object.vendor_id.id }}</field>
+            <field name="email_to">{{ object.vendor_id.email }}</field>
+            <field name="use_default_to" eval="False"/>
+            <field name="description">Sent to vendors to fill out their qualification questionnaire</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-size: 13px;">
+                    Dear <t t-out="object.vendor_id.name or ''">Vendor</t>,
+                    <br/>
+                    <br/>
+                    As part of our vendor qualification process for
+                    <strong t-out="', '.join(object.product_ids.mapped('name')) or ''">Product</strong>
+                    , we kindly ask you to complete the following qualification questionnaire.
+                    <br/>
+                    <br/>
+                    Please click the button below to access the questionnaire portal:
+                    <div style="margin: 16px 0px 16px 0px; text-align: center;">
+                        <a t-attf-href="{{ object.get_base_url() }}/pharma/vendor/questionnaire/{{ object.id }}?access_token={{ object.access_token }}"
+                           style="background-color: #577CBA; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                            Start Questionnaire
+                        </a>
+                    </div>
+                    If you have any questions, feel free to contact us.
+                    <br/>
+                    <br/>
+                    Best regards,
+                    <br/>
+                    <t t-out="object.create_uid.signature or ''">QA Department</t>
+                </div>
+            </field>
+            <field name="lang">{{ object.vendor_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <!-- Mail template notifying QA of a submission. -->
+        <record id="email_template_vendor_submission_notification" model="mail.template">
+            <field name="name">Vendor Qualification: Submission Notification</field>
+            <field name="model_id" ref="model_pharma_vendor_qualification"/>
+            <field name="subject">Questionnaire Submitted: {{ object.vendor_id.name }}</field>
+            <field name="email_from">{{ object.env.company.catchall_formatted or object.env.user.email_formatted }}</field>
+            <field name="partner_to">{{ object.create_uid.partner_id.id }}</field>
+            <field name="email_to">{{ object.create_uid.email }}</field>
+            <field name="use_default_to" eval="False"/>
+            <field name="description">Sent to QA when a vendor submits their questionnaire</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-size: 13px;">
+                    Hello<t t-out="object.create_uid.name or 'QA Team'"/>,
+                    <br/>
+                    <br/>
+                    The vendor
+                    <strong>
+                        <t t-out="object.vendor_id.name or ''">Vendor</t>
+                    </strong>
+                    has successfully submitted
+                    their qualification questionnaire for
+                    <strong>
+                        <t t-out="', '.join(object.product_ids.mapped('name')) or ''">Product</t>
+                    </strong>
+                    .
+                    <br/>
+                    <br/>
+                    <strong>Qualification Reference:</strong>
+                    <t t-out="object.display_name"/>
+                    <br/>
+                    <strong>Submission Time:</strong>
+                    <t t-out="object.submission_date"/>
+                    <br/>
+                    <br/>
+                    Please click the button below to review the responses:
+                    <div style="margin: 16px 0px 16px 0px; text-align: center;">
+                        <a t-attf-href="{{ object.get_base_url() }}/web#id={{ object.id }}&amp;model=pharma.vendor.qualification&amp;view_type=form"
+                           style="background-color: #577CBA; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                            View Qualification
+                        </a>
+                    </div>
+                    Best regards,
+                    <br/>
+                    Odoo System
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

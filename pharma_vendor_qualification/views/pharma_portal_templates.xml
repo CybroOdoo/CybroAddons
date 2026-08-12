@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Portal page where vendors fill the questionnaire. -->
+    <template id="portal_vendor_questionnaire" name="Vendor Qualification Questionnaire">
+        <t t-call="web.frontend_layout">
+            <main id="wrap" class="vq-questionnaire-page py-4 py-lg-5">
+                <div class="container">
+                    <div class="vq-questionnaire-shell mx-auto">
+                        <header class="vq-hero-card">
+                            <div class="vq-hero-icon" aria-hidden="true">
+                                <i class="fa fa-clipboard"/>
+                            </div>
+                            <div>
+                                <p class="vq-eyebrow mb-2">Vendor portal</p>
+                                <h1 class="vq-page-title">Vendor Qualification Questionnaire</h1>
+                                <p class="vq-welcome mb-0">
+                                    Welcome, <strong><t t-out="qualification.vendor_id.name"/></strong>
+                                </p>
+                                <p class="vq-product mb-0">
+                                    <span>Product</span>
+                                    <strong><t t-out="', '.join(qualification.product_ids.mapped('name'))"/></strong>
+                                </p>
+                            </div>
+                        </header>
+
+                        <form class="vq-questionnaire-form"
+                              t-attf-action="/pharma/vendor/questionnaire/#{qualification.id}/submit"
+                              method="post" enctype="multipart/form-data" data-vq-form="true">
+                            <input type="hidden" name="access_token" t-att-value="access_token"/>
+
+                            <div t-if="error" class="alert alert-danger vq-alert" role="alert">
+                                <i class="fa fa-exclamation-circle me-2" aria-hidden="true"/>
+                                <t t-out="error"/>
+                            </div>
+
+                            <section class="vq-progress-card" aria-labelledby="vq-progress-heading">
+                                <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+                                    <div>
+                                        <h2 id="vq-progress-heading" class="vq-card-title mb-1">Questionnaire progress</h2>
+                                        <p class="vq-card-subtitle mb-0" data-vq-progress-text="true">0 / 0 questions answered</p>
+                                    </div>
+                                    <span class="vq-progress-percentage" data-vq-progress-percentage="true">0%</span>
+                                </div>
+                                <div class="progress vq-progress" role="progressbar" aria-label="Questionnaire completion"
+                                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                                    <div class="progress-bar vq-progress-bar" data-vq-progress-bar="true"/>
+                                </div>
+                            </section>
+
+                            <div id="vqQuestionnaireAccordion" class="accordion vq-accordion" data-vq-accordion="true"/>
+
+                            <div class="vq-question-source" data-vq-question-source="true">
+                                <t t-set="current_section" t-value="None"/>
+                                <t t-foreach="qualification.response_ids" t-as="response">
+                                    <t t-if="response.section and response.section != current_section">
+                                        <h2 class="vq-section-fallback-title" t-att-data-vq-section-heading="response.section">
+                                            <t t-out="response.section"/>
+                                        </h2>
+                                        <t t-set="current_section" t-value="response.section"/>
+                                    </t>
+
+                                    <div class="vq-question-card" role="group"
+                                         t-att-data-vq-section="response.section or ''"
+                                         t-attf-aria-labelledby="vq_question_#{response.id}">
+                                        <div class="vq-question-title" t-attf-id="vq_question_#{response.id}">
+                                            <t t-out="response.question_text"/>
+                                            <span class="vq-required-indicator" aria-hidden="true">*</span>
+                                        </div>
+
+                                        <t t-if="response.answer_type == 'yes_no'">
+                                            <div class="vq-answer-options" role="radiogroup" t-att-aria-label="response.question_text">
+                                                <div class="form-check vq-answer-option">
+                                                    <input class="form-check-input" type="radio"
+                                                           t-attf-name="answer_yes_no_#{response.id}"
+                                                           t-attf-id="yes_#{response.id}" value="True"
+                                                           t-att-checked="response.answer_yes_no == 'yes'"
+                                                           required="required"/>
+                                                    <label class="form-check-label" t-attf-for="yes_#{response.id}">Yes</label>
+                                                </div>
+                                                <div class="form-check vq-answer-option">
+                                                    <input class="form-check-input" type="radio"
+                                                           t-attf-name="answer_yes_no_#{response.id}"
+                                                           t-attf-id="no_#{response.id}" value="False"
+                                                           t-att-checked="response.answer_yes_no == 'no'"
+                                                           required="required"/>
+                                                    <label class="form-check-label" t-attf-for="no_#{response.id}">No</label>
+                                                </div>
+                                            </div>
+                                        </t>
+
+                                        <t t-elif="response.answer_type == 'text'">
+                                            <label class="visually-hidden" t-attf-for="answer_text_#{response.id}">
+                                                <t t-out="response.question_text"/>
+                                            </label>
+                                            <textarea class="form-control vq-form-control" t-attf-id="answer_text_#{response.id}"
+                                                      t-attf-name="answer_text_#{response.id}" rows="4" required="required"><t t-out="response.answer_text or ''"/></textarea>
+                                        </t>
+
+                                        <t t-elif="response.answer_type == 'number'">
+                                            <label class="visually-hidden" t-attf-for="answer_number_#{response.id}">
+                                                <t t-out="response.question_text"/>
+                                            </label>
+                                            <input type="number" step="any" class="form-control vq-form-control"
+                                                   t-attf-id="answer_number_#{response.id}"
+                                                   t-attf-name="answer_number_#{response.id}"
+                                                   t-att-value="response.answer_number" required="required"/>
+                                        </t>
+
+                                        <t t-elif="response.answer_type == 'file'">
+                                            <label class="vq-file-answer-label" t-attf-for="answer_file_#{response.id}">Attach file</label>
+                                            <input type="file" class="form-control vq-file-input vq-question-file-input"
+                                                   t-attf-id="answer_file_#{response.id}"
+                                                   t-attf-name="answer_file_#{response.id}" required="required"/>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <div class="vq-submit-actions">
+                                <button type="submit" class="btn vq-submit-button" data-vq-submit-button="true">
+                                    <span data-vq-submit-label="true">Submit</span>
+                                    <span class="d-none" data-vq-submitting-label="true">
+                                        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"/>
+                                        Submitting...
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </t>
+    </template>
+
+    <!-- Portal page shown after a questionnaire is sent. -->
+    <template id="portal_vendor_questionnaire_success" name="Questionnaire Submitted">
+        <!-- QWeb template displaying the success confirmation screen after a vendor successfully submits their qualification questionnaire. -->
+        <t t-call="web.frontend_layout">
+            <div id="wrap" class="container mt-5 mb-5">
+                <div class="row justify-content-center">
+                    <div class="col-lg-6 text-center">
+                        <div class="card shadow-sm border-0 p-5">
+                            <i class="fa fa-check-circle text-success" style="font-size: 5rem;"/>
+                            <h2 class="mt-4">Thank You!</h2>
+                            <p class="lead text-muted mt-3">
+                                Your questionnaire has been successfully submitted to our QA Department for review. 
+                                We appreciate your cooperation.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Adds AVL enforcement fields to the PO form. -->
+    <record id="purchase_order_form_pharma" model="ir.ui.view">
+        <field name="name">purchase.order.form.pharma</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- 1. Hide the native state statusbar (replaced by the pharma one) -->
+            <xpath expr="//header/field[@name='state']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- 2. Inject the pharma 4-stage statusbar before the buttons -->
+            <xpath expr="//header/button[1]" position="before">
+                <field name="pharma_po_state" widget="statusbar"
+                       statusbar_visible="rfq,sent,waiting_approval,purchase"
+                       readonly="1"/>
+            </xpath>
+
+            <!-- 3. Workflow buttons -->
+            <xpath expr="//header/button[@name='button_confirm']" position="before">
+
+                <!-- Step 1: Procurement (User) submits for QA approval (visible in RFQ / Sent RFQ) -->
+                <button name="action_submit_pharma_approval" type="object"
+                        string="Submit for Approval" class="btn-primary"
+                        invisible="pharma_approval_state != 'draft' or state not in ('draft', 'sent')"
+                        groups="pharmaceutical_base.group_pharma_procurement"/>
+
+                <!-- Step 2a: QA approves (visible when waiting) -->
+                <button name="action_pharma_approve" type="object"
+                        string="Approve PO" class="btn-primary"
+                        invisible="pharma_approval_state != 'waiting_approval'"
+                        groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                <!-- Step 2b: QA rejects (visible when waiting) -->
+                <button name="action_pharma_reject" type="object"
+                        string="Reject"
+                        invisible="pharma_approval_state != 'waiting_approval'"
+                        groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                <!-- Step 3: Reset to draft after rejection (Procurement) -->
+                <button name="action_pharma_reset_draft" type="object"
+                        string="Revise PO"
+                        invisible="pharma_approval_state != 'rejected'"
+                        groups="pharmaceutical_base.group_pharma_procurement,pharmaceutical_base.group_pharma_admin"/>
+
+            </xpath>
+
+            <!-- 4. Hide the standard Confirm Order buttons unless QA approved -->
+            <xpath expr="//header/button[@name='button_confirm' and @id='bid_confirm']" position="attributes">
+                <attribute name="invisible">state != 'sent' or pharma_approval_state != 'approved'</attribute>
+            </xpath>
+            <xpath expr="//header/button[@name='button_confirm' and @id='draft_confirm']" position="attributes">
+                <attribute name="invisible">state != 'draft' or pharma_approval_state != 'approved'</attribute>
+            </xpath>
+
+            <!-- 4b. Warning banner for Not Qualified vendors -->
+            <xpath expr="//sheet" position="before">
+                <field name="is_vendor_not_qualified" invisible="1"/>
+                <div class="alert alert-warning mb-2" role="alert" invisible="not is_vendor_not_qualified">
+                    The selected vendor is Not Qualified in Vendor Qualification.
+                </div>
+            </xpath>
+
+            <!-- 5. Pharma approval status badge below partner. The vendor domain is restricted to approved AVL vendors and Not Qualified vendors. -->
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="widget">many2one</attribute>
+                <attribute name="domain">[('id', 'in', approved_vendor_ids)]</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="approved_vendor_ids" invisible="1"/>
+                <field name="allowed_product_ids" invisible="1"/>
+                <field name="pharma_approval_state" widget="badge" readonly="1"
+                       decoration-success="pharma_approval_state == 'approved'"
+                       decoration-warning="pharma_approval_state in ('draft', 'waiting_approval')"
+                       decoration-danger="pharma_approval_state == 'rejected'"/>
+                <field name="pharma_approved_by"
+                       invisible="pharma_approval_state != 'approved'"/>
+                <field name="pharma_approval_date"
+                       invisible="pharma_approval_state != 'approved'"/>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('id', 'in', parent.allowed_product_ids)]</attribute>
+            </xpath>
+
+            <!-- 6. Pharma / QA notes tab -->
+            <xpath expr="//notebook" position="inside">
+                <page name="pharma_po" string="Pharma / QA">
+                    <group>
+                        <group string="Approval Status">
+                            <field name="pharma_approval_state" readonly="1"/>
+                            <field name="pharma_approved_by"/>
+                            <field name="pharma_approval_date"/>
+                        </group>
+                    </group>
+                    <group string="QA Notes">
+                        <field name="pharma_notes" nolabel="1" colspan="2"
+                               readonly="pharma_approval_state == 'approved'"
+                               placeholder="QA remarks, special conditions, or AVL waiver justification…"/>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Adds AVL columns to the PO list. -->
+    <record id="purchase_order_list_pharma" model="ir.ui.view">
+        <field name="name">purchase.order.list.pharma</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="after">
+                <field name="pharma_po_state" widget="badge"
+                       decoration-success="pharma_po_state == 'purchase'"
+                       decoration-warning="pharma_po_state in ('rfq', 'sent', 'waiting_approval')"
+                       optional="show"
+                       string="Pharma Status"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Action opening requests for quotation. -->
+    <record id="pharma_rfq_action" model="ir.actions.act_window">
+        <field name="name">Requests for Quotation</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', 'not in', ('purchase', 'done', 'cancel'))]</field>
+        <field name="context">{'search_default_todo': 1}</field>
+    </record>
+
+    <!-- Action opening purchase orders. -->
+    <record id="pharma_po_action" model="ir.actions.act_window">
+        <field name="name">Purchase Orders</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', 'in', ('purchase', 'done', 'cancel'))]</field>
+    </record>
+</odoo>

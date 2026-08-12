@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view for approved vendor entries. -->
+    <record id="pharma_avl_list_view" model="ir.ui.view">
+        <field name="name">pharma.avl.list</field>
+        <field name="model">pharma.avl</field>
+        <field name="arch" type="xml">
+            <list string="Approved Vendor List"
+                  create="0"
+                  decoration-danger="status == 'blocked'"
+                  decoration-warning="status == 'under_review'"
+                  decoration-info="status == 'pending_approval'">
+                <field name="product_id"/>
+                <field name="vendor_id"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'approved'"
+                       decoration-warning="status == 'under_review'"
+                       decoration-info="status == 'pending_approval'"
+                       decoration-danger="status == 'blocked'"/>
+                <field name="approval_date"/>
+                <field name="approved_by"/>
+                <field name="expiry_date"/>
+                <field name="vendor_item_code" optional="show"/>
+                <field name="lead_time_days" optional="show"/>
+                <!-- Procurement submit button inline in list -->
+                <button name="action_submit_review" type="object"
+                        string="Submit for Approval" icon="fa-paper-plane"
+                        invisible="status != 'under_review'"
+                        groups="pharmaceutical_base.group_pharma_procurement"/>
+            </list>
+        </field>
+    </record>
+    <!-- Form view for an approved vendor entry. -->
+    <record id="pharma_avl_form_view" model="ir.ui.view">
+        <field name="name">pharma.avl.form</field>
+        <field name="model">pharma.avl</field>
+        <field name="arch" type="xml">
+            <form string="Approved Vendor" create="0">
+                <header>
+                    <!-- Procurement (User): submit for approval -->
+                    <button name="action_submit_review" type="object"
+                            string="Submit for Approval" class="btn-primary"
+                            invisible="status != 'under_review'"
+                            groups="pharmaceutical_base.group_pharma_procurement"/>
+
+                    <!-- QA: approve -->
+                    <button name="action_approve" type="object"
+                            string="Approve" class="btn-primary"
+                            invisible="status != 'pending_approval'"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <!-- QA: block -->
+                    <button name="action_block" type="object"
+                            string="Block Vendor"
+                            invisible="status in ('blocked',)"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <!-- QA: reset to under review -->
+                    <button name="action_reset" type="object"
+                            string="Reset to Under Review"
+                            invisible="status == 'under_review'"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <field name="status" widget="statusbar" readonly="1"
+                           statusbar_visible="under_review,pending_approval,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="vendor_id" placeholder="Vendor…"
+                                   readonly="status not in ('under_review',)"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Product / Vendor">
+                            <field name="product_id"
+                                   readonly="status not in ('under_review',)"/>
+                            <field name="vendor_id"
+                                   readonly="status not in ('under_review',)"/>
+                            <field name="vendor_item_code"
+                                   readonly="status not in ('under_review',)"/>
+                            <field name="lead_time_days"
+                                   readonly="status not in ('under_review',)"/>
+                            <field name="expiry_date" readonly="status == 'approved'"/>
+                        </group>
+                        <group string="Approval">
+                            <field name="status"/>
+                            <field name="approval_date"/>
+                            <field name="approved_by"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1" colspan="2"
+                               placeholder="Additional qualification remarks…"
+                               readonly="status not in ('under_review',)"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Search view for approved vendor entries. -->
+    <record id="pharma_avl_search_view" model="ir.ui.view">
+        <field name="name">pharma.avl.search</field>
+        <field name="model">pharma.avl</field>
+        <field name="arch" type="xml">
+            <search string="Search AVL">
+                <field name="product_id"/>
+                <field name="vendor_id"/>
+                <filter name="approved" string="Approved" domain="[('status','=','approved')]"/>
+                <filter name="pending_approval" string="Waiting for Approval" domain="[('status','=','pending_approval')]"/>
+                <filter name="under_review" string="Under Review" domain="[('status','=','under_review')]"/>
+                <filter name="blocked" string="Blocked" domain="[('status','=','blocked')]"/>
+                <group>
+                    <filter name="group_by_vendor" string="Vendor" context="{'group_by': 'vendor_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Action opening the approved vendor list. -->
+    <record id="pharma_avl_action" model="ir.actions.act_window">
+        <field name="name">Approved Vendor List</field>
+        <field name="res_model">pharma.avl</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_avl_search_view"/>
+        <field name="context">{'search_default_group_by_vendor': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No vendors in the AVL yet.
+            </p>
+            <p>Add vendors and submit them for QA Director approval before raising purchase orders.</p>
+        </field>
+    </record>
+</odoo>

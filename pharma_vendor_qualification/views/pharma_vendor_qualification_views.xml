@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Search view for vendor qualifications. -->
+    <record id="pharma_vendor_qualification_view_search" model="ir.ui.view">
+        <field name="name">pharma.vendor.qualification.search</field>
+        <field name="model">pharma.vendor.qualification</field>
+        <field name="arch" type="xml">
+            <search string="Search Qualifications">
+                <field name="name"/>
+                <field name="vendor_id"/>
+                <field name="approved_by"/>
+                <filter string="Draft" name="filter_draft" domain="[('status', '=', 'draft')]"/>
+                <filter string="Questionnaire Sent" name="filter_qs" domain="[('status', '=', 'questionnaire_sent')]"/>
+                <filter string="Documents Received" name="filter_dr" domain="[('status', '=', 'documents_received')]"/>
+                <filter string="Audit Scheduled" name="filter_as" domain="[('status', '=', 'audit_scheduled')]"/>
+                <filter string="Approved" name="filter_approved" domain="[('status', '=', 'approved')]"/>
+                <filter string="Rejected" name="filter_rejected" domain="[('status', '=', 'rejected')]"/>
+                <filter string="Not Qualified" name="filter_not_qualified" domain="[('status', '=', 'not_qualified')]"/>
+                <filter string="Archived" name="filter_archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Vendor" name="group_by_vendor" domain="[]" context="{'group_by': 'vendor_id'}"/>
+                    <filter string="Status" name="group_by_status" domain="[]" context="{'group_by': 'status'}"/>
+                    <filter string="Approved By" name="group_by_approved_by" domain="[]"
+                            context="{'group_by': 'approved_by'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action opening vendor qualifications. -->
+    <record id="pharma_vendor_qualification_action" model="ir.actions.act_window">
+        <field name="name">Vendor Qualifications</field>
+        <field name="res_model">pharma.vendor.qualification</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_vendor_qualification_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Record the first vendor qualification.
+            </p>
+            <p>
+                Track audits, status, certificates, and approval details of vendors.
+            </p>
+        </field>
+    </record>
+
+    <!-- List view for vendor qualifications. -->
+    <record id="pharma_vendor_qualification_view_list" model="ir.ui.view">
+        <field name="name">pharma.vendor.qualification.list</field>
+        <field name="model">pharma.vendor.qualification</field>
+        <field name="arch" type="xml">
+            <list string="Vendor Qualifications">
+                <field name="vendor_id"/>
+                <field name="version"/>
+                <field name="product_ids" widget="many2many_tags"/>
+                <field name="audit_date"/>
+                <field name="total_score"/>
+                <field name="audit_score"/>
+                <field name="approved_by" widget="many2one_avatar_user"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'approved'"
+                       decoration-warning="status in ('questionnaire_sent', 'documents_received', 'audit_scheduled')"
+                       decoration-danger="status in ('rejected', 'not_qualified')"
+                       decoration-muted="status == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view for a vendor qualification. -->
+    <record id="pharma_vendor_qualification_view_form" model="ir.ui.view">
+        <field name="name">pharma.vendor.qualification.form</field>
+        <field name="model">pharma.vendor.qualification</field>
+        <field name="arch" type="xml">
+            <form string="Vendor Qualification">
+                <header>
+                    <button name="action_send_questionnaire" string="Send Questionnaire" type="object"
+                            class="oe_highlight" invisible="status != 'draft'"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+                    <button name="action_schedule_audit" string="Schedule Audit" type="object" class="oe_highlight"
+                            invisible="status != 'documents_received'"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+                    <button name="action_approve" string="Confirm" type="object" class="oe_highlight"
+                            invisible="status != 'audit_scheduled'" groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-secondary"
+                            invisible="status != 'audit_scheduled'" groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object"
+                            invisible="status not in ('approved', 'rejected', 'not_qualified')"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="draft,questionnaire_sent,documents_received,audit_scheduled,not_qualified,approved"
+                           force_save="1"/>
+                </header>
+                <sheet>
+                    <field name="active" invisible="1"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Basic Info">
+                            <field name="version" readonly="1"/>
+                            <field name="vendor_id" readonly="status in ('approved', 'rejected', 'not_qualified')"/>
+                            <field name="product_ids" readonly="status != 'draft'" options="{'no_create': True}"
+                                   widget="many2many_tags"/>
+                            <field name="template_id" readonly="status in ('approved', 'rejected', 'not_qualified')"/>
+                        </group>
+                        <group string="Audit &amp; Approval">
+                            <field name="submission_date"
+                                   readonly="not active or status in ('approved', 'rejected', 'not_qualified')"/>
+                            <field name="audit_date"
+                                   readonly="not active or status in ('approved', 'rejected', 'not_qualified')"/>
+                            <field name="total_score" required="1"
+                                   readonly="not active or status not in ('draft', 'questionnaire_sent', 'documents_received')"/>
+                            <field name="audit_score" readonly="not active or status != 'audit_scheduled'"/>
+                            <field name="approved_by" widget="many2one_avatar_user" readonly="1"/>
+                            <field name="avl_ids" widget="many2many_tags"
+                                   readonly="not active or status in ('approved', 'rejected', 'not_qualified')"/>
+                            <field name="access_token" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="questionnaire" string="Questionnaire" invisible="not template_id">
+                            <field name="response_ids"
+                                   readonly="not active or status in ('approved', 'rejected', 'not_qualified')">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="question_id" column_invisible="True"/>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="section" readonly="1" optional="show"/>
+                                    <field name="question_text" readonly="1"/>
+                                    <field name="answer_type" column_invisible="True"/>
+                                    <field name="answer_yes_no" readonly="not parent.active or answer_type != 'yes_no'"
+                                           column_invisible="parent.template_id == False"/>
+                                    <field name="answer_text" readonly="not parent.active or answer_type != 'text'"
+                                           column_invisible="parent.template_id == False"/>
+                                    <field name="answer_number" readonly="not parent.active or answer_type != 'number'"
+                                           column_invisible="parent.template_id == False"/>
+                                    <field name="answer_file_filename" column_invisible="True"/>
+                                    <field name="answer_file" filename="answer_file_filename" widget="binary"
+                                           options="{'no_upload': True}"
+                                           readonly="not parent.active or answer_type != 'file'"
+                                           column_invisible="parent.template_id == False"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="rejection" string="Rejection/Disqualification Details"
+                              invisible="status not in ('rejected', 'not_qualified')">
+                            <group>
+                                <field name="rejection_reason"
+                                       readonly="not active or status in ('approved', 'rejected', 'not_qualified')"
+                                       placeholder="Enter reason for rejection..."/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+</odoo>

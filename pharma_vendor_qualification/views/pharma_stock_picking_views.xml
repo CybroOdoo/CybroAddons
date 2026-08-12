@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Adds AVL checks to the receipt form. -->
+    <record id="pharma_stock_picking_form_inherit" model="ir.ui.view">
+        <field name="name">pharma.stock.picking.form.inherit</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <!-- Restrict incoming receipt lines to products whose vendor is on the Approved Vendor List. Present only while this module is installed. -->
+            <xpath expr="//field[@name='move_ids']//field[@name='product_id']" position="attributes">
+                <attribute name="domain">
+                    [
+                        '|', ('parent.picking_type_code', '!=', 'incoming'),
+                        '&amp;', ('avl_ids.vendor_id', '=', parent.partner_id), ('avl_ids.status', '=', 'approved')
+                    ]
+                </attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
