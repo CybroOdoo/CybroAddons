@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- App category holding the pharma roles. -->
+    <record id="module_category_pharmaceutical_base" model="ir.module.category">
+        <field name="name">Pharmaceutical ERP</field>
+        <field name="description">Role-based access levels for the Pharmaceutical ERP / Quality module.</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Privilege that shows pharma roles as one selection. -->
+    <record id="res_groups_privilege_pharma" model="res.groups.privilege">
+        <field name="name">Pharmaceutical ERP</field>
+        <field name="sequence">20</field>
+        <field name="category_id" ref="module_category_pharmaceutical_base"/>
+    </record>
+
+    <!-- Base group with read-only pharma access. -->
+    <record id="group_pharma_user" model="res.groups">
+        <field name="name">Pharma / User</field>
+    </record>
+
+    <!-- Group for operators running BMR steps. -->
+    <record id="group_pharma_operator" model="res.groups">
+        <field name="name">Pharma / Operator</field>
+        <field name="implied_ids" eval="[(4, ref('group_pharma_user'))]"/>
+    </record>
+
+    <!-- Group for QC analysts handling tests and lots. -->
+    <record id="group_pharma_qc_analyst" model="res.groups">
+        <field name="name">Pharma / QC Analyst</field>
+        <field name="implied_ids" eval="[(4, ref('group_pharma_operator'))]"/>
+    </record>
+
+    <!-- Group for QA managers approving specs and CAPAs. -->
+    <record id="group_pharma_qa_manager" model="res.groups">
+        <field name="name">Pharma / QA Manager</field>
+        <field name="implied_ids" eval="[(4, ref('group_pharma_qc_analyst'))]"/>
+    </record>
+
+    <!-- Group for QA directors with full QA authority. -->
+    <record id="group_pharma_qa_director" model="res.groups">
+        <field name="name">Pharma / QA Director</field>
+        <field name="implied_ids" eval="[(4, ref('group_pharma_qa_manager'))]"/>
+    </record>
+
+    <!-- Group for procurement users on POs and AVL. -->
+    <record id="group_pharma_procurement" model="res.groups">
+        <field name="name">Pharma / Procurement</field>
+        <field name="implied_ids" eval="[(4, ref('group_pharma_user'))]"/>
+    </record>
+
+    <!-- Feature group enabling SOP and training. -->
+    <record id="group_pharma_sop_training_feature" model="res.groups">
+        <field name="name">Pharma / SOP &amp; Training Feature</field>
+    </record>
+
+    <!-- Feature group enabling CAPA management. -->
+    <record id="group_pharma_capa_management" model="res.groups">
+        <field name="name">Pharma / CAPA Management Feature</field>
+    </record>
+
+    <!-- Feature group enabling the audit trail. -->
+    <record id="group_audit_trail_feature" model="res.groups">
+        <field name="name">Pharma / Audit Trail Feature</field>
+    </record>
+
+    <!-- Group bundling every pharma technical group. -->
+    <record id="group_pharma_admin" model="res.groups">
+        <field name="name">Pharma / Administrator</field>
+        <field name="implied_ids" eval="[(6, 0, [
+            ref('group_pharma_qa_director'),
+            ref('group_pharma_procurement'),
+            ref('group_pharma_sop_training_feature'),
+            ref('group_pharma_capa_management'),
+            ref('group_audit_trail_feature'),
+        ])]"/>
+    </record>
+
+    <!-- Grants pharma admin rights to system users. -->
+    <record id="base.group_system" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_pharma_admin'))]"/>
+    </record>
+
+    <!-- Role 1: daily user who creates and submits records. -->
+    <record id="group_pharma_role_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_pharma"/>
+        <field name="comment">Standard operational user. Can create and edit records, perform daily operations, and submit records for approval. Cannot approve, delete approved records, or modify module configurations.</field>
+        <!-- Procurement is bundled into the base role: a User drafts AVLs and submits POs for QA approval (submission only — approval sits with QA). -->
+        <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('group_pharma_operator')), (4, ref('group_pharma_procurement'))]"/>
+    </record>
+
+    <!-- Role 2: QA approver of quality records. -->
+    <record id="group_pharma_role_qa" model="res.groups">
+        <field name="name">QA</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_pharma"/>
+        <field name="comment">Quality approval authority. QA is a review/approval role — it reads all pharma records and approves/rejects the submitted forms (QC Tests, Specs, SOPs, AVL, POs, Vendor Qualifications, Batch Release, CAPA, Deviations, OOS, CoA). QA can edit fields on records but cannot create or delete records (data entry is the User's job). QA is NOT a superset of User — it deliberately does not inherit the User role's create rights; instead it gets base access, the QA technical-group chain (for the approve/reject buttons) and audit-trail visibility.</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('group_pharma_qa_director')), (4, ref('group_audit_trail_feature'))]"/>
+    </record>
+
+    <!-- Role 3: manager over QA plus configuration. -->
+    <record id="group_pharma_role_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="sequence">30</field>
+        <field name="privilege_id" ref="res_groups_privilege_pharma"/>
+        <field name="comment">Department/module manager. Full access within the module, including creating, editing, deleting, approving operational records, and viewing reports. Cannot manage users, security groups, or global system settings.</field>
+        <field name="implied_ids" eval="[(4, ref('group_pharma_role_qa')), (4, ref('group_pharma_admin'))]"/>
+    </record>
+
+    <!-- Role 4: administrator with full pharma access. -->
+    <record id="group_pharma_role_admin" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="sequence">40</field>
+        <field name="privilege_id" ref="res_groups_privilege_pharma"/>
+        <field name="comment">Full system administrator. Complete access to all modules, settings, users, security groups, and configurations. Can perform any operation.</field>
+        <field name="implied_ids" eval="[(4, ref('group_pharma_role_manager')), (4, ref('base.group_system'))]"/>
+    </record>
+
+</odoo>

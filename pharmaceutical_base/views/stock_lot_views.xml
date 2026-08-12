@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view for quarantined stock. -->
+    <record id="pharma_quarantine_quant_list" model="ir.ui.view">
+        <field name="name">pharma.quarantine.quant.list</field>
+        <field name="model">stock.quant</field>
+        <field name="arch" type="xml">
+            <list string="Quarantine Queue" create="0" delete="0"
+                  decoration-warning="lot_id != False">
+                <field name="has_incoming_qc" column_invisible="1"/>
+
+                <field name="product_id" readonly="1"/>
+                <field name="lot_id" string="Lot / Batch" readonly="1"
+                       groups="stock.group_production_lot"/>
+                <field name="location_id" readonly="1"/>
+                <field name="quantity" string="Qty on Hand" readonly="1"/>
+                <field name="reserved_quantity" string="Reserved" readonly="1" optional="show"/>
+                <field name="product_uom_id" string="UoM" readonly="1"
+                       groups="uom.group_uom"/>
+                <!-- lot status badge, loaded via related -->
+                <button name="action_quant_create_qc_test" type="object"
+                        string="Create Test Order" class="btn-secondary" icon="fa-flask"
+                        invisible="has_incoming_qc"
+                        groups="pharmaceutical_base.group_pharma_operator"/>
+                <button name="action_view_stock_moves" type="object"
+                        string="Moves" class="btn-link" icon="fa-exchange"/>
+                <button name="action_quant_open_lot" type="object"
+                        string="Open Lot" class="btn-link" icon="fa-external-link"/>
+            </list>
+        </field>
+    </record>
+    <!-- Form view for a quarantined quant. -->
+    <record id="pharma_quarantine_quant_form" model="ir.ui.view">
+        <field name="name">pharma.quarantine.quant.form</field>
+        <field name="model">stock.quant</field>
+        <field name="arch" type="xml">
+            <form string="Quarantine Item" create="0" delete="0">
+                <header>
+                    <button name="action_quant_create_qc_test" type="object" string="Create Test Order"
+                            class="oe_highlight" invisible="has_incoming_qc"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+                </header>
+                <sheet>
+                    <field name="has_incoming_qc" invisible="1"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_qc_test_orders" type="object"
+                                class="oe_stat_button" icon="fa-flask"
+                                invisible="qc_test_order_count == 0"
+                                title="QC Test Orders for this product.">
+                            <field name="qc_test_order_count" widget="statinfo" string="QC Tests"/>
+                        </button>
+                        <button name="action_view_stock_moves" type="object"
+                                class="oe_stat_button" icon="fa-exchange"
+                                invisible="move_line_count == 0"
+                                title="Stock moves — received from / moved to.">
+                            <field name="move_line_count" widget="statinfo" string="Stock Moves"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="product_id" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Material">
+                            <field name="product_id" readonly="1"/>
+                            <field name="lot_id" string="Lot / Batch" readonly="1"
+                                   groups="stock.group_production_lot"/>
+                            <field name="location_id" readonly="1"/>
+                        </group>
+                        <group string="Quantity">
+                            <field name="quantity" string="Qty on Hand" readonly="1"/>
+                            <field name="reserved_quantity" string="Reserved" readonly="1"/>
+                            <field name="available_quantity" string="Available" readonly="1"/>
+                            <field name="product_uom_id" string="UoM" readonly="1"
+                                   groups="uom.group_uom"/>
+                        </group>
+                    </group>
+                    <group string="Lot / Batch Details"
+                           invisible="not lot_id"
+                           groups="stock.group_production_lot">
+                        <group>
+                            <field name="lot_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-warning" role="alert">
+                        <strong>GMP Notice:</strong>
+                        This material is in <strong>Quarantine</strong>.
+                        It must pass incoming QC testing before it can be used in production.
+                        Use the buttons above to Approve, Reject, Put On Hold, or create a QC Test Order.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Search view for quarantined stock. -->
+    <record id="pharma_quarantine_quant_search" model="ir.ui.view">
+        <field name="name">pharma.quarantine.quant.search</field>
+        <field name="model">stock.quant</field>
+        <field name="arch" type="xml">
+            <search string="Stock by QC Status">
+                <field name="lot_id"/>
+                <field name="product_id"/>
+                <field name="location_id"/>
+                <filter name="filter_quarantine" string="Quarantine"
+                        domain="[('lot_id.lot_status', '=', 'quarantine')]"/>
+                <filter name="filter_approved" string="Approved"
+                        domain="[('lot_id.lot_status', '=', 'approved')]"/>
+                <filter name="filter_released" string="Released"
+                        domain="[('lot_id.lot_status', '=', 'released')]"/>
+                <filter name="filter_on_hold" string="On Hold"
+                        domain="[('lot_id.lot_status', '=', 'on_hold')]"/>
+                <filter name="filter_rejected" string="Rejected"
+                        domain="[('lot_id.lot_status', '=', 'rejected')]"/>
+                <group>
+                    <filter name="group_product" string="Product" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_location" string="Location" context="{'group_by': 'location_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Action opening the quarantine queue. -->
+    <record id="pharma_quarantine_queue_action" model="ir.actions.act_window">
+        <field name="name">Quarantine Queue</field>
+        <field name="res_model">stock.quant</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('location_id.usage', '=', 'internal'), ('quantity', '>', 0)]</field>
+        <field name="context">{'search_default_filter_quarantine': 1}</field>
+        <field name="search_view_id" ref="pharma_quarantine_quant_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('pharmaceutical_base.pharma_quarantine_quant_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('pharmaceutical_base.pharma_quarantine_quant_form')})
+        ]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No materials currently in quarantine.
+            </p>
+            <p>Materials are automatically placed here when a goods receipt is validated.
+                Approve them to Stock after incoming QC testing passes.
+            </p>
+        </field>
+    </record>
+</odoo>

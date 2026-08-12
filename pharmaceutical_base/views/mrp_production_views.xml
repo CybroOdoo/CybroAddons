@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Adds pharma fields to the manufacturing order form. -->
+    <record id="mrp_production_form_pharma" model="ir.ui.view">
+        <field name="name">mrp.production.form.pharma</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="pharma_bmr_completed" invisible="1"/>
+                <field name="pharma_allowed_component_ids" invisible="1"/>
+            </xpath>
+            <xpath expr="//header/button[@name='button_mark_done'][1]" position="attributes">
+                <attribute name="invisible">state in ('draft', 'cancel', 'done', 'to_close') or not pharma_bmr_completed</attribute>
+            </xpath>
+            <xpath expr="//header/button[@name='button_mark_done'][2]" position="attributes">
+                <attribute name="invisible">state != 'to_close' or not pharma_bmr_completed</attribute>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <!-- BMR stat button — view only, no direct creation allowed -->
+                <button name="action_view_bmr" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                        title="BMRs are auto-generated when a Production Order is confirmed.">
+                    <field name="bmr_count" widget="statinfo" string="BMRs"/>
+                </button>
+                <!-- QC Test Orders stat button -->
+                <button name="action_view_qc_test_orders" type="object" class="oe_stat_button" icon="fa-flask"
+                        invisible="qc_test_order_count == 0"
+                        title="QC Test Orders for this order's produced and consumed lots.">
+                    <field name="qc_test_order_count" widget="statinfo" string="QC Tests"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Search view for the QA release queue. -->
+    <record id="pharma_qa_release_queue_search" model="ir.ui.view">
+        <field name="name">pharma.qa.release.queue.search</field>
+        <field name="model">mrp.production</field>
+        <field name="arch" type="xml">
+            <search string="QA Release">
+                <field name="name"/>
+                <field name="product_id"/>
+                <filter name="filter_qa_eligible" string="Awaiting QA Release"
+                        domain="[('qa_release_eligible', '=', True)]"/>
+                <group>
+                    <filter name="group_product" string="Product" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Action opening the QA release queue. -->
+    <record id="pharma_qa_release_queue_action" model="ir.actions.act_window">
+        <field name="name">QA Release Queue</field>
+        <field name="res_model">mrp.production</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_qa_release_queue_search"/>
+        <field name="context">{'hide_unbuild': True, 'search_default_filter_qa_eligible': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No BMRs currently awaiting QA Release.
+            </p>
+            <p>
+                BMRs will appear here automatically when they are completed, all QC tests are passed, and there are no active deviations.
+            </p>
+        </field>
+    </record>
+
+    <!-- Adds QA release controls to the MO form. -->
+    <record id="mrp_production_form_pharma_release" model="ir.ui.view">
+        <field name="name">mrp.production.form.pharma.release</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <!-- qa_release_eligible == 'Batch Ready for QA Release'. The actual QA Release button is added by the optional pharma_traceability_coa module; core only surfaces readiness via the ribbon below. -->
+                <field name="qa_release_eligible" invisible="1"/>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <widget name="web_ribbon" title="Ready for QA Release"
+                        bg_color="text-bg-success"
+                        invisible="not qa_release_eligible"/>
+            </xpath>
+            <xpath expr="//button[@name='button_unbuild']" position="attributes">
+                <attribute name="invisible">state != 'done' or context.get('hide_unbuild')</attribute>
+            </xpath>
+            <xpath expr="//field[@name='bom_id']" position="attributes">
+                <attribute name="domain">[('formula_status', 'in', ('done', 'approved'))]</attribute>
+                <attribute name="options">{'no_create': True}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('has_approved_bom', '=', True)]</attribute>
+                <attribute name="options">{'no_create': True}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='move_raw_ids']//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('id', 'in', parent.pharma_allowed_component_ids)]</attribute>
+                <attribute name="options">{'no_create': True}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='move_raw_ids']//field[@name='product_id']" position="after">
+                <field name="qc_test_order_status" string="QC Test Order" widget="badge"
+                       decoration-success="qc_test_order_status == 'pass'"
+                       decoration-danger="qc_test_order_status == 'fail'"
+                       optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action opening IPQC results. -->
+    <record id="pharma_ipqc_result_action" model="ir.actions.act_window">
+        <field name="name">IPQC Results</field>
+        <field name="res_model">pharma.ipqc.result</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Form view for an IPQC result. -->
+    <record id="pharma_ipqc_result_form" model="ir.ui.view">
+        <field name="name">pharma.ipqc.result.form</field>
+        <field name="model">pharma.ipqc.result</field>
+        <field name="arch" type="xml">
+            <form string="IPQC Check" create="0">
+                <header>
+                    <button name="action_sign" type="object"
+                            string="Sign Check" class="btn-primary"
+                            invisible="signed_on"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Reference">
+                            <field name="bmr_id"/>
+                            <field name="step_id"/>
+                        </group>
+                        <group string="Check">
+                            <field name="parameter_id"
+                                   domain="[('spec_id.product_id', '=', bmr_id.product_id), ('spec_id.stage', '=', 'ipqc')]"
+                                   options="{'no_open': True, 'no_create': True}"/>
+                            <field name="expected_min" readonly="1" force_save="1"/>
+                            <field name="expected_max" readonly="1" force_save="1"/>
+                            <field name="actual_value"/>
+                            <field name="result" widget="badge"
+                                   decoration-success="result == 'pass'"
+                                   decoration-danger="result == 'fail'"/>
+                        </group>
+                    </group>
+                    <group string="Outcome">
+                        <field name="signed_by" readonly="1"/>
+                        <field name="signed_on" readonly="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- List view for IPQC results. -->
+    <record id="pharma_ipqc_result_list" model="ir.ui.view">
+        <field name="name">pharma.ipqc.result.list</field>
+        <field name="model">pharma.ipqc.result</field>
+        <field name="arch" type="xml">
+            <list string="IPQC Results" create="0">
+                <field name="bmr_id"/>
+                <field name="step_id" optional="show"/>
+                <field name="parameter_id"
+                       domain="[('spec_id.product_id', '=', bmr_id.product_id), ('spec_id.stage', '=', 'ipqc')]"
+                       options="{'no_open': True, 'no_create': True}"/>
+                <field name="expected_min" readonly="1"/>
+                <field name="expected_max" readonly="1"/>
+                <field name="actual_value"/>
+                <field name="result" widget="badge"
+                       decoration-success="result == 'pass'"
+                       decoration-danger="result == 'fail'"/>
+                <field name="signed_by" optional="show"/>
+                <field name="signed_on" optional="show"/>
+            </list>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Adds pharma fields to the product form. -->
+    <record id="product_template_form_pharma" model="ir.ui.view">
+        <field name="name">product.template.form.pharma</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+
+            <!-- Keep the standard Purchase tab: purchase/product inherited views depend on it. -->
+            <xpath expr="//page[@name='purchase']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//page[@name='purchase']" position="after">
+                <page name="pharma" string="Pharma">
+                    <field name="pharma_enforce_storage_class" invisible="1"/>
+                    <group string="Classification">
+                        <group>
+                            <field name="product_type_pharma"/>
+                            <field name="pharmacopoeial_ref"/>
+                            <field name="storage_conditions"
+                                   placeholder="e.g. Store below 25°C, protect from moisture and light"/>
+                            <field name="storage_category_id"
+                                   invisible="not pharma_enforce_storage_class"
+                                   required="product_type_pharma and pharma_enforce_storage_class"
+                                   options="{'no_quick_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="drug_license_no"/>
+                            <field name="hsn_code"/>
+                        </group>
+                    </group>
+
+                    <!-- The Approved Vendor List (AVL) section is added here by the optional pharma_vendor_qualification module when installed. -->
+
+                    <!-- QC Spec section -->
+                    <separator string="QC Specifications"/>
+                    <field name="qc_spec_ids" context="{'default_product_id': id}">
+                        <list string="QC Specifications" create="0" delete="0">
+                            <field name="name" required="1"/>
+                            <field name="stage"/>
+                            <field name="version"/>
+                            <field name="state" widget="badge"
+                                   decoration-success="state == 'approved'"
+                                   decoration-warning="state == 'review'"
+                                   decoration-muted="state in ('draft','obsolete')"/>
+                            <field name="pharmacopoeial_ref"/>
+                            <field name="approval_date"/>
+                            <field name="approved_by"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+    <!-- Adds pharma columns to the product list. -->
+    <record id="product_template_list_pharma" model="ir.ui.view">
+        <field name="name">product.template.list.pharma</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="uom_id" position="after">
+                <field name="product_type_pharma" string="Pharma Type" optional="show"/>
+            </field>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Adds pharma formula fields to the BoM form. -->
+    <record id="mrp_bom_form_pharma" model="ir.ui.view">
+        <field name="name">mrp.bom.form.pharma</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+
+            <!-- Restrict BOM Product to those tracked by lots, disable creation -->
+            <xpath expr="//field[@name='product_tmpl_id']" position="attributes">
+                <attribute name="domain">[('tracking', '=', 'lot')]</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+                <attribute name="readonly">formula_status in ('approved', 'obsolete')</attribute>
+            </xpath>
+            <xpath expr="//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('tracking', '=', 'lot')]</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+                <attribute name="readonly">formula_status in ('approved', 'obsolete')</attribute>
+            </xpath>
+
+            <!-- Lock the whole formula once approved / obsolete -->
+            <xpath expr="//field[@name='product_qty']" position="attributes">
+                <attribute name="readonly">formula_status in ('approved', 'obsolete')</attribute>
+            </xpath>
+            <xpath expr="//field[@name='code']" position="attributes">
+                <attribute name="readonly">formula_status in ('approved', 'obsolete')</attribute>
+            </xpath>
+            <xpath expr="//field[@name='bom_line_ids']" position="attributes">
+                <attribute name="readonly">formula_status in ('approved', 'obsolete')</attribute>
+            </xpath>
+
+            <!-- Restrict BOM Components to those with an approved QC Spec, disable creation. The additional approved-AVL restriction is layered on by the optional pharma_vendor_qualification module when it is installed. -->
+            <xpath expr="//field[@name='bom_line_ids']//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('tracking', '=', 'lot')]</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+            </xpath>
+
+            <!-- The Odoo 19 BoM form has no header, so create one before the sheet. -->
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_approve_formula" type="object"
+                            string="Approve Formula" class="btn-primary"
+                            invisible="formula_status not in ('draft',)"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_obsolete_formula" type="object"
+                            string="Mark Obsolete"
+                            invisible="formula_status not in ('approved',)"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_reset_draft" type="object"
+                            string="Reset to Draft"
+                            invisible="formula_status not in ('approved',)"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <field name="formula_status" widget="statusbar"
+                           statusbar_visible="draft,approved"/>
+                </header>
+            </xpath>
+
+            <!-- Inject pharma fields before the notebook -->
+            <xpath expr="//notebook" position="before">
+                <group string="Pharma">
+                    <group>
+                        <!-- System-managed: auto-increments when reset to draft. -->
+                        <field name="formula_version" readonly="1"/>
+                        <field name="pharmacopoeial_ref" readonly="formula_status in ('approved', 'obsolete')"/>
+                    </group>
+                    <group>
+                        <field name="theoretical_yield" readonly="formula_status in ('approved', 'obsolete')"/>
+                        <field name="change_ref" placeholder="CC-2026-001" readonly="formula_status in ('approved', 'obsolete')"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Approval block after product -->
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="approved_by"
+                       invisible="formula_status != 'approved'"/>
+                <field name="approval_date"
+                       invisible="formula_status != 'approved'"/>
+            </xpath>
+
+            <!-- Notes tab page -->
+            <xpath expr="//notebook" position="inside">
+                <page name="pharma_notes" string="Formula Notes">
+                    <field name="notes" nolabel="1"
+                           readonly="formula_status in ('approved', 'obsolete')"
+                           placeholder="Manufacturing instructions, handling precautions, yield calculation method…"/>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Adds pharma columns to the BoM list. -->
+    <record id="mrp_bom_list_pharma" model="ir.ui.view">
+        <field name="name">mrp.bom.list.pharma</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="product_tmpl_id" position="after">
+                <field name="formula_version" optional="show"/>
+                <field name="formula_status" widget="badge"
+                       decoration-success="formula_status == 'approved'"
+                       decoration-muted="formula_status in ('draft','obsolete')"
+                       optional="show"/>
+            </field>
+        </field>
+    </record>
+</odoo>

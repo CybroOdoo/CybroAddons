@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view for OOS investigations. -->
+    <record id="pharma_oos_investigation_view_list" model="ir.ui.view">
+        <field name="name">pharma.oos.investigation.list</field>
+        <field name="model">pharma.oos.investigation</field>
+        <field name="arch" type="xml">
+            <list string="OOS Investigations" create="0">
+                <field name="name"/>
+                <field name="test_order_id"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="result_line_id"/>
+                <field name="phase"/>
+                <field name="lab_error_found"/>
+                <field name="disposition"/>
+                <field name="investigated_by" widget="many2one_avatar_user"/>
+                <field name="closed_on"/>
+            </list>
+        </field>
+    </record>
+    <!-- Form view for an OOS investigation. -->
+    <record id="pharma_oos_investigation_view_form" model="ir.ui.view">
+        <field name="name">pharma.oos.investigation.form</field>
+        <field name="model">pharma.oos.investigation</field>
+        <field name="arch" type="xml">
+            <form string="OOS Investigation" create="0">
+                <header>
+                    <button name="action_escalate_to_phase_2" string="Escalate to Phase II"
+                            type="object" class="oe_highlight" invisible="phase != 'phase_1' or closed_on != False or
+                            lab_error_found == True" groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_invalidate_retest" string="Invalidate &amp; Re-test" type="object"
+                            class="oe_highlight"
+                            invisible="phase != 'phase_1' or closed_on != False or lab_error_found == False"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_close_investigation" string="Close Investigation" type="object"
+                            class="oe_highlight" invisible="phase != 'phase_2' or closed_on != False"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <field name="phase" widget="statusbar" statusbar_visible="phase_1,phase_2"/>
+                </header>
+                <sheet>
+                    <div name="button_box" class="oe_button_box">
+                        <button name="action_view_test_order" type="object"
+                                class="oe_stat_button" icon="fa-flask"
+                                string="Test Order"
+                                invisible="not test_order_id"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Trigger Details">
+                            <field name="test_order_id" readonly="1"/>
+                            <field name="product_id" readonly="1"/>
+                            <field name="lot_id" readonly="1"/>
+                            <field name="result_line_id" readonly="1"/>
+                            <field name="lab_error_found" readonly="closed_on != False or phase != 'phase_1'"/>
+                        </group>
+                        <group string="QA Review">
+                            <field name="investigated_by" widget="many2one_avatar_user" readonly="1"/>
+                            <field name="closed_on" readonly="1"/>
+                            <field name="disposition" invisible="phase != 'phase_2'" readonly="closed_on != False"
+                                   required="phase == 'phase_2' and not closed_on"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="conclusion_tab" string="Investigation Details">
+                            <field name="conclusion" placeholder="Provide details, analysis, and final conclusion..."
+                                   readonly="closed_on != False" required="phase == 'phase_2' and not closed_on"
+                                   nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <!-- Chatter -->
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Search view for OOS investigations. -->
+    <record id="pharma_oos_investigation_view_search" model="ir.ui.view">
+        <field name="name">pharma.oos.investigation.search</field>
+        <field name="model">pharma.oos.investigation</field>
+        <field name="arch" type="xml">
+            <search string="Search OOS Investigations">
+                <field name="name"/>
+                <field name="test_order_id"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="result_line_id"/>
+                <filter string="Phase I" name="filter_phase_1" domain="[('phase', '=', 'phase_1')]"/>
+                <filter string="Phase II" name="filter_phase_2" domain="[('phase', '=', 'phase_2')]"/>
+                <separator/>
+                <filter string="Lab Error Found" name="filter_lab_error" domain="[('lab_error_found', '=', True)]"/>
+                <filter string="Closed" name="filter_closed" domain="[('closed_on', '!=', False)]"/>
+                <group>
+                    <filter string="Product" name="group_by_product" domain="[]" context="{'group_by': 'product_id'}"/>
+                    <filter string="Test Order" name="group_by_test_order" domain="[]"
+                            context="{'group_by': 'test_order_id'}"/>
+                    <filter string="Phase" name="group_by_phase" domain="[]" context="{'group_by': 'phase'}"/>
+                    <filter string="Disposition" name="group_by_disposition" domain="[]"
+                            context="{'group_by': 'disposition'}"/>
+                    <filter string="Investigator" name="group_by_investigator" domain="[]"
+                            context="{'group_by': 'investigated_by'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Action opening OOS investigations. -->
+    <record id="pharma_oos_investigation_action" model="ir.actions.act_window">
+        <field name="name">OOS Investigations</field>
+        <field name="res_model">pharma.oos.investigation</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_oos_investigation_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No OOS Investigations recorded.
+            </p>
+            <p>
+                Investigations are automatically triggered when a test result is marked Out Of Specification (OOS).
+            </p>
+        </field>
+    </record>
+</odoo>

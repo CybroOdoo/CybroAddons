@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+            <!-- Form view for batch manufacturing records. -->
+            <record id="pharma_bmr_form" model="ir.ui.view">
+        <field name="name">pharma.bmr.form</field>
+        <field name="model">pharma.bmr</field>
+        <field name="arch" type="xml">
+            <form string="Batch Manufacturing Record" create="0" delete="0">
+                <header>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="draft,in_progress,completed"/>
+
+                    <button name="action_start" type="object" string="Start BMR"
+                            class="btn-primary"
+                            invisible="status != 'draft'"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+
+                    <button name="action_hold" type="object" string="Place on Hold"
+                            invisible="status != 'in_progress'"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+
+                    <button name="action_resume" type="object" string="Resume"
+                            class="btn-primary"
+                            invisible="status != 'on_hold'"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+
+                    <button name="action_qa_yield_signoff" type="object"
+                            string="QA Yield Sign-Off" class="btn-warning"
+                            invisible="not yield_flag or qa_yield_signoff or status != 'in_progress' or not all_steps_done"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <button name="action_complete" type="object" string="Mark Completed"
+                            class="btn-primary"
+                            invisible="status != 'in_progress' or not all_steps_done or (yield_flag and not qa_yield_signoff)"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                </header>
+
+                <sheet>
+                    <field name="all_steps_done" invisible="1"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_steps" type="object"
+                                class="oe_stat_button" icon="fa-list-ol">
+                            <field name="step_count" widget="statinfo" string="Steps"/>
+                        </button>
+                        <button name="action_view_ipqc" type="object"
+                                class="oe_stat_button" icon="fa-flask">
+                            <field name="ipqc_count" widget="statinfo" string="IPQC"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Batch Identity">
+                            <field name="production_id" readonly="status == 'completed'"/>
+                            <field name="product_id" readonly="status == 'completed'"/>
+                            <field name="batch_no" readonly="status == 'completed'"/>
+                            <field name="any_step_operator_signed" invisible="1"/>
+                            <field name="enable_ipqc" readonly="status == 'completed'"
+                                   invisible="not any_step_operator_signed"/>
+                        </group>
+                        <group string="Yield">
+                            <field name="yield_expected" readonly="status == 'completed'"/>
+                            <field name="yield_actual" readonly="status == 'completed'"/>
+                            <field name="yield_percentage" string="Yield %"/>
+                            <field name="yield_flag" widget="boolean_toggle" readonly="1"/>
+                            <field name="qa_yield_signoff" readonly="1"
+                                   invisible="not yield_flag"/>
+                            <field name="qa_yield_signed_by" readonly="1"
+                                   invisible="not qa_yield_signoff"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Steps Tab -->
+                        <page name="steps" string="Execution Steps">
+                            <field name="step_ids" mode="list">
+                                <list string="Steps">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="description"/>
+                                    <field name="status" widget="badge"
+                                           decoration-success="status == 'done'"
+                                           decoration-warning="status == 'hold'"
+                                           decoration-muted="status == 'pending'"/>
+                                    <field name="operator_id" optional="show"/>
+                                    <field name="operator_signed_on" optional="show"/>
+                                    <field name="supervisor_id" optional="show"/>
+                                    <field name="supervisor_signed_on" optional="show"/>
+                                    <button name="action_operator_sign" type="object"
+                                            title="Operator Sign-Off" icon="fa-pencil-square-o"
+                                            class="o_pharma_step_btn o_pharma_step_op o_list_button"
+                                            invisible="parent.status != 'in_progress' or status != 'pending' or
+                                            operator_signed_on"
+                                            groups="pharmaceutical_base.group_pharma_operator"/>
+                                    <button name="action_supervisor_sign" type="object"
+                                            title="Supervisor Sign-Off" icon="fa-check-square-o"
+                                            class="o_pharma_step_btn o_pharma_step_sup"
+                                            invisible="parent.status != 'in_progress' or status != 'pending' or
+                                            not operator_signed_on or supervisor_signed_on"
+                                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                                    <button name="action_hold" type="object"
+                                            title="Hold Step" icon="fa-pause"
+                                            class="o_pharma_step_btn o_pharma_step_hold"
+                                            invisible="parent.status != 'in_progress' or status != 'pending'"
+                                            groups="pharmaceutical_base.group_pharma_operator"/>
+                                    <button name="action_release_hold" type="object"
+                                            title="Release Hold" icon="fa-play"
+                                            class="o_pharma_step_btn o_pharma_step_release"
+                                            invisible="parent.status != 'on_hold' or status != 'hold'"
+                                            groups="pharmaceutical_base.group_pharma_operator"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- IPQC Tab -->
+                        <page name="ipqc" string="IPQC Checks" invisible="not enable_ipqc">
+                            <field name="ipqc_ids" mode="list" readonly="status == 'completed'">
+                                <list string="IPQC Results" editable="bottom">
+                                    <field name="step_id" required="1" domain="[('bmr_id', '=', parent.id), ('operator_signed_on', '!=', False), ('supervisor_signed_on', '=', False)]" options="{'no_create': True, 'no_create_edit': True}"/>
+                                    <field name="parameter_id" domain="[('spec_id.product_id', '=', parent.product_id), ('spec_id.stage', '=', 'ipqc')]" options="{'no_open': True, 'no_create': True}"/>
+                                    <field name="expected_min" readonly="1" force_save="1"/>
+                                    <field name="expected_max" readonly="1" force_save="1"/>
+                                    <field name="actual_value" readonly="signed_on != False"/>
+                                    <field name="result" readonly="1"
+                                           decoration-success="result == 'pass'"
+                                           decoration-danger="result == 'fail'"/>
+                                    <field name="signed_by" optional="show" readonly="1"/>
+                                    <field name="signed_on" optional="show" readonly="1"/>
+                                    <button name="action_sign" type="object"
+                                            string="Signature" class="btn-sm btn-primary"
+                                            invisible="parent.status != 'in_progress' or signed_on"
+                                            groups="pharmaceutical_base.group_pharma_operator"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- List view for batch manufacturing records. -->
+    <record id="pharma_bmr_list" model="ir.ui.view">
+        <field name="name">pharma.bmr.list</field>
+        <field name="model">pharma.bmr</field>
+        <field name="arch" type="xml">
+            <list string="Batch Manufacturing Records" decoration-muted="status == 'completed'" create="0" delete="0">
+                <field name="name"/>
+                <field name="batch_no"/>
+                <field name="product_id"/>
+                <field name="production_id"/>
+                <field name="yield_percentage" string="Yield %" optional="show"/>
+                <field name="yield_flag" widget="boolean" optional="show"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'completed'"
+                       decoration-info="status == 'in_progress'"
+                       decoration-warning="status == 'on_hold'"
+                       decoration-muted="status == 'draft'"/>
+            </list>
+        </field>
+    </record>
+    <!-- Search view for batch manufacturing records. -->
+    <record id="pharma_bmr_search" model="ir.ui.view">
+        <field name="name">pharma.bmr.search</field>
+        <field name="model">pharma.bmr</field>
+        <field name="arch" type="xml">
+            <search string="Search BMR">
+                <field name="name"/>
+                <field name="batch_no"/>
+                <field name="product_id"/>
+                <field name="production_id"/>
+                <filter string="Draft" name="draft" domain="[('status','=','draft')]"/>
+                <filter string="In Progress" name="in_progress" domain="[('status','=','in_progress')]"/>
+                <filter string="On Hold" name="on_hold" domain="[('status','=','on_hold')]"/>
+                <filter string="Completed" name="completed" domain="[('status','=','completed')]"/>
+                <filter string="Yield Flagged" name="yield_flag" domain="[('yield_flag','=',True)]"/>
+                <group name="group_by">
+                    <filter string="Status" name="grp_status" context="{'group_by': 'status'}"/>
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Action opening batch manufacturing records. -->
+    <record id="pharma_bmr_action" model="ir.actions.act_window">
+        <field name="name">Batch Manufacturing Records</field>
+        <field name="res_model">pharma.bmr</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_bmr_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No BMRs yet. Start from a Manufacturing Order.
+            </p>
+        </field>
+    </record>
+</odoo>

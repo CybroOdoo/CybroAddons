@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List view for QC test orders. -->
+    <record id="pharma_qc_test_order_view_list" model="ir.ui.view">
+        <field name="name">pharma.qc.test.order.list</field>
+        <field name="model">pharma.qc.test.order</field>
+        <field name="arch" type="xml">
+            <list string="QC Test Orders" create="0">
+                <field name="name"/>
+                <field name="lot_id"/>
+                <field name="product_id"/>
+                <field name="stage"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'passed'"
+                       decoration-warning="status in ('in_progress', 'under_investigation')"
+                       decoration-danger="status == 'failed'"
+                       decoration-muted="status == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view for a QC test order. -->
+    <record id="pharma_qc_test_order_view_form" model="ir.ui.view">
+        <field name="name">pharma.qc.test.order.form</field>
+        <field name="model">pharma.qc.test.order</field>
+        <field name="arch" type="xml">
+            <form string="QC Test Order" create="0">
+                <header>
+                    <button name="action_start_test" string="Start Test"
+                            type="object" class="oe_highlight"
+                            invisible="status != 'draft'"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+                    <button name="action_approve" string="Approve &amp; Sign-Off"
+                            type="object" class="oe_highlight"
+                            invisible="status not in ('in_progress', 'under_investigation')"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_reject" string="Reject &amp; Fail"
+                            type="object" invisible="status not in ('in_progress', 'under_investigation')"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,in_progress,passed"/>
+                </header>
+                <sheet>
+                    <div name="button_box" class="oe_button_box">
+                        <button name="action_view_oos_investigations" type="object"
+                                class="oe_stat_button" icon="fa-search"
+                                invisible="oos_investigation_count == 0">
+                            <field name="oos_investigation_count" widget="statinfo" string="Investigations"/>
+                        </button>
+                        <button name="action_view_stock_moves" type="object"
+                                class="oe_stat_button" icon="fa-exchange"
+                                invisible="stock_move_line_count == 0"
+                                title="Stock moves for this lot — received from / moved to.">
+                            <field name="stock_move_line_count" widget="statinfo" string="Stock Moves"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Material Details">
+                            <field name="product_id" readonly="status != 'draft'"/>
+                            <field name="lot_id" domain="[('product_id', '=', product_id)]"
+                                   readonly="status != 'draft'"/>
+                        </group>
+                        <group string="QC Parameters">
+                            <field name="stage" readonly="status != 'draft'"/>
+                            <field name="spec_id" required="1"
+                                   domain="[('product_id', '=', product_id), ('stage', '=', stage), ('state', '=', 'approved')]"
+                                   readonly="status != 'draft'"/>
+                        </group>
+                        <group string="Sign-Off">
+                            <field name="entered_by" widget="many2one_avatar_user" readonly="status != 'draft'"/>
+                            <field name="reviewed_by" widget="many2one_avatar_user" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="results" string="Test Results">
+                            <field name="result_line_ids" readonly="status not in ('draft', 'in_progress')">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="has_min" column_invisible="True"/>
+                                    <field name="has_max" column_invisible="True"/>
+                                    <field name="parameter_id" readonly="1" force_save="1" options="{'no_open': True}"/>
+                                    <field name="expected_min" readonly="1" force_save="1"/>
+                                    <field name="expected_max" readonly="1" force_save="1"/>
+                                    <field name="actual_value" readonly="parent.status != 'in_progress'"/>
+                                    <field name="uom" readonly="1" force_save="1"/>
+                                    <field name="is_oos" widget="boolean_toggle" readonly="1"/>
+                                    <field name="status" widget="badge"
+                                           decoration-success="status == 'pass'"
+                                           decoration-warning="status == 'pending'"
+                                           decoration-danger="status == 'oos'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="oos_investigations" string="OOS Investigations"
+                              invisible="oos_investigation_count == 0">
+                            <field name="oos_investigation_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="phase"/>
+                                    <field name="lab_error_found"/>
+                                    <field name="disposition"/>
+                                    <field name="closed_on"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <!-- Chatter -->
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view for QC test orders. -->
+    <record id="pharma_qc_test_order_view_search" model="ir.ui.view">
+        <field name="name">pharma.qc.test.order.search</field>
+        <field name="model">pharma.qc.test.order</field>
+        <field name="arch" type="xml">
+            <search string="Search Test Orders">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="spec_id"/>
+                <filter string="Incoming" name="filter_incoming" domain="[('stage', '=', 'incoming')]"/>
+                <filter string="In-Process" name="filter_inprocess" domain="[('stage', '=', 'inprocess')]"/>
+                <filter string="Finished Goods" name="filter_finished" domain="[('stage', '=', 'finished')]"/>
+                <separator/>
+                <filter string="Draft" name="filter_draft" domain="[('status', '=', 'draft')]"/>
+                <filter string="In Progress" name="filter_in_progress" domain="[('status', '=', 'in_progress')]"/>
+                <filter string="Under Investigation" name="filter_investigation"
+                        domain="[('status', '=', 'under_investigation')]"/>
+                <filter string="Passed" name="filter_passed" domain="[('status', '=', 'passed')]"/>
+                <filter string="Failed" name="filter_failed" domain="[('status', '=', 'failed')]"/>
+                <separator/>
+                <filter string="Out Of Specification (OOS)" name="filter_oos"
+                        domain="[('result_line_ids.is_oos', '=', True)]"/>
+                <group>
+                    <filter string="Product" name="group_by_product" domain="[]" context="{'group_by': 'product_id'}"/>
+                    <filter string="Stage" name="group_by_stage" domain="[]" context="{'group_by': 'stage'}"/>
+                    <filter string="Status" name="group_by_status" domain="[]" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action opening QC test orders. -->
+    <record id="pharma_qc_test_order" model="ir.actions.act_window">
+        <field name="name">QC Test Orders</field>
+        <field name="res_model">pharma.qc.test.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_qc_test_order_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create the first Quality Control Test Order.
+            </p>
+            <p>
+                Track chemical, physical, and microbiological test results for raw materials, in-process, and finished
+                batches.
+            </p>
+        </field>
+    </record>
+</odoo>

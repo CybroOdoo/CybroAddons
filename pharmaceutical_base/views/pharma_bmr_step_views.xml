@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!-- Action opening BMR steps. -->
+<record id="pharma_bmr_step_action" model="ir.actions.act_window">
+        <field name="name">BMR Steps</field>
+        <field name="res_model">pharma.bmr.step</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+<!-- Form view for a BMR step. -->
+<record id="pharma_bmr_step_form" model="ir.ui.view">
+        <field name="name">pharma.bmr.step.form</field>
+        <field name="model">pharma.bmr.step</field>
+        <field name="arch" type="xml">
+            <form string="BMR Step">
+                <header>
+                    <field name="status" widget="statusbar"
+                            statusbar_visible="pending,done"/>
+                    <button name="action_operator_sign" type="object"
+                            string="Operator Sign-Off" style="bg-color:#577CBA !important;"
+                            invisible="status != 'pending' or operator_signed_on"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+                    <button name="action_supervisor_sign" type="object"
+                            string="Supervisor Sign-Off" style="color:green !important;"
+                            invisible="status != 'pending' or not operator_signed_on or supervisor_signed_on"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_hold" type="object" string="Hold Step" style="color:red !important;"
+                            invisible="status == 'done' or status == 'hold'"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+                    <button name="action_release_hold" type="object" string="Release Hold"
+                            invisible="status != 'hold'"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Step Info">
+                            <field name="bmr_id" readonly="status == 'done'"/>
+                            <field name="sequence" readonly="status == 'done'"/>
+                        </group>
+                        <group string="Description">
+                            <field name="description" nolabel="1" readonly="status == 'done'"/>
+                        </group>
+                    </group>
+                    <group string="Sign-Offs">
+                        <group>
+                            <field name="operator_id" readonly="1"/>
+                            <field name="operator_signed_on" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="supervisor_id" readonly="1"/>
+                            <field name="supervisor_signed_on" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+<!-- List view for BMR steps. -->
+<record id="pharma_bmr_step_list" model="ir.ui.view">
+        <field name="name">pharma.bmr.step.list</field>
+        <field name="model">pharma.bmr.step</field>
+        <field name="arch" type="xml">
+            <list string="BMR Steps">
+                <field name="bmr_id"/>
+                <field name="sequence"/>
+                <field name="description"/>
+                <field name="operator_id" optional="show"/>
+                <field name="supervisor_id" optional="show"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'done'"
+                       decoration-warning="status == 'hold'"
+                       decoration-muted="status == 'pending'"/>
+            </list>
+        </field>
+    </record>
+</odoo>

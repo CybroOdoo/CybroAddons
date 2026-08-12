@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view for QC specifications. -->
+    <record id="pharma_qc_spec_list_view" model="ir.ui.view">
+        <field name="name">pharma.qc.spec.list</field>
+        <field name="model">pharma.qc.spec</field>
+        <field name="arch" type="xml">
+            <list string="QC Specifications">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="stage"/>
+                <field name="version"/>
+                <field name="pharmacopoeial_ref"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'approved'"
+                       decoration-warning="state == 'review'"
+                       decoration-muted="state in ('draft','obsolete')"/>
+                <field name="approval_date"/>
+                <field name="approved_by" optional="show"/>
+                <field name="effective_date" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <!-- Form view for a QC specification. -->
+    <record id="pharma_qc_spec_form_view" model="ir.ui.view">
+        <field name="name">pharma.qc.spec.form</field>
+        <field name="model">pharma.qc.spec</field>
+        <field name="arch" type="xml">
+            <form string="QC Specification">
+                <header>
+                    <button name="action_submit_review" type="object"
+                            string="Submit for Review" class="btn-primary"
+                            invisible="state not in ('draft',)"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+                    <button name="action_approve" type="object"
+                            string="Approve" class="btn-primary"
+                            invisible="state not in ('review',)"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_obsolete" type="object"
+                            string="Mark Obsolete"
+                            invisible="state not in ('approved',)"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_reset_draft" type="object"
+                            string="Reset to Draft"
+                            invisible="state not in ('review',)"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,review,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Specification name…"
+                                   readonly="state in ('approved', 'obsolete')"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Specification Details">
+                            <field name="product_id" readonly="state in ('approved', 'obsolete')"/>
+                            <field name="stage" readonly="state in ('approved', 'obsolete')"/>
+                            <!-- Version is system-managed: auto-assigned per product/stage. -->
+                            <field name="version" readonly="1"/>
+                            <field name="pharmacopoeial_ref" readonly="state in ('approved', 'obsolete')"/>
+                        </group>
+                        <group string="Approval">
+                            <field name="approved_by"/>
+                            <field name="approval_date"/>
+                            <field name="effective_date" readonly="state in ('approved', 'obsolete')"/>
+                        </group>
+                    </group>
+
+                    <!-- Parameter Lines -->
+                    <notebook>
+                        <page name="parameters" string="Test Parameters">
+                            <field name="parameter_ids" readonly="state in ('approved', 'obsolete')">
+                            </field>
+                        </page>
+                        <page name="notes_tab" string="Notes / Sampling">
+                            <field name="notes" nolabel="1"
+                                   readonly="state in ('approved', 'obsolete')"
+                                   placeholder="Sampling instructions, storage conditions for samples, special remarks…"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Search view for QC specifications. -->
+    <record id="pharma_qc_spec_search_view" model="ir.ui.view">
+        <field name="name">pharma.qc.spec.search</field>
+        <field name="model">pharma.qc.spec</field>
+        <field name="arch" type="xml">
+            <search string="Search QC Specifications">
+                <field name="name"/>
+                <field name="product_id"/>
+                <filter name="approved" string="Approved" domain="[('state','=','approved')]"/>
+                <filter name="under_review" string="Under Review" domain="[('state','=','review')]"/>
+                <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+                <separator/>
+                <filter name="incoming" string="Incoming" domain="[('stage','=','incoming')]"/>
+                <filter name="inprocess" string="In-Process" domain="[('stage','=','inprocess')]"/>
+                <filter name="finished" string="Finished Goods" domain="[('stage','=','finished')]"/>
+            </search>
+        </field>
+    </record>
+    <!-- Action opening QC specifications. -->
+    <record id="pharma_qc_spec_action" model="ir.actions.act_window">
+        <field name="name">QC Specifications</field>
+        <field name="res_model">pharma.qc.spec</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_qc_spec_search_view"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No QC Specifications yet.
+            </p>
+            <p>Create specifications to define acceptance criteria for each product and testing stage.</p>
+        </field>
+    </record>
+</odoo>

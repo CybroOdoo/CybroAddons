@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <!-- This file defines the side bar template. It is rendered by the
+         PharmaSidebar main component (see js/sidebar.js) instead of being
+         xpath'd into web.NavBar, so it survives the Enterprise navbar, which
+         forks web.NavBar into its own primary template and therefore ignores
+         the extensions declared by modules loaded after web_enterprise. -->
+    <t t-name="pharmaceutical_base.Sidebar">
+        <div class="sidebar" t-att-class="{ o_hidden: state.isHidden }">
+
+            <div class="wrapper">
+                <ul class="sidebar_links">
+                    <t t-foreach="this.menuService.getApps()" t-as="app"
+                       t-key="app.id">
+                        <li t-attf-class="sidbar-item {{ app.id === this.state.activeApp ? 'active' : '' }}">
+                            <a role="menuitem"
+                               t-attf-href="#menu_id={{app.id}}"
+                               class="nav-link"
+                               t-att-data-id="app.id"
+                               t-att-data-menu-xmlid="app.xmlid"
+                               t-att-data-section="app.id"
+                               t-on-click="() => this.onAppClick(app)">
+                                <!-- Handle PNG icons -->
+                                <t t-if="app.webIcon and app.webIcon.includes('.png')">
+                                    <img class="sidebar_img"
+                                         t-att-src="app.webIconData"
+                                         t-att-title="app.name"
+                                         t-att-alt="app.name"/>
+                                </t>
+                                <!-- Handle SVG icons -->
+                                <t t-if="app.webIcon and app.webIcon.includes('.svg')">
+                                    <img class="sidebar_img"
+                                         t-att-src="app.webIconData"
+                                         t-att-title="app.name"
+                                         t-att-alt="app.name"/>
+                                </t>
+                                <!-- Handle Bootstrap icons fallback -->
+                                <t t-if="!app.webIcon">
+                                    <i t-attf-class="bi bi-{{ app.icon || 'app' }}"/>
+                                </t>
+                                <span class="a_app_menu_title">
+                                    <t t-esc="app.name"/>
+                                </span>
+                            </a>
+                        </li>
+                    </t>
+                </ul>
+            </div>
+        </div>
+    </t>
+</templates>

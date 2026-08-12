@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="pharmaceutical_base.PharmaDashboard" owl="1">
+        <!-- OWL template defining the modern Pharmaceutical Dashboard matching the reference design -->
+        <div class="pharma-dashboard-wrapper">
+            <!-- Header Bar -->
+            <div class="dash-top-nav">
+                <div class="user-greeting-header">
+                    <h2 class="greeting-title">
+                        <t t-esc="state.greeting"/>,
+                        <span class="user-name-text"><t t-esc="state.userName"/></span>
+                    </h2>
+                </div>
+                <div class="nav-user-actions">
+                    <div class="date-filter-pill">
+                        <input type="date" t-model="state.startDate" t-on-change="onDateChange"
+                               t-att-min="dateMin" t-att-max="dateMax" class="date-input"/>
+                        <span class="date-sep">-</span>
+                        <input type="date" t-model="state.endDate" t-on-change="onDateChange"
+                               t-att-min="dateMin" t-att-max="dateMax" class="date-input"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Grid Area -->
+            <div class="dash-main-grid">
+                
+                <!-- 3-Column Top Layout -->
+                <div class="top-columns-grid">
+                    
+                    <!-- Column 1: Today's releases + Weekly Output -->
+                    <div class="col-stack">
+                        <!-- Hero Card: Today's Releases -->
+                        <div class="hero-release-card" t-on-click="() => this.openLotsByStatus('released')">
+                            <div class="hero-top">
+                                <span class="hero-badge"><span class="badge-icon"><i class="fa fa-circle"/></span>Today's releases</span>
+                            </div>
+                            <div class="hero-mid">
+                                <div class="hero-count-group">
+                                    <span class="hero-count"><t t-esc="state.releasedBatches"/></span>
+                                    <span class="hero-total">/<t t-esc="state.totalBatches"/>
+                                        lots</span>
+                                </div>
+                                <div class="hero-info">
+                                    <span class="hero-subtext">Released &amp; Compliant</span>
+                                    <span class="hero-rate"><t t-esc="state.statusPercent"/>% pass rate</span>
+                                </div>
+                            </div>
+                            <div class="hero-progress-track">
+                                <div class="hero-progress-bar" t-attf-style="width: {{ state.statusPercent }}%;"/>
+                            </div>
+                        </div>
+
+                        <!-- Card: Batch Production Output (Real Chart) -->
+                        <div class="card-box batch-output-chart-card">
+                            <div class="card-header">
+                                <span class="card-header-title">
+                                    <span class="header-icon icon-blue"><i class="fa fa-bar-chart"/></span>Batches
+                                </span>
+                                <div class="chart-filter-pills">
+                                    <span t-attf-class="filter-pill {{ state.chartFilter === 'daily' ? 'active' : '' }}"
+                                          t-on-click="() => this.setChartFilter('daily')">Day</span>
+                                    <span t-attf-class="filter-pill {{ state.chartFilter === 'weekly' ? 'active' : '' }}"
+                                          t-on-click="() => this.setChartFilter('weekly')">Week</span>
+                                    <span t-attf-class="filter-pill {{ state.chartFilter === 'yearly' ? 'active' : '' }}"
+                                          t-on-click="() => this.setChartFilter('yearly')">Year</span>
+                                </div>
+                            </div>
+                            <div class="chart-canvas-wrapper" style="height: 140px; position: relative;">
+                                <canvas t-ref="chartCanvas"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Card: Expiring Batches -->
+                        <div class="card-box expiring-batches-card">
+                            <div class="card-header">
+                                <span class="card-header-title">
+                                    <span class="header-icon icon-blue"><i class="fa fa-clock-o"/></span>
+                                    Expiring Batches
+                                </span>
+                            </div>
+                            <div class="expiring-pills-row">
+                                <div class="exp-pill exp-today" t-on-click="() => this.openExpiringLots(0)">
+                                    <span class="exp-pill-label">Today</span>
+                                    <span class="exp-pill-val"><t t-esc="state.expiringToday"/></span>
+                                </div>
+                                <div class="exp-pill exp-30" t-on-click="() => this.openExpiringLots(30)">
+                                    <span class="exp-pill-label">30 Days</span>
+                                    <span class="exp-pill-val"><t t-esc="state.expiring30"/></span>
+                                </div>
+                                <div class="exp-pill exp-60" t-on-click="() => this.openExpiringLots(60)">
+                                    <span class="exp-pill-label">60 Days</span>
+                                    <span class="exp-pill-val"><t t-esc="state.expiring60"/></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: KPI Metrics + QC Schedule & Calendar -->
+                    <div class="col-stack center-col-stack">
+                        <!-- QMS KPI Metrics Grid placed at top of QC schedule -->
+                        <div class="qms-metrics-row">
+                            <!-- Open OOS -->
+                            <div class="card-box qms-kpi-card" t-on-click="openAllOos">
+                                <div class="kpi-header-row">
+                                    <div class="kpi-icon"><i class="fa fa-exclamation-triangle"/></div>
+                                    <span class="kpi-title">Open OOS</span>
+                                </div>
+                                <div class="kpi-footer-row">
+                                    <span class="kpi-value"><t t-esc="state.openOos"/></span>
+                                    <span class="kpi-subtext">Out of Specification (<t t-esc="state.allOos ? Math.round((state.openOos / state.allOos) * 100) : 0"/>%)</span>
+                                </div>
+                            </div>
+                            <!-- Open CAPA -->
+                            <div class="card-box qms-kpi-card" t-if="state.capaAvailable" t-on-click="openAllCapas">
+                                <div class="kpi-header-row">
+                                    <div class="kpi-icon"><i class="fa fa-check-square-o"/></div>
+                                    <span class="kpi-title">Open CAPA</span>
+                                </div>
+                                <div class="kpi-footer-row">
+                                    <span class="kpi-value"><t t-esc="state.openCapas"/></span>
+                                    <span class="kpi-subtext">Corrective Action (<t t-esc="state.allCapas ? Math.round((state.openCapas / state.allCapas) * 100) : 0"/>%)</span>
+                                </div>
+                            </div>
+                            <!-- Open Deviations -->
+                            <div class="card-box qms-kpi-card" t-if="state.capaAvailable" t-on-click="openAllDeviations">
+                                <div class="kpi-header-row">
+                                    <div class="kpi-icon"><i class="fa fa-random"/></div>
+                                    <span class="kpi-title">Open Deviations</span>
+                                </div>
+                                <div class="kpi-footer-row">
+                                    <span class="kpi-value"><t t-esc="state.openDeviations"/></span>
+                                    <span class="kpi-subtext">Quality Deviations (<t t-esc="state.allDeviations ? Math.round((state.openDeviations / state.allDeviations) * 100) : 0"/>%)</span>
+                                </div>
+                            </div>
+                            <!-- Open QC Tests -->
+                            <div class="card-box qms-kpi-card" t-on-click="openAllQcTests">
+                                <div class="kpi-header-row">
+                                    <div class="kpi-icon"><i class="fa fa-flask"/></div>
+                                    <span class="kpi-title">Open QC Tests</span>
+                                </div>
+                                <div class="kpi-footer-row">
+                                    <span class="kpi-value"><t t-esc="state.openQcTests"/></span>
+                                    <span class="kpi-subtext">Quality Control (<t t-esc="state.allQcTests ? Math.round((state.openQcTests / state.allQcTests) * 100) : 0"/>%)</span>
+                                </div>
+                            </div>
+                            <!-- Open QC Spec -->
+                            <div class="card-box qms-kpi-card" t-on-click="openQcSpecs">
+                                <div class="kpi-header-row">
+                                    <div class="kpi-icon"><i class="fa fa-list-alt"/></div>
+                                    <span class="kpi-title">Open QC Spec</span>
+                                </div>
+                                <div class="kpi-footer-row">
+                                    <span class="kpi-value"><t t-esc="state.openQcSpecs"/></span>
+                                    <span class="kpi-subtext">Specifications (<t t-esc="state.totalQcSpecs ? Math.round((state.openQcSpecs / state.totalQcSpecs) * 100) : 0"/>%)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QC Schedule Card -->
+                        <div class="card-box qc-schedule-card">
+                            <div class="card-header">
+                                <span class="card-header-title">
+                                    <span class="header-icon icon-blue"><i class="fa fa-clock-o"/></span>QC schedule
+                                </span>
+                                <div class="header-nav-arrows">
+                                    <span class="arrow-btn" t-on-click="prevCalWeek">‹</span>
+                                    <span class="arrow-btn" t-on-click="nextCalWeek">›</span>
+                                </div>
+                            </div>
+
+                            <!-- Days Row -->
+                            <div class="calendar-days-row">
+                                <t t-foreach="state.calDays" t-as="day" t-key="day.date">
+                                    <div t-attf-class="day-col cursor-pointer {{ day.isSelected ? 'active' : '' }}"
+                                         t-on-click="() => this.selectCalDay(day)">
+                                        <span class="dow" t-esc="day.dow"/>
+                                        <span t-attf-class="num {{ day.isSelected ? 'today' : '' }}" t-esc="day.num"/>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <!-- Schedule Items -->
+                            <div class="schedule-items-list">
+                                <div class="schedule-item-card" t-on-click="openIncomingQcTests">
+                                    <span class="sched-time">Raw &amp; Packaging Materials</span>
+                                    <div class="sched-body">
+                                        <div class="sched-icon icon-blue"><i class="fa fa-flask"/></div>
+                                        <div class="sched-details">
+                                            <span class="sched-title">Incoming QC</span>
+                                            <span class="sched-sub">Material receipt inspections</span>
+                                        </div>
+                                        <span class="sched-chip chip-blue"><t t-esc="state.incomingQcPending"/>
+                                            Pending</span>
+                                    </div>
+                                </div>
+
+                                <div class="schedule-item-card" t-on-click="openIpqcTests">
+                                    <span class="sched-time">In-Process Controls</span>
+                                    <div class="sched-body">
+                                        <div class="sched-icon icon-light"><i class="fa fa-cogs"/></div>
+                                        <div class="sched-details">
+                                            <span class="sched-title">IPQC Products QC</span>
+                                            <span class="sched-sub">In-process testing &amp; line clearance</span>
+                                        </div>
+                                        <span class="sched-chip chip-light"><t t-esc="state.ipqcQcTotal"/>
+                                            Total</span>
+                                    </div>
+                                </div>
+
+                                <div class="schedule-item-card" t-on-click="openFinishedQcTests">
+                                    <span class="sched-time">Finished Goods Clearance</span>
+                                    <div class="sched-body">
+                                        <div class="sched-icon icon-blue"><i class="fa fa-check-circle-o"/></div>
+                                        <div class="sched-details">
+                                            <span class="sched-title">Finished Products QC</span>
+                                            <span class="sched-sub">Final release batch verification</span>
+                                        </div>
+                                        <span class="sched-chip chip-blue"><t t-esc="state.finishedQcReleased"/>
+                                            Released</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 3: Quality Overview -->
+                    <div class="card-box quality-alerts-card">
+                        <div class="card-header">
+                            <span class="card-header-title">
+                                <span class="header-icon icon-pink"><i class="fa fa-shield"/></span>
+                                Quality Overview
+                            </span>
+                        </div>
+                        <div class="alerts-list">
+                            <div class="alert-item alert-critical" t-on-click="openTotalOos">
+                                <div class="alert-icon"><i class="fa fa-exclamation-triangle"/></div>
+                                <div class="alert-info">
+                                    <span class="alert-title">Total OOS</span>
+                                    <span class="alert-sub"><t t-esc="state.allOos"/>
+                                        investigation records</span>
+                                </div>
+                            </div>
+
+                            <div class="alert-item alert-quarantine" t-if="state.capaAvailable"
+                                 t-on-click="openTotalCapas">
+                                <div class="alert-icon"><i class="fa fa-check-square-o"/></div>
+                                <div class="alert-info">
+                                    <span class="alert-title">Total CAPA</span>
+                                    <span class="alert-sub"><t t-esc="state.allCapas"/>
+                                        corrective actions</span>
+                                </div>
+                            </div>
+
+                            <div class="alert-item alert-info-blue" t-if="state.capaAvailable"
+                                 t-on-click="openTotalDeviations">
+                                <div class="alert-icon"><i class="fa fa-random"/></div>
+                                <div class="alert-info">
+                                    <span class="alert-title">Total Deviations</span>
+                                    <span class="alert-sub"><t t-esc="state.allDeviations"/>
+                                        deviation logs</span>
+                                </div>
+                            </div>
+
+                            <div class="alert-item alert-info-blue" t-on-click="openTotalQcTests">
+                                <div class="alert-icon"><i class="fa fa-flask"/></div>
+                                <div class="alert-info">
+                                    <span class="alert-title">Total QC Tests</span>
+                                    <span class="alert-sub"><t t-esc="state.allQcTests"/>
+                                        test orders logged</span>
+                                </div>
+                            </div>
+
+                            <div class="alert-item alert-info-blue" t-on-click="openTotalQcSpecs">
+                                <div class="alert-icon"><i class="fa fa-list-alt"/></div>
+                                <div class="alert-info">
+                                    <span class="alert-title">QC Spec</span>
+                                    <span class="alert-sub"><t t-esc="state.totalQcSpecs"/>
+                                        active specifications</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Batches Table -->
+                <div class="card-box recent-batches-table-card">
+                    <div class="card-header"
+                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span class="card-header-title" style="font-size: 14px; font-weight: 700; color: #0B2C45;">
+                            <span class="header-icon icon-blue" style="margin-right: 6px;"><i class="fa fa-list"/></span>Recent Batches
+                        </span>
+                        <span class="header-link" t-on-click="openLots"
+                              style="font-size: 12px; color: #096DB7; font-weight: 600; cursor: pointer;">View All Batches <i class="fa fa-arrow-right ms-1"/></span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover"
+                               style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #EDF5FB; text-align: left; color: #6D8CA6;">
+                                    <th style="padding: 8px 12px;">Batch / Lot #</th>
+                                    <th style="padding: 8px 12px;">Product</th>
+                                    <th style="padding: 8px 12px;">Manufacturing Date</th>
+                                    <th style="padding: 8px 12px; text-align: right;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="state.recentBatches.length === 0">
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; padding: 16px; color: #8AA3B8;">No recent batches found.</td>
+                                    </tr>
+                                </t>
+                                <t t-foreach="state.recentBatches" t-as="batch" t-key="batch.id">
+                                    <tr t-on-click="() => this.openLot(batch.id)"
+                                        style="cursor: pointer; border-bottom: 1px solid #F3F8FC;">
+                                        <td style="padding: 10px 12px; font-weight: 700; color: #096DB7;"
+                                            t-esc="batch.name"/>
+                                        <td style="padding: 10px 12px; color: #0B2C45;" t-esc="batch.product"/>
+                                        <td style="padding: 10px 12px; color: #6D8CA6;" t-esc="batch.mfgDate"/>
+                                        <td style="padding: 10px 12px; text-align: right;">
+                                            <span t-attf-class="status-pill status-{{ batch.status }}"
+                                                  style="padding: 4px 10px; border-radius: 12px; font-size: 10.5px; font-weight: 700; display: inline-block;">
+                                                <t t-esc="batch.statusLabel"/>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </t>
+</templates>
+

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view tracing lot movements. -->
+    <record id="view_pharma_move_line_list" model="ir.ui.view">
+        <field name="name">pharma.stock.move.line.trace.list</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <list string="Stock Moves" create="0" delete="0" default_order="date desc">
+                <field name="date" string="Date"/>
+                <field name="reference" string="Reference"/>
+                <field name="product_id"/>
+                <field name="lot_id" string="Lot / Batch"
+                       groups="stock.group_production_lot"/>
+                <field name="location_id" string="From"/>
+                <field name="pharma_src_storage_category_id" string="Class (From)"
+                       optional="hide" groups="stock.group_stock_multi_locations"/>
+                <field name="location_dest_id" string="To"/>
+                <field name="pharma_storage_category_id" string="Storage Class"
+                       optional="show" groups="stock.group_stock_multi_locations"/>
+                <field name="pharma_required_storage_category_id" string="Required Class"
+                       optional="show" groups="stock.group_stock_multi_locations"/>
+                <field name="quantity" string="Quantity"/>
+                <field name="product_uom_id" string="UoM" groups="uom.group_uom"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-muted="state == 'cancel'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search view for traced lot movements. -->
+    <record id="view_pharma_move_line_search" model="ir.ui.view">
+        <field name="name">pharma.stock.move.line.trace.search</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <search string="Stock Moves">
+                <field name="product_id"/>
+                <field name="lot_id" groups="stock.group_production_lot"/>
+                <field name="reference"/>
+                <field name="location_id" string="From"/>
+                <field name="location_dest_id" string="To"/>
+                <field name="pharma_storage_category_id" string="Storage Class"/>
+                <filter name="filter_done" string="Done"
+                        domain="[('state', '=', 'done')]"/>
+                <group>
+                    <filter name="group_storage_category" string="Storage Class"
+                            context="{'group_by': 'pharma_storage_category_id'}"/>
+                    <filter name="group_product" string="Product"
+                            context="{'group_by': 'product_id'}"/>
+                    <filter name="group_dest" string="Destination Location"
+                            context="{'group_by': 'location_dest_id'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>
