@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view for SOPs. -->
+    <record id="pharma_sop_list_view" model="ir.ui.view">
+        <field name="name">pharma.sop.list</field>
+        <field name="model">pharma.sop</field>
+        <field name="arch" type="xml">
+            <list string="SOPs"
+                  decoration-success="status == 'effective'"
+                  decoration-muted="status == 'archived'"
+                  decoration-warning="status == 'review'">
+                <field name="sop_code" optional="show"/>
+                <field name="name"/>
+                <field name="version"/>
+                <field name="workcenter_id" optional="show"/>
+                <field name="author_id"/>
+                <field name="reviewer_id" optional="show"/>
+                <field name="approved_by" optional="show"/>
+                <field name="effective_date"/>
+                <field name="employee_count" string="Employees"/>
+                <field name="review_due_date" optional="show"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'effective'"
+                       decoration-warning="status == 'review'"
+                       decoration-muted="status in ('draft','archived')"/>
+            </list>
+        </field>
+    </record>
+    <!-- Form view for an SOP. -->
+    <record id="pharma_sop_form_view" model="ir.ui.view">
+        <field name="name">pharma.sop.form</field>
+        <field name="model">pharma.sop</field>
+        <field name="arch" type="xml">
+            <form string="Standard Operating Procedure">
+                <header>
+                    <!-- Author (User) submits for review -->
+                    <button name="action_submit_review" type="object"
+                            string="Submit for Review" class="btn-primary"
+                            invisible="not active or status != 'draft'"
+                            groups="pharmaceutical_base.group_pharma_operator"/>
+
+                    <!-- QA approver makes it Effective (cannot be the author) -->
+                    <button name="action_approve" type="object"
+                            string="Approve &amp; Make Effective" class="btn-primary"
+                            invisible="not active or status != 'review'"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <!-- Back to Draft (from Under Review) -->
+                    <button name="action_reset_draft" type="object"
+                            string="Return to Draft"
+                            invisible="not active or status != 'review'"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <!-- Archive an effective SOP -->
+                    <button name="action_archive_sop" type="object"
+                            string="Archive SOP"
+                            invisible="not active or status != 'effective'"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <!-- Revise an archived SOP (increments version, resets to Draft) -->
+                    <button name="action_revise" type="object"
+                            string="Revise (New Version)"
+                            invisible="not active or status not in ('effective', 'archived')"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="draft,review,effective"/>
+                </header>
+                <sheet>
+                    <field name="active" invisible="1"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <!-- status loaded explicitly so header button invisible attrs evaluate correctly -->
+                    <field name="status" invisible="1"/>
+
+                    <!-- Smart button — Training Records -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_trainings" type="object"
+                                class="oe_stat_button" icon="fa-graduation-cap"
+                                invisible="training_count == 0">
+                            <field name="training_count" widget="statinfo"
+                                   string="Trainings"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="SOP Title…"
+                                   readonly="not active or status in ('effective', 'archived')"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="SOP Details">
+                            <field name="sop_code" readonly="1"/>
+                            <!-- System-managed: auto-increments on revision. -->
+                            <field name="version" readonly="1"/>
+                            <field name="workcenter_id" required="1" readonly="not active or status in ('effective', 'archived')"/>
+                            <field name="author_id" readonly="not active or status in ('effective', 'archived')"/>
+                            <field name="reviewer_id" readonly="not active or status in ('effective', 'archived')"/>
+                        </group>
+                        <group string="Approval">
+                            <field name="approved_by"
+                                   readonly="1"
+                                   invisible="status not in ('effective','archived')"/>
+                            <field name="effective_date"
+                                   readonly="1"
+                                   invisible="status not in ('effective','archived')"/>
+                            <field name="review_due_date" readonly="not active or status in ('effective', 'archived')"/>
+                        </group>
+                    </group>
+
+                    <!-- Document Upload -->
+                    <group string="SOP Document">
+                        <field name="document" widget="binary"
+                               filename="filename" string="Upload File"
+                               readonly="not active or status in ('effective', 'archived')"/>
+                        <field name="filename" invisible="1"/>
+                    </group>
+                    <group string="Assigned Employees">
+                        <field name="employee_ids"
+                               widget="many2many_tags"
+                               placeholder="Select employees who require training on this SOP…"
+                               nolabel="1"
+                               readonly="not active or status in ('effective', 'archived')"
+                               domain="[('active', '=', True)]"/>
+                    </group>
+
+                    <group string="Notes">
+                        <field name="notes" nolabel="1" colspan="2"
+                               readonly="not active or status in ('effective', 'archived')"
+                               placeholder="Change history, cross-references, scope…"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Search view for SOPs. -->
+    <record id="pharma_sop_search_view" model="ir.ui.view">
+        <field name="name">pharma.sop.search</field>
+        <field name="model">pharma.sop</field>
+        <field name="arch" type="xml">
+            <search string="Search SOPs">
+                <field name="name"/>
+                <field name="sop_code"/>
+                <field name="workcenter_id"/>
+                <field name="author_id"/>
+                <field name="approved_by"/>
+                <filter name="effective" string="Effective" domain="[('status', '=', 'effective')]"/>
+                <filter name="under_review" string="Under Review" domain="[('status', '=', 'review')]"/>
+                <filter name="draft" string="Draft" domain="[('status', '=', 'draft')]"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <filter name="group_by_workcenter" string="Work Center" context="{'group_by': 'workcenter_id'}"/>
+                <filter name="group_by_status" string="Status" context="{'group_by': 'status'}"/>
+                <filter name="group_by_author" string="Author" context="{'group_by': 'author_id'}"/>
+            </search>
+        </field>
+    </record>
+    <!-- Action opening SOPs. -->
+    <record id="pharma_sop_action" model="ir.actions.act_window">
+        <field name="name">SOPs</field>
+        <field name="res_model">pharma.sop</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_sop_search_view"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No SOPs created yet.
+            </p>
+            <p>Create Standard Operating Procedures here. Once an SOP reaches
+               Effective status, training records are automatically generated
+               for all employees with the applicable job roles.</p>
+        </field>
+    </record>
+</odoo>

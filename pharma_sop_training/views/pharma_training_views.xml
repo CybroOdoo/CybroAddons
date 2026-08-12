@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view for training records. -->
+    <record id="pharma_training_list_view" model="ir.ui.view">
+            <field name="name">pharma.training.list</field>
+            <field name="model">pharma.training</field>
+            <field name="arch" type="xml">
+                <list string="Training Records" create="0"
+                      decoration-danger="status == 'expired'"
+                      decoration-warning="status == 'failed'"
+                      decoration-muted="status == 'pending'">
+                    <field name="sop_id"/>
+                    <field name="employee_id"/>
+                    <field name="version"/>
+                    <field name="status" widget="badge"
+                           decoration-success="status == 'passed'"
+                           decoration-warning="status == 'failed'"
+                           decoration-danger="status == 'expired'"
+                           decoration-muted="status == 'pending'"/>
+                    <field name="score" optional="show"/>
+                    <field name="assessor_id" optional="show"/>
+                    <field name="completed_on" optional="show"/>
+                    <field name="expiry_date"/>
+                </list>
+            </field>
+    </record>
+    <!-- Form view for a training record. -->
+    <record id="pharma_training_form_view" model="ir.ui.view">
+        <field name="name">pharma.training.form</field>
+        <field name="model">pharma.training</field>
+        <field name="arch" type="xml">
+            <form string="Training Record" create="0">
+                <header>
+                    <!-- Assessor (QA) records the score and submits assessment -->
+                    <button name="action_record_assessment" type="object"
+                            string="Record Assessment" class="btn-primary"
+                            invisible="not active or status not in ('pending', 'failed')"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <!-- Allow re-take of a failed or expired training -->
+                    <button name="action_retake" type="object"
+                            string="Reset for Re-take"
+                            invisible="not active or status not in ('failed', 'expired', 'passed')"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="pending,passed"/>
+                </header>
+                <sheet>
+                    <field name="active" invisible="1"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="training_name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Assignment">
+                            <field name="version" readonly="1"/>
+                            <field name="sop_id" readonly="not active or status == 'passed'"/>
+                            <field name="employee_id" readonly="not active or status == 'passed'"/>
+                            <field name="status" widget="badge"
+                                   decoration-success="status == 'passed'"
+                                   decoration-warning="status == 'failed'"
+                                   decoration-danger="status == 'expired'"
+                                   decoration-muted="status == 'pending'"/>
+                            <field name="expiry_date" readonly="not active or status == 'passed'"/>
+                        </group>
+                        <group string="Assessment">
+                            <field name="assessor_id" readonly="not active or status == 'passed'"/>
+                            <field name="score" readonly="not active or status == 'passed'"/>
+                            <field name="completed_on" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Embedded SOP document viewer / download link -->
+                    <group string="SOP Document" invisible="not sop_id">
+                        <field name="sop_id" readonly="1" string="SOP"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Search view for training records. -->
+    <record id="pharma_training_search_view" model="ir.ui.view">
+        <field name="name">pharma.training.search</field>
+        <field name="model">pharma.training</field>
+        <field name="arch" type="xml">
+            <search string="Search Training Records">
+    <field name="employee_id"/>
+    <field name="sop_id"/>
+    <filter name="pending" string="Pending"
+            domain="[('status','=','pending')]"/>
+    <filter name="passed" string="Passed"
+            domain="[('status','=','passed')]"/>
+    <filter name="failed" string="Failed"
+            domain="[('status','=','failed')]"/>
+    <filter name="expired" string="Expired"
+            domain="[('status','=','expired')]"/>
+    <filter name="archived" string="Archived"
+            domain="[('active', '=', False)]"/>
+    <filter name="my_trainings" string="My Trainings"
+            domain="[('employee_id.user_id','=',uid)]"/>
+    <filter name="group_employee" string="Group by Employee"
+            context="{'group_by': 'employee_id'}"/>
+    <filter name="group_sop" string="Group by SOP"
+            context="{'group_by': 'sop_id'}"/>
+    <filter name="group_status" string="Group by Status"
+            context="{'group_by': 'status'}"/>
+</search>
+        </field>
+    </record>
+    <!-- Action opening all training records. -->
+    <record id="pharma_training_action" model="ir.actions.act_window">
+        <field name="name">Training Records</field>
+        <field name="res_model">pharma.training</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_group_sop': 1}</field>
+        <field name="search_view_id" ref="pharma_training_search_view"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No training records yet.
+            </p>
+            <p>Training records are created automatically when an SOP reaches
+               Effective status. Employees with expired training are blocked
+               from signing BMR steps and QC results.</p>
+        </field>
+    </record>
+    <!-- Action opening the current user's trainings. -->
+    <record id="pharma_training_my_action" model="ir.actions.act_window">
+        <field name="name">My Training Records</field>
+        <field name="res_model">pharma.training</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="search_view_id" ref="pharma_training_search_view"/>
+    </record>
+</odoo>
