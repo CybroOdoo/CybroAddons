@@ -5,3 +5,9 @@
 #### ADD
 
 - Initial commit for Product Low Stock Alert
+
+#### 05.08.2026
+#### Version 19.0.1.0.1
+#### UPDT
+
+- Bug Fix for Product Low Stock Alert

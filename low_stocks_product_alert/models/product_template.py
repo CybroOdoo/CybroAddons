@@ -50,26 +50,24 @@ class ProductTemplate(models.Model):
 
     @api.depends('qty_available')
     def _compute_alert_state(self):
-        """ Computes the 'alert_state' and 'color_field' fields based on
-        the product's stock quantity and low stock alert parameters."""
-        stock_alert = self.env['ir.config_parameter'].sudo().get_param(
+        """Compute the alert state, background color and alert tag."""
+        ir_config = self.env['ir.config_parameter'].sudo()
+        stock_alert = ir_config.get_param(
             'low_stocks_product_alert.is_low_stock_alert')
+        limit = int(
+            ir_config.get_param(
+                'low_stocks_product_alert.min_low_stock_alert',
+                default='0'))
+
         for rec in self:
             if stock_alert:
-
-                rec.alert_state, rec.color_field = (False, 'white') if \
-                    not rec.is_storable or rec.qty_available > int(
-                        rec.env['ir.config_parameter'].sudo().get_param(
-                            'low_stocks_product_alert.min_low_stock_alert')) \
-                    else (True, '#fdc6c673')
-
-                is_low_stock = True if rec.is_storable and rec.qty_available <= int(
-                    self.env['ir.config_parameter'].sudo().get_param(
-                        'low_stocks_product_alert.min_low_stock_alert')) else False
-                rec.alert_tag = rec.qty_available if is_low_stock else False
+                rec.alert_state = (rec.is_storable and rec.qty_available <= limit)
+                rec.color_field = ('#fdc6c673' if rec.alert_state else 'white')
+                rec.alert_tag = (str(rec.qty_available) if rec.alert_state else False)
             else:
                 rec.alert_state = False
                 rec.color_field = 'white'
+                rec.alert_tag = False
 
     @api.model
     def _load_pos_data_fields(self, config_id):
