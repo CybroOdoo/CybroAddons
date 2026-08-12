@@ -59,3 +59,8 @@
 #### Version 18.0.1.3.5
 #### UPDT
 - Removed eval() functions to fix security issues during publication.
+
+#### 03.08.2026
+#### Version 18.0.1.3.6
+#### UPDT
+- Corrected tax report to properly net credit notes and refunds.

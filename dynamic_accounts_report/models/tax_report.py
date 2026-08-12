@@ -61,16 +61,16 @@ class TaxReport(models.TransientModel):
                 sale.append({
                     'name': tax.name,
                     'amount': tax.amount,
-                    'net': round(tax_debit_sums + tax_credit_sums, 2),
-                    'tax': round((tax_debit_sums + tax_credit_sums) * (
+                    'net': round((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums), 2),
+                    'tax': round(((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                             tax.amount / 100), 2)
                 })
             elif tax.type_tax_use == 'purchase':
                 purchase.append({
                     'name': tax.name,
                     'amount': tax.amount,
-                    'net': round(tax_debit_sums + tax_credit_sums, 2),
-                    'tax': round((tax_debit_sums + tax_credit_sums) * (
+                    'net': round((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums), 2),
+                    'tax': round(((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                             tax.amount / 100), 2)
                 })
         return {
@@ -146,7 +146,7 @@ class TaxReport(models.TransientModel):
                                     tax_credit_sums = sum(
                                         record['credit'] for record in tax_id)
                                     dynamic_total_net_sum[
-                                        f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                        f"dynamic_total_net_sum{i}"] = (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)
                                     dynamic_total_tax_sum[
                                         f"dynamic_total_tax_sum{i}"] = \
                                         dynamic_total_net_sum[
@@ -174,7 +174,7 @@ class TaxReport(models.TransientModel):
                                     tax_credit_sums = sum(
                                         record['credit'] for record in tax_id)
                                     dynamic_total_net_sum[
-                                        f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                        f"dynamic_total_net_sum{i}"] = (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)
                                     dynamic_total_tax_sum[
                                         f"dynamic_total_tax_sum{i}"] = \
                                         dynamic_total_net_sum[
@@ -209,7 +209,7 @@ class TaxReport(models.TransientModel):
                                     tax_credit_sums = sum(
                                         record['credit'] for record in tax_id)
                                     dynamic_total_net_sum[
-                                        f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                        f"dynamic_total_net_sum{i}"] = (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)
                                     dynamic_total_tax_sum[
                                         f"dynamic_total_tax_sum{i}"] = \
                                         dynamic_total_net_sum[
@@ -237,10 +237,10 @@ class TaxReport(models.TransientModel):
                                     'name': tax.name,
                                     'amount': tax.amount,
                                     'net': round(
-                                        tax_debit_sums + tax_credit_sums,
+                                        (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums),
                                         2),
                                     'tax': round(
-                                        (tax_debit_sums + tax_credit_sums) * (
+                                        ((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                                 tax.amount / 100), 2),
                                     'dynamic net': dynamic_total_net_sum,
                                     'dynamic tax': dynamic_total_tax_sum,
@@ -251,10 +251,10 @@ class TaxReport(models.TransientModel):
                                     'name': tax.name,
                                     'amount': tax.amount,
                                     'net': round(
-                                        tax_debit_sums + tax_credit_sums,
+                                        (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums),
                                         2),
                                     'tax': round(
-                                        (tax_debit_sums + tax_credit_sums) * (
+                                        ((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                                 tax.amount / 100), 2),
                                     'account': account.display_name,
                                 })
@@ -264,10 +264,10 @@ class TaxReport(models.TransientModel):
                                     'name': tax.name,
                                     'amount': tax.amount,
                                     'net': round(
-                                        tax_debit_sums + tax_credit_sums,
+                                        (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums),
                                         2),
                                     'tax': round(
-                                        (tax_debit_sums + tax_credit_sums) * (
+                                        ((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                                 tax.amount / 100), 2),
                                     'dynamic net': dynamic_total_net_sum,
                                     'dynamic tax': dynamic_total_tax_sum,
@@ -278,10 +278,10 @@ class TaxReport(models.TransientModel):
                                     'name': tax.name,
                                     'amount': tax.amount,
                                     'net': round(
-                                        tax_debit_sums + tax_credit_sums,
+                                        (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums),
                                         2),
                                     'tax': round(
-                                        (tax_debit_sums + tax_credit_sums) * (
+                                        ((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                                 tax.amount / 100), 2),
                                     'account': account.display_name,
                                 })
@@ -316,7 +316,7 @@ class TaxReport(models.TransientModel):
                                 tax_credit_sums = sum(
                                     record['credit'] for record in tax_id)
                                 dynamic_total_net_sum[
-                                    f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                    f"dynamic_total_net_sum{i}"] = (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)
                                 dynamic_total_tax_sum[
                                     f"dynamic_total_tax_sum{i}"] = \
                                     dynamic_total_net_sum[
@@ -343,7 +343,7 @@ class TaxReport(models.TransientModel):
                                 tax_credit_sums = sum(
                                     record['credit'] for record in tax_id)
                                 dynamic_total_net_sum[
-                                    f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                    f"dynamic_total_net_sum{i}"] = (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)
                                 dynamic_total_tax_sum[
                                     f"dynamic_total_tax_sum{i}"] = \
                                     dynamic_total_net_sum[
@@ -377,7 +377,7 @@ class TaxReport(models.TransientModel):
                                 tax_credit_sums = sum(
                                     record['credit'] for record in tax_id)
                                 dynamic_total_net_sum[
-                                    f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                    f"dynamic_total_net_sum{i}"] = (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)
                                 dynamic_total_tax_sum[
                                     f"dynamic_total_tax_sum{i}"] = \
                                     dynamic_total_net_sum[
@@ -404,10 +404,10 @@ class TaxReport(models.TransientModel):
                             sale.append({
                                 'name': tax.name,
                                 'amount': tax.amount,
-                                'net': round(tax_debit_sums + tax_credit_sums,
+                                'net': round((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums),
                                              2),
                                 'tax': round(
-                                    (tax_debit_sums + tax_credit_sums) * (
+                                    ((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                             tax.amount / 100), 2),
                                 'dynamic net': dynamic_total_net_sum,
                                 'dynamic tax': dynamic_total_tax_sum,
@@ -417,10 +417,10 @@ class TaxReport(models.TransientModel):
                             sale.append({
                                 'name': tax.name,
                                 'amount': tax.amount,
-                                'net': round(tax_debit_sums + tax_credit_sums,
+                                'net': round((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums),
                                              2),
                                 'tax': round(
-                                    (tax_debit_sums + tax_credit_sums) * (
+                                    ((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                             tax.amount / 100), 2),
                                 'account': account.display_name,
                             })
@@ -429,10 +429,10 @@ class TaxReport(models.TransientModel):
                             purchase.append({
                                 'name': tax.name,
                                 'amount': tax.amount,
-                                'net': round(tax_debit_sums + tax_credit_sums,
+                                'net': round((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums),
                                              2),
                                 'tax': round(
-                                    (tax_debit_sums + tax_credit_sums) * (
+                                    ((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                             tax.amount / 100), 2),
                                 'dynamic net': dynamic_total_net_sum,
                                 'dynamic tax': dynamic_total_tax_sum,
@@ -442,10 +442,10 @@ class TaxReport(models.TransientModel):
                             purchase.append({
                                 'name': tax.name,
                                 'amount': tax.amount,
-                                'net': round(tax_debit_sums + tax_credit_sums,
+                                'net': round((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums),
                                              2),
                                 'tax': round(
-                                    (tax_debit_sums + tax_credit_sums) * (
+                                    ((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                             tax.amount / 100), 2),
                                 'account': account.display_name,
                             })
@@ -475,7 +475,7 @@ class TaxReport(models.TransientModel):
                             tax_credit_sums = sum(
                                 record['credit'] for record in tax_id)
                             dynamic_total_net_sum[
-                                f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                f"dynamic_total_net_sum{i}"] = (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)
                             dynamic_total_tax_sum[
                                 f"dynamic_total_tax_sum{i}"] = \
                                 dynamic_total_net_sum[
@@ -500,7 +500,7 @@ class TaxReport(models.TransientModel):
                             tax_credit_sums = sum(
                                 record['credit'] for record in tax_id)
                             dynamic_total_net_sum[
-                                f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                f"dynamic_total_net_sum{i}"] = (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)
                             dynamic_total_tax_sum[
                                 f"dynamic_total_tax_sum{i}"] = \
                                 dynamic_total_net_sum[
@@ -532,7 +532,7 @@ class TaxReport(models.TransientModel):
                             tax_credit_sums = sum(
                                 record['credit'] for record in tax_id)
                             dynamic_total_net_sum[
-                                f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                f"dynamic_total_net_sum{i}"] = (tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)
                             dynamic_total_tax_sum[
                                 f"dynamic_total_tax_sum{i}"] = \
                                 dynamic_total_net_sum[
@@ -555,8 +555,8 @@ class TaxReport(models.TransientModel):
                         sale.append({
                             'name': tax.name,
                             'amount': tax.amount,
-                            'net': round(tax_debit_sums + tax_credit_sums, 2),
-                            'tax': round((tax_debit_sums + tax_credit_sums) * (
+                            'net': round((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums), 2),
+                            'tax': round(((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                     tax.amount / 100), 2),
                             'dynamic net': dynamic_total_net_sum,
                             'dynamic tax': dynamic_total_tax_sum,
@@ -565,8 +565,8 @@ class TaxReport(models.TransientModel):
                         sale.append({
                             'name': tax.name,
                             'amount': tax.amount,
-                            'net': round(tax_debit_sums + tax_credit_sums, 2),
-                            'tax': round((tax_debit_sums + tax_credit_sums) * (
+                            'net': round((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums), 2),
+                            'tax': round(((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                     tax.amount / 100), 2),
                         })
                 elif tax.type_tax_use == 'purchase':
@@ -574,8 +574,8 @@ class TaxReport(models.TransientModel):
                         purchase.append({
                             'name': tax.name,
                             'amount': tax.amount,
-                            'net': round(tax_debit_sums + tax_credit_sums, 2),
-                            'tax': round((tax_debit_sums + tax_credit_sums) * (
+                            'net': round((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums), 2),
+                            'tax': round(((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                     tax.amount / 100), 2),
                             'dynamic net': dynamic_total_net_sum,
                             'dynamic tax': dynamic_total_tax_sum,
@@ -584,8 +584,8 @@ class TaxReport(models.TransientModel):
                         purchase.append({
                             'name': tax.name,
                             'amount': tax.amount,
-                            'net': round(tax_debit_sums + tax_credit_sums, 2),
-                            'tax': round((tax_debit_sums + tax_credit_sums) * (
+                            'net': round((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums), 2),
+                            'tax': round(((tax_credit_sums - tax_debit_sums if tax.type_tax_use == 'sale' else tax_debit_sums - tax_credit_sums)) * (
                                     tax.amount / 100), 2),
                         })
         return {
