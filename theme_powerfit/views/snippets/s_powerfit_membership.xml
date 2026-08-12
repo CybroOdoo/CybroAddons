@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- S Powerfit Membership Template -->
+<odoo>
+  <template id="s_powerfit_membership" name="PowerFit Membership">
+    <section class="section" data-snippet="theme_powerfit.s_powerfit_membership" data-name="PowerFit Membership">
+             <div class="container oe_structure" id="membership">
+              <div class="section-header reveal from-bottom">
+               <div class="eyebrow">Membership Plans</div>
+               <h2 class="o_editable section-title">Choose Your <span class="o_editable">Journey</span></h2>
+               <p class="o_editable section-subtitle">Flexible plans designed to match your goals, schedule, and lifestyle. No hidden fees.</p>
+              </div>
+              <!-- Always fetch gym plans directly from DB (reliable pattern) -->
+              <t t-set="all_gym_plans" t-value="request.env['product.template'].sudo().search([('is_gym_plan', '=', True), ('active', '=', True)])"/>
+              <!-- Sort: basic=0, standard=1, premium=2 -->
+              <t t-set="all_gym_plans" t-value="all_gym_plans.sorted(key=lambda p: {'basic': 0, 'standard': 1, 'premium': 2}.get(p.gym_plan_category or '', 99))"/>
+
+              <!-- DYNAMIC CARDS – rendered when gym plan products exist -->
+              <t t-if="all_gym_plans">
+               <div class="pricing-grid">
+                <t t-foreach="all_gym_plans" t-as="plan">
+                 <!-- Determine card CSS class and button style by category -->
+                 <t t-set="is_featured" t-value="plan.gym_plan_category == 'standard'"/>
+                 <t t-set="delay_class" t-value="'reveal-delay-%d' % ((plan_index % 3) + 1)"/>
+                 <t t-set="card_class"   t-value="'pricing-card featured reveal from-bottom %s' % delay_class if is_featured else 'pricing-card reveal from-bottom %s' % delay_class"/>
+                 <t t-set="cta_class"    t-value="'pricing-cta pricing-cta-filled' if is_featured else 'pricing-cta pricing-cta-outline'"/>
+
+                 <!-- Build contact URL with plan enquiry params -->
+                 <t t-set="plan_label"   t-value="dict(basic='Basic', standard='Standard', premium='Premium').get(plan.gym_plan_category or '', plan.name)"/>
+                 <t t-set="plan_price"   t-value="'%.0f' % (plan.list_price or 0)"/>
+                 <t t-set="contact_url"  t-value="'/contactus?plan=%s&amp;product=%s&amp;price=%s' % (plan_label, plan.name.replace(' ', '+'), plan_price)"/>
+
+                 <div t-att-class="card_class">
+                  <!-- Most Popular badge – only for Standard plan -->
+                  <t t-if="is_featured">
+                   <div class="pricing-popular-badge">Most Popular</div>
+                  </t>
+
+                  <!-- Plan name (BASIC / STANDARD / PREMIUM) -->
+                  <div class="pricing-plan-name">
+                   <t t-esc="plan_label"/>
+                  </div>
+
+                  <!-- Price -->
+                  <div class="pricing-price">
+                   <span class="pricing-currency">$</span>
+                   <span class="pricing-amount">
+                    <t t-esc="'%.0f' % (plan.list_price or 0)"/>
+                   </span>
+                   <span class="pricing-period">/month</span>
+                  </div>
+
+                  <!-- Tagline description -->
+                  <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:4px;">
+                   <t t-if="plan.gym_plan_description">
+                    <t t-esc="plan.gym_plan_description"/>
+                   </t>
+                   <t t-else="">—</t>
+                  </p>
+
+                  <div class="pricing-divider"></div>
+
+                  <!-- Features from product sales description -->
+                  <ul class="pricing-features">
+                   <t t-if="plan.description_sale">
+                    <t t-foreach="plan.description_sale.split('\n')" t-as="feat">
+                     <t t-if="feat.strip()">
+                      <li class="pricing-feature">
+                       <iconify-icon icon="ph:check-bold"></iconify-icon>
+                       <t t-esc="feat.strip()"/>
+                      </li>
+                     </t>
+                    </t>
+                   </t>
+                   <t t-else="">
+                    <li class="pricing-feature">
+                     <iconify-icon icon="ph:check-bold"></iconify-icon> Full Gym Access
+                    </li>
+                   </t>
+                  </ul>
+
+                  <!-- Get Started button – links to Contact page with plan prefilled -->
+                  <a t-att-href="contact_url" t-att-class="cta_class">Get Started</a>
+                 </div>
+                </t>
+               </div>
+              </t>
+
+              <!-- DEMO FALLBACK – shown when no gym plan products exist -->
+              <t t-else="">
+               <div class="pricing-grid">
+                <div class="pricing-card reveal from-bottom reveal-delay-1">
+                 <div class="pricing-plan-name">Basic</div>
+                 <div class="pricing-price">
+                  <span class="o_editable pricing-currency">$</span>
+                  <span class="o_editable pricing-amount">29</span>
+                  <span class="o_editable pricing-period">/month</span>
+                 </div>
+                 <p class="o_editable" style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:4px;">Perfect for beginners</p>
+                 <div class="pricing-divider"></div>
+                 <ul class="pricing-features">
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Gym Floor Access</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Cardio Equipment</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Locker Room Access</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> 2 Group Classes/Week</li>
+                  <li class="pricing-feature unavailable"><iconify-icon icon="ph:x-bold"></iconify-icon> Personal Sessions</li>
+                  <li class="pricing-feature unavailable"><iconify-icon icon="ph:x-bold"></iconify-icon> Nutrition Consultation</li>
+                  <li class="pricing-feature unavailable"><iconify-icon icon="ph:x-bold"></iconify-icon> Guest Passes</li>
+                  <li class="pricing-feature unavailable"><iconify-icon icon="ph:x-bold"></iconify-icon> Spa Access</li>
+                 </ul>
+                 <a href="/contactus" class="o_editable pricing-cta pricing-cta-outline">Get Started</a>
+                </div>
+                <div class="pricing-card featured reveal from-bottom reveal-delay-2">
+                 <div class="pricing-popular-badge">Most Popular</div>
+                 <div class="pricing-plan-name">Standard</div>
+                 <div class="pricing-price">
+                  <span class="o_editable pricing-currency">$</span>
+                  <span class="o_editable pricing-amount">59</span>
+                  <span class="o_editable pricing-period">/month</span>
+                 </div>
+                 <p class="o_editable" style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:4px;">For serious athletes</p>
+                 <div class="pricing-divider"></div>
+                 <ul class="pricing-features">
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Full Gym Access</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> All Cardio Equipment</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Locker Room Access</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Unlimited Group Classes</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> 2 Personal Sessions/Month</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Nutrition Consultation</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> 2 Guest Passes/Month</li>
+                  <li class="pricing-feature unavailable"><iconify-icon icon="ph:x-bold"></iconify-icon> Spa Access</li>
+                 </ul>
+                 <a href="/contactus" class="o_editable pricing-cta pricing-cta-filled">Get Started</a>
+                </div>
+                <div class="pricing-card reveal from-bottom reveal-delay-3">
+                 <div class="pricing-plan-name">Premium</div>
+                 <div class="pricing-price">
+                  <span class="o_editable pricing-currency">$</span>
+                  <span class="o_editable pricing-amount">99</span>
+                  <span class="o_editable pricing-period">/month</span>
+                 </div>
+                 <p class="o_editable" style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:4px;">The ultimate experience</p>
+                 <div class="pricing-divider"></div>
+                 <ul class="pricing-features">
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> VIP 24/7 Access</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> All Equipment &amp; Zones</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Unlimited Group Classes</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Unlimited Personal Training</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Full Nutrition Program</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Unlimited Guest Passes</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Full Spa Access</li>
+                  <li class="pricing-feature"><iconify-icon icon="ph:check-bold"></iconify-icon> Priority Booking</li>
+                 </ul>
+                 <a href="/contactus" class="o_editable pricing-cta pricing-cta-outline">Get Started</a>
+                </div>
+               </div>
+              </t>
+             </div>
+            </section>
+  </template>
+  
+  <template id="s_powerfit_membership_reg" inherit_id="website.snippets" priority="16">
+    <xpath expr="//snippets[@id='snippet_structure']/*[last()]" position="after">
+      <t t-snippet="theme_powerfit.s_powerfit_membership" string="PowerFit Membership" t-thumbnail="/theme_powerfit/static/src/img/snippets/s_powerfit_membership.png" group="powerfit_group"/>
+    </xpath>
+  </template>
+</odoo>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="powerfit_trainers_page" name="Trainers">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+<section class="page-banner page-banner--trainers" data-snippet="theme_powerfit.s_powerfit_trainers_1" data-name="PowerFit Trainers 1">
+         <div class="container oe_structure">
+          <div class="eyebrow">Meet the Team</div>
+          <h1 class="o_editable page-banner-title">Expert <span class="o_editable" style="color:var(--accent)">Trainers</span></h1>
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+           <a class="o_editable" href="/">Home</a>
+           <span class="o_editable">/</span>
+           <span class="o_editable breadcrumb-current">Trainers</span>
+          </nav>
+         </div>
+        </section>
+<section class="section" data-snippet="theme_powerfit.s_powerfit_trainers_2" data-name="PowerFit Trainers 2">
+         <div class="container oe_structure">
+          <div class="section-header reveal from-bottom">
+           <div class="eyebrow">Our Coaches</div>
+           <h2 class="o_editable section-title">World-Class <span class="o_editable">Expertise</span></h2>
+           <p class="o_editable section-subtitle">Our certified trainers are dedicated to helping you achieve your fitness goals safely, effectively, and sustainably. Hover to discover each trainer's story.</p>
+          </div>
+
+          <!-- Always fetch trainers directly from DB — same pattern as homepage snippet -->
+          <t t-set="all_trainers" t-value="request.env['hr.employee'].sudo().search([('is_gym_trainer', '=', True)], order='id asc')"/>
+
+          <!-- ══════════════════════════════════════════════════════
+               DYNAMIC TRAINERS (when backend trainer records exist)
+               ══════════════════════════════════════════════════════ -->
+          <t t-if="all_trainers">
+           <div class="trainers-grid">
+            <t t-foreach="all_trainers" t-as="trainer">
+             <!-- Cycle delay class: 1, 2, 3, 1, 2, 3 … -->
+             <t t-set="delay_class" t-value="'reveal-delay-%d' % ((trainer_index % 3) + 1)"/>
+             <div t-attf-class="trainer-card reveal from-bottom {{ delay_class }}">
+              <div class="trainer-img">
+               <img t-att-src="'/web/image/hr.employee/%d/image_1920' % trainer.id"
+                    t-att-alt="trainer.name"
+                    onerror="this.src='/theme_powerfit/static/src/img/trainer_default.jpg'"/>
+               <div class="trainer-overlay"></div>
+               <div class="trainer-social">
+                <t t-if="trainer.trainer_instagram">
+                 <a t-att-href="trainer.trainer_instagram" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                  <iconify-icon icon="ph:instagram-logo-fill"></iconify-icon>
+                 </a>
+                </t>
+                <t t-if="trainer.trainer_twitter">
+                 <a t-att-href="trainer.trainer_twitter" aria-label="Twitter" target="_blank" rel="noopener noreferrer">
+                  <iconify-icon icon="ph:twitter-logo-fill"></iconify-icon>
+                 </a>
+                </t>
+                <t t-if="trainer.trainer_linkedin">
+                 <a t-att-href="trainer.trainer_linkedin" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+                  <iconify-icon icon="ph:linkedin-logo-fill"></iconify-icon>
+                 </a>
+                </t>
+               </div>
+               <div class="trainer-info">
+                <span class="trainer-tag">
+                 <t t-if="trainer.job_id">
+                  <t t-esc="trainer.job_id.name"/>
+                 </t>
+                 <t t-else="">Personal Trainer</t>
+                </span>
+                <h3 class="trainer-name" t-esc="trainer.name"/>
+                <div class="trainer-details">
+                 <p class="trainer-bio">
+                  <t t-if="trainer.trainer_short_description">
+                   <t t-esc="trainer.trainer_short_description"/>
+                  </t>
+                 </p>
+                 <div class="trainer-achievements">
+                  <div class="trainer-ach">
+                   <div class="trainer-ach-num">
+                    <t t-esc="'%d+' % trainer.trainer_experience if trainer.trainer_experience else '0'"/>
+                   </div>
+                   <div class="trainer-ach-label">Years</div>
+                  </div>
+                  <div class="trainer-ach">
+                   <div class="trainer-ach-num">
+                    <t t-esc="'%d+' % trainer.trainer_clients if trainer.trainer_clients else '0'"/>
+                   </div>
+                   <div class="trainer-ach-label">Clients</div>
+                  </div>
+                  <div class="trainer-ach">
+                   <div class="trainer-ach-num">
+                    <t t-if="trainer.trainer_rating">
+                     <t t-esc="'%.1f★' % trainer.trainer_rating"/>
+                    </t>
+                    <t t-else="">N/A</t>
+                   </div>
+                   <div class="trainer-ach-label">Rating</div>
+                  </div>
+                 </div>
+                </div>
+               </div>
+              </div>
+             </div>
+            </t>
+           </div>
+          </t>
+
+          <!-- ══════════════════════════════════════════════════════
+               DEMO FALLBACK (shown when no backend trainers exist)
+               ══════════════════════════════════════════════════════ -->
+          <t t-else="">
+           <div class="trainers-grid">
+            <div class="trainer-card reveal from-bottom reveal-delay-1">
+             <div class="trainer-img">
+              <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&amp;q=80" alt="Alex Carter"/>
+              <div class="trainer-overlay"></div>
+              <div class="trainer-social">
+               <a class="o_editable" href="https://instagram.com/" aria-label="Instagram"><iconify-icon icon="ph:instagram-logo-fill"></iconify-icon></a>
+               <a class="o_editable" href="https://twitter.com/" aria-label="Twitter"><iconify-icon icon="ph:twitter-logo-fill"></iconify-icon></a>
+               <a class="o_editable" href="https://linkedin.com/" aria-label="LinkedIn"><iconify-icon icon="ph:linkedin-logo-fill"></iconify-icon></a>
+              </div>
+              <div class="trainer-info">
+               <span class="o_editable trainer-tag">Strength &amp; Conditioning</span>
+               <h3 class="o_editable trainer-name">Alex Carter</h3>
+               <div class="trainer-details">
+                <p class="o_editable trainer-bio">Former pro athlete with 10+ years of coaching. Specialises in powerlifting, functional strength, and athletic performance.</p>
+                <div class="trainer-achievements">
+                 <div class="trainer-ach"><div class="trainer-ach-num">10+</div><div class="trainer-ach-label">Years</div></div>
+                 <div class="trainer-ach"><div class="trainer-ach-num">500+</div><div class="trainer-ach-label">Clients</div></div>
+                 <div class="trainer-ach"><div class="trainer-ach-num">4.9★</div><div class="trainer-ach-label">Rating</div></div>
+                </div>
+               </div>
+              </div>
+             </div>
+            </div>
+            <div class="trainer-card reveal from-bottom reveal-delay-2">
+             <div class="trainer-img">
+              <img src="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&amp;q=80" alt="Maya Johnson"/>
+              <div class="trainer-overlay"></div>
+              <div class="trainer-social">
+               <a class="o_editable" href="https://instagram.com/" aria-label="Instagram"><iconify-icon icon="ph:instagram-logo-fill"></iconify-icon></a>
+               <a class="o_editable" href="https://twitter.com/" aria-label="Twitter"><iconify-icon icon="ph:twitter-logo-fill"></iconify-icon></a>
+               <a class="o_editable" href="https://linkedin.com/" aria-label="LinkedIn"><iconify-icon icon="ph:linkedin-logo-fill"></iconify-icon></a>
+              </div>
+              <div class="trainer-info">
+               <span class="o_editable trainer-tag">Yoga &amp; Wellness</span>
+               <h3 class="o_editable trainer-name">Maya Johnson</h3>
+               <div class="trainer-details">
+                <p class="o_editable trainer-bio">500-hour certified yoga instructor and wellness coach with a deep passion for mindfulness and holistic health transformation.</p>
+                <div class="trainer-achievements">
+                 <div class="trainer-ach"><div class="trainer-ach-num">8+</div><div class="trainer-ach-label">Years</div></div>
+                 <div class="trainer-ach"><div class="trainer-ach-num">350+</div><div class="trainer-ach-label">Clients</div></div>
+                 <div class="trainer-ach"><div class="trainer-ach-num">5.0★</div><div class="trainer-ach-label">Rating</div></div>
+                </div>
+               </div>
+              </div>
+             </div>
+            </div>
+            <div class="trainer-card reveal from-bottom reveal-delay-3">
+             <div class="trainer-img">
+              <img src="https://images.unsplash.com/photo-1605296867724-fa87a8ef53fd?w=600&amp;q=80" alt="Marcus Lee"/>
+              <div class="trainer-overlay"></div>
+              <div class="trainer-social">
+               <a class="o_editable" href="https://instagram.com/" aria-label="Instagram"><iconify-icon icon="ph:instagram-logo-fill"></iconify-icon></a>
+               <a class="o_editable" href="https://twitter.com/" aria-label="Twitter"><iconify-icon icon="ph:twitter-logo-fill"></iconify-icon></a>
+               <a class="o_editable" href="https://linkedin.com/" aria-label="LinkedIn"><iconify-icon icon="ph:linkedin-logo-fill"></iconify-icon></a>
+              </div>
+              <div class="trainer-info">
+               <span class="o_editable trainer-tag">HIIT &amp; Cardio</span>
+               <h3 class="o_editable trainer-name">Marcus Lee</h3>
+               <div class="trainer-details">
+                <p class="o_editable trainer-bio">Marathon runner and HIIT specialist who brings explosive energy to every session. Specialises in metabolic conditioning.</p>
+                <div class="trainer-achievements">
+                 <div class="trainer-ach"><div class="trainer-ach-num">12+</div><div class="trainer-ach-label">Years</div></div>
+                 <div class="trainer-ach"><div class="trainer-ach-num">700+</div><div class="trainer-ach-label">Clients</div></div>
+                 <div class="trainer-ach"><div class="trainer-ach-num">4.8★</div><div class="trainer-ach-label">Rating</div></div>
+                </div>
+               </div>
+              </div>
+             </div>
+            </div>
+           </div>
+          </t>
+
+         </div>
+        </section>
+<section class="final-cta" style="min-height:50vh;" data-snippet="theme_powerfit.s_powerfit_trainers_3" data-name="PowerFit Trainers 3">
+         <div class="final-cta-bg">
+          <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1600&amp;q=80" alt="Trainer"/>
+         </div>
+         <div class="final-cta-content reveal from-bottom oe_structure">
+          <div class="final-cta-eyebrow">Work With the Best</div>
+          <h2 class="o_editable final-cta-headline" style="font-size:clamp(2.5rem,6vw,5rem);">Book Your <span class="o_editable line-accent">Trainer.</span></h2>
+          <p class="o_editable final-cta-sub">Get matched with the perfect coach for your goals. Your first consultation is on us.</p>
+          <a href="/contactus" class="o_editable btn btn-magnetic">Book a Free Consultation <iconify-icon icon="ph:arrow-right-bold"></iconify-icon></a>
+         </div>
+        </section>
+            </div>
+        </t>
+    </template>
+</odoo>

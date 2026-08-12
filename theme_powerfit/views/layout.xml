@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Layout Template -->
+<odoo>
+    <template id="layout_powerfit" inherit_id="website.layout" name="PowerFit Layout">
+
+        <!-- Add Iconify and Google Fonts to the head -->
+        <xpath expr="//head/meta[last()]" position="after">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+            <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+            <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+        </xpath>
+
+        <!-- Custom Cursor and Back-to-top — injected before the header -->
+        <xpath expr="//header" position="before">
+            <div class="cursor-dot" id="cursorDot"></div>
+            <div class="cursor-ring" id="cursorRing"></div>
+            <a href="#" class="back-to-top" id="backToTop" aria-label="Back to top">
+                <iconify-icon icon="ph:arrow-up-bold"></iconify-icon>
+            </a>
+        </xpath>
+
+        <!-- Replace native header — keeping id="top" and data-anchor="true"
+             so Odoo's editor toolbar and JS anchoring continue to work.
+             Menu items are read from website.menu_id.child_id (same source
+             as the default Odoo header) so any menu created in the backend
+             automatically appears here. -->
+        <xpath expr="//header" position="replace">
+            <header id="top" data-anchor="true" class="o_header_standard">
+                <nav class="navbar" id="navbar">
+                    <div class="container nav-inner">
+
+                        <!-- Logo -->
+                        <a href="/" class="nav-logo">
+                            <img src="/theme_powerfit/static/src/img/logo.png" alt="PowerFit" class="nav-logo-img"/>
+                        </a>
+
+                        <!-- Desktop Menu — dynamic from website.menu -->
+                        <ul class="nav-links" id="navLinks">
+                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                <li>
+                                    <a t-att-href="submenu.url or '#'"
+                                       t-att-class="'active' if submenu.url and submenu.url == request.httprequest.path else ''">
+                                        <t t-esc="submenu.name"/>
+                                    </a>
+                                </li>
+                            </t>
+                        </ul>
+
+                        <!-- Right-hand controls -->
+                        <div class="nav-right">
+                            <t t-if="request.env.user._is_public()">
+                                <!-- Guest: Sign In button + Join Now CTA -->
+                                <a href="/web/login" class="nav-user-btn">
+                                    Sign In <iconify-icon icon="ph:sign-in-bold"></iconify-icon>
+                                </a>
+                                <a href="/membership" class="nav-cta">
+                                    Join Now <iconify-icon icon="ph:arrow-right-bold"></iconify-icon>
+                                </a>
+                            </t>
+                            <t t-else="">
+                                <!-- Logged-in: avatar dropdown + Join Now CTA -->
+                                <t t-call="portal.user_dropdown">
+                                    <t t-set="_avatar" t-value="true"/>
+                                    <t t-set="_item_class" t-value="'list-unstyled mb-0 dropdown o_no_autohide_item d-inline-block'"/>
+                                    <t t-set="_link_class" t-value="'nav-user-btn nav-avatar-btn dropdown-toggle d-flex align-items-center justify-content-center'"/>
+                                    <t t-set="_dropdown_menu_class" t-value="'dropdown-menu-end'"/>
+                                </t>
+                                <a href="/membership" class="nav-cta">
+                                    Join Now <iconify-icon icon="ph:arrow-right-bold"></iconify-icon>
+                                </a>
+                            </t>
+                        </div>
+
+                        <!-- Hamburger (mobile) -->
+                        <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+                            <span></span><span></span><span></span>
+                        </button>
+                    </div>
+                </nav>
+
+                <!-- Mobile Overlay Nav — also driven by website.menu -->
+                <div class="mobile-nav" id="mobileNav">
+                    <ul>
+                        <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                            <li>
+                                <a t-att-href="submenu.url or '#'"
+                                   t-att-class="'active' if submenu.url and submenu.url == request.httprequest.path else ''">
+                                    <t t-esc="submenu.name"/>
+                                </a>
+                            </li>
+                        </t>
+                        <t t-if="not request.env.user._is_public()">
+                            <li><a href="/my/home">My Account</a></li>
+                            <li><a href="/web/session/logout">Logout</a></li>
+                        </t>
+                        <t t-else="">
+                            <li><a href="/web/login">Sign In</a></li>
+                        </t>
+                    </ul>
+                    <a href="/membership" class="mobile-nav-cta">Join Now</a>
+                </div>
+            </header>
+        </xpath>
+
+        <!-- Replace Native Footer with Custom PowerFit Footer -->
+        <xpath expr="//footer" position="replace">
+            <footer class="footer o_footer">
+                <div class="container">
+                    <div class="footer-grid">
+                        <div>
+                            <a href="/" class="footer-brand-logo">
+                                <img src="/theme_powerfit/static/src/img/logo.png" alt="PowerFit" class="footer-logo-img"/>
+                            </a>
+                            <p class="footer-brand-desc">Where elite training meets luxury experience. Join the community that refuses to settle for ordinary.</p>
+                            <div class="footer-social">
+                                <a href="https://instagram.com/" aria-label="Instagram"><iconify-icon icon="ph:instagram-logo-fill"></iconify-icon></a>
+                                <a href="https://facebook.com/" aria-label="Facebook"><iconify-icon icon="ph:facebook-logo-fill"></iconify-icon></a>
+                                <a href="https://twitter.com/" aria-label="Twitter"><iconify-icon icon="ph:twitter-logo-fill"></iconify-icon></a>
+                                <a href="https://youtube.com/" aria-label="YouTube"><iconify-icon icon="ph:youtube-logo-fill"></iconify-icon></a>
+                                <a href="https://tiktok.com/" aria-label="TikTok"><iconify-icon icon="ph:tiktok-logo-fill"></iconify-icon></a>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="footer-col-title">Quick Links</h4>
+                            <ul class="footer-links">
+                                <li><a href="/">Home</a></li>
+                                <li><a href="/aboutus">About</a></li>
+                                <li><a href="/services">Services</a></li>
+                                <li><a href="/trainers">Trainers</a></li>
+                                <li><a href="/membership">Membership</a></li>
+                                <li><a href="/contactus">Contact</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="footer-col-title">Programs</h4>
+                            <ul class="footer-links">
+                                <li><a href="/services">Personal Training</a></li>
+                                <li><a href="/services">Weight Training</a></li>
+                                <li><a href="/services">Cardio Programs</a></li>
+                                <li><a href="/services">Yoga &amp; Mindfulness</a></li>
+                                <li><a href="/services">HIIT Classes</a></li>
+                                <li><a href="/services">Nutrition Coaching</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="footer-col-title">Contact</h4>
+                            <div class="footer-contact-item"><iconify-icon icon="ph:map-pin-fill"></iconify-icon><span>123 Fitness St, New York, NY 10001</span></div>
+                            <div class="footer-contact-item"><iconify-icon icon="ph:phone-fill"></iconify-icon><span>+1 (555) 123-4567</span></div>
+                            <div class="footer-contact-item"><iconify-icon icon="ph:envelope-fill"></iconify-icon><span>hello@powerfit.com</span></div>
+                            <div class="footer-contact-item"><iconify-icon icon="ph:clock-fill"></iconify-icon><span>Mon–Fri 5am–11pm<br/>Sat–Sun 7am–9pm</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="footer-bottom">
+                        <span class="footer-copy">© 2025 PowerFit Gym. All rights reserved.</span>
+                        <div class="footer-legal">
+                            <a href="/privacy">Privacy Policy</a>
+                            <a href="/terms">Terms of Service</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </xpath>
+    </template>
+</odoo>
