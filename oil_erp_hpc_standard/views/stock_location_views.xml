@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_storage_location_atg_form_inherit_hpm" model="ir.ui.view">
+        <field name="name">stock.location.atg.form.inherit.hpm</field>
+        <field name="model">stock.location</field>
+        <field name="inherit_id" ref="oil_erp_project.view_storage_location_atg_form"/>
+        <field name="arch" type="xml">
+            <!-- Add hpm_category_id (Storage Category) under product_type_id -->
+            <xpath expr="//field[@name='product_type_id']" position="after">
+                <field name="hpm_category_id" invisible="not is_storage_tank"/>
+            </xpath>
+            
+            <!-- Replace base_temperature_f with storing temperature, pressure, and API gravity -->
+            <xpath expr="//field[@name='base_temperature_f']" position="replace">
+                <field name="base_temperature_f" string="Storing Temperature (°F)"/>
+                <field name="storing_pressure"/>
+                <field name="storing_api_gravity"/>
+            </xpath>
+
+            <!-- Wrap live telemetry fields to show a warning icon next to the value with tooltip on hover, using labels to keep perfect grid alignment -->
+            <xpath expr="//field[@name='current_temperature_f']" position="replace">
+                <label for="current_temperature_f"/>
+                <div class="o_row">
+                    <field name="current_temperature_f"/>
+                    <span class="fa fa-exclamation-triangle text-warning" title="Temperature differs from storing temperature!" invisible="not temp_warning"/>
+                </div>
+            </xpath>
+
+            <xpath expr="//field[@name='current_pressure']" position="replace">
+                <label for="current_pressure"/>
+                <div class="o_row">
+                    <field name="current_pressure"/>
+                    <span class="fa fa-exclamation-triangle text-warning" title="Pressure differs from storing pressure!" invisible="not press_warning"/>
+                </div>
+            </xpath>
+
+            <xpath expr="//field[@name='current_api_gravity']" position="replace">
+                <label for="current_api_gravity"/>
+                <div class="o_row">
+                    <field name="current_api_gravity"/>
+                    <span class="fa fa-exclamation-triangle text-warning" title="API Gravity differs from storing API gravity!" invisible="not api_warning"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

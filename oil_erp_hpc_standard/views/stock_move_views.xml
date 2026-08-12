@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- HPM audit columns in the stock picking operations list -->
+    <record id="view_picking_form_inherit_hpm" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.hpm</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='move_ids']/list/field[@name='product_uom_qty']"
+                   position="before">
+                <field name="hpm_observed_qty" string="Observed Vol"
+                       optional="hide" readonly="1"/>
+                <field name="hpm_temperature"  string="Temp (°F)"
+                       optional="hide" readonly="1"/>
+                <field name="hpm_pressure"     string="Press (psi)"
+                       optional="hide" readonly="1"/>
+                <field name="hpm_api_gravity"  string="API Gravity"
+                       optional="hide" readonly="1"/>
+                <field name="hpm_vcf"          string="VCF"
+                       optional="hide" readonly="1"/>
+                <field name="hpm_water_content"  string="BSW %"
+                       optional="hide" readonly="1"/>
+                <field name="hpm_sulfur_content" string="Sulfur %"
+                       optional="hide" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Full HPM audit section on the stock move detail form -->
+    <record id="view_move_form_inherit_hpm" model="ir.ui.view">
+        <field name="name">stock.move.form.inherit.hpm</field>
+        <field name="model">stock.move</field>
+        <field name="inherit_id" ref="stock.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet" position="inside">
+                <group string="Hydrocarbon Product Measurement (HPM) Audit"
+                       name="hpm_audit"
+                       invisible="hpm_vcf == 0.0 or hpm_vcf == 1.0">
+                    <group>
+                        <field name="hpm_observed_qty"
+                               string="Observed Volume (Raw)" readonly="1"/>
+                        <field name="hpm_vcf"
+                               string="Correction Factor (VCF)"
+                               readonly="1" decimal_places="5"/>
+                    </group>
+                    <group>
+                        <field name="hpm_temperature"
+                               string="Measured Temperature (°F)" readonly="1"/>
+                        <field name="hpm_pressure"
+                               string="Measured Pressure (psi)" readonly="1"/>
+                        <field name="hpm_api_gravity"
+                               string="Measured API Gravity" readonly="1"/>
+                        <field name="hpm_water_content"
+                               string="Water / BSW (%)" readonly="1"/>
+                        <field name="hpm_sulfur_content"
+                               string="Sulfur (%)" readonly="1"/>
+                    </group>
+                    <!-- Range warnings recorded at time of computation -->
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not hpm_vcf_warnings">
+                        <i class="fa fa-exclamation-triangle" title="Warning"/>
+                        <b> Range warnings recorded at VCF computation:</b>
+                        <field name="hpm_vcf_warnings" readonly="1" nolabel="1"
+                               widget="text"
+                               style="border:none;background:transparent;"/>
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
