@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <!-- =========================================================
+         ARO Settlement Wizard
+    ========================================================== -->
+    <record id="view_aro_settlement_wizard_form" model="ir.ui.view">
+        <field name="name">oil.aro.settlement.wizard.form</field>
+        <field name="model">oil.aro.settlement.wizard</field>
+        <field name="arch" type="xml">
+
+            <form string="ARO Settlement">
+
+                <sheet>
+
+                    <!-- =====================================================
+                         HEADER
+                    ====================================================== -->
+                    <div class="oe_title">
+                        <h1>
+                            ARO Settlement
+                        </h1>
+                    </div>
+
+                    <!-- =====================================================
+                         BASIC DETAILS
+                    ====================================================== -->
+                    <group string="Settlement Information" col="2">
+
+                        <group>
+                            <field name="obligation_id" readonly="1"/>
+                            <field name="settlement_type" widget="radio"/>
+                            <field name="partial_liability_amount" invisible="settlement_type != 'partial'" required="settlement_type == 'partial'"/>
+                            <field name="settlement_date" required="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+
+                        <group>
+                            <field name="salvage_amount"/>
+                            <field name="result" readonly="1"/>
+                        </group>
+
+                    </group>
+
+                    <!-- =====================================================
+                         WIP SELECTION
+                    ====================================================== -->
+                    <group string="WIP Lines to Settle" invisible="settlement_type != 'partial'">
+                        <field name="wip_line_ids" nolabel="1" domain="[('obligation_id', '=', obligation_id), ('state', '=', 'posted')]">
+                            <list string="WIP Lines">
+                                <field name="date"/>
+                                <field name="cost_type"/>
+                                <field name="description"/>
+                                <field name="amount"/>
+                                <field name="currency_id"/>
+                            </list>
+                        </field>
+                    </group>
+
+                    <!-- =====================================================
+                         NOTES
+                    ====================================================== -->
+                    <group string="Notes">
+                        <field name="notes"
+                               nolabel="1"
+                               placeholder="Enter settlement notes, engineering remarks, contractor closeout details, salvage remarks, etc."/>
+                    </group>
+
+                    <!-- =====================================================
+                         FINANCIAL SUMMARY
+                    ====================================================== -->
+                    <group string="Settlement Financial Summary"
+                           col="4">
+
+                        <field name="liability_balance"
+                               readonly="1"/>
+
+                        <field name="total_wip"
+                               readonly="1"/>
+
+                        <field name="net_cost"
+                               readonly="1"/>
+
+                        <field name="variance"
+                               readonly="1"/>
+
+                    </group>
+
+                    <!-- =====================================================
+                         INFORMATION BOX
+                    ====================================================== -->
+                    <group>
+
+                        <div class="alert alert-info" role="alert">
+
+                            <strong>Settlement Logic</strong>
+
+                            <br/>
+
+                            • Selected liability amount will be released from GL.
+
+                            <br/>
+
+                            • Selected WIP costs will be cleared.
+
+                            <br/>
+
+                            • Salvage revenue or disposal costs will be recognized.
+
+                            <br/>
+
+                            • Gain or loss will be posted automatically.
+
+                        </div>
+
+                    </group>
+
+                </sheet>
+
+                <!-- =====================================================
+                     FOOTER
+                ====================================================== -->
+                <footer>
+
+                    <button name="action_settle"
+                            string="Post Settlement"
+                            type="object"
+                            class="btn-primary"
+                            confirm="This will permanently post the settlement accounting entries. Continue?"/>
+
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+
+                </footer>
+
+            </form>
+
+        </field>
+    </record>
+
+</odoo>

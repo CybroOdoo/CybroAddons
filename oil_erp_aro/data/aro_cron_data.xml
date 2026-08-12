@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ══════════════════════════════════════════════════════════════
+             CRON 1 — EIM Accretion (with catch-up compounding)
+             Runs daily; loops through each obligation and posts every
+             missed period since last_accretion_date using relativedelta.
+        ══════════════════════════════════════════════════════════════ -->
+        <record id="cron_aro_post_accretion" model="ir.cron">
+            <field name="name">ARO: Post Period Accretion (EIM Catch-Up)</field>
+            <field name="model_id" ref="model_oil_aro_obligation"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_post_accretion()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             CRON 2 — Abandonment Warning Notifications
+             Runs daily; checks for AROs whose abandonment_date falls
+             within 12 / 6 / 3-month warning windows and creates
+             mail.activity records for the responsible user.
+        ══════════════════════════════════════════════════════════════ -->
+        <record id="cron_aro_warn_abandonment" model="ir.cron">
+            <field name="name">ARO: Abandonment Deadline Warning</field>
+            <field name="model_id" ref="model_oil_aro_obligation"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_warn_approaching_abandonment()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             CRON 3 — Equipment Certification Expiry → ARO Suggestion
+             Runs daily; creates a draft ARO for any Oil & Gas equipment
+             whose operating certification has expired and no active ARO
+             obligation exists yet.
+        ══════════════════════════════════════════════════════════════ -->
+        <record id="cron_aro_equipment_cert_expiry" model="ir.cron">
+            <field name="name">ARO: Equipment Certification Expiry Check</field>
+            <field name="model_id" ref="model_oil_aro_obligation"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_equipment_cert_expiry_aro()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+        </record>
+
+    </data>
+</odoo>
