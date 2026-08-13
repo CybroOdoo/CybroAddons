@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    To add the additional state and fields to the sale order-->
+   <record id="view_order_form" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.approval.connector</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="replace">
+                <field name="state" widget="statusbar" statusbar_visible="draft,sent"/>
+            </xpath>
+            <xpath expr="//button[@name='action_preview_sale_order']" position="before">
+                    <button name="action_confirm" id="action_confirm" data-hotkey="q"
+                    string="Confirm" class="btn-primary" type="object" context="{'validate_analytic': True}"
+                    invisible="state not in ['approved']"/>
+                <field name="is_approved" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='action_cancel']" position="attributes">
+                <attribute name="invisible">state not in ['draft', 'sent', 'sale','approved'] or not id</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
