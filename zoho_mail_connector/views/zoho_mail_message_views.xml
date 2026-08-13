@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Form View of Inbox and Sent Mails -->
+    <record id="zoho_mail_message_view_form" model="ir.ui.view">
+        <field name="name">zoho.mail.message.view.form</field>
+        <field name="model">zoho.mail.message</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <sheet>
+                    <group>
+                        <field name="subject"/>
+                        <field name="sender"/>
+                        <field name="recipients" widget="html"/>
+                        <field name="cc_address" widget="html"/>
+                        <field name="date"/>
+                        <field name="body" widget="html"/>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                            <field name="mail_type"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View of Inbox and Sent Mails -->
+    <record id="zoho_mail_message_view_tree" model="ir.ui.view">
+        <field name="name">zoho.mail.message.view.tree</field>
+        <field name="model">zoho.mail.message</field>
+        <field name="arch" type="xml">
+            <tree create="false">
+                <field name="date"/>
+                <field name="subject"/>
+                <field name="sender"/>
+                <field name="mail_type"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Search View of Emails -->
+    <record id="zoho_mail_message_view_search" model="ir.ui.view">
+        <field name="name">zoho.mail.message.view.search</field>
+        <field name="model">zoho.mail.message</field>
+        <field name="arch" type="xml">
+            <search string="Emails">
+                <field name="subject"/>
+                <field name="sender"/>
+                <field name="recipients"/>
+                <separator/>
+                <group>
+                    <filter string="Sender" name="sender" context="{'group_by': 'sender'}"/>
+                    <filter string="Recipients" name="recipients" context="{'group_by': 'recipients'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action for Sent Emails menu -->
+    <record id="action_zoho_sent_messages" model="ir.actions.act_window">
+        <field name="name">Sent</field>
+        <field name="res_model">zoho.mail.message</field>
+        <field name="view_mode">list,form,search</field>
+        <field name="domain">[('mail_type', '=', 'sent')]</field>
+    </record>
+
+    <!-- Action for Inbox Emails menu -->
+    <record id="action_zoho_inbox_messages" model="ir.actions.act_window">
+        <field name="name">Inbox</field>
+        <field name="res_model">zoho.mail.message</field>
+        <field name="view_mode">list,form,search</field>
+        <field name="domain">[('mail_type', '=', 'inbox')]</field>
+    </record>
+
+    <!-- Menu Items for Emails -->
+    <menuitem id="menu_zoho_mail_messages"
+              parent="menu_zoho_mail_root"
+              name="Emails"
+              sequence="1"/>
+    <menuitem id="menu_zoho_inbox_messages"
+          parent="menu_zoho_mail_messages"
+          action="action_zoho_inbox_messages"
+          name="Inbox"
+          sequence="1"/>
+    <menuitem id="menu_zoho_sent_messages"
+              parent="menu_zoho_mail_messages"
+              action="action_zoho_sent_messages"
+              name="Sent"
+              sequence="2"/>
+</odoo>
