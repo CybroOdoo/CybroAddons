@@ -1,0 +1,492 @@
+# -*- coding: utf-8 -*-
+###############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Swaraj R (odoo@cybrosys.com)
+#
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+###############################################################################
+import calendar
+from odoo import api, fields, models
+
+
+class PurchaseOrder(models.Model):
+    """ Inherit purchase.order model and add fields and methods """
+    _inherit = 'purchase.order'
+
+    requisition_order = fields.Char(
+        string='Requisition Order', help='Requisition Order'
+    )
+    number_to_words = fields.Char(
+        string="Amount in Words (Total) : ",
+        compute='_compute_number_to_words', help="Total amount in words"
+    )
+
+    def _compute_number_to_words(self):
+        """Compute the amount to words in Purchase Order"""
+        for rec in self:
+            rec.number_to_words = rec.currency_id.amount_to_text(
+                rec.amount_total)
+
+    def button_confirm(self):
+        """The same order line merges when the confirmation button is
+         clicked"""
+        line_groups = {}
+        for line in self.order_line:
+            key = (line.product_id.id, line.price_unit)
+            line_groups.setdefault(key, []).append(line)
+        for lines in line_groups.values():
+            if len(lines) > 1:
+                lines[0].product_qty = sum(line.product_qty for line in lines)
+                lines[0]._compute_amount()
+                for line in lines[1:]:
+                    line.unlink()
+        res = super(PurchaseOrder, self).button_confirm()
+        return res
+
+
+    @api.model
+    def get_purchase_data(self):
+        """Returns data to the orm call to display the data in the tiles
+        :return: Dictionary with purchase data
+        :rtype: dict"""
+        orders = self.env['purchase.order'].search([('state', 'in', [
+            'purchase', 'done'])])
+        priority_orders = self.env['purchase.order'].search([
+            ('priority', '=', '1')])
+        vendor = list(set(rec.partner_id for rec in orders))
+        return {
+            'purchase_orders': len(orders),
+            'purchase_amount': sum(rec.amount_total for rec in orders),
+            'priority_orders': len(priority_orders),
+            'vendors': len(vendor)
+        }
+
+    def _get_purchase_data(self, period_type, company_id):
+        """Helper method to fetch purchase data based on period type.
+        :param period_type: 'year', 'month', 'week', or 'day'
+        :param company_id: ID of the company
+        :return: Dictionary with purchase data
+        """
+        # Base query components
+        base_query = """
+            SELECT 
+                COUNT(*) AS purchase_orders,
+                SUM(amount_total) AS purchase_amount,
+                COUNT(CASE WHEN priority = '1' THEN 1 ELSE NULL END) AS priority_orders
+            FROM purchase_order
+            WHERE company_id = %s
+                AND state IN ('purchase', 'done')
+        """
+        period_conditions = {
+            'year': "AND date_order >= date_trunc('year', now())",
+            'month': "AND EXTRACT(YEAR FROM date_order) = EXTRACT(YEAR FROM CURRENT_DATE) "
+                     "AND EXTRACT(MONTH FROM date_order) = EXTRACT(MONTH FROM CURRENT_DATE)",
+            'week': "AND EXTRACT(YEAR FROM date_order) = EXTRACT(YEAR FROM CURRENT_DATE) "
+                    "AND EXTRACT(WEEK FROM date_order) = EXTRACT(WEEK FROM CURRENT_DATE)",
+            'day': "AND date_order::date = CURRENT_DATE"
+        }
+
+        # Execute main query
+        query = f"{base_query} {period_conditions[period_type]}"
+        self.env.cr.execute(query, (company_id,))
+        data = self.env.cr.dictfetchone() or {
+            'purchase_orders': 0, 'purchase_amount': 0, 'priority_orders': 0
+        }
+
+        # Priority order IDs (only for year and month as per original)
+        priority_ids = []
+        if period_type in ('year', 'month', 'day'):
+            priority_query = f"""
+                SELECT id
+                FROM purchase_order
+                WHERE company_id = %s
+                    AND state IN ('purchase', 'done')
+                    {period_conditions[period_type]}
+                    AND priority = '1'
+            """
+            self.env.cr.execute(priority_query, (company_id,))
+            priority_ids = [r['id'] for r in self.env.cr.dictfetchall()]
+
+        purchase_order_base = """
+        SELECT id FROM purchase_order 
+        WHERE company_id = %s 
+        AND state IN ('purchase', 'done') """
+
+        # Vendor queries
+        vendor_base = """
+            SELECT DISTINCT partner_id
+            FROM purchase_order
+            WHERE company_id = %s
+                AND state IN ('purchase', 'done')
+        """
+        # Previous vendors (for new vendor calculation)
+        # previous_condition = {
+        #     'year': "AND date_order < date_trunc('year', now())",
+        #     'month': "AND EXTRACT(MONTH FROM date_order) < EXTRACT(MONTH FROM CURRENT_DATE)",
+        #     'week': "AND EXTRACT(WEEK FROM date_order) < EXTRACT(WEEK FROM CURRENT_DATE)",
+        #     'day': "AND date_order::date < CURRENT_DATE"
+        # }
+        # self.env.cr.execute(f"{vendor_base} {period_conditions[period_type]}", (company_id,))
+        # previous_vendors = {r['partner_id'] for r in self.env.cr.dictfetchall()}
+
+        # Current vendors
+        self.env.cr.execute(f"{vendor_base} {period_conditions[period_type]}", (company_id,))
+        new_vendors = [r['partner_id'] for r in self.env.cr.dictfetchall()]
+
+        self.env.cr.execute(f"{purchase_order_base} {period_conditions[period_type]}", (company_id,))
+        purchase_orders = self.env.cr.dictfetchall()
+
+        purchase_orders_ids = [o['id'] for o in purchase_orders]
+        # new_vendors = [vid for vid in all_vendors if vid not in previous_vendors]
+
+        # Construct result
+        result = {
+            'purchase_orders': data['purchase_orders'],
+            'purchase_amount': data['purchase_amount'] or 0,
+            'priority_orders': data['priority_orders'],
+            'purchase_orders_ids': purchase_orders_ids,
+            'priority_orders_ids': priority_ids,
+            'vendors': len(new_vendors),
+            'vendor_id': new_vendors,
+        }
+
+        return result
+
+    def get_yearly_data(self):
+        """Get yearly purchase data.
+        :return: Dictionary with yearly purchase data
+        :rtype: dict"""
+        return self._get_purchase_data('year', self.env.company.id)
+
+    def get_monthly_data(self):
+        """Get monthly purchase data.
+        :return: Dictionary with monthly purchase data
+        :rtype: dict"""
+        return self._get_purchase_data('month', self.env.company.id)
+
+    def get_weekly_data(self):
+        """Get weekly purchase data.
+        :return: Dictionary with weekly purchase data
+        :rtype: dict"""
+        return self._get_purchase_data('week', self.env.company.id)
+
+    def get_today_data(self):
+        """Get purchase data for the current day.
+        :return: Dictionary with purchase data for the current day
+        :rtype: dict"""
+        return self._get_purchase_data('day', self.env.company.id)
+
+    @api.model
+    def get_select_mode_data(self, args):
+        """Get data based on the selected filters
+        :param args: Selected filter
+        :type args: str
+        :return: Data based on the selected filter
+        :rtype: dict or False"""
+        data = {
+            'this_year': self.get_yearly_data,
+            'this_month': self.get_monthly_data,
+            'this_week': self.get_weekly_data,
+            'today': self.get_today_data,
+        }.get(args)
+        return data() if data else False
+
+    def execute_query(self, query, args):
+        """Returns quantity/count regarding the top entities
+        :param query: SQL query to be executed
+        :type query: str
+        :param args: Query parameters
+        :type args: str
+        :return: Query results
+        :rtype: list"""
+        self._cr.execute(query)
+        results = self._cr.dictfetchall()
+        final = []
+        if args == 'top_product':
+            final = [[record.get('total_quantity') for record in results],
+                     [record.get('product_name') for record in results]]
+        elif args == 'top_vendor':
+            final = [[record.get('count') for record in results],
+                     [record.get('name') for record in results]]
+        elif args == 'top_rep':
+            final = [[record.get('count') for record in results],
+                     [record.get('name') for record in results]]
+        return final
+
+    @api.model
+    def get_top_chart_data(self, args):
+        """Get top chart data based on the selected filter.
+         :param args: Selected filter
+        :type args: str
+        :return: Top chart data
+        :rtype: list"""
+        query = ''
+        company_id = self.env.company.id
+        if args == 'top_product':
+            query = f'''
+                    SELECT DISTINCT(product_template.name) as product_name,
+                    SUM(product_qty) as total_quantity 
+                    FROM purchase_order_line 
+                    INNER JOIN product_product ON 
+                    product_product.id=purchase_order_line.product_id 
+                    INNER JOIN product_template ON 
+                    product_product.product_tmpl_id = product_template.id 
+                    WHERE purchase_order_line.company_id = {company_id} 
+                    GROUP BY product_template.id 
+                    ORDER BY total_quantity DESC 
+                    LIMIT 10
+                '''
+        elif args == 'top_vendor':
+            query = f'''
+                    SELECT partner.name, COUNT(po.id) as count
+                    FROM purchase_order po
+                    JOIN res_partner partner ON po.partner_id = partner.id
+                    WHERE po.company_id = {company_id}
+                    GROUP BY partner.name
+                    ORDER BY count DESC 
+                    LIMIT 10
+                '''
+        elif args == 'top_rep':
+            query = f'''
+                    SELECT partner.name, COUNT(po.id) as count
+                    FROM purchase_order po
+                    JOIN res_users users ON po.user_id = users.id
+                    JOIN res_partner partner ON users.partner_id = partner.id
+                    WHERE po.company_id = {company_id}
+                    GROUP BY partner.name
+                    ORDER BY count DESC
+                    LIMIT 10
+                '''
+        final = self.execute_query(query, args)
+        return final
+
+    @api.model
+    def get_orders_by_month(self):
+        """Get purchase orders grouped by month.
+        :return: Purchase orders by month
+        :rtype: dict"""
+        query = f"""select count(*), EXTRACT(month from date_order) as dates
+                from purchase_order po
+                where company_id = {self.env.company.id} and state = 'purchase'
+                group by dates"""
+        self.env.cr.execute(query, (self.env.company.id,))
+        cr = self.env.cr.dictfetchall()
+        month = []
+        for rec in cr:
+            month.append(int(rec['dates']))
+            rec.update({
+                'count': rec['count'],
+                'dates': calendar.month_name[int(rec['dates'])],
+                'month': int(rec['dates'])
+            })
+        for rec in range(1, 13):
+            if rec not in month:
+                cr.append({
+                    'count': 0,
+                    'dates': calendar.month_name[rec],
+                    'month': rec
+                })
+        cr = sorted(cr, key=lambda i: i['month'])
+        return {
+            'count': [rec['count'] for rec in cr],
+            'dates': [rec['dates'] for rec in cr]
+        }
+
+    @api.model
+    def purchase_vendors(self):
+        """Get a list of purchase vendors.
+        :return: List of purchase vendors in the format
+        [{'id': vendor_id, 'name': vendor_name}]
+        :rtype: list"""
+        company_id = self.env.company.id
+        query = """
+                SELECT partner.id, partner.name
+                FROM purchase_order po
+                INNER JOIN res_partner partner ON po.partner_id = partner.id
+                WHERE po.company_id = %s
+                GROUP BY partner.id
+            """
+        self._cr.execute(query, (company_id,))
+        return self._cr.dictfetchall()
+
+    @api.model
+    def purchase_vendor_details(self, args):
+        """Get purchase details for a specific vendor.
+        :param args: Vendor ID
+        :type args: int
+        :return: Purchase details for the specific vendor
+        :rtype: dict"""
+        company_id = self.env.company.id
+        partner = int(args) if args else 1
+        query = """
+                SELECT count(po.id),SUM(po.amount_total), EXTRACT(MONTH from 
+                po.date_order) as dates 
+                FROM purchase_order po 
+                JOIN res_partner ON res_partner.id = po.partner_id 
+                WHERE po.company_id = %s and po.partner_id = %s 
+                GROUP BY dates
+            """
+        self._cr.execute(query, (company_id, partner))
+        partner_orders = self._cr.dictfetchall()
+        query_draft = """
+                SELECT count(po.id),SUM(po.amount_total), EXTRACT(MONTH from 
+                po.date_order) as dates 
+                FROM purchase_order po 
+                JOIN res_partner ON res_partner.id = po.partner_id 
+                WHERE po.state in ('draft', 'sent') and po.company_id = %s and 
+                po.partner_id = %s 
+                GROUP BY dates"""
+        self._cr.execute(query_draft, (company_id, partner))
+        draft_orders = self._cr.dictfetchall()
+        approve_qry = """
+                SELECT count(po.id),SUM(po.amount_total), EXTRACT(MONTH from 
+                po.date_order) as dates 
+                FROM purchase_order po 
+                JOIN res_partner ON res_partner.id = po.partner_id 
+                WHERE po.state = 'to approve' and po.company_id = %s and 
+                po.partner_id = %s 
+                GROUP BY dates"""
+        self._cr.execute(approve_qry, (company_id, partner))
+        approve_orders = self._cr.dictfetchall()
+        cancel_qry = """
+                SELECT count(po.id),SUM(po.amount_total), EXTRACT(MONTH from 
+                po.date_order) as dates 
+                FROM purchase_order po 
+                JOIN res_partner ON res_partner.id = po.partner_id 
+                WHERE po.state = 'cancel' and po.company_id = %s and po.partner_id 
+                = %s 
+                GROUP BY dates"""
+        self._cr.execute(cancel_qry, (company_id, partner))
+        cancel_orders = self._cr.dictfetchall()
+        all_orders = {
+            'partner_orders': partner_orders, 'draft_orders': draft_orders,
+            'approve_orders': approve_orders, 'cancel_orders': cancel_orders}
+        for order_type, order_list in all_orders.items():
+            order_months = []
+            for rec in order_list:
+                order_months.append(int(rec.get('dates')))
+            for rec in range(1, 13):
+                if rec not in order_months:
+                    vals = {'sum': 0.0, 'dates': rec, 'count': 0}
+                    order_list.append(vals)
+            all_orders[order_type] = sorted(
+                order_list, key=lambda order: order['dates'])
+        value = {
+            'purchase_amount': [record.get('sum') for record in
+                                partner_orders],
+            'po_count': [record.get('count') for record in partner_orders],
+            'draft_amount': [record.get('sum') for record in draft_orders],
+            'draft_count': [record.get('count') for record in draft_orders],
+            'approve_amount': [record.get('sum') for record in approve_orders],
+            'approve_count': [record.get('count') for record in
+                              approve_orders],
+            'cancel_amount': [record.get('sum') for record in cancel_orders],
+            'cancel_count': [record.get('count') for record in cancel_orders],
+            'dates': [record.get('dates') for record in partner_orders],
+        }
+        return value
+
+    @api.model
+    def get_pending_purchase_data(self):
+        """Get pending purchase orders data.
+        :return: Data of pending purchase orders
+        :rtype: dict"""
+        company = self.env.company.id
+        query = """
+                SELECT po.name, po.id, rp.name as partner_name, po.date_planned, 
+                po.amount_total, po.state 
+                FROM purchase_order po 
+                JOIN purchase_order_line pol ON pol.order_id = po.id 
+                JOIN res_partner rp ON rp.id = po.partner_id 
+                WHERE po.date_planned < CURRENT_DATE AND pol.qty_received < 
+                pol.product_qty AND po.company_id = %s
+                GROUP BY po.id, rp.id
+            """
+        self._cr.execute(query, (company,))
+        orders = self._cr.dictfetchall()
+        value = {
+            'order': [rec['name'] for rec in orders],
+            'vendor': [rec['partner_name'] for rec in orders],
+            'amount': [rec['amount_total'] for rec in orders],
+            'date': [rec['date_planned'] for rec in orders],
+            'state': [rec['state'] for rec in orders],
+            'data': [list(val for val in rec.values()) for rec in orders]
+        }
+        return value
+
+    @api.model
+    def get_upcoming_purchase_data(self):
+        """Get upcoming purchase orders data.
+        :return: Data of upcoming purchase orders
+        :rtype: dict"""
+        company = self.env.company.id
+        query = """
+                SELECT po.name, po.id, rp.name as partner_name, po.date_planned, 
+                po.amount_total, po.state 
+                FROM purchase_order po 
+                JOIN purchase_order_line pol ON pol.order_id = po.id 
+                JOIN res_partner rp ON rp.id = po.partner_id 
+                WHERE po.date_planned > CURRENT_DATE AND pol.qty_received < 
+                pol.product_qty AND po.company_id = %s
+                GROUP BY po.id, rp.id
+            """
+        self._cr.execute(query, (company,))
+        orders = self._cr.dictfetchall()
+        value = {
+            'order': [rec['name'] for rec in orders],
+            'vendor': [rec['partner_name'] for rec in orders],
+            'amount': [rec['amount_total'] for rec in orders],
+            'date': [rec['date_planned'] for rec in orders],
+            'state': [rec['state'] for rec in orders],
+            'data': [list(val for val in rec.values()) for rec in orders],
+        }
+        return value
+
+    @api.model
+    def total_amount_spend(self):
+        """Returns total amount spend for purchase"""
+        total_amount = sum(self.search([
+            ('state', '=', 'purchase')]).mapped('amount_total'))
+        return {
+            'amount_total': total_amount
+        }
+
+    def recommendation_wizard(self):
+        """Add data to wizard"""
+        orders = self.search([('partner_id', '=', self.partner_id.id)])
+        pro_id = []
+        for order in orders:
+            for product in order.order_line.product_id:
+                val = (0, 0, {
+                    'product_id': product.id,
+                    'available_qty': product.qty_available,
+                    'list_price': product.list_price,
+                    'qty_need': 0,
+                    'is_modified': False,
+                })
+                if val not in pro_id:
+                    pro_id.append(val)
+            res = {
+                'type': 'ir.actions.act_window',
+                'view_mode': 'form',
+                'res_model': 'product.recommendation',
+                'target': 'new',
+                'context': {
+                    'default_line_ids': pro_id,
+                }
+            }
+        return res

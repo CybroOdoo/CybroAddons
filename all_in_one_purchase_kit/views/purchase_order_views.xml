@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherit view of purchase  -->
+    <record id="purchase_order_form" model="ir.ui.view">
+        <field name="name">purchase.order.inherit.view.form.all.in.one.purchase.kit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id"
+               ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <header>
+                <button
+                    name="recommendation_wizard"
+                    invisible="state not in ('draft','sent')"
+                    string="Recommended Products"
+                    type="object"/>
+            </header>
+            <xpath expr="//field[@name='currency_id']" position="after">
+                <field name="requisition_order"/>
+            </xpath>
+            <!--Amount in words field in po-->
+            <xpath expr="//field[@name='notes']" position="before">
+                <group colspan="8">
+                    <div style="width: 600%;">
+                        <b>
+                            <label for="number_to_words"/>
+                        </b>
+                        <field name="number_to_words"/>
+                    </div>
+                </group>
+            </xpath>
+
+            <!--Field in purchase order line-->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_id']"
+                   position="before">
+                <field name="barcode_scan"/>
+            </xpath>
+            <!--Adding image in purchase order line-->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_id']"
+                   position="after">
+                <field name="product_image" widget="image"
+                       style="height:30px;width:30px ;" readonly="1"/>
+            </xpath>
+            <!--Add discount in purchase order line-->
+            <xpath expr="//field[@name='order_line']/list/field[@name='taxes_id']"
+                   position="before">
+                <field name="discount"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
