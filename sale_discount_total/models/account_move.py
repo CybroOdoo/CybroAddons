@@ -121,7 +121,7 @@ class AccountInvoice(models.Model):
                     else:
                         new_pmt_state = move._get_invoice_in_payment_state()
                 elif currency.compare_amounts(total_to_pay,
-                                              abs(total_residual)) != 0:
+                                              abs(total_residual_currency)) != 0:
                     new_pmt_state = 'partial'
             if new_pmt_state == 'paid' and move.move_type in (
                     'in_invoice', 'out_invoice', 'entry'):
@@ -164,10 +164,10 @@ class AccountInvoice(models.Model):
                 total = 0.0
                 for line in inv.invoice_line_ids:
                     total += (line.quantity * line.price_unit)
-                if inv.discount_rate != 0:
+                if inv.discount_rate != 0 and total != 0:
                     discount = (inv.discount_rate / total) * 100
                 else:
-                    discount = inv.discount_rate
+                    discount = inv.discount_rate if total == 0 else 0
                 for line in inv.invoice_line_ids:
                     line.discount = discount
                     inv.amount_discount = inv.discount_rate
