@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="pivot_ai_summary.Buttons" t-inherit="web.PivotView.Buttons" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_pivot_buttons')]" position="inside">
+            <t t-if="aiState and aiState.isEnabled">
+                <button type="button" class="btn btn-secondary fa fa-comments" t-on-click="onAISummaryClick"
+                        title="Chat with Data"/>
+            </t>
+        </xpath>
+    </t>
+
+    <t t-name="pivot_ai_summary.View" t-inherit="web.PivotView" t-inherit-mode="extension">
+        <xpath expr="//Layout" position="inside">
+            <t t-if="aiState and aiState.showPanel">
+                <div class="o_pivot_ai_panel position-absolute top-0 bottom-0 end-0 border-start bg-view shadow d-flex flex-column"
+                     style="width: 450px; min-width: 450px; z-index: 10; background: #f4f7f6;">
+
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom bg-white">
+                        <h6 class="mb-0 fw-bold text-primary"><i class="fa fa-comments me-2"/>Pivot Analytics Assistant</h6>
+                        <button class="btn btn-sm btn-link text-dark" t-on-click="() => aiState.showPanel = false"><i class="fa fa-times"/></button>
+                    </div>
+
+                    <div class="p-3 flex-grow-1"
+                         style="overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+                        <t t-if="aiState and aiState.messages">
+                            <t t-foreach="aiState.messages" t-as="msg" t-key="msg_index">
+                                <div t-attf-class="p-2 rounded shadow-sm #{msg.role == 'user' ? 'bg-primary text-white align-self-end' : 'bg-white text-dark align-self-start'}"
+                                     style="max-width: 85%; font-size: 13px; white-space: pre-wrap; line-height: 1.5;">
+                                    <t t-out="msg.content"/>
+                                </div>
+                            </t>
+                        </t>
+
+                        <t t-if="aiState.loading">
+                            <div class="align-self-start bg-white p-2 rounded shadow-sm text-muted">
+                                <i class="fa fa-spinner fa-spin me-2"/>Thinking...
+                            </div>
+                        </t>
+                    </div>
+
+                    <div class="p-3 border-top bg-white">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Ask a question..."
+                                   t-model="aiState.userInput"
+                                   t-on-keydown="onKeydown"/>
+                            <button class="btn btn-primary" t-on-click="sendMessage" t-att-disabled="aiState.loading">
+                                <i class="fa fa-paper-plane"/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>
