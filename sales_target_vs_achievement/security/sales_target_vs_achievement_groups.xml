@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+<!-- Defines a module category for Sales Target and Achievement to organize access rights -->
+        <record id="module_sales_target" model="ir.module.category">
+            <field name="name">Sales Target and Achievement</field>
+            <field name="description">User access rights</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- Creates a privilege group for Sales Target, linked to the module category -->
+        <record model="res.groups.privilege"
+                id="res_groups_privilege_sales_target">
+            <field name="name">Sales Target</field>
+            <field name="category_id"
+                   ref="sales_target_vs_achievement.module_sales_target"/>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- Defines a user group for standard users with access to Sales Target features -->
+        <record id="group_sales_target_user" model="res.groups">
+            <field name="name">Users</field>
+            <field name="sequence">20</field>
+            <field name="privilege_id" ref="res_groups_privilege_sales_target"/>
+        </record>
+
+        <!-- Defines an admin group for Sales Target, inheriting permissions from the user group -->
+        <record id="group_sales_target_admin" model="res.groups">
+            <field name="name">Sales Target Admin</field>
+            <field name="sequence">20</field>
+            <field name="privilege_id" ref="res_groups_privilege_sales_target"/>
+            <!-- Links the admin group to inherit permissions from the standard user group -->
+            <field name="implied_ids" eval="[Command.link(ref('sales_target_vs_achievement.group_sales_target_user'))]"/>
+        </record>
+    </data>
+</odoo>
