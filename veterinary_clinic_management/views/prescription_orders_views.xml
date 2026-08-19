@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- View for Prescription Orders Search -->
+    <record id="prescription_orders_view_search" model="ir.ui.view">
+        <field name="name">prescription.orders.view.search</field>
+        <field name="model">prescription.orders</field>
+        <field name="arch" type="xml">
+            <search>
+                <!-- Fields displayed in the search view -->
+                <field name="prescription_no"/>
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="pharmacist_id"/>
+                <!-- Grouping options -->
+                <group expand="1" string="Group By">
+                    <filter string="Animal" name="patient_id" context="{'group_by':'patient_id'}"/>
+                    <filter string="Doctor" name="doctor_id" context="{'group_by':'doctor_id'}"/>
+                    <filter string="Pharmacist" name="pharmacist_id" context="{'group_by':'pharmacist_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- list View for Prescription Orders -->
+    <record id="prescription_orders_view_list" model="ir.ui.view">
+        <field name="name">prescription.order.view.list</field>
+        <field name="model">prescription.orders</field>
+        <field name="arch" type="xml">
+            <list string="Prescription">
+                <!-- Fields to display in the list view -->
+                <field name="prescription_no"/>
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="date"/>
+                <field name="pharmacist_id"/>
+            </list>
+        </field>
+    </record>
+    <!-- Form View for Prescription Orders -->
+    <record id="prescription_orders_view_form" model="ir.ui.view">
+        <field name="name">prescription.order.view.form</field>
+        <field name="model">prescription.orders</field>
+        <field name="arch" type="xml">
+            <form string="prescription">
+                <header/>
+                <sheet>
+                    <!-- Main fields -->
+                    <field name="prescription_no" readonly="True" style="font-size:50px;color:black;"/>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="customer_id"/> <!-- Assuming this is related to patient's owner -->
+                            <field name="doctor_id"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="pharmacist_id"/>
+                        </group>
+                    </group>
+                    <!-- Notebook for Prescription Details -->
+                    <notebook>
+                        <page string="Prescription Details" name="prescription_line_ids">
+                            <field name="prescription_line_ids">
+                                <list editable="bottom">
+                                    <!-- Fields for prescription lines -->
+                                    <field name="medicine_id"/>
+                                    <field name="intake_time"/>
+                                    <field name="qty"/>
+                                    <field name="form"/>
+                                    <field name="duration"/>
+                                    <field name="frequency"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Action to Open Prescription Orders -->
+    <record id="prescription_orders_action" model="ir.actions.act_window">
+        <field name="name">Prescription</field>
+        <field name="res_model">prescription.orders</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <!-- Action for Product Template (Medicines) -->
+    <record id="product_template_menus_action" model="ir.actions.act_window">
+        <field name="name">Medicines</field>
+        <field name="res_model">product.product</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('is_medicine_product', '=', True)]</field>
+        <field name="context">{'default_type':'consu','default_is_medicine_product': True,'create': True,
+            'edit': True, 'delete': False}</field>
+    </record>
+    <!-- Menu Items -->
+    <menuitem id="pharmacies_menu" name="Pharmacy" parent="veterinary_clinic_management_menu_root" sequence="6"/>
+    <menuitem id="prescription_orders_menu" action="prescription_orders_action" name="Prescription orders"
+              parent="pharmacies_menu" sequence="1"/>
+    <menuitem id="product_template_action" name="Medicines" action="product_template_menus_action"
+              parent="pharmacies_menu" sequence="2"/>
+</odoo>

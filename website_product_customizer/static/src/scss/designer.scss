@@ -1,0 +1,554 @@
+// ============================================================================
+// Website Product Designer - Frontend Styles
+// ============================================================================
+
+// Variables
+$designer-primary: #1E40AF;
+$designer-primary-light: #3B82F6;
+$designer-accent: #F59E0B;
+$designer-success: #10B981;
+$designer-zone-border: #3B82F6;
+$designer-zone-active-border: #F59E0B;
+$designer-bg-canvas: #f8f9fa;
+
+// ============================================================================
+// Designer Wrapper
+// ============================================================================
+.o_designer_wrap {
+    background-color: #f0f2f5;
+    min-height: 100vh;
+}
+
+// ============================================================================
+// Designer Sidebar
+// ============================================================================
+.o_designer_sidebar {
+    position: sticky;
+    top: 80px;
+    border-radius: 12px;
+    overflow: hidden;
+    width: auto;
+
+    .list-group-item {
+        border: none;
+        padding: 14px 16px;
+        font-size: 16px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            background-color: rgba($designer-primary, 0.05);
+            color: $designer-primary;
+        }
+
+        // Remove persistent highlight on click/focus (Bootstrap defaults)
+        &:focus,
+        &:active,
+        &.active {
+            background-color: transparent;
+            color: inherit;
+            font-weight: normal;
+            border-left: none;
+            box-shadow: none;
+            outline: none;
+        }
+
+        i {
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+    }
+}
+
+// ============================================================================
+// Design Canvas Container
+// ============================================================================
+.o_designer_canvas_container {
+    border-radius: 12px;
+    overflow: hidden;
+
+    .card-header {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .card-body {
+        background-color: $designer-bg-canvas;
+        background-image:
+            linear-gradient(45deg, #e8e8e8 25%, transparent 25%),
+            linear-gradient(-45deg, #e8e8e8 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #e8e8e8 75%),
+            linear-gradient(-45deg, transparent 75%, #e8e8e8 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+}
+
+.o_designer_canvas {
+    transition: transform 0.3s ease;
+    margin: 20px auto;
+    position: relative;
+
+    .o_designer_base_image {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        user-select: none;
+        pointer-events: none;
+    }
+}
+
+// ============================================================================
+// Design Zones
+// ============================================================================
+.o_design_zone {
+    cursor: grab;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    overflow: hidden;
+
+    &:hover {
+        border-color: $designer-zone-active-border !important;
+        box-shadow: 0 0 0 2px rgba($designer-zone-active-border, 0.3);
+    }
+
+    &.o_zone_dragging {
+        cursor: grabbing !important;
+        opacity: 0.85;
+        z-index: 1000 !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        transition: none; // No transition during drag for responsiveness
+    }
+
+    &.o_zone_resizing {
+        z-index: 1000 !important;
+        box-shadow: 0 0 0 3px rgba($designer-primary-light, 0.6),
+            0 8px 24px rgba(0, 0, 0, 0.2);
+        transition: none; // No transition during resize for responsiveness
+    }
+
+    &.o_zone_active {
+        border-color: $designer-zone-active-border !important;
+        border-style: solid !important;
+        box-shadow: 0 0 0 3px rgba($designer-zone-active-border, 0.4),
+            inset 0 0 0 1px rgba($designer-zone-active-border, 0.1);
+
+        .o_zone_label {
+            background: $designer-zone-active-border;
+            color: white;
+        }
+    }
+
+    // Image zone: ensure image fills the zone and can be resized
+    &.o_zone_has_image {
+        .o_zone_content {
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                pointer-events: none;
+                user-select: none;
+            }
+        }
+    }
+
+    .o_zone_label {
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        background: rgba($designer-zone-border, 0.8);
+        color: white;
+        padding: 2px 8px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-radius: 0 0 4px 0;
+        z-index: 10;
+        transition: background 0.2s ease;
+    }
+
+    .o_zone_content {
+        padding: 8px;
+        outline: none;
+        min-height: 30px;
+        word-break: break-word;
+
+        &[contenteditable="true"] {
+            cursor: text;
+
+            &:focus {
+                background: rgba(255, 255, 255, 0.5);
+            }
+        }
+    }
+
+    .o_zone_placeholder {
+        opacity: 0.5;
+        text-align: center;
+        user-select: none;
+    }
+
+    // ========================================================================
+    // Resize Handles — 4 corners + 4 edges
+    // ========================================================================
+    .o_resize_handle {
+        position: absolute;
+        z-index: 20;
+        background: #fff;
+        border: 2px solid $designer-primary-light;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.2s ease, transform 0.15s ease;
+        pointer-events: all;
+    }
+
+    &:hover .o_resize_handle,
+    &.o_zone_active .o_resize_handle,
+    &.o_zone_resizing .o_resize_handle {
+        opacity: 1;
+    }
+
+    // Corner handles — 10x10 circles at each corner
+    .o_resize_nw,
+    .o_resize_ne,
+    .o_resize_sw,
+    .o_resize_se {
+        width: 10px;
+        height: 10px;
+    }
+
+    .o_resize_nw {
+        top: -5px;
+        left: -5px;
+        cursor: nwse-resize;
+    }
+
+    .o_resize_ne {
+        top: -5px;
+        right: -5px;
+        cursor: nesw-resize;
+    }
+
+    .o_resize_sw {
+        bottom: -5px;
+        left: -5px;
+        cursor: nesw-resize;
+    }
+
+    .o_resize_se {
+        bottom: -5px;
+        right: -5px;
+        cursor: nwse-resize;
+    }
+
+    // Edge handles — 8x8 circles on each edge midpoint
+    .o_resize_n,
+    .o_resize_s,
+    .o_resize_e,
+    .o_resize_w {
+        width: 8px;
+        height: 8px;
+    }
+
+    .o_resize_n {
+        top: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        cursor: ns-resize;
+    }
+
+    .o_resize_s {
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        cursor: ns-resize;
+    }
+
+    .o_resize_e {
+        right: -4px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: ew-resize;
+    }
+
+    .o_resize_w {
+        left: -4px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: ew-resize;
+    }
+
+    // Hover effect on handles
+    .o_resize_handle:hover {
+        transform: scale(1.4);
+        background: $designer-primary-light;
+        border-color: $designer-primary;
+    }
+
+    // Override transform for handles that already use transform for centering
+    .o_resize_n:hover {
+        transform: translateX(-50%) scale(1.4);
+    }
+
+    .o_resize_s:hover {
+        transform: translateX(-50%) scale(1.4);
+    }
+
+    .o_resize_e:hover {
+        transform: translateY(-50%) scale(1.4);
+    }
+
+    .o_resize_w:hover {
+        transform: translateY(-50%) scale(1.4);
+    }
+}
+
+// ============================================================================
+// Design Options Sidebar (Right)
+// ============================================================================
+.o_designer_options {
+    position: sticky;
+    top: 80px;
+
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+
+        .card-header {
+            font-size: 14px;
+            padding: 10px 16px;
+        }
+    }
+
+    // Size/Material Radio Buttons
+    .form-check {
+        padding: 8px 12px 8px 36px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+
+        &:hover {
+            border-color: $designer-primary-light;
+            background: rgba($designer-primary, 0.02);
+        }
+
+        .form-check-input:checked~.form-check-label {
+            color: $designer-primary;
+            font-weight: 500;
+        }
+
+        .form-check-input:checked {
+            background-color: $designer-primary;
+            border-color: $designer-primary;
+        }
+    }
+
+    // Quantity Input
+    .input-group {
+        .btn {
+            border-radius: 8px;
+        }
+
+        .form-control {
+            border-radius: 0;
+            font-weight: 600;
+        }
+    }
+
+    // Add to Cart Card
+    .o_designer_cart_card {
+        background: #ffffff;
+        border-radius: 16px !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .btn-primary {
+            /* background: linear-gradient(135deg, $designer-primary, $designer-primary-light); */
+            /* border: none; */
+            font-weight: 600;
+            border-radius: 12px;
+            padding: 12px 24px;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+
+            &:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba($designer-primary, 0.3) !important;
+                filter: brightness(1.05);
+            }
+
+            &:active {
+                transform: translateY(0);
+                box-shadow: none !important;
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Text Properties Panel
+// ============================================================================
+.o_designer_text_panel {
+    animation: slideDown 0.3s ease;
+
+    .form-range {
+        accent-color: $designer-primary;
+    }
+
+    .form-control-color {
+        width: 100%;
+        height: 36px;
+    }
+
+    .btn-group .btn {
+        flex: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// ============================================================================
+// Design Categories Page
+// ============================================================================
+.o_designer_category_card {
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1) !important;
+
+        i {
+            transform: scale(1.2);
+        }
+    }
+
+    i {
+        transition: transform 0.3s ease;
+    }
+
+    .card-title {
+        color: #1f2937;
+    }
+
+    .card-text {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+}
+
+// ============================================================================
+// Design Products Page
+// ============================================================================
+.o_designer_product_card {
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12) !important;
+
+        .card-img-top img {
+            transform: scale(1.05);
+        }
+    }
+
+    .card-img-top {
+        overflow: hidden;
+
+        img {
+            transition: transform 0.5s ease;
+        }
+    }
+
+    .btn-primary {
+        border-radius: 8px;
+        padding: 10px;
+        font-weight: 600;
+        background: linear-gradient(135deg, $designer-primary, $designer-primary-light);
+        border: none;
+
+        &:hover {
+            box-shadow: 0 4px 12px rgba($designer-primary, 0.4);
+        }
+    }
+}
+
+// ============================================================================
+// Responsive
+// ============================================================================
+@media (max-width: 991px) {
+    .o_designer_sidebar {
+        position: relative;
+        top: 0;
+        margin-bottom: 20px;
+
+        .list-group {
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+
+            .list-group-item {
+                white-space: nowrap;
+                border-left: none !important;
+                border-bottom: 3px solid transparent;
+
+                &.active {
+                    border-bottom-color: $designer-primary;
+                }
+            }
+        }
+    }
+
+    .o_designer_options {
+        position: relative;
+        top: 0;
+    }
+}
+
+// ============================================================================
+// Product Page - Designer Button
+// ============================================================================
+.o_designer_btn {
+    /* background: linear-gradient(135deg, $designer-primary, $designer-primary-light); */
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba($designer-primary, 0.4);
+    }
+}

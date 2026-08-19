@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- list View for Patients (Animals) -->
+    <record id="res_patient_view_list" model="ir.ui.view">
+        <field name="name">res.patient.view.list</field>
+        <field name="model">res.patient</field>
+        <field name="arch" type="xml">
+            <list string="Animal" default_group_by="pet_type_id">
+                <!-- Fields displayed in the list view -->
+                <field name="number"/>
+                <field name="name"/>
+                <field name="pet_type_id"/>
+                <field name="breed_id"/>
+                <field name="gender"/>
+                <field name="age"/>
+                <field name="owner_name_id"/>
+                <field name="phone"/>
+            </list>
+        </field>
+    </record>
+    <!-- Form View for Patients (Animals) -->
+    <record id="res_patient_view_form" model="ir.ui.view">
+        <field name="name">res.patient.view.form</field>
+        <field name="model">res.patient</field>
+        <field name="arch" type="xml">
+            <form string="Animal">
+                <header>
+                    <!-- Button to create an appointment -->
+                    <button name="action_create_appointment" string="Create Appointment"
+                            type="object" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <div name="button_box" position="inside">
+                        <!-- Statistics buttons for various records -->
+                        <button name="action_get_training_record" class="oe_stat_button"
+                                type="object" icon="fa-book">
+                            <field string="Training" name="training_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_get_grooming_record" class="oe_stat_button"
+                                type="object" icon="fa-cut">
+                            <field string="Grooming" name="grooming_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_get_procedure_record" class="oe_stat_button"
+                                type="object" icon="fa-list-alt">
+                            <field string="Procedure" name="procedure_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_get_surgery_record" class="oe_stat_button"
+                                type="object" icon="fa-user-md">
+                            <field string="Surgery" name="surgery_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_get_prescription_record" class="oe_stat_button"
+                                type="object" icon="fa-thumb-tack">
+                            <field string="Prescription" name="prescription_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <!-- Animal's photo displayed as an avatar -->
+                    <field name="photo" widget="image" class="oe_avatar"/>
+                    <field name="number" readonly="True" style="font-size:50px;color:black;"/>
+                    <group string="ANIMAL DETAILS">
+                        <group>
+                            <!-- Animal's name, type, breed -->
+                            <field name="name"/>
+                            <field name="pet_type_id"/>
+                            <field name="breed_id" domain="[('animal_type_id', '=', pet_type_id)]"/>
+                        </group>
+                        <group>
+                            <!-- Animal's gender, age, behavior -->
+                            <field name="gender"/>
+                            <field name="age"/>
+                            <field name="behaviour"/>
+                        </group>
+                    </group>
+                    <group string="OWNER DETAILS">
+                        <group>
+                            <!-- Owner related to the animal, with address shown -->
+                            <field name="owner_name_id" context="{'show_address': 1}"
+                                   options='{"always_reload": True}'/>
+                        </group>
+                        <group>
+                            <!-- Owner's phone and email -->
+                            <field name="phone"/>
+                            <field name="email"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <!-- Tabs for different sections of animal information -->
+                        <page string="General Info">
+                            <group>
+                                <group>
+                                    <field name="color"/>
+                                    <field name="height"/>
+                                    <field name="weight"/>
+                                </group>
+                                <group>
+                                    <field name="blood_type"/>
+                                    <field name="rh"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Medical History" name="medical_history_line_ids">
+                            <!-- Medical history records -->
+                            <field name="medical_history_line_ids">
+                                <list editable="bottom">
+                                    <field name="disease_name_id"/>
+                                    <field name="description"/>
+                                    <field name="start_date"/>
+                                    <field name="end_date"/>
+                                    <field name="medicine_id"/>
+                                    <field name="allergy"/>
+                                    <field name="allergy_description"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Vaccination History" name="vaccination_history_line_ids">
+                            <!-- Vaccination history records -->
+                            <field name="vaccination_history_line_ids">
+                                <list editable="bottom">
+                                    <field name="vaccine_id"/>
+                                    <field name="vaccination_date"/>
+                                    <field name="description"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                    <chatter/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Search View for Patients (Animals) -->
+    <record id="res_patient_view_search" model="ir.ui.view">
+        <field name="name">res.patient.view.search</field>
+        <field name="model">res.patient</field>
+        <field name="arch" type="xml">
+            <search>
+                <!-- Fields available for search and grouping -->
+                <field name="number"/>
+                <field name="name"/>
+                <field name="pet_type_id"/>
+                <field name="breed_id"/>
+                <field name="owner_name_id"/>
+                <group expand="1" string="Group By">
+                    <filter string="Patient" name="name" context="{'group_by':'name'}"/>
+                    <filter string="Animal Type" name="pet_type_id" context="{'group_by':'pet_type_id'}"/>
+                    <filter string="Breed" name="breed_id" context="{'group_by':'breed_id'}"/>
+                    <filter string="Sequence No" name="number" context="{'group_by':'number'}"/>
+                    <filter string="Owner Name" name="owner_name_id" context="{'group_by':'owner_name_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Action for Patients (Animals) -->
+    <record id="res_patient_action" model="ir.actions.act_window">
+        <field name="name">Animals</field>
+        <field name="res_model">res.patient</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <!-- Menu Item for Patients (Animals) -->
+    <menuitem id="veterinary_clinic_management_menu_root" name="Veterinary" sequence="0"
+              web_icon="veterinary_clinic_management,static/description/icon.png"/>
+    <menuitem id="animal_menu" action="res_patient_action"
+              name="Animal" parent="veterinary_clinic_management_menu_root" sequence="1"/>
+</odoo>

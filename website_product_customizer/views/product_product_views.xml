@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--
+        Extend the Product Variant form to add variant-specific designer fields
+        INSIDE the existing "Product Designer" page (inherited from the template view).
+        This avoids a duplicate notebook page.
+    -->
+    <record id="product_product_form_view_designer" model="ir.ui.view">
+        <field name="name">product.product.form.designer</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Inject variant fields at the end of the existing Product Designer page -->
+            <xpath expr="//page[@name='product_designer']" position="inside">
+
+                <separator string="Variant-Specific Design Images"/>
+                <group>
+                    <group>
+                        <field name="design_base_image_variant" widget="image"
+                               string="Design Base Image (Front)"
+                               help="Set a variant-specific front image. Leave empty to use the template image."/>
+                    </group>
+                    <group>
+                        <field name="design_base_image_back_variant" widget="image"
+                               string="Design Base Image (Back)"
+                               help="Set a variant-specific back image. Leave empty to use the template image."/>
+                    </group>
+                </group>
+
+                <separator/>
+
+                <!-- Override Toggle -->
+                <group>
+                    <group>
+                        <field name="has_design_variant_override" widget="boolean_toggle"
+                               help="Enable to configure variant-specific design area, limits, colors, fonts, and instructions."/>
+                    </group>
+                </group>
+
+                <!-- Variant-specific settings (only visible when override is enabled) -->
+                <group string="Variant Design Settings" invisible="not has_design_variant_override">
+                    <group>
+                        <field name="has_variant_front_back"/>
+                        <field name="variant_production_time_days"/>
+                        <field name="variant_min_order_quantity"/>
+                        <field name="variant_max_order_quantity"/>
+                        <field name="variant_shipping_weight_per_unit"/>
+                    </group>
+                    <group>
+                        <field name="variant_design_max_texts"/>
+                        <field name="variant_design_max_images"/>
+                        <field name="variant_design_max_characters"/>
+                    </group>
+                </group>
+
+                <group invisible="not has_design_variant_override">
+                    <group string="Design Area — Front" groups="base.group_no_one">
+                        <field name="variant_design_area_left"/>
+                        <field name="variant_design_area_top"/>
+                        <field name="variant_design_area_width"/>
+                        <field name="variant_design_area_height"/>
+                    </group>
+                    <group string="Design Area — Back"
+                           invisible="not has_variant_front_back"
+                           groups="base.group_no_one">
+                        <field name="variant_design_area_back_left"/>
+                        <field name="variant_design_area_back_top"/>
+                        <field name="variant_design_area_back_width"/>
+                        <field name="variant_design_area_back_height"/>
+                    </group>
+                </group>
+
+                <group string="Colors &amp; Fonts" invisible="not has_design_variant_override">
+                    <group>
+                        <field name="variant_design_font_ids" widget="many2many_tags"/>
+                        <field name="variant_design_bg_color_ids" widget="many2many_tags"/>
+                        <field name="variant_design_text_color_ids" widget="many2many_tags"/>
+                    </group>
+                </group>
+
+                <group invisible="not has_design_variant_override">
+                    <separator string="Variant Design Instructions"/>
+                    <field name="variant_design_instruction" nolabel="1"
+                           placeholder="Enter variant-specific design instructions..."/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

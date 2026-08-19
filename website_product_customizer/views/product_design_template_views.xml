@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Design Template Tree View -->
+    <record id="product_design_template_view_tree" model="ir.ui.view">
+        <field name="name">product.design.template.tree</field>
+        <field name="model">product.design.template</field>
+        <field name="arch" type="xml">
+            <list string="Design Templates">
+                <field name="preview_image" widget="image" options="{'size': [50,50]}"/>
+                <field name="name"/>
+                <field name="template_style"/>
+                <field name="product_tmpl_id"/>
+                <field name="design_category_id"/>
+                <field name="is_premium"/>
+                <field name="usage_count"/>
+                <field name="active" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Design Template Form View -->
+    <record id="product_design_template_view_form" model="ir.ui.view">
+        <field name="name">product.design.template.form</field>
+        <field name="model">product.design.template</field>
+        <field name="arch" type="xml">
+            <form string="Design Template">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="preview_image" widget="image" class="oe_avatar"/>
+                        </group>
+                        <group>
+                            <field name="preview_image_back" widget="image" class="oe_avatar"/>
+                        </group>
+                    </group>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Template Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_tmpl_id"/>
+                            <field name="design_category_id"/>
+                            <field name="template_style"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                            <field name="is_premium"/>
+                            <field name="usage_count"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tags &amp; Colors">
+                            <group>
+                                <group>
+                                    <field name="tag_ids" widget="many2many_tags"/>
+                                </group>
+                                <group>
+                                    <field name="color_primary" widget="color"/>
+                                    <field name="color_secondary" widget="color"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Design Data">
+                            <field name="design_data" widget="ace"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kanban View for Design Templates -->
+    <record id="product_design_template_view_kanban" model="ir.ui.view">
+        <field name="name">product.design.template.kanban</field>
+        <field name="model">product.design.template</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name"/>
+                <field name="preview_image"/>
+                <field name="template_style"/>
+                <templates>
+                    <t t-name="card">
+                        <field name="preview_image" widget="image" options="{'size': [150, 150]}"/>
+                        <div class="oe_kanban_details">
+                            <strong><field name="name"/></strong>
+                            <div><field name="template_style"/></div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Design Template Action -->
+    <record id="action_product_design_template" model="ir.actions.act_window">
+        <field name="name">Design Templates</field>
+        <field name="res_model">product.design.template</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first design template
+            </p>
+            <p>Design templates are pre-made designs that customers can use as starting points.</p>
+        </field>
+    </record>
+
+    <!-- Product Template Customizable Search Filter -->
+    <record id="product_template_search_view_customizable" model="ir.ui.view">
+        <field name="name">product.template.search.customizable</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <!-- Add filter after existing filters -->
+            <xpath expr="//filter[last()]" position="after">
+                <separator/>
+                <filter
+                    string="Customizable"
+                    name="filter_customizable"
+                    domain="[('is_designable', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Design Template Search View -->
+    <record id="view_product_design_template_search" model="ir.ui.view">
+        <field name="name">product.design.template.search</field>
+        <field name="model">product.design.template</field>
+        <field name="arch" type="xml">
+            <search string="Search Design Templates">
+
+                <!-- Searchable Fields -->
+                <field name="name"/>
+                <field name="product_tmpl_id"/>
+                <field name="design_category_id"/>
+                <field name="template_style"/>
+                <field name="tag_ids"/>
+                <field name="is_premium"/>
+                <field name="active"/>
+
+                <!-- Status Filters -->
+                <filter name="filter_active"
+                        string="Active"
+                        domain="[('active','=',True)]"/>
+
+                <filter name="filter_inactive"
+                        string="Archived"
+                        domain="[('active','=',False)]"/>
+
+                <separator/>
+
+                <!-- Template Filters -->
+                <filter name="filter_premium"
+                        string="Premium Templates"
+                        domain="[('is_premium','=',True)]"/>
+
+                <filter name="filter_popular"
+                        string="Popular (Used)"
+                        domain="[('usage_count','&gt;',0)]"/>
+
+                <separator/>
+
+                <!-- Style Filters -->
+                <filter name="filter_modern"
+                        string="Modern"
+                        domain="[('template_style','=','modern')]"/>
+
+                <filter name="filter_classic"
+                        string="Classic"
+                        domain="[('template_style','=','classic')]"/>
+
+                <filter name="filter_minimalist"
+                        string="Minimalist"
+                        domain="[('template_style','=','minimalist')]"/>
+
+                <filter name="filter_bold"
+                        string="Bold"
+                        domain="[('template_style','=','bold')]"/>
+
+                <filter name="filter_elegant"
+                        string="Elegant"
+                        domain="[('template_style','=','elegant')]"/>
+
+                <separator/>
+
+                <!-- Group By (Odoo 17+) -->
+                <filter name="group_by_product"
+                        string="Product"
+                        context="{'group_by': 'product_tmpl_id'}"/>
+
+                <filter name="group_by_category"
+                        string="Design Category"
+                        context="{'group_by': 'design_category_id'}"/>
+
+                <filter name="group_by_style"
+                        string="Style"
+                        context="{'group_by': 'template_style'}"/>
+
+                <filter name="group_by_premium"
+                        string="Premium"
+                        context="{'group_by': 'is_premium'}"/>
+
+                <filter name="group_by_active"
+                        string="Active Status"
+                        context="{'group_by': 'active'}"/>
+
+            </search>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu item for the root of the Quality module -->
+    <menuitem id="menu_quality_root" name="Quality" sequence="30"
+              groups="quality_assurance.group_quality_user" web_icon="quality_assurance,static/description/icon.png"/>
+
+    <!-- Tree view definition for Quality Measures -->
+    <record id="quality_measure_view_tree" model="ir.ui.view">
+        <field name="name">quality.measure.view.tree</field>
+        <field name="model">quality.measure</field>
+        <field name="arch" type="xml">
+            <list string="Quality Alerts">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="type"/>
+                <field name="quantity_min"/>
+                <field name="quantity_max"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <!-- Form view definition for Quality Measures -->
+    <record id="quality_measure_view_form" model="ir.ui.view">
+        <field name="name">quality.measure.view.form</field>
+        <field name="model">quality.measure</field>
+        <field name="arch" type="xml">
+            <form string="Quality Measure">
+                <sheet>
+                    <div class="oe_title">
+                        <h3>
+                            <field name="name" placeholder="Name"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="type"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="quantity_min" invisible="type == 'quality'"/>
+                            <field name="quantity_max" invisible="type == 'quality'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="picking_type_ids"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Form view definition for Quality Measures -->
+    <record id="quality_measure_view_search" model="ir.ui.view">
+        <field name="name">quality.measure.view.search</field>
+        <field name="model">quality.measure</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="product_id"/>
+                <group expand="0" string="Group By">
+                    <filter string="Product" name="group_by_product_id" domain="[]"
+                            context="{'group_by':'product_id'}"/>
+                    <filter string="Type" name="group_by_type" domain="[]" context="{'group_by':'type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Action definition for Quality Measures -->
+    <record model="ir.actions.act_window" id="quality_measure_action">
+        <field name="name">Quality Measure</field>
+        <field name="res_model">quality.measure</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="quality_measure_view_search"/>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click here to add a new Quality Measure
+            </p>
+        </field>
+    </record>
+    <!--Menu's.-->
+    <menuitem id="menu_quality_config_settings" name="Configuration" parent="quality_assurance.menu_quality_root"
+              sequence="100"
+              groups="quality_assurance.group_quality_manager"/>
+    <menuitem id="menu_quality_measure" name="Quality Measures" parent="menu_quality_config_settings"
+              action="quality_measure_action"/>
+
+</odoo>

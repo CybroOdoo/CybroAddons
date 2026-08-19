@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Designer Button on Product Page -->
+    <template id="product_designer_button" inherit_id="website_sale.product" name="Select Quantity">
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
+            <a t-if="product.is_designable"
+               t-attf-href="/shop/designer/#{product.id}"
+               class="btn btn-lg btn-primary w-100 mb-2 o_designer_btn js_designer_btn"
+               id="o_designer_btn_link"
+               t-att-data-product-tmpl-id="product.id">
+                <i class="fa fa-paint-brush me-2"/> Customize &amp; Design
+            </a>
+        </xpath>
+    </template>
+
+    <!-- Designer Page Template -->
+    <template id="designer_page" name="Product Designer Page">
+        <t t-call="website.layout">
+            <t t-set="additional_title" t-value="product.name + ' - Designer'"/>
+            <t t-set="no_header" t-value="True"/>
+            <t t-set="no_footer" t-value="True"/>
+            <div id="wrap" class="o_designer_wrap" style="height: 100vh; overflow: hidden;">
+                <style>
+                    /* Force hide ALL potential header/footer elements */
+                    header:not(.modal-header), footer:not(.modal-footer), nav.navbar, #website_header, .o_header_standard, .o_header_common, .o_main_navbar, #top_menu_container { 
+                        display: none !important; 
+                        height: 0 !important; 
+                        overflow: hidden !important; 
+                        visibility: hidden !important;
+                    }
+                    /* Ensure body/html take full height and don't scroll */
+                    html, body { height: 100%; overflow: hidden; }
+                    /* ensure the container takes available space */
+                    .o_designer_wrap .container-fluid { height: 100%; display: flex; flex-direction: column; padding-top: 0 !important; }
+                    .o_designer_wrap .row { flex: 1; overflow: hidden; }
+                    /* Make sidebar scrollable independently */
+                    .o_designer_sidebar { height: 100%; overflow-y: auto; }
+                </style>
+                <div class="container-fluid h-100">
+                    <!-- Font Loading -->
+                    <t t-foreach="fonts" t-as="font">
+                        <t t-if="font.provider == 'google' and font.css_url">
+                            <link rel="stylesheet" t-att-href="font.css_url"/>
+                        </t>
+                        <t t-elif="font.provider == 'custom' and font.css_url">
+                            <style>
+                                @font-face {
+                                    font-family: '<t t-out="font.font_family_name"/>';
+                                    src: url('<t t-out="font.css_url"/>');
+                                }
+                            </style>
+                        </t>
+                    </t>
+
+                    <!-- Breadcrumb -->
+                    <nav class="py-3" aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
+                            <li class="breadcrumb-item">
+                                <a t-att-href="product.website_url" t-out="product.name"/>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Design</li>
+                        </ol>
+                    </nav>
+
+                    <div class="row g-4 pb-5">
+                        <!-- Left Sidebar - Tools -->
+                        <div class="col-auto d-none d-lg-block">
+                            <div class="o_designer_sidebar card shadow-sm border-0">
+                                <div class="card-body p-0">
+                                    <!-- Tool Buttons (icon-only) -->
+                                    <div class="list-group list-group-flush">
+                                        <button class="list-group-item list-group-item-action o_designer_tool"
+                                                data-tool="text" title="Add Text">
+                                            <i class="fa fa-font fa-fw"/>
+                                        </button>
+                                        <button class="list-group-item list-group-item-action o_designer_tool"
+                                                data-tool="image" title="Upload Image">
+                                            <i class="fa fa-image fa-fw"/>
+                                        </button>
+                                        <button class="list-group-item list-group-item-action o_designer_tool"
+                                                data-tool="shapes" title="Shapes">
+                                            <i class="fa fa-square-o fa-fw"/>
+                                        </button>
+                                        <button class="list-group-item list-group-item-action o_designer_tool"
+                                                data-tool="templates" title="Templates">
+                                            <i class="fa fa-th-large fa-fw"/>
+                                        </button>
+                                        <button class="list-group-item list-group-item-action o_designer_tool"
+                                                data-tool="background" title="Background">
+                                            <i class="fa fa-tint fa-fw"/>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Center - Design Canvas -->
+                        <div class="col d-flex flex-column h-100">
+                            <div class="o_designer_canvas_container card shadow-sm border-0 h-100 d-flex flex-column">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-danger o_designer_delete" title="Delete Selected">
+                                            <i class="fa fa-trash"/>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger o_designer_clear_all" title="Clear All">
+                                            <i class="fa fa-eraser"/>
+                                        </button>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-secondary o_designer_undo" title="Undo">
+                                            <i class="fa fa-undo"/>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary o_designer_redo" title="Redo">
+                                            <i class="fa fa-repeat"/>
+                                        </button>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-primary o_designer_zoom_in" title="Zoom In">
+                                            <i class="fa fa-search-plus"/>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary o_designer_zoom_out" title="Zoom Out">
+                                            <i class="fa fa-search-minus"/>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary o_designer_fit" title="Fit to Screen">
+                                            <i class="fa fa-compress"/>
+                                        </button>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-success o_designer_save" title="Save">
+                                            <i class="fa fa-floppy-o me-1"/> 
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary o_designer_preview" title="Preview Design">
+                                            <i class="fa fa-eye me-1"/> 
+                                        </button>
+                                        <t t-if="is_admin_user">
+                                            <button class="btn btn-sm btn-outline-warning o_designer_admin_edit_area" title="Edit Design Area">
+                                                <i class="fa fa-pencil-square-o me-1"/> Edit Area
+                                            </button>
+                                            <button class="btn btn-sm btn-warning o_designer_admin_save_area d-none" title="Save Design Area Configuration">
+                                                <i class="fa fa-save me-1"/> Save Config
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info o_designer_save_template" title="Save as Template">
+                                                <i class="fa fa-bookmark me-1"/> Save as Template
+                                            </button>
+                                        </t>
+                                    </div>
+                                    <!-- Front/Back Toggle -->
+                                    <t t-if="design_config.get('has_front_back')">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-primary o_designer_side active" data-side="front">Front</button>
+                                            <button class="btn btn-outline-primary o_designer_side" data-side="back">Back</button>
+                                        </div>
+                                    </t>
+                                </div>
+                                <div class="card-body p-4 bg-light position-relative overflow-auto flex-grow-1">
+                                    <!-- Canvas Area -->
+                                    <div class="o_designer_canvas position-relative mx-auto"
+                                         t-att-data-product-id="product.id"
+                                         t-att-data-variant-id="variant_id or 0"
+                                         t-att-data-has-front-back="design_config.get('has_front_back')"
+                                         t-att-data-saved-customization-id="saved_customization_id"
+                                         t-att-data-is-admin="is_admin_user"
+                                         t-att-data-design-area-left="design_config.get('design_area_left', 0)"
+                                         t-att-data-design-area-top="design_config.get('design_area_top', 0)"
+                                         t-att-data-design-area-width="design_config.get('design_area_width', 100)"
+                                         t-att-data-design-area-height="design_config.get('design_area_height', 100)"
+                                         t-att-data-design-area-back-left="design_config.get('design_area_back_left', 0)"
+                                         t-att-data-design-area-back-top="design_config.get('design_area_back_top', 0)"
+                                         t-att-data-design-area-back-width="design_config.get('design_area_back_width', 100)"
+                                         t-att-data-design-area-back-height="design_config.get('design_area_back_height', 100)"
+                                         t-att-data-max-texts="design_config.get('design_max_texts', 0)"
+                                         t-att-data-max-images="design_config.get('design_max_images', 0)"
+                                         t-att-data-max-characters="design_config.get('design_max_characters', 0)"
+                                         style="max-width: 100%;">
+                                        <!-- Product base image — use variant (computed field falls back to template) -->
+                                        <img t-if="selected_variant and selected_variant.design_base_image"
+                                             t-att-src="'/web/image/product.product/%s/design_base_image' % selected_variant.id"
+                                             class="o_designer_base_image"
+                                             alt="Product base"
+                                             style="max-width: 100%; height: auto;"/>
+                                        <img t-else=""
+                                             t-att-src="'/web/image/product.product/%s/image_1920' % (selected_variant.id if selected_variant else product.product_variant_ids[:1].id)"
+                                             class="o_designer_base_image"
+                                             alt="Product base"
+                                             style="max-width: 100%; height: auto;"/>
+
+                                        <!-- Product back image — use variant (falls back to template) -->
+                                        <img t-if="design_config.get('has_front_back') and selected_variant and selected_variant.design_base_image_back"
+                                             t-att-src="'/web/image/product.product/%s/design_base_image_back' % selected_variant.id"
+                                             class="o_designer_base_image_back d-none"
+                                             alt="Product back"
+                                             style="max-width: 100%; height: auto;"/>
+
+                                        <!-- Fabric.js Canvas -->
+                                        <canvas id="o_designer_canvas_element"/>
+
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Sidebar - Product Options -->
+                        <div class="col-lg-3 col-xl-3 d-flex flex-column h-100">
+                            <div class="o_designer_options d-flex flex-column h-100">
+                                <!-- Scrollable Options Area -->
+                                <div class="o_designer_scrollable_content pe-2 flex-grow-1" style="overflow-y: auto; scrollbar-width: thin; max-height: calc(100vh - 280px);">
+                                    <!-- Product Info Card -->
+                                    <div class="card shadow-sm border-0 mb-3">
+                                        <div class="card-body">
+                                            <h5 t-out="product.name"/>
+                                            <p class="text-muted small" t-if="product.design_category_id"
+                                               t-out="product.design_category_id.name"/>
+                                            <div class="h4 text-primary o_designer_price"
+                                                 t-att-data-base-price="variant_price">
+                                                <t t-out="variant_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                            </div>
+                                            <!-- Selected variant info -->
+                                            <p t-if="selected_variant and has_variants" class="small text-muted mb-1">
+                                                <i class="fa fa-tag me-1"/>
+                                                Variant: <strong t-out="', '.join(selected_variant.product_template_attribute_value_ids.mapped('name'))"/>
+                                            </p>
+                                            <p t-if="design_config.get('production_time_days')" class="small text-muted mb-0">
+                                                <i class="fa fa-clock-o me-1"/>
+                                                Est. production: <strong t-out="design_config.get('production_time_days')"/> business days
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Variant Selector (when product has multiple variants) -->
+                                    <t t-if="has_variants">
+                                        <div class="card shadow-sm border-0 mb-3">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0"><i class="fa fa-th-list me-2"/>Select Variant</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <select class="form-select o_designer_variant_select">
+                                                    <t t-foreach="variant_data" t-as="v">
+                                                        <option t-att-value="v['id']"
+                                                                t-att-selected="'selected' if v['selected'] else None"
+                                                                t-att-data-price="v['price']">
+                                                            <t t-out="v['name']"/>
+                                                        </option>
+                                                    </t>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </t>
+
+                                    <!-- Design Instructions -->
+                                    <t t-if="design_config.get('design_instruction')">
+                                        <div class="card shadow-sm border-0 mb-3 o_designer_instructions_card">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0"><i class="fa fa-info-circle me-2"/>Instructions</h6>
+                                            </div>
+                                            <div class="card-body small" t-raw="design_config.get('design_instruction')"/>
+                                        </div>
+                                    </t>
+
+
+
+                                    <!-- Quantity -->
+                                    <div class="card shadow-sm border-0 mb-3">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0"><i class="fa fa-sort-numeric-asc me-2"/>Quantity</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="input-group">
+                                                <button class="btn btn-outline-secondary o_designer_qty_minus" type="button">
+                                                    <i class="fa fa-minus"/>
+                                                </button>
+                                                <input type="number" class="form-control text-center o_designer_quantity"
+                                                       value="1"
+                                                       t-att-min="design_config.get('min_order_quantity', 1)"
+                                                       t-att-max="design_config.get('max_order_quantity', 10000)"/>
+                                                <button class="btn btn-outline-secondary o_designer_qty_plus" type="button">
+                                                    <i class="fa fa-plus"/>
+                                                </button>
+                                            </div>
+                                            <small class="text-muted d-block mt-1"
+                                                   t-if="design_config.get('min_order_quantity', 1) > 1">
+                                                Min. order: <t t-out="design_config.get('min_order_quantity', 1)"/> pcs
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Text Properties Panel (shows when editing text) -->
+                                    <div class="card shadow-sm border-0 mb-3 o_designer_text_panel d-none">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0"><i class="fa fa-font me-2"/>Text Properties</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-2">
+                                                <label class="form-label small">Font Family</label>
+                                                <select class="form-select form-select-sm o_designer_font_family">
+                                                    <t t-foreach="fonts" t-as="font">
+                                                        <option t-att-value="font.font_family_name"
+                                                                t-att-style="'font-family: ' + font.font_family_name">
+                                                            <t t-out="font.name"/>
+                                                        </option>
+                                                    </t>
+                                                </select>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label small">Font Size</label>
+                                                <input type="range" class="form-range o_designer_font_size"
+                                                       min="8" max="120" value="24"/>
+                                                <small class="text-muted o_designer_font_size_label">24px</small>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label small">Font Color</label>
+                                                <t t-if="text_colors">
+                                                    <div class="d-flex flex-wrap gap-1 o_designer_text_color_swatches">
+                                                        <t t-foreach="text_colors" t-as="tc">
+                                                            <button class="btn btn-sm o_designer_text_color_swatch"
+                                                                    t-att-data-color="tc.color_code"
+                                                                    t-att-title="tc.name"
+                                                                    t-attf-style="width:26px;height:26px;padding:0;background-color:#{tc.color_code};border:2px solid #dee2e6;border-radius:4px;"/>
+                                                        </t>
+                                                    </div>
+                                                </t>
+                                                <t t-else="">
+                                                    <input type="color" class="form-control form-control-sm form-control-color o_designer_font_color"
+                                                           value="#000000"/>
+                                                </t>
+                                            </div>
+                                            <div class="mb-2 d-flex gap-1">
+                                                <button class="btn btn-sm btn-outline-secondary o_designer_bold" title="Bold">
+                                                    <i class="fa fa-bold"/>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary o_designer_italic" title="Italic">
+                                                    <i class="fa fa-italic"/>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary o_designer_underline" title="Underline">
+                                                    <i class="fa fa-underline"/>
+                                                </button>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label small">Alignment</label>
+                                                <div class="btn-group btn-group-sm w-100">
+                                                    <button class="btn btn-outline-secondary o_designer_align" data-align="left">
+                                                        <i class="fa fa-align-left"/>
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary o_designer_align active" data-align="center">
+                                                        <i class="fa fa-align-center"/>
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary o_designer_align" data-align="right">
+                                                        <i class="fa fa-align-right"/>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <!-- Shapes Panel (shows when shapes tool is active) -->
+                                    <div class="card shadow-sm border-0 mb-3 o_designer_shapes_panel d-none">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0"><i class="fa fa-square-o me-2"/>Add Shape</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-2">
+                                                <div class="col-4">
+                                                    <button class="btn btn-outline-secondary w-100 o_designer_shape_btn" data-shape="rect" title="Rectangle">
+                                                        <i class="fa fa-stop"/>
+                                                    </button>
+                                                </div>
+                                                <div class="col-4">
+                                                    <button class="btn btn-outline-secondary w-100 o_designer_shape_btn" data-shape="circle" title="Circle">
+                                                        <i class="fa fa-circle"/>
+                                                    </button>
+                                                </div>
+                                                <div class="col-4">
+                                                    <button class="btn btn-outline-secondary w-100 o_designer_shape_btn" data-shape="triangle" title="Triangle">
+                                                        <i class="fa fa-caret-up"/>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Templates Panel (shows when templates tool is active) -->
+                                    <div class="card shadow-sm border-0 mb-3 o_designer_templates_panel d-none">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0"><i class="fa fa-th-large me-2"/>Design Templates</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="o_designer_templates_grid d-flex flex-wrap gap-2">
+                                                <p class="text-muted small w-100 text-center">Loading templates...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Background Color Panel (shows when background tool is active) -->
+                                    <t t-if="bg_colors">
+                                        <div class="card shadow-sm border-0 mb-3 o_designer_bg_panel d-none">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0"><i class="fa fa-tint me-2"/>Background Color</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <!-- Transparent / No Color option -->
+                                                    <button class="btn btn-sm btn-outline-secondary o_designer_bg_swatch"
+                                                            data-color="transparent"
+                                                            title="No Background"
+                                                            style="width:32px;height:32px;padding:0;position:relative;overflow:hidden;">
+                                                        <span style="position:absolute;top:0;left:50%;width:1px;height:100%;background:#dc3545;transform:rotate(45deg);transform-origin:top center;"/>
+                                                    </button>
+                                                    <t t-foreach="bg_colors" t-as="color">
+                                                        <button class="btn btn-sm o_designer_bg_swatch"
+                                                                t-att-data-color="color.color_code"
+                                                                t-att-title="color.name"
+                                                                t-attf-style="width:32px;height:32px;padding:0;background-color:#{color.color_code};border:2px solid #dee2e6;border-radius:4px;"/>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+
+                                <!-- Total Price & Add to Cart (Fixed at bottom) -->
+                                <div class="card shadow-sm border-0 mt-3 flex-shrink-0 o_designer_cart_card">
+                                    <div class="card-body text-center py-4">
+                                        <div class="h2 mb-1 fw-bold text-dark o_designer_total_price"
+                                             t-att-data-currency-symbol="website.currency_id.symbol"
+                                             t-att-data-currency-position="website.currency_id.position">
+                                            <t t-out="variant_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                        </div>
+                                        <small class="d-block mb-4 text-muted">Total Price (excl. tax)</small>
+                                        <button type="button"
+                                                class="btn btn-primary btn-lg w-100 o_designer_add_to_cart shadow-sm">
+                                            <i class="fa fa-shopping-cart me-2"/>Add to Cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Preview Modal -->
+                <div class="modal fade" id="o_designer_preview_modal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header d-flex justify-content-between align-items-center position-relative">
+                                <h5 class="modal-title mb-0">Design Preview</h5>
+                                <!-- Preview Front/Back Toggle -->
+                                <t t-if="design_config.get('has_front_back')">
+                                    <div class="position-absolute start-50 translate-middle-x">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-primary o_designer_preview_side active" data-side="front">Front</button>
+                                            <button class="btn btn-outline-primary o_designer_preview_side" data-side="back">Back</button>
+                                        </div>
+                                    </div>
+                                </t>
+                                <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"/>
+                            </div>
+                            <div class="modal-body text-center bg-light">
+                                <img id="o_designer_preview_image" class="img-fluid shadow-sm" style="max-height: 70vh;"/>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary o_designer_add_to_cart">
+                                    <i class="fa fa-shopping-cart me-2"/>Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Design Categories Browse Page -->
+    <template id="designer_categories_page" name="Design Categories">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Custom Print &amp; Design</t>
+            <div id="wrap">
+                <div class="container py-5">
+                    <div class="text-center mb-5">
+                        <h1 class="display-4 fw-bold">Design Your Custom Products</h1>
+                        <p class="lead text-muted">Choose a category to start designing</p>
+                    </div>
+                    <div class="row g-4">
+                        <t t-foreach="categories" t-as="cat">
+                            <div class="col-md-6 col-lg-4 col-xl-3">
+                                <a t-attf-href="/shop/designer/category/#{cat.id}"
+                                   class="card h-100 border-0 shadow-sm text-decoration-none o_designer_category_card">
+                                    <div class="card-img-top position-relative overflow-hidden" style="height: 180px;" t-if="cat.image_1920">
+                                        <img t-att-src="'/web/image/product.public.category/%s/image_1920' % cat.id"
+                                             class="img-fluid w-100 h-100"
+                                             style="object-fit: cover;"
+                                             t-att-alt="cat.name"/>
+                                    </div>
+                                    <div class="card-body text-center py-4">
+                                        <h5 class="card-title" t-out="cat.name"/>
+                                    </div>
+                                </a>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Products in Design Category Page -->
+    <template id="designer_category_products_page" name="Design Category Products">
+        <t t-call="website.layout">
+            <t t-set="additional_title" t-value="category.name"/>
+            <div id="wrap">
+                <div class="container py-5">
+                    <nav aria-label="breadcrumb" class="mb-4">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
+                            <li class="breadcrumb-item"><a href="/shop/designer">Design</a></li>
+                            <li class="breadcrumb-item active" t-out="category.name"/>
+                        </ol>
+                    </nav>
+
+                    <div class="text-center mb-5">
+                        <h1 t-out="category.name"/>
+                    </div>
+
+                    <div class="row g-4">
+                        <t t-foreach="products" t-as="prod">
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card h-100 border-0 shadow-sm o_designer_product_card">
+                                    <div class="card-img-top position-relative overflow-hidden" style="height: 250px;">
+                                        <img t-att-src="'/web/image/product.template/%s/image_512' % prod.id"
+                                             class="img-fluid w-100 h-100"
+                                             style="object-fit: cover;"
+                                             t-att-alt="prod.name"/>
+                                        <div class="position-absolute bottom-0 start-0 end-0 p-3 text-white"
+                                             style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                                            <strong t-out="prod.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div>
+                                                <span class="h5 text-primary mb-0">
+                                                    Starting at
+                                                    <t t-out="prod.list_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                </span>
+                                            </div>
+                                            <span t-if="prod.production_time_days" class="badge bg-light text-dark">
+                                                <i class="fa fa-clock-o me-1"/>
+                                                <t t-out="prod.production_time_days"/> days
+                                            </span>
+                                        </div>
+                                        <div class="d-flex gap-1 mb-3 flex-wrap">
+
+                                        </div>
+                                        <a t-attf-href="/shop/designer/#{prod.id}"
+                                           class="btn btn-primary w-100">
+                                            <i class="fa fa-paint-brush me-2"/>Start Designing
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <t t-if="not products">
+                        <div class="text-center py-5">
+                            <i class="fa fa-paint-brush fa-5x text-muted mb-3 d-block"/>
+                            <h3 class="text-muted">No products available yet</h3>
+                            <p class="text-muted">Check back soon for designable products in this category.</p>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

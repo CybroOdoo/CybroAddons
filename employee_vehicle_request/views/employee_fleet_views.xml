@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--    Form view of employee fleet-->
+    <record model='ir.ui.view' id='employee_fleet_view_form'>
+        <field name="name">employee.fleet.view.form</field>
+        <field name="model">employee.fleet</field>
+        <field name="arch" type="xml">
+            <form string="Employee Fleet Request">
+                <header>
+                    <button name='action_send' string="Send Request" type="object"
+                            class='oe_highlight' invisible="state != 'draft'"/>
+                    <button name='action_approve' string="Approve" type="object"
+                            class='oe_highlight'
+                            invisible="state != 'waiting' or not is_manager"/>
+                    <button name='action_reject' string="Reject" type="object"
+                            invisible="state != 'waiting' or not is_manager"/>
+                    <button name='action_cancel' string="Cancel" type="object"
+                            invisible="state not in ['draft', 'waiting']"/>
+                    <button name='action_return' string="Return" type="object"
+                            class='oe_highlight'
+                            invisible="state != 'confirm' or not is_manager"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,waiting,confirm,return"
+                           invisible="state in ['cancel', 'reject']"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,cancel"
+                           invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,waiting,reject"
+                           invisible="state != 'reject'"/>
+                </header>
+                <sheet>
+                    <field name="is_manager" invisible="1"/>
+                    <field name="is_hr" invisible="1"/>
+                    <h1>
+                        <field name="name" readonly="1"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="employee_id"
+                                   readonly="1" force_save="1"/>
+                            <field name="date_from" readonly="state != 'draft'"/>
+                            <field name="date_to" readonly="state != 'draft'"/>
+                            <field name="returned_date"
+                                invisible="state != 'return'"/>
+                        </group>
+                        <group>
+                            <field name="req_date" readonly="state != 'draft'"/>
+                            <field name="fleet_id"
+                                   options="{'no_create': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="purpose" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+
+            </form>
+        </field>
+    </record>
+<!--    Tree view of employee fleet-->
+    <record model='ir.ui.view' id='employee_fleet_view_tree'>
+        <field name="name">employee.fleet.view.tree</field>
+        <field name="model">employee.fleet</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'"
+                  decoration-muted="state == 'cancel'"
+                  decoration-success="state == 'confirm'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="fleet_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+<!--    Search view of employee fleet-->
+    <record model='ir.ui.view' id='employee_fleet_view_search'>
+        <field name="name">employee.fleet.view.search</field>
+        <field name="model">employee.fleet</field>
+        <field name="arch" type="xml">
+            <search string="Custody">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="fleet_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="state"/>
+                <separator/>
+                <group >
+                    <filter string="Status" name="status" domain="[]"
+                            context="{'group_by':'state'}"/>
+                    <filter string="Employee" name="employee_id" domain="[]"
+                            context="{'group_by':'employee_id'}"/>
+                    <filter string="Vehicle" name="vehicle" domain="[]"
+                            context="{'group_by':'fleet_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+<!--    Employee fleet record-->
+    <record id="action_employee_fleet" model="ir.actions.act_window">
+        <field name="name">Vehicle Request</field>
+        <field name="res_model">employee.fleet</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="employee_fleet_view_search"/>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to create a New Vehicle Request.
+            </p>
+        </field>
+    </record>
+<!--    Root menu for vehicle request-->
+    <menuitem id="employee_fleet_menu"
+              name="Vehicle Request"
+              parent="hr.menu_hr_root"
+              sequence="4"
+              groups="base.group_user"/>
+<!--    Sub menu for the vehicle request-->
+    <menuitem id="employee_fleet_sub_menu"
+              name="Vehicle Request"
+              parent="employee_fleet_menu"
+              sequence="1"
+              groups="base.group_user"
+              action="action_employee_fleet"/>
+</odoo>
