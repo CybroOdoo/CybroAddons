@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': "Cybrosys Support Assistant",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Productivity ",
     "summary": "Get Technical/Functional Assistance from Cybrosys without leaving your Database",
     "description": """Get Technical/Functional Assistant from Cybrosys without leaving your Odoo Database, Cybrosys Support, Functional Support, Technical Support""",
