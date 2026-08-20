@@ -19,10 +19,9 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
+from . import audit_trail
+from . import mrp_production
 from . import pharma_coa
 from . import pharma_coa_line
-from . import audit_trail
-from . import stock_lot
 from . import pharma_qa_release
-from . import mrp_production
+from . import stock_lot

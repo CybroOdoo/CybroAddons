@@ -19,9 +19,8 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
-from . import pharma_sop
-from . import pharma_training
 from . import mrp_bom
 from . import mrp_production
 from . import pharma_bmr_step
+from . import pharma_sop
+from . import pharma_training

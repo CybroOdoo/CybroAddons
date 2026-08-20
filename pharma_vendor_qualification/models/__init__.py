@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from . import pharma_avl
 from . import pharma_questionnaire
 from . import pharma_questionnaire_question

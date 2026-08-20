@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -38,59 +37,45 @@ class PharmaQcSpecLine(models.Model):
         required=True,
         ondelete='cascade',
         index=True,
-            help='Specifies the Specification for this record.',
+        help='Specifies the Specification for this record.',
     )
-
     sequence = fields.Integer(
-
         string='Seq.',
-
         default=10,
-
-            help='Specifies the Seq. for this record.',
+        help='Specifies the Seq. for this record.',
     )
-
     parameter_name = fields.Char(
         string='Parameter',
         required=True,
         help='Name of the test parameter (e.g. Assay, Water Content, Hardness).',
     )
-
     test_method = fields.Char(
         string='Test Method',
         help='Method reference (e.g. HPLC, BP 2.9.1, In-house STP-QC-001).',
     )
-
     uom_id = fields.Many2one(
         comodel_name='uom.uom',
         string='Unit',
-            help='Specifies the Unit for this record.',
+        help='Specifies the Unit for this record.',
     )
-
     min_value = fields.Float(
         string='Min. Limit',
         digits=(16, 4),
         help='Minimum acceptable value. May be zero but cannot be negative.',
     )
-
     max_value = fields.Float(
         string='Max. Limit',
         digits=(16, 4),
         help='Maximum acceptable value. May be zero but cannot be negative, '
              'and cannot be smaller than the Min. Limit.',
     )
-
     acceptance_criteria = fields.Char(
         string='Acceptance Criteria (Text)',
         help='Text-based criteria for qualitative parameters (e.g. "White crystalline powder").',
     )
-
-
     notes = fields.Char(
-
         string='Remarks',
-
-            help='Specifies the Remarks for this record.',
+        help='Specifies the Remarks for this record.',
     )
 
     @api.constrains('min_value', 'max_value')

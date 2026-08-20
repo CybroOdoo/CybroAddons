@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -28,6 +27,7 @@ from odoo.tools.translate import _
 class ProductTemplate(models.Model):
     """Adds pharmaceutical properties such as shelf life and storage conditions to products."""
     _inherit = 'product.template'
+
     product_type_pharma = fields.Selection(
         selection=[
             ('api', 'API (Active Pharmaceutical Ingredient)'),
@@ -40,7 +40,6 @@ class ProductTemplate(models.Model):
         help='Classifies this product within the pharmaceutical manufacturing context.',
         tracking=True,
     )
-
     pharmacopoeial_ref = fields.Selection(
         selection=[
             ('bp', 'BP (British Pharmacopoeia)'),
@@ -53,14 +52,11 @@ class ProductTemplate(models.Model):
         help='International standard this product is tested against.',
         tracking=True,
     )
-
-
     storage_conditions = fields.Char(
         string='Storage Conditions',
         help='Temperature, light, and humidity conditions (e.g. "Store below 25°C, protect from light").',
         tracking=True,
     )
-
     storage_category_id = fields.Many2one(
         comodel_name='stock.storage.category',
         string='Storage Class',
@@ -75,19 +71,11 @@ class ProductTemplate(models.Model):
         compute='_compute_pharma_enforce_storage_class',
         help='Indicates whether Storage Class enforcement is enabled in settings.',
     )
-
-    @api.depends_context('company')
-    def _compute_pharma_enforce_storage_class(self):
-        """Compute whether storage class enforcement is enabled on the company."""
-        for rec in self:
-            company = rec.company_id or self.env.company
-            rec.pharma_enforce_storage_class = company.pharma_enforce_storage_class
     drug_license_no = fields.Char(
         string='Drug License No.',
         help='Regulatory license number for this product.',
         tracking=True,
     )
-
     hsn_code = fields.Char(
         string='HSN Code',
         help='Harmonised System Nomenclature code for customs and GST.',
@@ -98,26 +86,30 @@ class ProductTemplate(models.Model):
         string='QC Specifications',
         help='All quality control specifications linked to this product.',
     )
-
     qc_spec_count = fields.Integer(
         string='QC Spec Count',
         compute='_compute_qc_spec_count',
-            help='Specifies the QC Spec Count for this record.',
+        help='Specifies the QC Spec Count for this record.',
     )
-
     has_passed_qc_test = fields.Boolean(
         string='Has Passed QC Test',
         compute='_compute_has_passed_qc_test',
         search='_search_has_passed_qc_test',
         help='Indicates if this product has at least one passed QC test order.'
     )
-
     has_approved_bom = fields.Boolean(
         string='Has Approved BOM',
         compute='_compute_has_approved_bom',
         search='_search_has_approved_bom',
         help='Indicates if this product has at least one approved Bill of Materials.'
     )
+
+    @api.depends_context('company')
+    def _compute_pharma_enforce_storage_class(self):
+        """Compute whether storage class enforcement is enabled on the company."""
+        for rec in self:
+            company = rec.company_id or self.env.company
+            rec.pharma_enforce_storage_class = company.pharma_enforce_storage_class
 
     @api.depends('qc_spec_ids')
     def _compute_qc_spec_count(self):

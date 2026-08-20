@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models, tools
 
 
@@ -89,21 +88,22 @@ class PharmaAuditTrail(models.Model):
     def init(self, _excluded_tables=None):
         """(Re)create the audit-trail SQL view over the regulated model tables."""
         excluded = set(_excluded_tables or ())
-        # Models that are always present (core pharmaceutical_base + this module).
-        model_tables = {
+        # Every auditable model, whether it lives in pharmaceutical_base, in this
+        # module or in an optional feature module. A table may legitimately be
+        # missing: the feature module may not be installed, and on a fresh
+        # install pharma_coa is only created later in this same registry pass
+        # (the post_init_hook rebuilds the view once it exists).
+        candidate_tables = {
             'pharma.bmr': 'pharma_bmr',
             'pharma.qc.test.order': 'pharma_qc_test_order',
             'pharma.coa': 'pharma_coa',
             'stock.lot': 'stock_lot',
-        }
-        # Optional models: only audited when their feature module (and hence its
-        # table) is installed.
-        optional_model_tables = {
             'pharma.sop': 'pharma_sop',
             'pharma.deviation': 'pharma_deviation',
             'pharma.capa': 'pharma_capa',
         }
-        for model, table in optional_model_tables.items():
+        model_tables = {}
+        for model, table in candidate_tables.items():
             if table in excluded:
                 continue
             self.env.cr.execute(
@@ -117,8 +117,9 @@ class PharmaAuditTrail(models.Model):
             "                        WHEN m.model = '%s' THEN "
             "(SELECT name FROM %s WHERE id = m.res_id)" % (model, table)
             for model, table in model_tables.items()
-        )
-        model_in_list = ", ".join("'%s'" % model for model in model_tables)
+        ) or "                        WHEN FALSE THEN NULL"
+        model_in_list = ", ".join(
+            "'%s'" % model for model in model_tables) or 'NULL'
 
         tools.drop_view_if_exists(self.env.cr, self._table)
         self.env.cr.execute("""

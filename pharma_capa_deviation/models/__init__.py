@@ -19,11 +19,10 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
-from . import pharma_deviation
-from . import pharma_capa
-from . import pharma_oos_investigation
-from . import pharma_ipqc_result
-from . import pharma_qc_test_order
 from . import pharma_bmr
 from . import pharma_bmr_step
+from . import pharma_capa
+from . import pharma_deviation
+from . import pharma_ipqc_result
+from . import pharma_oos_investigation
+from . import pharma_qc_test_order

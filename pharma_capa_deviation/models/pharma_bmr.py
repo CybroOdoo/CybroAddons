@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
@@ -72,7 +71,6 @@ class PharmaBmr(models.Model):
             ])
             if open_deviations:
                 raise UserError(_('Cannot resume — there are open Deviations:\n%s') % ', '.join(open_deviations.mapped('name')))
-
             open_capas = self.env['pharma.capa'].search([
                 ('deviation_id.batch_id', '=', rec.production_id.id),
                 ('status', '!=', 'closed')

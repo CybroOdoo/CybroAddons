@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -38,9 +37,8 @@ class PharmaQcTestOrder(models.Model):
         copy=False,
         readonly=True,
         default='/',
-            help='Specifies the Test Order Number for this record.',
+        help='Specifies the Test Order Number for this record.',
     )
-
     lot_id = fields.Many2one(
         comodel_name='stock.lot',
         string='Lot',
@@ -50,7 +48,6 @@ class PharmaQcTestOrder(models.Model):
         tracking=True,
         help='Which material or product lot is being tested.'
     )
-
     product_id = fields.Many2one(
         comodel_name='product.template',
         string='Product',
@@ -60,7 +57,6 @@ class PharmaQcTestOrder(models.Model):
         tracking=True,
         help='Product linked to this test order.'
     )
-
     spec_id = fields.Many2one(
         comodel_name='pharma.qc.spec',
         string='Specification',
@@ -71,7 +67,6 @@ class PharmaQcTestOrder(models.Model):
         tracking=True,
         help='QC specification auto-loaded based on product and stage.'
     )
-
     stage = fields.Selection(
         selection=[
             ('incoming', 'Incoming'),
@@ -84,7 +79,6 @@ class PharmaQcTestOrder(models.Model):
         tracking=True,
         help='QC checkpoint stage.'
     )
-
     status = fields.Selection(
         selection=[
             ('draft', 'Draft'),
@@ -99,39 +93,40 @@ class PharmaQcTestOrder(models.Model):
         tracking=True,
         help='Overall status of the test order.'
     )
-
     entered_by = fields.Many2one(
         comodel_name='res.users',
         string='Analyst',
         tracking=True,
         help='Analyst who entered the results.'
     )
-
     reviewed_by = fields.Many2one(
         comodel_name='res.users',
         string='Reviewed By',
         tracking=True,
         help='Second person who reviewed and signed, must differ from analyst.'
     )
-
     result_line_ids = fields.One2many(
         comodel_name='pharma.qc.result.line',
         inverse_name='test_order_id',
         string='Test Results',
         copy=True,
-            help='Specifies the Test Results for this record.',
+        help='Specifies the Test Results for this record.',
     )
-
     oos_investigation_ids = fields.One2many(help='Specifies the Oos Investigation Ids for this record.',
         comodel_name='pharma.oos.investigation',
         inverse_name='test_order_id',
         string='OOS Investigations',
     )
-
     oos_investigation_count = fields.Integer(
         string='OOS Investigations',
         compute='_compute_oos_investigation_count',
-            help='Specifies the OOS Investigations for this record.',
+        help='Specifies the OOS Investigations for this record.',
+    )
+    stock_move_line_count = fields.Integer(
+        string='Stock Moves',
+        compute='_compute_stock_move_line_count',
+        help='Number of completed stock moves for this lot — where it was '
+             'received from and where it was moved on QC disposition.',
     )
 
     def _compute_oos_investigation_count(self):
@@ -140,13 +135,6 @@ class PharmaQcTestOrder(models.Model):
             order.oos_investigation_count = self.env['pharma.oos.investigation'].search_count([
                 ('result_line_id.test_order_id', '=', order.id)
             ])
-
-    stock_move_line_count = fields.Integer(
-        string='Stock Moves',
-        compute='_compute_stock_move_line_count',
-        help='Number of completed stock moves for this lot — where it was '
-             'received from and where it was moved on QC disposition.',
-    )
 
     def _compute_stock_move_line_count(self):
         """Counts the done stock move lines for the tested lot."""

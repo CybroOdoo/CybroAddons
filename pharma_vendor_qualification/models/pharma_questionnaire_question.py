@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models
 
 class PharmaQuestionnaireQuestion(models.Model):
@@ -34,12 +33,12 @@ class PharmaQuestionnaireQuestion(models.Model):
         required=True,
         ondelete='cascade',
         index=True,
-            help='Specifies the Template for this record.',
+        help='Specifies the Template for this record.',
     )
     sequence = fields.Integer(
         string='Sequence',
         default=10,
-            help='Specifies the Sequence for this record.',
+        help='Specifies the Sequence for this record.',
     )
     section = fields.Char(
         string='Section',
@@ -50,7 +49,7 @@ class PharmaQuestionnaireQuestion(models.Model):
         string='Question',
         required=True,
         translate=True,
-            help='Specifies the Question for this record.',
+        help='Specifies the Question for this record.',
     )
     answer_type = fields.Selection(
         selection=[
@@ -62,5 +61,5 @@ class PharmaQuestionnaireQuestion(models.Model):
         string='Answer Type',
         required=True,
         default='yes_no',
-            help='Specifies the Answer Type for this record.',
+        help='Specifies the Answer Type for this record.',
     )

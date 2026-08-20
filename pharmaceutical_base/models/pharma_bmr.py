@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
@@ -35,18 +34,14 @@ class PharmaBMR(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'name desc'
 
-    _sql_constraints = [
-        ('production_uniq', 'unique(production_id)', 'A Manufacturing Order can only have one BMR.')
-    ]
     name = fields.Char(
         string='BMR Number',
         default='New',
         copy=False,
         readonly=True,
         tracking=True,
-            help='Specifies the BMR Number for this record.',
+        help='Specifies the BMR Number for this record.',
     )
-
     production_id = fields.Many2one(
         comodel_name='mrp.production',
         string='Manufacturing Order',
@@ -54,18 +49,16 @@ class PharmaBMR(models.Model):
         ondelete='restrict',
         index=True,
         tracking=True,
-            help='Specifies the Manufacturing Order for this record.',
+        help='Specifies the Manufacturing Order for this record.',
     )
-
     product_id = fields.Many2one(
         comodel_name='product.template',
         string='Product',
         required=True,
         ondelete='restrict',
         tracking=True,
-            help='Specifies the Product for this record.',
+        help='Specifies the Product for this record.',
     )
-
     batch_no = fields.Char(
         string='Batch Number',
         required=True,
@@ -86,19 +79,6 @@ class PharmaBMR(models.Model):
         compute='_compute_any_step_operator_signed',
         string='Any Step Signed by Operator',
     )
-
-    @api.depends('step_ids.operator_signed_on')
-    def _compute_any_step_operator_signed(self):
-        """Flag the BMR when at least one of its steps carries an operator signature."""
-        for bmr in self:
-            bmr.any_step_operator_signed = any(step.operator_signed_on for step in bmr.step_ids)
-
-    @api.onchange('enable_ipqc')
-    def _onchange_enable_ipqc(self):
-        """Clear the IPQC checks when in-process quality control is switched off."""
-        if not self.enable_ipqc:
-            self.ipqc_ids = [(5, 0, 0)]
-
     status = fields.Selection(
         selection=[
             ('draft', 'Draft'),
@@ -111,30 +91,27 @@ class PharmaBMR(models.Model):
         required=True,
         copy=False,
         tracking=True,
-            help='Specifies the Status for this record.',
+        help='Specifies the Status for this record.',
     )
     yield_expected = fields.Float(
         string='Expected Yield (unit)',
         digits=(16, 3),
         help='Theoretical yield based on BOM quantities.',
     )
-
     yield_actual = fields.Float(
         string='Actual Yield (unit)',
         digits=(16, 3),
         tracking=True,
         help='Actual output weight recorded at end of batch.',
     )
-
     yield_percentage = fields.Float(
         string='Yield %',
         compute='_compute_yield',
         store=True,
         digits=(5, 2),
         tracking=True,
-            help='Specifies the Yield % for this record.',
+        help='Specifies the Yield % for this record.',
     )
-
     yield_flag = fields.Boolean(
         string='Yield Flag',
         compute='_compute_yield',
@@ -143,47 +120,60 @@ class PharmaBMR(models.Model):
         help='True when yield is below the configured threshold. '
              'QA sign-off is required before the BMR can be completed.',
     )
-
     qa_yield_signoff = fields.Boolean(
         string='QA Yield Sign-Off',
         copy=False,
         tracking=True,
         help='QA Director has reviewed and accepted a below-threshold yield.',
     )
-
     qa_yield_signed_by = fields.Many2one(
         comodel_name='res.users',
         string='Yield Sign-Off By',
         copy=False,
         readonly=True,
         tracking=True,
-            help='Specifies the Yield Sign-Off By for this record.',
+        help='Specifies the Yield Sign-Off By for this record.',
     )
     step_ids = fields.One2many(
         comodel_name='pharma.bmr.step',
         inverse_name='bmr_id',
         string='Steps',
-            help='Specifies the Steps for this record.',
+        help='Specifies the Steps for this record.',
     )
-
     ipqc_ids = fields.One2many(
         comodel_name='pharma.ipqc.result',
         inverse_name='bmr_id',
         string='IPQC Results',
-            help='Specifies the IPQC Results for this record.',
+        help='Specifies the IPQC Results for this record.',
     )
     step_count = fields.Integer(
         compute='_compute_counts',
-            help='Specifies the Step Count for this record.',
+        help='Specifies the Step Count for this record.',
     )
     ipqc_count = fields.Integer(
         compute='_compute_counts',
-            help='Specifies the Ipqc Count for this record.',
+        help='Specifies the Ipqc Count for this record.',
     )
     all_steps_done = fields.Boolean(help='Specifies the All Steps Done for this record.',
         string='All Steps Done',
         compute='_compute_all_steps_done',
     )
+
+    _sql_constraints = [
+        ('production_uniq', 'unique(production_id)', 'A Manufacturing Order can only have one BMR.')
+    ]
+
+    @api.depends('step_ids.operator_signed_on')
+    def _compute_any_step_operator_signed(self):
+        """Flag the BMR when at least one of its steps carries an operator signature."""
+        for bmr in self:
+            bmr.any_step_operator_signed = any(step.operator_signed_on for step in bmr.step_ids)
+
+    @api.onchange('enable_ipqc')
+    def _onchange_enable_ipqc(self):
+        """Clear the IPQC checks when in-process quality control is switched off."""
+        if not self.enable_ipqc:
+            self.ipqc_ids = [(5, 0, 0)]
 
     @api.depends('step_ids.status')
     def _compute_all_steps_done(self):
@@ -229,6 +219,7 @@ class PharmaBMR(models.Model):
                 pct = 0.0
             rec.yield_percentage = pct
             rec.yield_flag = pct < YIELD_THRESHOLD and rec.yield_expected > 0
+
     @api.model_create_multi
     def create(self, vals_list):
         """Overrides creation to auto-assign a sequential BMR number."""

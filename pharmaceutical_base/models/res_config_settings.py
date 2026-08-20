@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -28,6 +27,7 @@ from odoo.tools.translate import _
 class ResConfigSettings(models.TransientModel):
     """Configuration settings for the Pharmaceutical ERP module, allowing toggling of major features."""
     _inherit = 'res.config.settings'
+
     module_pharma_vendor_qualification = fields.Boolean(
         string='Enable Vendor Qualification',
         help='Manage Approved Vendor Lists (AVL), questionnaire portal, and PO enforcement.',
@@ -44,7 +44,6 @@ class ResConfigSettings(models.TransientModel):
         string='Enable Traceability, CoA &amp; Audit Trail',
         help='Enable Certificate of Analysis (CoA), batch genealogy, and audit trail.',
     )
-
     # GMP locations, stored per company on res.company.
     pharma_rejected_location_id = fields.Many2one(
         related='company_id.pharma_rejected_location_id',
@@ -52,14 +51,12 @@ class ResConfigSettings(models.TransientModel):
         string='Rejected Location',
         help='Location where QC-rejected material is automatically moved.',
     )
-
     pharma_enforce_storage_class = fields.Boolean(
         related='company_id.pharma_enforce_storage_class',
         readonly=False,
         string='Enforce Storage Class',
         help='Restrict material transfers to locations matching their assigned Storage Class.',
     )
-
     # Qualification / passing scores, stored per company on res.company.
     pharma_vendor_approval_percentage = fields.Float(
         related='company_id.pharma_vendor_approval_percentage',

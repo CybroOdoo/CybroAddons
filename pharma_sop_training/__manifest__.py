@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
     'name': 'Pharmaceutical ERP — SOP & Training',
     'version': '19.0.1.0.0',

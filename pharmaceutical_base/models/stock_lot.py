@@ -19,13 +19,13 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.tools.translate import _
 
 class StockLot(models.Model):
     """Extends stock.lot with pharma lot status, expiry, and QA traceability."""
     _inherit = 'stock.lot'
+
     lot_status = fields.Selection(
         selection=[
             ('quarantine', 'Quarantine'),
@@ -49,27 +49,24 @@ class StockLot(models.Model):
         string='Status Changed By',
         copy=False,
         tracking=True,
-            help='Specifies the Status Changed By for this record.',
+        help='Specifies the Status Changed By for this record.',
     )
-
     status_changed_on = fields.Datetime(
         string='Status Changed On',
         copy=False,
         tracking=True,
-            help='Specifies the Status Changed On for this record.',
+        help='Specifies the Status Changed On for this record.',
     )
     expiry_date = fields.Date(
         string='Expiry Date',
         tracking=True,
         help='Expiry date of this lot, calculated from manufacture date and shelf life.',
     )
-
     manufacture_date = fields.Date(
         string='Manufacture Date',
         tracking=True,
-            help='Specifies the Manufacture Date for this record.',
+        help='Specifies the Manufacture Date for this record.',
     )
-
     retest_date = fields.Date(
         string='Re-test Date',
         tracking=True,
@@ -79,6 +76,25 @@ class StockLot(models.Model):
         string='QC Tests',
         compute='_compute_qc_test_count',
         help='Specifies the QC Tests for this record.',
+    )
+    vendor_coa = fields.Binary(
+        string="Vendor CoA",
+        attachment=True,
+        help="Vendor's Certificate of Analysis attached at goods receipt.",
+    )
+    vendor_coa_filename = fields.Char(
+        string='CoA Filename',
+        help='Specifies the CoA Filename for this record.',
+    )
+    vendor_lot_number = fields.Char(
+        string="Vendor's Lot Number",
+        help="The lot/batch number as printed on the vendor's label or CoA.",
+        tracking=True,
+    )
+    disposition_remarks = fields.Text(
+        string='Disposition Remarks',
+        tracking=True,
+        help='QA justification for releasing, rejecting, or holding this lot.',
     )
 
     def _compute_qc_test_count(self):
@@ -97,28 +113,6 @@ class StockLot(models.Model):
             'domain': [('lot_id', '=', self.id)],
             'context': {'default_lot_id': self.id},
         }
-    vendor_coa = fields.Binary(
-        string="Vendor CoA",
-        attachment=True,
-        help="Vendor's Certificate of Analysis attached at goods receipt.",
-    )
-
-    vendor_coa_filename = fields.Char(
-        string='CoA Filename',
-
-            help='Specifies the CoA Filename for this record.',
-    )
-
-    vendor_lot_number = fields.Char(
-        string="Vendor's Lot Number",
-        help="The lot/batch number as printed on the vendor's label or CoA.",
-        tracking=True,
-    )
-    disposition_remarks = fields.Text(
-        string='Disposition Remarks',
-        tracking=True,
-        help='QA justification for releasing, rejecting, or holding this lot.',
-    )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -135,6 +129,7 @@ class StockLot(models.Model):
             vals['status_changed_by'] = self.env.user.id
             vals['status_changed_on'] = fields.Datetime.now()
         return super().write(vals)
+
     def action_approve_lot(self):
         """Set the lot status to Approved for use or dispatch."""
         self.write({'lot_status': 'approved'})

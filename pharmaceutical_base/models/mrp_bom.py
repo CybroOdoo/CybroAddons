@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -28,6 +27,71 @@ from odoo.tools.translate import _
 class MrpBom(models.Model):
     """Extends the BoM (Formula) with versioning, pharmacopoeial reference, and QA approval."""
     _inherit = ['mrp.bom', 'pharma.workflow.mixin']
+
+    # ── Pharma Formula Fields ─────────────────────────────────────────────────
+    formula_version = fields.Integer(
+        string='BOM Version',
+        default=1,
+        copy=False,
+        tracking=True,
+        help='Version identifier for this formula. '
+             'Increments automatically when reset to draft.',
+    )
+    formula_status = fields.Selection(
+        selection=[
+            ('draft', 'Draft'),
+            ('approved', 'Approved'),
+            ('obsolete', 'Obsolete'),
+        ],
+        string='Formula Status',
+        default='draft',
+        required=True,
+        tracking=True,
+        help='Only Approved formulas can be used to start a production order.',
+    )
+    pharmacopoeial_ref = fields.Selection(
+        selection=[
+            ('bp', 'BP (British Pharmacopoeia)'),
+            ('usp', 'USP (United States Pharmacopeia)'),
+            ('ep', 'EP (European Pharmacopoeia)'),
+            ('ip', 'IP (Indian Pharmacopoeia)'),
+            ('inhouse', 'In-House Specification'),
+        ],
+        string='Pharmacopoeial Reference',
+        tracking=True,
+        help='Standard this formula is written against.',
+    )
+    # ── Approval Fields ───────────────────────────────────────────────────────
+    approved_by = fields.Many2one(
+        comodel_name='res.users',
+        string='Approved By',
+        copy=False,
+        tracking=True,
+        help='QA person who signed off on this formula.',
+    )
+    approval_date = fields.Date(
+        string='Approval Date',
+        copy=False,
+        tracking=True,
+        help='Date the formula was approved for production use.',
+    )
+    # ── Theoretical Yield ────────────────────────────────────────────────────
+    theoretical_yield = fields.Float(
+        string='Theoretical Yield (%)',
+        digits=(5, 2),
+        default=100.0,
+        tracking=True,
+        help='Expected batch yield percentage. Values below the configured '
+             'threshold trigger a QA investigation.',
+    )
+    # ── Change Control Reference ──────────────────────────────────────────────
+    change_ref = fields.Char(
+        string='Change Control Ref.',
+        copy=False,
+        tracking=True,
+        help='Reference to the Change Control record that authorised this formula version.',
+    )
+    notes = fields.Text(help='Specifies the Notes for this record.', string='Formula Notes / Manufacturing Instructions')
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -59,78 +123,6 @@ class MrpBom(models.Model):
                     seen[key] = line
             if lines_to_unlink:
                 lines_to_unlink.unlink()
-
-    # ── Pharma Formula Fields ─────────────────────────────────────────────────
-    formula_version = fields.Integer(
-        string='BOM Version',
-        default=1,
-        copy=False,
-        tracking=True,
-        help='Version identifier for this formula. '
-             'Increments automatically when reset to draft.',
-    )
-
-    formula_status = fields.Selection(
-        selection=[
-            ('draft', 'Draft'),
-            ('approved', 'Approved'),
-            ('obsolete', 'Obsolete'),
-        ],
-        string='Formula Status',
-        default='draft',
-        required=True,
-        tracking=True,
-        help='Only Approved formulas can be used to start a production order.',
-    )
-
-    pharmacopoeial_ref = fields.Selection(
-        selection=[
-            ('bp', 'BP (British Pharmacopoeia)'),
-            ('usp', 'USP (United States Pharmacopeia)'),
-            ('ep', 'EP (European Pharmacopoeia)'),
-            ('ip', 'IP (Indian Pharmacopoeia)'),
-            ('inhouse', 'In-House Specification'),
-        ],
-        string='Pharmacopoeial Reference',
-        tracking=True,
-        help='Standard this formula is written against.',
-    )
-
-    # ── Approval Fields ───────────────────────────────────────────────────────
-    approved_by = fields.Many2one(
-        comodel_name='res.users',
-        string='Approved By',
-        copy=False,
-        tracking=True,
-        help='QA person who signed off on this formula.',
-    )
-
-    approval_date = fields.Date(
-        string='Approval Date',
-        copy=False,
-        tracking=True,
-        help='Date the formula was approved for production use.',
-    )
-
-    # ── Theoretical Yield ────────────────────────────────────────────────────
-    theoretical_yield = fields.Float(
-        string='Theoretical Yield (%)',
-        digits=(5, 2),
-        default=100.0,
-        tracking=True,
-        help='Expected batch yield percentage. Values below the configured '
-             'threshold trigger a QA investigation.',
-    )
-
-    # ── Change Control Reference ──────────────────────────────────────────────
-    change_ref = fields.Char(
-        string='Change Control Ref.',
-        copy=False,
-        tracking=True,
-        help='Reference to the Change Control record that authorised this formula version.',
-    )
-
-    notes = fields.Text(help='Specifies the Notes for this record.', string='Formula Notes / Manufacturing Instructions')
 
     # ── Constraints ───────────────────────────────────────────────────────────
     @api.constrains('formula_status', 'approved_by', 'approval_date')

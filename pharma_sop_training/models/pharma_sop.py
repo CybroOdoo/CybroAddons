@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -39,7 +38,6 @@ class PharmaSop(models.Model):
         tracking=True,
         help='Descriptive title of this Standard Operating Procedure.',
     )
-
     sop_code = fields.Char(
         string='SOP Code',
         copy=False,
@@ -48,7 +46,6 @@ class PharmaSop(models.Model):
         default=lambda self: _('New'),
         help='Auto-generated unique SOP reference code (e.g. SOP/0001).',
     )
-
     workcenter_id = fields.Many2one(
         comodel_name='mrp.workcenter',
         string='Work Center',
@@ -56,14 +53,12 @@ class PharmaSop(models.Model):
         tracking=True,
         help='Work Center associated with this SOP. Used to filter SOPs on BOM operations.',
     )
-
     active = fields.Boolean(
         string='Active',
         default=True,
         tracking=True,
         help='Uncheck to archive the SOP record.'
     )
-
     version = fields.Integer(
         string='Version',
         default=1,
@@ -72,19 +67,16 @@ class PharmaSop(models.Model):
         tracking=True,
         help='Auto-increments each time an archived SOP is revised and approved again.',
     )
-
     # ── Document ──────────────────────────────────────────────────────────────
     document = fields.Binary(
         string='SOP Document',
         attachment=True,
         help='Upload the SOP file (PDF, DOCX, etc.).',
     )
-
     filename = fields.Char(
         string='Filename',
         help='Original filename of the uploaded SOP document.',
     )
-
     # ── Workflow State ────────────────────────────────────────────────────────
     status = fields.Selection(
         selection=[
@@ -99,7 +91,6 @@ class PharmaSop(models.Model):
         tracking=True,
         help='Workflow state of this SOP. Only Effective SOPs can be linked to BMR steps.',
     )
-
     # ── People ────────────────────────────────────────────────────────────────
     author_id = fields.Many2one(
         comodel_name='res.users',
@@ -109,14 +100,12 @@ class PharmaSop(models.Model):
         tracking=True,
         help='Creator of this SOP. The author cannot approve their own SOP.',
     )
-
     reviewer_id = fields.Many2one(
         comodel_name='res.users',
         string='Reviewer',
         tracking=True,
         help='User who reviewed the SOP before it was submitted for QA approval.',
     )
-
     approved_by = fields.Many2one(
         comodel_name='res.users',
         string='Approved By',
@@ -124,7 +113,6 @@ class PharmaSop(models.Model):
         tracking=True,
         help='QA approver. Must be a different user from the author.',
     )
-
     # ── Dates ─────────────────────────────────────────────────────────────────
     effective_date = fields.Date(
         string='Effective Date',
@@ -132,13 +120,11 @@ class PharmaSop(models.Model):
         tracking=True,
         help='Date from which this SOP version is active and usable.',
     )
-
     review_due_date = fields.Date(
         string='Review Due Date',
         tracking=True,
         help='Periodic review date — the SOP should be re-evaluated before this date.',
     )
-
     # ── Assigned Employees ────────────────────────────────────────────────────
     employee_ids = fields.Many2many(
         comodel_name='hr.employee',
@@ -150,13 +136,11 @@ class PharmaSop(models.Model):
              'When the SOP reaches Effective status, one training record '
              'is created for each employee listed here.',
     )
-
     employee_count = fields.Integer(
         string='Assigned Employees',
         compute='_compute_employee_count',
-            help='Specifies the Assigned Employees for this record.',
+        help='Specifies the Assigned Employees for this record.',
     )
-
     # ── Training Records ──────────────────────────────────────────────────────
     training_ids = fields.One2many(
         comodel_name='pharma.training',
@@ -164,13 +148,11 @@ class PharmaSop(models.Model):
         string='Training Records',
         help='Auto-generated training records for assigned employees.',
     )
-
     training_count = fields.Integer(
         string='Training Count',
         compute='_compute_training_count',
-            help='Specifies the Training Count for this record.',
+        help='Specifies the Training Count for this record.',
     )
-
     notes = fields.Text(
         string='Notes',
         help='Additional remarks, change history summary, or cross-references.',

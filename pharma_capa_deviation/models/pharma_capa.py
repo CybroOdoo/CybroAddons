@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
@@ -31,6 +30,7 @@ class PharmaCapa(models.Model):
     _description = 'Corrective and Preventive Action (CAPA)'
     _inherit = ['mail.thread', 'mail.activity.mixin', 'pharma.workflow.mixin']
     _order = 'name desc'
+
     name = fields.Char(
         string='CAPA Number',
         default='New',
@@ -39,7 +39,6 @@ class PharmaCapa(models.Model):
         tracking=True,
         help='Specifies the CAPA Number for this record.',
     )
-
     deviation_id = fields.Many2one(
         comodel_name='pharma.deviation',
         string='Source Deviation',
@@ -49,28 +48,10 @@ class PharmaCapa(models.Model):
         tracking=True,
         help='No standalone CAPAs — every CAPA must originate from a deviation.',
     )
-
     deviation_count = fields.Integer(help='Specifies the Deviation Count for this record.',
         string='Deviation Count',
         compute='_compute_deviation_count',
     )
-
-    def _compute_deviation_count(self):
-        """Executes the _compute_deviation_count operation."""
-        for rec in self:
-            rec.deviation_count = 1 if rec.deviation_id else 0
-
-    def action_view_deviation(self):
-        """Executes the action_view_deviation operation."""
-        self.ensure_one()
-        return {
-            'name': 'Source Deviation',
-            'type': 'ir.actions.act_window',
-            'view_mode': 'form',
-            'res_model': 'pharma.deviation',
-            'res_id': self.deviation_id.id,
-        }
-
     capa_type = fields.Selection(
         selection=[
             ('corrective', 'Corrective'),
@@ -80,19 +61,16 @@ class PharmaCapa(models.Model):
         required=True,
         default='corrective',
         tracking=True,
-            help='Specifies the CAPA Type for this record.',
+        help='Specifies the CAPA Type for this record.',
     )
-
     root_cause = fields.Text(
         string='Root Cause',
         help='Detailed root cause identified through 5-Why or Ishikawa analysis.',
     )
-
     action_plan = fields.Text(
         string='Action Plan',
         help='What will be done, by whom, and by when.',
     )
-
     effectiveness_check = fields.Text(
         string='Effectiveness Check',
         help='Evidence that the CAPA actually fixed the problem.',
@@ -104,7 +82,6 @@ class PharmaCapa(models.Model):
         tracking=True,
         help='Specifies the Assigned To for this record.',
     )
-
     due_date = fields.Date(
         string='Due Date',
         tracking=True,
@@ -122,7 +99,7 @@ class PharmaCapa(models.Model):
         required=True,
         copy=False,
         tracking=True,
-            help='Specifies the Status for this record.',
+        help='Specifies the Status for this record.',
     )
     closed_by = fields.Many2one(
         comodel_name='res.users',
@@ -132,7 +109,6 @@ class PharmaCapa(models.Model):
         tracking=True,
         help='QA Director who closed after verifying effectiveness.',
     )
-
     closed_on = fields.Datetime(
         string='Closed On',
         copy=False,
@@ -140,6 +116,22 @@ class PharmaCapa(models.Model):
         tracking=True,
         help='Specifies the Closed On for this record.',
     )
+
+    def _compute_deviation_count(self):
+        """Executes the _compute_deviation_count operation."""
+        for rec in self:
+            rec.deviation_count = 1 if rec.deviation_id else 0
+
+    def action_view_deviation(self):
+        """Executes the action_view_deviation operation."""
+        self.ensure_one()
+        return {
+            'name': 'Source Deviation',
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'pharma.deviation',
+            'res_id': self.deviation_id.id,
+        }
 
     @api.model_create_multi
     def create(self, vals_list):

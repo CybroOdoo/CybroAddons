@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models
 
 
@@ -35,56 +34,53 @@ class PharmaVendorQualificationResponse(models.Model):
         required=True,
         ondelete='cascade',
         index=True,
-            help='Specifies the Vendor Qualification for this record.',
+        help='Specifies the Vendor Qualification for this record.',
     )
-
     question_id = fields.Many2one(
         comodel_name='pharma.questionnaire.question',
         string='Question Reference',
         required=True,
         ondelete='restrict',
-            help='Specifies the Question Reference for this record.',
+        help='Specifies the Question Reference for this record.',
     )
-
     # Display fields related to the question
     section = fields.Char(
         related='question_id.section',
         string='Section',
         readonly=True,
-            help='Specifies the Section for this record.',
+        help='Specifies the Section for this record.',
     )
     sequence = fields.Integer(
         related='question_id.sequence',
         string='Sequence',
         readonly=True,
-            help='Specifies the Sequence for this record.',
+        help='Specifies the Sequence for this record.',
     )
     question_text = fields.Char(
         related='question_id.question_text',
         string='Question',
         readonly=True,
-            help='Specifies the Question for this record.',
+        help='Specifies the Question for this record.',
     )
     answer_type = fields.Selection(
         related='question_id.answer_type',
         string='Answer Type',
         readonly=True,
-            help='Specifies the Answer Type for this record.',
+        help='Specifies the Answer Type for this record.',
     )
-
     # Answer fields
     answer_yes_no = fields.Selection(
         selection=[('yes', 'Yes'), ('no', 'No')],
         string='Yes/No Answer',
-            help='Specifies the Yes/No Answer for this record.',
+        help='Specifies the Yes/No Answer for this record.',
     )
     answer_text = fields.Text(
         string='Text Answer',
-            help='Specifies the Text Answer for this record.',
+        help='Specifies the Text Answer for this record.',
     )
     answer_number = fields.Float(
         string='Number Answer',
-            help='Specifies the Number Answer for this record.',
+        help='Specifies the Number Answer for this record.',
     )
     answer_file = fields.Binary(
         string='File',

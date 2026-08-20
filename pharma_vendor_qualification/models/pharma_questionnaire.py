@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models
 
 
@@ -30,29 +29,24 @@ class PharmaQuestionnaireTemplate(models.Model):
     _order = 'name'
 
     name = fields.Char(
-
         string='Template Name',
-
         required=True,
-
         translate=True,
-
-            help='Specifies the Template Name for this record.',
+        help='Specifies the Template Name for this record.',
     )
     description = fields.Text(
         string='Description',
         translate=True,
-            help='Specifies the Description for this record.',
+        help='Specifies the Description for this record.',
     )
     active = fields.Boolean(
         default=True,
         help="Set to False to hide this template without removing it.",
     )
-
     question_ids = fields.One2many(
         comodel_name='pharma.questionnaire.question',
         inverse_name='template_id',
         string='Questions',
         copy=True,
-            help='Specifies the Questions for this record.',
+        help='Specifies the Questions for this record.',
     )

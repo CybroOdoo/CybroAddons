@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
@@ -33,12 +32,10 @@ class StockQuant(models.Model):
         string='Has Incoming QC',
         compute='_compute_has_incoming_qc',
     )
-
     qc_test_order_count = fields.Integer(help='Specifies the Qc Test Order Count for this record.',
         string='QC Test Orders',
         compute='_compute_qc_test_order_count',
     )
-
     move_line_count = fields.Integer(help='Specifies the Move Line Count for this record.',
         string='Stock Moves',
         compute='_compute_move_line_count',

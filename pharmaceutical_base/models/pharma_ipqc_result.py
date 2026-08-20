@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools.translate import _
@@ -39,9 +38,8 @@ class PharmaIPQCResult(models.Model):
         required=True,
         ondelete='cascade',
         index=True,
-            help='Specifies the BMR for this record.',
+        help='Specifies the BMR for this record.',
     )
-
     step_id = fields.Many2one(
         comodel_name='pharma.bmr.step',
         string='BMR Step',
@@ -49,6 +47,57 @@ class PharmaIPQCResult(models.Model):
         domain="[('bmr_id', '=', bmr_id), ('operator_signed_on', '!=', False), ('supervisor_signed_on', '=', False)]",
         ondelete='restrict',
         help='Specifies the BMR Step for this record.',
+    )
+    parameter_id = fields.Many2one(
+        comodel_name='pharma.qc.spec.line',
+        string='Parameter',
+        required=True,
+        domain="[('spec_id.product_id', '=', bmr_id.product_id), ('spec_id.stage', '=', 'ipqc')]",
+        help='What is being checked, e.g. tablet hardness, weight.',
+    )
+    parameter = fields.Char(
+        string='Parameter Name',
+        related='parameter_id.parameter_name',
+        store=True,
+        readonly=True,
+        help='Parameter name related from spec line.',
+    )
+    expected_min = fields.Float(
+        string='Expected Min',
+        help='Acceptable minimum for this in-process check.',
+    )
+    expected_max = fields.Float(
+        string='Expected Max',
+        help='Acceptable maximum for this in-process check.',
+    )
+    actual_value = fields.Float(
+        string='Actual Value',
+        help='Value recorded by the analyst.',
+    )
+    result = fields.Selection(
+        selection=[
+            ('pass', 'Pass'),
+            ('fail', 'Fail'),
+        ],
+        string='Result',
+        copy=False,
+        compute='_compute_result',
+        store=True,
+        tracking=True,
+        help='Specifies the Result for this record.',
+    )
+    signed_by = fields.Many2one(
+        comodel_name='res.users',
+        string='Signed By',
+        copy=False,
+        readonly=True,
+        help='Specifies the Signed By for this record.',
+    )
+    signed_on = fields.Datetime(
+        string='Signed On',
+        copy=False,
+        readonly=True,
+        help='Specifies the Signed On for this record.',
     )
 
     @api.constrains('step_id')
@@ -63,50 +112,6 @@ class PharmaIPQCResult(models.Model):
                     'Cannot create an IPQC check for step "%s" — the operator '
                     'has not signed off this step yet.'
                 ) % step.name)
-
-    parameter_id = fields.Many2one(
-        comodel_name='pharma.qc.spec.line',
-        string='Parameter',
-        required=True,
-        domain="[('spec_id.product_id', '=', bmr_id.product_id), ('spec_id.stage', '=', 'ipqc')]",
-        help='What is being checked, e.g. tablet hardness, weight.',
-    )
-
-    parameter = fields.Char(
-        string='Parameter Name',
-        related='parameter_id.parameter_name',
-        store=True,
-        readonly=True,
-        help='Parameter name related from spec line.',
-    )
-
-    expected_min = fields.Float(
-        string='Expected Min',
-        help='Acceptable minimum for this in-process check.',
-    )
-
-    expected_max = fields.Float(
-        string='Expected Max',
-        help='Acceptable maximum for this in-process check.',
-    )
-
-    actual_value = fields.Float(
-        string='Actual Value',
-        help='Value recorded by the analyst.',
-    )
-
-    result = fields.Selection(
-        selection=[
-            ('pass', 'Pass'),
-            ('fail', 'Fail'),
-        ],
-        string='Result',
-        copy=False,
-        compute='_compute_result',
-        store=True,
-        tracking=True,
-            help='Specifies the Result for this record.',
-    )
 
     @api.depends('actual_value', 'expected_min', 'expected_max')
     def _compute_result(self):
@@ -175,21 +180,6 @@ class PharmaIPQCResult(models.Model):
                     raise ValidationError(_(
                         "The parameter '%s' is already selected for step '%s' in this BMR."
                     ) % (rec.parameter_id.parameter_name, rec.step_id.name))
-
-    signed_by = fields.Many2one(
-        comodel_name='res.users',
-        string='Signed By',
-        copy=False,
-        readonly=True,
-            help='Specifies the Signed By for this record.',
-    )
-
-    signed_on = fields.Datetime(
-        string='Signed On',
-        copy=False,
-        readonly=True,
-            help='Specifies the Signed On for this record.',
-    )
 
     def write(self, vals):
         """Auto-create a deviation and hold/release the BMR step on IPQC pass/fail."""

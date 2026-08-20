@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
@@ -32,6 +31,7 @@ class PharmaAVL(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _rec_name = 'display_name'
     _order = 'product_id, status, vendor_id'
+
     product_id = fields.Many2one(
         comodel_name='product.template',
         string='Product',
@@ -39,9 +39,8 @@ class PharmaAVL(models.Model):
         ondelete='cascade',
         index=True,
         tracking=True,
-            help='Specifies the Product for this record.',
+        help='Specifies the Product for this record.',
     )
-
     vendor_id = fields.Many2one(
         comodel_name='res.partner',
         string='Vendor',
@@ -50,9 +49,8 @@ class PharmaAVL(models.Model):
         ondelete='restrict',
         index=True,
         tracking=True,
-            help='Specifies the Vendor for this record.',
+        help='Specifies the Vendor for this record.',
     )
-
     status = fields.Selection(
         selection=[
             ('under_review', 'Under Review'),
@@ -65,7 +63,7 @@ class PharmaAVL(models.Model):
         required=True,
         tracking=True,
         readonly=True,
-            help='Specifies the Status for this record.',
+        help='Specifies the Status for this record.',
     )
     approval_date = fields.Date(
         string='Approval Date',
@@ -73,7 +71,6 @@ class PharmaAVL(models.Model):
         readonly=True,
         help='Date the vendor was approved. Auto-filled on QA Director approval.',
     )
-
     approved_by = fields.Many2one(
         comodel_name='res.users',
         string='Approved By',
@@ -81,7 +78,6 @@ class PharmaAVL(models.Model):
         readonly=True,
         help='QA Director who approved this vendor.',
     )
-
     expiry_date = fields.Date(
         string='Approval Expiry Date',
         tracking=True,
@@ -91,12 +87,10 @@ class PharmaAVL(models.Model):
         string="Vendor's Item Code",
         help="Vendor's own part number or code for this material.",
     )
-
     lead_time_days = fields.Integer(
         string='Lead Time (Days)',
         help='Typical delivery lead time in calendar days.',
     )
-
     notes = fields.Text(
         string='Notes',
         help='Any additional qualification remarks or special conditions.',
@@ -105,8 +99,16 @@ class PharmaAVL(models.Model):
         string='Display Name',
         compute='_compute_display_name',
         store=True,
-            help='Specifies the Display Name for this record.',
+        help='Specifies the Display Name for this record.',
     )
+
+    _sql_constraints = [
+        (
+            'unique_product_vendor',
+            'UNIQUE(product_id, vendor_id)',
+            'A vendor can appear only once per product in the Approved Vendor List.',
+        ),
+    ]
 
     @api.depends('product_id', 'vendor_id')
     def _compute_display_name(self):
@@ -115,13 +117,6 @@ class PharmaAVL(models.Model):
             product = rec.product_id.name or ''
             vendor = rec.vendor_id.name or ''
             rec.display_name = f'{product} / {vendor}' if product or vendor else _('New AVL')
-    _sql_constraints = [
-        (
-            'unique_product_vendor',
-            'UNIQUE(product_id, vendor_id)',
-            'A vendor can appear only once per product in the Approved Vendor List.',
-        ),
-    ]
 
     def _check_group(self, group_xmlid, message):
         """Check whether the current user is in a given security group."""

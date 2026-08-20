@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 
 
@@ -30,31 +29,28 @@ class PharmaCoA(models.Model):
     _inherit = ['mail.thread']
 
     name = fields.Char(string='Reference', required=True, tracking=True, default='New', copy=False,
-                       help='Specifies the Reference for this record.')
+        help='Specifies the Reference for this record.')
     batch_id = fields.Many2one('mrp.production', string='Production Batch', tracking=True,
-                               help='Specifies the Production Batch for this record.')
+        help='Specifies the Production Batch for this record.')
     product_id = fields.Many2one('product.template', string='Product', tracking=True,
-                                 help='Specifies the Product for this record.')
+        help='Specifies the Product for this record.')
     lot_id = fields.Many2one('stock.lot', string='Lot/Batch', tracking=True,
-                             help='Specifies the Lot/Batch for this record.')
+        help='Specifies the Lot/Batch for this record.')
     released_by = fields.Many2one('res.users', string='Released By', tracking=True,
-                                  help='Specifies the Released By for this record.')
+        help='Specifies the Released By for this record.')
     release_date = fields.Datetime(string='Release Date', tracking=True,
-                                   help='Specifies the Release Date for this record.')
+        help='Specifies the Release Date for this record.')
     qc_test_order_id = fields.Many2one('pharma.qc.test.order', string='QC Test Order', tracking=True,
-                                       help='Specifies the QC Test Order for this record.')
+        help='Specifies the QC Test Order for this record.')
     is_locked = fields.Boolean(string='Locked', default=False, tracking=True,
-                               help='Specifies the Locked for this record.')
-
+        help='Specifies the Locked for this record.')
     coa_line_ids = fields.One2many('pharma.coa.line', 'coa_id', string='Test Results',
-                                   help='Specifies the Test Results for this record.')
-
+        help='Specifies the Test Results for this record.')
     qc_result_ids = fields.Many2many(help='Specifies the Qc Result Ids for this record.',
         comodel_name='pharma.qc.result.line',
         compute='_compute_related_quality_records',
         string='All QC Results'
     )
-
     qc_test_ids = fields.Many2many(help='Specifies the Qc Test Ids for this record.',
         comodel_name='pharma.qc.test.order',
         compute='_compute_related_quality_records',

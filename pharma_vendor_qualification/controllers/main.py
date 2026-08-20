@@ -19,14 +19,12 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 import base64
 from odoo import fields, http
 from odoo.http import request
 from odoo.tools.translate import _
 
 class PharmaVendorPortal(http.Controller):
-
     """Controller for handling public vendor access to qualification questionnaires."""
 
     def _render_questionnaire(self, qualification, access_token, error=None):

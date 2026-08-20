@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
@@ -35,30 +34,26 @@ class PharmaBMRStep(models.Model):
         string='Step',
         compute='_compute_name',
         store=True,
-            help='Specifies the Step for this record.',
+        help='Specifies the Step for this record.',
     )
-
     bmr_id = fields.Many2one(
         comodel_name='pharma.bmr',
         string='BMR',
         required=True,
         ondelete='cascade',
         index=True,
-            help='Specifies the BMR for this record.',
+        help='Specifies the BMR for this record.',
     )
-
     sequence = fields.Integer(
         string='Sequence',
         default=10,
-            help='Specifies the Sequence for this record.',
+        help='Specifies the Sequence for this record.',
     )
-
     description = fields.Text(
         string='Step Description',
         required=True,
-            help='Specifies the Step Description for this record.',
+        help='Specifies the Step Description for this record.',
     )
-
     status = fields.Selection(
         selection=[
             ('pending', 'Pending'),
@@ -68,9 +63,8 @@ class PharmaBMRStep(models.Model):
         string='Status',
         default='pending',
         required=True,
-            help='Specifies the Status for this record.',
+        help='Specifies the Status for this record.',
     )
-
     hold_source_step_id = fields.Many2one(
         comodel_name='pharma.bmr.step',
         string='Hold Source Step',
@@ -79,6 +73,30 @@ class PharmaBMRStep(models.Model):
         ondelete='set null',
         help='Set when this step is on hold because an earlier step was put on hold.',
     )
+    operator_id = fields.Many2one(
+        comodel_name='res.users',
+        string='Operator',
+        copy=False,
+        help='Specifies the Operator for this record.',
+    )
+    operator_signed_on = fields.Datetime(
+        string='Operator Signed On',
+        copy=False,
+        readonly=True,
+        help='Specifies the Operator Signed On for this record.',
+    )
+    supervisor_id = fields.Many2one(
+        comodel_name='res.users',
+        string='Supervisor',
+        copy=False,
+        help='Specifies the Supervisor for this record.',
+    )
+    supervisor_signed_on = fields.Datetime(
+        string='Supervisor Signed On',
+        copy=False,
+        readonly=True,
+        help='Specifies the Supervisor Signed On for this record.',
+    )
 
     @api.depends('sequence', 'description')
     def _compute_name(self):
@@ -86,32 +104,7 @@ class PharmaBMRStep(models.Model):
         for step in self:
             description = (step.description or '').strip()
             step.name = '%s - %s' % (step.sequence, description) if description else _('Step %s') % step.sequence
-    operator_id = fields.Many2one(
-        comodel_name='res.users',
-        string='Operator',
-        copy=False,
-            help='Specifies the Operator for this record.',
-    )
 
-    operator_signed_on = fields.Datetime(
-        string='Operator Signed On',
-        copy=False,
-        readonly=True,
-            help='Specifies the Operator Signed On for this record.',
-    )
-    supervisor_id = fields.Many2one(
-        comodel_name='res.users',
-        string='Supervisor',
-        copy=False,
-            help='Specifies the Supervisor for this record.',
-    )
-
-    supervisor_signed_on = fields.Datetime(
-        string='Supervisor Signed On',
-        copy=False,
-        readonly=True,
-            help='Specifies the Supervisor Signed On for this record.',
-    )
     @api.constrains('operator_id', 'supervisor_id')
     def _check_different_users(self):
         """Validates that the operator and supervisor sign-offs are performed by different users."""

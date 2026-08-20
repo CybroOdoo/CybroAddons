@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from datetime import timedelta
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -39,6 +38,7 @@ class PharmaDeviation(models.Model):
     _description = 'Pharma Deviation'
     _inherit = ['mail.thread', 'mail.activity.mixin', 'pharma.workflow.mixin']
     _order = 'name desc'
+
     name = fields.Char(
         string='Deviation Number',
         default='New',
@@ -47,31 +47,27 @@ class PharmaDeviation(models.Model):
         tracking=True,
         help='Auto-generated, permanent — cannot be edited after creation.',
     )
-
     batch_id = fields.Many2one(
         comodel_name='mrp.production',
         string='Manufacturing Order / Batch',
         ondelete='restrict',
         index=True,
         tracking=True,
-            help='Specifies the Manufacturing Order / Batch for this record.',
+        help='Specifies the Manufacturing Order / Batch for this record.',
     )
-
     lot_id = fields.Many2one(
         comodel_name='stock.lot',
         string='Lot / Batch',
         ondelete='restrict',
         tracking=True,
-            help='Specifies the Lot / Batch for this record.',
+        help='Specifies the Lot / Batch for this record.',
     )
-
     qc_result_id = fields.Many2one(
         comodel_name='pharma.qc.result.line',
         string='OOS QC Result (if applicable)',
         ondelete='set null',
         help='QC result that auto-triggered this deviation, if applicable.',
     )
-
     oos_investigation_id = fields.Many2one(
         comodel_name='pharma.oos.investigation',
         string='OOS Investigation',
@@ -87,9 +83,8 @@ class PharmaDeviation(models.Model):
         string='Stage',
         required=True,
         tracking=True,
-            help='Specifies the Stage for this record.',
+        help='Specifies the Stage for this record.',
     )
-
     classification = fields.Selection(
         selection=[
             ('critical', 'Critical'),
@@ -100,9 +95,8 @@ class PharmaDeviation(models.Model):
         required=True,
         default='major',
         tracking=True,
-            help='Specifies the Classification for this record.',
+        help='Specifies the Classification for this record.',
     )
-
     root_cause_category = fields.Selection(
         selection=[
             ('human', 'Human'),
@@ -120,7 +114,6 @@ class PharmaDeviation(models.Model):
         required=True,
         help='Full description of what went wrong.',
     )
-
     immediate_action = fields.Text(
         string='Immediate Action',
         help='Action taken immediately when the deviation was discovered.',
@@ -136,7 +129,7 @@ class PharmaDeviation(models.Model):
         required=True,
         copy=False,
         tracking=True,
-            help='Specifies the Status for this record.',
+        help='Specifies the Status for this record.',
     )
     raised_by = fields.Many2one(
         comodel_name='res.users',
@@ -144,17 +137,15 @@ class PharmaDeviation(models.Model):
         default=lambda self: self.env.user,
         readonly=True,
         tracking=True,
-            help='Specifies the Raised By for this record.',
+        help='Specifies the Raised By for this record.',
     )
-
     raised_on = fields.Datetime(
         string='Raised On',
         default=fields.Datetime.now,
         readonly=True,
         tracking=True,
-            help='Specifies the Raised On for this record.',
+        help='Specifies the Raised On for this record.',
     )
-
     deadline_date = fields.Date(
         string='Investigation Deadline',
         compute='_compute_deadline',
@@ -176,12 +167,16 @@ class PharmaDeviation(models.Model):
         comodel_name='pharma.capa',
         inverse_name='deviation_id',
         string='CAPAs',
-            help='Specifies the CAPAs for this record.',
+        help='Specifies the CAPAs for this record.',
     )
-
     capa_count = fields.Integer(
         compute='_compute_capa_count',
-            help='Specifies the Capa Count for this record.',
+        help='Specifies the Capa Count for this record.',
+    )
+    all_capas_closed = fields.Boolean(
+        string='All CAPAs Closed',
+        compute='_compute_all_capas_closed',
+        help='True when there are no open CAPAs linked to this deviation.',
     )
 
     @api.depends('capa_ids')
@@ -189,12 +184,6 @@ class PharmaDeviation(models.Model):
         """Calculates the total number of CAPAs linked to this deviation."""
         for rec in self:
             rec.capa_count = len(rec.capa_ids)
-
-    all_capas_closed = fields.Boolean(
-        string='All CAPAs Closed',
-        compute='_compute_all_capas_closed',
-        help='True when there are no open CAPAs linked to this deviation.',
-    )
 
     @api.depends('capa_ids', 'capa_ids.status')
     def _compute_all_capas_closed(self):
@@ -303,11 +292,6 @@ class PharmaDeviation(models.Model):
 
     def _pharma_dispose_rejected_lot(self):
         """Segregate the deviation's batch into the company's Rejected location."""
-        # Physical counterpart of a 'Reject' disposition: the move
-        # pharmaceutical_base would make at QC-fail time happens here instead,
-        # once every CAPA is closed and QA has closed the deviation on a reject.
-        # Not limited to incoming material — a rejected finished or in-process
-        # batch must be segregated too. No on-hand stock is a no-op downstream.
         self.ensure_one()
         lot = self.lot_id or self.oos_investigation_id.lot_id
         if not lot:

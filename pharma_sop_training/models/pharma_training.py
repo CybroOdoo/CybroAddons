@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -32,6 +31,7 @@ class PharmaTraining(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin', 'pharma.workflow.mixin']
     _rec_name = 'training_name'
     _order = 'employee_id, sop_id'
+
     sop_id = fields.Many2one(
         comodel_name='pharma.sop',
         string='SOP',
@@ -41,7 +41,6 @@ class PharmaTraining(models.Model):
         tracking=True,
         help='SOP assigned for this training.',
     )
-
     employee_id = fields.Many2one(
         comodel_name='hr.employee',
         string='Employee',
@@ -49,7 +48,7 @@ class PharmaTraining(models.Model):
         ondelete='cascade',
         index=True,
         tracking=True,
-            help='Specifies the Employee for this record.',
+        help='Specifies the Employee for this record.',
     )
     status = fields.Selection(
         selection=[
@@ -74,7 +73,6 @@ class PharmaTraining(models.Model):
         tracking=True,
         help='Person who evaluated the training and entered the score.',
     )
-
     score = fields.Float(
         string='Assessment Score (%)',
         digits=(5, 2),
@@ -82,14 +80,12 @@ class PharmaTraining(models.Model):
         help='Score achieved by the employee. Compared against the configured '
              'passing score to decide Passed or Failed.',
     )
-
     completed_on = fields.Date(
         string='Completed On',
         copy=False,
         tracking=True,
         help='Date the employee completed the training assessment.',
     )
-
     expiry_date = fields.Date(
         string='Expiry Date',
         copy=False,
@@ -105,12 +101,17 @@ class PharmaTraining(models.Model):
         tracking=True,
         help='Auto-increments each time a training record is reset for re-take.'
     )
-
     training_name = fields.Char(
         string='Training',
         compute='_compute_training_name',
         store=True,
-            help='Specifies the Training for this record.',
+        help='Specifies the Training for this record.',
+    )
+    active = fields.Boolean(
+        string='Active',
+        default=True,
+        tracking=True,
+        help='Uncheck to archive the training record.'
     )
 
     @api.depends('sop_id', 'employee_id')
@@ -120,12 +121,6 @@ class PharmaTraining(models.Model):
             sop = rec.sop_id.name or ''
             emp = rec.employee_id.name or ''
             rec.training_name = f'{emp} / {sop}' if (sop or emp) else _('New Training')
-    active = fields.Boolean(
-        string='Active',
-        default=True,
-        tracking=True,
-        help='Uncheck to archive the training record.'
-    )
 
     @api.constrains('sop_id', 'employee_id', 'active')
     def _check_unique_active_sop_employee(self):
@@ -202,6 +197,7 @@ class PharmaTraining(models.Model):
             'domain': [('id', 'in', new_trainings.ids)],
             'target': 'current',
         }
+
     @api.model
     def _cron_expire_trainings(self):
         """Daily cron marking passed trainings Expired once past their expiry date."""
@@ -211,6 +207,7 @@ class PharmaTraining(models.Model):
             ('expiry_date', '<', today),
         ])
         expired.write({'status': 'expired'})
+
     @api.model
     def check_training_clearance(self, user_id, sop_ids=None):
         """Raise ValidationError unless the user has passed current training for required SOPs."""

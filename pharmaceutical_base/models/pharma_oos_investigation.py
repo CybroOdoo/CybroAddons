@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -38,9 +37,8 @@ class PharmaOosInvestigation(models.Model):
         copy=False,
         readonly=True,
         default='/',
-            help='Specifies the Investigation Number for this record.',
+        help='Specifies the Investigation Number for this record.',
     )
-
     result_line_id = fields.Many2one(
         comodel_name='pharma.qc.result.line',
         string='OOS Result Line',
@@ -50,7 +48,6 @@ class PharmaOosInvestigation(models.Model):
         tracking=True,
         help='The specific OOS result that triggered this investigation.'
     )
-
     phase = fields.Selection(
         selection=[
             ('phase_1', 'Phase I'),
@@ -62,26 +59,93 @@ class PharmaOosInvestigation(models.Model):
         tracking=True,
         help='Phase I checks for lab error, Phase II checks the full batch.'
     )
-
     lab_error_found = fields.Boolean(
         string='Lab Error Found',
         default=False,
         tracking=True,
         help='If True in Phase I, result is invalidated and re-tested.'
     )
-
     conclusion_notes = fields.Text(
         string='Conclusion Notes',
         tracking=True,
         help='User entered analysis and notes for the investigation.'
     )
-
     conclusion = fields.Text(
         string='Conclusion',
         compute='_compute_conclusion',
         inverse='_inverse_conclusion',
         tracking=True,
         help='Final conclusion of the investigation containing expected/actual values and analysis.'
+    )
+    disposition = fields.Selection(
+        selection=[
+            ('release', 'Release'),
+            ('reject', 'Reject'),
+        ],
+        string='Disposition',
+        tracking=True,
+        help='Final decision on the batch after investigation.'
+    )
+    investigated_by = fields.Many2one(
+        comodel_name='res.users',
+        string='Investigated By',
+        tracking=True,
+        help='QA person who led the investigation.'
+    )
+    closed_on = fields.Datetime(
+        string='Closed On',
+        tracking=True,
+        help='Date and time the investigation was formally closed.'
+    )
+    test_order_id = fields.Many2one(
+        comodel_name='pharma.qc.test.order',
+        string='Test Order',
+        related='result_line_id.test_order_id',
+        store=True,
+        help='Specifies the Test Order for this record.',
+    )
+    product_id = fields.Many2one(
+        comodel_name='product.template',
+        string='Defected Product',
+        related='result_line_id.test_order_id.product_id',
+        store=True,
+        readonly=True,
+        help='Product associated with the OOS test order.',
+    )
+    lot_id = fields.Many2one(
+        comodel_name='stock.lot',
+        string='Lot / Batch',
+        related='result_line_id.test_order_id.lot_id',
+        store=True,
+        readonly=True,
+        help='Lot / batch associated with the OOS test order.',
+    )
+    expected_min = fields.Float(
+        string='Expected Min',
+        related='result_line_id.expected_min',
+        readonly=True,
+        digits=(16, 4),
+        help='Minimum accepted specification value.',
+    )
+    expected_max = fields.Float(
+        string='Expected Max',
+        related='result_line_id.expected_max',
+        readonly=True,
+        digits=(16, 4),
+        help='Maximum accepted specification value.',
+    )
+    actual_value = fields.Float(
+        string='Actual Value',
+        related='result_line_id.actual_value',
+        readonly=True,
+        digits=(16, 4),
+        help='Actual measured value that triggered the OOS.',
+    )
+    uom = fields.Char(
+        string='UoM',
+        related='result_line_id.uom',
+        readonly=True,
+        help='Unit of measure for the parameter.',
     )
 
     @api.depends('result_line_id', 'result_line_id.parameter_id', 'result_line_id.expected_min', 'result_line_id.expected_max', 'result_line_id.actual_value', 'result_line_id.uom', 'conclusion_notes')
@@ -134,86 +198,6 @@ class PharmaOosInvestigation(models.Model):
                     rec.conclusion_notes = ""
             else:
                 rec.conclusion_notes = val.strip()
-
-    disposition = fields.Selection(
-        selection=[
-            ('release', 'Release'),
-            ('reject', 'Reject'),
-        ],
-        string='Disposition',
-        tracking=True,
-        help='Final decision on the batch after investigation.'
-    )
-
-    investigated_by = fields.Many2one(
-        comodel_name='res.users',
-        string='Investigated By',
-        tracking=True,
-        help='QA person who led the investigation.'
-    )
-
-    closed_on = fields.Datetime(
-        string='Closed On',
-        tracking=True,
-        help='Date and time the investigation was formally closed.'
-    )
-
-    test_order_id = fields.Many2one(
-        comodel_name='pharma.qc.test.order',
-        string='Test Order',
-        related='result_line_id.test_order_id',
-        store=True,
-        help='Specifies the Test Order for this record.',
-    )
-
-    product_id = fields.Many2one(
-        comodel_name='product.template',
-        string='Defected Product',
-        related='result_line_id.test_order_id.product_id',
-        store=True,
-        readonly=True,
-        help='Product associated with the OOS test order.',
-    )
-
-    lot_id = fields.Many2one(
-        comodel_name='stock.lot',
-        string='Lot / Batch',
-        related='result_line_id.test_order_id.lot_id',
-        store=True,
-        readonly=True,
-        help='Lot / batch associated with the OOS test order.',
-    )
-
-    expected_min = fields.Float(
-        string='Expected Min',
-        related='result_line_id.expected_min',
-        readonly=True,
-        digits=(16, 4),
-        help='Minimum accepted specification value.',
-    )
-
-    expected_max = fields.Float(
-        string='Expected Max',
-        related='result_line_id.expected_max',
-        readonly=True,
-        digits=(16, 4),
-        help='Maximum accepted specification value.',
-    )
-
-    actual_value = fields.Float(
-        string='Actual Value',
-        related='result_line_id.actual_value',
-        readonly=True,
-        digits=(16, 4),
-        help='Actual measured value that triggered the OOS.',
-    )
-
-    uom = fields.Char(
-        string='UoM',
-        related='result_line_id.uom',
-        readonly=True,
-        help='Unit of measure for the parameter.',
-    )
 
     def action_view_test_order(self):
         """Returns a window action to open the associated QC Test Order form."""

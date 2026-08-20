@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 {
     'name': 'Pharmaceutical ERP — Traceability, CoA & Audit Trail',
     'version': '19.0.1.0.0',
@@ -50,6 +49,7 @@
         'views/menus.xml',
     ],
     'images': ['static/description/banner.jpg'],
+    'post_init_hook': 'post_init_hook',
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,

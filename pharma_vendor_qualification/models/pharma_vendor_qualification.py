@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
@@ -42,7 +41,6 @@ class PharmaVendorQualification(models.Model):
         default=lambda self: _('New'),
         help='Auto-generated unique qualification reference number (e.g. VQ/2026/00001).'
     )
-
     version = fields.Integer(
         string='Version',
         default=1,
@@ -51,14 +49,12 @@ class PharmaVendorQualification(models.Model):
         tracking=True,
         help='Auto-increments each time a vendor qualification is revised or reset to draft.'
     )
-
     active = fields.Boolean(
         string='Active',
         default=True,
         tracking=True,
         help='Uncheck to archive the vendor qualification record.'
     )
-
     vendor_id = fields.Many2one(
         comodel_name='res.partner',
         string='Vendor',
@@ -68,7 +64,6 @@ class PharmaVendorQualification(models.Model):
         tracking=True,
         help='Vendor going through the qualification process.'
     )
-
     product_ids = fields.Many2many(
         comodel_name='product.template',
         string='Products',
@@ -77,7 +72,6 @@ class PharmaVendorQualification(models.Model):
         tracking=True,
         help='Products they are being qualified to supply.'
     )
-
     status = fields.Selection(
         selection=[
             ('draft', 'Draft'),
@@ -94,13 +88,11 @@ class PharmaVendorQualification(models.Model):
         tracking=True,
         help='Tracks where the vendor is in the qualification journey.'
     )
-
     audit_date = fields.Date(
         string='Audit Date',
         tracking=True,
         help='Date the physical or remote audit was conducted.'
     )
-
     total_score = fields.Float(
         string='Total Score',
         required=True,
@@ -110,12 +102,67 @@ class PharmaVendorQualification(models.Model):
              'Pharmaceutical ERP settings, the vendor will automatically be '
              'marked as Not Qualified.'
     )
-
     audit_score = fields.Float(
         string='Audit Score',
         tracking=True,
         help='Score given to the vendor after the audit. Must reach the approval '
              'percentage of the Total Score configured in the settings to be approved.'
+    )
+    gmp_certificate = fields.Binary(
+        string='GMP Certificate',
+        attachment=True,
+        help="Vendor's GMP certificate uploaded as a file."
+    )
+    gmp_certificate_filename = fields.Char(
+        string='GMP Certificate Filename',
+        help='Original filename of the uploaded GMP certificate.'
+    )
+    approved_by = fields.Many2one(
+        comodel_name='res.users',
+        string='Approved By',
+        readonly=True,
+        tracking=True,
+        help='QA person who gave final approval.'
+    )
+    rejection_reason = fields.Text(
+        string='Rejection Reason',
+        help='Reason recorded if the vendor was rejected.'
+    )
+    avl_ids = fields.Many2many(
+        comodel_name='pharma.avl',
+        string='AVL Entries',
+        readonly=True,
+        help='AVL entries auto-created when vendor is approved.'
+    )
+    template_id = fields.Many2one(
+        comodel_name='pharma.questionnaire.template',
+        string='Questionnaire Template',
+        tracking=True,
+        help='Select a template to auto-populate the questionnaire.'
+    )
+    response_ids = fields.One2many(
+        comodel_name='pharma.vendor.qualification.response',
+        inverse_name='qualification_id',
+        string='Responses',
+        copy=True,
+        help='Specifies the Responses for this record.',
+    )
+    access_token = fields.Char(
+        string='Access Token',
+        copy=False,
+        help='Specifies the Access Token for this record.',
+    )
+    submission_date = fields.Datetime(
+        string='Submission Date',
+        readonly=True,
+        copy=False,
+        help='Date and time when the vendor submitted the questionnaire via the portal.'
+    )
+    display_name = fields.Char(
+        string='Display Name',
+        compute='_compute_display_name',
+        store=True,
+        help='Specifies the Display Name for this record.',
     )
 
     def _is_audit_score_passing(self):
@@ -137,64 +184,6 @@ class PharmaVendorQualification(models.Model):
             if rec.total_score > 0 and rec.audit_score > rec.total_score:
                 raise UserError(_("The actual audit score cannot be greater than the total score."))
 
-    gmp_certificate = fields.Binary(
-        string='GMP Certificate',
-        attachment=True,
-        help="Vendor's GMP certificate uploaded as a file."
-    )
-
-    gmp_certificate_filename = fields.Char(
-        string='GMP Certificate Filename',
-        help='Original filename of the uploaded GMP certificate.'
-    )
-
-    approved_by = fields.Many2one(
-        comodel_name='res.users',
-        string='Approved By',
-        readonly=True,
-        tracking=True,
-        help='QA person who gave final approval.'
-    )
-
-    rejection_reason = fields.Text(
-        string='Rejection Reason',
-        help='Reason recorded if the vendor was rejected.'
-    )
-
-    avl_ids = fields.Many2many(
-        comodel_name='pharma.avl',
-        string='AVL Entries',
-        readonly=True,
-        help='AVL entries auto-created when vendor is approved.'
-    )
-
-    template_id = fields.Many2one(
-        comodel_name='pharma.questionnaire.template',
-        string='Questionnaire Template',
-        tracking=True,
-        help='Select a template to auto-populate the questionnaire.'
-    )
-
-    response_ids = fields.One2many(
-        comodel_name='pharma.vendor.qualification.response',
-        inverse_name='qualification_id',
-        string='Responses',
-        copy=True,
-            help='Specifies the Responses for this record.',
-    )
-
-    access_token = fields.Char(
-        string='Access Token',
-        copy=False,
-        help='Specifies the Access Token for this record.',
-    )
-    submission_date = fields.Datetime(
-        string='Submission Date',
-        readonly=True,
-        copy=False,
-        help='Date and time when the vendor submitted the questionnaire via the portal.'
-    )
-
     @api.onchange('template_id')
     def _onchange_template_id(self):
         """Auto-populates the questionnaire responses based on the selected template's questions."""
@@ -214,13 +203,6 @@ class PharmaVendorQualification(models.Model):
         """Executes the _onchange_audit_score operation."""
         if self.status == 'audit_scheduled' and not self._is_audit_score_passing():
             self.status = 'not_qualified'
-
-    display_name = fields.Char(
-        string='Display Name',
-        compute='_compute_display_name',
-        store=True,
-            help='Specifies the Display Name for this record.',
-    )
 
     @api.depends('name', 'vendor_id')
     def _compute_display_name(self):

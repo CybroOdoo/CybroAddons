@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -30,6 +29,7 @@ class PharmaQcSpec(models.Model):
     _description = 'QC Specification'
     _inherit = ['mail.thread', 'mail.activity.mixin', 'pharma.workflow.mixin']
     _order = 'product_id, stage'
+
     name = fields.Char(
         string='Specification Name',
         readonly=True,
@@ -38,7 +38,6 @@ class PharmaQcSpec(models.Model):
         default='/',
         help='Specifies the Specification Name for this record.',
     )
-
     product_id = fields.Many2one(
         comodel_name='product.template',
         string='Product',
@@ -50,7 +49,6 @@ class PharmaQcSpec(models.Model):
         help='Specifies the Product for this record. '
              'Only products tracked by lots are selectable.',
     )
-
     stage = fields.Selection(
         selection=[
             ('incoming', 'Incoming / Raw Material'),
@@ -60,9 +58,8 @@ class PharmaQcSpec(models.Model):
         string='Testing Stage',
         required=True,
         tracking=True,
-            help='Specifies the Testing Stage for this record.',
+        help='Specifies the Testing Stage for this record.',
     )
-
     pharmacopoeial_ref = fields.Selection(
         selection=[
             ('bp', 'BP'),
@@ -73,15 +70,14 @@ class PharmaQcSpec(models.Model):
         ],
         string='Pharmacopoeial Reference',
         tracking=True,
-            help='Specifies the Pharmacopoeial Reference for this record.',
+        help='Specifies the Pharmacopoeial Reference for this record.',
     )
-
     version = fields.Char(
         string='Version',
         default='1.0',
         required=True,
         tracking=True,
-            help='Specifies the Version for this record.',
+        help='Specifies the Version for this record.',
     )
     state = fields.Selection(
         selection=[
@@ -94,9 +90,8 @@ class PharmaQcSpec(models.Model):
         default='draft',
         required=True,
         tracking=True,
-            help='Specifies the Status for this record.',
+        help='Specifies the Status for this record.',
     )
-
     approved_by = fields.Many2one(
         comodel_name='res.users',
         string='Approved By',
@@ -104,14 +99,12 @@ class PharmaQcSpec(models.Model):
         readonly=True,
         help='Specifies the Approved By for this record.',
     )
-
     approval_date = fields.Date(
         string='Approval Date',
         tracking=True,
         readonly=True,
         help='Specifies the Approval Date for this record.',
     )
-
     effective_date = fields.Date(
         string='Valid Until Date',
         tracking=True,
@@ -121,15 +114,13 @@ class PharmaQcSpec(models.Model):
         comodel_name='pharma.qc.spec.line',
         inverse_name='spec_id',
         string='Test Parameters',
-            help='Specifies the Test Parameters for this record.',
+        help='Specifies the Test Parameters for this record.',
     )
-
     notes = fields.Text(
-
         string='Notes / Sampling Instructions',
-
-            help='Specifies the Notes / Sampling Instructions for this record.',
+        help='Specifies the Notes / Sampling Instructions for this record.',
     )
+
     _unique_product_stage_version = models.Constraint(
         'UNIQUE(product_id, stage, version)',
         'A specification with this version already exists for this product and stage.',

@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -28,6 +27,28 @@ from odoo.tools.translate import _
 class ResCompany(models.Model):
     """Adds the GMP rejected-material location configuration to the company."""
     _inherit = 'res.company'
+
+    pharma_rejected_location_id = fields.Many2one(
+        comodel_name='stock.location',
+        string='Rejected Location',
+        domain="[('usage', '=', 'internal')]",
+        help='Location where QC-rejected material is automatically moved.',
+    )
+    pharma_enforce_storage_class = fields.Boolean(
+        string='Enforce Storage Class',
+        default=False,
+        help='Restrict material transfers to locations matching their assigned Storage Class.',
+    )
+    pharma_vendor_approval_percentage = fields.Float(
+        string='Vendor Qualification Approval (%)',
+        default=70.0,
+        help='Minimum audit score (%) required for vendor approval.',
+    )
+    pharma_training_passing_score = fields.Float(
+        string='SOP Training Passing Score (%)',
+        default=80.0,
+        help='Minimum assessment score (%) required to pass SOP training.',
+    )
 
     def _auto_init(self):
         """Ensure the pharma columns exist on res_company before any ORM query runs."""
@@ -41,30 +62,6 @@ class ResCompany(models.Model):
             ADD COLUMN IF NOT EXISTS pharma_rejected_location_id INTEGER;
         """)
         return super()._auto_init()
-
-    pharma_rejected_location_id = fields.Many2one(
-        comodel_name='stock.location',
-        string='Rejected Location',
-        domain="[('usage', '=', 'internal')]",
-        help='Location where QC-rejected material is automatically moved.',
-    )
-
-    pharma_enforce_storage_class = fields.Boolean(
-        string='Enforce Storage Class',
-        default=False,
-        help='Restrict material transfers to locations matching their assigned Storage Class.',
-    )
-
-    pharma_vendor_approval_percentage = fields.Float(
-        string='Vendor Qualification Approval (%)',
-        default=70.0,
-        help='Minimum audit score (%) required for vendor approval.',
-    )
-    pharma_training_passing_score = fields.Float(
-        string='SOP Training Passing Score (%)',
-        default=80.0,
-        help='Minimum assessment score (%) required to pass SOP training.',
-    )
 
     @api.constrains('pharma_rejected_location_id')
     def _check_pharma_locations(self):

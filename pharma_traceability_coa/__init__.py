@@ -19,5 +19,15 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from . import models
+
+
+def post_init_hook(env):
+    """Rebuild the audit-trail view now that pharma_coa exists.
+
+    The view is created by ``pharma.audit.trail.init()``, which runs before the
+    pharma.coa table exists on a fresh install, so CoA changes would otherwise
+    be left out until the next module upgrade.
+    """
+    if 'pharma.audit.trail' in env:
+        env['pharma.audit.trail'].init()

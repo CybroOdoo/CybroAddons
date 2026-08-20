@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -34,7 +33,6 @@ class MrpRoutingWorkcenter(models.Model):
         compute='_compute_allowed_sop_ids',
         string='Allowed SOPs',
     )
-
     sop_id = fields.Many2one(
         comodel_name='pharma.sop',
         string='Linked SOP',

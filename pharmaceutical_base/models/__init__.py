@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from . import pharma_workflow_mixin
 from . import mrp_bom
 from . import mrp_production

@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -34,11 +33,15 @@ class PharmaQcTestOrder(models.Model):
         compute='_compute_deviations_capas',
         string='Deviations',
     )
-
     capa_ids = fields.Many2many(help='Specifies the Capa Ids for this record.',
         comodel_name='pharma.capa',
         compute='_compute_deviations_capas',
         string='CAPAs',
+    )
+    deviation_count = fields.Integer(
+        string='Deviations',
+        compute='_compute_deviation_count',
+        help='Specifies the Deviations for this record related to OOS.'
     )
 
     def _compute_deviations_capas(self):
@@ -49,12 +52,6 @@ class PharmaQcTestOrder(models.Model):
             ])
             order.deviation_ids = deviations
             order.capa_ids = deviations.mapped('capa_ids')
-
-    deviation_count = fields.Integer(
-        string='Deviations',
-        compute='_compute_deviation_count',
-        help='Specifies the Deviations for this record related to OOS.'
-    )
 
     def _compute_deviation_count(self):
         """Count the Deviations from this test order's OOS investigations."""
@@ -77,12 +74,6 @@ class PharmaQcTestOrder(models.Model):
 
     def _pharma_rejection_deferred(self):
         """Hold the segregation move while an open deviation owns the batch decision."""
-        # With CAPA & Deviation management installed a QC failure only *opens*
-        # the investigation: the material is moved to the Rejected location when
-        # QA closes the deviation on a 'Reject' disposition (see
-        # pharma.deviation.action_close). A failed test order with no open
-        # deviation has no downstream decision to wait for, so it segregates
-        # right away as in core.
         self.ensure_one()
         return bool(self.env['pharma.deviation'].sudo().search_count([
             ('oos_investigation_id.result_line_id.test_order_id', '=', self.id),

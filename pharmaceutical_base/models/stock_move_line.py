@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models
 
 
@@ -35,14 +34,12 @@ class StockMoveLine(models.Model):
              'destination actually provides, so a move into the wrong area is '
              'visible in the traceability history.',
     )
-
     pharma_src_storage_category_id = fields.Many2one(
         comodel_name='stock.storage.category',
         related='location_id.storage_category_id',
         string='Storage Class (From)',
         help='Storage class provided by the source location of this move.',
     )
-
     # Stored so the traceability list can be grouped by storage class; the
     # related fields above are only ever displayed, never grouped.
     pharma_storage_category_id = fields.Many2one(

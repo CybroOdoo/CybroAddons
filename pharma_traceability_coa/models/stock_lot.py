@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 
 
@@ -28,32 +27,30 @@ class StockLot(models.Model):
     _inherit = 'stock.lot'
 
     produced_production_ids = fields.Many2many('mrp.production', compute='_compute_genealogy',
-                                               string='Production Orders',
-                                               help='Specifies the Production Orders for this record.')
+        string='Production Orders',
+        help='Specifies the Production Orders for this record.')
     consumed_lot_ids = fields.Many2many('stock.lot', compute='_compute_genealogy',
-                                        string='Raw Material Lots',
-                                        help='Specifies the Raw Material Lots for this record.')
+        string='Raw Material Lots',
+        help='Specifies the Raw Material Lots for this record.')
     vendor_ids = fields.Many2many('res.partner', compute='_compute_genealogy', string='Vendors',
-                                  help='Specifies the Vendors for this record.')
+        help='Specifies the Vendors for this record.')
     purchase_order_ids = fields.Many2many('purchase.order', compute='_compute_genealogy',
-                                          string='Purchase Orders',
-                                          help='Specifies the Purchase Orders for this record.')
-
+        string='Purchase Orders',
+        help='Specifies the Purchase Orders for this record.')
     delivery_order_ids = fields.Many2many('stock.picking', compute='_compute_genealogy',
-                                          string='Delivery Orders',
-                                          help='Specifies the Delivery Orders for this record.')
+        string='Delivery Orders',
+        help='Specifies the Delivery Orders for this record.')
     customer_ids = fields.Many2many('res.partner', compute='_compute_genealogy',
-                                    string='Customers', help='Specifies the Customers for this record.')
+        string='Customers', help='Specifies the Customers for this record.')
     invoice_ids = fields.Many2many('account.move', compute='_compute_genealogy',
-                                   string='Customer Invoices', help='Specifies the Customer Invoices for this record.')
-
+        string='Customer Invoices', help='Specifies the Customer Invoices for this record.')
     qc_test_ids = fields.Many2many('pharma.qc.test.order', compute='_compute_genealogy',
-                                   string='QC Test Orders', help='Specifies the QC Test Orders for this record.')
+        string='QC Test Orders', help='Specifies the QC Test Orders for this record.')
     incoming_qc_ids = fields.Many2many('pharma.qc.test.order', help='Specifies the Incoming Qc Ids for this record.', compute='_compute_genealogy_qc', string='Incoming QC')
     ipqc_ids = fields.Many2many('pharma.qc.test.order', help='Specifies the Ipqc Ids for this record.', compute='_compute_genealogy_qc', string='IPQC')
     fg_qc_ids = fields.Many2many('pharma.qc.test.order', help='Specifies the Fg Qc Ids for this record.', compute='_compute_genealogy_qc', string='FG QC')
     bmr_ids = fields.Many2many('pharma.bmr', compute='_compute_genealogy',
-                               string='BMRs', help='Specifies the BMRs for this record.')
+        string='BMRs', help='Specifies the BMRs for this record.')
     # Deviation / CAPA genealogy relations. This tier depends on
     # pharma_capa_deviation, so these are plain computed relations (no bridge, no
     # runtime guard). They back both the genealogy tags and the smart buttons.
@@ -68,11 +65,11 @@ class StockLot(models.Model):
     capa_count = fields.Integer(
         string='CAPA Count', help='Specifies the Capa Count for this record.', compute='_compute_deviation_capa')
     oos_investigation_ids = fields.Many2many('pharma.oos.investigation', compute='_compute_genealogy',
-                                             string='OOS Investigations',
-                                             help='Specifies the OOS Investigations for this record.')
+        string='OOS Investigations',
+        help='Specifies the OOS Investigations for this record.')
     coa_ids = fields.Many2many('pharma.coa', compute='_compute_genealogy',
-                               string='Certificates of Analysis',
-                               help='Specifies the Certificates of Analysis for this record.')
+        string='Certificates of Analysis',
+        help='Specifies the Certificates of Analysis for this record.')
 
     def _compute_genealogy(self):
         """Compile the full backward and forward traceability data for this lot."""

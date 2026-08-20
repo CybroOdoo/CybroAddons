@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
@@ -28,6 +27,47 @@ from odoo.tools.translate import _
 class MrpProduction(models.Model):
     """Extends MRP Production with BMR and QA Release workflows."""
     _inherit = 'mrp.production'
+
+    bmr_ids = fields.One2many(
+        comodel_name='pharma.bmr',
+        inverse_name='production_id',
+        string='Batch Manufacturing Records',
+        help='Specifies the Batch Manufacturing Records for this record.',
+    )
+    bmr_count = fields.Integer(
+        string='BMR Count',
+        compute='_compute_bmr_count',
+        help='Specifies the BMR Count for this record.',
+    )
+    pharma_bmr_completed = fields.Boolean(
+        string='BMR Completed',
+        compute='_compute_pharma_bmr_completed',
+        help='Specifies the BMR Completed for this record.',
+    )
+    pharma_allowed_component_ids = fields.Many2many(help='Specifies the Pharma Allowed Component Ids for this record.',
+        comodel_name='product.product',
+        compute='_compute_pharma_allowed_component_ids',
+        string='Allowed Components'
+    )
+    qc_test_order_count = fields.Integer(
+        string='QC Test Orders',
+        compute='_compute_qc_test_order_count',
+        help='Specifies the number of QC Test Orders linked to this order.',
+    )
+    qa_release_eligible = fields.Boolean(
+        string='Ready for QA Release',
+        compute='_compute_qa_release_eligible',
+        search='_search_qa_release_eligible',
+        help='True when the batch has reached the end of the core workflow — the '
+             'BMR is completed and finished-goods QC has passed (on a non-cancelled '
+             'MO) — so it is ready to be sent to QA Release (optional traceability tier).'
+    )
+    pharma_qa_release_exists = fields.Boolean(
+        string='QA Release Created',
+        compute='_compute_pharma_qa_release_exists',
+        help='True when a QA Release Queue record already exists for this batch. '
+             'Always False unless the optional traceability tier is installed.',
+    )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -64,30 +104,11 @@ class MrpProduction(models.Model):
                     moves_to_unlink._action_cancel()
                 moves_to_unlink.unlink()
 
-    bmr_ids = fields.One2many(
-        comodel_name='pharma.bmr',
-        inverse_name='production_id',
-        string='Batch Manufacturing Records',
-            help='Specifies the Batch Manufacturing Records for this record.',
-    )
-
-    bmr_count = fields.Integer(
-        string='BMR Count',
-        compute='_compute_bmr_count',
-            help='Specifies the BMR Count for this record.',
-    )
-
     @api.depends('bmr_ids')
     def _compute_bmr_count(self):
         """Count the Batch Manufacturing Records linked to this manufacturing order."""
         for rec in self:
             rec.bmr_count = len(rec.bmr_ids)
-
-    pharma_bmr_completed = fields.Boolean(
-        string='BMR Completed',
-        compute='_compute_pharma_bmr_completed',
-            help='Specifies the BMR Completed for this record.',
-    )
 
     @api.depends('bmr_ids.status')
     def _compute_pharma_bmr_completed(self):
@@ -98,12 +119,6 @@ class MrpProduction(models.Model):
             else:
                 rec.pharma_bmr_completed = False
 
-    pharma_allowed_component_ids = fields.Many2many(help='Specifies the Pharma Allowed Component Ids for this record.',
-        comodel_name='product.product',
-        compute='_compute_pharma_allowed_component_ids',
-        string='Allowed Components'
-    )
-
     @api.depends('bom_id', 'bom_id.bom_line_ids.product_id')
     def _compute_pharma_allowed_component_ids(self):
         """Executes the _compute_pharma_allowed_component_ids operation."""
@@ -112,7 +127,6 @@ class MrpProduction(models.Model):
                 rec.pharma_allowed_component_ids = rec.bom_id.bom_line_ids.mapped('product_id')
             else:
                 rec.pharma_allowed_component_ids = self.env['product.product']
-
 
     def button_mark_done(self):
         """Executes the button_mark_done operation."""
@@ -200,12 +214,6 @@ class MrpProduction(models.Model):
 
         return bmr
 
-    qc_test_order_count = fields.Integer(
-        string='QC Test Orders',
-        compute='_compute_qc_test_order_count',
-        help='Specifies the number of QC Test Orders linked to this order.',
-    )
-
     def _pharma_raw_material_lots(self):
         """Raw-material lots consumed by this MO, inferred from its BOM components."""
         self.ensure_one()
@@ -277,15 +285,6 @@ class MrpProduction(models.Model):
             })
         return action
 
-    qa_release_eligible = fields.Boolean(
-        string='Ready for QA Release',
-        compute='_compute_qa_release_eligible',
-        search='_search_qa_release_eligible',
-        help='True when the batch has reached the end of the core workflow — the '
-             'BMR is completed and finished-goods QC has passed (on a non-cancelled '
-             'MO) — so it is ready to be sent to QA Release (optional traceability tier).'
-    )
-
     @api.depends('state', 'pharma_bmr_completed',
                  'lot_producing_ids', 'lot_producing_ids.lot_status')
     def _compute_qa_release_eligible(self):
@@ -321,13 +320,6 @@ class MrpProduction(models.Model):
         elif operator == '!=' and value is False:
             return eligible_domain
         return [('id', 'in', [])]
-
-    pharma_qa_release_exists = fields.Boolean(
-        string='QA Release Created',
-        compute='_compute_pharma_qa_release_exists',
-        help='True when a QA Release Queue record already exists for this batch. '
-             'Always False unless the optional traceability tier is installed.',
-    )
 
     def _compute_pharma_qa_release_exists(self):
         """Flag batches already sent to QA Release when the tier is installed."""

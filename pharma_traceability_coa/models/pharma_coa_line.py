@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models
 
 
@@ -29,7 +28,7 @@ class PharmaCoaLine(models.Model):
     _description = 'CoA Result Line'
 
     coa_id = fields.Many2one('pharma.coa', string='CoA', required=True, ondelete='cascade',
-                             help='Specifies the CoA for this record.')
+        help='Specifies the CoA for this record.')
     parameter = fields.Char(
         string='Parameter',
         help='Specifies the Parameter for this record.',

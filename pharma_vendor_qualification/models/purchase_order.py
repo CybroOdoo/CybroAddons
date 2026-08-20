@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
@@ -45,7 +44,6 @@ class PurchaseOrder(models.Model):
         help='Unified purchase statusbar combining the Odoo PO state and the '
              'pharma QA approval workflow.',
     )
-
     # ── Pharma Approval State ─────────────────────────────────────────────────
     pharma_approval_state = fields.Selection(
         selection=[
@@ -60,7 +58,6 @@ class PurchaseOrder(models.Model):
         tracking=True,
         help='QA review status for this purchase order.',
     )
-
     pharma_approved_by = fields.Many2one(
         comodel_name='res.users',
         string='Pharma Approved By',
@@ -69,7 +66,6 @@ class PurchaseOrder(models.Model):
         readonly=True,
         help='Specifies the Pharma Approved By for this record.',
     )
-
     pharma_approval_date = fields.Date(
         string='Pharma Approval Date',
         copy=False,
@@ -77,26 +73,22 @@ class PurchaseOrder(models.Model):
         readonly=True,
         help='Specifies the Pharma Approval Date for this record.',
     )
-
     pharma_notes = fields.Text(
         string='Pharma / QA Notes',
         help='QA remarks or conditions attached to this PO.',
     )
-
     approved_vendor_ids = fields.Many2many(
         comodel_name='res.partner',
         compute='_compute_approved_vendor_ids',
         string='Approved Vendors',
         help='Specifies the Approved Vendors for this record.',
     )
-
     is_vendor_not_qualified = fields.Boolean(
         string='Is Vendor Not Qualified',
         compute='_compute_is_vendor_not_qualified',
         store=False,
         help='Indicates if the selected vendor is marked as Not Qualified in Vendor Qualification.',
     )
-
     allowed_product_ids = fields.Many2many(
         comodel_name='product.product',
         compute='_compute_allowed_product_ids',

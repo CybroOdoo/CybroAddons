@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from . import models
 
 
@@ -27,7 +26,6 @@ def post_init_hook(env):
     """Rebuild the audit-trail view so it captures deviation/CAPA changes."""
     if 'pharma.audit.trail' in env:
         env['pharma.audit.trail'].init()
-
 
 def uninstall_hook(env):
     """Rebuild the audit-trail view without deviation/CAPA and purge their mail records."""

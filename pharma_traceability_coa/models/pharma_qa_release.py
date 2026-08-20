@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -39,21 +38,18 @@ class PharmaQaRelease(models.Model):
         ('released', 'Released'),
     ], string='Status', default='draft', tracking=True, help='Specifies the State for this record.')
     coa_id = fields.Many2one('pharma.coa', string='Certificate of Analysis', readonly=True, tracking=True, help='Specifies the Coa Id for this record.')
-
     # Smart button counts
     bmr_count = fields.Integer(compute="_compute_counts", string="BMR", help='Specifies the Bmr Count for this record.')
     qc_test_count = fields.Integer(compute="_compute_counts", string="QC Test Orders", help='Specifies the Qc Test Count for this record.')
     deviation_count = fields.Integer(compute="_compute_counts", string="Deviations", help='Specifies the Deviation Count for this record.')
     capa_count = fields.Integer(compute="_compute_counts", string="CAPAs", help='Specifies the Capa Count for this record.')
     coa_count = fields.Integer(compute="_compute_counts", string="CoAs", help='Specifies the Coa Count for this record.')
-
     # Main details
     company_id = fields.Many2one('res.company', related='production_id.company_id', string='Company', help='Specifies the Company Id for this record.')
     manufacturing_date = fields.Date(related='lot_id.manufacture_date', string='Manufacturing Date', help='Specifies the Manufacturing Date for this record.')
     expiry_date = fields.Date(related='lot_id.expiry_date', string='Expiry Date', help='Specifies the Expiry Date for this record.')
     formula_version = fields.Char(related='production_id.bom_id.display_name', string='Formula Version', help='Specifies the Formula Version for this record.')
     manufactured_by = fields.Many2one('res.users', related='production_id.user_id', string='Manufactured By', help='Specifies the Manufactured By for this record.')
-
     # Release Checklist
     bmr_completed = fields.Boolean("BMR Completed", compute="_compute_checklist", help='Specifies the Bmr Completed for this record.')
     fg_qc_passed = fields.Boolean("Finished Goods QC Passed", compute="_compute_checklist", help='Specifies the Fg Qc Passed for this record.')
@@ -65,7 +61,6 @@ class PharmaQaRelease(models.Model):
     stability_sampling_completed = fields.Boolean("Stability Sampling Completed (if applicable)", help='Specifies the Stability Sampling Completed for this record.')
     regulatory_docs_verified = fields.Boolean("Regulatory Documents Verified", help='Specifies the Regulatory Docs Verified for this record.')
     overall_status = fields.Selection([('pending', 'Pending'), ('all_clear', 'All Clear')], compute="_compute_overall_status", help='Specifies the Overall Status for this record.')
-
     # Finished Goods QC
     fg_qc_test_id = fields.Many2one('pharma.qc.test.order', compute="_compute_fg_qc", string="QC Test Order", help='Specifies the Fg Qc Test Id for this record.')
     fg_qc_status = fields.Selection([
@@ -76,13 +71,11 @@ class PharmaQaRelease(models.Model):
         ('incoming', 'Incoming'), ('inprocess', 'In-Process'), ('finished', 'Finished Goods')
     ], compute="_compute_fg_qc", string="Stage", help='Specifies the Fg Qc Stage for this record.')
     fg_qc_reviewed_by = fields.Many2one('res.users', compute="_compute_fg_qc", string="Reviewed By", help='Specifies the Fg Qc Reviewed By for this record.')
-
     # Yield Information
     expected_yield = fields.Float(string="Expected Yield", compute="_compute_yield", help='Specifies the Expected Yield for this record.')
     actual_yield = fields.Float(string="Actual Yield", compute="_compute_yield", help='Specifies the Actual Yield for this record.')
     yield_percentage = fields.Float(string="Yield %", compute="_compute_yield", help='Specifies the Yield Percentage for this record.')
     yield_flag = fields.Char(string="Yield Flag", compute="_compute_yield", help='Specifies the Yield Flag for this record.')
-
     # IPQC Information
     ipqc_ids = fields.One2many(
         comodel_name='pharma.ipqc.result',

@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 
 
@@ -33,7 +32,6 @@ class ProductTemplate(models.Model):
         string='Approved Vendor List',
         help='Vendors approved by QA to supply this material.',
     )
-
     avl_count = fields.Integer(
         string='AVL Count',
         compute='_compute_avl_count',

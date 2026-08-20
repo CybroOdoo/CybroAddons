@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import fields, models
 
 
@@ -34,7 +33,6 @@ class PharmaVendorQualificationConfirmWizard(models.TransientModel):
         required=True,
         ondelete='cascade',
     )
-
     message = fields.Text(
         string='Message',
         default='Audit score is below required score. Mark vendor as Not Qualified?',

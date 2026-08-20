@@ -19,7 +19,6 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.translate import _
@@ -37,28 +36,24 @@ class PharmaQcResultLine(models.Model):
         required=True,
         ondelete='cascade',
         index=True,
-            help='Specifies the Test Order for this record.',
+        help='Specifies the Test Order for this record.',
     )
-
     test_stage = fields.Selection(help='Specifies the Test Stage for this record.',
         related='test_order_id.stage',
         string='Stage',
         readonly=True,
     )
-
     test_status = fields.Selection(help='Specifies the Test Status for this record.',
         related='test_order_id.status',
         string='Test Status',
         readonly=True,
     )
-
     parameter_id = fields.Many2one(
         comodel_name='pharma.qc.spec.line',
         string='Parameter',
         domain="[('spec_id.product_id', '=', test_order_id.product_id)]",
         help='Test parameter from spec.'
     )
-
     parameter = fields.Char(
         string='Parameter Name',
         related='parameter_id.parameter_name',
@@ -66,59 +61,50 @@ class PharmaQcResultLine(models.Model):
         readonly=True,
         help='Parameter name related from parameter spec line.'
     )
-
     expected_min = fields.Float(
         string='Expected Min',
         digits=(16, 4),
         help='Minimum copied from spec for reference during entry.',
         store=True
     )
-
     has_min = fields.Boolean(
         string='Has Min Limit',
         default=True,
         help='When True the expected_min is enforced, even if it is 0.0. '
              'Set to False for parameters that have no lower bound.'
     )
-
     expected_max = fields.Float(
         string='Expected Max',
         digits=(16, 4),
         help='Maximum copied from spec for reference during entry.',
         store=True
     )
-
     has_max = fields.Boolean(
         string='Has Max Limit',
         default=True,
         help='When True the expected_max is enforced, even if it is 0.0. '
              'Set to False for parameters that have no upper bound.'
     )
-
     actual_value = fields.Float(
         string='Actual Value',
         digits=(16, 4),
         help='Result entered by the analyst after running the test.'
     )
-
     uom = fields.Char(
         string='UoM',
         help='Unit of measurement for this result.'
     )
-
     result_entered = fields.Boolean(
         string='Result Entered',
         default=False,
         help='Indicates if the actual test result has been entered.'
     )
-
     is_oos = fields.Boolean(
         string='OOS',
         compute='_compute_status',
         store=True,
         help='Auto set to True if actual value falls outside min/max.'
     )
-
     status = fields.Selection(
         selection=[
             ('pending', 'Pending'),
