@@ -19,5 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from . import dropbox_auth_code
-from . import auto_database_backup_support
+from . import test_db_backup_configure

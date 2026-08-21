@@ -6,6 +6,19 @@ Automatic Database Backup To Local Server, Remote Server, Google Drive, Dropbox,
 ==================================================================================================================
 * Generate Database Backups and store to multiple locations
 
+Required Python Packages
+========================
+Depending on the destinations you use, install the matching packages::
+
+    pip3 install dropbox
+    pip3 install pyncclient
+    pip3 install boto3
+    pip3 install nextcloud-api-wrapper
+    pip3 install paramiko
+    pip3 install azure-storage-blob
+    pip3 install google-cloud-storage
+    pip3 install webdavclient3
+
 Configuration
 ============
 - www.odoo.com/documentation/18.0/setup/install.html
