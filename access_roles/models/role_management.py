@@ -29,7 +29,7 @@ class RoleManagement(models.Model):
     _inherit = ['mail.thread']
 
     name = fields.Char(string='Name', required=True)
-    domain_ids = fields.Many2many('domain.model')
+    domain_ids = fields.One2many('domain.model', 'role_management_id', string='Domains')
     is_debug = fields.Boolean(
         string='Disable Debug Mode',
         help='Disable the option to enable debug mode for the user')
@@ -50,7 +50,6 @@ class RoleManagement(models.Model):
     field_access_ids = fields.One2many('field.access', 'access_field_id')
     model_access_ids = fields.One2many('field.access', 'access_model_id')
     button_access_ids = fields.One2many('field.access', 'button_access_id')
-    domain_access_ids = fields.One2many('field.access', 'domain_access_id')
     filter_access_ids = fields.One2many('field.access', 'filter_access_id')
 
     @api.depends('role_ids')
@@ -125,14 +124,3 @@ class RoleManagement(models.Model):
                 if not role.role_management_id:
                     role.write({'role_management_id': record.id})
         return records
-
-    def action_open_domain_form(self):
-        """Opens the domain form when clicking on domain_id"""
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Domain Configuration',
-            'res_model': 'domain.model',
-            'view_mode': 'form',
-            'res_id': self.domain_access_ids.domain_id.id,
-            'target': 'new'
-        }

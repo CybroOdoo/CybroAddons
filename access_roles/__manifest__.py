@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Access Roles',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.3',
     'category':'Security',
     'sequence': 1,
     'summary': 'Access Roles for users',
@@ -51,6 +51,7 @@
         ],
     },
     'images': ['static/description/banner.jpg'],
+    'post_init_hook': 'post_init_hook',
     'license': 'AGPL-3',
     'installable': True,
     'auto_install': False,

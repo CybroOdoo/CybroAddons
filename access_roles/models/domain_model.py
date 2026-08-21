@@ -30,6 +30,7 @@ class DomainModel(models.Model):
     name = fields.Text(string='Domain', default='[]', required=True)
     domain_model_name = fields.Char(string='Model', compute='_compute_domain_model_name')
     domain_model_id = fields.Many2one('ir.model', string='Model', domain="[('model', '!=', 'access.role')]")
+    role_management_id = fields.Many2one('role.management', string='Role Management', ondelete='cascade')
 
     @api.depends('domain_model_id')
     def _compute_domain_model_name(self):

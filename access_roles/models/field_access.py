@@ -58,8 +58,6 @@ class FieldAccess(models.Model):
                                 domain="[('model_id', '=', model_id)]")
     group_ids = fields.Many2many('groupby.registry', string='GroupBy',
                                domain="[('model_id', '=', model_id)]")
-    domain_access_id = fields.Many2one('role.management')
-    domain_id = fields.Many2one('domain.model')
 
     @api.onchange('model_id')
     def _onchange_model_id(self):

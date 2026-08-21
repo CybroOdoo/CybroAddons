@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, models, registry
+from odoo import api, models
 
 
 class IrUiMenu(models.Model):
@@ -28,17 +28,18 @@ class IrUiMenu(models.Model):
 
     @api.model
     def _visible_menu_ids(self, debug=False):
-        """Override to dynamically hide menus based on role management."""
+        """Override to dynamically hide menus based on role management.
+
+        Note: registry.clear_cache() has been intentionally removed from this
+        method. It was previously called on every menu visibility check (i.e.
+        on every page navigation for every user), which invalidated the entire
+        ORM cache globally and was a primary cause of the production slowdown.
+        Odoo manages its own menu cache correctly via load_menus; there is no
+        need to manually invalidate the registry cache here.
+        """
         visible_menu_ids = super()._visible_menu_ids(debug=debug)
         role = self.env.user.access_role_id
         hidden_menu_ids = set()
         if role.role_management_id and role.role_management_id.menu_ids:
             hidden_menu_ids.update(role.role_management_id.menu_ids.ids)
-        self.clear_caches()
         return visible_menu_ids - hidden_menu_ids
-
-    @api.model
-    def load_menus(self, debug=False):
-        """Override to ensure menus are always fresh when loaded."""
-        self.clear_caches()
-        return super().load_menus(debug=debug)

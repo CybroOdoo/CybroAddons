@@ -35,12 +35,6 @@ class GroupByRegistry(models.Model):
     model_id = fields.Many2one('ir.model', string='Model', ondelete='cascade')
     view_ids = fields.Many2many('ir.ui.view', string='View')
 
-    @api.model
-    def _register_hook(self):
-        """Triggers group_by extraction during module initialization."""
-        super()._register_hook()
-        self.get_all_groupby()
-        return True
 
     def _extract_groupby_attributes(self, filter_tag):
         """Extract attributes from a group_by filter tag."""

@@ -32,12 +32,6 @@ class TabRegistry(models.Model):
     view_ids = fields.Many2many('ir.ui.view', string='View')
     model_id = fields.Many2one('ir.model', string='Model', ondelete='cascade')
 
-    @api.model
-    def _register_hook(self):
-        """Triggers filter extraction during module initialization."""
-        super()._register_hook()
-        self.get_all_tabs()
-        return True
 
     def get_all_tabs(self):
         """Finds buttons from views and stores them."""

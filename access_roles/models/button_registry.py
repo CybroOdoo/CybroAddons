@@ -33,15 +33,6 @@ class ButtonRegistry(models.Model):
     model_id = fields.Many2one('ir.model', string='Model', ondelete='cascade')
     view_ids = fields.Many2many('ir.ui.view', string='View')
 
-    @api.model
-    def _register_hook(self):
-        """
-        Hook that runs when the module is loaded.
-        Calls `get_all_buttons` to populate the button registry.
-        """
-        super()._register_hook()
-        self.get_all_buttons()
-        return True
 
     def get_all_buttons(self):
         """Finds buttons from views and stores them."""

@@ -19,8 +19,11 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+import logging
 import xml.etree.ElementTree as ET
 from odoo import api, Command, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class FilterRegistry(models.Model):
@@ -35,12 +38,6 @@ class FilterRegistry(models.Model):
     model_id = fields.Many2one('ir.model', string='Model', ondelete='cascade')
     view_ids = fields.Many2many('ir.ui.view', string='View')
 
-    @api.model
-    def _register_hook(self):
-        """Triggers filter extraction during module initialization."""
-        super()._register_hook()
-        self.get_all_filters()
-        return True
 
     def _get_filter_elements_from_arch(self, arch):
         """Parse the XML arch and return a list of <filter> elements
@@ -66,7 +63,24 @@ class FilterRegistry(models.Model):
         }
 
     def get_all_filters(self):
-        """Collect all filters defined in search views."""
+        """Collect all filters defined in search views.
+
+        Wrapped in a top-level try/except so that any lock timeout or
+        unexpected DB error during server startup does NOT prevent Odoo
+        from initializing. The registry will be populated on the next
+        successful run (e.g. module upgrade or manual trigger).
+        """
+        try:
+            return self._get_all_filters_internal()
+        except Exception as e:
+            _logger.warning(
+                "access_roles: get_all_filters() skipped due to error "
+                "(likely a DB lock timeout during startup): %s", e
+            )
+            return {}
+
+    def _get_all_filters_internal(self):
+        """Internal implementation of get_all_filters."""
         search_views = self.env['ir.ui.view'].search([('type', '=', 'search')])
         filter_model = {}
         for view in search_views:
@@ -110,12 +124,13 @@ class FilterRegistry(models.Model):
         return filter_model
 
     def _create_or_update_filter(self, name, model_id, view_ids, domain, string):
-        """Create or update a filter registry record."""
+        """Create or update a filter registry record.
+
+        Uses a savepoint so that a PostgreSQL lock timeout on one record
+        only rolls back that single operation and does not abort the
+        entire startup transaction.
+        """
         display_name = string if string else name
-        existing_filter = self.search([
-            ('name', '=', name),
-            ('model_id', '=', model_id)
-        ], limit=1)
         vals = {
             'name': display_name,
             'model_id': model_id,
@@ -123,7 +138,18 @@ class FilterRegistry(models.Model):
             'domain': domain,
             'string': string
         }
-        if existing_filter:
-            existing_filter.write(vals)
-        else:
-            self.create(vals)
+        try:
+            with self.env.cr.savepoint():
+                existing_filter = self.search([
+                    ('name', '=', name),
+                    ('model_id', '=', model_id)
+                ], limit=1)
+                if existing_filter:
+                    existing_filter.write(vals)
+                else:
+                    self.create(vals)
+        except Exception as e:
+            _logger.warning(
+                "access_roles: Skipping filter '%s' (model_id=%s) due to error "
+                "(savepoint rolled back safely): %s", name, model_id, e
+            )
