@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    OWL template for legacy/compatibility hidden articles modal.
+-->
+<templates xml:space="preserve">
+
+<!--
+    ============================================================
+    KnowledgeHiddenArticlesDialog
+    ============================================================
+    Fullscreen overlay that renders a searchable picker of
+    hidden workspace articles the user can join.
+
+    Triggered by the eye icon (👁) in the Workspace sidebar section title.
+    After joining, the article appears permanently in the Workspace sidebar.
+    ============================================================
+-->
+<t t-name="knowledge_module_community.KnowledgeHiddenArticlesDialog">
+    <!-- Overlay backdrop — clicking it closes the dialog -->
+    <div class="o_km_hidden_dialog_backdrop" t-on-click="close">
+        <!-- Dialog box — stop click from bubbling to backdrop -->
+        <div class="o_km_hidden_dialog" t-on-click="onDialogClick" role="dialog" aria-modal="true">
+
+            <!-- ── Header ── -->
+            <div class="o_km_hidden_dialog_header">
+                <div class="o_km_hidden_dialog_header_left">
+                    <i class="fa fa-eye me-2 o_km_hidden_dialog_eye_icon"/>
+                    <span class="o_km_hidden_dialog_title">Hidden Articles</span>
+                    <span class="o_km_hidden_dialog_subtitle">
+                        Articles you can access but haven't joined yet
+                    </span>
+                </div>
+                <button class="o_km_hidden_dialog_close" t-on-click="close" title="Close">
+                    <i class="fa fa-times"/>
+                </button>
+            </div>
+
+            <!-- ── Search bar ── -->
+            <div class="o_km_hidden_dialog_search">
+                <i class="fa fa-search o_km_hidden_search_icon"/>
+                <input
+                    class="o_km_hidden_search_input"
+                    type="text"
+                    placeholder="Search hidden articles..."
+                    t-ref="searchInput"
+                    t-att-value="state.searchTerm"
+                    t-on-input="onSearchInput"
+                    autocomplete="off"
+                    spellcheck="false"
+                />
+                <span t-if="state.searchTerm" class="o_km_hidden_search_badge">
+                    Hidden
+                </span>
+            </div>
+
+            <!-- ── Body ── -->
+            <div class="o_km_hidden_dialog_body">
+
+                <!-- Loading skeleton -->
+                <div t-if="state.loading" class="o_km_hidden_dialog_loading">
+                    <i class="fa fa-spinner fa-spin fa-2x"/>
+                    <span>Loading hidden articles…</span>
+                </div>
+
+                <!-- Empty state -->
+                <div t-elif="state.articles.length === 0" class="o_km_hidden_dialog_empty">
+                    <div class="o_km_hidden_empty_icon">
+                        <i class="fa fa-check-circle fa-3x"/>
+                    </div>
+                    <div class="o_km_hidden_empty_title">
+                        <t t-if="state.searchTerm">No articles match your search.</t>
+                        <t t-else="">You have joined all accessible articles!</t>
+                    </div>
+                    <div class="o_km_hidden_empty_sub">
+                        <t t-if="!state.searchTerm">
+                            Articles with <strong>Can Read</strong> or <strong>Can Edit</strong>
+                            access will appear here once they are created by other users.
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Article list -->
+                <div t-else="" class="o_km_hidden_dialog_list">
+                    <t t-foreach="state.articles" t-as="art" t-key="art.id">
+                        <div class="o_km_hidden_article_row">
+                            <!-- Icon + Name + Breadcrumb -->
+                            <div class="o_km_hidden_article_info">
+                                <span class="o_km_hidden_article_icon" t-esc="art.icon or '📄'"/>
+                                <div class="o_km_hidden_article_meta">
+                                    <span class="o_km_hidden_article_name" t-esc="art.name"/>
+                                    <span t-if="art.parent_name" class="o_km_hidden_article_parent">
+                                        <i class="fa fa-angle-right mx-1"/>
+                                        <t t-esc="art.parent_name"/>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Right side: badge + join button -->
+                            <div class="o_km_hidden_article_actions">
+                                <span t-att-class="'o_km_hidden_access_badge o_km_access_' + art.default_access">
+                                    <t t-esc="getAccessLabel(art)"/>
+                                </span>
+                                <button
+                                    class="o_km_hidden_join_btn"
+                                    t-on-click="() => this.joinArticle(art)"
+                                    t-att-disabled="state.joiningId === art.id"
+                                    t-att-class="{ 'o_km_join_loading': state.joiningId === art.id }"
+                                    title="Join this article"
+                                >
+                                    <t t-if="state.joiningId === art.id">
+                                        <i class="fa fa-spinner fa-spin me-1"/>
+                                        Joining…
+                                    </t>
+                                    <t t-else="">
+                                        <i class="fa fa-sign-in me-1"/>
+                                        Join
+                                    </t>
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+            </div>
+
+            <!-- ── Footer ── -->
+            <div class="o_km_hidden_dialog_footer">
+                <span class="o_km_hidden_dialog_tip">
+                    <i class="fa fa-info-circle me-1"/>
+                    Joined articles appear permanently in your <strong>Workspace</strong> sidebar.
+                    Articles with <em>Members Only</em> access are not listed here.
+                </span>
+            </div>
+
+        </div>
+    </div>
+</t>
+
+</templates>

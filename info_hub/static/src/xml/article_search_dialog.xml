@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    OWL template for the Article Search and Link modal used to link internal articles within content.
+-->
+<templates>
+    <t t-name="info_hub.ArticleSearchDialog">
+        <Dialog size="'md'" title="'Link an Article'">
+            <div class="o_info_hub_article_search_dialog">
+                <div class="mb-3">
+                    <input type="text" class="form-control" placeholder="Search for an article..." 
+                           t-on-input="onSearchInput" t-model="state.searchQuery" autofocus="autofocus"/>
+                </div>
+                
+                <div class="list-group">
+                    <t t-if="state.loading">
+                        <div class="p-3 text-center text-muted">
+                            <i class="fa fa-circle-o-notch fa-spin me-2"/> Searching...
+                        </div>
+                    </t>
+                    <t t-elif="filteredArticles.length === 0">
+                        <div class="p-3 text-center text-muted">
+                            No articles found matching your search.
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <t t-foreach="filteredArticles" t-as="article" t-key="article.id">
+                            <button type="button" class="list-group-item list-group-item-action"
+                                    t-on-click="() => this.selectArticle(article)">
+                                <i class="fa fa-file-text-o me-2"/>
+                                <t t-esc="article.name"/>
+                            </button>
+                        </t>
+                    </t>
+                </div>
+            </div>
+            
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="props.close">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

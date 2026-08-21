@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    OWL component template for the Info Hub sidebar: hierarchical navigation tree, drag-and-drop
+    organization, Workspace/Shared/Private sections, Favorites, Trash, and search filtering.
+-->
+<templates xml:space="preserve">
+
+<t t-name="info_hub.InfoSidebar">
+    <aside class="o_info_hub_sidebar">
+        <div class="o_info_hub_sidebar_inner">
+
+            <!-- Search and New Article input row -->
+            <div class="o_info_hub_search_container d-flex align-items-center gap-2">
+                <!-- Collapse Sidebar Button: shown when search is collapsed -->
+                <button t-if="!state.isSearchExpanded" class="o_info_hub_sidebar_close_toggle_btn btn" t-on-click="props.toggleSidebar" title="Collapse Sidebar">
+                    <i class="fa fa-angle-double-left"/>
+                </button>
+
+                <!-- New Article Button: shown when search is collapsed -->
+                <button t-if="!state.isSearchExpanded" class="o_info_hub_sidebar_new_btn btn flex-grow-1" t-on-click="props.onNewArticle">
+                    <i class="fa fa-plus me-1"/> New Article
+                </button>
+                
+                <!-- Search input wrapper -->
+                <div class="o_info_hub_search_input_wrap" t-att-class="{ 'flex-grow-1 w-100': state.isSearchExpanded }">
+                    <!-- Collapsed search icon button -->
+                    <button t-if="!state.isSearchExpanded" class="o_info_hub_search_toggle_btn btn" t-on-click="() => this.toggleSearch(true)" title="Search Articles">
+                        <i class="fa fa-search"/>
+                    </button>
+                    <!-- Expanded search input -->
+                    <t t-else="">
+                        <input type="text" class="o_info_hub_sidebar_search" placeholder="Search an article..."
+                               t-on-input="props.onFilterInput" t-att-value="props.filterText"
+                               t-on-keydown="(ev) => ev.key === 'Escape' &amp;&amp; this.toggleSearch(false)"/>
+                        <i class="fa fa-times o_info_hub_search_close_btn" t-on-click="() => this.toggleSearch(false)" title="Close Search"/>
+                    </t>
+                </div>
+            </div>
+
+            <!-- Sidebar scroll content -->
+            <div class="o_info_hub_sidebar_scroll">
+
+                <!-- ── FAVORITES ── -->
+                <div class="o_info_hub_section_title">
+                    <span><i class="fa fa-star-o me-1 o_info_hub_section_icon"/>Favorites</span>
+                </div>
+                <div class="o_info_hub_section_content"
+                     data-section="favorites"
+                     t-on-dragover="props.onDragOver"
+                     t-on-drop="props.onDrop"
+                     t-on-dragleave="props.onDragLeave">
+                    <t t-foreach="getFavoritedArticles()" t-as="art" t-key="art.id">
+                        <div class="o_info_hub_item_row"
+                             t-att-class="{ 'o_info_hub_active': props.activeArticleId === art.id, 'o_info_hub_unread': art.is_unread }"
+                             t-on-click="() => props.onSelectArticle(art.id)"
+                             draggable="true"
+                             t-att-data-article-id="art.id"
+                             t-att-data-section="'favorites'"
+                             t-on-dragstart="props.onDragStart"
+                             t-on-dragend="props.onDragEnd">
+                            <span class="o_info_hub_drag_handle"><i class="fa fa-bars"/></span>
+                            <span class="o_info_hub_item_icon" t-esc="art.icon or '📄'"/>
+                            <span class="o_info_hub_item_name" t-esc="art.name"/>
+                            <span t-if="art.is_unread" class="o_info_hub_unread_badge ms-2" title="Mandatory Reading Pending">To Read</span>
+                        </div>
+                    </t>
+                    <div t-if="getFavoritedArticles().length === 0" class="o_info_hub_section_empty">
+                        No favorites yet.
+                    </div>
+                </div>
+
+                <!-- ── WORKSPACE ── -->
+                <div class="o_info_hub_section_title">
+                    <span><i class="fa fa-briefcase me-1 o_info_hub_section_icon"/>Workspace</span>
+                    <div class="o_info_hub_section_title_actions" t-if="!props.isSharedUser">
+                        <!-- Eye icon: opens the Hidden Articles picker -->
+                        <button class="o_info_hub_section_eye_btn"
+                                title="Search hidden articles — articles you can access but haven't joined yet"
+                                t-on-click="props.onSearchHiddenArticles">
+                            <i class="fa fa-eye"/>
+                        </button>
+                        <!-- Plus icon: create a new Workspace article -->
+                        <button class="o_info_hub_section_add_btn" title="New Workspace article"
+                                 t-on-click="() => props.onNewArticleInSection('workspace')">
+                            <i class="fa fa-plus"/>
+                        </button>
+                    </div>
+                </div>
+                <div class="o_info_hub_section_content"
+                     data-section="workspace"
+                     data-workspace-type="workspace"
+                     t-on-dragover="props.onDragOver"
+                     t-on-drop="props.onDrop"
+                     t-on-dragleave="props.onDragLeave">
+                    <t t-foreach="getArticleTree('workspace')" t-as="art" t-key="'ws_' + art.id">
+                        <div class="o_info_hub_item_row"
+                             t-att-class="{ 'o_info_hub_active': props.activeArticleId === art.id, 'o_info_hub_unread': art.is_unread }"
+                             t-on-click="() => props.onSelectArticle(art.id)"
+                             draggable="true"
+                             t-att-data-article-id="art.id"
+                             data-section="workspace"
+                             t-on-dragstart="props.onDragStart"
+                             t-on-dragend="props.onDragEnd"
+                             t-att-style="'padding-left: ' + (art.level * 16 + 8) + 'px;'">
+                            <span class="o_info_hub_caret_wrap" t-on-click="(ev) => props.toggleArticleExpand(art.id, ev)">
+                                <i t-if="art.hasChildren"
+                                   t-att-class="art.isExpanded ? 'fa fa-caret-down' : 'fa fa-caret-right'"/>
+                            </span>
+                            <span class="o_info_hub_drag_handle"><i class="fa fa-bars"/></span>
+                            <span class="o_info_hub_item_icon" t-esc="art.icon or '📄'"/>
+                            <span class="o_info_hub_item_name" t-esc="art.name"/>
+                            <span t-if="art.is_unread" class="o_info_hub_unread_badge ms-2" title="Mandatory Reading Pending">To Read</span>
+                            <div class="o_info_hub_hover_actions ms-auto" t-if="!props.isSharedUser">
+                                <button class="btn btn-link p-0 o_info_hub_add_sub_btn" title="Create an Article inside"
+                                        t-on-click="(ev) => props.onNewSubArticle(art.id, ev)">
+                                    <i class="fa fa-plus"/>
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                    <div t-if="getArticleTree('workspace').length === 0" class="o_info_hub_section_empty">
+                        No workspace articles yet.
+                    </div>
+                </div>
+
+                <!-- ── SHARED ── -->
+                <div class="o_info_hub_section_title">
+                    <span><i class="fa fa-users me-1 o_info_hub_section_icon"/>Shared</span>
+                    <button class="o_info_hub_section_add_btn" title="New Shared article"
+                             t-on-click="() => props.onNewArticleInSection('shared')"
+                             t-if="!props.isSharedUser">
+                        <i class="fa fa-plus"/>
+                    </button>
+                </div>
+                <div class="o_info_hub_section_content"
+                     data-section="shared"
+                     data-workspace-type="shared"
+                     t-on-dragover="props.onDragOver"
+                     t-on-drop="props.onDrop"
+                     t-on-dragleave="props.onDragLeave">
+                    <t t-foreach="getArticleTree('shared')" t-as="art" t-key="'sh_' + art.id">
+                        <div class="o_info_hub_item_row"
+                             t-att-class="{ 'o_info_hub_active': props.activeArticleId === art.id, 'o_info_hub_unread': art.is_unread }"
+                             t-on-click="() => props.onSelectArticle(art.id)"
+                             draggable="true"
+                             t-att-data-article-id="art.id"
+                             data-section="shared"
+                             t-on-dragstart="props.onDragStart"
+                             t-on-dragend="props.onDragEnd"
+                             t-att-style="'padding-left: ' + (art.level * 16 + 8) + 'px;'">
+                            <span class="o_info_hub_caret_wrap" t-on-click="(ev) => props.toggleArticleExpand(art.id, ev)">
+                                <i t-if="art.hasChildren"
+                                   t-att-class="art.isExpanded ? 'fa fa-caret-down' : 'fa fa-caret-right'"/>
+                            </span>
+                            <span class="o_info_hub_drag_handle"><i class="fa fa-bars"/></span>
+                            <span class="o_info_hub_item_icon" t-esc="art.icon or '📄'"/>
+                            <span class="o_info_hub_item_name" t-esc="art.name"/>
+                            <span t-if="art.is_unread" class="o_info_hub_unread_badge ms-2" title="Mandatory Reading Pending">To Read</span>
+                            <div class="o_info_hub_hover_actions ms-auto" t-if="!props.isSharedUser">
+                                <button class="btn btn-link p-0 o_info_hub_add_sub_btn" title="Create an Article inside"
+                                        t-on-click="(ev) => props.onNewSubArticle(art.id, ev)">
+                                    <i class="fa fa-plus"/>
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                    <div t-if="getArticleTree('shared').length === 0" class="o_info_hub_section_empty">
+                        No shared articles yet.
+                    </div>
+                </div>
+
+                <!-- ── PRIVATE ── -->
+                <div class="o_info_hub_section_title">
+                    <span><i class="fa fa-lock me-1 o_info_hub_section_icon"/>Private</span>
+                    <button class="o_info_hub_section_add_btn" title="New Private article"
+                            t-on-click="() => props.onNewArticleInSection('private')">
+                        <i class="fa fa-plus"/>
+                    </button>
+                </div>
+                <div class="o_info_hub_section_content"
+                     data-section="private"
+                     data-workspace-type="private"
+                     t-on-dragover="props.onDragOver"
+                     t-on-drop="props.onDrop"
+                     t-on-dragleave="props.onDragLeave">
+                    <t t-foreach="getArticleTree('private')" t-as="art" t-key="'priv_' + art.id">
+                        <div class="o_info_hub_item_row"
+                             t-att-class="{ 'o_info_hub_active': props.activeArticleId === art.id, 'o_info_hub_unread': art.is_unread }"
+                             t-on-click="() => props.onSelectArticle(art.id)"
+                             draggable="true"
+                             t-att-data-article-id="art.id"
+                             data-section="private"
+                             t-on-dragstart="props.onDragStart"
+                             t-on-dragend="props.onDragEnd"
+                             t-att-style="'padding-left: ' + (art.level * 16 + 8) + 'px;'">
+                            <span class="o_info_hub_caret_wrap" t-on-click="(ev) => props.toggleArticleExpand(art.id, ev)">
+                                <i t-if="art.hasChildren"
+                                   t-att-class="art.isExpanded ? 'fa fa-caret-down' : 'fa fa-caret-right'"/>
+                            </span>
+                            <span class="o_info_hub_drag_handle"><i class="fa fa-bars"/></span>
+                            <span class="o_info_hub_item_icon" t-esc="art.icon or '📄'"/>
+                            <span class="o_info_hub_item_name" t-esc="art.name"/>
+                            <span t-if="art.is_unread" class="o_info_hub_unread_badge ms-2" title="Mandatory Reading Pending">To Read</span>
+                            <div class="o_info_hub_hover_actions ms-auto" t-if="!props.isSharedUser or art.category === 'private'">
+                                <button class="btn btn-link p-0 o_info_hub_add_sub_btn" title="Create an Article inside"
+                                        t-on-click="(ev) => props.onNewSubArticle(art.id, ev)">
+                                    <i class="fa fa-plus"/>
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                    <div t-if="getArticleTree('private').length === 0" class="o_info_hub_section_empty">
+                        No private articles yet.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer options -->
+            <div class="o_info_hub_sidebar_footer" t-if="!props.isSharedUser">
+                <button class="o_info_hub_footer_btn" t-on-click="props.onBrowseTemplates">
+                    <i class="fa fa-pencil-square-o"/> Browse Templates
+                </button>
+                <button class="o_info_hub_footer_btn" t-on-click="props.openTrash">
+                    <i class="fa fa-trash-o"/> Open the Trash
+                </button>
+            </div>
+
+        </div>
+    </aside>
+</t>
+
+</templates>

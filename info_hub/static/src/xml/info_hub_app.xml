@@ -1,0 +1,1506 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    OWL component templates for the Info Hub Single Page Application (SPA), including top toolbar,
+    main workspace, article editor, cover image header, properties bar, and responsive layout.
+-->
+<templates xml:space="preserve">
+
+<t t-name="info_hub.InfoApp">
+    <div class="o_info_hub_root" t-att-class="{ 'o_info_hub_sidebar_collapsed': !state.isSidebarOpen }">
+
+        <!-- SIDEBAR -->
+        <InfoSidebar
+            articles="state.articles"
+            activeArticleId="state.activeArticleId"
+            filterText="state.filterText"
+            expandedArticles="state.expandedArticles"
+            isSharedUser="state.isSharedUser"
+            onSelectArticle.bind="selectArticle"
+            onFilterInput.bind="onFilterInput"
+            onNewArticle.bind="onNewArticle"
+            onNewArticleInSection.bind="onNewArticleInSection"
+            onNewSubArticle.bind="onNewSubArticle"
+            toggleArticleExpand.bind="toggleArticleExpand"
+            onDragStart.bind="onDragStart"
+            onDragEnd.bind="onDragEnd"
+            onDragOver.bind="onDragOver"
+            onDragLeave.bind="onDragLeave"
+            onDrop.bind="onDrop"
+            onBrowseTemplates.bind="onBrowseTemplates"
+            openTrash.bind="openTrash"
+            onSearchHiddenArticles.bind="searchHiddenArticles"
+            toggleSidebar.bind="toggleSidebar"
+        />
+
+        <!-- MAIN PANE -->
+        <main class="o_info_hub_main position-relative">
+
+            <!-- Floating Sidebar Expand Button (when collapsed) -->
+            <button class="o_info_hub_sidebar_floating_toggle_btn" t-att-class="{ 'o_info_hub_hidden': state.isSidebarOpen }" t-on-click="toggleSidebar" title="Show Sidebar">
+                <i class="fa fa-angle-double-right"/>
+            </button>
+
+            <!-- HEADER BAR -->
+            <div class="o_info_hub_header_bar" t-if="state.activeArticle">
+                <div class="o_info_hub_header_left">
+                    <div class="o_info_hub_breadcrumb">
+                        <!-- Ancestor crumbs -->
+                        <t t-foreach="breadcrumbs" t-as="crumb" t-key="crumb.id">
+                            <span class="o_info_hub_breadcrumb_parent"
+                                  t-on-click="() => this.selectArticle(crumb.id)"
+                                  t-esc="crumb.name"/>
+                            <i class="fa fa-chevron-right o_info_hub_breadcrumb_sep"/>
+                        </t>
+                        <span t-esc="state.activeArticle.icon or '📄'"/>
+                        <span class="o_info_hub_breadcrumb_active" t-esc="state.activeArticle.name"/>
+                        <span class="o_info_hub_save_discard_wrapper ms-2">
+                            <t t-if="state.editorDirty">
+                                <i class="fa fa-check text-success cursor-pointer me-2 o_info_hub_save_btn" title="Save changes" t-on-click="saveChanges"/>
+                                <i class="fa fa-times text-danger cursor-pointer o_info_hub_discard_btn" title="Discard changes" t-on-click="discardChanges"/>
+                            </t>
+                            <t t-else="">
+                                <i class="fa fa-cloud o_info_hub_cloud_icon text-muted" title="Saved"/>
+                            </t>
+                        </span>
+                    </div>
+                </div>
+                <div class="o_info_hub_header_right" t-if="state.activeArticle.active">
+                    <button class="o_info_hub_btn_primary" t-on-click="onNewArticleInCurrentSection">New</button>
+                    <div class="dropdown d-inline-block">
+                        <button class="o_info_hub_btn_outline dropdown-toggle dropdown-toggle-no-caret" data-bs-toggle="dropdown" aria-expanded="false" title="Share article">
+                            <i class="fa fa-share-alt"/>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-3 o_info_hub_share_dropdown" style="width: 360px;" t-on-click="(ev) => ev.stopPropagation()">
+                            <InfoSharePanel article="state.activeArticle" t-if="state.activeArticle" onRefreshArticle.bind="onRefreshSharePanel" isSharedUser="state.isSharedUser"/>
+                        </div>
+                    </div>
+                    <button class="o_info_hub_action_icon_btn o_info_hub_toc_btn"
+                            t-if="shouldShowTOCButton()"
+                            t-att-class="{ 'o_info_hub_toc_active': state.showTOCPanel }"
+                            t-on-click="onToggleTOCPanel"
+                            title="Table of Contents">
+                        <i class="fa fa-bookmark"/>
+                    </button>
+                    <button class="o_info_hub_action_icon_btn" t-on-click="toggleFavorite"
+                            t-att-class="{ 'o_info_hub_active': state.favorited }" title="Favorite">
+                        <i t-att-class="state.favorited ? 'fa fa-star' : 'fa fa-star-o'"/>
+                    </button>
+
+                    <button class="o_info_hub_action_icon_btn"
+                            t-if="state.activeArticle and state.activeArticle.parent_id and state.customProperties and state.customProperties.length > 0"
+                            t-att-class="{ 'o_info_hub_settings_active': state.showPropertiesPanel }"
+                            t-on-click="onTogglePropertiesPanel" title="Settings">
+                        <i class="fa fa-cog"/>
+                    </button>
+                    <button class="o_info_hub_action_icon_btn"
+                            t-att-class="{ 'o_info_hub_chat_active': state.showChatter }"
+                            t-on-click="onClickChat"
+                            title="Chat">
+                        <i class="fa fa-comments-o"/>
+                    </button>
+
+                    <!-- THREE-DOT DROPDOWN MENU -->
+                    <div class="dropdown d-inline-block">
+                        <button class="o_info_hub_action_icon_btn dropdown-toggle-no-caret"
+                                data-bs-toggle="dropdown" title="More" aria-expanded="false">
+                            <i class="fa fa-ellipsis-v"/>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end o_info_hub_more_menu">
+
+                            <!-- Remove Icon: only when a custom (non-default) emoji is set, and not locked -->
+                            <li t-if="!state.isLocked and state.activeArticle and state.activeArticle.icon and state.activeArticle.icon !== '📄'">
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onRemoveIcon(); }">
+                                    <i class="fa fa-smile-o me-2 o_info_hub_menu_icon"/> Remove Icon
+                                </a>
+                            </li>
+                            <!-- Add Icon: shown when icon is default or empty, and not locked -->
+                            <li t-if="!state.isLocked and (!state.activeArticle or !state.activeArticle.icon or state.activeArticle.icon === '📄')">
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onAddRandomIcon(); }">
+                                    <i class="fa fa-smile-o me-2 o_info_hub_menu_icon"/> Add Icon
+                                </a>
+                            </li>
+                            <li t-if="!state.isLocked and state.activeArticle and state.activeArticle.cover_image">
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onRemoveCover(); }">
+                                    <i class="fa fa-times me-2 o_info_hub_menu_icon"/> Remove Cover
+                                </a>
+                            </li>
+                            <li t-elif="!state.isLocked">
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onAddCover(); }">
+                                    <i class="fa fa-picture-o me-2 o_info_hub_menu_icon"/> Add Cover
+                                </a>
+                            </li>
+                            <li t-if="!state.isLocked and state.activeArticle and state.activeArticle.parent_id">
+                                <a class="dropdown-item d-flex align-items-center" href="#" t-on-click="(ev) => { ev.preventDefault(); this.onMenuAddProperty(); }">
+                                    <i class="fa fa-sliders me-2 o_info_hub_menu_icon"/> Add Properties
+                                </a>
+                            </li>
+                            <li t-elif="!state.isLocked">
+                                <a class="dropdown-item d-flex align-items-center o_info_hub_disabled_item" href="#">
+                                    <i class="fa fa-sliders me-2 o_info_hub_menu_icon"/> Add Properties
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onToggleFullWidth(); }">
+                                    <i class="fa fa-arrows-h me-2 o_info_hub_menu_icon"/> Full Width
+                                    <span class="o_info_hub_toggle_pill ms-auto"
+                                          t-att-class="state.isFullWidth ? 'o_info_hub_toggle_on' : 'o_info_hub_toggle_off'">
+                                        <span class="o_info_hub_toggle_knob"/>
+                                    </span>
+                                </a>
+                            </li>
+
+                            <li class="o_info_hub_separator_li"></li>
+
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onOpenMoveTo(); }">
+                                    <i class="fa fa-share me-2 o_info_hub_menu_icon"/> Move To
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onToggleLock(); }">
+                                    <i t-att-class="state.isLocked ? 'fa fa-unlock me-2 o_info_hub_menu_icon' : 'fa fa-lock me-2 o_info_hub_menu_icon'"/>
+                                    <t t-if="state.isLocked">Unlock Content</t>
+                                    <t t-else="">Lock Content</t>
+                                </a>
+                            </li>
+                            <li t-if="state.activeArticle.user_permission === 'edit'">
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onRequireReading(); }">
+                                    <i class="fa fa-bookmark-o me-2 o_info_hub_menu_icon"/> Require Reading
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onCreateCopy(); }">
+                                    <i class="fa fa-copy me-2 o_info_hub_menu_icon"/> Create a Copy
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onOpenVersionHistory(); }">
+                                    <i t-att-class="'fa me-2 o_info_hub_menu_icon ' + (state.showVersionHistory ? 'fa-eye-slash' : 'fa-history')"/>
+                                    <t t-if="state.showVersionHistory">Hide Version History</t>
+                                    <t t-else="">Open Version History</t>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onDownloadPDF(); }">
+                                    <i class="fa fa-download me-2 o_info_hub_menu_icon"/> Download PDF
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.onAddToTemplates(); }">
+                                    <i class="fa fa-file-text-o me-2 o_info_hub_menu_icon"/> Add to Templates
+                                </a>
+                            </li>
+
+
+                            <li><hr class="dropdown-divider"/></li>
+
+                            <!-- Danger zone -->
+                            <li>
+                                <a class="dropdown-item text-danger d-flex align-items-center" href="#"
+                                   t-on-click="(ev) => { ev.preventDefault(); this.archiveActiveArticle(); }">
+                                    <i class="fa fa-trash me-2"/> Move to Trash
+                                </a>
+                            </li>
+
+                            <!-- Last edited meta -->
+                            <li t-if="state.activeArticle.last_edition_date">
+                                <div class="o_info_hub_menu_meta d-flex flex-column">
+                                    <div class="mb-1 text-muted small">Last Edited · <span t-esc="getRelativeTime(state.activeArticle.last_edition_date)"/></div>
+                                    <div class="d-flex align-items-center mt-1" t-if="state.activeArticle.last_edition_uid">
+                                        <img t-att-src="'/web/image?model=res.users&amp;id=' + state.activeArticle.last_edition_uid[0] + '&amp;field=avatar_128'" class="rounded-circle me-2" style="width: 20px; height: 20px; object-fit: cover;"/>
+                                        <span t-esc="state.activeArticle.last_edition_uid[1]" class="o_info_hub_menu_meta_user"/>
+                                    </div>
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- COVER IMAGE UPLOAD PANEL -->
+            <div t-if="state.showCoverUpload and state.activeArticle" class="o_info_hub_cover_panel">
+                <div class="o_info_hub_cover_panel_inner">
+                    <div class="o_info_hub_cover_panel_left">
+                        <span class="o_info_hub_cover_panel_title">
+                            <i class="fa fa-picture-o me-1"/> Cover Image
+                        </span>
+                        <div class="o_info_hub_cover_panel_actions">
+                            <label class="o_info_hub_cover_btn">
+                                <i class="fa fa-upload me-1"/> Upload Image
+                                <input type="file" accept="image/*" style="display:none;"
+                                       t-on-change="onCoverFileChange"/>
+                            </label>
+                            <button t-if="state.activeArticle.cover_image"
+                                    class="o_info_hub_cover_btn o_info_hub_cover_btn_danger"
+                                    t-on-click="onRemoveCover">
+                                <i class="fa fa-trash me-1"/> Remove
+                            </button>
+                            <button class="o_info_hub_cover_btn o_info_hub_cover_btn_cancel"
+                                    t-on-click="() => { this.state.showCoverUpload = false; }">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                    <img t-if="state.activeArticle.cover_image" class="o_info_hub_cover_preview"
+                         t-att-src="'data:image/png;base64,' + state.activeArticle.cover_image"
+                         alt="Current cover"/>
+                </div>
+            </div>
+
+            <!-- MOVE TO DIALOG (inline overlay) -->
+            <div t-if="state.showMoveToDialog" class="o_info_hub_popup_overlay" t-on-click="onCancelMoveTo">
+                <div class="o_info_hub_add_property_popup" style="width: 480px;" t-on-click="(ev) => ev.stopPropagation()">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0 text-dark" style="font-size: 1.15rem; font-weight: 600;">Move an Article</h5>
+                        <button class="o_info_hub_dialog_close" style="background: transparent; border: none; color: #4b5563; padding: 0;" t-on-click="onCancelMoveTo">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-dark mb-2" style="font-size: 0.95rem;">
+                            Move "<t t-esc="state.activeArticle?.icon or '📄'"/> <t t-esc="state.activeArticle?.name"/>" under:
+                        </p>
+                        <select class="form-select o_info_hub_popup_input w-100" t-on-change="onMoveToArticleChange" style="background-color: #ffffff; border: 1px solid #e5e7eb; color: #1f2937; border-radius: 4px; padding: 8px 12px; font-size: 0.9rem; outline: none; box-shadow: none; cursor: pointer;">
+                            <option value="">Choose an Article...</option>
+                            <t t-foreach="state.articles" t-as="art" t-key="art.id">
+                                <!-- Do not allow moving an article under itself -->
+                                <option t-if="art.id !== state.activeArticleId" t-att-value="art.id" t-att-selected="art.id === state.moveToArticleId">
+                                    <t t-esc="art.icon or '📄'"/> <t t-esc="art.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm" style="background-color: #5F3F5B; color: white; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 500;" t-on-click="onConfirmMoveTo">Move Article</button>
+                        <button class="btn btn-sm" style="background-color: #e5e7eb; color: #1f2937; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 500;" t-on-click="onCancelMoveTo">Discard</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VERSION HISTORY PANEL -->
+            <div t-if="state.showVersionHistory and state.activeArticle" class="o_info_hub_version_panel">
+                <div class="o_info_hub_version_panel_header">
+                    <span>
+                        <i class="fa fa-history"/>
+                        Version History
+                    </span>
+                    <button class="o_info_hub_version_close"
+                            t-on-click="() => { this.state.showVersionHistory = false; }"
+                            title="Close">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+                <div class="o_info_hub_version_list">
+                    <t t-if="state.versionHistory.length === 0">
+                        <div class="o_info_hub_version_empty">
+                            <i class="fa fa-info-circle"/>
+                            No history entries found.
+                        </div>
+                    </t>
+                    <t t-foreach="state.versionHistory" t-as="entry" t-key="entry_index">
+                        <div class="o_info_hub_version_entry">
+                            <div class="o_info_hub_version_dot"/>
+                            <div class="o_info_hub_version_info">
+                                <span class="o_info_hub_version_label" t-esc="entry.label"/>
+                                <span class="o_info_hub_version_user" t-esc="entry.user"/>
+                                <span class="o_info_hub_version_date">
+                                    <i class="fa fa-clock-o me-1"/>
+                                    <t t-esc="entry.date"/>
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+
+            <!-- WELCOME -->
+            <div t-if="!state.activeArticleId" class="o_info_hub_welcome">
+                <div class="o_info_hub_welcome_inner">
+                    <div class="o_info_hub_welcome_emoji">📖</div>
+                    <h2>Welcome to Information</h2>
+                    <p class="text-muted">Select an article from the sidebar, or create a new one.</p>
+                    <button class="btn btn-primary mt-3" t-on-click="onNewArticle">
+                        <i class="fa fa-plus me-1"/> New Article
+                    </button>
+                </div>
+            </div>
+
+            <!-- ARTICLE LOADING -->
+            <div t-if="state.activeArticleId and state.articleLoading" class="o_info_hub_article_loading">
+                <i class="fa fa-spinner fa-spin fa-2x"/>
+            </div>
+
+            <!-- ARTICLE VIEW CONTAINER (Editor + Chatter) -->
+            <div id="content_body" t-if="state.activeArticle and !state.articleLoading" class="o_info_hub_view_container">
+                <div class="o_info_hub_editor_container"
+                     t-ref="editorContainer"
+                     t-att-class="{ 'o_info_hub_full_width': state.isFullWidth }">
+                    <div class="o_info_hub_editor_content"
+                         t-att-class="{ 'o_info_hub_content_full_width': state.isFullWidth }">
+
+                        <!-- MANDATORY READING BANNER -->
+                        <div t-if="state.pendingReadingId and state.activeArticle.user_permission !== 'none'" class="o_info_hub_mandatory_reading_banner alert alert-warning d-flex align-items-center justify-content-between p-3 mb-0 border-0 border-bottom rounded-0" style="position: sticky; top: 0; z-index: 10;">
+                            <div class="d-flex align-items-center">
+                                <i class="fa fa-exclamation-triangle me-2 text-warning" style="font-size: 1.1rem;"/>
+                                <span class="fw-bold">Mandatory Reading:</span>
+                                <span class="ms-1">Please acknowledge that you have read and understood this document.</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm px-3" t-on-click="acknowledgeReading">
+                                Acknowledge
+                            </button>
+                        </div>
+
+                        <!-- Template Edit Banner -->
+                        <div t-if="state.activeArticle.is_template and state.activeArticle.active" class="o_info_hub_template_edit_banner d-flex align-items-center justify-content-between px-4 py-3 bg-warning text-warning-800 border-bottom border-warning">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa fa-info-circle fa-lg"/>
+                                <span>You are editing a <strong>Template</strong>. Changes will affect all future articles created from this template.</span>
+                            </div>
+                            <button class="btn btn-xs btn-outline-dark" t-on-click="onCloseTemplateEdit">
+                                Exit Template Mode
+                            </button>
+                        </div>
+
+                        <!-- Trash Banner -->
+                        <div t-if="!state.activeArticle.active" class="o_info_hub_trash_banner d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa fa-trash-o fa-lg"/>
+                                <span t-if="state.activeArticle.is_template">This template is in the <strong>Trash</strong>. Restore it to view or edit.</span>
+                                <span t-else="">This article is in the <strong>Trash</strong>. Restore it to view or edit.</span>
+                            </div>
+                            <button class="btn btn-xs btn-outline-dark" t-on-click="restoreActiveArticle">
+                                <t t-if="state.activeArticle.is_template">Restore Template</t>
+                                <t t-else="">Restore Article</t>
+                            </button>
+                        </div>
+
+                    <!-- CASE 1: No Access (show Join banner) -->
+                    <t t-if="state.activeArticle.user_permission === 'none'">
+                        <div class="o_info_hub_join_banner text-center py-5 px-3">
+                            <div class="o_info_hub_join_icon mb-3"><i class="fa fa-lock fa-3x text-warning"/></div>
+                            <h3>This article is only displayed to its members.</h3>
+                            <p class="text-muted small">You need to join this article to view or edit its contents.</p>
+                            <button class="btn btn-primary mt-2" t-on-click="joinArticle">Join</button>
+                        </div>
+                    </t>
+                           <!-- CASE 2: Can Read (read-only view) -->
+                    <t t-elif="state.activeArticle.user_permission === 'read' or !state.activeArticle.active">
+                        <!-- Cover Image Display -->
+                        <div t-if="state.activeArticle.cover_image" class="o_info_hub_article_cover">
+                            <img t-att-src="'data:image/png;base64,' + state.activeArticle.cover_image"
+                                 t-att-style="'object-position: center ' + (state.activeArticle.cover_image_position || 50) + '%;'"
+                                 alt="Article Cover"/>
+                        </div>
+                        <div class="o_info_hub_editor_content_inner" t-att-class="{ 'o_info_hub_content_full_width': state.isFullWidth, 'o_info_hub_has_cover': state.activeArticle.cover_image }">
+                            <!-- Large Article Icon -->
+                            <div class="o_info_hub_article_icon_wrap">
+                                <span class="o_info_hub_article_icon_display" style="font-size: 3rem;"
+                                      t-esc="state.activeArticle.icon or '📄'"/>
+                            </div>
+
+                            <div class="o_info_hub_body_wrapper">
+                                <t t-if="state.activeArticle.display_mode === 'kanban' and !state.activeArticle.active">
+                                    <!-- Static read-only Kanban snapshot for archived articles -->
+                                    <div class="o_info_hub_page_kanban_wrapper mb-4 o_info_hub_archived_kanban">
+                                        <div class="o_info_hub_archived_kanban_board">
+                                            <t t-foreach="state.kanbanStages" t-as="stage" t-key="stage.id">
+                                                <div class="o_info_hub_archived_kanban_col">
+                                                    <div class="o_info_hub_archived_kanban_col_header">
+                                                        <span class="o_info_hub_archived_kanban_col_title" t-esc="stage.name"/>
+                                                        <span class="badge rounded-pill bg-secondary ms-1"
+                                                              t-esc="(state.archivedKanbanItems[stage.id] or []).length"/>
+                                                    </div>
+                                                    <div class="o_info_hub_archived_kanban_col_body">
+                                                        <t t-foreach="state.archivedKanbanItems[stage.id] or []" t-as="item" t-key="item.id">
+                                                            <div class="o_info_hub_archived_kanban_card">
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <span t-if="item.icon" t-esc="item.icon" class="fs-6"/>
+                                                                    <span t-else="" class="fs-6">📄</span>
+                                                                    <span class="fw-semibold text-truncate" t-esc="item.name or 'Untitled'"/>
+                                                                </div>
+                                                            </div>
+                                                        </t>
+                                                        <div t-if="!(state.archivedKanbanItems[stage.id] or []).length"
+                                                             class="o_info_hub_archived_kanban_empty text-muted small text-center py-2">
+                                                            No items
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                            <t t-if="!state.kanbanStages.length">
+                                                <div class="text-muted text-center py-4 w-100">
+                                                    <i class="fa fa-th-large fa-2x mb-2 d-block opacity-50"/>
+                                                    No Kanban stages found.
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                                <t t-elif="state.activeArticle.display_mode === 'kanban'">
+                                    <!-- Active article: use live View component -->
+                                    <div class="o_info_hub_page_kanban_wrapper mb-4">
+                                        <View t-props="getKanbanViewProps()" t-key="'kanban_' + state.activeArticleId + '_' + state.activeArticle.active"/>
+                                    </div>
+                                </t>
+                                <div t-att-class="state.activeArticle.display_mode === 'kanban' ? 'o_info_hub_kanban_editor_wrapper border-top pt-4 mt-4' : ''">
+                                    <div class="o_info_hub_read_only_body o_info_hub_editor_body">
+                                        <HtmlViewer config="getReadonlyEditorConfig()" />
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+                    </t>
+
+                    <!-- CASE 3: Can Edit (full edit view) -->
+                    <t t-else="">
+                        <!-- Cover Image Display -->
+                        <div t-if="state.activeArticle.cover_image" class="o_info_hub_article_cover"
+                            t-att-class="{ 'o_info_hub_cover_repositioning': state.repositioning }"
+                            t-on-mousemove="onCoverDragMove"
+                            t-on-mouseup="onCoverDragEnd"
+                        >
+                            <img t-att-src="'data:image/png;base64,' + state.activeArticle.cover_image"
+                                 t-att-style="'object-position: center ' + (state.coverObjectPosition !== undefined ? state.coverObjectPosition : (state.activeArticle.cover_image_position || 50)) + '%;'"
+                                 t-on-mousedown="onCoverDragStart"
+                                 alt="Article Cover"/>
+                            <div t-if="state.repositioning" class="o_info_hub_cover_reposition_bar">
+                                <span>Drag to reposition</span>
+                                <div class="o_info_hub_cover_action_divider"></div>
+                                <button class="o_info_hub_cover_action_pill" t-on-click="onSaveReposition">
+                                    <i class="fa fa-check me-1"/> Save
+                                </button>
+                                <div class="o_info_hub_cover_action_divider"></div>
+                                <button class="o_info_hub_cover_action_pill o_info_hub_cover_action_pill_danger" t-on-click="onCancelReposition">
+                                    <i class="fa fa-times me-1"/> Cancel
+                                </button>
+                            </div>
+                            <div t-if="!state.repositioning" class="o_info_hub_cover_actions">
+                                <button class="o_info_hub_cover_action_pill" t-on-click="onAddCover">
+                                    <i class="fa fa-image me-1"/> Replace
+                                </button>
+                                <div class="o_info_hub_cover_action_divider"></div>
+                                <button class="o_info_hub_cover_action_pill" t-on-click="onRepositionCover">
+                                    <i class="fa fa-arrows-v me-1"/> Reposition
+                                </button>
+                                <div class="o_info_hub_cover_action_divider"></div>
+                                <button class="o_info_hub_cover_action_pill o_info_hub_cover_action_pill_danger" t-on-click="onRemoveCover">
+                                    <i class="fa fa-trash me-1"/> Remove
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="o_info_hub_editor_content_inner" t-att-class="{ 'o_info_hub_content_full_width': state.isFullWidth, 'o_info_hub_has_cover': state.activeArticle.cover_image }">
+                            <!-- Locked Banner -->
+                            <div t-if="state.isLocked" class="o_info_hub_locked_banner">
+                                <i class="fa fa-lock me-2"/>
+<!--                                This article is locked and cannot be edited.-->
+                            </div>
+
+                            <!-- Large Article Icon (clickable to open emoji picker) -->
+                            <div class="o_info_hub_article_icon_wrap">
+                                <button class="o_info_hub_article_icon_btn"
+                                        t-on-click="state.isLocked ? () => {} : onToggleEmojiPicker"
+                                        t-att-disabled="state.isLocked"
+                                        t-att-title="state.isLocked ? 'Article is locked' : 'Click to change icon'">
+                                    <span class="o_info_hub_article_icon_display"
+                                        t-esc="state.activeArticle.icon or '📄'"/>
+                                </button>
+
+                                <!-- EMOJI PICKER POPUP -->
+                                <div t-if="state.showEmojiPicker" class="o_info_hub_emoji_panel" t-on-click="(ev) => ev.stopPropagation()">
+                                    <!-- Header row -->
+                                    <div class="o_info_hub_emoji_panel_header">
+                                        <span class="o_info_hub_emoji_panel_title">
+                                            <i class="fa fa-smile-o me-1"/> Choose an Icon
+                                        </span>
+                                        <button class="o_info_hub_emoji_close"
+                                                t-on-click="() => { this.state.showEmojiPicker = false; }">
+                                            <i class="fa fa-times"/>
+                                        </button>
+                                    </div>
+                                    <!-- Search -->
+                                    <div class="o_info_hub_emoji_search_wrap">
+                                        <i class="fa fa-search o_info_hub_emoji_search_icon"/>
+                                        <input class="o_info_hub_emoji_search_input"
+                                               type="text"
+                                               placeholder="Search emoji..."
+                                               t-att-value="state.emojiSearchQuery"
+                                               t-on-input="onEmojiSearch"/>
+                                    </div>
+                                    <!-- Category tabs (hidden when searching) -->
+                                    <div class="o_info_hub_emoji_cats" t-if="!state.emojiSearchQuery">
+                                        <t t-foreach="getEmojiCategories()" t-as="cat" t-key="cat.key">
+                                            <button class="o_info_hub_emoji_cat_btn"
+                                                    t-att-class="{ 'o_info_hub_emoji_cat_active': state.emojiActiveCategory === cat.key }"
+                                                    t-on-click="() => this.state.emojiActiveCategory = cat.key"
+                                                    t-att-title="cat.label">
+                                                <t t-esc="cat.icon"/>
+                                            </button>
+                                        </t>
+                                    </div>
+                                    <!-- Emoji grid -->
+                                    <div class="o_info_hub_emoji_grid">
+                                        <t t-foreach="getVisibleEmojis()" t-as="emoji" t-key="emoji">
+                                            <button class="o_info_hub_emoji_btn"
+                                                    t-att-class="{ 'o_info_hub_emoji_active': state.activeArticle.icon === emoji }"
+                                                    t-on-click="() => this.onSelectEmoji(emoji)"
+                                                    t-att-title="emoji">
+                                                <t t-esc="emoji"/>
+                                            </button>
+                                        </t>
+                                        <div t-if="getVisibleEmojis().length === 0" class="o_info_hub_emoji_no_results">
+                                            No emojis found.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="o_info_hub_body_wrapper">
+                                <!-- Slash Command Menu -->
+                                <div t-if="state.showSlashMenu" class="dropdown-menu show o_info_hub_slash_menu" t-att-style="state.slashMenuStyle">
+                                    <h6 class="dropdown-header">Insert Block</h6>
+                                    <a class="dropdown-item d-flex align-items-center cursor-pointer py-2" href="#" t-on-click="(ev) => { ev.preventDefault(); this.insertKanbanBlock(); }">
+                                        <i class="fa fa-th-large text-primary me-2 fs-5"></i>
+                                        <div>
+                                            <div class="fw-bold text-dark">Kanban Board</div>
+                                            <small class="text-muted">Insert a  Kanban </small>
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <t t-if="state.activeArticle.display_mode === 'kanban'">
+                                    <!-- Kanban board component -->
+                                    <div class="o_info_hub_page_kanban_wrapper mb-4">
+                                        <View t-props="getKanbanViewProps()" t-key="'kanban_' + state.activeArticleId + '_' + state.activeArticle.active"/>
+                                    </div>
+                                </t>
+
+                                <!-- Editor Area -->
+                                <div t-att-class="state.activeArticle.display_mode === 'kanban' ? 'o_info_hub_kanban_editor_wrapper border-top pt-4 mt-4' : ''">
+                                    <div class="o_info_hub_editor_wrapper" t-att-class="{ 'o_info_hub_editor_with_helper': state.showEditorHelper }">
+                                        <Wysiwyg
+                                            config="getEditorConfig()"
+                                            onLoad.bind="onEditorLoad"
+                                            onBlur.bind="onEditorBlur"
+                                            t-key="state.activeArticleId + '_' + state.editorKey"
+                                            contentClass="'o_info_hub_editor_body'"
+                                        />
+                                    </div>
+
+                                    <!-- Document Mode Helper -->
+                                    <t t-if="state.activeArticle.display_mode !== 'kanban' and state.showEditorHelper">
+                                        <div class="o_info_hub_editor_helper_screen">
+                                            <div class="o_info_hub_helper_header">
+                                                <p class="o_info_hub_helper_subtitle">Keep writing, or choose an option below to jump right in!</p>
+                                            </div>
+                                            <div class="o_info_hub_helper_cards_grid">
+                                                <div class="o_info_hub_helper_card" t-on-click="onLoadTemplateClick">
+                                                    <div class="o_info_hub_helper_card_icon_wrapper o_info_hub_helper_icon_template">
+                                                        <i class="fa fa-paint-brush"/>
+                                                    </div>
+                                                    <div class="o_info_hub_helper_card_content">
+                                                        <div class="o_info_hub_helper_card_title">Load a Template</div>
+                                                        <div class="o_info_hub_helper_card_desc">Use a pre-designed template as a starting point.</div>
+                                                    </div>
+                                                </div>
+                                                <div class="o_info_hub_helper_card" t-on-click="onBuildItemKanbanClick">
+                                                    <div class="o_info_hub_helper_card_icon_wrapper o_info_hub_helper_icon_kanban">
+                                                        <i class="fa fa-th-large"/>
+                                                    </div>
+                                                    <div class="o_info_hub_helper_card_content">
+                                                        <div class="o_info_hub_helper_card_title">Build an Item Kanban</div>
+                                                        <div class="o_info_hub_helper_card_desc">Organize tasks and track progress using stages.</div>
+                                                    </div>
+                                                </div>
+                                                <div class="o_info_hub_helper_card" t-on-click="onBuildItemListClick">
+                                                    <div class="o_info_hub_helper_card_icon_wrapper o_info_hub_helper_icon_list">
+                                                        <i class="fa fa-list-ul"/>
+                                                    </div>
+                                                    <div class="o_info_hub_helper_card_content">
+                                                        <div class="o_info_hub_helper_card_title">Build an Item List</div>
+                                                        <div class="o_info_hub_helper_card_desc">Track items, list features, or manage checklists.</div>
+                                                    </div>
+                                                </div>
+                                                <div class="o_info_hub_helper_card" t-on-click="onBuildItemCalendarClick">
+                                                    <div class="o_info_hub_helper_card_icon_wrapper o_info_hub_helper_icon_calendar">
+                                                        <i class="fa fa-calendar"/>
+                                                    </div>
+                                                    <div class="o_info_hub_helper_card_content">
+                                                        <div class="o_info_hub_helper_card_title">Build an Item Calendar</div>
+                                                        <div class="o_info_hub_helper_card_desc">Schedule meetings, track deadlines, and view timelines.</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                </div>
+
+                <!-- ITEM PROPERTIES PANEL -->
+                <div class="o_info_hub_properties_panel" t-if="state.showPropertiesPanel and state.activeArticle.parent_id">
+
+                    <!-- Empty state: centered icon + text + button -->
+                    <t t-if="state.customProperties.length === 0">
+                        <div class="d-flex flex-column align-items-center justify-content-center text-center flex-grow-1" style="gap: 16px; padding: 40px 16px;">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <line x1="10" y1="9" x2="8" y2="9"/>
+                            </svg>
+                            <div>
+                                <div class="fw-bold mb-2" style="font-size: 1.15rem; color: #1f2937;">Add Property Fields</div>
+                                <div class="text-muted" style="font-size: 0.85rem; line-height: 1.6; max-width: 220px; margin: 0 auto;">
+                                    Organize your database with custom fields (Text, Selection, ...). Those fields will be available on all articles that share the same parent.
+                                </div>
+                            </div>
+                            <button t-if="!state.isLocked" class="o_info_hub_add_property_btn mt-2" t-on-click="onAddProperty">
+                                <i class="fa fa-plus"/> Add Property
+                            </button>
+                        </div>
+                    </t>
+
+                    <!-- Properties list + Add button -->
+                    <t t-else="">
+                        <div class="o_info_hub_prop_list">
+                        <t t-foreach="state.customProperties" t-as="prop" t-key="prop_index">
+                            <div t-if="this.isPropertyVisible(prop_index)"
+                                 t-att-class="prop.type === 'Separator' ? 'o_info_hub_prop_item o_info_hub_prop_separator_item position-relative' : (prop.type === 'HTML' ? 'o_info_hub_prop_item o_info_hub_prop_html_item position-relative' : 'o_info_hub_prop_item position-relative')"
+                                 t-att-data-index="prop_index"
+                                 draggable="true"
+                                 t-on-dragstart="onPropDragStart"
+                                 t-on-dragover="onPropDragOver"
+                                 t-on-drop="onPropDrop"
+                                 t-on-dragend="onPropDragEnd">
+                                <t t-if="prop.type === 'Separator'">
+                                    <div class="d-flex flex-column" style="width:100%;">
+                                        <div class="d-flex align-items-center gap-1">
+                                              <i t-att-class="prop.separatorState !== 'fold' ? 'fa fa-caret-down cursor-pointer' : 'fa fa-caret-right cursor-pointer'"
+                                                style="color:#4b5563;font-size:0.75rem;width:12px;"
+                                                t-on-click="() => this.toggleSeparator(prop_index)"/>
+                                             <i class="fa fa-bars o_property_drag_handle text-muted" style="cursor:grab; margin-right:4px; font-size:0.8rem;"/>
+
+                                             <span class="o_info_hub_prop_label" style="white-space:nowrap;text-transform:uppercase;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;">
+                                                 <t t-esc="prop.label"/>
+                                                 <i t-if="!state.isLocked" class="fa fa-pencil o_info_hub_prop_edit_icon" t-on-click="(ev) => { ev.stopPropagation(); this.onEditProperty(prop_index); }"></i>
+                                             </span>
+                                         </div>
+                                         <hr t-if="prop.separatorState !== 'fold'" style="width:100%;border-color:#4b5563;margin:4px 0 0 0;"/>
+                                     </div>
+                                </t>
+                                <t t-else="">
+                                    <span class="o_info_hub_prop_label">
+                                    <i class="fa fa-bars o_property_drag_handle text-muted" style="cursor:grab; margin-right:4px; font-size:0.8rem;"/>
+                                    <t t-esc="prop.label"/>
+                                    <span class="d-flex align-items-center gap-2">
+                                        <i t-if="!state.isLocked" class="fa fa-pencil o_info_hub_prop_edit_icon" t-on-click="(ev) => { ev.stopPropagation(); this.onEditProperty(prop_index); }"></i>
+                                    </span>
+                                </span>
+                                <t t-if="prop.type === 'Checkbox'">
+                                     <div class="d-flex align-items-center gap-2">
+                                         <input type="checkbox"
+                                                class="form-check-input o_info_hub_prop_val_checkbox"
+                                                t-att-checked="prop.value === 'true'"
+                                                t-att-disabled="state.isLocked"
+                                                t-on-change="(ev) => this.updateCustomPropertyValue(prop, ev.target.checked ? 'true' : 'false')" />
+                                         <span t-if="prop.suffix" class="text-muted ms-1" style="font-size: 0.85rem;"><t t-esc="prop.suffix"/></span>
+                                     </div>
+                                 </t>
+                                <t t-elif="['Integer', 'Decimal', 'Monetary'].includes(prop.type)">
+                                    <div class="d-flex align-items-center w-100">
+                                        <input type="number"
+                                               class="o_info_hub_prop_val_input flex-grow-1"
+                                               placeholder="Empty"
+                                               t-att-step="prop.type === 'Integer' ? '1' : 'any'"
+                                               t-att-value="prop.value"
+                                               t-att-disabled="state.isLocked"
+                                               t-on-input="(ev) => this.updateCustomPropertyValue(prop, ev.target.value)" />
+                                        <span t-if="prop.suffix" class="text-muted ms-1" style="font-size: 0.85rem;"><t t-esc="prop.suffix"/></span>
+                                    </div>
+                                </t>
+                                <t t-elif="prop.type === 'Date'">
+                                    <div class="d-flex align-items-center w-100">
+                                        <input type="date"
+                                               class="o_info_hub_prop_val_input flex-grow-1"
+                                               t-att-value="prop.value"
+                                               t-att-disabled="state.isLocked"
+                                               t-on-input="(ev) => this.updateCustomPropertyValue(prop, ev.target.value)" />
+                                        <span t-if="prop.suffix" class="text-muted ms-1" style="font-size: 0.85rem;"><t t-esc="prop.suffix"/></span>
+                                    </div>
+                                </t>
+                                <t t-elif="prop.type === 'Date &amp; Time'">
+                                    <div class="d-flex align-items-center w-100">
+                                        <input type="datetime-local"
+                                               class="o_info_hub_prop_val_input flex-grow-1"
+                                               t-att-value="prop.value"
+                                               t-att-disabled="state.isLocked"
+                                               t-on-input="(ev) => this.updateCustomPropertyValue(prop, ev.target.value)" />
+                                        <span t-if="prop.suffix" class="text-muted ms-1" style="font-size: 0.85rem;"><t t-esc="prop.suffix"/></span>
+                                    </div>
+                                </t>
+                                <t t-elif="prop.type === 'Selection'">
+                                     <div class="d-flex align-items-center w-100">
+                                         <select class="form-select o_info_hub_prop_val_input"
+                                                 t-att-disabled="state.isLocked"
+                                                 t-att-value="prop.value"
+                                                 style="background: transparent; border: none; color: var(--info-hub-text-muted); font-size: 0.85rem; padding: 0; outline: none; width: 100%; box-shadow: none;"
+                                                 t-on-change="(ev) => this.updateCustomPropertyValue(prop, ev.target.value)">
+                                             <option value="" style="background: #374151; color: #e5e7eb;">Empty</option>
+                                             <t t-foreach="prop.selectionValues or []" t-as="val" t-key="val.id">
+                                                 <option t-att-value="val.name" t-att-selected="prop.value === val.name" style="background: #374151; color: #e5e7eb;">
+                                                     <t t-esc="val.name"/>
+                                                 </option>
+                                             </t>
+                                         </select>
+                                         <span t-if="prop.suffix" class="text-muted ms-1" style="font-size: 0.85rem;"><t t-esc="prop.suffix"/></span>
+                                     </div>
+                                 </t>
+                                <t t-elif="prop.type === 'Tags'">
+                                     <div class="d-flex align-items-center w-100">
+                                         <div class="position-relative w-100">
+                                             <div class="d-flex align-items-center flex-wrap gap-1 w-100 border-bottom pb-1" t-att-style="state.activeM2oPropIndex === prop_index ? 'border-color: #0d9488 !important;' : 'border-color: #4b5563 !important;'">
+                                                 <t t-foreach="prop.value || []" t-as="tagName" t-key="tagName">
+                                                     <span class="badge" style="background-color: #0d9488; font-weight: 500; font-size: 0.8rem; display: flex; align-items: center; gap: 4px; color: white;">
+                                                         <t t-esc="tagName"/>
+                                                         <i class="fa fa-times cursor-pointer" t-on-click="() => this.removeTagValue(prop_index, tagName)"/>
+                                                     </span>
+                                                 </t>
+                                                 <input type="text"
+                                                        class="o_info_hub_prop_val_input border-0 p-0 m-0 flex-grow-1"
+                                                        style="min-width: 60px;"
+                                                        placeholder="Add..."
+                                                        t-att-value="state.activeM2oPropIndex === prop_index ? state.m2oSearchQuery : ''"
+                                                        t-on-focus="() => this.onM2oFocus(prop_index)"
+                                                        t-on-blur="() => this.onM2oBlur(prop_index)"
+                                                        t-on-input="(ev) => this.onM2oInput(prop_index, ev)"
+                                                        t-on-keydown="(ev) => this.onTagsInputKeydown(prop_index, ev)" />
+                                                 <i class="fa fa-caret-down ms-auto" style="color: #0d9488; font-size: 0.8rem; pointer-events: none;" t-if="state.activeM2oPropIndex === prop_index"/>
+                                             </div>
+                                             <div class="o_info_hub_tags_dropdown w-100" t-if="state.activeM2oPropIndex === prop_index" style="max-height: 250px; overflow-y: auto;">
+                                                 <t t-set="filteredTags" t-value="this.getFilteredTags(prop)"/>
+                                                 <t t-set="trimmedTagQuery" t-value="(state.m2oSearchQuery || '').trim()"/>
+                                                 <t t-if="filteredTags.length === 0 and !trimmedTagQuery">
+                                                     <div class="o_info_hub_tags_dropdown_item p-2 fst-italic" style="color: #9ca3af; font-size: 0.85rem;">No tags found</div>
+                                                 </t>
+                                                 <t t-foreach="filteredTags" t-as="tag" t-key="tag.id">
+                                                     <!-- mousedown.prevent keeps the input focused so the dropdown stays
+                                                          open for selecting further tags (native many2many_tags behavior) -->
+                                                     <div class="o_info_hub_tags_dropdown_item p-2 o_info_hub_hover_bg_gray cursor-pointer text-truncate"
+                                                          t-on-mousedown.prevent="() => {}"
+                                                          t-on-click="() => this.selectTag(prop_index, tag)"
+                                                          style="color: #e5e7eb; font-size: 0.85rem;">
+                                                         <t t-esc="tag.name"/>
+                                                     </div>
+                                                 </t>
+                                                 <div t-if="trimmedTagQuery and !this.tagExists(prop, trimmedTagQuery)"
+                                                      class="o_info_hub_tags_dropdown_item p-2 o_info_hub_hover_bg_gray cursor-pointer text-truncate"
+                                                      t-on-mousedown.prevent="() => {}"
+                                                      t-on-click="() => this.createAndSelectTag(prop_index, trimmedTagQuery)"
+                                                      style="color: #0d9488; font-size: 0.85rem; font-weight: 500;">
+                                                     Create "<t t-esc="trimmedTagQuery"/>"
+                                                 </div>
+                                             </div>
+                                         </div>
+                                         <span t-if="prop.suffix" class="text-muted ms-1" style="font-size: 0.85rem;"><t t-esc="prop.suffix"/></span>
+                                     </div>
+                                 </t>
+                                <t t-elif="prop.type === 'Many2many'">
+                                     <div class="d-flex align-items-center w-100">
+                                         <div class="position-relative w-100">
+                                             <div class="d-flex align-items-center flex-wrap gap-1 w-100 border-bottom pb-1" t-att-style="state.activeM2oPropIndex === prop_index ? 'border-color: #0d9488 !important;' : 'border-color: #4b5563 !important;'">
+                                                 <t t-foreach="prop.m2mRecords || []" t-as="m2mRec" t-key="m2mRec.id">
+                                                     <span class="badge" style="background-color: #4b5563; font-weight: 500; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;">
+                                                         <t t-esc="m2mRec.display_name"/>
+                                                         <i class="fa fa-times cursor-pointer" t-on-click="() => this.removeM2mRecord(prop_index, m2mRec.id)"/>
+                                                     </span>
+                                                 </t>
+                                                 <input type="text"
+                                                        class="o_info_hub_prop_val_input border-0 p-0 m-0 flex-grow-1"
+                                                        style="min-width: 60px;"
+                                                        placeholder="Add..."
+                                                        t-att-disabled="state.isLocked"
+                                                        t-att-value="state.activeM2oPropIndex === prop_index ? state.m2oSearchQuery : ''"
+                                                        t-on-focus="() => this.onM2oFocus(prop_index)"
+                                                        t-on-blur="() => this.onM2oBlur(prop_index)"
+                                                        t-on-input="(ev) => this.onM2oInput(prop_index, ev)" />
+                                                 <i class="fa fa-caret-down ms-auto" style="color: #0d9488; font-size: 0.8rem; pointer-events: none;" t-if="state.activeM2oPropIndex === prop_index"/>
+                                             </div>
+                                             <div class="o_info_hub_tags_dropdown w-100" t-if="!state.isLocked and state.activeM2oPropIndex === prop_index" style="max-height: 250px; overflow-y: auto;">
+                                                 <t t-if="state.m2oRecords.length === 0">
+                                                     <div class="o_info_hub_tags_dropdown_item p-2 fst-italic" style="color: #9ca3af; font-size: 0.85rem;">No records found</div>
+                                                 </t>
+                                                 <t t-else="">
+                                                     <t t-foreach="state.m2oRecords" t-as="record" t-key="record.id">
+                                                         <div t-if="!(prop.m2mRecords || []).some(r => r.id === record.id)"
+                                                              class="o_info_hub_tags_dropdown_item p-2 o_info_hub_hover_bg_gray cursor-pointer text-truncate"
+                                                              t-on-click="() => this.selectM2mRecord(prop_index, record)"
+                                                              style="color: #e5e7eb; font-size: 0.85rem;">
+                                                             <t t-esc="record.display_name"/>
+                                                         </div>
+                                                     </t>
+                                                     <div class="o_info_hub_tags_dropdown_item p-2 cursor-pointer"
+                                                          style="font-size: 0.85rem; border-top: 1px solid #4b5563; color: #0d9488;"
+                                                          t-on-click="() => this.openM2oSearchMore(prop_index)">
+                                                         Search more...
+                                                      </div>
+                                                 </t>
+                                             </div>
+                                         </div>
+                                         <span t-if="prop.suffix" class="text-muted ms-1" style="font-size: 0.85rem;"><t t-esc="prop.suffix"/></span>
+                                     </div>
+                                 </t>
+                                <t t-elif="prop.type === 'Many2one'">
+                                    <div class="position-relative w-100">
+                                        <div class="d-flex align-items-center w-100">
+                                            <input type="text"
+                                                   class="o_info_hub_prop_val_input"
+                                                   placeholder="Empty"
+                                                   t-att-disabled="state.isLocked"
+                                                   t-att-value="state.activeM2oPropIndex === prop_index ? state.m2oSearchQuery : prop.value"
+                                                   t-on-focus="() => this.onM2oFocus(prop_index)"
+                                                   t-on-blur="() => this.onM2oBlur(prop_index)"
+                                                   t-on-input="(ev) => this.onM2oInput(prop_index, ev)" />
+                                            <i class="fa fa-caret-down ms-auto" style="color: #0d9488; font-size: 0.8rem; pointer-events: none;" t-if="state.activeM2oPropIndex === prop_index"/>
+                                        </div>
+                                        <div class="o_info_hub_tags_dropdown w-100" t-if="!state.isLocked and state.activeM2oPropIndex === prop_index" style="max-height: 250px; overflow-y: auto;">
+                                            <t t-if="state.m2oRecords.length === 0">
+                                                <div class="o_info_hub_tags_dropdown_item p-2 fst-italic" style="color: #9ca3af; font-size: 0.85rem;">No records found</div>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-foreach="state.m2oRecords" t-as="record" t-key="record.id">
+                                                    <div class="o_info_hub_tags_dropdown_item p-2 o_info_hub_hover_bg_gray cursor-pointer text-truncate"
+                                                         t-on-click="() => this.selectM2oRecord(prop_index, record)"
+                                                         style="color: #e5e7eb; font-size: 0.85rem;">
+                                                        <t t-esc="record.display_name"/>
+                                                    </div>
+                                                </t>
+                                                <div class="o_info_hub_tags_dropdown_item p-2 cursor-pointer"
+                                                     style="font-size: 0.85rem; border-top: 1px solid #4b5563; color: #0d9488;"
+                                                     t-on-click="() => this.openM2oSearchMore(prop_index)">
+                                                    Search more...
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                                <t t-elif="prop.type === 'HTML'">
+                                    <!-- Full-width HTML editor below the label row -->
+                                    <div class="o_info_hub_html_prop_value_editor d-flex align-items-start w-100">
+                                        <div class="flex-grow-1">
+                                            <Wysiwyg
+                                                config="getHtmlPropEditorConfig('value', prop_index)"
+                                                onLoad.bind="(editor) => this.onHtmlValueEditorLoad(editor, prop_index)"
+                                                t-key="'html_value_' + prop_index + '_' + state.activeArticleId"
+                                                contentClass="'o_info_hub_html_prop_editor_body'"
+                                                isReadonly="state.isLocked"
+                                            />
+                                        </div>
+                                        <span t-if="prop.suffix" class="text-muted ms-2 mt-1" style="font-size: 0.85rem;"><t t-esc="prop.suffix"/></span>
+                                    </div>
+                                </t>
+                                <t t-elif="prop.type === 'Signature'">
+                                    <div class="o_info_hub_prop_signature_box w-100 d-flex align-items-center justify-content-center cursor-pointer mt-1"
+                                         t-att-style="state.isLocked ? 'min-height: 120px; border: 2px solid #4b5563; background-color: transparent; border-radius: 0px; cursor: not-allowed; opacity: 0.6;' : 'min-height: 120px; border: 2px solid #0d9488; background-color: transparent; border-radius: 0px;'"
+                                         t-on-click="() => this.openSignaturePopup(prop_index)">
+                                        <t t-if="prop.signatureData">
+                                            <img t-att-src="prop.signatureData" style="max-height:116px; max-width:100%; object-fit:contain;"/>
+                                        </t>
+                                        <t t-else="">
+                                            <div style="background-color: #1d4ed8; color: white; padding: 4px 8px; font-weight: 500; font-size: 0.85rem; letter-spacing: 0.5px;">
+                                                SIGNATURE
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="d-flex align-items-center w-100">
+                                        <input type="text"
+                                               class="o_info_hub_prop_val_input flex-grow-1"
+                                               placeholder="Empty"
+                                               t-att-value="prop.value"
+                                               t-att-disabled="state.isLocked"
+                                               t-on-input="(ev) => this.updateCustomPropertyValue(prop, ev.target.value)" />
+                                        <span t-if="prop.suffix" class="text-muted ms-1" style="font-size: 0.85rem;"><t t-esc="prop.suffix"/></span>
+                                    </div>
+                                </t>
+                                </t> <!-- /t-else non-Separator -->
+                            </div>
+                        </t>
+                        </div> <!-- /o_info_hub_prop_list -->
+                        <button t-if="!state.isLocked" class="o_info_hub_add_property_btn" t-on-click="onAddProperty">
+                            <i class="fa fa-plus"/> Add Property
+                        </button>
+                    </t> <!-- /t-else (has properties) -->
+                </div>
+                </div> <!-- Close o_info_hub_editor_container -->
+
+                <!-- CHATTER PANEL -->
+                <aside class="o_info_hub_chatter_panel" t-if="state.showChatter">
+                    <Chatter
+                        threadModel="'info.hub.article'"
+                        threadId="state.activeArticleId"
+                    />
+                </aside>
+
+                <!-- TABLE OF CONTENTS PANEL -->
+                <aside class="o_info_hub_toc_panel" t-if="state.showTOCPanel">
+                    <div class="o_info_hub_toc_header d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+                        <span class="fs-5 fw-bold o_info_hub_toc_title">Table of Contents</span>
+                        <button class="o_info_hub_toc_close_btn btn border-0 p-1 bg-transparent" t-on-click="() => { this.state.showTOCPanel = false; }" aria-label="Close">
+                            <i class="fa fa-times o_info_hub_toc_close_icon fs-5"/>
+                        </button>
+                    </div>
+                    <div class="o_info_hub_toc_content_wrapper">
+                        <EmbeddedTableOfContentComponent manager="this.tocManager" />
+                    </div>
+                </aside>
+            </div> <!-- Close o_info_hub_view_container -->
+
+            <!-- ===== PROPERTIES ADD/EDIT POPUP ===== -->
+            <!-- Invisible Overlay for closing popup -->
+            <div class="o_info_hub_popup_overlay" t-if="state.showAddPropertyPopup" t-on-click="(ev) => { ev.stopPropagation(); this.saveAndClosePopup(); }"></div>
+
+            <!-- Add Property Popup -->
+            <div t-if="state.showAddPropertyPopup" class="o_info_hub_add_property_popup">
+                <div class="d-flex align-items-center justify-content-between pb-2 mb-3 border-bottom">
+                    <button class="btn btn-link p-0 d-flex align-items-center gap-1 text-decoration-none fw-bold"
+                            t-on-click="cancelProperty"
+                            t-if="state.editingPropertyIndex !== null"
+                            style="font-size: 0.85rem; color: red !important;">
+                        <i class="fa fa-trash-o"/> Delete
+                    </button>
+                    <div t-if="state.editingPropertyIndex === null"></div>
+                    <button class="btn btn-link p-0 text-secondary d-flex align-items-center gap-1 text-decoration-none"
+                            t-on-click="(ev) => this.discardProperty(ev)"
+                            title="Discard changes"
+                            style="font-size: 1.1rem;">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+                <div class="o_info_hub_popup_row">
+                    <label>Label</label>
+                    <input type="text" class="o_info_hub_popup_input" t-att-value="state.newPropertyLabel" t-on-input="onPropertyLabelChange" />
+                </div>
+                <div class="o_info_hub_popup_row position-relative">
+                    <label>Field Type</label>
+                    <div class="o_info_hub_popup_field_type cursor-pointer" t-on-click="toggleFieldTypeDropdown">
+                        <strong><t t-esc="getFieldTypeIcon(state.newPropertyType)"/></strong>
+                        <span t-esc="state.newPropertyType"></span>
+                        <i class="fa fa-caret-down ms-auto" style="color: #9ca3af;"/>
+                    </div>
+                   
+                    <div class="o_info_hub_field_type_dropdown" t-if="state.showFieldTypeDropdown">
+                        <t t-foreach="getFieldTypes()" t-as="type" t-key="type.name">
+                            <div class="o_info_hub_field_type_item" t-on-click="() => this.selectFieldType(type.name)">
+                                <strong t-esc="type.icon"/> <span t-esc="type.name"/>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                <div class="o_info_hub_popup_row align-items-start" t-if="state.newPropertyType !== 'Signature' and state.newPropertyType !== 'Separator'">
+                    <label class="mt-1">
+                        <t t-if="state.newPropertyType === 'Selection'">Values</t>
+                        <t t-elif="state.newPropertyType === 'Tags'">Tags</t>
+                        <t t-elif="['Many2one', 'Many2many'].includes(state.newPropertyType)">Model</t>
+                        <t t-else="">Default Value</t>
+                    </label>
+                    
+                    
+                    <div t-if="state.newPropertyType === 'Selection'" class="o_info_hub_popup_selection_values">
+                        <t t-foreach="state.newPropertySelectionValues" t-as="val" t-key="val.id">
+                            <div class="o_info_hub_selection_value_item d-flex align-items-center gap-2 mb-2">
+                                <i class="fa fa-braille text-muted" style="cursor: grab; font-size: 0.8rem;"/>
+                                <input type="text" class="o_info_hub_popup_input m-0" placeholder="Value" t-att-value="val.name" t-on-input="(ev) => this.onSelectionValueChange(val.id, ev.target.value)"/>
+                                <i t-att-class="val.isDefault ? 'fa fa-star cursor-pointer' : 'fa fa-star-o text-muted cursor-pointer'" t-on-click="() => this.onToggleSelectionDefault(val.id)" title="Set as default"/>
+                                <i class="fa fa-trash-o text-danger cursor-pointer" t-on-click="() => this.onRemoveSelectionValue(val.id)" title="Remove value"/>
+                            </div>
+                        </t>
+                        <div class="o_info_hub_add_value_btn mt-1" t-on-click="onAddSelectionValue">
+                            <i class="fa fa-plus me-1"/> Add a Value
+                        </div>
+                    </div>
+                    
+                    
+                    <div t-elif="state.newPropertyType === 'Tags'" class="o_info_hub_popup_tags flex-grow-1 position-relative">
+                        <div class="d-flex align-items-center border-bottom pb-1" t-att-style="state.tagsFocused ? 'border-color: #0d9488 !important;' : 'border-color: #e5e7eb !important;'">
+                            <div class="d-flex flex-wrap gap-1 flex-grow-1">
+                                <t t-foreach="state.newPropertyTags" t-as="tag" t-key="tag.id">
+                                    <span class="badge" style="background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; font-weight: 500; font-size: 0.8rem; display: flex; align-items: center; gap: 4px; padding: 3px 6px;">
+                                        <t t-esc="tag.name"/>
+                                        <i class="fa fa-times cursor-pointer text-muted" t-on-click="() => this.onRemoveTag(tag.id)"/>
+                                    </span>
+                                </t>
+                                <input type="text" class="o_info_hub_popup_input border-0 p-0 m-0 flex-grow-1"
+                                       style="min-width: 60px;"
+                                       t-att-value="state.tagCreationQuery || ''"
+                                       t-on-input="(ev) => { this.state.tagCreationQuery = ev.target.value; }"
+                                       t-on-keydown="onTagKeydown"
+                                       t-on-focus="() => this.state.tagsFocused = true"
+                                       t-on-blur="onTagCreationBlur"/>
+                            </div>
+                            <i class="fa fa-caret-down ms-2" style="color: #0d9488;"/>
+                        </div>
+                        
+                        <div class="o_info_hub_tags_dropdown" t-if="state.tagsFocused">
+                            <t t-set="trimmedPopupTagQuery" t-value="(state.tagCreationQuery || '').trim()"/>
+                            <t t-if="trimmedPopupTagQuery">
+                                <div class="o_info_hub_tags_dropdown_item p-2 o_info_hub_hover_bg_gray cursor-pointer text-truncate"
+                                     t-on-mousedown.prevent="() => {}"
+                                     t-on-click="() => this.onCreateTagDropdown(trimmedPopupTagQuery)"
+                                     style="color: #7c3aed; font-size: 0.85rem; font-weight: 500;">
+                                    Create "<t t-esc="trimmedPopupTagQuery"/>"
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="o_info_hub_tags_dropdown_item fst-italic" style="color: #9ca3af; font-size: 0.85rem; padding: 4px 8px;">Start typing...</div>
+                            </t>
+                        </div>
+                    </div>
+                    
+                    <!-- Many2one/Many2many Logic -->
+                    <div t-elif="['Many2one', 'Many2many'].includes(state.newPropertyType)" class="o_info_hub_popup_many2one flex-grow-1 position-relative">
+                        <div class="d-flex align-items-center border-bottom pb-1" t-att-style="state.showModelDropdown ? 'border-color: #0d9488 !important;' : 'border-color: #4b5563 !important;'">
+                            <input type="text" class="o_info_hub_popup_input border-0 p-0 m-0 flex-grow-1" placeholder="Type a model here..." t-att-value="state.newPropertyModel" t-on-focus="() => this.state.showModelDropdown = true" t-on-blur="onModelBlur" t-on-input="(ev) => this.state.newPropertyModel = ev.target.value"/>
+                        </div>
+                        
+                        <div class="o_info_hub_tags_dropdown" t-if="state.showModelDropdown" style="max-height: 200px; overflow-y: auto;">
+                            <t t-foreach="state.availableModels.filter(m => m.toLowerCase().includes(state.newPropertyModel.toLowerCase())).slice(0, 50)" t-as="model" t-key="model">
+                                <div class="o_info_hub_tags_dropdown_item p-2 o_info_hub_hover_bg_gray cursor-pointer" t-on-click="() => this.selectModel(model)">
+                                    <t t-esc="model"/>
+                                </div>
+                            </t>
+                            <div class="o_info_hub_tags_dropdown_item fst-italic p-2" style="color: #9ca3af; font-size: 0.85rem;">Start typing...</div>
+                        </div>
+                    </div>
+                    
+                    <t t-else="">
+                        <input t-if="state.newPropertyType === 'Checkbox'" type="checkbox"
+                               class="o_info_hub_popup_checkbox"
+                               t-att-checked="state.newPropertyDefaultValue === 'true'"
+                               t-on-change="(ev) => { this.state.newPropertyDefaultValue = ev.target.checked ? 'true' : ''; }" />
+                        <input t-elif="['Integer', 'Decimal', 'Monetary'].includes(state.newPropertyType)"
+                               type="number"
+                               t-att-step="state.newPropertyType === 'Integer' ? '1' : 'any'"
+                               class="o_info_hub_popup_input"
+                               t-att-value="state.newPropertyDefaultValue"
+                               t-on-input="(ev) => { this.state.newPropertyDefaultValue = ev.target.value; }" />
+                        <input t-elif="state.newPropertyType === 'Date'" type="date"
+                               class="o_info_hub_popup_input"
+                               t-att-value="state.newPropertyDefaultValue"
+                               t-on-input="(ev) => { this.state.newPropertyDefaultValue = ev.target.value; }" />
+                        <input t-elif="state.newPropertyType === 'Date &amp; Time'" type="datetime-local"
+                               class="o_info_hub_popup_input"
+                               t-att-value="state.newPropertyDefaultValue"
+                               t-on-input="(ev) => { this.state.newPropertyDefaultValue = ev.target.value; }" />
+                        <textarea t-elif="state.newPropertyType === 'Multiline Text'"
+                                  class="o_info_hub_popup_input"
+                                  rows="3"
+                                  style="resize:vertical;"
+                                  t-att-value="state.newPropertyDefaultValue"
+                                  t-on-input="(ev) => { this.state.newPropertyDefaultValue = ev.target.value; }"/>
+                        <!-- HTML type: inline Wysiwyg editor like article content -->
+                        <div t-elif="state.newPropertyType === 'HTML'" class="o_info_hub_html_popup_editor_area flex-grow-1"
+                             t-on-keydown="(ev) => ev.stopPropagation()"
+                             t-on-keyup="(ev) => ev.stopPropagation()"
+                             t-on-keypress="(ev) => ev.stopPropagation()"
+                             t-on-input="(ev) => ev.stopPropagation()"
+                             t-on-beforeinput="(ev) => ev.stopPropagation()">
+                            <Wysiwyg
+                                config="getHtmlPropEditorConfig('popup')"
+                                onLoad.bind="onHtmlPopupEditorLoad"
+                                t-key="'html_popup_' + state.htmlPopupEditorKey"
+                                contentClass="'o_info_hub_html_prop_editor_body'"
+                            />
+                        </div>
+                        <input t-else="" type="text" class="o_info_hub_popup_input"
+                               t-att-value="state.newPropertyDefaultValue"
+                               t-on-input="(ev) => { this.state.newPropertyDefaultValue = ev.target.value; }" />
+                    </t>
+                </div>
+
+                <!-- Default State row - only for Separator -->
+                <div class="o_info_hub_popup_row" t-if="state.newPropertyType === 'Separator'">
+                    <label>Default State</label>
+                    <div class="d-flex align-items-center gap-3">
+                        <label class="d-flex align-items-center gap-1 cursor-pointer" style="font-size:0.88rem;color:#374151;">
+                            <input type="radio" name="sep_state" value="open"
+                                   t-att-checked="state.newSeparatorState === 'open'"
+                                   t-on-change="() => this.state.newSeparatorState = 'open'"
+                                   style="accent-color:#0d9488;"/>
+                            Open
+                        </label>
+                        <label class="d-flex align-items-center gap-1 cursor-pointer" style="font-size:0.88rem;color:#374151;">
+                            <input type="radio" name="sep_state" value="fold"
+                                   t-att-checked="state.newSeparatorState === 'fold'"
+                                   t-on-change="() => this.state.newSeparatorState = 'fold'"
+                                   style="accent-color:#0d9488;"/>
+                            Fold
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Domain row - only visible when Many2one/Many2many has a model selected -->
+                <div class="o_info_hub_popup_row align-items-start" t-if="['Many2one', 'Many2many'].includes(state.newPropertyType) and state.newPropertyModel">
+                    <label class="mt-1">Domain</label>
+                    <div class="flex-grow-1">
+                        <!-- Header: Match all/any + Include archived -->
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <div class="d-flex align-items-center gap-1" style="font-size: 0.85rem; color: #374151;">
+                                <span>Match</span>
+                                <t t-if="state.domainRules.length === 0">
+                                    <strong>all records</strong>
+                                </t>
+                                <t t-else="">
+                                    <select class="o_info_hub_domain_select" t-att-value="state.domainMatchType" t-on-change="onDomainMatchTypeChange">
+                                        <option value="all">all</option>
+                                        <option value="any">any</option>
+                                    </select>
+                                    <span>of the following rules:</span>
+                                </t>
+                            </div>
+                            <div class="d-flex align-items-center gap-2" style="font-size: 0.82rem; color: #4b5563;">
+                                <input type="checkbox" id="domain_include_archived" t-att-checked="state.domainIncludeArchived" t-on-change="onDomainIncludeArchivedChange" style="accent-color: #0d9488;"/>
+                                <label for="domain_include_archived" style="cursor: pointer; margin: 0;">Include archived</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Rule Rows -->
+                        <t t-foreach="state.domainRules" t-as="rule" t-key="rule.id">
+                            <div class="o_info_hub_domain_rule_row d-flex align-items-center gap-2 mb-2">
+                                <div class="o_info_hub_domain_field_badge" style="background:#374151; border:1px solid #4b5563; border-radius:4px; padding:2px 8px; font-size:0.82rem; font-weight:600; cursor:pointer;">
+                                    <input type="text" class="o_info_hub_domain_field_input" t-att-value="rule.field" t-on-input="(ev) => this.onDomainRuleFieldChange(rule.id, ev.target.value)" placeholder="field"/>
+                                </div>
+                                <select class="o_info_hub_domain_select" t-att-value="rule.operator" t-on-change="(ev) => this.onDomainRuleOperatorChange(rule.id, ev.target.value)">
+                                    <t t-foreach="getDomainOperators()" t-as="op" t-key="op.value">
+                                        <option t-att-value="op.value" t-att-selected="op.value === rule.operator"><t t-esc="op.label"/></option>
+                                    </t>
+                                </select>
+                                <input type="text" class="o_info_hub_popup_input flex-grow-1 m-0" t-att-value="rule.value" t-on-input="(ev) => this.onDomainRuleValueChange(rule.id, ev.target.value)" placeholder="value"/>
+                                <i class="fa fa-trash-o text-danger cursor-pointer" style="font-size:0.85rem;" t-on-click="() => this.onRemoveDomainRule(rule.id)"/>
+                            </div>
+                        </t>
+                        
+                        <!-- New Rule link -->
+                        <div class="o_info_hub_add_value_btn" t-on-click="onAddDomainRule" style="margin-bottom:4px;">
+                            New Rule
+                        </div>
+                        
+                        <!-- Record count -->
+                        <div t-on-click="openDomainRecords"
+                             t-att-class="state.domainRecordCount ? 'cursor-pointer text-decoration-underline' : ''"
+                             t-att-style="state.domainRecordCount ? 'font-size: 0.82rem; color: #0d9488 !important; margin-top: 2px; width: fit-content;' : 'font-size: 0.82rem; color: #9ca3af; margin-top: 2px; width: fit-content;'">
+                            <i class="fa fa-arrow-right me-1"/>
+                            <t t-if="state.domainRecordCount !== null">
+                                <t t-esc="state.domainRecordCount"/> record(s)
+                            </t>
+                            <t t-else="">
+                                — record(s)
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="o_info_hub_popup_row" t-if="state.newPropertyType !== 'Signature' and state.newPropertyType !== 'Separator'">
+                    <label>Suffix</label>
+                    <input type="text" class="o_info_hub_popup_input"
+                           t-att-value="state.newPropertySuffix"
+                           t-on-input="(ev) => { this.state.newPropertySuffix = ev.target.value; }" />
+                </div>
+                <div class="o_info_hub_popup_row" t-if="state.newPropertyType !== 'Signature' and state.newPropertyType !== 'Separator'">
+                    <label class="d-flex align-items-center gap-1">
+                        Display in Cards
+<!--                        <span style="font-size: 0.82rem; font-weight: bold; color: #0d9488; cursor: help; vertical-align: super;" title="Display this property value directly on the article card preview.">?</span>-->
+                    </label>
+                    <input type="checkbox" class="o_info_hub_popup_checkbox"
+                           t-att-checked="state.newPropertyDisplayInCards"
+                           t-on-change="(ev) => { this.state.newPropertyDisplayInCards = ev.target.checked; }" />
+                </div>
+            </div>
+
+             <!-- ===== SIGNATURE POPUP MODAL ===== -->
+             <div t-if="state.showSignaturePopup"
+                  class="o_info_hub_sig_backdrop"
+                  style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:2000;display:flex;align-items:center;justify-content:center;">
+                 <div class="o_info_hub_sig_modal" style="background:#ffffff;border-radius:10px;width:600px;max-width:96vw;box-shadow:0 20px 60px rgba(0,0,0,.15);overflow:hidden;border:1px solid #e5e7eb;">
+                     <!-- Header -->
+                     <div class="d-flex align-items-center justify-content-between px-4 py-3" style="border-bottom:1px solid #e5e7eb;">
+                         <span style="font-size:1.1rem;font-weight:600;color:#1f2937;">Adopt Your Signature</span>
+                         <i class="fa fa-times cursor-pointer" style="color:#4b5563;font-size:1.1rem;" t-on-click="closeSignaturePopup"/>
+                     </div>
+                     <!-- Body -->
+                     <div class="p-3">
+                         <!-- Tab bar -->
+                         <div class="d-flex align-items-center justify-content-between p-2 mb-0" style="background:#f9fafb;border-radius:6px 6px 0 0;border:1px solid #e5e7eb;border-bottom:none;">
+                             <div class="d-flex gap-1">
+                                 <button t-att-class="state.sigTab === 'draw' ? 'btn btn-sm btn-success' : 'btn btn-sm btn-secondary'"
+                                         t-on-click="() => this.switchSigTab('draw')">Draw</button>
+                                 <button t-att-class="state.sigTab === 'load' ? 'btn btn-sm btn-success' : 'btn btn-sm btn-secondary'"
+                                         t-on-click="() => this.switchSigTab('load')">Load</button>
+                             </div>
+                             <i class="fa fa-trash cursor-pointer" style="color:#0d9488;" t-on-click="clearSignature" title="Clear"/>
+                         </div>
+                         <!-- Canvas / Upload area -->
+                         <div style="background:#ffffff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 6px 6px;position:relative;">
+                             <t t-if="state.sigTab === 'draw'">
+                                 <canvas id="o_info_hub_sig_canvas"
+                                         style="display:block;width:100%;height:250px;cursor:crosshair;touch-action:none;"
+                                         t-on-pointerdown="sigStartDraw"
+                                         t-on-pointermove="sigDraw"
+                                         t-on-pointerup="sigStopDraw"
+                                         t-on-pointerleave="sigStopDraw"/>
+                                 <div style="position:absolute;bottom:40px;left:10%;right:10%;height:1px;background:#cbd5e1;pointer-events:none;"/>
+                             </t>
+                             <t t-elif="state.sigTab === 'load'">
+                                 <div class="d-flex flex-column align-items-center justify-content-center"
+                                      style="height:250px;gap:12px;">
+                                     <t t-if="state.sigLoadedImage">
+                                         <img t-att-src="state.sigLoadedImage" style="max-height:200px;max-width:100%;object-fit:contain;"/>
+                                     </t>
+                                     <t t-else="">
+                                         <i class="fa fa-upload" style="font-size:2rem;color:#94a3b8;"/>
+                                         <span style="color:#64748b;font-size:0.9rem;">Click to upload an image</span>
+                                     </t>
+                                     <label class="btn btn-sm btn-secondary cursor-pointer">
+                                         Upload
+                                         <input type="file" accept="image/*" style="display:none;" t-on-change="onSigFileLoad"/>
+                                     </label>
+                                 </div>
+                             </t>
+                         </div>
+                         <!-- Legal text -->
+                         <p style="font-size:0.78rem;color:#64748b;margin-top:10px;margin-bottom:0;">
+                             By clicking Adopt &amp; Sign, I agree that the chosen signature/initials will be a valid electronic representation of my hand-written signature/initials for all purposes when it is used on documents, including legally binding contracts.
+                         </p>
+                     </div>
+                     <!-- Footer -->
+                     <div class="d-flex gap-2 px-4 pb-4">
+                         <button class="btn btn-sm text-white" style="background:#71639e;" t-on-click="adoptSignature">Adopt &amp; Sign</button>
+                         <button class="btn btn-sm btn-secondary" t-on-click="closeSignaturePopup">Discard</button>
+                     </div>
+                 </div>
+             </div>
+
+        </main>
+
+        <!-- HIDDEN ARTICLES DIALOG -->
+        <InfoHiddenArticlesDialog
+            t-if="state.showHiddenArticlesDialog"
+            onJoined.bind="onHiddenArticleJoined"
+            onClose="() => this.state.showHiddenArticlesDialog = false"
+        />
+
+    </div>
+</t>
+
+    <!-- Embedded List View Component Template -->
+    <t t-name="info_hub.EmbeddedListViewComponent">
+        <div class="o_info_embedded_list_wrapper my-3">
+            <t t-if="state.loading">
+                <div class="d-flex justify-content-center p-4">
+                    <i class="fa fa-spinner fa-spin fa-2x text-muted"/>
+                </div>
+            </t>
+            <t t-else="">
+                <View t-props="viewProps" t-key="state.reloadKey"/>
+            </t>
+        </div>
+    </t>
+
+    <!-- Custom List View Template for Embedded Item Lists -->
+    <t t-name="info_hub.InformationEmbeddedListView">
+        <div t-att-class="className" t-ref="root">
+            <Layout className="model.useSampleModel ? 'o_view_sample_data' : ''" display="display">
+                <t t-set-slot="control-panel-create-button">
+                    <div class="d-flex align-items-center gap-2">
+                        <button t-if="!editedRecord and activeActions.create and props.showButtons" type="button" class="btn btn-primary o_list_button_add" data-hotkey="c" t-on-click="onClickCreate" data-bounce-button="" style="background-color: #71639e; border-color: #71639e;">
+                            New
+                        </button>
+                        <span class="fw-bold fs-5 text-dark ms-2"><t t-esc="props.listName"/></span>
+                    </div>
+                    <t t-if="props.showButtons and !env.inDialog" t-call="web.ListView.EditableButtons"/>
+                </t>
+
+                <!-- standard layout slots -->
+                <t t-set-slot="layout-buttons">
+                    <t t-if="props.showButtons and env.inDialog" t-call="web.ListView.EditableButtons"/>
+                    <t t-if="props.showButtons" t-call="{{ props.buttonTemplate }}"/>
+                </t>
+                <t t-set-slot="layout-actions">
+                    <SearchBar toggler="searchBarToggler" autofocus="firstLoad"/>
+                </t>
+                <t t-set-slot="control-panel-navigation-additional">
+                    <t t-if="!hasSelectedRecords" t-component="searchBarToggler.component" t-props="searchBarToggler.props"/>
+                </t>
+                <t t-set-slot="control-panel-additional-actions">
+                    <CogMenu t-if="!hasSelectedRecords">
+                        <DropdownItem class="'d-flex align-items-center gap-2 py-2'" onSelected="() => this.onOpenFullScreen()">
+                            <i class="fa fa-external-link text-muted"/> Open
+                        </DropdownItem>
+                        <DropdownItem class="'d-flex align-items-center gap-2 py-2'" onSelected="() => this.onEditListName()">
+                            <i class="fa fa-pencil text-muted"/> Edit
+                        </DropdownItem>
+                    </CogMenu>
+                </t>
+                <t t-set-slot="control-panel-selection-actions">
+                    <div t-if="hasSelectedRecords" class="o_selection_container m-1 m-md-0 d-flex gap-1">
+                        <SelectionBox root="this.model.root"/>
+                        <t t-if="!env.isSmall">
+                            <t t-foreach="archInfo.headerButtons" t-as="button" t-key="button.id" t-if="!evalViewModifier(button.invisible)">
+                                <MultiRecordViewButton
+                                    t-if="button.display !== 'always'"
+                                    list="model.root"
+                                    className="button.className"
+                                    clickParams="button.clickParams"
+                                    defaultRank="'btn-secondary'"
+                                    domain="props.domain"
+                                    icon="button.icon"
+                                    string="button.string"
+                                    title="button.title"
+                                    attrs="button.attrs"
+                                />
+                            </t>
+                            <t t-if="props.info.actionMenus">
+                                <ActionMenus t-props="this.actionMenuProps"/>
+                            </t>
+                        </t>
+                    </div>
+                </t>
+                <t t-component="props.Renderer" t-if="model.isReady"
+                    list="model.root"
+                    activeActions="activeActions"
+                    archInfo="archInfo"
+                    allowSelectors="props.allowSelectors"
+                    editable="editable"
+                    onOpenFormView="onOpenFormView"
+                    hasOpenFormViewButton="hasOpenFormViewButton"
+                    openRecord.bind="openRecord"
+                    noContentHelp="props.info.noContentHelp"
+                    onAdd.bind="createRecord"
+                    optionalActiveFields="optionalActiveFields"
+                    readonly="props.readonly"
+                />
+            </Layout>
+        </div>
+    </t>
+
+    <!-- Embedded Calendar View Component Template -->
+    <t t-name="info_hub.EmbeddedCalendarViewComponent">
+        <div class="o_info_embedded_calendar_wrapper my-3 border rounded shadow-sm bg-white p-3" style="height: 600px;">
+            <t t-if="state.loading">
+                <div class="d-flex justify-content-center p-5">
+                    <i class="fa fa-spinner fa-spin fa-2x text-muted"/>
+                </div>
+            </t>
+            <t t-else="">
+                <View t-props="viewProps" t-key="state.itemName + '_' + (state.scale || 'week') + '_' + (state.showWeekends !== undefined ? state.showWeekends : true)"/>
+            </t>
+        </div>
+    </t>
+
+    <!-- Custom Calendar View Template for Embedded Calendars -->
+    <t t-name="info_hub.InformationEmbeddedCalendarView">
+        <div t-att-class="className" t-ref="root">
+            <Layout className="model.useSampleModel ? 'o_view_sample_data' : ''" display="props.display">
+                <t t-set-slot="control-panel-create-button">
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-primary" t-on-click="() => this.onCreateClick()">
+                            New
+                        </button>
+                        <span class="fw-bold fs-5 text-dark ms-2"><t t-esc="props.calendarName || 'Meetings'"/></span>
+                        <Dropdown menuClass="'o_info_list_gear_dropdown'" position="'bottom-start'">
+                            <button class="btn p-1 border-0 bg-transparent text-muted">
+                                <i class="fa fa-cog"/>
+                            </button>
+                            <t t-set-slot="content">
+                                <DropdownItem class="'d-flex align-items-center gap-2 py-2'" onSelected="() => this.onOpenFullScreen()">
+                                    <i class="fa fa-external-link text-muted"/> Open
+                                </DropdownItem>
+                                <DropdownItem class="'d-flex align-items-center gap-2 py-2'" onSelected="() => this.onEditCalendarName()">
+                                    <i class="fa fa-pencil text-muted"/> Edit
+                                </DropdownItem>
+                            </t>
+                        </Dropdown>
+                    </div>
+                </t>
+                <t t-set-slot="layout-buttons">
+                    <t t-call="{{ props.buttonTemplate }}"/>
+                </t>
+                <t t-set-slot="layout-actions">
+                    <SearchBar toggler="searchBarToggler"/>
+                </t>
+                <t t-set-slot="control-panel-navigation-additional">
+                    <t t-component="searchBarToggler.component" t-props="searchBarToggler.props"/>
+                </t>
+                <div class="o_calendar_container d-grid h-100 bg-view">
+                    <div class="o_calendar_header d-flex align-items-center gap-2 px-3 pe-md-1 py-2 px-print-0 pt-print-0 border-bottom">
+                        <div t-if="!env.isSmall" class="o_calendar_navigation_buttons d-flex gap-1 d-print-none">
+                            <button
+                                class="o_calendar_button_prev btn btn-light border"
+                                title="Previous"
+                                aria-label="Previous"
+                                t-on-click.stop="() => this.setDate('previous')"
+                            ><i class="oi oi-arrow-left"/></button>
+                            <button
+                                class="o_calendar_button_next btn btn-light border"
+                                title="Next"
+                                aria-label="Next"
+                                t-on-click.stop="() => this.setDate('next')"
+                            ><i class="oi oi-arrow-right"/></button>
+                        </div>
+                        <ViewScaleSelector scales="scales" currentScale="model.scale" isWeekendVisible="state.isWeekendVisible" setScale.bind="setScale" toggleWeekendVisibility.bind="toggleWeekendVisibility" dropdownClass="'d-print-none'"/>
+                        <button
+                            class="btn btn-light border o_calendar_button_today d-print-none"
+                            t-on-click.stop="() => this.setDate('today')"
+                        >   <span t-if="env.isSmall" class="position-relative pt-1"><t t-esc="today"/><i class="fa fa-calendar-o position-absolute top-50 start-50 translate-middle fs-1"></i></span>
+                            <t t-else="">Today</t>
+                        </button>
+                        <h5 class="d-inline-flex align-items-center mb-0 fw-bold text-dark ps-2">
+                            <t t-if="model.meta.scale === 'year'">
+                                <t t-esc="currentYear"/>
+                            </t>
+                            <t t-elif="model.meta.scale === 'month'">
+                                <t t-esc="currentMonth"/>
+                            </t>
+                            <t t-elif="model.meta.scale === 'week'">
+                                <t t-esc="weekHeader"/> <span class="fw-bold ms-2">Week <t t-esc="currentWeek"/></span>
+                            </t>
+                            <t t-else="">
+                                <t t-esc="dayHeader" />
+                            </t>
+                        </h5>
+                        <MultiSelectionButtons reactive="this.multiSelectionButtonsReactive" />
+                    </div>
+                    <div t-if="hasSideBar and !env.isSmall" class="o_sidebar_toggler d-flex d-print-none align-items-center border-bottom pe-3">
+                        <button class="btn btn-light oi oi-panel-right collapsed ms-2 lh-base" t-on-click="toggleSideBar"/>
+                    </div>
+                    <MobileFilterPanel t-if="env.isSmall and hasSideBar" t-props="mobileFilterPanelProps" />
+                    <div class="o_calendar_wrapper d-flex overflow-hidden">
+                        <t t-if="showCalendar" t-component="props.Renderer" t-props="rendererProps"/>
+                        <CalendarSidePanel t-if="hasSideBar and showSideBar" t-props="sidePanelProps"/>
+                    </div>
+                </div>
+            </Layout>   
+        </div>
+    </t>
+
+</templates>

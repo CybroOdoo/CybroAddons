@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    List, form, and search views for managing per-article member permissions (edit, read, none).
+-->
+<odoo>
+
+    <!-- ============================================================
+         MEMBERS — Configuration > Members
+         Shows all info.hub.article.member records so an admin can
+         see who has been invited to which article and at what
+         permission level, and edit those records directly.
+    ============================================================ -->
+
+    <!-- List View -->
+    <record id="view_info_article_member_list" model="ir.ui.view">
+        <field name="name">info.hub.article.member.list</field>
+        <field name="model">info.hub.article.member</field>
+        <field name="arch" type="xml">
+            <list string="Article Members"
+                  decoration-success="permission == 'edit'"
+                  decoration-muted="permission == 'none'">
+                <field name="article_id" string="Article"/>
+                <field name="partner_id" string="User / Partner"/>
+                <field name="partner_email" string="Email" optional="show"/>
+                <field name="permission"
+                       widget="badge"
+                       decoration-success="permission == 'edit'"
+                       decoration-info="permission == 'read'"
+                       decoration-danger="permission == 'none'"
+                       string="Permission"/>
+                <field name="member_type"
+                       widget="badge"
+                       decoration-warning="member_type == 'admin'"
+                       decoration-info="member_type == 'employee'"
+                       decoration-muted="member_type == 'guest'"
+                       string="User Type"
+                       optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_info_article_member_form" model="ir.ui.view">
+        <field name="name">info.hub.article.member.form</field>
+        <field name="model">info.hub.article.member</field>
+        <field name="arch" type="xml">
+            <form string="Article Member">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="partner_id" string="Member"/>
+                        <h1>
+                            <field name="partner_id"
+                                   placeholder="Select a partner…"
+                                   style="flex: 1;"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Membership Details">
+                            <field name="article_id" string="Article"/>
+                            <field name="permission" string="Permission Level"/>
+                            <field name="partner_email" string="Email" readonly="1"/>
+                        </group>
+                        <group string="User Info">
+                            <field name="user_id" string="Linked User" readonly="1"/>
+                            <field name="member_type" string="User Type" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_info_article_member_search" model="ir.ui.view">
+        <field name="name">info.hub.article.member.search</field>
+        <field name="model">info.hub.article.member</field>
+        <field name="arch" type="xml">
+            <search string="Search Members">
+                <field name="article_id" string="Article"/>
+                <field name="partner_id" string="Partner"/>
+                <separator/>
+                <filter string="Can Edit" name="perm_edit"
+                        domain="[('permission', '=', 'edit')]"/>
+                <filter string="Can Read" name="perm_read"
+                        domain="[('permission', '=', 'read')]"/>
+                <filter string="No Access" name="perm_none"
+                        domain="[('permission', '=', 'none')]"/>
+                <separator/>
+                <filter string="Admins" name="type_admin"
+                        domain="[('member_type', '=', 'admin')]"/>
+                <filter string="Employees" name="type_employee"
+                        domain="[('member_type', '=', 'employee')]"/>
+                <filter string="Guests" name="type_guest"
+                        domain="[('member_type', '=', 'guest')]"/>
+                <group>
+                    <filter string="Article" name="group_by_article"
+                            context="{'group_by': 'article_id'}"/>
+                    <filter string="Permission" name="group_by_permission"
+                            context="{'group_by': 'permission'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_info_article_member" model="ir.actions.act_window">
+        <field name="name">Members</field>
+        <field name="res_model">info.hub.article.member</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_info_article_member_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No members found!
+            </p>
+            <p>
+                Members are added when you share or invite people to an article
+                via the Share panel inside the Information editor.
+            </p>
+        </field>
+    </record>
+
+</odoo>

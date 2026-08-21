@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    OWL template for embedded Card/Grid views rendered directly inside article document bodies.
+-->
+<templates>
+    <!-- Blueprint node inserted into the editor DOM by the plugin command. -->
+    <t t-name="info_hub.EmbeddedCardViewBlueprint">
+        <div t-att-data-embedded-props="embeddedProps"
+             class="o_info_card_host d-flex flex-column my-3"
+             data-embedded="info_card"
+             data-oe-protected="true"
+             contenteditable="false"/>
+    </t>
+
+    <!-- Runtime OWL template for EmbeddedCardViewComponent -->
+    <t t-name="info_hub.EmbeddedCardView">
+        <div class="o_info_embedded_cards position-relative border rounded overflow-hidden my-2"
+             tabindex="-1"
+             t-on-dragstart.stop="() => {}"
+             t-on-dragover.stop="() => {}"
+             t-on-dragenter.stop="() => {}"
+             t-on-dragleave.stop="() => {}"
+             t-on-drop.stop="() => {}"
+             t-on-dragend.stop="() => {}">
+
+            <!-- Error state -->
+            <t t-if="state.error">
+                <div class="d-flex flex-column align-items-center justify-content-center p-5 bg-light text-muted">
+                    <i class="fa fa-exclamation-triangle fa-2x mb-2 text-warning"/>
+                    <p class="mb-0 fw-bold">Could not load Cards view</p>
+                    <p class="small">The view may not exist or you may lack access.</p>
+                </div>
+            </t>
+
+            <!-- Loading state -->
+            <t t-elif="!state.isLoaded">
+                <div class="d-flex align-items-center justify-content-center p-4 bg-light text-muted">
+                    <i class="fa fa-spinner fa-spin me-2"/>
+                    <span>Loading Cards…</span>
+                </div>
+            </t>
+
+            <!-- Loaded: render Odoo View component (Kanban view) -->
+            <t t-else="">
+                <View t-props="embeddedViewProps" t-key="state.reloadKey"/>
+            </t>
+        </div>
+    </t>
+    <!-- Custom Kanban view layout for embedded cards, defining the Actions dropdown menu next to the title -->
+    <t t-name="info_hub.InfoEmbeddedCardsView">
+        <div t-att-class="className" t-ref="root">
+            <Layout className="model.useSampleModel ? 'o_view_sample_data' : ''" display="display">
+                <!-- Top-Left Slot: New Button + Title -->
+                <t t-set-slot="control-panel-create-button">
+                    <div class="d-flex align-items-center gap-2">
+                        <button t-if="activeActions.create" type="button" class="btn btn-primary o_list_button_add" data-hotkey="c" t-on-click="createRecord" style="background-color: #704A6B; border-color: #704A6B;">
+                            New
+                        </button>
+                    </div>
+                </t>
+
+                <!-- Actions Slot: Gear icon (CogMenu) next to it -->
+                <t t-set-slot="control-panel-additional-actions">
+                    <CogMenu>
+                        <DropdownItem class="'d-flex align-items-center gap-2 py-2'" onSelected="() => this.onOpenFullScreen()">
+                            <i class="fa fa-external-link text-muted"/> Open
+                        </DropdownItem>
+                        <DropdownItem class="'d-flex align-items-center gap-2 py-2'" onSelected="() => this.onEditCardsName()">
+                            <i class="fa fa-pencil text-muted"/> Edit
+                        </DropdownItem>
+                    </CogMenu>
+                </t>
+
+                <!-- Search/Filter slot -->
+                <t t-set-slot="layout-actions">
+                    <SearchBar toggler="searchBarToggler" autofocus="firstLoad"/>
+                </t>
+
+                <t t-component="props.Renderer" t-if="model.isReady"
+                    list="model.root"
+                    archInfo="props.archInfo"
+                    Compiler="props.Compiler"
+                    readonly="props.readonly"
+                    openRecord.bind="openRecord"
+                    deleteRecord.bind="deleteRecord"
+                    noContentHelp="props.noContentHelp"
+                />
+            </Layout>
+        </div>
+    </t>
+</templates>

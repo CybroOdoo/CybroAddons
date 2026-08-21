@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Tree, pivot, and search views for monitoring article reading compliance and user acknowledgement status.
+-->
+<odoo>
+    <!-- Tree View -->
+    <record id="info_article_reading_view_list" model="ir.ui.view">
+        <field name="name">info.hub.article.reading.view.list</field>
+        <field name="model">info.hub.article.reading</field>
+        <field name="arch" type="xml">
+            <list string="Mandatory Reading Tracking" create="false" edit="false">
+                <field name="article_id"/>
+                <field name="user_id"/>
+                <field name="state" widget="badge" decoration-warning="state == 'pending'" decoration-success="state == 'read'"/>
+                <field name="read_date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="info_article_reading_view_pivot" model="ir.ui.view">
+        <field name="name">info.hub.article.reading.view.pivot</field>
+        <field name="model">info.hub.article.reading</field>
+        <field name="arch" type="xml">
+            <pivot string="Reading Compliance Analysis">
+                <field name="article_id" type="row"/>
+                <field name="state" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="info_article_reading_view_search" model="ir.ui.view">
+        <field name="name">info.hub.article.reading.view.search</field>
+        <field name="model">info.hub.article.reading</field>
+        <field name="arch" type="xml">
+            <search string="Search Reading Tracking">
+                <field name="article_id"/>
+                <field name="user_id"/>
+                <filter string="My Assignments" name="my_assignments" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Pending" name="pending" domain="[('state', '=', 'pending')]"/>
+                <filter string="Completed" name="completed" domain="[('state', '=', 'read')]"/>
+                <separator string="Group By"/>
+                <group>
+                    <filter string="Article" name="group_by_article" context="{'group_by': 'article_id'}"/>
+                    <filter string="User" name="group_by_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="State" name="group_by_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_info_article_reading" model="ir.actions.act_window">
+        <field name="name">Mandatory Reading Compliance</field>
+        <field name="res_model">info.hub.article.reading</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="search_view_id" ref="info_article_reading_view_search"/>
+        <field name="context">{'search_default_pending': 1}</field>
+    </record>
+
+</odoo>

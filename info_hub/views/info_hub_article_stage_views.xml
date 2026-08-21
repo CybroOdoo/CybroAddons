@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    List, form, and search views for configuring stages used in embedded article kanban views.
+-->
+<odoo>
+
+    <!-- ============================================================
+         STAGES — Configuration > Stages
+         Shows all info.hub.article.stage records.  Stages are
+         created automatically when an article uses the /Kanban
+         slash command in the editor.  Admins can rename, reorder,
+         or fold/unfold stages directly from this list.
+    ============================================================ -->
+
+    <!-- List View (editable so admins can quick-edit without opening a form) -->
+    <record id="view_info_article_stage_list" model="ir.ui.view">
+        <field name="name">info.hub.article.stage.list</field>
+        <field name="model">info.hub.article.stage</field>
+        <field name="arch" type="xml">
+            <list string="Article Stages"
+                  editable="bottom"
+                  decoration-muted="fold">
+                <field name="sequence" widget="handle"/>
+                <field name="name" string="Stage Name"/>
+                <field name="parent_id" string="Parent Article"/>
+                <field name="fold"
+                       string="Folded in Kanban"
+                       widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_info_article_stage_form" model="ir.ui.view">
+        <field name="name">info.hub.article.stage.form</field>
+        <field name="model">info.hub.article.stage</field>
+        <field name="arch" type="xml">
+            <form string="Kanban Stage">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Stage Name"/>
+                        <h1>
+                            <field name="name"
+                                   placeholder="e.g. New, In Progress, Done…"
+                                   style="flex: 1;"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Stage Settings">
+                            <field name="parent_id" string="Parent Article"
+                                   help="The article whose Kanban board this stage belongs to."/>
+                            <field name="sequence" string="Sequence"
+                                   help="Lower numbers appear first in the Kanban board."/>
+                            <field name="fold" string="Folded in Kanban"
+                                   help="Folded stages are collapsed by default in the Kanban view."/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_info_article_stage_search" model="ir.ui.view">
+        <field name="name">info.hub.article.stage.search</field>
+        <field name="model">info.hub.article.stage</field>
+        <field name="arch" type="xml">
+            <search string="Search Stages">
+                <field name="name" string="Stage Name"/>
+                <field name="parent_id" string="Parent Article"/>
+                <separator/>
+                <filter string="Folded" name="folded"
+                        domain="[('fold', '=', True)]"/>
+                <filter string="Active (Unfolded)" name="active"
+                        domain="[('fold', '=', False)]"/>
+                <group>
+                    <filter string="Parent Article" name="group_by_parent"
+                            context="{'group_by': 'parent_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_info_article_stage" model="ir.actions.act_window">
+        <field name="name">Stages</field>
+        <field name="res_model">info.hub.article.stage</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_info_article_stage_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No Kanban stages yet!
+            </p>
+            <p>
+                Stages are created automatically when you add a
+                <strong>/Kanban</strong> block inside a Information article.
+                They will appear here once created.
+            </p>
+        </field>
+    </record>
+
+</odoo>

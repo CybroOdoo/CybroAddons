@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    OWL template for the Member Invitation modal dialog to add partners and configure access permissions.
+-->
+<templates xml:space="preserve">
+
+<t t-name="info_hub.InvitePeopleDialog">
+    <Dialog title="'Invite people'" size="'md'">
+        <div class="o_info_hub_invite_dialog_body">
+            <!-- 1. Permission Select -->
+            <div class="row align-items-center mb-3">
+                <label class="col-sm-3 col-form-label fw-bold">Permission</label>
+                <div class="col-sm-9">
+                    <select class="form-select" t-model="state.permission">
+                        <option value="edit">Can edit</option>
+                        <option value="read">Can read</option>
+                        <option value="none">No access</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 2. Recipients Search Box & Tag Badges -->
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label fw-bold">Recipients</label>
+                <div class="col-sm-9">
+                    <div class="o_info_hub_recipients_input_container border rounded p-1 d-flex flex-wrap gap-1 align-items-center position-relative">
+                        <!-- Selected Partner Badges -->
+                        <t t-foreach="state.selectedPartners" t-as="partner" t-key="partner.id">
+                            <span class="badge o_info_hub_recipient_badge d-flex align-items-center gap-1">
+                                <span t-esc="partner.name"/>
+                                <span class="o_info_hub_remove_recipient" t-on-click="() => this.removePartner(partner.id)">×</span>
+                            </span>
+                        </t>
+                        
+                        <!-- Input Search Field -->
+                        <input type="text" class="flex-grow-1 border-0 outline-none p-1 o_info_hub_invite_search_input" 
+                               placeholder="Add people or email addresses..." 
+                               t-att-value="state.searchQuery" 
+                               t-on-input="onSearchInput"
+                               t-on-focus="onInputFocus"
+                               t-on-click="onInputFocus"/>
+                               
+                        <!-- Suggestions Dropdown list -->
+                        <div class="dropdown-menu show w-100 mt-1 o_info_hub_suggestions_dropdown" t-if="state.searchResults.length &gt; 0">
+                            <t t-foreach="state.searchResults" t-as="res" t-key="res.id">
+                                <button class="dropdown-item d-flex flex-column align-items-start py-2 border-bottom" type="button" t-on-click="() => this.selectPartner(res)">
+                                    <span class="fw-bold" t-esc="res.name"/>
+                                    <span class="text-muted small" t-if="res.email" t-esc="res.email"/>
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Extra Comment Textarea -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <textarea class="form-control" rows="3" placeholder="Extra Comment" t-model="state.comment"/>
+                </div>
+            </div>
+        </div>
+        
+        <t t-set-slot="footer">
+            <button class="btn btn-primary me-2 o_info_hub_dialog_invite_btn" t-on-click="onInvite">Invite</button>
+            <button class="btn btn-secondary" t-on-click="props.close">Cancel</button>
+        </t>
+    </Dialog>
+</t>
+
+</templates>

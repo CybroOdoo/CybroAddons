@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    OWL template for the Article Share popover panel, supporting public web sharing and member rights management.
+-->
+<templates xml:space="preserve">
+
+<t t-name="info_hub.InfoSharePanel">
+    <div class="o_info_hub_share_panel">
+        <!-- TOP SECTION: Web Sharing -->
+        <div class="o_info_hub_share_section o_info_hub_share_web">
+            <t t-if="state.isWebsiteInstalled">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-start gap-2">
+                        <i class="fa fa-globe o_info_hub_share_icon_large"/>
+                        <div>
+                            <div class="fw-bold">Article shared to web</div>
+                            <div class="text-muted small">It and its published children can be read by anyone.</div>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch p-0 m-0">
+                        <input class="form-check-input o_info_hub_toggle_switch" type="checkbox" role="switch"
+                               t-att-checked="state.websitePublished" t-on-change="onToggleShareToWeb"
+                               t-att-disabled="props.article.user_permission === 'read'"/>
+                    </div>
+                </div>
+                
+                <div class="mt-2 d-flex gap-1" t-if="state.websitePublished">
+                    <input type="text" class="form-control form-control-sm bg-light" t-att-value="state.shareUrl" readonly="readonly"/>
+                    <button class="btn btn-sm btn-outline-secondary" t-on-click="onCopyUrl" title="Copy URL">
+                        <i class="fa fa-copy"/>
+                    </button>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="d-flex align-items-start gap-2">
+                    <i class="fa fa-globe o_info_hub_share_icon_large text-muted"/>
+                    <div>
+                        <div class="fw-bold text-muted">Generate article URL</div>
+                        <div class="text-muted small mt-1">Click Share and activate the Share to web toggle to generate a URL.</div>
+                        <div class="text-danger small mt-1"><i class="fa fa-exclamation-triangle me-1"/>Having the Website app is necessary to share an article's URL.</div>
+                    </div>
+                </div>
+            </t>
+        </div>
+
+        <hr class="my-2" t-if="!props.isSharedUser"/>
+
+        <!-- MIDDLE SECTION: Visibility and Default Permissions -->
+        <div class="o_info_hub_share_section o_info_hub_share_settings" t-if="!props.isSharedUser">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="d-flex align-items-center gap-2 small">
+                    <i class="fa fa-sliders text-muted"/>
+                    <span>Default Access Rights</span>
+                </div>
+                <select class="form-select form-select-sm w-auto o_info_hub_small_select" t-att-value="state.defaultAccess" t-on-change="onDefaultAccessChange"
+                        t-att-disabled="props.article.user_permission === 'read'">
+                    <option value="none">No access</option>
+                    <option value="read">Can read</option>
+                    <option value="edit">Can edit</option>
+                </select>
+            </div>
+            
+            <div class="d-flex align-items-center justify-content-between" t-if="state.defaultAccess !== 'none'">
+                <div class="d-flex align-items-center gap-2 small">
+                    <i class="fa fa-eye text-muted"/>
+                    <span>Visibility</span>
+                </div>
+                <select class="form-select form-select-sm w-auto o_info_hub_small_select" t-att-value="state.visibility" t-on-change="onVisibilityChange"
+                        t-att-disabled="props.article.user_permission === 'read'">
+                    <option value="everyone">Everyone</option>
+                    <option value="members">Members</option>
+                </select>
+            </div>
+        </div>
+
+        <hr class="my-2" t-if="!props.isSharedUser &amp;&amp; props.article.user_permission !== 'read'"/>
+
+        <!-- INVITATION BAR -->
+        <div class="o_info_hub_share_section o_info_hub_share_invite" t-if="props.article.user_permission !== 'read'">
+            <div class="d-flex gap-2">
+                <div class="flex-grow-1 border rounded px-2 py-1 o_info_hub_invite_input_placeholder" t-on-click="onInviteClick">
+                    <i class="fa fa-user-plus text-muted me-1"/>
+                    <span class="text-muted small">Add people or email addresses...</span>
+                </div>
+                <button class="btn btn-sm o_info_hub_invite_btn" t-on-click="onInviteClick">Invite</button>
+            </div>
+        </div>
+
+        <hr class="my-2"/>
+
+        <!-- BOTTOM SECTION: Member List -->
+        <div class="o_info_hub_share_section o_info_hub_share_members">
+            <div class="o_info_hub_member_list_scroll">
+                <t t-foreach="state.members" t-as="member" t-key="member.id">
+                    <div class="o_info_hub_member_row d-flex align-items-center justify-content-between py-2 border-bottom">
+                        <div class="d-flex align-items-center gap-2 overflow-hidden">
+                            <img t-att-src="'/web/image/res.partner/' + member.partner_id[0] + '/avatar_128'" 
+                                 class="rounded-circle o_info_hub_member_avatar" alt="Avatar"/>
+                            <div class="overflow-hidden">
+                                <div class="fw-bold text-truncate small">
+                                    <span t-esc="member.partner_id[1]"/>
+                                    <span class="badge bg-secondary ms-1 small" t-if="member.user_id and member.user_id[0] === currentUserId">You</span>
+                                </div>
+                                <div class="text-muted text-truncate o_info_hub_member_subinfo">
+                                    <t t-if="member.member_type === 'admin'">Admin</t>
+                                    <t t-elif="member.member_type === 'employee'">Employee</t>
+                                    <t t-elif="member.member_type === 'guest'">Guest</t>
+                                    <t t-if="member.partner_email"> • <span t-esc="member.partner_email"/></t>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ms-2 d-flex align-items-center gap-2">
+                            <!-- If the member is the owner, permission is Can Edit and disabled -->
+                            <t t-if="isOwner(member)">
+                                <span class="text-muted small px-2">Can edit</span>
+                            </t>
+                            <!-- If it is the current user's own row -->
+                            <t t-elif="member.user_id and member.user_id[0] === currentUserId">
+                                <button class="btn btn-sm btn-danger px-2 py-1" title="Leave Article"
+                                        t-on-click="() => this.onRemoveMember(member.id)">
+                                    <i class="fa fa-sign-out"/>
+                                </button>
+                                <select class="form-select form-select-sm o_info_hub_small_select" 
+                                        t-att-value="member.permission" 
+                                        disabled="disabled">
+                                    <option value="edit">Can edit</option>
+                                    <option value="read">Can read</option>
+                                    <option value="none">No access</option>
+                                </select>
+                            </t>
+                            <!-- If it is another member and current user is read-only -->
+                            <t t-elif="props.article.user_permission === 'read'">
+                                <select class="form-select form-select-sm o_info_hub_small_select" 
+                                        t-att-value="member.permission" 
+                                        disabled="disabled">
+                                    <option value="edit">Can edit</option>
+                                    <option value="read">Can read</option>
+                                    <option value="none">No access</option>
+                                </select>
+                            </t>
+                            <!-- If it is another member and current user has edit permission -->
+                            <t t-else="">
+                                <button class="btn btn-sm btn-danger px-2 py-1" title="Remove member"
+                                        t-on-click="() => this.onRemoveMember(member.id)">
+                                    <i class="fa fa-times"/>
+                                </button>
+                                <select class="form-select form-select-sm o_info_hub_small_select" 
+                                        t-att-value="member.permission" 
+                                        t-on-change="(ev) => this.onMemberPermissionChange(member.id, ev)">
+                                    <option value="edit">Can edit</option>
+                                    <option value="read">Can read</option>
+                                    <option value="none">No access</option>
+                                </select>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </div>
+</t>
+
+</templates>

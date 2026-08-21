@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Customizes the default website layout by replacing the header and footer and adding university-specific fonts, icons, navigation, branding, and portal access. -->
+    <template id="university_layout" inherit_id="website.layout" name="University Layout">
+        <!-- Inject Fonts + Icons -->
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;display=swap"
+                  rel="stylesheet"/>
+            <link rel="stylesheet"
+                  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+        </xpath>
+        <!-- Replace Header -->
+        <xpath expr="//header" position="replace">
+            <header class="site-header">
+                <!-- Topbar -->
+                <div class="topbar py-2">
+                    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="d-flex gap-4">
+                            <a href="tel:+18001234567"><i class="bi bi-telephone-fill me-1"/>+1 (800) 123-4567
+                            </a>
+                            <a href="mailto:admissions@axion.edu">
+                                <i class="bi bi-envelope-fill me-1"/>
+                                admissions@Axion.edu
+                            </a>
+                        </div>
+                        <div class="d-flex align-items-center gap-4">
+                            <a href="#" class="text-white opacity-50" style="font-size:.85rem" aria-label="Facebook">
+                                <i class="bi bi-facebook"/>
+                            </a>
+                            <a href="#" class="text-white opacity-50" style="font-size:.85rem" aria-label="Instagram">
+                                <i class="bi bi-instagram"/>
+                            </a>
+                            <a href="#" class="text-white opacity-50" style="font-size:.85rem" aria-label="LinkedIn">
+                                <i class="bi bi-linkedin"/>
+                            </a>
+                            <a href="#" class="text-white opacity-50" style="font-size:.85rem" aria-label="Twitter">
+                                <i class="bi bi-twitter-x"/>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Navbar -->
+                <nav class="navbar navbar-expand-lg" id="mainNavbar">
+                    <div class="container">
+                        <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="/">
+                            <img src="/theme_university/static/src/img/logo.png" alt="Axion Logo" class="logo-img"
+                                 width="200"/>
+                        </a>
+                        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false"
+                                aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"/>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navMenu">
+                            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+                                <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                    <t t-if="submenu.is_visible">
+                                        <!-- No Submenus -->
+                                        <t t-if="not submenu.child_id">
+                                            <li class="nav-item">
+                                                <a t-att-href="submenu._clean_url()"
+                                                   t-attf-class="nav-link #{submenu._is_active() and 'active'}"
+                                                   t-att-data-nav-page="submenu.url">
+                                                    <span t-field="submenu.name"/>
+                                                </a>
+                                            </li>
+                                        </t>
+                                        <!-- Has Submenus -->
+                                        <t t-else="">
+                                            <li class="nav-item dropdown d-flex align-items-center">
+                                                <a t-att-href="submenu._clean_url() or '#'"
+                                                   t-attf-class="nav-link pe-1 #{submenu._is_active() and 'active'}">
+                                                    <span t-field="submenu.name"/>
+                                                </a>
+                                                <a class="nav-link dropdown-toggle ps-1" href="#" role="button"
+                                                   data-bs-toggle="dropdown" aria-expanded="false"
+                                                   style="cursor:pointer;" aria-label="Toggle drop-down">
+                                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                                </a>
+                                                <ul class="dropdown-menu shadow border-0" style="margin-top:0;">
+                                                    <t t-foreach="submenu.child_id" t-as="child_menu">
+                                                        <t t-if="child_menu.is_visible">
+                                                            <li>
+                                                                <a class="dropdown-item py-2"
+                                                                   t-att-href="child_menu._clean_url()">
+                                                                    <span t-field="child_menu.name"/>
+                                                                </a>
+                                                            </li>
+                                                        </t>
+                                                    </t>
+                                                </ul>
+                                            </li>
+                                        </t>
+                                    </t>
+                                </t>
+                            </ul>
+                            <!-- Apply Button -->
+                            <a href="/apply" class="btn-apply ms-lg-3">Apply Now</a>
+                            <!-- Portal Sign In User Dropdown -->
+                            <t t-if="request.env.user._is_public()">
+                                <a href="/web/login"
+                                   class="btn-signin ms-lg-3 px-3 py-1.5 rounded-pill text-decoration-none fw-semibold"
+                                   style="font-family:'Inter',sans-serif; font-size:.8rem; border:1px solid rgba(26,58,107,.2); color:var(--primary); transition:all .2s ease;">
+                                    Sign In
+                                </a>
+                            </t>
+                            <t t-else="">
+                                <t t-call="portal.user_dropdown">
+                                    <t t-set="_avatar" t-value="true"/>
+                                    <t t-set="_user_name" t-value="true"/>
+                                    <t t-set="_item_class"
+                                       t-value="'list-unstyled mb-0 dropdown o_no_autohide_item d-inline-block ms-lg-3'"/>
+                                    <t t-set="_link_class"
+                                       t-value="'btn dropdown-toggle d-flex align-items-center gap-2 px-3 py-1.5 rounded-pill fw-semibold text-decoration-none'"/>
+                                    <t t-set="_dropdown_menu_class" t-value="'dropdown-menu-end'"/>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+        </xpath>
+        <!-- Replace Footer -->
+        <xpath expr="//footer" position="replace">
+            <footer class="pt-5 pb-3">
+                <div class="container pt-5">
+                    <div class="row g-4 mb-5">
+                        <div class="col-lg-4">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <img src="/theme_university/static/src/img/logo-white.png" alt="Axion Logo"
+                                     class="logo-img" width="200"/>
+                            </div>
+                            <p class="footer-desc mb-4">
+                                Empowering brilliant minds since 1892. A world-class research university dedicated to
+                                excellence,
+                                innovation, and global impact across every field of human endeavor.
+                            </p>
+                            <div class="footer-social d-flex gap-2">
+                                <a href="#" aria-label="Facebook">
+                                    <i class="bi bi-facebook"/>
+                                </a>
+                                <a href="#" aria-label="Twitter">
+                                    <i class="bi bi-twitter-x"/>
+                                </a>
+                                <a href="#" aria-label="Instagram">
+                                    <i class="bi bi-instagram"/>
+                                </a>
+                                <a href="#" aria-label="LinkedIn">
+                                    <i class="bi bi-linkedin"/>
+                                </a>
+                                <a href="#" aria-label="YouTube">
+                                    <i class="bi bi-youtube"/>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-2 offset-lg-1">
+                            <div class="footer-heading">Academics</div>
+                            <a href="/academics/undergraduate" class="footer-link">Undergraduate</a>
+                            <a href="/academics/graduate" class="footer-link">Graduate</a>
+                            <a href="/academics/online-learning" class="footer-link">Online Programs</a>
+                            <a href="/research" class="footer-link">Research</a>
+                            <a href="#" class="footer-link">Libraries</a>
+                        </div>
+                        <div class="col-sm-6 col-lg-2">
+                            <div class="footer-heading">Campus Life</div>
+                            <a href="/campus-life" class="footer-link">Housing &amp; Dining</a>
+                            <a href="/campus-life" class="footer-link">Clubs &amp; Orgs</a>
+                            <a href="/campus-life" class="footer-link">Athletics</a>
+                            <a href="/campus-life" class="footer-link">Health &amp; Wellness</a>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="footer-heading">Contact Us</div>
+                            <div class="footer-contact-item">
+                                <i class="bi bi-geo-alt-fill"/>
+                                <span>1 University Drive, Axion, CA 90210</span>
+                            </div>
+                            <div class="footer-contact-item">
+                                <i class="bi bi-telephone-fill"/>
+                                <span>+1 (800) 123-4567</span>
+                            </div>
+                            <div class="footer-contact-item">
+                                <i class="bi bi-envelope-fill"/>
+                                <span>info@Axion.edu</span>
+                            </div>
+                            <div class="footer-contact-item">
+                                <i class="bi bi-clock-fill"/>
+                                <span>Mon-Fri, 8:00 AM - 5:00 PM PST</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer-newsletter mb-4">
+                        <div class="row align-items-center g-3">
+                            <div class="col-lg-5">
+                                <h6>Stay in the Loop</h6>
+                                <p>Get the latest news, events, and research updates delivered to your inbox.</p>
+                            </div>
+                            <div class="col-lg-7 d-flex justify-content-lg-end">
+                                <div class="input-group">
+                                    <input type="email" class="form-control newsletter-input"
+                                           placeholder="Enter your email address" aria-label="Email Address"/>
+                                    <button class="newsletter-btn">Subscribe</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="footer-divider"/>
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <span class="footer-bottom-text">&#169; 2026 Axion University. All rights reserved.</span>
+                        <div class="d-flex gap-3">
+                            <a href="#" class="footer-bottom-link">Privacy Policy</a>
+                            <a href="#" class="footer-bottom-link">Terms of Use</a>
+                            <a href="#" class="footer-bottom-link">Accessibility</a>
+                            <a href="#" class="footer-bottom-link">Cookies</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+            <!-- Back to top -->
+            <a href="#" class="back-to-top" id="backToTop" aria-label="Back to top">
+                <i class="bi bi-chevron-up"/>
+            </a>
+        </xpath>
+    </template>
+</odoo>

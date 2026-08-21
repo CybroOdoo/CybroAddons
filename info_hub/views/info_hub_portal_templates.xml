@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    QWeb portal templates for external and portal users to view, create, and edit shared articles.
+-->
+<odoo>
+    <!-- 1. Extend Portal Home Dashboard with Information Card -->
+    <template id="portal_my_home_info" inherit_id="portal.portal_my_home" priority="100">
+        <xpath expr="//div[@id='portal_common_category']" position="inside">
+            <t t-if="request.env.user.shared_article_count &gt; 0">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="icon" t-value="'/info_hub/static/src/img/Books.svg'"/>
+                    <t t-set="title">Information</t>
+                    <t t-set="text">Find all articles shared with you</t>
+                    <t t-set="url" t-value="'/info/shared'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- 2. Dedicated Information Portal View Layout -->
+    <template id="info_portal_layout" name="Information Portal Layout">
+        <t t-call="web.frontend_layout">
+            <t t-set="no_header" t-value="True"/>
+            <t t-set="no_footer" t-value="True"/>
+            <t t-set="title" t-value="active_article.name if active_article else 'Information'"/>
+            <div id="wrap" class="oe_structure oe_empty container-fluid py-3 px-4">
+                <div class="row min-vh-80 g-4">
+                    
+                    <!-- Left Sidebar (Sidebar navigation) -->
+                    <div class="col-md-3 border-end pe-md-4 o_info_portal_sidebar_container" style="max-width: 320px;">
+                        <div class="sticky-top" style="top: 20px; z-index: 100;">
+                            
+                            <!-- Sidebar Top Bar -->
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom gap-2">
+                                <!-- Collapse button -->
+                                <button class="btn btn-light btn-sm o_info_portal_sidebar_collapse_btn" id="o_portal_sidebar_collapse_btn" title="Collapse Sidebar">
+                                    <i class="fa fa-angle-double-left"/>
+                                </button>
+                                
+                                <!-- Home button -->
+                                <a href="/my/home" class="btn btn-light btn-sm o_info_portal_home_btn" title="Home">
+                                    <i class="fa fa-home"/>
+                                </a>
+                                
+                                <!-- New Article button -->
+                                <form action="/info/portal/create" method="POST" class="m-0 flex-grow-1">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <button type="submit" class="btn btn-light btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-2 border text-primary">
+                                        <i class="fa fa-plus text-primary"/> New Article
+                                    </button>
+                                </form>
+                                
+                                <!-- Search Toggle button -->
+                                <button class="btn btn-light btn-sm o_info_portal_search_toggle_btn" id="o_portal_search_toggle_btn" title="Search">
+                                    <i class="fa fa-search"/>
+                                </button>
+                            </div>
+
+                            <!-- Search Bar -->
+                            <div id="o_info_portal_search_bar" t-attf-class="mb-3 position-relative #{'d-none' if not filter_text else ''}">
+                                <span class="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted">
+                                    <i class="fa fa-search"/>
+                                </span>
+                                <input type="text" id="o_info_portal_search" 
+                                       class="form-control ps-5 rounded-pill shadow-sm" 
+                                       placeholder="Search..." 
+                                       t-att-value="filter_text"/>
+                            </div>
+
+                            <!-- Favorites Section -->
+                            <div class="mb-4">
+                                <h6 class="text-uppercase text-muted font-weight-bold mb-2 small letter-spacing-1 d-flex align-items-center gap-1" style="font-size: 11px;">
+                                    <i class="fa fa-star text-warning"/> FAVORITES
+                                </h6>
+                                <div class="list-group list-group-flush o_info_portal_list" id="o_info_favorites_list" data-category="favorites">
+                                    <t t-if="not favorite_articles">
+                                        <p class="text-muted small ps-2 mb-0 italic" style="font-size: 11px;">No favorites yet.</p>
+                                    </t>
+                                    <t t-else="" t-foreach="favorite_articles" t-as="article">
+                                        <a t-attf-href="/info/shared?article_id={{article.id}}&amp;search={{filter_text}}" 
+                                           t-attf-class="list-group-item list-group-item-action border-0 px-2 py-2 rounded d-flex align-items-center gap-2 o_info_hub_item_row position-relative #{'active bg-primary-light text-primary font-weight-semibold' if active_article and active_article.id == article.id else 'text-dark'}" 
+                                           t-att-data-article-id="article.id"
+                                           draggable="true">
+                                            <i class="fa fa-bars text-muted o_info_hub_drag_handle me-1" style="cursor: grab; font-size: 0.8rem;"/>
+                                            <span class="fs-5" t-esc="article.icon or '📄'"/>
+                                            <span class="text-truncate" t-esc="article.name or 'Untitled'"/>
+                                        </a>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <!-- Workspace Section -->
+                            <div class="mb-4">
+                                <h6 class="text-uppercase text-muted font-weight-bold mb-2 small letter-spacing-1 d-flex align-items-center gap-1" style="font-size: 11px;">
+                                    <i class="fa fa-briefcase"/> WORKSPACE
+                                </h6>
+                                <div class="list-group list-group-flush o_info_portal_list" id="o_info_workspace_list" data-category="workspace">
+                                    <t t-if="not workspace_articles">
+                                        <p class="text-muted small ps-2 mb-0 italic" style="font-size: 11px;">No workspace articles yet.</p>
+                                    </t>
+                                    <t t-else="" t-foreach="workspace_articles" t-as="article">
+                                        <a t-attf-href="/info/shared?article_id={{article.id}}&amp;search={{filter_text}}" 
+                                           t-attf-class="list-group-item list-group-item-action border-0 px-2 py-2 rounded d-flex align-items-center gap-2 o_info_hub_item_row position-relative #{'active bg-primary-light text-primary font-weight-semibold' if active_article and active_article.id == article.id else 'text-dark'}" 
+                                           t-att-data-article-id="article.id"
+                                           draggable="true">
+                                            <i class="fa fa-bars text-muted o_info_hub_drag_handle me-1" style="cursor: grab; font-size: 0.8rem;"/>
+                                            <span class="fs-5" t-esc="article.icon or '📄'"/>
+                                            <span class="text-truncate" t-esc="article.name or 'Untitled'"/>
+                                        </a>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <!-- Shared Section -->
+                            <div class="mb-4">
+                                <h6 class="text-uppercase text-muted font-weight-bold mb-2 small letter-spacing-1 d-flex align-items-center gap-1" style="font-size: 11px;">
+                                    <i class="fa fa-users"/> SHARED
+                                </h6>
+                                <div class="list-group list-group-flush o_info_portal_list" id="o_info_shared_list" data-category="shared">
+                                    <t t-if="not shared_articles">
+                                        <p class="text-muted small ps-2 mb-0 italic" style="font-size: 11px;">No shared articles yet.</p>
+                                    </t>
+                                    <t t-else="" t-foreach="shared_articles" t-as="article">
+                                        <a t-attf-href="/info/shared?article_id={{article.id}}&amp;search={{filter_text}}" 
+                                           t-attf-class="list-group-item list-group-item-action border-0 px-2 py-2 rounded d-flex align-items-center gap-2 o_info_hub_item_row position-relative #{'active bg-primary-light text-primary font-weight-semibold' if active_article and active_article.id == article.id else 'text-dark'}" 
+                                           t-att-data-article-id="article.id"
+                                           draggable="true">
+                                            <i class="fa fa-bars text-muted o_info_hub_drag_handle me-1" style="cursor: grab; font-size: 0.8rem;"/>
+                                            <span class="fs-5" t-esc="article.icon or '📄'"/>
+                                            <span class="text-truncate" t-esc="article.name or 'Untitled'"/>
+                                        </a>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <!-- Private Section -->
+                            <div class="mb-4">
+                                <h6 class="text-uppercase text-muted font-weight-bold mb-2 small letter-spacing-1 d-flex align-items-center gap-1" style="font-size: 11px;">
+                                    <i class="fa fa-lock"/> PRIVATE
+                                </h6>
+                                <div class="list-group list-group-flush o_info_portal_list" id="o_info_private_list" data-category="private">
+                                    <t t-if="not private_articles">
+                                        <p class="text-muted small ps-2 mb-0 italic" style="font-size: 11px;">No private articles yet.</p>
+                                    </t>
+                                    <t t-else="" t-foreach="private_articles" t-as="article">
+                                        <a t-attf-href="/info/shared?article_id={{article.id}}&amp;search={{filter_text}}" 
+                                           t-attf-class="list-group-item list-group-item-action border-0 px-2 py-2 rounded d-flex align-items-center gap-2 o_info_hub_item_row position-relative #{'active bg-primary-light text-primary font-weight-semibold' if active_article and active_article.id == article.id else 'text-dark'}" 
+                                           t-att-data-article-id="article.id"
+                                           draggable="true">
+                                            <i class="fa fa-bars text-muted o_info_hub_drag_handle me-1" style="cursor: grab; font-size: 0.8rem;"/>
+                                            <span class="fs-5" t-esc="article.icon or '📄'"/>
+                                            <span class="text-truncate" t-esc="article.name or 'Untitled'"/>
+                                        </a>
+                                    </t>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Right Panel (Content and Editor) -->
+                    <div class="col-md-9 ps-md-4 o_info_portal_content_container">
+                        <t t-if="active_article">
+                            
+                            <!-- Header Action Bar -->
+                            <div class="o_info_hub_header_bar">
+                                <div class="o_info_hub_header_left">
+                                    <!-- Sidebar Expand Button -->
+                                    <button class="o_info_hub_nav_btn d-none" id="o_portal_sidebar_expand_btn" title="Expand Sidebar">
+                                        <i class="fa fa-angle-double-right"/>
+                                    </button>
+                                    <!-- Navigation Buttons -->
+                                    <button class="o_info_hub_nav_btn" onclick="history.back()" title="Back">
+                                        <i class="fa fa-chevron-left"/>
+                                    </button>
+                                    <button class="o_info_hub_nav_btn" onclick="history.forward()" title="Forward">
+                                        <i class="fa fa-chevron-right"/>
+                                    </button>
+                                    
+                                    <!-- Saved Status Indicator -->
+                                    <span id="o_info_save_status" class="text-muted small ms-3 d-none">
+                                        <i class="fa fa-check-circle text-success me-1"/>Saved
+                                    </span>
+
+                                    <!-- Heading breadcrumb exactly like internal users -->
+                                    <div class="o_info_hub_breadcrumb ms-3">
+                                        <t t-if="active_permission == 'edit'">
+                                            <input type="text" id="o_info_portal_header_icon" class="border-0 bg-transparent p-0 m-0" 
+                                                   style="width: 30px; outline: none; font-size: inherit;" t-att-value="active_article.icon or '📄'"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span t-esc="active_article.icon or '📄'"/>
+                                        </t>
+                                        <span id="o_info_portal_header_title" class="o_info_hub_breadcrumb_active fw-bold" t-esc="active_article.name or 'Untitled'"/>
+                                        
+                                        <!-- Save / Discard buttons exactly like internal users -->
+                                        <span id="o_info_portal_save_discard_wrapper" class="ms-2 d-none">
+                                            <i class="fa fa-check text-success cursor-pointer me-2" style="font-size: 1.1rem; cursor: pointer;" title="Save changes" id="o_info_portal_save_btn"/>
+                                            <i class="fa fa-times text-danger cursor-pointer" style="font-size: 1.1rem; cursor: pointer;" title="Discard changes" id="o_info_portal_discard_btn"/>
+                                        </span>
+                                        <span id="o_info_portal_cloud_saved" class="ms-2 text-muted" title="Saved">
+                                            <i class="fa fa-cloud text-muted"/>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="o_info_hub_header_right">
+                                    <!-- New Article POST button -->
+                                    <form action="/info/portal/create" method="POST" class="m-0">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <button type="submit" class="o_info_hub_btn_primary">New</button>
+                                    </form>
+
+                                    <!-- Share Dropdown button (if edit permission) -->
+                                    <t t-if="active_permission == 'edit'">
+                                        <div class="dropdown d-inline-block">
+                                            <button class="o_info_hub_btn_outline dropdown-toggle dropdown-toggle-no-caret" 
+                                                    type="button" id="o_info_share_btn" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" title="Share article">
+                                                <i class="fa fa-share-alt"/>
+                                            </button>
+                                            
+                                            <!-- Share Panel Dropdown Menu -->
+                                            <div class="dropdown-menu dropdown-menu-end p-4 shadow-lg border-0 rounded-3" aria-labelledby="o_info_share_btn" style="width: 360px; z-index: 1060;">
+                                                <h5 class="dropdown-header font-weight-bold text-dark px-0 pt-0 mb-3 fs-6">Share settings</h5>
+                                                
+                                                <!-- Share to Web (Website toggle) -->
+                                                <div class="mb-3 pb-3 border-bottom">
+                                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                                        <span class="font-weight-semibold text-dark">Share to Web</span>
+                                                        <div class="form-check form-switch p-0 m-0">
+                                                            <input class="form-check-input ms-0" type="checkbox" id="o_portal_share_web_toggle" 
+                                                                   t-att-checked="'checked' if active_article.website_published else None"
+                                                                   t-att-disabled="None if (is_website_installed and active_article.create_uid == user) else 'disabled'"/>
+                                                        </div>
+                                                    </div>
+                                                    <p t-if="not is_website_installed" class="text-warning small mb-0">
+                                                        <i class="oi oi-warning me-1"/>Website application must be installed to generate sharing links.
+                                                    </p>
+                                                    <div id="o_portal_share_link_container" t-attf-class="mt-2 #{'d-none' if not active_article.website_published else ''}">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" id="o_portal_share_link_input" class="form-control bg-light text-muted" 
+                                                                   t-att-value="active_article.share_url or ''" readonly="readonly"/>
+                                                            <button class="btn btn-outline-secondary" type="button" id="o_portal_share_copy_btn" title="Copy link">Copy</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Default Access Rights -->
+                                                <div class="mb-3 pb-3 border-bottom">
+                                                    <label class="form-label font-weight-semibold text-dark small mb-1">Default Access Rights</label>
+                                                    <select class="form-select form-select-sm" id="o_portal_default_permission_select"
+                                                            t-att-disabled="None if active_article.create_uid == user else 'disabled'">
+                                                        <option value="none" t-att-selected="'selected' if active_article.default_access == 'none' else None">No access</option>
+                                                        <option value="read" t-att-selected="'selected' if active_article.default_access == 'read' else None">Can read</option>
+                                                        <option value="edit" t-att-selected="'selected' if active_article.default_access == 'edit' else None">Can edit</option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Visibility Selector -->
+                                                <div id="o_portal_visibility_container" t-attf-class="mb-3 pb-3 border-bottom #{'d-none' if active_article.default_access == 'none' else ''}">
+                                                    <label class="form-label font-weight-semibold text-dark small mb-1">Visibility</label>
+                                                    <select class="form-select form-select-sm" id="o_portal_visibility_select"
+                                                            t-att-disabled="None if active_article.create_uid == user else 'disabled'">
+                                                        <option value="everyone" t-att-selected="'selected' if active_article.visibility == 'everyone' else None">Everyone</option>
+                                                        <option value="members" t-att-selected="'selected' if active_article.visibility == 'members' else None">Members Only</option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Invite People -->
+                                                <div class="mb-3 pb-3 border-bottom">
+                                                    <label class="form-label font-weight-semibold text-dark small mb-1">Invite People</label>
+                                                    <div class="input-group input-group-sm mb-2">
+                                                        <input type="text" class="form-control" id="o_portal_invite_search" placeholder="Enter name or email..."
+                                                               t-att-disabled="None if active_article.create_uid == user else 'disabled'"/>
+                                                        <select class="form-select form-select-sm" id="o_portal_invite_perm" style="max-width: 100px;"
+                                                                t-att-disabled="None if active_article.create_uid == user else 'disabled'">
+                                                            <option value="read">Read</option>
+                                                            <option value="edit">Edit</option>
+                                                        </select>
+                                                        <button class="btn btn-primary" type="button" id="o_portal_invite_btn"
+                                                                t-att-disabled="None if active_article.create_uid == user else 'disabled'">Invite</button>
+                                                    </div>
+                                                    <!-- Suggestion list container -->
+                                                    <div id="o_portal_invite_suggestions" class="list-group position-absolute shadow border-0 rounded w-100" style="display: none; z-index: 1100; max-height: 150px; overflow-y: auto;"></div>
+                                                </div>
+
+                                                <!-- Members List -->
+                                                <div>
+                                                    <label class="form-label font-weight-semibold text-dark small mb-2">Members</label>
+                                                    <div class="o_portal_members_list" style="max-height: 120px; overflow-y: auto;">
+                                                        <t t-foreach="active_members" t-as="member">
+                                                            <div class="d-flex align-items-center justify-content-between mb-2 small text-dark py-1">
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <div class="avatar bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 10px;">
+                                                                        <t t-esc="(member.partner_id.name or 'U')[:2].upper()"/>
+                                                                    </div>
+                                                                    <span class="text-truncate" style="max-width: 140px;" t-esc="member.partner_id.name"/>
+                                                                </div>
+                                                                
+                                                                <!-- Permission Dropdown (owner disabled) -->
+                                                                <t t-if="member.partner_id == active_article.create_uid.partner_id">
+                                                                    <span class="text-muted small">Owner</span>
+                                                                </t>
+                                                                <t t-elif="active_article.create_uid == user">
+                                                                    <select class="form-select form-select-sm o_portal_member_perm_select" t-att-data-partner-id="member.partner_id.id" style="width: 100px; padding: 0.2rem 1.5rem 0.2rem 0.5rem; font-size: 11px;">
+                                                                        <option value="read" t-att-selected="'selected' if member.permission == 'read' else None">Can read</option>
+                                                                        <option value="edit" t-att-selected="'selected' if member.permission == 'edit' else None">Can edit</option>
+                                                                        <option value="none">Remove</option>
+                                                                    </select>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <t t-if="member.partner_id == user.partner_id">
+                                                                        <!-- Current user can leave the article -->
+                                                                        <select class="form-select form-select-sm o_portal_member_perm_select" t-att-data-partner-id="member.partner_id.id" style="width: 100px; padding: 0.2rem 1.5rem 0.2rem 0.5rem; font-size: 11px;">
+                                                                            <option value="read" t-att-selected="'selected' if member.permission == 'read' else None" disabled="disabled">Can read</option>
+                                                                            <option value="edit" t-att-selected="'selected' if member.permission == 'edit' else None" disabled="disabled">Can edit</option>
+                                                                            <option value="none">Leave</option>
+                                                                        </select>
+                                                                    </t>
+                                                                    <t t-else="">
+                                                                        <!-- Read-only permission display for other members -->
+                                                                        <span class="text-muted small" t-if="member.permission == 'read'">Can read</span>
+                                                                        <span class="text-muted small" t-if="member.permission == 'edit'">Can edit</span>
+                                                                    </t>
+                                                                </t>
+                                                            </div>
+                                                        </t>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </t>
+
+                                    <!-- Table of Contents Button -->
+                                    <button class="o_info_hub_action_icon_btn o_info_hub_toc_btn" id="o_portal_toc_btn" title="Table of Contents">
+                                        <i class="fa fa-bookmark"/>
+                                    </button>
+
+                                    <!-- Favorite Button -->
+                                    <button t-attf-class="o_info_hub_action_icon_btn #{'o_info_hub_active' if active_article.is_favorite else ''}" id="o_portal_favorite_btn" title="Favorite">
+                                        <i t-attf-class="fa #{'fa-star' if active_article.is_favorite else 'fa-star-o'}"/>
+                                    </button>
+
+                                    <!-- THREE-DOT DROPDOWN MENU -->
+                                    <div class="dropdown d-inline-block">
+                                        <button class="o_info_hub_action_icon_btn dropdown-toggle-no-caret"
+                                                data-bs-toggle="dropdown" title="More" aria-expanded="false">
+                                            <i class="fa fa-ellipsis-v"/>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end o_info_hub_more_menu">
+                                            <!-- Remove/Add Icon (only if edit permission and not locked) -->
+                                            <t t-if="active_permission == 'edit' and not active_article.is_locked">
+                                                <t t-if="active_article.icon and active_article.icon != '📄'">
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center" href="#" id="o_portal_remove_icon_btn">
+                                                            <i class="fa fa-smile-o me-2 o_info_hub_menu_icon"/> Remove Icon
+                                                        </a>
+                                                    </li>
+                                                </t>
+                                                <t t-else="">
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center" href="#" id="o_portal_add_icon_btn">
+                                                            <i class="fa fa-smile-o me-2 o_info_hub_menu_icon"/> Add Icon
+                                                        </a>
+                                                    </li>
+                                                </t>
+                                            </t>
+
+                                            <!-- Full Width -->
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center" href="#" id="o_portal_full_width_btn">
+                                                    <i class="fa fa-arrows-h me-2 o_info_hub_menu_icon"/> Full Width
+                                                     <span
+                                                           t-attf-class="o_info_hub_toggle_pill ms-auto #{'o_info_hub_toggle_on' if active_article.is_full_width else 'o_info_hub_toggle_off'}">
+                                                         <span class="o_info_hub_toggle_knob"/>
+                                                     </span>
+                                                </a>
+                                            </li>
+
+                                            <!-- Lock Content (only if edit permission) -->
+                                            <t t-if="active_permission == 'edit'">
+                                                <li>
+                                                    <a class="dropdown-item d-flex align-items-center" href="#" id="o_portal_lock_btn">
+                                                        <i t-attf-class="fa me-2 o_info_hub_menu_icon #{'fa-unlock' if active_article.is_locked else 'fa-lock'}"/>
+                                                        <t t-if="active_article.is_locked">Unlock Content</t>
+                                                        <t t-else="">Lock Content</t>
+                                                    </a>
+                                                </li>
+                                            </t>
+
+                                            <!-- Create a Copy -->
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center" href="#" id="o_portal_duplicate_btn">
+                                                    <i class="fa fa-copy me-2 o_info_hub_menu_icon"/> Create a Copy
+                                                </a>
+                                            </li>
+
+                                            <!-- Download PDF -->
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center" href="#" id="o_portal_pdf_btn">
+                                                    <i class="fa fa-download me-2 o_info_hub_menu_icon"/> Download PDF
+                                                </a>
+                                            </li>
+
+                                            <!-- Last Edited Meta -->
+                                            <t t-if="active_article.last_edition_date">
+                                                <li><hr class="dropdown-divider"/></li>
+                                                <li>
+                                                    <div class="o_info_hub_menu_meta d-flex flex-column px-3 py-2 text-muted small" style="font-size: 11px;">
+                                                        <div class="mb-1 text-muted">Last Edited · <span t-field="active_article.last_edition_date"/></div>
+                                                        <div class="d-flex align-items-center mt-1" t-if="active_article.last_edition_uid">
+                                                            <img t-attf-src="/web/image?model=res.users&amp;id=#{active_article.last_edition_uid.id}&amp;field=avatar_128" class="rounded-circle me-2" style="width: 20px; height: 20px; object-fit: cover;"/>
+                                                            <span t-esc="active_article.last_edition_uid.name" class="o_info_hub_menu_meta_user fw-bold text-dark"/>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </t>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Article Content Area -->
+                            <div class="o_info_hub_view_container" style="flex: 1; display: flex; flex-direction: row; height: auto;">
+                                <div t-attf-class="o_info_hub_editor_container #{'o_info_hub_full_width' if active_article.is_full_width else ''}" style="flex: 1; min-height: 0; display: flex; justify-content: center; align-items: stretch; overflow-y: auto;">
+                                    <div t-attf-class="o_info_hub_editor_content w-100 #{'o_info_hub_content_full_width' if active_article.is_full_width else ''}">
+                                        <div t-attf-class="o_info_portal_body_panel o_info_hub_editor_content_inner #{'o_info_hub_content_full_width' if active_article.is_full_width else ''}" t-att-data-article-id="active_article.id">
+                                            
+                                            <!-- Cover image -->
+                                            <t t-if="active_article.cover_image">
+                                                <div class="o_info_portal_cover rounded-3 mb-4 overflow-hidden" style="max-height: 250px;">
+                                                    <img t-att-src="image_data_uri(active_article.cover_image)" alt="Cover" class="w-100 h-100 object-fit-cover"/>
+                                                </div>
+                                            </t>
+
+                                            <!-- Body Text Editor -->
+                                            <t t-if="active_permission == 'edit' and not active_article.is_locked">
+                                                <!-- Editable Body -->
+                                                <div id="o_info_portal_wysiwyg_mount" class="w-100">
+                                                </div>
+                                                <div id="o_info_portal_editor_value" class="d-none">
+                                                    <t t-out="active_article.body"/>
+                                                </div>
+                                            </t>
+                                            <t t-else="">
+                                                <!-- Read-only Body -->
+                                                <div class="o_portal_body_readonly o_info_hub_body" 
+                                                     style="min-height: 50vh; line-height: 1.75;">
+                                                    <t t-out="active_article.body"/>
+                                                </div>
+                                            </t>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- TABLE OF CONTENTS PANEL -->
+                                <aside class="o_info_hub_toc_panel d-none" id="o_portal_toc_panel" style="position: sticky; top: 0; max-height: calc(100vh - 100px); overflow-y: auto;">
+                                    <div class="o_info_hub_toc_header d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+                                        <span class="fs-5 fw-bold o_info_hub_toc_title">Table of Contents</span>
+                                        <button class="o_info_hub_toc_close_btn btn border-0 p-1 bg-transparent" id="o_portal_toc_close_btn" aria-label="Close">
+                                            <i class="fa fa-times o_info_hub_toc_close_icon fs-5"/>
+                                        </button>
+                                    </div>
+                                    <div class="o_info_hub_toc_content_wrapper">
+                                        <ul class="list-unstyled" id="o_portal_toc_list">
+                                        </ul>
+                                    </div>
+                                </aside>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <!-- Empty / Welcome state -->
+                            <div class="text-center py-5 my-5 bg-light border border-dashed rounded-3 shadow-sm">
+                                <span class="fs-1">📚</span>
+                                <h3 class="text-dark font-weight-bold mt-3 mb-2">Welcome to Information</h3>
+                                <p class="text-muted mb-4 max-width-500 mx-auto">Select a shared article from the sidebar or create a new private article to get started.</p>
+                                <form action="/info/portal/create" method="POST" class="m-0">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <button type="submit" class="btn btn-primary btn-lg shadow rounded-pill px-5">
+                                        <i class="oi oi-plus me-2"/> Create your first article
+                                    </button>
+                                </form>
+                            </div>
+                        </t>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Custom styling for Portal View -->
+            <style>
+                .bg-primary-light {
+                    background-color: rgba(13, 110, 253, 0.08) !important;
+                }
+                .font-weight-semibold {
+                    font-weight: 600 !important;
+                }
+                .italic {
+                    font-style: italic;
+                }
+                .border-dashed {
+                    border-style: dashed !important;
+                }
+                .min-vh-80 {
+                    min-height: 80vh;
+                }
+                .o_info_portal_list .list-group-item {
+                    transition: background-color 0.2s, color 0.2s;
+                }
+                .o_info_portal_list .list-group-item:hover {
+                    background-color: rgba(0, 0, 0, 0.04);
+                }
+                .o_info_portal_list .list-group-item.active:hover {
+                    background-color: rgba(13, 110, 253, 0.12);
+                }
+                .o_portal_body_editable:focus {
+                    border-color: #86b7fe;
+                    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+                }
+                
+                /* Custom styles for the autocomplete dropdown */
+                #o_portal_invite_suggestions .list-group-item {
+                    cursor: pointer;
+                    transition: background 0.15s;
+                }
+                #o_portal_invite_suggestions .list-group-item:hover {
+                    background: #f8f9fa;
+                }
+
+                /* Slash Commands Menu styling */
+                .o_info_slash_menu {
+                    background: white;
+                    border: 1px solid #dee2e6;
+                    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+                    border-radius: 0.375rem;
+                    min-width: 180px;
+                }
+                .o_info_slash_menu .dropdown-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 0.375rem 0.75rem;
+                    font-size: 0.875rem;
+                    cursor: pointer;
+                }
+                .o_info_slash_menu .dropdown-item:hover {
+                    background: #f8f9fa;
+                    color: #0d6efd;
+                }
+            </style>
+
+        </t>
+    </template>
+</odoo>

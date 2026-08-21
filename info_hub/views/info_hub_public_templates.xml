@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    QWeb website templates for publicly published articles accessible via shareable web links.
+-->
+<odoo>
+    <template id="public_article_view" name="Public Article View">
+        <t t-call="web.frontend_layout">
+            <t t-set="title" t-value="article.name"/>
+            <div id="wrap" class="oe_structure oe_empty">
+                <!-- Stylesheet for public view -->
+                <style>
+                    .o_public_info_container {
+                        max-width: 800px;
+                        margin: 40px auto;
+                        padding: 0 20px;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                        color: #1f2937;
+                        line-height: 1.75;
+                    }
+                    .o_public_cover {
+                        width: 100%;
+                        max-height: 350px;
+                        overflow: hidden;
+                        border-radius: 12px;
+                        margin-bottom: 24px;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                    }
+                    .o_public_cover img {
+                        width: 100%;
+                        height: auto;
+                        object-fit: cover;
+                    }
+                    .o_public_header {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        margin-bottom: 20px;
+                    }
+                    .o_public_icon {
+                        font-size: 2.5rem;
+                    }
+                    .o_public_title {
+                        font-size: 2.2rem;
+                        font-weight: 800;
+                        margin: 0;
+                        color: #111827;
+                    }
+                    .o_public_meta {
+                        font-size: 0.85rem;
+                        color: #6b7280;
+                        margin-bottom: 30px;
+                        border-bottom: 1px solid #e5e7eb;
+                        padding-bottom: 12px;
+                    }
+                    .o_public_body {
+                        font-size: 1.05rem;
+                        color: #374151;
+                    }
+                    .o_public_body h1, .o_public_body h2, .o_public_body h3 {
+                        color: #111827;
+                        margin-top: 1.8rem;
+                        margin-bottom: 0.8rem;
+                        font-weight: 700;
+                    }
+                    .o_public_body h1 { font-size: 1.6rem; }
+                    .o_public_body h2 { font-size: 1.4rem; }
+                    .o_public_body h3 { font-size: 1.2rem; }
+                    .o_public_body p { margin-bottom: 1.2rem; }
+                    .o_public_body ul, .o_public_body ol { padding-left: 24px; margin-bottom: 1.2rem; }
+                    
+                    /* Inaccessible blocks warning */
+                    .o_public_warning_card {
+                        background: #fff;
+                        border: 1px solid #fcd34d;
+                        border-radius: 12px;
+                        padding: 30px 20px;
+                        text-align: center;
+                        box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.05);
+                        margin: 40px 0;
+                    }
+                    .o_public_warning_icon {
+                        font-size: 3rem;
+                        color: #d97706;
+                        margin-bottom: 16px;
+                    }
+                    .o_public_warning_title {
+                        font-size: 1.25rem;
+                        font-weight: 700;
+                        color: #92400e;
+                        margin-bottom: 8px;
+                    }
+                    .o_public_warning_text {
+                        color: #b45309;
+                        margin-bottom: 20px;
+                    }
+                    .o_public_warning_btn {
+                        background: #71639e;
+                        color: #fff;
+                        padding: 10px 24px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        text-decoration: none;
+                        display: inline-block;
+                        transition: background 0.2s;
+                    }
+                    .o_public_warning_btn:hover {
+                        background: #5F3F5B;
+                        color: #fff;
+                    }
+                </style>
+                
+                <div class="o_public_info_container">
+                    <!-- Cover image -->
+                    <div class="o_public_cover" t-if="article.cover_image">
+                        <img t-att-src="image_data_uri(article.cover_image)" alt="Article Cover"/>
+                    </div>
+                    
+                    <!-- Title and Icon -->
+                    <div class="o_public_header">
+                        <span class="o_public_icon" t-esc="article.icon or '📄'"/>
+                        <h1 class="o_public_title" t-esc="article.name"/>
+                    </div>
+                    
+                    <!-- Metadata -->
+                    <div class="o_public_meta">
+                        Published by <span t-esc="article.author_id.name or 'System'"/> • Last edited on <span t-esc="article.last_edition_date or article.create_date" t-options='{"widget": "date"}'/>
+                    </div>
+                    
+                    <!-- Content or Warning -->
+                    <t t-if="has_inaccessible_blocks">
+                        <div class="o_public_warning_card">
+                            <div class="o_public_warning_icon">🔒</div>
+                            <div class="o_public_warning_title">This view is only available for internal users.</div>
+                            <p class="o_public_warning_text">Some interactive components or secure view blocks embedded in this article require internal authorization to load.</p>
+                            <a class="o_public_warning_btn" t-att-href="'/web/login?redirect=/info/article/%s' % article.id">Login</a>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="o_public_body">
+                            <t t-out="article.body"/>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    OWL template for legacy/compatibility cover image selection dialog.
+-->
+<templates xml:space="preserve">
+
+<!--
+    KnowledgeCoverDialog — Rich cover-picker dialog.
+
+    States:
+      1. Empty state  → No query entered yet; shows illustration + hint.
+      2. Loading      → Spinner while Unsplash results are being fetched.
+      3. Error        → Unsplash not configured or network issue.
+      4. No results   → Search returned 0 images.
+      5. Image grid   → Responsive 3-column grid of Unsplash thumbnails.
+-->
+<t t-name="knowledge_module_community.KnowledgeCoverDialog">
+    <Dialog size="'xl'" title="''" footer="false" contentClass="'o_km_cover_dialog_content'">
+        <!-- ══════════════════════════════════════════
+             DIALOG HEADER
+             ══════════════════════════════════════════ -->
+        <t t-set-slot="header">
+            <div class="o_km_cover_dialog_header">
+                <div class="o_km_cover_dialog_title_row">
+                    <i class="fa fa-image o_km_cover_dialog_icon"/>
+                    <h4 class="o_km_cover_dialog_title">Choose a nice cover</h4>
+                </div>
+                <button class="o_km_cover_dialog_close" t-on-click="onDiscard" title="Close">
+                    <i class="fa fa-times"/>
+                </button>
+            </div>
+        </t>
+        <!-- ══════════════════════════════════════════
+             DIALOG BODY
+             ══════════════════════════════════════════ -->
+        <t t-set-slot="default">
+
+            <!-- ── TOP TOOLBAR ── -->
+            <div class="o_km_cover_toolbar">
+                <div class="o_km_cover_toolbar_actions">
+                    <button
+                        id="o_km_cover_add_url_btn"
+                        class="o_km_cover_action_btn"
+                        t-att-class="{ 'o_km_cover_action_btn_active': state.showUrlPanel }"
+                        t-on-click="onToggleUrlPanel"
+                    >
+                        <i class="fa fa-link me-1"/>
+                        Add URL
+                    </button>
+                    <label
+                        id="o_km_cover_upload_btn"
+                        class="o_km_cover_action_btn o_km_cover_action_btn_primary"
+                        title="Upload an image from your computer"
+                    >
+                        <i class="fa fa-upload me-1"/>
+                        Upload an image
+                        <input
+                            t-ref="fileInput"
+                            type="file"
+                            accept="image/*"
+                            style="display:none;"
+                            t-on-change="onFileChange"
+                        />
+                    </label>
+                </div>
+            </div>
+
+            <!-- ── URL INPUT PANEL ── -->
+            <div t-if="state.showUrlPanel" class="o_km_cover_url_panel">
+                <div class="o_km_cover_url_inner">
+                    <div class="o_km_cover_url_input_row">
+                        <i class="fa fa-link o_km_cover_url_icon"/>
+                        <input
+                            id="o_km_cover_url_input"
+                            class="o_km_cover_url_input"
+                            type="url"
+                            placeholder="https://example.com/image.jpg"
+                            t-att-value="state.urlValue"
+                            t-on-input="onUrlInput"
+                        />
+                        <button
+                            id="o_km_cover_apply_url_btn"
+                            class="o_km_cover_apply_url_btn"
+                            t-on-click="onApplyUrl"
+                            t-att-disabled="state.applying"
+                        >
+                            <t t-if="state.applying">
+                                <i class="fa fa-spinner fa-spin me-1"/>
+                            </t>
+                            Apply
+                        </button>
+                    </div>
+                    <p t-if="state.urlError" class="o_km_cover_url_error">
+                        <i class="fa fa-exclamation-circle me-1"/>
+                        <t t-esc="state.urlError"/>
+                    </p>
+                </div>
+            </div>
+
+            <div>
+                <div t-if="state.recentImages.length === 0" class="o_km_cover_empty_state">
+                    <p class="o_km_cover_empty_text">No recently uploaded cover images</p>
+                    <p class="o_km_cover_empty_sub">
+                        Upload an image or paste a URL above to get started.
+                    </p>
+                </div>
+
+                <div t-else="" class="o_km_cover_image_grid">
+                    <t t-foreach="state.recentImages" t-as="dataUri" t-key="dataUri_index">
+                        <div
+                            class="o_km_cover_img_item"
+                            title="Apply this cover"
+                            t-on-click="() => this.onRecentImageClick(dataUri_index)"
+                        >
+                            <img
+                                class="o_km_cover_img"
+                                t-att-src="dataUri"
+                                alt="Recent cover"
+                                loading="lazy"
+                            />
+                            <div class="o_km_cover_img_overlay">
+                                <i class="fa fa-check o_km_cover_img_overlay_icon"/>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+        <!-- ══════════════════════════════════════════
+             DIALOG FOOTER
+             ══════════════════════════════════════════ -->
+        <t t-set-slot="footer">
+            <div class="o_km_cover_dialog_footer">
+                <button
+                    id="o_km_cover_discard_btn"
+                    class="o_km_cover_discard_btn"
+                    t-on-click="onDiscard"
+                >
+                    <i class="fa fa-times me-1"/>
+                    Discard
+                </button>
+            </div>
+        </t>
+
+    </Dialog>
+</t>
+
+</templates>

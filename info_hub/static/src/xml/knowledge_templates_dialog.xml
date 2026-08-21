@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    OWL template for legacy/compatibility template browsing and preview dialogs.
+-->
+<templates xml:space="preserve">
+    <!-- Main Browse Templates Dialog -->
+    <t t-name="knowledge_module_community.BrowseTemplatesDialog">
+        <Dialog title="'Browse Templates'" size="'xl'">
+            <div class="o_km_templates_dialog_body">
+                <t t-if="state.loading">
+                    <div class="o_km_dialog_loading">
+                        <i class="fa fa-spinner fa-spin fa-2x"/>
+                        <p class="mt-2 text-muted">Loading templates...</p>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="o_km_templates_dialog_container">
+                        <!-- Left sidebar: Search and Categories -->
+                        <aside class="o_km_templates_dialog_sidebar">
+                            <div class="o_km_templates_search_box">
+                                <div class="o_km_search_input_wrap">
+                                    <input type="text" class="form-control" placeholder="Search templates..."
+                                           t-on-input="onSearchInput" t-att-value="state.searchQuery"/>
+                                    <i class="fa fa-search"/>
+                                </div>
+                            </div>
+                            <div class="o_km_templates_categories_list">
+                                <div class="o_km_category_item" 
+                                     t-att-class="{ 'active': state.selectedCategoryId === null }"
+                                     t-on-click="() => this.selectCategory(null)">
+                                    <span class="o_km_category_icon">📂</span>
+                                    <span class="o_km_category_name">All Templates</span>
+                                </div>
+                                <t t-foreach="state.categories" t-as="cat" t-key="cat.id">
+                                    <div class="o_km_category_item"
+                                         t-att-class="{ 'active': state.selectedCategoryId === cat.id }"
+                                         t-on-click="() => this.selectCategory(cat.id)">
+                                        <span class="o_km_category_icon" t-esc="cat.icon"/>
+                                        <span class="o_km_category_name" t-esc="cat.name"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </aside>
+
+                        <!-- Main content: Cards Grid -->
+                        <main class="o_km_templates_dialog_main">
+                            <div class="o_km_template_grid" t-if="filteredTemplates.length > 0">
+                                <t t-foreach="filteredTemplates" t-as="tmpl" t-key="tmpl.id">
+                                    <div class="o_km_template_card" t-on-click="() => this.onSelectTemplate(tmpl.id)">
+                                        <div class="o_km_template_card_header">
+                                            <span class="o_km_template_icon" t-esc="tmpl.icon or '📄'"/>
+                                            <div class="o_km_template_cat_badge" t-if="tmpl.template_category_id" t-esc="tmpl.template_category_id[1]"/>
+                                        </div>
+                                        <div class="o_km_template_card_body">
+                                            <h4 class="o_km_template_title" t-esc="tmpl.name"/>
+                                            <p class="o_km_template_description" t-esc="tmpl.template_description or 'No description provided.'"/>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="o_km_no_templates" t-else="">
+                                <div class="o_km_no_templates_inner">
+                                    <i class="fa fa-folder-open-o fa-3x mb-3"/>
+                                    <h4>No templates found</h4>
+                                    <p class="text-muted">Try adjusting your search query or category filter.</p>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                </t>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="props.close">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- Template Preview Dialog -->
+    <t t-name="knowledge_module_community.BrowseTemplatesPreviewDialog">
+        <Dialog title="'Template Preview'" size="'lg'">
+            <div class="o_km_preview_dialog_body">
+                <!-- Cover Image Strip -->
+                <div t-if="props.preview.cover_image_url" class="o_km_preview_cover mb-3">
+                    <img t-att-src="props.preview.cover_image_url" alt="Template Cover Image" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px;"/>
+                </div>
+
+                <!-- Header Info -->
+                <div class="o_km_preview_header mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="o_km_preview_icon" t-esc="props.preview.icon or '📄'" style="font-size: 2.5rem;"/>
+                        <div>
+                            <h2 class="o_km_preview_title font-weight-bold mb-1" t-esc="props.preview.name" style="font-size: 1.6rem; color: #1f2937;"/>
+                            <span class="badge o_km_preview_category" t-esc="props.preview.template_category || 'Uncategorised'" style="background: #f6edf5; color: #71639e; font-weight: 600; font-size: 0.75rem; padding: 4px 10px; border-radius: 999px;"/>
+                        </div>
+                    </div>
+                    <p t-if="props.preview.template_description" class="o_km_preview_description text-muted mt-3 mb-0" style="font-size: 0.9rem; line-height: 1.5;" t-esc="props.preview.template_description"/>
+                    <hr class="my-3"/>
+                </div>
+
+                <!-- HTML Rendered Body -->
+                <div class="o_km_preview_content_wrap p-3 border rounded mb-4" style="background: #f9fafb; max-height: 320px; overflow-y: auto;">
+                    <div class="o_km_preview_body" t-out="renderedBody"/>
+                </div>
+
+                <!-- Target Category Selector -->
+                <div t-if="!props.isApplyOnly" class="o_km_preview_workspace_select mt-4 p-3 border rounded" style="background: #f8fafc;">
+                    <div class="row align-items-center">
+                        <div class="col-sm-6">
+                            <label for="categorySelect" class="form-label mb-sm-0 font-weight-bold" style="color: #334155; font-size: 0.9rem;">Select Target Category</label>
+                        </div>
+                        <div class="col-sm-6">
+                            <select id="categorySelect" class="form-select" t-on-change="onCategoryChange" style="font-size: 0.88rem; border-radius: 6px;">
+                                <option value="workspace">Workspace</option>
+                                <option value="private">Private</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_km_preview_use_btn" t-on-click="useTemplate" t-att-disabled="state.loading">
+                    Use Template
+                </button>
+                <button t-if="props.onEditTemplate" class="btn btn-warning text-white o_km_preview_edit_btn" t-on-click="editTemplate" t-att-disabled="state.loading">
+                    Edit Template
+                </button>
+                <button class="btn btn-danger o_km_preview_delete_btn" t-on-click="deleteTemplate" t-att-disabled="state.loading">
+                    Delete
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- Insert Kanban View Dialog -->
+    <t t-name="knowledge_module_community.InsertKanbanViewDialog">
+        <Dialog title="'Insert a Kanban View'" size="'md'">
+            <div class="p-3 o_km_insert_dialog">
+                <div class="row align-items-center">
+                    <div class="col-sm-6">
+                        <label for="itemNameInput" class="form-label mb-0 font-weight-bold">What items do you want to manage?</label>
+                    </div>
+                    <div class="col-sm-6">
+                        <input id="itemNameInput" type="text" class="form-control" t-model="state.itemName" t-on-keydown="onKeydown" placeholder="e.g. Tasks, Buildings..." autofocus="autofocus"/>
+                    </div>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_km_insert_btn" t-on-click="onInsertClick">
+                    Insert
+                </button>
+                <button class="btn btn-secondary text-white o_km_dialog_discard_btn" t-on-click="props.close">
+                    Discard
+                </button>
+            </t>
+        </Dialog>
+    </t>
+    
+    <!-- Insert List View Dialog -->
+    <t t-name="knowledge_module_community.InsertListViewDialog">
+        <Dialog title="'Insert a List View'" size="'md'">
+            <div class="p-3 o_km_insert_dialog">
+                <div class="row align-items-center">
+                    <div class="col-sm-6">
+                        <label for="itemNameInput" class="form-label mb-0 font-weight-bold">What items do you want to manage?</label>
+                    </div>
+                    <div class="col-sm-6">
+                        <input id="itemNameInput" type="text" class="form-control" t-model="state.itemName" t-on-keydown="onKeydown" placeholder="e.g. Todos, Tasks..." autofocus="autofocus"/>
+                    </div>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_km_insert_btn" t-on-click="insert">
+                    <t t-if="props.itemName">Rename</t>
+                    <t t-else="">Insert</t>
+                </button>
+                <button class="btn btn-secondary text-white o_km_dialog_discard_btn" t-on-click="props.close">
+                    Discard
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- Insert Calendar View Dialog -->
+    <t t-name="knowledge_module_community.InsertCalendarViewDialog">
+        <Dialog title="'Insert a Calendar View'" size="'md'">
+            <div class="p-4 o_km_insert_dialog o_km_insert_calendar_dialog">
+                <div class="mb-3 row align-items-center">
+                    <div class="col-sm-5">
+                        <label for="itemNameInput" class="form-label mb-0 font-weight-bold">What do you want to manage?</label>
+                    </div>
+                    <div class="col-sm-7">
+                        <input id="itemNameInput" type="text" class="form-control" t-model="state.itemName" t-on-keydown="onKeydown" placeholder="e.g. Meetings" autofocus="autofocus"/>
+                    </div>
+                </div>
+
+                <t t-if="props.isAdvancedMode">
+                    <div class="mb-3 row align-items-center">
+                        <div class="col-sm-5">
+                            <label class="form-label mb-0 font-weight-bold">Date Properties</label>
+                        </div>
+                        <div class="col-sm-7 d-flex align-items-center gap-2">
+                            <select class="form-select">
+                                <option>Start Date Time</option>
+                            </select>
+                            <span class="text-muted"><i class="fa fa-arrow-right"/></span>
+                            <select class="form-select">
+                                <option>End Date Time</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row align-items-center">
+                        <div class="col-sm-5">
+                            <label class="form-label mb-0 font-weight-bold">Base Color On</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <select class="form-select" disabled="disabled">
+                                <option>Property Field</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row align-items-center">
+                        <div class="col-sm-5">
+                            <label class="form-label mb-0 font-weight-bold">Default Scale</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <select class="form-select" t-model="state.scale">
+                                <option value="day">Day</option>
+                                <option value="month">Month</option>
+                                <option value="week">Week</option>
+                                <option value="year">Year</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row align-items-center">
+                        <div class="col-sm-5">
+                            <label class="form-label mb-0 font-weight-bold">Hours Display</label>
+                        </div>
+                        <div class="col-sm-7 d-flex align-items-center gap-2">
+                            <input type="text" class="form-control text-center" t-model="state.startHour" style="width: 100px;"/>
+                            <span class="text-muted"><i class="fa fa-arrow-right"/></span>
+                            <input type="text" class="form-control text-center" t-model="state.endHour" style="width: 100px;"/>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center">
+                        <div class="col-sm-5">
+                            <label class="form-label mb-0 font-weight-bold">Show Weekends?</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <div class="form-check form-switch mb-0">
+                                <input type="checkbox" class="form-check-input" t-model="state.showWeekends" id="showWeekendsCheck" style="cursor: pointer;"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_km_insert_btn" t-on-click="insert">
+                    <t t-if="props.itemName">Save</t>
+                    <t t-else="">Insert</t>
+                </button>
+                <button class="btn btn-secondary text-white o_km_dialog_discard_btn" t-on-click="props.close">
+                    Discard
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- Version History Dialog -->
+    <t t-name="knowledge_module_community.KnowledgeArticleVersionHistoryDialog">
+        <Dialog title="'History'" size="'xl'">
+            <div class="o_km_history_modal_body">
+                <!-- Left Sidebar: History List -->
+                <aside class="o_km_history_sidebar">
+                    <div class="o_km_history_sidebar_header">
+                        <span>Versions</span>
+                    </div>
+                    <div class="o_km_history_sidebar_list">
+                        <t t-if="state.loading">
+                            <div class="text-center py-5 text-muted">
+                                <i class="fa fa-spinner fa-spin fa-2x mb-2"/>
+                                <div>Loading history...</div>
+                            </div>
+                        </t>
+                        <t t-elif="state.versions.length === 0">
+                            <div class="text-center py-5 text-muted">
+                                <i class="fa fa-info-circle fa-2x mb-2"/>
+                                <div>No version snapshots found.</div>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="o_km_history_timeline">
+                                <t t-foreach="state.versions" t-as="version" t-key="version.id">
+                                    <t t-set="isCurrent" t-value="version.id === state.versions[0].id"/>
+                                    <t t-set="isSelected" t-value="version.id === state.selectedVersionId"/>
+                                    <div class="o_km_history_version_item"
+                                         t-att-class="{ 'active': isSelected, 'current': isCurrent, 'selected': isSelected }"
+                                         t-on-click="() => this.selectVersion(version.id)">
+                                        <!-- Timeline dot/icon -->
+                                        <div t-att-class="'o_km_history_timeline_icon ' + (isSelected ? 'bg-primary text-white border-primary' : (isCurrent ? 'bg-primary text-white border-primary' : 'bg-light text-muted border-secondary'))">
+                                            <i t-att-class="isSelected ? 'fa fa-play text-white ms-1' : (isCurrent ? 'fa fa-check' : 'fa fa-minus')"/>
+                                        </div>
+                                        
+                                        <!-- Version info -->
+                                        <div class="o_km_history_version_meta">
+                                            <span class="o_km_history_version_time" t-esc="formatDate(version.create_date)"/>
+                                            <div class="o_km_history_version_author">
+                                                <img t-att-src="'/web/image?model=res.users&amp;id=' + version.create_uid[0] + '&amp;field=avatar_128'"
+                                                     class="o_km_history_avatar"
+                                                     alt="Avatar"/>
+                                                <span t-esc="version.create_uid[1]"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                </aside>
+
+                <!-- Right Content Area -->
+                <main class="o_km_history_content_pane">
+                    <t t-if="selectedVersion">
+                        <div class="o_km_history_content_header">
+                            <!-- Info banner -->
+                            <div class="o_km_history_info_banner">
+                                <i class="fa fa-info-circle"/>
+                                <t t-if="state.showComparison">
+                                    <span>Showing all differences between the current version and the selected one updated by <strong t-esc="selectedVersion.create_uid[1]"/> on <span t-esc="formatDate(selectedVersion.create_date)"/></span>
+                                </t>
+                                <t t-else="">
+                                    <span>Showing the document as it was on <span t-esc="formatDate(selectedVersion.create_date)"/>, submitted by <strong t-esc="selectedVersion.create_uid[1]"/></span>
+                                </t>
+                            </div>
+                            <!-- Toggle Button -->
+                            <button class="o_km_history_toggle_btn btn btn-light" t-on-click="toggleComparison">
+                                <t t-if="state.showComparison">
+                                    <i class="fa fa-eye me-1"/> View content
+                                </t>
+                                <t t-else="">
+                                    <i class="fa fa-exchange me-1"/> View comparison
+                                </t>
+                            </button>
+                        </div>
+
+                        <!-- Canvas preview -->
+                        <div class="o_km_history_preview_canvas">
+                            <div class="o_km_history_preview_body">
+                                <div class="o_km_history_preview_content" t-out="displayedBody"/>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                            Select a version from the timeline to view content.
+                        </div>
+                    </t>
+                </main>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary"
+                        t-on-click="restore"
+                        t-att-disabled="state.loading or !selectedVersion"
+                        style="background: #71639e; border-color: #71639e;">
+                    Restore history
+                </button>
+                <button class="btn btn-secondary text-white"
+                        t-on-click="props.close"
+                        style="background: #4b5563; border-color: #4b5563; margin-left: 8px;">
+                    Discard
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

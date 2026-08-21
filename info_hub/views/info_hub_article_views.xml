@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Backend views, search filters, actions, client action, and forms for Information Articles.
+    Includes views for main articles, sub-articles, kanban cards, calendar, trash, and favorites.
+-->
+<odoo>
+
+
+    <record id="view_info_article_list" model="ir.ui.view">
+        <field name="name">info.hub.article.list</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <list string="Articles"
+                  create="false"
+                  decoration-muted="not active"
+                  decoration-info="is_template"
+                  action="info_hub.action_info_client"
+                  type="action">
+                <field name="sequence" widget="handle"/>
+
+                <field name="name"/>
+                <field name="category"/>
+                <field name="parent_id" string="Parent"/>
+                <field name="author_id" string="Author"/>
+                <field name="last_edition_date" string="Last Edited" optional="show"/>
+                <field name="child_count" string="Sub-Articles" optional="show"/>
+                <field name="is_template" string="Template" optional="hide" widget="boolean"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_info_article_kanban" model="ir.ui.view">
+        <field name="name">info.hub.article.kanban</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" records_draggable="0" action="info_hub.action_info_client" type="action">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="icon"/>
+                <field name="is_favorite"/>
+                <field name="parent_id"/>
+                <field name="author_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click d-flex align-items-center justify-content-between p-2">
+                            <div class="d-flex align-items-center min-w-0">
+                                <span class="me-2 fs-5" t-if="record.icon.raw_value" t-esc="record.icon.raw_value"/>
+                                <span class="me-2 fs-5" t-else="">📄</span>
+                                <field name="name" class="fw-bold text-truncate"/>
+                            </div>
+                            <field name="is_favorite" widget="boolean_favorite" nolabel="1"/>
+                        </div>
+                        <div class="px-2 pb-2 text-muted small" t-if="record.parent_id.raw_value">
+                            <field name="parent_id"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_info_article_hierarchy" model="ir.ui.view">
+        <field name="name">info.hub.article.hierarchy</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <hierarchy child_field="child_ids" draggable="1" icon="fa-sitemap">
+                <field name="name"/>
+                <field name="icon"/>
+                <field name="category"/>
+                <field name="author_id"/>
+                <field name="is_favorite"/>
+                <field name="card_properties_html"/>
+                <templates>
+                    <t t-name="hierarchy-box">
+                        <div class="position-absolute" style="top: 8px; right: 8px; z-index: 10;">
+                            <field name="is_favorite" widget="boolean_favorite" nolabel="1"/>
+                        </div>
+                        <div class="d-flex flex-column text-center pb-2 pt-2" style="background-color: transparent;">
+                            <div class="d-flex justify-content-center align-items-center min-w-0 mb-2">
+                                <span class="fs-1" t-if="record.icon.raw_value" t-esc="record.icon.raw_value"/>
+                                <span class="fs-1" t-else="">📄</span>
+                            </div>
+                            <field class="fw-bold w-100 fs-6 text-truncate" name="name" />
+                            <div class="fw-bold small mt-1 d-flex align-items-center justify-content-center text-capitalize text-muted">
+                                <field name="author_id" widget="many2one_avatar_user" class="me-2"/>
+                            </div>
+                            <div class="fw-bold small mt-1 d-flex align-items-center justify-content-center text-capitalize text-muted">
+                                <i class="fa fa-user me-1" title="Private" t-if="record.category.raw_value == 'private'"/>
+                                <i class="fa fa-users me-1" title="Shared" t-if="record.category.raw_value == 'shared'"/>
+                                <i class="fa fa-building me-1" title="Workspace" t-if="record.category.raw_value == 'workspace'"/>
+                                <field name="category"/>
+                            </div>
+                            <t t-if="record.card_properties_html.raw_value">
+                                <div class="o_info_hub_card_props_row d-flex flex-column gap-1 mt-2 px-2" style="font-size:0.78rem;">
+                                    <t t-out="record.card_properties_html.raw_value"/>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </templates>
+            </hierarchy>
+        </field>
+    </record>
+
+
+
+    <!-- Streamlined Tree View for Embedded Article Items -->
+    <record id="info_article_view_tree_embedded" model="ir.ui.view">
+        <field name="name">info.hub.article.view.tree.embedded</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <list string="Embedded Article Items" create="1" edit="1" delete="1">
+                <header>
+                    <button name="action_archive" type="object" string="Trash" icon="fa-trash"/>
+                </header>
+                <field name="sequence" widget="handle"/>
+                <field name="name" string="Name"/>
+                <field name="create_uid" string="Created by" readonly="1" optional="show"/>
+                <field name="create_date" string="Created on" readonly="1" optional="show"/>
+                <field name="category" string="Section" optional="hide"/>
+                <field name="parent_id" string="Menu Article" optional="hide"/>
+                <field name="last_edition_uid" string="Last Edited by" readonly="1" optional="hide"/>
+                <field name="last_edition_date" string="Last Edit Date" readonly="1" optional="hide"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+
+    <record id="info_article_view_calendar_embedded" model="ir.ui.view">
+        <field name="name">info.hub.article.view.calendar.embedded</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <calendar string="name"
+                      date_start="item_date_start"
+                      date_stop="item_date_end"
+                      mode="week"
+                      quick_create="false">
+                <field name="name"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Standard Article List View (used for trash and templates to allow standard form redirection) -->
+    <record id="view_info_article_list_standard" model="ir.ui.view">
+        <field name="name">info.hub.article.list.standard</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <list string="Articles"
+                  decoration-muted="not active"
+                  decoration-info="is_template"
+                  action="info_hub.action_info_client"
+                  type="action">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="parent_id" string="Parent"/>
+                <field name="author_id" string="Author"/>
+                <field name="last_edition_date" string="Last Edited" optional="show"/>
+                <field name="child_count" string="Sub-Articles" optional="show"/>
+                <field name="is_template" string="Template" optional="hide" widget="boolean"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_info_article_kanban_items" model="ir.ui.view">
+        <field name="name">info.hub.article.kanban.items</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" class="o_kanban_small_column o_info_kanban_items_view" default_order="sequence asc, id desc" on_create="quick_create" records_draggable="1">
+                <field name="id"/>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="icon"/>
+                <field name="stage_id"/>
+                <field name="is_favorite"/>
+                <field name="author_id"/>
+                <field name="cover_image"/>
+                <templates>
+                    <t t-name="card" class="row g-0 flex-row overflow-hidden p-0 border rounded">
+                        <aside t-if="record.cover_image.raw_value" class="o_kanban_aside_full position-relative flex-shrink-0" style="width: 70px;">
+                            <div t-attf-style="background-image: url('/web/image/info.hub.article/{{ record.id.raw_value }}/cover_image'); background-size: cover; background-position: center; width: 100%; height: 100%; min-height: 80px;" role="img"/>
+                        </aside>
+                        <main class="oe_kanban_global_click d-flex flex-column justify-content-between p-3 flex-grow-1 min-w-0">
+                            <div>
+                                <div class="d-flex align-items-start justify-content-between gap-1">
+                                    <div class="d-flex align-items-center min-w-0">
+                                        <span class="me-2 fs-5 flex-shrink-0" t-if="record.icon.raw_value" t-esc="record.icon.raw_value"/>
+                                        <span class="me-2 fs-5 flex-shrink-0" t-else="">📄</span>
+                                        <field name="name" class="fw-bold fs-6 text-truncate" invisible="not name"/>
+                                        <span class="text-muted fw-bold fs-6 fst-italic" invisible="name">Untitled</span>
+                                    </div>
+                                    <field name="is_favorite" widget="boolean_favorite" nolabel="1" class="flex-shrink-0 ms-2"/>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <field name="author_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action loaded by the embedded Kanban block inside the article editor -->
+    <record id="action_info_article_item_kanban" model="ir.actions.act_window">
+        <field name="name">Article Items</field>
+        <field name="res_model">info.hub.article</field>
+        <field name="view_mode">kanban,list</field>
+        <field name="view_id" ref="view_info_article_kanban_items"/>
+        <field name="domain">[('is_article_item', '=', True), ('parent_id', '=', active_id)]</field>
+        <field name="context">{
+            'default_is_article_item': True,
+            'default_parent_id': active_id,
+            'group_by': 'stage_id',
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No items yet!</p>
+            <p>Add items to organise your work in this Kanban board.</p>
+        </field>
+    </record>
+
+    <record id="view_info_article_form" model="ir.ui.view">
+        <field name="name">info.hub.article.form</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <form string="Article" js_class="info_article_form">
+                <header>
+                    <button name="%(action_info_assign_reading_wizard)d" type="action"
+                            string="Require Reading"
+                            class="btn-primary"
+                            context="{'default_article_id': id}"
+                            invisible="user_permission != 'edit'"/>
+                    <button name="action_archive" type="object"
+                            string="Trash"
+                            icon="fa-trash"
+                            class="btn-secondary"
+                            invisible="not active"
+                            confirm="Moving to trash will hide this article and all its sub-articles. Continue?"/>
+                    <button name="action_unarchive" type="object"
+                            string="Restore from Trash"
+                            icon="fa-undo"
+                            class="btn-primary"
+                            invisible="active"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_reading_compliance"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-bookmark-o">
+                            <field name="reading_compliance_stat" string="Read / Assigned"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived"
+                            bg_color="bg-danger"
+                            invisible="active"/>
+                    <widget name="web_ribbon" title="Template"
+                            bg_color="bg-info"
+                            invisible="not is_template"/>
+
+                    <field name="active" invisible="1"/>
+
+                    <!-- Cover image strip -->
+                    <div class="o_info_cover" invisible="not cover_image">
+                        <field name="cover_image"
+                               widget="image"
+                               class="o_info_cover_img"
+                               options="{'size': [1200, 400], 'preview_image': 'cover_image'}"/>
+                    </div>
+
+                    <!-- Title row with emoji icon -->
+                    <div class="oe_title">
+                        <label for="name" string="Article Title"/>
+                        <h1>
+                            <field name="icon"
+                                   placeholder="📄"
+                                   style="width: 3rem; display: inline-block;"
+                                   class="me-2"/>
+                            <field name="name"
+                                   placeholder="Untitled Article…"
+                                   style="flex: 1;"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Organisation">
+                            <field name="category"/>
+                            <field name="parent_id"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group string="Meta">
+                            <field name="author_id" readonly="1"/>
+                            <field name="last_edition_uid" string="Last Edited By" readonly="1"/>
+                            <field name="last_edition_date" readonly="1"/>
+                            <field name="is_template"/>
+                            <field name="template_category_id" invisible="not is_template" required="is_template"/>
+                            <field name="template_description" invisible="not is_template"/>
+                            <field name="template_sequence" invisible="not is_template"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- ==== Content ==== -->
+                        <page string="Content" name="content">
+                            <field name="body"
+                                   widget="html_editor"
+                                   nolabel="1"
+                                   placeholder="Start writing your article here…"
+                                   options="{'collaborative': false}"/>
+                        </page>
+
+                        <!-- ==== Access Control ==== -->
+                        <page string="Access &amp; Members" name="members">
+                            <p class="text-muted" invisible="category != 'private'">
+                                This article is <strong>Private</strong>.
+                                Only the partners listed below can view it.
+                            </p>
+                            <field name="member_ids">
+                                <list editable="bottom">
+                                    <field name="partner_id"/>
+                                    <field name="permission" widget="badge"
+                                           decoration-success="permission == 'admin'"
+                                           decoration-info="permission == 'write'"
+                                           decoration-muted="permission == 'read'"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- ==== Sub-Articles ==== -->
+                        <page string="Sub-Articles" name="sub_articles"
+                              invisible="child_count == 0">
+                            <field name="child_ids" readonly="1">
+                                <list>
+                                    <field name="icon"/>
+                                    <field name="name"/>
+                                    <field name="author_id"/>
+                                    <field name="last_edition_date" string="Last Edited"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_info_article_kanban_items" model="ir.ui.view">
+        <field name="name">info.hub.article.kanban.items</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" class="o_kanban_small_column o_info_kanban_items_view" default_order="sequence asc, id desc" on_create="quick_create" records_draggable="1">
+                <field name="id"/>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="icon"/>
+                <field name="stage_id"/>
+                <field name="is_favorite"/>
+                <field name="cover_image"/>
+                <field name="author_id"/>
+                <field name="card_properties_html"/>
+                <templates>
+                    <t t-name="card" class="row g-0 flex-row overflow-hidden p-0 border rounded">
+                        <aside t-if="record.cover_image.raw_value" class="o_kanban_aside_full position-relative flex-shrink-0" style="width: 70px;">
+                            <div t-attf-style="background-image: url('/web/image/info.hub.article/{{ record.id.raw_value }}/cover_image'); background-size: cover; background-position: center; width: 100%; height: 100%; min-height: 80px;" role="img"/>
+                        </aside>
+                        <main class="oe_kanban_global_click d-flex flex-column justify-content-between p-3 flex-grow-1 min-w-0">
+                            <div>
+                                <div class="d-flex align-items-start justify-content-between gap-1">
+                                    <div class="d-flex align-items-center min-w-0">
+                                        <span class="me-2 fs-5 flex-shrink-0" t-if="record.icon.raw_value" t-esc="record.icon.raw_value"/>
+                                        <span class="me-2 fs-5 flex-shrink-0" t-else="">📄</span>
+                                        <field name="name" class="fw-bold fs-6 text-truncate" invisible="not name"/>
+                                        <span class="text-muted fw-bold fs-6 fst-italic" invisible="name">Untitled</span>
+                                    </div>
+                                    <field name="is_favorite" widget="boolean_favorite" nolabel="1" class="flex-shrink-0 ms-2"/>
+                                </div>
+                            </div>
+                            <t t-if="record.card_properties_html.raw_value">
+                                <div class="o_info_hub_card_props_row d-flex flex-column gap-1 mt-2" style="font-size:0.78rem;">
+                                    <t t-out="record.card_properties_html.raw_value"/>
+                                </div>
+                            </t>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <field name="author_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+
+
+    <record id="view_info_article_search" model="ir.ui.view">
+        <field name="name">info.hub.article.search</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <search string="Search Articles">
+                <!-- Searchable fields -->
+                <field name="name" string="Title"/>
+                <field name="body" string="Content" filter_domain="[('body', 'ilike', self)]"/>
+                <field name="category" string="Category"/>
+                <field name="author_id" string="Author"/>
+                <field name="parent_id" string="Parent Article"/>
+
+                <separator/>
+
+                <!-- Quick filters -->
+                <filter string="My Articles" name="my_articles"
+                        domain="[('author_id', '=', uid)]"/>
+                <filter string="Templates" name="templates"
+                        domain="[('is_template', '=', True)]"
+                        context="{'active_test': False}"/>
+                <filter string="Articles" name="articles"
+                        domain="[('parent_id', '=', False)]"/>
+
+                <separator/>
+
+                <!-- Category filters -->
+                <filter string="Workspace Section" name="category_workspace"
+                        domain="[('category', '=', 'workspace')]"/>
+                <filter string="Shared Section" name="category_shared"
+                        domain="[('category', '=', 'shared')]"/>
+                <filter string="Private Section" name="category_private"
+                        domain="[('category', '=', 'private')]"/>
+
+                <separator/>
+
+                <filter string="Trashed" name="trashed"
+                        domain="[('active', '=', False), ('is_article_item', '=', False), ('is_template', '=', False)]"/>
+
+                <!-- Group By -->
+                <separator string="Group By"/>
+                <group>
+                    <filter string="Category" name="group_by_category"
+                            context="{'group_by': 'category'}"/>
+                    <filter string="Author" name="group_by_author"
+                            context="{'group_by': 'author_id'}"/>
+                    <filter string="Parent Article" name="group_by_parent"
+                            context="{'group_by': 'parent_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+    <record id="action_info_article" model="ir.actions.act_window">
+        <field name="name">Articles</field>
+        <field name="res_model">info.hub.article</field>
+        <field name="view_mode">list,kanban,hierarchy</field>
+        <field name="search_view_id" ref="view_info_article_search"/>
+        <field name="domain">[('is_template', '=', False), ('is_article_item', '=', False)]</field>
+        <field name="context">{'search_default_my_articles': 0, 'default_is_template': False, 'search_default_articles': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first info article!
+            </p>
+            <p>
+                Capture and organise everything your team knows in one place.
+                Articles can be nested, templated, and access-controlled.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_info_article_list_view" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_info_article_list"/>
+        <field name="act_window_id" ref="action_info_article"/>
+    </record>
+    <record id="action_info_article_kanban_view" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="view_info_article_kanban"/>
+        <field name="act_window_id" ref="action_info_article"/>
+    </record>
+    <record id="action_info_article_hierarchy_view" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">hierarchy</field>
+        <field name="view_id" ref="view_info_article_hierarchy"/>
+        <field name="act_window_id" ref="action_info_article"/>
+    </record>
+
+    <!-- Dedicated list view for Trash to disable record creation -->
+    <record id="view_info_article_trash_list" model="ir.ui.view">
+        <field name="name">info.hub.article.trash.list</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <list string="Trash"
+                  create="false"
+                  edit="false"
+                  delete="true"
+                  decoration-muted="1"
+                  action="info_hub.action_info_client"
+                  type="action">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="parent_id" string="Parent"/>
+                <field name="author_id" string="Author"/>
+                <field name="last_edition_date" string="Last Edited" optional="show"/>
+                <field name="child_count" string="Sub-Articles" optional="show"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action for viewing trash articles (archived) -->
+    <record id="action_info_article_trash" model="ir.actions.act_window">
+        <field name="name">Trash</field>
+        <field name="res_model">info.hub.article</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_info_article_trash_list"/>
+        <field name="domain">[('is_article_item', '=', False), ('active', '=', False)]</field>
+        <field name="context">{'active_test': False, 'search_default_trashed': 1}</field>
+        <field name="search_view_id" ref="view_info_article_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Trash is empty!
+            </p>
+            <p>
+                Articles you delete will appear here. You can restore them or permanently delete them.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_info_article_trash_list_view" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_info_article_trash_list"/>
+        <field name="act_window_id" ref="action_info_article_trash"/>
+    </record>
+
+
+
+    <record id="view_info_article_template_list" model="ir.ui.view">
+        <field name="name">info.hub.article.template.list</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <list string="Templates"
+                  create="false"
+                  edit="false"
+                  delete="false"
+                  action="action_do_nothing"
+                  type="object">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="template_category_id" string="Category"/>
+                <field name="template_description" string="Description"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action for viewing template articles -->
+    <record id="action_info_article_template" model="ir.actions.act_window">
+        <field name="name">Templates</field>
+        <field name="res_model">info.hub.article</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_info_article_template_list"/>
+        <field name="domain">[('is_template', '=', True)]</field>
+        <field name="context">{'default_is_template': True}</field>
+        <field name="search_view_id" ref="view_info_article_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No templates found!
+            </p>
+            <p>
+                Templates can be duplicated as a starting point for new articles.
+            </p>
+        </field>
+    </record>
+
+
+<!-- FAVOURITES — Configuration > Favourites -->
+
+    <record id="view_info_article_favorites_list" model="ir.ui.view">
+        <field name="name">info.hub.article.favorites.list</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <list string="Favourite Articles"
+                 create="False"
+                  decoration-muted="not active"
+                  class="o_info_favorites_list"
+                  action="info_hub.action_info_client"
+                  type="action">
+                <field name="sequence" widget="handle"/>
+                <field name="icon" string="Icon"/>
+                <field name="name" string="Title"/>
+                <field name="category" string="Section"/>
+                <field name="parent_id" string="Parent"/>
+                <field name="author_id" string="Author" readonly="1"/>
+                <field name="last_edition_date" string="Last Edited" readonly="1" optional="show"/>
+                <field name="is_favorite" widget="boolean_favorite" string="Favourite" nolabel="1"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_info_article_favorites" model="ir.actions.act_window">
+        <field name="name">Favourites</field>
+        <field name="res_model">info.hub.article</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_info_article_favorites_list"/>
+        <field name="domain">[('is_favorite', '=', True), ('is_template', '=', False), ('is_article_item', '=', False)]</field>
+        <field name="context">{'default_is_favorite': True, 'default_is_template': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No favourite articles yet!
+            </p>
+            <p>
+                Star an article from the Information editor sidebar or article list to see it here.
+            </p>
+        </field>
+    </record>
+
+    <!-- Embedded Cards View -->
+    <record id="info_article_view_embedded_cards" model="ir.ui.view">
+        <field name="name">info.hub.article.view.embedded.cards</field>
+        <field name="model">info.hub.article</field>
+        <field name="arch" type="xml">
+            <kanban quick_create="0" default_order="sequence, id" class="o_kanban_small_column o_info_embedded_cards_view">
+                <field name="name"/>
+                <field name="icon"/>
+                <field name="cover_image"/>
+                <field name="article_properties"/>
+                <field name="is_favorite"/>
+                <field name="sequence" widget="handle"/>
+                <field name="write_date"/>
+                <field name="write_uid"/>
+                <templates>
+                    <t t-name="card" class="o_info_card_item border rounded p-0 d-flex flex-row overflow-hidden position-relative">
+                        <!-- Cover Image Left -->
+                        <div t-if="record.cover_image.raw_value"
+                             class="o_info_card_cover"
+                             t-attf-style="background-image: url('/web/image/info.hub.article/{{ record.id.raw_value }}/cover_image');"/>
+
+                        <!-- Right column: Body & Footer -->
+                        <div class="o_info_card_body p-2 d-flex flex-column justify-content-between flex-grow-1 min-w-0">
+                            <!-- Top Row: Icon + Title + Favorite Star -->
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <div class="d-flex align-items-center min-w-0">
+                                    <span class="fs-6 me-1 flex-shrink-0" t-if="record.icon.raw_value" t-esc="record.icon.raw_value"/>
+                                    <span class="fs-6 me-1 flex-shrink-0" t-else="">📄</span>
+                                    <span class="fw-bold text-truncate" style="font-size: 0.85rem;" t-esc="record.name.raw_value || 'Untitled'"/>
+                                </div>
+                                <!-- Interactive Favorite Star -->
+                                <field name="is_favorite" widget="boolean_favorite" nolabel="1" class="flex-shrink-0"/>
+                            </div>
+
+                            <!-- Middle Row: Properties -->
+                            <div class="o_info_card_properties">
+                                <field name="article_properties" widget="properties"/>
+                            </div>
+
+                            <!-- Bottom Row: Date & Avatar -->
+                            <div class="o_info_card_footer d-flex align-items-center justify-content-end gap-1 mt-1">
+                                <span class="text-muted small d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                                    <i class="fa fa-clock-o" title="Last updated"/>
+                                    <span t-esc="record.write_date.value"/>
+                                </span>
+                                <field name="write_uid" widget="many2one_avatar_user"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+</odoo>
