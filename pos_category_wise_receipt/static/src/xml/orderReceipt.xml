@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+<t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+    <!-- Replace entire OrderDisplay -->
+    <xpath expr="//OrderDisplay" position="replace">
+        <!-- Custom category grouping -->
+        <t t-foreach="order.getCategoryData()" t-as="category" t-key="category.category_id">
+            <h3 style="font-weight:bold; text-decoration:underline;">
+                <t t-esc="category.category_name"/>
+            </h3>
+            <t t-foreach="category.lines" t-as="line" t-key="line.id">
+                <Orderline
+                    line="line"
+                    showTaxGroup="showTaxGroupLabels"
+                    mode="'receipt'"
+                    basic_receipt="props.basic_receipt"
+                />
+            </t>
+            <div style="font-weight: bold; margin-left: auto;" class="pos-receipt-right-align">
+                SUB TOTAL:
+                <span style="margin-left: 25px;" >
+                    <t t-esc="order.currency_id.symbol"/> <t t-esc="category.subtotal.toFixed(2)" t-esc-options='{"widget": "float", "precision": 2}'/>
+                </span>
+            </div>
+            <br/>
+        </t>
+    </xpath>
+</t>
+</templates>
