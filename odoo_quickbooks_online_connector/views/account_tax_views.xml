@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherited account_tax model form view to add fields related to quickbook -->
+    <record id="view_tax_form" model="ir.ui.view">
+        <field name="name">
+            account.tax.view.form.inherit.odoo.quickbooks.online.connector
+        </field>
+        <field name="model">account.tax</field>
+        <field name="inherit_id" ref="account.view_tax_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='advanced_options']" position="inside">
+                <group>
+                    <group name="qbook" string="QuickBooks Data">
+                        <field name="qbooks_tax" readonly="1"/>
+                        <field name="qbooks_tax_rate" readonly="1"/>
+                        <field name="qbooks_sync_token" readonly="1"/>
+                        <field name="tax_agency_id" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+            <field name="tax_scope" position="before">
+                <field name="tax_agency_id"/>
+            </field>
+        </field>
+    </record>
+    <!-- Taxes Action -->
+    <record id="action_quickbook_taxes" model="ir.actions.act_window">
+        <field name="name">Taxes</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.tax</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('qbooks_tax', '!=', False)]</field>
+        <field name="context">{'create': 0}</field>
+    </record>
+</odoo>

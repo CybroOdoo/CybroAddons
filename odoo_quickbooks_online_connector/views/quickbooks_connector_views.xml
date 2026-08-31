@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action of quickbooks.connector -->
+    <record id="action_quickbooks_connector" model="ir.actions.act_window">
+        <field name="name">QuickBooks Connector</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">quickbooks.connector</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                No Configuration Found. Create a new record!
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu items -->
+    <menuitem id="quickbooks_connector_root_menu" name="Quickbooks Connector"
+              web_icon="odoo_quickbooks_online_connector,static/description/icon.png">
+        <!-- Quickbook -->
+        <menuitem id="quickbooks_menu" name="Quickbooks" action="action_quickbooks_connector"/>
+        <!-- Customers -->
+        <menuitem name="Customers" id="quickbooks_menu_invoices">
+            <menuitem name="Sale Orders" id="quickbooks_menu_sale_orders"
+                      action="odoo_quickbooks_online_connector.action_sale_orders"/>
+            <menuitem name="Invoices" id="quickbooks_menu_customer_invoices"
+                      action="odoo_quickbooks_online_connector.action_customer_invoice"/>
+            <menuitem name="Payments" id="quickbooks_menu_customer_payments"
+                      action="odoo_quickbooks_online_connector.action_quickbook_customer_payments"/>
+            <menuitem name="Customers" id="quickbooks_menu_customers"
+                      action="odoo_quickbooks_online_connector.action_quickbook_customers"/>
+        </menuitem>
+        <!-- Vendors -->
+        <menuitem name="Vendors" id="quickbooks_menu_bills">
+            <menuitem name="Purchase Orders" id="quickbooks_menu_purchase_orders"
+                      action="odoo_quickbooks_online_connector.action_purchase_orders"/>
+            <menuitem name="Bills" id="quickbooks_menu_vendor_bills"
+                      action="odoo_quickbooks_online_connector.action_vendor_bills"/>
+            <menuitem name="Payments" id="quickbooks_menu_vendor_payments"
+                      action="odoo_quickbooks_online_connector.action_quickbook_vendor_payments"/>
+            <menuitem name="Vendors" id="quickbooks_menu_vendors"
+                      action="odoo_quickbooks_online_connector.action_quickbook_vendors"/>
+        </menuitem>
+        <!-- Products -->
+        <menuitem name="Products" id="quickbooks_menu_products"
+                  action="odoo_quickbooks_online_connector.action_quickbook_products"/>
+        <!-- Configuration -->
+        <menuitem name="Configuration" id="quickbooks_menu_configuration">
+            <menuitem name="Chart of Accounts" id="quickbooks_menu_accounts"
+                      action="odoo_quickbooks_online_connector.action_quickbook_accounts"/>
+            <menuitem name="Tax Agency" id="quickbooks_menu_tax_agency"
+                      action="odoo_quickbooks_online_connector.tax_agency_action"/>
+            <menuitem name="Taxes" id="quickbooks_menu_taxes"
+                      action="odoo_quickbooks_online_connector.action_quickbook_taxes"/>
+            <menuitem name="Product Category" id="quickbooks_menu_product_category"
+                      action="odoo_quickbooks_online_connector.action_quickbook_product_category"/>
+            <menuitem name="Employees" id="quickbooks_menu_employees"
+                      action="odoo_quickbooks_online_connector.action_quickbook_employees"/>
+        </menuitem>
+    </menuitem>
+
+    <!--list view of quickbook connector.-->
+    <record id="quickbooks_connector_view_tree" model="ir.ui.view">
+        <field name="name">quickbooks.connector.view.list</field>
+        <field name="model">quickbooks.connector</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="quickbooks_client"/>
+                <field name="quickbooks_mode"/>
+            </list>
+        </field>
+    </record>
+    <!-- Form view of quickbooks.connector -->
+    <record id="quickbooks_connector_view_form" model="ir.ui.view">
+        <field name="name">quickbooks.connector.view.form</field>
+        <field name="model">quickbooks.connector</field>
+        <field name="arch" type="xml">
+            <form string="Quickbook" name="quickbook">
+                <header>
+                    <button name="action_quickbook_auth" string="Authorize"
+                            type="object" class="oe_highlight" col="2"/>
+                    <button name="action_refresh_token" string="Refresh token"
+                            type="object" class="oe_highlight" col="2"/>
+                </header>
+                <sheet>
+                    <field name="authorised" invisible="1"/>
+                    <widget name="web_ribbon" text="Authorized"
+                            invisible="authorised  == False"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="quickbooks_client"/>
+                            <field name="quickbooks_api_url"/>
+                            <field name="quickbooks_client_secret"/>
+                            <field name="quickbooks_mode"/>
+                            <field name="minor_version"/>
+                        </group>
+                        <group>
+                            <field name="quickbooks_realm"/>
+                            <field name="quickbooks_access_token_expiry"/>
+                            <field name="quickbooks_refresh_token_expiry"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Import">
+                            <button name="action_import_product_category"
+                                    string="Import Products Category"
+                                    type="object" class="oe_highlight"
+                                    style="width: 30%; !important;"
+                                    id="quickbooks"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_tax_agency"
+                                    string="Import Tax Agency"
+                                    type="object" class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_account"
+                                    string="Import Chart of Accounts"
+                                    type="object" class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_tax"
+                                    string="Import Tax"
+                                    type="object" class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_products"
+                                    string="Import Products" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%; !important;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_employees"
+                                    string="Import Employees" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_customers"
+                                    string="Import Customers" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_so"
+                                    string="Import Sale orders" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_invoice"
+                                    string="Import Invoice" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_customer_payment"
+                                    string="Import Customer Payment"
+                                    type="object" class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_vendor"
+                                    string="Import Vendors" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_po"
+                                    string="Import Purchase orders"
+                                    type="object" class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_bill"
+                                    string="Import Vendor Bill" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_vendor_payment"
+                                    string="Import Vendor Payment"
+                                    type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                             <button name="action_import_credit_note"
+                                    string="Import Credit Note" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_import_refunds"
+                                    string="Import Refund" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                        </page>
+                        <page string="Export">
+                            <button name="action_export_product_category"
+                                    string="Export Products Category"
+                                    type="object" class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_agency"
+                                    string="Export Tax agency" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_account"
+                                    string="Export Chart of Account"
+                                    type="object" class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_tax_service"
+                                    string="Export Tax" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_products"
+                                    string="Export Products" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_employees"
+                                    string="Export Employees" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_customer"
+                                    string="Export Customers" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_so"
+                                    string="Export Sale Orders" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_invoice"
+                                    string="Export Invoice" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_customer_payment"
+                                    string="Export customer Payment"
+                                    type="object" class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_vendor"
+                                    string="Export Vendors" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_po"
+                                    string="Export Purchase Order"
+                                    type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                            <button name="action_export_bill"
+                                    string="Export Vendor Bill" type="object"
+                                    class="oe_highlight"
+                                    style="width: 30%;"/>
+                            <br/>
+                            <br/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

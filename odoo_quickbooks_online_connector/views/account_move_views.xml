@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherited account_move model form view to add fields related to quickbook -->
+    <record id="view_move_form" model="ir.ui.view">
+        <field name="name">account.move.view.form.inherit.odoo.quickbooks.online.connector</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='other_info']" position="inside">
+                <group>
+                    <group name="qbook" string="QuickBooks Data">
+                        <field name="qbooks_invoice" readonly="1"/>
+                        <field name="qbooks_bill" readonly="1"/>
+                        <field name="qbooks_sync_token" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+    <!--Fetch invoices that are imported from Quickbook.-->
+    <record id="action_customer_invoice" model="ir.actions.act_window">
+        <field name="name">Invoices</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="view_id" ref="account.view_out_invoice_tree"/>
+        <field name="search_view_id" ref="account.view_account_invoice_filter"/>
+        <field name="domain">[('move_type', '=', 'out_invoice'),('qbooks_invoice', '!=', False)]</field>
+        <field name="context">{'default_move_type': 'out_invoice', 'create': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a customer invoice
+            </p>
+            <p>
+                Create invoices, register payments and keep track of the discussions with your customers.
+            </p>
+        </field>
+    </record>
+    <!--Fetch bills that are imported from Quickbook.-->
+    <record id="action_vendor_bills" model="ir.actions.act_window">
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="view_id" ref="account.view_in_invoice_bill_tree"/>
+        <field name="search_view_id" ref="account.view_account_invoice_filter"/>
+        <field name="domain">[('move_type', '=', 'in_invoice'),('qbooks_bill', '!=', False)]</field>
+        <field name="context">{'default_move_type': 'in_invoice', 'display_account_trust': True, 'create': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a vendor bill
+            </p>
+            <p>
+                Create invoices, register payments and keep track of the discussions with your vendors.
+            </p>
+        </field>
+    </record>
+</odoo>

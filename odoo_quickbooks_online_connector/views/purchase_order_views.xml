@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherited purchase_order model form view to add fields related to quickbook -->
+    <record id="purchase_order_form" model="ir.ui.view">
+        <field name="name">
+            purchase.order.view.form.inherit.odoo.quickbooks.online.connector
+        </field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='purchase_delivery_invoice']"
+                   position="inside">
+                <group>
+                    <group name="qbook" string="QuickBooks Data">
+                        <field name="qbooks_purchase" readonly="1"/>
+                        <field name="qbooks_sync_token" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+    <!--Fetch purchase orders that are imported from Quickbook.-->
+    <record id="action_purchase_orders" model="ir.actions.act_window">
+        <field name="name">Purchase Orders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('qbooks_purchase', '!=', False)]</field>
+        <field name="context">{'create': 0}</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to create a Document Format
+            </p>
+        </field>
+    </record>
+</odoo>
