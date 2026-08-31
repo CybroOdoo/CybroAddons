@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="theme_buildcraft_layout" inherit_id="website.layout" name="BuildCraft Layout" priority="200">
+        <xpath expr="//header" position="replace">
+            <header id="top" data-anchor="true" data-name="Header" class="o_header_standard">
+                <div class="inner-page-nav" id="navbar">
+                    <div class="w-full flex items-center justify-between px-16 py-5 navbar-inner"
+                         data-component="@components/NavBar.jsx">
+                        <a class="flex items-center" href="/">
+                            <img alt="BuildCraft Developers" class="nav-logo"
+                                 src="/theme_buildcraft/static/src/images/logo_buildcraft.png"/>
+                        </a>
+                        <div class="nav-desktop-links flex items-center gap-8">
+                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                <a t-attf-class="text-sm font-body text-white/80 font-medium nav-link #{request.httprequest.path == submenu.url and 'active' or ''}"
+                                   t-att-href="submenu.url">
+                                    <span t-esc="submenu.name"/>
+                                </a>
+                            </t>
+                        </div>
+                        <a class="nav-cta bg-primary text-primary-foreground px-5 py-2 rounded-md text-sm font-body font-medium"
+                           href="/contactus">Get Quote
+                        </a>
+
+                        <!-- Desktop User Auth -->
+                        <t t-set="is_user" t-value="not request.env.user._is_public()"/>
+                        <t t-if="is_user">
+                            <div class="bc-user-menu" id="bc-user-menu">
+                                <button class="bc-avatar" id="bc-avatar-btn" aria-label="User menu">
+                                    <t t-esc="request.env.user.name[:1]"/>
+                                </button>
+                                <div class="bc-dropdown" id="bc-dropdown">
+                                    <div class="bc-dropdown-header">
+                                        <div class="bc-dropdown-name">
+                                            <t t-esc="request.env.user.name"/>
+                                        </div>
+                                        <div class="bc-dropdown-email">
+                                            <t t-esc="request.env.user.login"/>
+                                        </div>
+                                    </div>
+                                    <a href="/my/home" class="bc-dropdown-item">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        My Account
+                                    </a>
+                                    <a href="/web/session/logout?redirect=/" class="bc-dropdown-item bc-logout">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                        Logout
+                                    </a>
+                                </div>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <a href="/web/login" class="bc-signin-btn">Sign In</a>
+                        </t>
+                        <button aria-label="Toggle navigation" class="hamburger-btn" id="menu-toggle">
+                            <svg fill="none" height="24" id="icon-hamburger" stroke="currentColor"
+                                 stroke-linecap="round" stroke-width="2.5" viewbox="0 0 24 24" width="24">
+                                <line x1="3" x2="21" y1="6" y2="6"/>
+                                <line x1="3" x2="21" y1="12" y2="12"/>
+                                <line x1="3" x2="21" y1="18" y2="18"/>
+                            </svg>
+                            <svg fill="none" height="24" id="icon-close" stroke="currentColor" stroke-linecap="round"
+                                 stroke-width="2.5" style="display:none" viewbox="0 0 24 24" width="24">
+                                <line x1="18" x2="6" y1="6" y2="18"/>
+                                <line x1="6" x2="18" y1="6" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mobile-menu" id="mobile-menu">
+                        <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                            <a t-attf-class="mobile-nav-link #{request.httprequest.path == submenu.url and 'active' or ''}"
+                               t-att-href="submenu.url">
+                                <span t-esc="submenu.name"/>
+                            </a>
+                        </t>
+                        <a class="mobile-nav-cta" href="/contactus">Get Quote</a>
+
+                        <!-- Mobile User Auth -->
+                        <t t-set="is_user_mob" t-value="not request.env.user._is_public()"/>
+                        <t t-if="is_user_mob">
+                            <div class="bc-mob-user">
+                                <div class="bc-mob-user-info">
+                                    <div class="bc-mob-avatar">
+                                        <t t-esc="request.env.user.name[:1]"/>
+                                    </div>
+                                    <div>
+                                        <div class="bc-mob-name">
+                                            <t t-esc="request.env.user.name"/>
+                                        </div>
+                                        <div class="bc-mob-email">
+                                            <t t-esc="request.env.user.login"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="/web/session/logout?redirect=/" class="bc-mob-logout">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                    Logout
+                                </a>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <a href="/web/login" class="mobile-nav-cta" style="background: transparent; border: 1.5px solid rgba(190,245,71,0.4); color: #bef547; margin-top: 0.5rem;">Sign In</a>
+                        </t>
+                    </div>
+                </div>
+            </header>
+        </xpath>
+        <xpath expr="//footer" position="replace">
+            <footer id="bottom" data-anchor="true" data-name="Footer" class="o_footer">
+                <div class="bg-dark border-t border-white/10 px-24 py-16">
+                    <div class="grid grid-cols-4 gap-12 mb-12">
+                        <div class="flex flex-col gap-5">
+                            <div class="flex items-center">
+                                <img alt="BuildCraft Developers" class="nav-logo"
+                                     src="/theme_buildcraft/static/src/images/logo_buildcraft.png"/>
+                            </div>
+                            <p class="text-sm text-white/50 leading-relaxed">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="171">Building the world's most
+                                    iconic structures since 1999.
+                                    Quality, innovation, trust.
+                                </span>
+                            </p>
+                            <div class="flex gap-3">
+                                <a class="w-9 h-9 rounded-md bg-white/5 border border-white/10 flex items-center justify-center"
+                                   data-media-type="banani-button">
+                                    <span class="icon icon-15 icon-muted" data-component="@globalComponents/Icon.jsx"
+                                          data-icon="linkedin">
+                                        <svg height="15px" viewbox="0 0 24 24" width="15px">
+                                            <g fill="none" stroke="currentColor" stroke-linecap="round"
+                                               stroke-linejoin="round" stroke-width="3.2">
+                                                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2a2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6M2 9h4v12H2z"/>
+                                                <circle cx="4" cy="4" r="2"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                </a>
+                                <a class="w-9 h-9 rounded-md bg-white/5 border border-white/10 flex items-center justify-center"
+                                   data-media-type="banani-button">
+                                    <span class="icon icon-15 icon-muted" data-component="@globalComponents/Icon.jsx"
+                                          data-icon="twitter">
+                                        <svg height="15px" viewbox="0 0 24 24" width="15px">
+                                            <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6c2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4c-.9-4.2 4-6.6 7-3.8c1.1 0 3-1.2 3-1.2"
+                                                  fill="none" stroke="currentColor" stroke-linecap="round"
+                                                  stroke-linejoin="round" stroke-width="3.2"/>
+                                        </svg>
+                                    </span>
+                                </a>
+                                <a class="w-9 h-9 rounded-md bg-white/5 border border-white/10 flex items-center justify-center"
+                                   data-media-type="banani-button">
+                                    <span class="icon icon-15 icon-muted" data-component="@globalComponents/Icon.jsx"
+                                          data-icon="instagram">
+                                        <svg height="15px" viewbox="0 0 24 24" width="15px">
+                                            <g fill="none" stroke="currentColor" stroke-linecap="round"
+                                               stroke-linejoin="round" stroke-width="3.2">
+                                                <rect height="20" rx="5" ry="5" width="20" x="2" y="2"/>
+                                                <path d="M16 11.37A4 4 0 1 1 12.63 8A4 4 0 0 1 16 11.37m1.5-4.87h.01"/>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                </a>
+                                <a class="w-9 h-9 rounded-md bg-white/5 border border-white/10 flex items-center justify-center"
+                                   data-media-type="banani-button">
+                                    <span class="icon icon-15 icon-muted" data-component="@globalComponents/Icon.jsx"
+                                          data-icon="facebook">
+                                        <svg height="15px" viewbox="0 0 24 24" width="15px">
+                                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"
+                                                  fill="none" stroke="currentColor" stroke-linecap="round"
+                                                  stroke-linejoin="round" stroke-width="3.2"/>
+                                        </svg>
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-4">
+                            <h4 class="font-bold text-sm text-white">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="172">Quick Links</span>
+                            </h4>
+                            <a class="text-sm text-white/50" data-media-type="banani-button" href="/">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="173">Home</span>
+                            </a>
+                            <a class="text-sm text-white/50" data-media-type="banani-button" href="/about">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="174">About Us</span>
+                            </a>
+                            <a class="text-sm text-white/50" data-media-type="banani-button" href="/services">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="175">Services</span>
+                            </a>
+                            <a class="text-sm text-white/50" data-media-type="banani-button" href="/projects">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="176">Projects</span>
+                            </a>
+                            <a class="text-sm text-white/50" data-media-type="banani-button" href="/team">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="177">Team</span>
+                            </a>
+                            <a class="text-sm text-white/50" data-media-type="banani-button" href="/blog">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="178">Blog</span>
+                            </a>
+                            <a class="text-sm text-white/50" data-media-type="banani-button" href="/contactus">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="179">Contact</span>
+                            </a>
+                        </div>
+                        <div class="flex flex-col gap-4">
+                            <h4 class="font-bold text-sm text-white">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="187">Contact</span>
+                            </h4>
+                            <p class="text-sm text-white/50">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="188">DIFC, Sheikh Zayed Road
+                                </span>
+                                <br/>
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="189">Dubai, UAE, 00000</span>
+                            </p>
+                            <p class="text-sm text-white/50">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="190">+971 4 123 4567</span>
+                            </p>
+                            <p class="text-sm text-white/50">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="191">info@buildcraftdev.com
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="border-t border-white/10 pt-8 flex items-center justify-between">
+                        <p class="text-xs text-white/30">
+                            <span data-file="/screens/BuildCraftHome.jsx" data-idx="192">© 2026 BuildCraft Developers.
+                                All rights reserved.
+                            </span>
+                        </p>
+                        <div class="flex gap-6">
+                            <a class="text-xs text-white/30" data-media-type="banani-button">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="193">Privacy Policy</span>
+                            </a>
+                            <a class="text-xs text-white/30" data-media-type="banani-button">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="194">Terms of Service</span>
+                            </a>
+                            <a class="text-xs text-white/30" data-media-type="banani-button">
+                                <span data-file="/screens/BuildCraftHome.jsx" data-idx="195">Cookie Policy</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </xpath>
+    </template>
+</odoo>

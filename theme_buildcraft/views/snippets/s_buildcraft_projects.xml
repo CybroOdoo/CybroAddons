@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <template id="s_buildcraft_projects" name="BuildCraft Projects">
+        <section class="s_buildcraft_projects pt0 pb0" data-snippet="s_buildcraft_projects"
+                 data-name="BuildCraft Projects">
+            <div class="px-24 py-24 bg-background">
+                <div class="flex items-end justify-between mb-12">
+                    <div class="flex flex-col gap-4">
+                        <div class="inline-flex items-center gap-2 bg-primary/10 text-secondary font-medium text-sm px-4 py-1.5 rounded-xl"
+                             data-component="@components/SectionLabel.jsx">
+                            <div class="w-1.5 h-1.5 rounded-full bg-primary"/>
+                            <span>Our Portfolio</span>
+                        </div>
+                        <h2 class="font-headings font-bold text-5xl text-foreground">
+                            <span>Featured Projects</span>
+                        </h2>
+                    </div>
+                    <div class="flex gap-2" id="project-filters">
+                        <button class="filter-btn px-4 py-2 rounded-md text-sm font-medium border bg-dark text-white border-dark"
+                                data-filter="all">All
+                        </button>
+                        <button class="filter-btn px-4 py-2 rounded-md text-sm font-medium border bg-background text-muted-foreground border-border"
+                                data-filter="commercial">Commercial
+                        </button>
+                        <button class="filter-btn px-4 py-2 rounded-md text-sm font-medium border bg-background text-muted-foreground border-border"
+                                data-filter="residential">Residential
+                        </button>
+                        <button class="filter-btn px-4 py-2 rounded-md text-sm font-medium border bg-background text-muted-foreground border-border"
+                                data-filter="villas">Villas
+                        </button>
+                        <button class="filter-btn px-4 py-2 rounded-md text-sm font-medium border bg-background text-muted-foreground border-border"
+                                data-filter="infrastructure">Infrastructure
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-6">
+                    <t t-set="projects"
+                       t-value="request.env['buildcraft.project'].sudo().search([('is_published', '=', True)], limit=3)"/>
+                    <t t-if="projects">
+                        <t t-foreach="projects" t-as="project">
+                            <div class="project-card rounded-lg overflow-hidden bg-card border border-border flex flex-col"
+                                 t-att-data-category="project.category">
+                                <div class="relative overflow-hidden">
+                                    <img class="w-full" style="aspect-ratio: 4/3; object-fit: cover;"
+                                         t-attf-src="/web/image/buildcraft.project/#{project.id}/image"
+                                         t-att-alt="project.name"/>
+                                    <div class="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-md">
+                                        <span t-esc="project.category.title()"/>
+                                    </div>
+                                </div>
+                                <div class="p-5 flex flex-col gap-3">
+                                    <h3 class="font-headings font-bold text-lg text-foreground">
+                                        <span t-esc="project.name"/>
+                                    </h3>
+                                    <div class="flex flex-col gap-1.5">
+                                        <div class="flex items-center gap-2 text-sm text-muted-foreground"
+                                             t-if="project.location">
+                                            <span>
+                                                <i class="fa fa-map-marker"/>
+                                                <t t-esc="project.location"/>
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2 text-sm text-muted-foreground"
+                                             t-if="project.year">
+                                            <span>
+                                                <i class="fa fa-calendar"/>
+                                                <t t-esc="project.year"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <a t-attf-href="/project/#{project.id}"
+                                       class="mt-2 border border-secondary text-secondary text-sm font-medium py-2 rounded-md text-center d-block">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <div class="project-empty-state text-center py-16 bg-card rounded-xl border border-border">
+                            <div class="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4">
+                                <i class="fa fa-folder-open-o text-2xl"></i>
+                            </div>
+                            <h3 class="font-headings font-bold text-2xl text-foreground mb-2">No Projects Available</h3>
+                            <p class="text-muted-foreground text-sm max-w-md mx-auto">There are currently no projects available in our portfolio.</p>
+                        </div>
+                    </t>
+                </div>
+                <div class="flex justify-center mt-10">
+                    <a class="border border-secondary text-secondary px-8 py-3 rounded-md font-medium text-sm flex items-center gap-2"
+                       href="/projects">
+                        View All Projects
+                        <span class="icon icon-14" data-component="@globalComponents/Icon.jsx"
+                              data-icon="arrow-right">
+                            <svg height="14px" viewbox="0 0 24 24" width="14px">
+                                <path d="M5 12h14m-7-7l7 7l-7 7" fill="none" stroke="currentColor"
+                                      stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="3.4285714285714284"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </template>
+</odoo>

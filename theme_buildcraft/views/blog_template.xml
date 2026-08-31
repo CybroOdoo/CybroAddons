@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="theme_buildcraft_blog" inherit_id="website_blog.blog_post_short" name="BuildCraft Blog" priority="200">
+        <xpath expr="//t[@t-call='website_blog.index']" position="replace">
+            <t t-call="website.layout">
+                <div id="wrap" class="theme_buildcraft_wrap font-body bg-background text-foreground">
+                    <div class="oe_structure oe_empty" id="oe_structure_buildcraft_blog_top"/>
+
+                <!-- Page Hero -->
+                <section class="page-hero px-24">
+                  <div class="max-w-3xl relative z-10">
+                    <span class="badge hero-fade-1 mb-6 inline-flex"><span class="dot"/> Insights &amp; News</span>
+                    <h1 class="font-headings font-bold text-5xl text-white leading-tight mb-6 hero-fade-2">
+                      Construction <span class="text-gradient">Insights</span> &amp; Industry News
+                    </h1>
+                    <p class="text-lg text-white/60 leading-relaxed max-w-2xl hero-fade-3">
+                      Expert perspectives on construction technology, sustainability, real estate trends, and the future of the built environment.
+                    </p>
+                  </div>
+                </section>
+
+                <t t-if="posts">
+                <t t-set="featured" t-value="posts[0]"/>
+                <!-- Featured Article -->
+                <section class="px-24 py-24 bg-white">
+                  <div class="mb-10 reveal">
+                    <span class="badge badge-dark"><span class="dot"/> Featured Article</span>
+                  </div>
+                  <div class="card-hover reveal rounded-2xl overflow-hidden border border-border flex" style="min-height:420px;">
+                    <div class="w-1/2 flex-shrink-0 img-zoom" style="overflow:hidden;">
+                      <t t-call="website.record_cover">
+                          <t t-set="_record" t-value="featured"/>
+                          <t t-set="additionnal_classes" t-value="'w-full h-full'"/>
+                      </t>
+                    </div>
+                    <div class="flex-1 p-12 flex flex-col justify-center bg-card">
+                      <div class="flex items-center gap-3 mb-5">
+                        <span class="badge badge-dark"><span class="dot"/> <t t-esc="featured.tag_ids and featured.tag_ids[0].name or 'Blog'"/></span>
+                        <span class="text-xs text-muted-foreground"><t t-esc="featured.post_date" t-options="{'widget': 'date'}"/></span>
+                      </div>
+                      <h2 class="font-headings font-bold text-3xl text-foreground leading-tight mb-4"><t t-esc="featured.name"/></h2>
+                      <p class="text-muted-foreground leading-relaxed mb-8"><t t-esc="featured.subtitle"/></p>
+                      <div class="flex items-center gap-4 mb-6">
+                        <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+                           <img t-if="featured.author_avatar" t-attf-src="/web/image/res.partner/#{featured.author_id.id}/avatar_128" class="w-full h-full object-cover" alt="Author"/>
+                        </div>
+                        <div>
+                          <p class="font-semibold text-sm text-foreground"><t t-esc="featured.author_id.name"/></p>
+                          <p class="text-xs text-muted-foreground">Author</p>
+                        </div>
+                      </div>
+                      <a t-att-href="featured.website_url" class="arrow-link text-secondary font-semibold text-sm inline-flex items-center gap-1.5">
+                        Read Full Article
+                        <span class="icon icon-14"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
+                      </a>
+                    </div>
+                  </div>
+                </section>
+                </t>
+
+                <t t-if="len(posts) > 1">
+                <!-- Articles Grid -->
+                <section class="px-24 pb-24 bg-white">
+                  <div class="flex items-center justify-between mb-10 reveal">
+                    <h2 class="sec-head font-headings font-bold text-3xl text-foreground">Latest Articles</h2>
+                    <div class="flex gap-2">
+                      <button class="filter-tab active" data-filter="all">All</button>
+                      <button class="filter-tab" data-filter="technology">Technology</button>
+                      <button class="filter-tab" data-filter="sustainability">Sustainability</button>
+                      <button class="filter-tab" data-filter="real-estate">Real Estate</button>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-3 gap-8" id="articles-grid">
+                    <t t-foreach="posts[1:]" t-as="post">
+                        <div class="blog-card card-accent-top reveal rounded-xl overflow-hidden border border-border bg-card flex flex-col" t-att-data-category="post.tag_ids and post.tag_ids[0].name.lower() or 'all'">
+                          <div class="img-zoom" style="height:196px;overflow:hidden;">
+                              <t t-call="website.record_cover">
+                                  <t t-set="_record" t-value="post"/>
+                                  <t t-set="additionnal_classes" t-value="'w-full h-full'"/>
+                              </t>
+                          </div>
+                          <div class="p-6 flex flex-col gap-3 flex-1">
+                            <div class="flex items-center gap-2">
+                              <span class="badge badge-dark"><span class="dot"/><t t-esc="post.tag_ids and post.tag_ids[0].name or 'Blog'"/></span>
+                              <span class="text-xs text-muted-foreground"><t t-esc="post.post_date" t-options="{'widget': 'date'}"/></span>
+                            </div>
+                            <h3 class="font-headings font-bold text-base text-foreground leading-snug"><t t-esc="post.name"/></h3>
+                            <p class="text-sm text-muted-foreground leading-relaxed flex-1"><t t-esc="post.subtitle"/></p>
+                            <a t-att-href="post.website_url" class="arrow-link text-sm font-semibold text-secondary mt-2 inline-flex items-center gap-1.5">Read Article <span class="icon icon-14"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span></a>
+                          </div>
+                        </div>
+                    </t>
+                  </div>
+                </section>
+                </t>
+
+                <!-- Newsletter -->
+                <section class="px-24 py-24 bg-dark">
+                  <div class="max-w-2xl mx-auto text-center reveal">
+                    <span class="badge mb-6 inline-flex"><span class="dot"/> Newsletter</span>
+                    <h2 class="font-headings font-bold text-4xl text-white mb-4">Stay Ahead in Construction</h2>
+                    <hr class="grad-rule my-6" />
+                    <p class="text-white/60 leading-relaxed mb-10">Get our weekly digest of industry news, project spotlights, and expert insights delivered to your inbox.</p>
+                    <div class="flex gap-4 max-w-md mx-auto subscribe-form-wrap">
+                      <input type="email" placeholder="Enter your email address" class="form-input flex-1 bg-white/5 border border-white/10 rounded-full px-5 py-3 text-white text-sm placeholder:text-white/30" />
+                      <button class="bg-primary text-primary-foreground px-6 py-3 rounded-full font-semibold text-sm flex-shrink-0">Subscribe</button>
+                    </div>
+                    <p class="text-xs text-white/30 mt-5">No spam. Unsubscribe anytime. Read by 12,000+ industry professionals.</p>
+                  </div>
+                </section>
+                <div class="oe_structure oe_empty" id="oe_structure_buildcraft_blog_bottom"/>
+            </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

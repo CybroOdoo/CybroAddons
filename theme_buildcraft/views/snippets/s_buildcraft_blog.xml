@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <template id="s_buildcraft_blog" name="BuildCraft Blog">
+        <section class="s_buildcraft_blog pt0 pb0" data-snippet="s_buildcraft_blog" data-name="BuildCraft Blog">
+            <div class="px-24 py-24 bg-background">
+                <div class="flex items-end justify-between mb-12">
+                    <div class="flex flex-col gap-4">
+                        <div class="inline-flex items-center gap-2 bg-primary/10 text-secondary font-medium text-sm px-4 py-1.5 rounded-xl"
+                             data-component="@components/SectionLabel.jsx">
+                            <div class="w-1.5 h-1.5 rounded-full bg-primary"/>
+                            <span data-file="/screens/BuildCraftHome.jsx" data-idx="135">Insights</span>
+                        </div>
+                        <h2 class="font-headings font-bold text-5xl text-foreground">
+                            <span data-file="/screens/BuildCraftHome.jsx" data-idx="136">Latest from Our Blog
+                            </span>
+                        </h2>
+                    </div>
+                    <a class="text-secondary font-medium text-sm flex items-center gap-1" href="/blog">
+                        <span data-file="/screens/BuildCraftHome.jsx" data-idx="137">View All Articles</span>
+                        <span class="icon icon-14" data-component="@globalComponents/Icon.jsx"
+                              data-icon="arrow-right">
+                            <svg height="14px" viewbox="0 0 24 24" width="14px">
+                                <path d="M5 12h14m-7-7l7 7l-7 7" fill="none" stroke="currentColor"
+                                      stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="3.4285714285714284"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+                <div class="grid grid-cols-3 gap-6">
+                    <t t-set="blogs" t-value="request.env['blog.post'].sudo().search([], limit=3)"/>
+                    <t t-foreach="blogs" t-as="blog">
+                        <div class="blog-card rounded-lg overflow-hidden bg-card border border-border flex flex-col"
+                             style="cursor:pointer">
+                            <t t-set="_cp" t-value="json.loads(blog.cover_properties)"/>
+                            <t t-set="bg_url"
+                               t-value="_cp.get('background-image', 'url(\'/web/image/website.s_banner_default_image\')')"/>
+                            <div class="w-full bg-cover bg-center"
+                                 t-attf-style="aspect-ratio: 16/9; background-image: #{bg_url};"/>
+                            <div class="p-5 flex flex-col gap-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-medium text-secondary bg-secondary/10 px-2 py-0.5 rounded"
+                                          t-if="blog.blog_id">
+                                        <span t-esc="blog.blog_id.name"/>
+                                    </span>
+                                    <span class="text-xs text-muted-foreground" t-if="blog.published_date">
+                                        <span t-esc="blog.published_date and blog.published_date.strftime('%b %d, %Y') or ''"/>
+                                    </span>
+                                </div>
+                                <h3 class="font-headings font-bold text-base text-foreground leading-snug">
+                                    <span t-esc="blog.name"/>
+                                </h3>
+                                <p class="text-sm text-muted-foreground leading-relaxed">
+                                    <span t-esc="blog.subtitle"/>
+                                </p>
+                                <a class="flex items-center gap-1 text-sm font-medium text-secondary mt-1"
+                                   t-attf-href="/blog/#{blog.blog_id.id}/#{blog.id}">
+                                    <span>Read Article</span>
+                                    <span class="icon icon-14" data-component="@globalComponents/Icon.jsx"
+                                          data-icon="arrow-right">
+                                        <svg height="14px" viewbox="0 0 24 24" width="14px">
+                                            <path d="M5 12h14m-7-7l7 7l-7 7" fill="none" stroke="currentColor"
+                                                  stroke-linecap="round" stroke-linejoin="round"
+                                                  stroke-width="3.4285714285714284"/>
+                                        </svg>
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </template>
+</odoo>

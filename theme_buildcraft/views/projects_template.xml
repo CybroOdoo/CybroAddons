@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="projects_template" name="Projects">
+        <t t-call="website.layout">
+            <div id="wrap" class="theme_buildcraft_wrap font-body bg-background text-foreground">
+                <div class="oe_structure oe_empty" id="oe_structure_buildcraft_projects_top"/>
+
+                <!-- Page Hero -->
+                <section class="page-hero px-24">
+                  <div class="max-w-4xl relative z-10">
+                    <div class="badge hero-fade-1 mb-6">
+                      <span class="dot"></span>Our Portfolio
+                    </div>
+                    <h1 class="font-headings font-bold text-5xl text-white leading-tight mb-6 hero-fade-2">
+                      850+ Projects,<br /><span class="text-gradient">One Standard</span> — Excellence
+                    </h1>
+                    <p class="text-lg text-white/60 leading-relaxed max-w-2xl hero-fade-3">
+                      From luxury villas in Dubai to commercial towers in Singapore, explore our portfolio of iconic structures built across 30 countries.
+                    </p>
+                  </div>
+                </section>
+
+                <!-- Filter + Projects -->
+                <section class="px-24 py-24 bg-background">
+                  <!-- Filter Tabs -->
+                  <div class="flex items-center gap-3 mb-12 reveal">
+                    <button class="project-filter-tab active px-6 py-2.5 rounded-full text-sm font-semibold border border-primary bg-primary text-primary-foreground transition-all" data-filter="all">All Projects</button>
+                    <button class="project-filter-tab px-6 py-2.5 rounded-full text-sm font-semibold border border-border bg-card text-foreground hover:border-primary hover:text-primary transition-all" data-filter="residential">Residential</button>
+                    <button class="project-filter-tab px-6 py-2.5 rounded-full text-sm font-semibold border border-border bg-card text-foreground hover:border-primary hover:text-primary transition-all" data-filter="commercial">Commercial</button>
+                    <button class="project-filter-tab px-6 py-2.5 rounded-full text-sm font-semibold border border-border bg-card text-foreground hover:border-primary hover:text-primary transition-all" data-filter="luxury">Luxury</button>
+                    <button class="project-filter-tab px-6 py-2.5 rounded-full text-sm font-semibold border border-border bg-card text-foreground hover:border-primary hover:text-primary transition-all" data-filter="infrastructure">Infrastructure</button>
+                  </div>
+
+                  <!-- Projects Grid -->
+                  <t t-if="projects">
+                    <div class="grid grid-cols-3 gap-8" id="projects-grid">
+                      <t t-foreach="projects" t-as="project">
+                          <div class="card-hover card-accent-top reveal rounded-xl overflow-hidden border border-border bg-card project-grid-card" t-att-data-category="project.category">
+                            <div class="img-zoom relative" style="height:220px">
+                              <img t-if="project.image" t-attf-src="/web/image/buildcraft.project/#{project.id}/image" class="w-full h-full object-cover" t-att-alt="project.name" />
+                              <div t-else="" class="w-full h-full bg-gray-200"></div>
+
+                              <div class="absolute inset-0 bg-dark/60 opacity-0 hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
+                                <span class="text-xs text-primary font-semibold uppercase tracking-wider mb-1" t-esc="project.category.title()"/>
+                                <h3 class="font-headings font-bold text-white text-base" t-esc="project.name"/>
+                                <span class="text-white/70 text-xs mt-1"><t t-esc="project.location"/> · <t t-esc="project.value"/></span>
+                              </div>
+                            </div>
+                            <div class="p-5 flex items-center justify-between">
+                              <div>
+                                <p class="font-semibold text-sm text-foreground" t-esc="project.name"/>
+                                <p class="text-xs text-muted-foreground mt-0.5"><t t-esc="project.location"/> · <t t-esc="project.year"/></p>
+                              </div>
+                              <a t-attf-href="/project/#{project.id}" class="arrow-link text-xs text-secondary font-semibold">View <span class="icon icon-12">→</span></a>
+                            </div>
+                          </div>
+                      </t>
+                    </div>
+                  </t>
+                  <t t-else="">
+                    <div class="w-full text-center py-20 px-8 bg-card rounded-2xl border border-border shadow-sm max-w-2xl mx-auto">
+                        <div class="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center text-primary mb-6">
+                            <i class="fa fa-folder-open-o text-3xl"></i>
+                        </div>
+                        <h3 class="font-headings font-bold text-3xl text-foreground mb-3">No Projects Available</h3>
+                        <p class="text-muted-foreground text-base leading-relaxed max-w-lg mx-auto mb-8">There are currently no projects available in our BuildCraft portfolio. Please check back soon as new projects are added regularly.</p>
+                        <t t-if="request.env.user.has_group('base.group_system')">
+                            <a href="/web#model=buildcraft.project&amp;view_type=list" class="btn-primary px-8 py-3.5 inline-flex items-center gap-2 rounded-full font-semibold text-sm">Manage Projects</a>
+                        </t>
+                        <t t-else="">
+                            <a href="/contactus" class="btn-primary px-8 py-3.5 inline-flex items-center gap-2 rounded-full font-semibold text-sm">Contact Us for Inquiries</a>
+                        </t>
+                    </div>
+                  </t>
+
+                  <div id="no-filtered-projects-msg" class="w-full text-center py-20 px-8 bg-card rounded-2xl border border-border shadow-sm max-w-2xl mx-auto mt-8" style="display: none;">
+                      <div class="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center text-primary mb-6">
+                          <i class="fa fa-search text-3xl"></i>
+                      </div>
+                      <h3 class="font-headings font-bold text-3xl text-foreground mb-3">No Projects Available</h3>
+                      <p class="text-muted-foreground text-base leading-relaxed max-w-lg mx-auto">No projects found matching the selected category filter.</p>
+                  </div>
+                </section>
+
+                <!-- Stats Section -->
+                <section class="px-24 py-24 bg-dark">
+                  <div class="text-center mb-16 reveal">
+                    <div class="badge-dark mb-5">
+                      <span class="dot"></span>By the Numbers
+                    </div>
+                    <h2 class="font-headings font-bold text-5xl text-white">Our Track Record <span class="text-gradient">Speaks for Itself</span></h2>
+                  </div>
+                  <div class="grid grid-cols-4 gap-8 stagger">
+                    <div class="dark-card reveal text-center p-10">
+                      <div class="stat-num">850+</div>
+                      <div class="font-semibold text-white mt-3">Completed Projects</div>
+                      <p class="text-sm text-white/40 mt-1">Across every major sector</p>
+                    </div>
+                    <div class="dark-card reveal text-center p-10">
+                      <div class="stat-num">30</div>
+                      <div class="font-semibold text-white mt-3">Countries</div>
+                      <p class="text-sm text-white/40 mt-1">Global reach, local expertise</p>
+                    </div>
+                    <div class="dark-card reveal text-center p-10">
+                      <div class="stat-num">$2.4B</div>
+                      <div class="font-semibold text-white mt-3">Portfolio Value</div>
+                      <p class="text-sm text-white/40 mt-1">In completed constructions</p>
+                    </div>
+                    <div class="dark-card reveal text-center p-10">
+                      <div class="stat-num">98.7%</div>
+                      <div class="font-semibold text-white mt-3">On-Time Delivery</div>
+                      <p class="text-sm text-white/40 mt-1">Industry-leading reliability</p>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- CTA Section -->
+                <section class="bg-subtle px-24 py-24">
+                  <div class="max-w-3xl mx-auto text-center reveal">
+                    <div class="badge-dark mb-6">
+                      <!-- <span class="dot"></span>Start Building -->
+                    </div>
+                    <h2 class="font-headings font-bold text-5xl text-foreground mb-5">Your Project Could Be <span class="text-secondary">Next</span></h2>
+                    <p class="text-muted-foreground leading-relaxed mb-10 max-w-xl mx-auto">Join 850+ satisfied clients who trusted BuildCraft with their most important investments. Let's create something iconic together.</p>
+                    <div class="flex items-center justify-center gap-4">
+                      <a href="/contactus" class="bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm">Start Your Project</a>
+                    </div>
+                  </div>
+                </section>
+                <div class="oe_structure oe_empty" id="oe_structure_buildcraft_projects_bottom"/>
+            </div>
+        </t>
+    </template>
+</odoo>
