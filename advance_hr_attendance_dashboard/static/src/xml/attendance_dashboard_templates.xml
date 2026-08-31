@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<template id="template" xml:space="preserve">
+    <!--    This is an XML template for an HR Attendance Dashboard that includes a form -->
+    <!--    for filtering attendance data, a search bar for finding specific employees, -->
+    <!--    and an HTML table for displaying attendance information. The template also -->
+    <!--    adds a "Print PDF" button to the form using jQuery.-->
+    <t t-name="AttendanceDashboard" owl="1">
+        <div class="o_action_manager" style="height: 100%; overflow-y:scroll"
+             t-ref="attendance-dashboard">
+        <div class="employee_dashboard">
+        <div style="padding:10px;">
+            <p><h1>HR Attendance Dashboard</h1></p>
+        </div>
+            <div style="float:left; width:25%; padding:0px 10px;">
+            <form class="form-group col-6 w-auto">
+                <select style="border:1px solid #333;" id="filter_duration"
+                        class="form-control" t-on-change="onChangeFilter">
+                    <option value=""/>
+                    <option id="this_week"
+                            value="this_week">This Week</option>
+                    <option id="last_15_days"
+                            value="last_15_days">Last 15 days</option>
+                    <option id="this_month"
+                            value="this_month">This Month</option>
+                </select>
+            </form>
+        </div>
+            <div style="padding:0px 5px; float:left;">
+            <t t-jquery=".form-group" t-operation="after">
+                <button type="object"
+                        t-on-click="_OnClickPdfReport"
+                        class="btn btn-primary print_attendance_pdf_report">
+                    Print PDF
+                </button>
+            </t>
+        </div>
+            <div style="display:flex; margin-left:37px; width:30%; float:left;">
+            <input type="text" class="search-bar" style="border:1px solid #333;"
+                   id="search-bar"/>
+                <t t-jquery=".search-bar" t-operation="after">
+                <button type="object" t-on-click="_OnClickSearchEmployee"
+                        class="btn btn-primary search_employee"
+                        style="margin:0px 10px;">
+                    Search
+                </button>
+            </t>
+        </div>
+            <div class="attendance_table">
+            <table id="attendance_table" class="hr_attendance"/>
+        </div>
+            <div class="attendance">
+            <table class="table" id="attendance_table_nm">
+                <thead class="attendance">
+                    <th style="width:9%;"><strong>Employee Name</strong></th>
+                    <t t-foreach="state.filteredDurationDates" t-as="tDate"
+                       t-key="tDate_index">
+                        <th style="width:6%;" t-out="formatDate(tDate)"/>
+                    </t>
+                    <th style="width:0%; text-align: center;"><strong>Total</strong></th>
+                </thead>
+                <tbody class="attendance">
+                    <tr t-foreach="state.employeeData" t-as="employee"
+                        t-key="employee_index" class="attendance">
+                        <td t-out="employee.name"
+                            t-att-data-name="employee.name"/>
+                        <t
+                                t-foreach="employee.leave_data" t-as="leave"
+                                t-key="leave_index">
+                            <td class="employee-leave-data table-data"
+                                t-attf-style="background: {{ leave.color }};">
+                                <t t-if="leave.state">
+                                <span class="leave-data"
+                                      t-out="leave.state or 'null'"/>
+                                </t>
+                            </td>
+                        </t>
+                        <td t-out="employee.total_absent_count"
+                            style="text-align: center;"/>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        </div>
+        </div>
+    </t>
+</template>
