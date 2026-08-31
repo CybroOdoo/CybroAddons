@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Extension to PaymentScreenButtons to add the 'Partial Payment' toggle button -->
+    <t t-name="pos_partial_payment_odoo.PaymentScreenButtons"
+       t-inherit="point_of_sale.PaymentScreenButtons"
+       t-inherit-mode="extension">
+        <xpath expr="//button[contains(@class, 'js_invoice')]" position="after">
+            <t t-if="pos.config.partial_payment">
+                <button
+                    class="button btn btn-light py-3 text-start rounded-0 border-bottom"
+                    t-on-click="PartialPaymentButton"
+                    t-attf-class="button btn py-3 text-start rounded-0 border-bottom btn-light #{currentOrder.is_partial_payment ? 'text-bg-primary highlight' : ''}">
+                    <i class="fa fa-file-text-o me-2"/>
+                    Partial Payment
+                </button>
+            </t>
+        </xpath>
+    </t>
+
+    <!-- Extension to PaymentScreenValidate to add a t-ref to the validation button -->
+    <t t-name="pos_partial_payment_odoo.PaymentScreenValidate"
+       t-inherit="point_of_sale.PaymentScreenValidate"
+       t-inherit-mode="extension">
+        <xpath expr="//button[contains(@t-on-click, 'validateOrder')]" position="attributes">
+            <attribute name="t-ref">PartialPayment</attribute>
+        </xpath>
+    </t>
+</templates>
