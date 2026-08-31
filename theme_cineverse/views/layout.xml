@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Template: layout.xml
+        Purpose: Defines QWeb templates and snippets for the CineVerse theme.
+    -->
+    <template id="layout_cineverse" inherit_id="website.layout" name="CineVerse Layout">
+        
+        <!-- Add Iconify and Google Fonts to the head -->
+        <xpath expr="//head/meta[last()]" position="after">
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,600;1,9..144,700&amp;family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet" />
+            <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js" defer="defer"></script>
+        </xpath>
+        
+        <!-- Pre-header global elements -->
+        <xpath expr="//header" position="before">
+            <canvas class="grain" id="grain" aria-hidden="true"></canvas>
+
+            <!-- Only show preloader on the home page -->
+            <t t-if="request.httprequest.path == '/'">
+                <div class="preloader" id="preloader" aria-hidden="true">
+                    <div class="preloader__inner">
+                        <div class="preloader__count">
+                            <span data-n="3"></span>
+                            <span data-n="2"></span>
+                            <span data-n="1"></span>
+                        </div>
+                        <p class="preloader__brand">CINEVERSE</p>
+                    </div>
+                </div>
+            </t>
+
+            <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+        </xpath>
+
+        <!-- Replace Native Header with Custom Header -->
+        <xpath expr="//header" position="replace">
+            <header class="navbar o_no_autohide_menu" id="top" data-anchor="true">
+                <div class="container navbar__inner">
+                    <a href="/" class="logo" aria-label="CineVerse home">
+                        <img src="/theme_cineverse/static/src/img/images/logo.png" alt="CineVerse" class="logo__img" />
+                    </a>
+                    <nav class="nav" id="navMenu" aria-label="Primary navigation">
+                        <ul class="nav__list">
+                            <!-- First 5 menu items shown directly -->
+                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                <t t-if="submenu_index &lt; 5">
+                                    <t t-call="website.submenu" item_class.f="nav-item" link_class.f="nav__link nav-link"/>
+                                </t>
+                            </t>
+
+                            <!-- "More +" dropdown for items 6 and beyond -->
+                            <t t-if="len(website.menu_id.child_id) &gt; 5">
+                                <li class="nav-item dropdown cineverse-more-dropdown">
+                                    <a class="nav__link nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        More +
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                            <t t-if="submenu_index &gt;= 5">
+                                                <li>
+                                                    <a class="dropdown-item" t-att-href="submenu.url" t-out="submenu.name"/>
+                                                </li>
+                                            </t>
+                                        </t>
+                                    </ul>
+                                </li>
+                            </t>
+                        </ul>
+                        <!-- CTA inside nav drawer for mobile only -->
+                        <a href="/showtimes" class="btn btn--gold nav__cta d-block d-lg-none">Reserve Seats</a>
+                    </nav>
+                    <!-- CTA outside nav for desktop only -->
+                    <a href="/showtimes" class="btn btn--gold nav__cta nav__cta--desktop d-none d-lg-block">Reserve Seats</a>
+                    <div class="navbar__right">
+                        <div class="user-nav-wrap d-flex align-items-center me-2">
+                            <t t-call="portal.placeholder_user_sign_in">
+                                <t t-set="_item_class" t-value="'nav-item'"/>
+                                <t t-set="_link_class" t-value="'nav-link user-nav-link'"/>
+                            </t>
+                            <t t-call="portal.user_dropdown">
+                                <t t-set="_user_name" t-value="True"/>
+                                <t t-set="_item_class" t-value="'nav-item dropdown'"/>
+                                <t t-set="_link_class" t-value="'nav-link dropdown-toggle user-nav-link'"/>
+                            </t>
+                        </div>
+                        <button class="ticket-btn" id="ticketBtn" aria-label="My bookings" aria-expanded="false" aria-controls="bookingsDrawer">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4V7z"/><line x1="9" y1="5" x2="9" y2="19"/></svg>
+                            <span class="ticket-btn__badge" id="ticketBadge" style="display:none;">0</span>
+                        </button>
+                        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="navMenu">
+                            <span></span><span></span><span></span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            <div class="nav-backdrop" id="navBackdrop" aria-hidden="true"></div>
+            
+            <aside class="bookings-drawer" id="bookingsDrawer" aria-hidden="true" aria-label="My bookings">
+                <div class="bookings-drawer__header">
+                    <div>
+                        <p class="mono bookings-drawer__eyebrow">My Tickets</p>
+                        <h3 class="bookings-drawer__title">Booking <em>History</em></h3>
+                    </div>
+                    <button class="bookings-drawer__close" id="bookingsClose" aria-label="Close">✕</button>
+                </div>
+                <div class="bookings-drawer__body" id="bookingsBody"></div>
+            </aside>
+            <div class="bookings-backdrop" id="bookingsBackdrop"></div>
+        </xpath>
+
+        <!-- Replace Native Footer with Custom Footer -->
+        <xpath expr="//div[@id='footer']" position="replace">
+            <div id="footer" class="oe_structure oe_structure_solo" data-name="Footer">
+                <footer class="footer" id="bottom" data-anchor="true">
+                    <div class="container footer__top">
+                        <!-- Brand -->
+                        <div class="footer__brand">
+                            <div class="footer__logo"><img src="/theme_cineverse/static/src/img/images/logo.png" alt="CineVerse" class="logo__img logo__img--sm" /></div>
+                            <p>Where cinema becomes ceremony.<br />Est. 1928, London.</p>
+                            <ul class="social">
+                                <li><a href="#" aria-label="Instagram"><iconify-icon icon="mdi:instagram" width="20"></iconify-icon></a></li>
+                                <li><a href="#" aria-label="Twitter"><iconify-icon icon="mdi:twitter" width="20"></iconify-icon></a></li>
+                                <li><a href="#" aria-label="Facebook"><iconify-icon icon="mdi:facebook" width="20"></iconify-icon></a></li>
+                                <li><a href="#" aria-label="YouTube"><iconify-icon icon="mdi:youtube" width="20"></iconify-icon></a></li>
+                            </ul>
+                        </div>
+                        <!-- Navigate -->
+                        <nav class="footer__links" aria-label="Footer navigation">
+                            <h4>Navigate</h4>
+                            <ul>
+                                <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                    <li>
+                                        <a t-att-href="submenu._clean_url()">
+                                            <span t-field="submenu.name"/>
+                                        </a>
+                                    </li>
+                                </t>
+                            </ul>
+                        </nav>
+                        <!-- Contact -->
+                        <div class="footer__links">
+                            <h4>Find Us</h4>
+                            <ul class="footer__contact-list">
+                                <li>
+                                    <span class="footer__contact-label">Address</span>
+                                    <address>12 Marlowe Street, Mayfair<br />London W1K 4BP</address>
+                                </li>
+                                <li>
+                                    <span class="footer__contact-label">Telephone</span>
+                                    <a href="tel:+442071234567">+44 (0)20 7123 4567</a>
+                                </li>
+                                <li>
+                                    <span class="footer__contact-label">Email</span>
+                                    <a href="mailto:hello@cineverse.co.uk">hello@cineverse.co.uk</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- Newsletter -->
+                        <div class="footer__newsletter">
+                            <h4>Join the Marquee</h4>
+                            <p>Premieres, festivals and members-only invitations &#8212; straight to your inbox.</p>
+                            <div class="s_newsletter_subscribe_form js_subscribe" data-list-id="1">
+                                <div class="news-form input-group">
+                                    <input type="email" name="email" class="js_subscribe_email" placeholder="your@email.com" aria-label="Email address" required="required" />
+                                    <a href="#" role="button" class="btn btn--gold btn--sm btn--ripple js_subscribe_btn">Subscribe</a>
+                                </div>
+                                <p class="s_newsletter_subscribe_form_result news-status"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer__bottom">
+                        <div class="container footer__bottom-inner">
+                            <span class="mono">&#169; <span id="year"></span> CineVerse Ltd. All rights reserved.</span>
+                            <span class="mono footer__credit">Designed for the love of cinema.</span>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+            
+            <!-- Trailer Modal -->
+            <div class="modal" id="trailerModal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Trailer">
+                <div class="modal__backdrop" data-close="data-close"></div>
+                <div class="modal__box">
+                    <button class="modal__close" data-close="data-close" aria-label="Close">&#10005;</button>
+                    <div class="modal__screen">
+                        <div class="modal__inner">
+                            <div class="modal__play-btn">&#9654;</div>
+                            <p class="mono">CINEVERSE &#183; REEL 2026</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="to-top" id="toTop" aria-label="Back to top">&#8593;</button>
+
+            <!-- BOOKING MODAL -->
+            <div class="booking-modal" id="bookingModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="bFilm">
+                <div class="booking-modal__panel">
+                    <div class="booking-modal__header">
+                        <div class="booking-modal__meta">
+                            <p class="booking-modal__film" id="bFilm"></p>
+                            <p class="booking-modal__screen" id="bScreen"></p>
+                        </div>
+                        <button class="booking-modal__close" id="bookingClose" aria-label="Close booking">✕</button>
+                    </div>
+
+                    <div class="bk-steps">
+                        <div class="bk-step is-active" data-step="1"><span class="bk-step__n">1</span><span class="bk-step__l">Seats</span></div>
+                        <span class="bk-step__line"></span>
+                        <div class="bk-step" data-step="2"><span class="bk-step__n">2</span><span class="bk-step__l">Details</span></div>
+                        <span class="bk-step__line"></span>
+                        <div class="bk-step" data-step="3"><span class="bk-step__n">3</span><span class="bk-step__l">Confirm</span></div>
+                    </div>
+
+                    <!-- STEP 1 — seat map -->
+                    <div class="bk-pane" id="bPane1">
+                        <div class="seat-screen">
+                            <div class="seat-screen__glow"></div>
+                            <p>screen</p>
+                        </div>
+                        <div class="seat-legend">
+                            <span><i class="sleg sleg--std"></i>Standard</span>
+                            <span><i class="sleg sleg--vip"></i>VIP · £40</span>
+                            <span><i class="sleg sleg--taken"></i>Taken</span>
+                            <span><i class="sleg sleg--sel"></i>Selected</span>
+                        </div>
+                        <div class="seat-map" id="seatMap"></div>
+                        <div class="seat-bar">
+                            <div class="seat-bar__info">
+                                <span class="seat-bar__label">Seats</span>
+                                <span class="seat-bar__seats" id="bSeatList">—</span>
+                            </div>
+                            <div class="seat-bar__info">
+                                <span class="seat-bar__label">Total</span>
+                                <strong class="seat-bar__total" id="bTotal">£0</strong>
+                            </div>
+                            <button class="btn btn--gold btn--sm btn--ripple" id="bNext1" disabled="disabled">Continue →</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2 — details -->
+                    <div class="bk-pane" id="bPane2" hidden="hidden">
+                        <h3 class="bk-pane__title">Your <em>Details</em></h3>
+                        <div class="bk-form-grid">
+                            <div class="form-group bk-span2">
+                                <label class="form-label mono" for="bName">Full Name</label>
+                                <input id="bName" type="text" class="form-input" placeholder="Jane Smith" autocomplete="name" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label mono" for="bEmail">Email</label>
+                                <input id="bEmail" type="email" class="form-input" placeholder="jane@example.com" autocomplete="email" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label mono" for="bPhone">Phone</label>
+                                <input id="bPhone" type="tel" class="form-input" placeholder="+44 7700 900000" autocomplete="tel" />
+                            </div>
+                            <div class="form-group bk-span2">
+                                <label class="form-label mono" for="bCard">Card Number</label>
+                                <input id="bCard" type="text" class="form-input" placeholder="1234  5678  9012  3456" maxlength="19" inputmode="numeric" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label mono" for="bExpiry">Expiry</label>
+                                <input id="bExpiry" type="text" class="form-input" placeholder="MM / YY" maxlength="7" inputmode="numeric" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label mono" for="bCvv">CVV</label>
+                                <input id="bCvv" type="text" class="form-input" placeholder="123" maxlength="4" inputmode="numeric" />
+                            </div>
+                        </div>
+                        <div class="bk-order-box" id="bOrderBox"></div>
+                        <p class="bk-error" id="bError"></p>
+                        <div class="bk-actions">
+                            <button class="btn btn--outline btn--sm btn--ripple" id="bBack2">← Back</button>
+                            <button class="btn btn--gold btn--ripple" id="bPay">Confirm &amp; Pay</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3 — confirmation -->
+                    <div class="bk-pane" id="bPane3" hidden="hidden">
+                        <div class="bk-confirm">
+                            <div class="bk-confirm__check">✓</div>
+                            <h3 class="bk-pane__title">Booking <em>Confirmed</em></h3>
+                            <p class="bk-confirm__sub">Your seats are reserved. A confirmation email is on its way.</p>
+                            <div class="bk-ticket" id="bTicket"></div>
+                            <button class="btn btn--outline btn--ripple" id="bDone" style="margin-top:28px;">Close</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </xpath>
+
+    </template>
+</odoo>

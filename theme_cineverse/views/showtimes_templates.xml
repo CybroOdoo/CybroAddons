@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Template: showtimes_templates.xml
+        Purpose: Defines QWeb templates and snippets for the CineVerse theme.
+    -->
+    <template id="cineverse_showtimes_template_comp_0">
+        <!-- PAGE HERO -->
+    </template>
+
+    <template id="cineverse_showtimes_template_comp_1">
+        <section class="s_cineverse_showtimes_hero page-hero" data-snippet="s_cineverse_showtimes_hero"
+                 data-name="Showtimes Hero">
+            <p class="page-hero__eyebrow eyebrow">Plan Your Visit</p>
+            <h1 class="page-hero__title">Today's
+                <em>Programme</em>
+            </h1>
+            <p class="page-hero__lead">Select a film, choose your time, and your seats will be waiting.</p>
+        </section>
+    </template>
+
+    <template id="cineverse_showtimes_template" name="Showtimes page">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <div class="oe_structure oe_empty" id="oe_structure_cineverse_showtimes_top"/>
+                <section class="s_cineverse_showtimes_hero page-hero" data-snippet="s_cineverse_showtimes_hero"
+                         data-name="Showtimes Hero">
+                    <p class="page-hero__eyebrow eyebrow">Plan Your Visit</p>
+                    <h1 class="page-hero__title">Today's
+                        <em>Programme</em>
+                    </h1>
+                    <p class="page-hero__lead">Select a film, choose your time, and your seats will be waiting.</p>
+                </section>
+                <div class="oe_structure oe_empty" id="oe_structure_cineverse_showtimes_mid"/>
+                <section class="s_cineverse_showtimes_board section showtimes"
+                         data-snippet="s_cineverse_showtimes_board"
+                         data-name="Showtimes" style="padding-top: clamp(44px,6vw,80px);">
+                    <div class="container">
+
+                        <!-- Date selector -->
+                        <div class="date-tabs" role="tablist" aria-label="Select date">
+                            <button class="date-tab is-active" role="tab" aria-selected="true">Today</button>
+                            <button class="date-tab" role="tab" aria-selected="false">Tomorrow</button>
+                            <button class="date-tab" role="tab" aria-selected="false">Thu 24</button>
+                            <button class="date-tab" role="tab" aria-selected="false">Fri 25</button>
+                            <button class="date-tab" role="tab" aria-selected="false">Sat 26</button>
+                            <button class="date-tab" role="tab" aria-selected="false">Sun 27</button>
+                        </div>
+
+                        <div class="board reveal" role="table" aria-label="Showtimes">
+                            <t t-set="cineverse_movies" t-value="env['cineverse.movie'].sudo().search([('active', '=', True)], order='sequence, id')"/>
+                            <t t-if="cineverse_movies">
+                                <t t-foreach="cineverse_movies" t-as="movie">
+                                    <div class="board__row" role="row">
+                                        <div class="board__film" role="cell">
+                                            <span class="mono board__screen">
+                                                <t t-esc="'SCREEN %s' % (movie_index + 1)"/>
+                                                <t t-if="movie.badge" t-esc="' · ' + movie.badge"/>
+                                                <t t-if="movie.category" t-esc="' · ' + movie.category"/>
+                                            </span>
+                                            <h3 t-esc="movie.name"/>
+                                        </div>
+                                        <div class="board__times" role="cell">
+                                            <t t-set="times" t-value="movie.showtimes.split(',') if movie.showtimes else ['11:30', '14:15', '17:45', '21:00']"/>
+                                            <t t-foreach="times" t-as="t_time">
+                                                <button t-attf-class="time-btn #{'time-btn--lit' if t_time_index == 1 else ''}" t-esc="t_time.strip()"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <div class="board__row" role="row">
+                                    <div class="board__film" role="cell">
+                                        <span class="mono board__screen">SCREEN 1 · IMAX · Sci-Fi</span>
+                                        <h3>Celestial Drift</h3>
+                                    </div>
+                                    <div class="board__times" role="cell">
+                                        <button class="time-btn">11:30</button>
+                                        <button class="time-btn time-btn--lit">14:15</button>
+                                        <button class="time-btn">17:45</button>
+                                        <button class="time-btn">21:00</button>
+                                    </div>
+                                </div>
+                                <div class="board__row" role="row">
+                                    <div class="board__film" role="cell">
+                                        <span class="mono board__screen">SCREEN 2 · PREMIERE · Drama</span>
+                                        <h3>The Velvet Hour</h3>
+                                    </div>
+                                    <div class="board__times" role="cell">
+                                        <button class="time-btn">12:00</button>
+                                        <button class="time-btn">15:30</button>
+                                        <button class="time-btn time-btn--lit">19:00</button>
+                                        <button class="time-btn">22:15</button>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- Booking info -->
+                        <div class="reveal"
+                             style="margin-top: 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 18px;">
+                            <div style="background:var(--ground-1);border:1px solid var(--line);padding:28px 26px;">
+                                <span class="mono eyebrow" style="font-size:.64rem;">Standard Seats</span>
+                                <p style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--text);margin:8px 0 6px;">
+                                    &#163;18 – &#163;22
+                                </p>
+                                <p style="color:var(--text-soft);font-size:.9rem;">Luxury recliner in any standard
+                                    auditorium.
+                                </p>
+                            </div>
+                            <div style="background:var(--ground-1);border:1px solid var(--gold-line);padding:28px 26px;">
+                                <span class="mono eyebrow" style="font-size:.64rem;color:var(--gold);">VIP /
+                                    Premiere
+                                </span>
+                                <p style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--gold);margin:8px 0 6px;">
+                                    &#163;34 – &#163;48
+                                </p>
+                                <p style="color:var(--text-soft);font-size:.9rem;">Includes lounge access, dining
+                                    &amp; champagne service.
+                                </p>
+                            </div>
+                            <div style="background:var(--ground-1);border:1px solid var(--line);padding:28px 26px;">
+                                <span class="mono eyebrow" style="font-size:.64rem;">Private Screening</span>
+                                <p style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--text);margin:8px 0 6px;">
+                                    From &#163;450
+                                </p>
+                                <p style="color:var(--text-soft);font-size:.9rem;">Hire an entire auditorium for
+                                    your group or event.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:32px;text-align:center;" class="reveal">
+                            <a href="/contactus" class="btn btn--outline btn--ripple">Enquire about a private
+                                screening
+                            </a>
+                        </div>
+
+                    </div>
+                </section>
+                <div class="oe_structure oe_empty" id="oe_structure_cineverse_showtimes_bottom"/>
+            </div>
+        </t>
+    </template>
+
+    <record id="cineverse_showtimes_page" model="website.page">
+        <field name="name">Showtimes</field>
+        <field name="url">/showtimes</field>
+        <field name="is_published">True</field>
+        <field name="view_id" ref="cineverse_showtimes_template"/>
+        <field name="track">True</field>
+        <field name="website_meta_title">Showtimes | CineVerse</field>
+        <field name="website_meta_description">Book your tickets for the best cinema experience. View all CineVerse showtimes.</field>
+        <field name="website_meta_keywords">showtimes, book tickets, cinema times, movie schedule</field>
+    </record>
+</odoo>
