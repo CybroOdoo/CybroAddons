@@ -22,7 +22,7 @@
 {
     "name": "Dark Mode Backend Theme",
     "version": "18.0.1.0.0",
-    "category": "Theme/Backend",
+    "category": "Backend Theme",
     "summary": "Dark Mode Backend Theme for Odoo 18 community edition",
     "description": "Minimalist and elegant backend theme for Odoo 18,"
                    "Backend Theme, Theme",
