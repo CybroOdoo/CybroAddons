@@ -150,6 +150,29 @@
         <section class="screen_info custom_padding_top">
             <div class="wrapper">
                 <div class="container-fluid">
+                    <t t-if="state.cancellations.length">
+                        <div class="row">
+                            <div class="col-12">
+                                <t t-foreach="state.cancellations" t-as="cancellation" t-key="cancellation.id">
+                                    <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert" style="margin-bottom: 8px;">
+                                        <span>
+                                            <i class="fa fa-exclamation-triangle" role="img" aria-label="Cancelled" title="Cancelled"/>
+                                            <b style="margin-left: 6px;">CANCELLED:</b>
+                                            <span style="margin-left: 6px;">
+                                                <t t-esc="cancellation.qty"/> x <t t-esc="cancellation.product_name"/>
+                                            </span>
+                                            <t t-if="cancellation.order_ref">
+                                                <span style="margin-left: 6px;">(<t t-esc="cancellation.order_ref"/><t t-if="cancellation.table_name"> - <t t-esc="cancellation.table_name"/></t>)</span>
+                                            </t>
+                                        </span>
+                                        <button type="button" class="btn btn-sm btn-light" t-on-click="() => this.dismiss_cancellation(cancellation.id)">
+                                            OK
+                                        </button>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
                     <div class="row">
                         <t t-foreach="state.order_details" t-as="order"
                            t-key="order.id">
@@ -449,6 +472,9 @@
                                                                                 x
                                                                             </span>
                                                                             <t t-esc="line.full_product_name"/>
+                                                                            <span t-if="line.kitchen_new_qty > 0 and line.kitchen_new_qty &lt; line.qty" class="badge" style="background-color: #28a745; color: #fff; margin-left: 6px;">
+                                                                                +<t t-esc="line.kitchen_new_qty"/> new
+                                                                            </span>
                                                                             <br/>
                                                                             <t t-foreach="state.prepare_times"
                                                                                t-as="time"
@@ -625,13 +651,19 @@
                                                            t-as="line"
                                                            t-key="line.id">
                                                             <t t-if="lines==line.id">
-                                                                <button class="list-group-item">
+                                                                <button class="list-group-item" t-att-style="line.order_status=='ready' ? 'text-decoration: line-through; color: #bfbfbf;' : (line.is_new_addition ? 'border-left: 4px solid #28a745;' : '')">
                                                                     <span>
                                                                         <t
                                                                                 t-esc="line.qty"/>
                                                                         x
                                                                     </span>
                                                                     <t t-esc="line.full_product_name"/>
+                                                                    <span t-if="line.kitchen_new_qty > 0 and line.kitchen_new_qty &lt; line.qty" class="badge" style="background-color: #28a745; color: #fff; margin-left: 6px;">
+                                                                        +<t t-esc="line.kitchen_new_qty"/> new
+                                                                    </span>
+                                                                    <span t-elif="line.is_new_addition" class="badge" style="background-color: #28a745; color: #fff; margin-left: 6px;">
+                                                                        New
+                                                                    </span>
                                                                     <br/>
                                                                     <t t-foreach="state.prepare_times"
                                                                        t-as="time"
