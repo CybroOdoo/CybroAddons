@@ -28,15 +28,15 @@ class IrModelAccess(models.Model):
     _inherit = 'ir.model.access'
 
     @api.model
-    def check(self, model_name, mode='read', raise_exception=True):
+    def check(self, model, mode='read', raise_exception=True):
         """Overrides the default check method to allow
          only read access to the user."""
-        model = ['res.users.log', 'mail.channel', 'mail.alias',
+        model_name = ['res.users.log', 'mail.channel', 'mail.alias',
                  'bus.presence', 'res.lang',
                  'mail.channel.member']
-        res = super().check(model_name, mode='read', raise_exception=raise_exception)
+        res = super().check(model, mode, raise_exception=raise_exception)
         if self.env.user.has_group('odoo_readonly_user.group_users_readonly') \
-                and model_name not in model and mode in (
+                and model not in model_name and mode in (
                 'write', 'create', 'unlink'):
             return False
         return res
