@@ -20,8 +20,7 @@
 #
 #############################################################################
 import re
-from odoo import api, Command, fields, models
-
+from odoo import Command, fields, models
 
 class TabRegistry(models.Model):
     """Class for representing tabs"""
@@ -31,13 +30,6 @@ class TabRegistry(models.Model):
     name = fields.Char(string='Tab Name', required=True)
     view_ids = fields.Many2many('ir.ui.view', string='View')
     model_id = fields.Many2one('ir.model', string='Model', ondelete='cascade')
-
-    @api.model
-    def _register_hook(self):
-        """Triggers filter extraction during module initialization."""
-        super()._register_hook()
-        self.get_all_tabs()
-        return True
 
     def get_all_tabs(self):
         """Finds buttons from views and stores them."""

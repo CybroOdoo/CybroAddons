@@ -20,8 +20,7 @@
 #
 #############################################################################
 import xml.etree.ElementTree as ET
-from odoo import api, Command, fields, models
-
+from odoo import Command, fields, models
 
 class FilterRegistry(models.Model):
     """Stores and manages filters from search views."""
@@ -34,13 +33,6 @@ class FilterRegistry(models.Model):
     active = fields.Boolean(default=True)
     model_id = fields.Many2one('ir.model', string='Model', ondelete='cascade')
     view_ids = fields.Many2many('ir.ui.view', string='View')
-
-    @api.model
-    def _register_hook(self):
-        """Triggers filter extraction during module initialization."""
-        super()._register_hook()
-        self.get_all_filters()
-        return True
 
     def _get_filter_elements_from_arch(self, arch):
         """Parse the XML arch and return a list of <filter> elements

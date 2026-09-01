@@ -20,8 +20,7 @@
 #
 #############################################################################
 import re
-from odoo import api, Command, fields, models
-
+from odoo import Command, fields, models
 
 class GroupByRegistry(models.Model):
     """Stores and manages group_by filters from search views."""
@@ -34,13 +33,6 @@ class GroupByRegistry(models.Model):
     active = fields.Boolean(default=True)
     model_id = fields.Many2one('ir.model', string='Model', ondelete='cascade')
     view_ids = fields.Many2many('ir.ui.view', string='View')
-
-    @api.model
-    def _register_hook(self):
-        """Triggers group_by extraction during module initialization."""
-        super()._register_hook()
-        self.get_all_groupby()
-        return True
 
     def _extract_groupby_attributes(self, filter_tag):
         """Extract attributes from a group_by filter tag."""
