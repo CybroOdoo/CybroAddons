@@ -1,18 +1,170 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Inherited user view for Adding API key.  -->
-    <record id="view_users_form" model="ir.ui.view">
-        <field name="name">view.users.form.inherit.rest.api.odoo</field>
+    <!-- Vista de usuario para gestión de API keys -->
+    <record id="view_users_form_api_enhanced" model="ir.ui.view">
+        <field name="name">view.users.form.inherit.rest.api.enhanced</field>
         <field name="inherit_id" ref="base.view_users_form"/>
         <field name="model">res.users</field>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='access_rights']" position="after">
-                <page string="API" name="rest-api">
+                <page string="REST API" name="rest-api" groups="base.group_system">
                     <group>
-                        <field name="api_key" groups="base.group_user"/>
+                        <group string="API Key Management">
+                            <field name="api_key" readonly="1" password="True"/>
+                            <field name="api_key_created" readonly="1"/>
+                            <field name="api_key_expiry" readonly="1"/>
+                        </group>
+                        <group string="Usage Statistics">
+                            <field name="api_requests_count" readonly="1"/>
+                            <field name="api_key_last_used" readonly="1"/>
+                        </group>
                     </group>
+
+                    <div class="oe_button_box">
+                        <button name="action_generate_api_key" type="object"
+                                string="Generate API Key"
+                                class="btn-primary"
+                                invisible="api_key"
+                                confirm="This will generate a new API key. Continue?"/>
+                        <button name="action_regenerate_api_key" type="object"
+                                string="Regenerate API Key"
+                                class="btn-warning"
+                                invisible="not api_key"
+                                confirm="This will invalidate the current API key. Continue?"/>
+                        <button name="action_revoke_api_key" type="object"
+                                string="Revoke API Key"
+                                class="btn-danger"
+                                invisible="not api_key"
+                                confirm="This will permanently revoke the API key. Continue?"/>
+                    </div>
+
+                    <div class="alert alert-info" role="alert" invisible="not api_key">
+                        <h4>API Usage Instructions</h4>
+                        <p><strong>Authentication:</strong> Include your API key in the request header:</p>
+                        <pre><code>X-API-Key: [Your API Key Here]</code></pre>
+
+                        <p><strong>Available Endpoints:</strong></p>
+                        <ul>
+                            <li><code>GET /api/v1/models</code> - List available models</li>
+                            <li><code>GET /api/v1/{model}</code> - Get all records</li>
+                            <li><code>GET /api/v1/{model}/{id}</code> - Get specific record</li>
+                            <li><code>POST /api/v1/{model}</code> - Create new record</li>
+                            <li><code>PUT /api/v1/{model}/{id}</code> - Update record</li>
+                            <li><code>DELETE /api/v1/{model}/{id}</code> - Delete record</li>
+                        </ul>
+
+                        <p><strong>Example:</strong></p>
+                        <pre><code>curl -X GET http://your-server/api/v1/res.partner -H "X-API-Key: [Key]"</code></pre>
+                    </div>
+
+                    <div class="alert alert-warning" role="alert" invisible="api_key">
+                        <h4>No API Key Generated</h4>
+                        <p>Click "Generate API Key" to create an API key for this user.</p>
+                    </div>
                 </page>
             </xpath>
         </field>
+    </record>
+
+    <!-- Vista de lista corregida - Usando base.view_users_tree -->
+    <record id="view_users_list_api_info" model="ir.ui.view">
+        <field name="name">view.users.list.api.info</field>
+        <field name="inherit_id" ref="base.view_users_tree"/>
+        <field name="model">res.users</field>
+        <field name="arch" type="xml">
+            <field name="login_date" position="after">
+                <field name="api_key" string="Has API Key" widget="boolean" optional="hide"/>
+                <field name="api_requests_count" string="API Requests" optional="hide"/>
+                <field name="api_key_last_used" string="API Last Used" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Server action SIMPLIFICADO sin f-strings -->
+    <record id="action_cleanup_expired_api_keys" model="ir.actions.server">
+        <field name="name">Cleanup Expired API Keys</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Código simple sin imports prohibidos y sin f-strings
+expired_users = model.search([
+    ('api_key_expiry', '!=', False),
+    ('api_key_expiry', '&lt;', fields.Datetime.now())
+])
+
+cleaned_count = 0
+for user in expired_users:
+    user.write({
+        'api_key': False,
+        'api_key_expiry': False,
+        'api_key_created': False,
+        'api_key_last_used': False
+    })
+    cleaned_count += 1
+
+if cleaned_count > 0:
+    message = "Cleaned " + str(cleaned_count) + " expired API keys."
+    msg_type = 'success'
+else:
+    message = "No expired API keys found."
+    msg_type = 'info'
+
+action = {
+    'type': 'ir.actions.client',
+    'tag': 'display_notification',
+    'params': {
+        'message': message,
+        'type': msg_type,
+        'sticky': False,
+    }
+}
+        ]]></field>
+    </record>
+
+    <!-- Menús -->
+     <menuitem id="rest_api_root"
+              name="REST API"
+              sequence="10"
+              groups="base.group_system"/>
+    <menuitem id="rest_api_users_menu"
+              name="API Users Management"
+              parent="rest_api_root"
+              action="base.action_res_users"
+              sequence="30"
+              groups="base.group_system"/>
+
+    <menuitem id="rest_api_cleanup_menu"
+              name="Cleanup Expired Keys"
+              parent="rest_api_root"
+              action="action_cleanup_expired_api_keys"
+              sequence="40"
+              groups="base.group_system"/>
+
+    <!-- Cron job SIMPLIFICADO -->
+    <record id="ir_cron_cleanup_expired_api_keys" model="ir.cron">
+        <field name="name">Cleanup Expired API Keys</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Código simple para cron
+try:
+    expired_users = model.search([
+        ('api_key_expiry', '!=', False),
+        ('api_key_expiry', '&lt;', fields.Datetime.now())
+    ])
+
+    for user in expired_users:
+        user.write({
+            'api_key': False,
+            'api_key_expiry': False,
+            'api_key_created': False,
+            'api_key_last_used': False
+        })
+except Exception:
+    pass
+        ]]></field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active">True</field>
     </record>
 </odoo>
