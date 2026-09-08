@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template: report_signed_document -->
+    <template id="report_signed_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; font-size: 12px; color: #333333; line-height: 1.5;">
+                    
+                    <!-- Header -->
+                    <div style="border-bottom: 2px solid #007bff; padding-bottom: 15px; margin-bottom: 20px;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td>
+                                    <h1 style="margin: 0; color: #007bff; font-size: 22px; font-weight: bold; text-transform: uppercase;">Certificate of Completion</h1>
+                                    <p style="margin: 3px 0 0 0; color: #666; font-size: 12px;">Electronic Signature Audit Record</p>
+                                </td>
+                                <td style="text-align: right; vertical-align: middle;">
+                                    <div style="display: inline-block; border: 2px solid #28a745; border-radius: 4px; padding: 6px 12px; color: #28a745; font-weight: bold; font-size: 12px; text-transform: uppercase;">
+                                        Digitally Signed &amp; Verified
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Summary Table -->
+                    <h2 style="font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 3px; color: #333; margin-bottom: 10px; font-weight: bold;">Document Summary</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr>
+                            <td style="width: 25%; padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Document Template</td>
+                            <td style="width: 75%; padding: 6px; border: 1px solid #eee;"><t t-esc="doc.template_id.name"/></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Request Ref</td>
+                            <td style="padding: 6px; border: 1px solid #eee;"><t t-esc="doc.name"/></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Date Requested</td>
+                            <td style="padding: 6px; border: 1px solid #eee;"><t t-esc="doc.date_requested"/></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Date Completed</td>
+                            <td style="padding: 6px; border: 1px solid #eee;"><t t-esc="doc.date_signed"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- Linked Record Information (if any) -->
+                    <t t-if="doc.reference_doc">
+                        <h2 style="font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 3px; color: #333; margin-bottom: 10px; font-weight: bold;">Linked Operations Record</h2>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <t t-if="doc.reference_doc._name == 'wm.collection.order'">
+                                <tr>
+                                    <td style="width: 25%; padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Collection Order</td>
+                                    <td style="width: 25%; padding: 6px; border: 1px solid #eee;"><t t-esc="doc.reference_doc.name"/></td>
+                                    <td style="width: 25%; padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Customer</td>
+                                    <td style="width: 25%; padding: 6px; border: 1px solid #eee;"><t t-esc="doc.reference_doc.partner_id.name"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Waste Category</td>
+                                    <td style="padding: 6px; border: 1px solid #eee;"><t t-esc="', '.join(doc.reference_doc.order_line_ids.mapped('category_id.name')) or '-'"/></td>
+                                    <td style="padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Waste Material</td>
+                                    <td style="padding: 6px; border: 1px solid #eee;"><t t-esc="', '.join(doc.reference_doc.order_line_ids.mapped('product_id.name')) or '-'"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Container Type</td>
+                                    <td style="padding: 6px; border: 1px solid #eee;"><t t-esc="doc.reference_doc.container_id.name"/></td>
+                                    <td style="padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Confirmed Weight</td>
+                                    <td style="padding: 6px; border: 1px solid #eee;"><t t-esc="doc.reference_doc.confirmed_weight"/> kg</td>
+                                </tr>
+                            </t>
+                            <t t-else="">
+                                <tr>
+                                    <td style="width: 25%; padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Record Reference</td>
+                                    <td style="width: 75%; padding: 6px; border: 1px solid #eee;"><t t-esc="doc.reference_doc.display_name"/></td>
+                                </tr>
+                            </t>
+                        </table>
+                    </t>
+
+                    <!-- Signers Trail -->
+                    <h2 style="font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 3px; color: #333; margin-bottom: 10px; font-weight: bold;">Signer Authentication &amp; Audit Trail</h2>
+                    <t t-foreach="doc.signer_ids" t-as="signer">
+                        <div style="border: 1px solid #e0e0e0; border-radius: 4px; padding: 12px; margin-bottom: 15px; background: #ffffff;">
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td style="width: 65%; vertical-align: top;">
+                                        <table style="width: 100%; font-size: 11px;">
+                                            <tr>
+                                                <td style="font-weight: bold; width: 30%; padding: 3px 0;">Signer Name:</td>
+                                                <td style="padding: 3px 0;"><t t-esc="signer.partner_id.name"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-weight: bold; padding: 3px 0;">Role:</td>
+                                                <td style="padding: 3px 0;"><t t-esc="signer.role_id.name"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-weight: bold; padding: 3px 0;">Email:</td>
+                                                <td style="padding: 3px 0;"><t t-esc="signer.email"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-weight: bold; padding: 3px 0;">Signed Date:</td>
+                                                <td style="padding: 3px 0;"><t t-esc="signer.signed_date"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-weight: bold; padding: 3px 0;">IP Address:</td>
+                                                <td style="padding: 3px 0;"><t t-esc="signer.ip_address"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-weight: bold; padding: 3px 0; vertical-align: top;">User Agent:</td>
+                                                <td style="padding: 3px 0; color: #777; font-size: 9px;"><t t-esc="signer.user_agent"/></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="width: 35%; text-align: center; vertical-align: middle; border-left: 1px dashed #ddd; padding-left: 10px;">
+                                        <p style="margin: 0 0 5px 0; font-size: 9px; text-transform: uppercase; color: #999; font-weight: bold;">Signature</p>
+                                        <img t-if="signer.signature_image" t-att-src="image_data_uri(signer.signature_image)" style="max-height: 70px; max-width: 160px; display: block; margin: 0 auto;"/>
+                                        <t t-else="">
+                                            <span style="color: #d9534f; font-weight: bold;">PENDING</span>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </t>
+
+                    <!-- Verification footer -->
+                    <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; font-size: 9px; color: #888; text-align: center; line-height: 1.4;">
+                        <p>This document is electronically signed and secured. The parties agree that the electronic signatures contained on this document are the legally binding equivalent to manual signatures.</p>
+                        <p style="margin-top: 4px; font-weight: bold; color: #555;">Verification Security ID: <t t-esc="doc.id"/> - Completed: <t t-esc="doc.date_signed"/></p>
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

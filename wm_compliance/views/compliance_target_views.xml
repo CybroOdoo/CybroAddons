@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.compliance.target - wm.compliance.target.form (Form) -->
+    <record id="view_wm_compliance_target_form" model="ir.ui.view">
+        <field name="name">wm.compliance.target.form</field>
+        <field name="model">wm.compliance.target</field>
+        <field name="arch" type="xml">
+            <form string="Compliance Target">
+                <sheet>
+                    <group>
+                        <group string="Target Definition">
+                            <field name="partner_id"/>
+                            <field name="partner_role"/>
+                            <field name="waste_category_id"/>
+                            <field name="target_quantity"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Period &amp; Status">
+                            <field name="period_start"/>
+                            <field name="period_end"/>
+                            <field name="achieved_quantity"/>
+                            <field name="compliance_pct"/>
+                            <field name="state" widget="badge" decoration-success="state == 'on_track'" decoration-warning="state == 'at_risk'" decoration-danger="state == 'breached'"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- View: wm.compliance.target - wm.compliance.target.list (List) -->
+    <record id="view_wm_compliance_target_list" model="ir.ui.view">
+        <field name="name">wm.compliance.target.list</field>
+        <field name="model">wm.compliance.target</field>
+        <field name="arch" type="xml">
+            <list string="Compliance Targets" decoration-success="state == 'on_track'" decoration-warning="state == 'at_risk'" decoration-danger="state == 'breached'">
+                <field name="partner_id"/>
+                <field name="partner_role"/>
+                <field name="waste_category_id"/>
+                <field name="period_start"/>
+                <field name="period_end"/>
+                <field name="target_quantity"/>
+                <field name="achieved_quantity"/>
+                <field name="compliance_pct"/>
+                <field name="state" widget="badge" decoration-success="state == 'on_track'" decoration-warning="state == 'at_risk'" decoration-danger="state == 'breached'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.compliance.target - wm.compliance.target.kanban (Kanban) -->
+    <record id="view_wm_compliance_target_kanban" model="ir.ui.view">
+        <field name="name">wm.compliance.target.kanban</field>
+        <field name="model">wm.compliance.target</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column" records_draggable="false">
+                <field name="state"/>
+                <field name="partner_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <strong><field name="partner_id"/></strong>
+                            <div>Role: <field name="partner_role"/></div>
+                            <div>Category: <field name="waste_category_id"/></div>
+                            <div>Target: <field name="target_quantity"/></div>
+                            <div>Achieved: <field name="achieved_quantity"/></div>
+                            <div>Compliance: <field name="compliance_pct"/>%</div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action: Compliance Targets -->
+    <record id="action_wm_compliance_target" model="ir.actions.act_window">
+        <field name="name">Compliance Targets</field>
+        <field name="res_model">wm.compliance.target</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define recycling or collection quotas for partners.
+            </p>
+        </field>
+    </record>
+</odoo>

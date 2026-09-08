@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.fleet.expiry.report - wm.fleet.expiry.report.list (List) -->
+    <record id="view_wm_fleet_expiry_report_list" model="ir.ui.view">
+        <field name="name">wm.fleet.expiry.report.list</field>
+        <field name="model">wm.fleet.expiry.report</field>
+        <field name="arch" type="xml">
+            <list string="Certificate &amp; Licence Expiry" decoration-danger="days_remaining &lt;= 0" decoration-warning="days_remaining &gt; 0 and days_remaining &lt;= 30">
+                <field name="entity_type"/>
+                <field name="entity_name"/>
+                <field name="document_type"/>
+                <field name="expiry_date"/>
+                <field name="days_remaining"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.fleet.expiry.report - wm.fleet.expiry.report.search (Search) -->
+    <record id="view_wm_fleet_expiry_report_search" model="ir.ui.view">
+        <field name="name">wm.fleet.expiry.report.search</field>
+        <field name="model">wm.fleet.expiry.report</field>
+        <field name="arch" type="xml">
+            <search string="Certificate &amp; Licence Expiry">
+                <field name="entity_name"/>
+                <field name="document_type"/>
+                <filter string="Expiring within 30 Days" name="expiring_soon" domain="[('days_remaining', '&lt;=', 30)]"/>
+                <filter string="Expired" name="expired" domain="[('days_remaining', '&lt;=', 0)]"/>
+                <group>
+                    <filter string="Entity Type" name="group_entity_type" context="{'group_by':'entity_type'}"/>
+                    <filter string="Document Type" name="group_document_type" context="{'group_by':'document_type'}"/>
+                    <filter string="Expiry Month" name="group_expiry_month" context="{'group_by':'expiry_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Certificate & Licence Expiry -->
+    <record id="action_wm_fleet_expiry_report" model="ir.actions.act_window">
+        <field name="name">Certificate &amp; Licence Expiry</field>
+        <field name="res_model">wm.fleet.expiry.report</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_expiring_soon': 1}</field>
+    </record>
+</odoo>

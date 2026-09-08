@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Template: report_collection_order_document -->
+        <template id="report_collection_order_document">
+            <!-- Template for report collection order document -->
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page" style="font-family: Arial, sans-serif; color: #1e293b; padding: 10px;">
+                            <!-- COLLECTION ORDER HEADING -->
+                            <div style="text-align:center; margin-bottom:20px; padding:16px 20px; background:#1b5e20; border-radius:6px;">
+                                <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#a8ffa8; margin-bottom:4px; font-weight:600;">Official Proof of Service &amp; Waste Handover Receipt</div>
+                                <h2 style="color:#ffffff; margin:0; font-size:20px; font-weight:bold; letter-spacing:0.5px;">WASTE COLLECTION ORDER SIGNOFF</h2>
+                            </div>
+
+                            <!-- ORDER INFORMATION -->
+                            <h4 style="border-left:4px solid #1b5e20; padding-left:8px; color:#1b5e20; margin-top:16px; margin-bottom:10px; font-size:13px; font-weight:bold; text-transform:uppercase;">Order Information</h4>
+                            <table style="width:100%; border-collapse:collapse; margin-bottom:16px; font-size:11px;">
+                                <tr>
+                                    <td style="padding:8px 10px; border:1px solid #e2e8f0; width:50%;">
+                                        <strong>Collection Point:</strong> <span t-field="o.collection_point_id.name"/>
+                                    </td>
+                                    <td style="padding:8px 10px; border:1px solid #e2e8f0; width:50%;">
+                                        <strong>Customer:</strong> <span t-field="o.partner_id.name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:8px 10px; border:1px solid #e2e8f0;">
+                                        <strong>Scheduled Date:</strong> <span t-field="o.scheduled_start"/>
+                                    </td>
+                                    <td style="padding:8px 10px; border:1px solid #e2e8f0;">
+                                        <strong>Service Zone:</strong> <span t-esc="(o.collection_point_id and o.collection_point_id.zone_id and o.collection_point_id.zone_id.name) or (o.route_id and o.route_id.zone_id and o.route_id.zone_id.name) or 'N/A'"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:8px 10px; border:1px solid #e2e8f0;">
+                                        <strong>Vehicle &amp; Driver:</strong> 
+                                        <t t-if="o.vehicle_id"><span t-field="o.vehicle_id.name"/></t>
+                                        <t t-if="o.driver_id"> / <span t-field="o.driver_id.name"/></t>
+                                    </td>
+                                    <td style="padding:8px 10px; border:1px solid #e2e8f0;">
+                                        <strong>Status:</strong> <span t-field="o.state"/>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- WASTE MATERIAL / CATEGORY TABLE -->
+                            <h4 style="border-left:4px solid #1b5e20; padding-left:8px; color:#1b5e20; margin-top:16px; margin-bottom:10px; font-size:13px; font-weight:bold; text-transform:uppercase;">Waste Material / Category Details</h4>
+                            <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:11px;">
+                                <thead>
+                                    <tr style="background-color:#1b5e20; color:#ffffff;">
+                                        <th style="padding:8px 10px; border:1px solid #004411; text-align:left;">Waste Category</th>
+                                        <th style="padding:8px 10px; border:1px solid #004411; text-align:left;">Waste Material</th>
+                                        <th style="padding:8px 10px; border:1px solid #004411; text-align:right;">Price / kg</th>
+                                        <th style="padding:8px 10px; border:1px solid #004411; text-align:right;">Confirmed Wt (kg)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.order_line_ids" t-as="line">
+                                        <tr>
+                                            <td style="padding:7px 10px; border:1px solid #e2e8f0;">
+                                                <span t-field="line.category_id.name"/>
+                                            </td>
+                                            <td style="padding:7px 10px; border:1px solid #e2e8f0;">
+                                                <span t-field="line.product_id.name"/>
+                                            </td>
+                                            <td style="padding:7px 10px; border:1px solid #e2e8f0; text-align:right;">
+                                                <span t-field="line.price"/>
+                                            </td>
+                                            <td style="padding:7px 10px; border:1px solid #e2e8f0; text-align:right;">
+                                                <span t-field="line.weight"/> kg
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <tr style="background-color:#f1f5f9; font-weight:bold;">
+                                        <td colspan="2" style="padding:8px 10px; border:1px solid #cbd5e1;">
+                                            Total Estimated Weight: <span t-field="o.estimated_weight"/> kg
+                                        </td>
+                                        <td colspan="2" style="padding:8px 10px; border:1px solid #cbd5e1; text-align:right; color:#1b5e20;">
+                                            Total Confirmed Weight: <span t-field="o.confirmed_weight"/> kg
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- TERMS & DECLARATION -->
+                            <div style="font-size:10px; color:#475569; margin-bottom:24px; padding:10px 12px; background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:4px;">
+                                <strong>Terms &amp; Verification Declaration:</strong><br/>
+                                1. The waste materials listed above have been inspected and handed over to the authorized waste collector.<br/>
+                                2. Confirmed weights and sorting statuses recorded on site are binding for billing and compliance reporting.<br/>
+                                3. Hazardous or restricted items not declared prior to collection remain the responsibility of the generator.
+                            </div>
+
+                            <!-- AUTHORIZATION SIGNATURES -->
+                            <div style="margin-top:20px; border:1px solid #cbd5e1; border-radius:6px; padding:16px; background-color:#fafafa;">
+                                <div style="font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:12px;">Authorization Signatures</div>
+                                <div style="width:60%;">
+                                    <div style="font-size:11px; font-weight:bold; color:#334155; margin-bottom:8px;">
+                                        Driver / Field Collector Signature:
+                                    </div>
+                                    <!-- Signature Field / Image -->
+                                    <div style="min-height:48px; border:1px dashed #94a3b8; border-radius:4px; padding:6px; background-color:#ffffff; margin-bottom:8px; display:flex; align-items:center; justify-content:center;">
+                                        <t t-if="o.signature_id and o.signature_id.signature_image">
+                                            <img t-att-src="image_data_uri(o.signature_id.signature_image)" style="max-height:42px; max-width:220px;"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="font-size:10px; color:#94a3b8; font-style:italic;">[ Signature Field ]</span>
+                                        </t>
+                                    </div>
+                                    <!-- Signature Person Name & Role -->
+                                    <div style="font-size:11px; font-weight:bold; color:#1e293b; margin-top:6px;">
+                                        Signer Name: <span t-esc="o.driver_id.name or (o.signature_id and o.signature_id.signer_id.name) or (o.env.user and o.env.user.name) or '—'"/>
+                                    </div>
+                                    <div style="font-size:10px; color:#64748b; margin-top:2px;">
+                                        Role: <span t-esc="(o.signature_id and o.signature_id.signer_role_id.name) or 'Waste Collector / Field Driver'"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

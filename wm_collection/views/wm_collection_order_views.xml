@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.collection.order - wm.collection.order.list (List) -->
+    <record id="view_wm_collection_order_list" model="ir.ui.view">
+        <field name="name">wm.collection.order.list</field>
+        <field name="model">wm.collection.order</field>
+        <field name="arch" type="xml">
+            <list string="Collection Orders" decoration-info="state == 'draft'" decoration-warning="state == 'dispatched'" decoration-success="state == 'completed'" decoration-danger="state == 'missed'">
+                <field name="currency_id" column_invisible="True"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="collection_point_id"/>
+                <field name="scheduled_start"/>
+                <field name="actual_end" optional="show"/>
+                <field name="confirmed_weight" sum="Total Confirmed Weight (kg)"/>
+                <field name="total_amount" sum="Total Amount" widget="monetary" decoration-bf="1"/>
+                <field name="co2_avoided_tons" sum="Total Carbon Abated (tCO2e)" optional="show"/>
+                <field name="schedule_status" widget="badge" decoration-success="schedule_status == 'on_time'" decoration-warning="schedule_status == 'early'" decoration-danger="schedule_status == 'late'"/>
+                <field name="is_billed" widget="boolean" decoration-success="is_billed"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'dispatched'" decoration-success="state == 'completed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.signature.request.signer - wm.signature.request.signer.list.wm_collection (List) -->
+    <record id="view_wm_signature_request_signer_list_wm_collection" model="ir.ui.view">
+        <field name="name">wm.signature.request.signer.list.wm_collection</field>
+        <field name="model">wm.signature.request.signer</field>
+        <field name="priority" eval="30"/>
+        <field name="arch" type="xml">
+            <list string="Signers" create="false" edit="false" delete="false">
+                <field name="role_id"/>
+                <field name="partner_id"/>
+                <field name="email"/>
+                <field name="state" widget="badge" decoration-warning="state == 'sent'" decoration-success="state == 'signed'"/>
+                <field name="signed_date"/>
+                <button name="action_sign_signer" type="object" string="Sign Now" class="btn-primary" invisible="state == 'signed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.collection.order - wm.collection.order.form (Form) -->
+    <record id="view_wm_collection_order_form" model="ir.ui.view">
+        <field name="name">wm.collection.order.form</field>
+        <field name="model">wm.collection.order</field>
+        <field name="arch" type="xml">
+            <form string="Collection Order">
+                <header>
+                    <field name="use_missed_collection" invisible="1"/>
+                    <button name="action_dispatch" string="Dispatch" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_start" string="Start" type="object" class="oe_highlight" invisible="state != 'dispatched'"/>
+                    <button name="action_complete" string="Complete" type="object" class="oe_highlight" invisible="state != 'in_progress'"/>
+                    <button name="action_mark_missed" string="Mark Missed" type="object" class="oe_highlight" invisible="not use_missed_collection or state not in ('dispatched', 'in_progress')"/>
+                    <button name="action_sign" string="Sign" type="object" class="oe_highlight" invisible="state != 'completed'"/>
+                    <button name="action_create_waste_batch" string="Create Waste Batch" type="object" class="oe_highlight" invisible="state not in ('completed', 'signed') or waste_batch_count &gt; 0 or route_id"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state == 'cancelled'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,dispatched,in_progress,completed,signed"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="RETRY" bg_color="text-bg-warning" invisible="not parent_order_id"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_signatures" type="object" class="oe_stat_button" icon="fa-pencil" invisible="signature_signer_count == 0">
+                            <field name="signature_signer_count" widget="statinfo" string="Signatures"/>
+                        </button>
+                        <button name="action_view_waste_batches" type="object" class="oe_stat_button" icon="fa-cubes" invisible="waste_batch_count == 0">
+                            <field name="waste_batch_count" widget="statinfo" string="Waste Batches"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <h4 invisible="not parent_order_id" class="text-muted">
+                            <i class="fa fa-reply" title="Retry"/> Retry of: <field name="parent_order_id" readonly="1" options="{'no_open': True}"/>
+                        </h4>
+                    </div>
+
+                    <!-- KPI Panel Row -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <div class="wm-kpi-panel p-2 text-center">
+                                <div class="wm-kpi-title">Confirmed Weight</div>
+                                <div class="wm-kpi-value"><field name="confirmed_weight" readonly="1"/> kg</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="wm-kpi-panel p-2 text-center">
+                                <div class="wm-kpi-title">Carbon Abated</div>
+                                <div class="wm-kpi-value text-success"><field name="co2_avoided_tons" readonly="1"/> tCO₂e</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="wm-kpi-panel p-2 text-center">
+                                <div class="wm-kpi-title">Schedule Status</div>
+                                <div class="mt-1"><field name="schedule_status" widget="badge" decoration-success="schedule_status == 'on_time'" decoration-warning="schedule_status == 'early'" decoration-danger="schedule_status == 'late'"/></div>
+                            </div>
+                        </div>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
+                            <field name="collection_point_id" domain="[('partner_id', '=', partner_id)] if partner_id else []" context="{'default_partner_id': partner_id}" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
+                        </group>
+                        <group>
+                            <field name="scheduled_start" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
+                            <field name="scheduled_end" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
+                            <field name="actual_start" readonly="1"/>
+                            <field name="actual_end" readonly="1"/>
+                            <field name="schedule_status" widget="badge" decoration-success="schedule_status == 'on_time'" decoration-warning="schedule_status == 'early'" decoration-danger="schedule_status == 'late'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Waste Information" name="waste_info">
+                            <field name="collection_point_category_ids" invisible="1"/>
+                            <field name="order_line_ids" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')">
+                                <list editable="bottom">
+                                    <field name="category_id" domain="[('id', 'in', parent.collection_point_category_ids)] if parent.collection_point_category_ids else []"/>
+                                    <field name="product_id"
+                                           domain="[('is_waste_material', '=', True)] + (category_id and [('wm_waste_category_id', '=', category_id)] or [])"
+                                           context="{'default_is_waste_material': True, 'default_wm_waste_category_id': category_id}"/>
+                                    <field name="estimated_weight"/>
+                                    <field name="weight"/>
+                                    <field name="price"/>
+                                    <field name="total_amount" sum="Total"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Logistics" name="logistics">
+                            <group>
+                                <group>
+                                    <field name="route_id" domain="[('state', '!=', 'completed')]" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
+                                    <field name="valid_vehicle_ids" invisible="1"/>
+                                    <field name="vehicle_id" domain="[('id', 'in', valid_vehicle_ids)]" readonly="1" force_save="1"/>
+                                    <field name="driver_id" readonly="1" force_save="1"/>
+                                    <field name="container_id" readonly="1" force_save="1"/>
+                                </group>
+                                <group>
+                                    <field name="completed_date" readonly="1"/>
+                                    <field name="estimated_weight" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
+                                    <field name="confirmed_weight" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Other Info" name="other_info" invisible="state not in ('completed', 'signed')">
+                            <group>
+                                <group>
+                                    <field name="driver_photo" widget="image" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
+                                    <field name="geolocation_tag" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
+                                </group>
+                                <group>
+                                    <field name="signature_template_id" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Missed Info" name="missed_info" invisible="not use_missed_collection or state != 'missed'">
+                            <group>
+                                <group>
+                                    <field name="is_missed" invisible="1"/>
+                                    <field name="missed_reason_id" readonly="1"/>
+                                    <field name="missed_notes" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="retry_order_id" readonly="1"/>
+                                    <field name="parent_order_id" readonly="1"/>
+                                    <field name="retry_count" readonly="1"/>
+                                    <field name="missed_collection_id" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- View: wm.collection.order - wm.collection.order.kanban (Kanban) -->
+    <record id="view_wm_collection_order_kanban" model="ir.ui.view">
+        <field name="name">wm.collection.order.kanban</field>
+        <field name="model">wm.collection.order</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" default_group_by="state">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="scheduled_start"/>
+                <field name="driver_id"/>
+                <field name="product_ids"/>
+                <field name="estimated_weight"/>
+                <field name="state"/>
+                <field name="collection_point_id"/>
+                <field name="activity_ids"/>
+                <field name="schedule_status"/>
+                <field name="parent_order_id"/>
+                <field name="use_missed_collection"/>
+                <field name="missed_reason_id"/>
+                <templates>
+                    <t t-name="card" t-attf-class="p-3 ef-kanban-card--#{record.state.raw_value == 'completed' or record.state.raw_value == 'signed' ? 'success' : record.state.raw_value == 'missed' or record.state.raw_value == 'cancelled' ? 'danger' : record.state.raw_value == 'draft' ? 'warning' : 'info'}">
+                        <widget name="web_ribbon" title="RETRY" bg_color="text-bg-warning" invisible="not parent_order_id"/>
+                        <widget name="web_ribbon" title="MISSED" bg_color="text-bg-danger" invisible="state != 'missed'"/>
+                        <div class="fw-bolder fs-5 mb-1" t-if="record.name.raw_value">
+                            <field name="name"/>
+                        </div>
+                        <div class="text-muted small mb-1" t-if="record.collection_point_id.raw_value">
+                            <i class="fa fa-map-marker me-1 text-danger" title="Collection Point"/>
+                            <field name="collection_point_id"/>
+                        </div>
+                        <div t-if="record.product_ids.raw_value">
+                            <field name="product_ids" widget="many2many_tags"/>
+                        </div>
+                        
+                        <div class="d-flex align-items-center gap-1 mt-1" t-if="record.driver_id.raw_value">
+                            <span title="Driver">🚚</span>
+                            <field name="driver_id" class="small pt-1 pb-1 fw-bold"/>
+                        </div>
+
+                        <t t-if="record.state.raw_value == 'missed'">
+                            <div class="alert alert-danger p-2 mt-2 mb-1 rounded d-flex align-items-center justify-content-between small" role="alert">
+
+                                <div>
+                                    <span t-if="record.missed_reason_id.raw_value" class="text-dark fw-bold"><field name="missed_reason_id"/></span>
+                                </div>
+                            </div>
+                        </t>
+
+                        <div class="small mt-1 text-muted" t-if="record.parent_order_id.raw_value">
+                            <i class="fa fa-reply" title="Retry Of"></i> Retry of: <field name="parent_order_id"/>
+                        </div>
+
+                        <div class="small mt-1 text-muted" t-if="record.scheduled_start.raw_value">
+                            <i class="fa fa-calendar" title="Date"></i> <field name="scheduled_start"/>
+                            <span t-if="record.schedule_status.raw_value == 'on_time'" class="ef_status_badge ef_status_badge--success ms-2">On Time</span>
+                            <span t-elif="record.schedule_status.raw_value == 'early'" class="ef_status_badge ef_status_badge--warning ms-2">Early</span>
+                            <span t-elif="record.schedule_status.raw_value == 'late'" class="ef_status_badge ef_status_badge--danger ms-2">Late</span>
+                        </div>
+                        
+                        <footer class="pt-0 mt-1">
+                            <div class="d-flex fs-6 text-muted">
+                                <span><field name="estimated_weight"/> kg</span>
+                                <field name="activity_ids" widget="kanban_activity" class="ms-2"/>
+                            </div>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- View: wm.collection.order - wm.collection.order.search (Search) -->
+    <record id="view_wm_collection_order_search" model="ir.ui.view">
+        <field name="name">wm.collection.order.search</field>
+        <field name="model">wm.collection.order</field>
+        <field name="arch" type="xml">
+            <search string="Collection Orders">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="driver_id"/>
+                <field name="vehicle_id"/>
+                <field name="route_id"/>
+                <filter string="On Time" name="filter_on_time" domain="[('schedule_status', '=', 'on_time')]"/>
+                <filter string="Early" name="filter_early" domain="[('schedule_status', '=', 'early')]"/>
+                <filter string="Late" name="filter_late" domain="[('schedule_status', '=', 'late')]"/>
+                <separator/>
+                <filter string="Unbilled" name="filter_unbilled" domain="[('is_billed', '=', False), ('state', 'in', ('completed', 'signed'))]"/>
+                <filter string="Billed" name="filter_billed" domain="[('is_billed', '=', True)]"/>
+                <group>
+                    <filter name="groupby_driver" context="{'group_by': 'driver_id'}" string="Driver"/>
+                    <filter name="groupby_vehicle" context="{'group_by': 'vehicle_id'}" string="Vehicle"/>
+                    <filter name="groupby_route" context="{'group_by': 'route_id'}" string="Route"/>
+                    <filter name="groupby_schedule_status" context="{'group_by': 'schedule_status'}" string="Schedule Status"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- View: wm.collection.order - wm.collection.order.graph (Graph) -->
+    <record id="view_wm_collection_order_graph" model="ir.ui.view">
+        <field name="name">wm.collection.order.graph</field>
+        <field name="model">wm.collection.order</field>
+        <field name="arch" type="xml">
+            <graph string="Collection Orders Analysis" sample="1">
+                <field name="state" type="row"/>
+                <field name="estimated_weight" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- View: wm.collection.order - wm.collection.order.pivot (Pivot) -->
+    <record id="view_wm_collection_order_pivot" model="ir.ui.view">
+        <field name="name">wm.collection.order.pivot</field>
+        <field name="model">wm.collection.order</field>
+        <field name="arch" type="xml">
+            <pivot string="Collection Orders Analysis" sample="1">
+                <field name="scheduled_start" type="row" interval="month"/>
+                <field name="state" type="col"/>
+                <field name="estimated_weight" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action: Collection Orders Analysis -->
+    <record id="action_wm_collection_order_report" model="ir.actions.act_window">
+        <field name="name">Collection Orders Analysis</field>
+        <field name="res_model">wm.collection.order</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+    </record>
+    <!-- Action: Collection Orders -->
+    <record id="action_wm_collection_order" model="ir.actions.act_window">
+        <field name="name">Collection Orders</field>
+        <field name="res_model">wm.collection.order</field>
+        <field name="view_mode">kanban,list,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard Form View -->
+    <record id="view_wm_consolidated_billing_wizard_form" model="ir.ui.view">
+        <field name="name">wm.consolidated.billing.wizard.form</field>
+        <field name="model">wm.consolidated.billing.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Monthly Invoice">
+                <sheet>
+                    <group string="Billing Filters">
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                    </group>
+                    <div class="text-center mb-3">
+                        <button name="action_fetch_orders"
+                                string="Fetch Eligible Orders"
+                                type="object"
+                                class="btn btn-secondary"
+                                icon="fa-refresh"/>
+                    </div>
+                    <group string="Eligible Collection Orders">
+                        <group>
+                            <field name="order_count" readonly="1" string="Orders Found"/>
+                        </group>
+                        <group>
+                            <field name="estimated_total_amount" readonly="1" widget="monetary"/>
+                        </group>
+                    </group>
+                    <field name="order_ids" nolabel="1">
+                        <list string="Collection Orders" optional="show">
+                            <field name="name"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="collection_point_id"/>
+                            <field name="scheduled_start"/>
+                            <field name="actual_end"/>
+                            <field name="confirmed_weight"/>
+                            <field name="state" widget="badge"
+                                   decoration-success="state in ('completed', 'signed')"/>
+                        </list>
+                    </field>
+                </sheet>
+                <footer>
+                    <button name="action_create_consolidated_invoice"
+                            string="Generate Monthly Invoice"
+                            type="object"
+                            class="btn-primary"
+                            confirm="This will create a single monthly invoice for all selected orders. Continue?"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action to open wizard -->
+    <record id="action_wm_consolidated_billing_wizard" model="ir.actions.act_window">
+        <field name="name">New Monthly Invoice</field>
+        <field name="res_model">wm.consolidated.billing.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Server Action for multi-select on Collection Orders list -->
+    <record id="action_server_create_consolidated_invoice" model="ir.actions.server">
+        <field name="name">Generate Monthly Invoice</field>
+        <field name="model_id" ref="wm_collection.model_wm_collection_order"/>
+        <field name="binding_model_id" ref="wm_collection.model_wm_collection_order"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+# Filter selected orders to only include completed/signed, un-consolidated, and unbilled ones
+eligible = records.filtered(lambda o: o.state in ('completed', 'signed') and not o.consolidated_invoice_id and not o.billing_run_line_id)
+if not eligible:
+    raise UserError(env._("No completed or signed orders without an existing monthly invoice found in your selection."))
+partners = eligible.mapped('partner_id')
+if len(partners) > 1:
+    raise UserError(env._("All selected orders must belong to the same customer for monthly billing."))
+action = {
+    'type': 'ir.actions.act_window',
+    'res_model': 'wm.consolidated.billing.wizard',
+    'view_mode': 'form',
+    'target': 'new',
+    'context': {
+        'default_partner_id': partners[0].id,
+        'default_order_ids': [(6, 0, eligible.ids)],
+    },
+}
+        </field>
+    </record>
+</odoo>

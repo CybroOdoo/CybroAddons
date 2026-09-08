@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.route - wm.route.list (List) -->
+    <record id="view_wm_route_list" model="ir.ui.view">
+        <field name="name">wm.route.list</field>
+        <field name="model">wm.route</field>
+        <field name="arch" type="xml">
+            <list string="Routes">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="zone_id" optional="show"/>
+                <field name="vehicle_id"/>
+                <field name="driver_id"/>
+                <field name="estimated_duration"/>
+                <field name="date"/>
+                <field name="is_inspected" widget="boolean_toggle" optional="show"/>
+                <field name="state" widget="badge" decoration-info="state == 'to_start'" decoration-warning="state == 'dispatched'" decoration-danger="state == 'running'" decoration-success="state == 'completed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.route - wm.route.form (Form) -->
+    <record id="view_wm_route_form" model="ir.ui.view">
+        <field name="name">wm.route.form</field>
+        <field name="model">wm.route</field>
+        <field name="arch" type="xml">
+            <form string="Route">
+                <field name="use_route_zones" invisible="1"/>
+                <header>
+                    <button name="action_inspect_vehicle" type="object" string="Inspect Vehicle" class="oe_highlight btn-primary" invisible="not vehicle_id or is_inspected or state != 'to_start'"/>
+                    <button name="action_dispatch_route" type="object" string="Dispatch Route" class="btn-primary" invisible="state != 'to_start' or not is_inspected"/>
+                    <button name="action_start_route" type="object" string="Start Route" class="btn-primary" invisible="state != 'dispatched'"/>
+                    <button name="action_complete_route" type="object" string="Complete Route" class="btn-primary" invisible="state != 'running'"/>
+                    <button name="action_optimize_route" string="Optimize Route" type="object" class="btn-secondary" icon="fa-calculator" invisible="state != 'to_start'"/>
+                    <button name="action_cancel_route" type="object" string="Cancel" class="btn-secondary" invisible="state not in ('running', 'dispatched')"/>
+                    <button name="action_change_driver_wizard" type="object" string="Change Driver" class="btn-secondary" invisible="state != 'to_start'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="to_start,dispatched,running,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_collection_orders" type="object" class="oe_stat_button" icon="fa-truck" invisible="collection_order_count == 0">
+                            <field name="collection_order_count" widget="statinfo" string="Orders"/>
+                        </button>
+                        <button name="action_view_route_map" type="object"
+                                class="oe_stat_button" icon="fa-map-marker"
+                                string="Route Map">
+                        </button>
+                        <button name="action_view_driver_history" type="object" class="oe_stat_button" icon="fa-history" invisible="driver_history_count == 0">
+                            <field name="driver_history_count" widget="statinfo" string="Driver History"/>
+                        </button>
+                        <button name="action_view_inspections" type="object" class="oe_stat_button" icon="fa-check-square-o" invisible="inspection_count == 0">
+                            <field name="inspection_count" widget="statinfo" string="Inspections"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Route Name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="zone_id" invisible="not use_route_zones" readonly="state in ('dispatched', 'running', 'completed')"/>
+                            <field name="valid_vehicle_ids" invisible="1"/>
+                            <field name="vehicle_id" readonly="state in ('dispatched', 'running', 'completed')"/>
+                            <field name="driver_id" readonly="1" force_save="1"/>
+                        </group>
+                        <group>
+                            <field name="estimated_duration" readonly="state == 'completed'"/>
+                            <field name="date" readonly="state in ('dispatched', 'running', 'completed')"/>
+                            <field name="is_inspected" widget="boolean_toggle" readonly="state != 'to_start'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Route Lines" name="route_lines">
+                            <field name="selected_point_ids" invisible="1"/>
+                            <field name="line_ids" readonly="state in ('dispatched', 'running', 'completed')">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="collection_point_id" domain="[('id', 'not in', parent.selected_point_ids)]"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Map" name="map_view">
+                            <div class="d-flex align-items-center gap-3 p-2 mb-2 bg-light border rounded small text-muted">
+                                <div><i class="fa fa-map-marker text-primary me-1" title="Route Stops"/> <strong>Numbered Pins:</strong> Route Stops</div>
+                                <div><i class="fa fa-road text-info me-1" title="Optimized Road Trajectory"/> <strong>Dashed Line:</strong> Optimized Road Trajectory</div>
+                            </div>
+                            <field name="route_map_data" widget="wm_route_map" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- View: wm.route - wm.route.search (Search) -->
+    <record id="view_wm_route_search" model="ir.ui.view">
+        <field name="name">wm.route.search</field>
+        <field name="model">wm.route</field>
+        <field name="arch" type="xml">
+            <search string="Search Routes">
+                <field name="name"/>
+                <field name="zone_id"/>
+                <field name="vehicle_id"/>
+                <field name="driver_id"/>
+                <separator/>
+                <filter string="Ready to Dispatch" name="ready_to_dispatch" domain="[('is_ready_to_dispatch', '=', True)]"/>
+                <filter string="Inspection Passed" name="is_inspected" domain="[('is_inspected', '=', True)]"/>
+                <filter string="Needs Inspection" name="needs_inspection" domain="[('is_inspected', '=', False)]"/>
+                <filter string="To Start" name="to_start" domain="[('state', '=', 'to_start')]"/>
+                <filter string="Dispatched" name="dispatched" domain="[('state', '=', 'dispatched')]"/>
+                <filter string="Running" name="running" domain="[('state', '=', 'running')]"/>
+                <separator/>
+                <filter string="Zone" name="group_by_zone" context="{'group_by': 'zone_id'}"/>
+                <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                <filter string="Date" name="group_by_date" context="{'group_by': 'date'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- View: wm.route - wm.route.graph (Graph) -->
+    <record id="view_wm_route_graph" model="ir.ui.view">
+        <field name="name">wm.route.graph</field>
+        <field name="model">wm.route</field>
+        <field name="arch" type="xml">
+            <graph string="Routes Analysis" sample="1">
+                <field name="vehicle_id" type="row"/>
+                <field name="estimated_duration" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- View: wm.route - wm.route.pivot (Pivot) -->
+    <record id="view_wm_route_pivot" model="ir.ui.view">
+        <field name="name">wm.route.pivot</field>
+        <field name="model">wm.route</field>
+        <field name="arch" type="xml">
+            <pivot string="Routes Analysis" sample="1">
+                <field name="date" type="row" interval="month"/>
+                <field name="vehicle_id" type="col"/>
+                <field name="estimated_duration" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action: Routes Analysis -->
+    <record id="action_wm_route_report" model="ir.actions.act_window">
+        <field name="name">Routes Analysis</field>
+        <field name="res_model">wm.route</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+    </record>
+
+    <!-- Action: Routes -->
+    <record id="action_wm_route" model="ir.actions.act_window">
+        <field name="name">Routes</field>
+        <field name="res_model">wm.route</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wm_route_search"/>
+    </record>
+</odoo>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template: Collection Order Summary Report (report_collection_order_summary_document) -->
+    <template id="report_collection_order_summary_document" name="Collection Order Summary Report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <t t-set="rd" t-value="report_data[wizard.id]"/>
+                <t t-call="web.external_layout">
+                    <div class="page mt-4">
+                        
+                        <!-- Header Section -->
+                        <div class="row border-bottom border-primary pb-3 mb-4">
+                            <div class="col-7">
+                                <h2 class="text-primary fw-bolder text-uppercase mb-1">Collection Order Summary</h2>
+                            </div>
+                            <div class="col-5 text-end" style="font-size: 13px;">
+                                <div class="mb-1">
+                                    <strong class="fw-bolder text-dark">Period:</strong> 
+                                    <span t-esc="wizard.date_from" t-options="{'widget': 'date'}"/> to <span t-esc="wizard.date_to" t-options="{'widget': 'date'}"/>
+                                </div>
+                                <div t-if="wizard.order_id" class="mb-1">
+                                    <strong class="fw-bolder text-dark">Order Filter:</strong> <span t-esc="wizard.order_id.name"/>
+                                </div>
+                                <div t-if="wizard.state" class="mb-1">
+                                    <strong class="fw-bolder text-dark">Status Filter:</strong> <span class="fw-bold text-dark" t-esc="dict(wizard._fields['state'].selection).get(wizard.state)"/>
+                                </div>
+                                <div t-if="wizard.route_id" class="mb-1">
+                                    <strong class="fw-bolder text-dark">Route:</strong> <span t-esc="wizard.route_id.display_name"/>
+                                </div>
+                                <div t-if="wizard.product_id" class="mb-1">
+                                    <strong class="fw-bolder text-dark">Material:</strong> <span t-esc="wizard.product_id.name"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- KPI Summary Cards -->
+                        <div class="row mb-5 text-center">
+                            <div class="col-4">
+                                <div class="card bg-light border-0 rounded p-3">
+                                    <h6 class="text-muted text-uppercase fw-bolder mb-2">Total Orders</h6>
+                                    <h3 class="mb-0 text-dark fw-bolder"><span t-esc="rd['total_orders']"/></h3>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="card bg-success-light border-success border-opacity-25 rounded p-3" style="background-color: #e6f4ea;">
+                                    <h6 class="text-success text-uppercase fw-bolder mb-2">Total Completed</h6>
+                                    <h3 class="mb-0 text-success fw-bolder"><span t-esc="rd['total_completed']"/></h3>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="card bg-danger-light border-danger border-opacity-25 rounded p-3" style="background-color: #fce8e6;">
+                                    <h6 class="text-danger text-uppercase fw-bolder mb-2">Total Missed</h6>
+                                    <h3 class="mb-0 text-danger fw-bolder"><span t-esc="rd['total_missed']"/></h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <h5 class="fw-bolder mb-3 text-dark">Order Details</h5>
+                        <table class="table table-sm table-striped table-borderless">
+                            <thead class="border-bottom border-dark" style="border-bottom: 2px solid #333 !important;">
+                                <tr>
+                                    <th class="text-start pb-2">Reference</th>
+                                    <th class="text-start pb-2">Date</th>
+                                    <th class="text-start pb-2">Customer</th>
+                                    <th class="text-start pb-2">Route</th>
+                                    <th class="text-start pb-2">Driver</th>
+                                    <th class="text-start pb-2">Materials</th>
+                                    <th class="text-center pb-2">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="not rd['records']">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4 text-muted fst-italic">
+                                            No collection orders found for the selected criteria.
+                                        </td>
+                                    </tr>
+                                </t>
+                                <tr t-foreach="rd['records']" t-as="line">
+                                    <td class="align-middle fw-bold"><span t-esc="line.name"/></td>
+                                    <td class="align-middle"><span t-esc="line.scheduled_start" t-options="{'widget': 'date'}"/></td>
+                                    <td class="align-middle text-truncate" style="max-width: 200px;"><span t-esc="line.partner_id.display_name"/></td>
+                                    <td class="align-middle text-truncate" style="max-width: 120px;"><span t-esc="line.route_id.display_name or '-'"/></td>
+                                    <td class="align-middle text-truncate" style="max-width: 120px;"><span t-esc="line.driver_id.name or '-'"/></td>
+                                    <td class="align-middle text-truncate" style="max-width: 150px;">
+                                        <span t-esc="', '.join(line.product_ids.mapped('name')) or '-'"/>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <t t-set="status_color" t-value="'text-secondary'"/>
+                                        <t t-if="line.state in ['completed', 'signed', 'invoiced']" t-set="status_color" t-value="'text-success'"/>
+                                        <t t-if="line.state == 'missed'" t-set="status_color" t-value="'text-danger'"/>
+                                        <t t-if="line.state in ['dispatched', 'in_progress']" t-set="status_color" t-value="'text-info'"/>
+                                        
+                                        <span t-attf-class="fw-bold {{ status_color }}" style="font-size: 11px;">
+                                            <span t-esc="dict(line._fields['state'].selection).get(line.state)"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

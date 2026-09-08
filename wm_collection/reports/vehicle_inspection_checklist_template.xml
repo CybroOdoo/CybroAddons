@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template: report_vehicle_inspection_checklist_document -->
+    <template id="report_vehicle_inspection_checklist_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="page-break-after: always;">
+                        <!-- HEADER -->
+                        <div style="text-align:center; margin-bottom:20px; padding:16px 20px; background:linear-gradient(135deg,#005b1f 0%,#008c3a 100%); border-radius:6px;">
+                            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#a8ffa8; margin-bottom:6px; font-weight:600;">Fleet Maintenance &amp; Safety</div>
+                            <h1 style="color:#ffffff; margin:0; font-size:20px; font-weight:bold; letter-spacing:0.5px;">VEHICLE INSPECTION CHECKLIST</h1>
+                        </div>
+
+                        <!-- OVERALL PASS/FAIL BANNER -->
+                        <t t-set="all_passed" t-value="all(l.is_passed for l in o.line_ids) if o.line_ids else True"/>
+                        <div t-if="all_passed" style="margin-bottom:20px; padding:12px 16px; background-color:#d4edda; border:1px solid #c3e6cb; border-radius:4px; color:#155724; font-weight:bold; text-align:center; font-size:16px;">
+                            ✔ OVERALL INSPECTION STATUS: PASSED
+                        </div>
+                        <div t-if="not all_passed" style="margin-bottom:20px; padding:12px 16px; background-color:#f8d7da; border:1px solid #f5c6cb; border-radius:4px; color:#721c24; font-weight:bold; text-align:center; font-size:16px;">
+                            ✖ OVERALL INSPECTION STATUS: ISSUES DETECTED / FAILED
+                        </div>
+
+                        <!-- DETAILS TABLE -->
+                        <h3 style="border-left:4px solid #005b1f; padding-left:10px; color:#005b1f; margin-bottom:10px; font-size:14px;">Inspection Details</h3>
+                        <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:12px;">
+                            <thead>
+                                <tr>
+                                    <th style="background-color:#005b1f; color:#ffffff; font-weight:bold; padding:8px 12px; border:1px solid #004411;">Checklist Ref</th>
+                                    <th style="background-color:#005b1f; color:#ffffff; font-weight:bold; padding:8px 12px; border:1px solid #004411;">Vehicle</th>
+                                    <th style="background-color:#005b1f; color:#ffffff; font-weight:bold; padding:8px 12px; border:1px solid #004411;">Inspector</th>
+                                    <th style="background-color:#005b1f; color:#ffffff; font-weight:bold; padding:8px 12px; border:1px solid #004411;">Date</th>
+                                    <th style="background-color:#005b1f; color:#ffffff; font-weight:bold; padding:8px 12px; border:1px solid #004411;">Checklist Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding:8px 12px; border:1px solid #dce6f5; font-weight:bold;"><span t-field="o.name"/></td>
+                                    <td style="padding:8px 12px; border:1px solid #dce6f5;"><span t-field="o.vehicle_id.name"/></td>
+                                    <td style="padding:8px 12px; border:1px solid #dce6f5;"><span t-field="o.inspector_id.name"/></td>
+                                    <td style="padding:8px 12px; border:1px solid #dce6f5;"><span t-field="o.date"/></td>
+                                    <td style="padding:8px 12px; border:1px solid #dce6f5;"><span t-field="o.checklist_type"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ITEMISED CHECKLIST TABLE -->
+                        <h3 style="border-left:4px solid #005b1f; padding-left:10px; color:#005b1f; margin-bottom:10px; font-size:14px;">Itemised Checklist Results</h3>
+                        <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:12px;">
+                            <thead>
+                                <tr>
+                                    <th style="background-color:#005b1f; color:#ffffff; padding:8px 12px; border:1px solid #004411; width:40%;">Item Name</th>
+                                    <th style="background-color:#005b1f; color:#ffffff; padding:8px 12px; border:1px solid #004411; width:20%; text-align:center;">Result</th>
+                                    <th style="background-color:#005b1f; color:#ffffff; padding:8px 12px; border:1px solid #004411; width:40%;">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.line_ids" t-as="line">
+                                    <tr>
+                                        <td style="padding:8px 12px; border:1px solid #dce6f5; font-weight:bold;"><span t-field="line.item_id.name"/></td>
+                                        <td style="padding:8px 12px; border:1px solid #dce6f5; text-align:center;">
+                                            <span t-if="line.is_passed" style="color:#28a745; font-weight:bold;">PASS</span>
+                                            <span t-if="not line.is_passed" style="color:#dc3545; font-weight:bold;">FAIL</span>
+                                        </td>
+                                        <td style="padding:8px 12px; border:1px solid #dce6f5;"><span t-field="line.notes"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

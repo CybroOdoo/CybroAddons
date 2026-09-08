@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Template: report_partner_contract_document -->
+        <template id="report_partner_contract_document">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="oe_structure"/>
+
+                            <!-- Title -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h2>
+                                        <span>Waste Collection &amp; Disposal Contract</span>
+                                    </h2>
+                                    <h4>
+                                        Reference: <span t-field="o.name"/>
+                                    </h4>
+                                </div>
+                            </div>
+
+                            <!-- Address/Client and Provider Details -->
+                            <div class="row mt-4 mb-4">
+                                <div class="col-6" name="client_info">
+                                    <strong>Client Information:</strong>
+                                    <div t-field="o.partner_id"
+                                         t-options='{"widget": "contact", "fields": ["address", "name", "phone", "email"], "no_marker": True}'/>
+                                </div>
+                                <div class="col-6" name="company_info">
+                                    <strong>Service Provider:</strong>
+                                    <div t-field="o.env.company.partner_id"
+                                         t-options='{"widget": "contact", "fields": ["address", "name", "phone", "email"], "no_marker": True}'/>
+                                </div>
+                            </div>
+
+                            <!-- Contract Information Grid -->
+                            <div class="row mt-4 mb-4" id="informations">
+                                <div t-if="o.from_date" class="col-auto col-3 mw-100 mb-2">
+                                    <strong>Start Date:</strong>
+                                    <p class="m-0" t-field="o.from_date"/>
+                                </div>
+                                <div t-if="o.to_date" class="col-auto col-3 mw-100 mb-2">
+                                    <strong>End Date:</strong>
+                                    <p class="m-0" t-field="o.to_date"/>
+                                </div>
+                                <div t-if="o.frequency" class="col-auto col-3 mw-100 mb-2">
+                                    <strong>Frequency:</strong>
+                                    <p class="m-0" t-field="o.frequency"/>
+                                </div>
+                                <div t-if="o.billing_basis" class="col-auto col-3 mw-100 mb-2">
+                                    <strong>Billing:</strong>
+                                    <p class="m-0" t-field="o.billing_basis"/>
+                                </div>
+                            </div>
+
+                            <!-- Pricing Details Grid -->
+                            <div class="row mb-4" id="pricing_informations" t-if="o.billing_basis in ('per_collection', 'hybrid')">
+                                <div class="col-auto col-3 mw-100 mb-2" t-if="o.fixed_price">
+                                    <strong>Fixed Price:</strong>
+                                    <p class="m-0" t-field="o.fixed_price"/>
+                                </div>
+                                <div class="col-auto col-3 mw-100 mb-2" t-if="o.billing_basis == 'per_collection'">
+                                    <strong>Max Weight:</strong>
+                                    <p class="m-0"><span t-field="o.max_weight"/> kg</p>
+                                </div>
+                                <div class="col-auto col-3 mw-100 mb-2" t-if="o.billing_basis == 'per_collection'">
+                                    <strong>Overweight Price:</strong>
+                                    <p class="m-0" t-field="o.overweight_price"/>
+                                </div>
+                                <div class="col-auto col-3 mw-100 mb-2" t-if="o.billing_basis == 'hybrid'">
+                                    <strong>Included Weight:</strong>
+                                    <p class="m-0"><span t-field="o.included_weight"/> kg</p>
+                                </div>
+                            </div>
+                            <!-- Services / Lines Table -->
+                            <div class="mt-4 mb-4">
+                                <h3>Contracted Services &amp; Waste Types</h3>
+                                <table class="table table-sm o_main_table mt-2">
+                                    <thead>
+                                        <tr class="table-light">
+                                            <th name="th_category" class="text-start">Waste Category</th>
+                                            <th name="th_products" class="text-start">Included Waste Materials</th>
+                                            <th name="th_price" class="text-end" t-if="o.billing_basis == 'category_rate'">Rate per kg</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="contract_tbody">
+                                        <t t-foreach="o.contract_line_ids" t-as="line">
+                                            <tr>
+                                                <td class="text-start fw-bold">
+                                                    <span t-field="line.category_id.name"/>
+                                                </td>
+                                                <td class="text-start">
+                                                    <span t-if="line.product_ids" t-esc="', '.join(line.product_ids.mapped('name'))"/>
+                                                    <span t-else="" class="text-muted fst-italic">All materials in category</span>
+                                                </td>
+                                                <td class="text-end" t-if="o.billing_basis == 'category_rate'">
+                                                    <span t-field="line.price"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- SLA Block -->
+                            <div class="mt-4" style="page-break-inside: avoid;">
+                                <h3>Service Level Agreement</h3>
+
+                                <t t-if="o.sla_snapshot_html">
+                                    <div class="border rounded p-3 bg-light">
+                                        <div t-out="o.sla_snapshot_html"/>
+                                    </div>
+                                </t>
+                                <t t-elif="o.sla_id">
+                                    <div class="border rounded p-3 bg-light">
+                                        <div class="text-muted mb-2 font-italic">Draft preview — this SLA will be frozen into the contract once confirmed.</div>
+                                        <div class="mb-2"><strong>SLA Name:</strong> <span t-field="o.sla_id.name"/></div>
+                                        <table class="table table-sm mt-2" t-if="o.sla_id.sla_line_ids">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-start">Type</th>
+                                                    <th class="text-start">Commitment</th>
+                                                    <th class="text-start">Target</th>
+                                                    <th class="text-start">Penalty</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr t-foreach="o.sla_id.sla_line_ids" t-as="line">
+                                                    <td class="text-start"><span t-field="line.sla_type"/></td>
+                                                    <td class="text-start"><span t-field="line.description"/></td>
+                                                    <td class="text-start">
+                                                        <t t-if="line.target_value"><span t-field="line.target_value"/> <span t-field="line.uom"/></t>
+                                                        <t t-else="">-</t>
+                                                    </td>
+                                                    <td class="text-start"><span t-field="line.penalty_type"/></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="border-top mt-3 pt-2" t-if="o.sla_id.terms_and_conditions">
+                                            <strong>Terms &amp; Conditions:</strong>
+                                            <div class="mt-1" t-out="o.sla_id.terms_and_conditions"/>
+                                        </div>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="text-muted">No SLA has been defined for this contract.</div>
+                                </t>
+                            </div>
+
+                            <!-- Signatures Section -->
+                            <div class="row mt-5" style="page-break-inside: avoid;">
+                                <div class="col-6 text-center">
+                                    <t t-set="sig_req" t-value="o.env['wm.signature.request'].sudo().search([('reference_doc', '=', 'wm.partner.contract,' + str(o.id))], limit=1) if 'wm.signature.request' in o.env else False"/>
+                                    <t t-set="sig_val" t-value="sig_req.item_value_ids.filtered(lambda v: v.signature_image)[:1]" t-if="sig_req"/>
+                                    <t t-if="sig_val and sig_val.signature_image">
+                                        <div style="height: 65px;">
+                                            <img t-att-src="image_data_uri(sig_val.signature_image)" style="max-height: 60px; max-width: 220px;"/>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div style="height: 65px;"/>
+                                    </t>
+                                    <div class="border-top mx-4 pt-2">
+                                        <strong>Client Signature</strong>
+                                        <div class="text-muted small mt-1" t-field="o.partner_id.name"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="oe_structure"/>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

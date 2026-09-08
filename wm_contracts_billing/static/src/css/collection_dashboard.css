@@ -1,0 +1,323 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Rich Date Range Filter — Collection Dashboard
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Outer pill ────────────────────────────────────────────────── */
+.wm-date-filter {
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+    background: #ffffff;
+    border: 1px solid #d8d3de;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    overflow: visible;          /* let dropdown overflow */
+    user-select: none;
+}
+
+/* ── Toggle button ─────────────────────────────────────────────── */
+.wm-date-filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a4453;
+    white-space: nowrap;
+    text-decoration: none !important;
+    border-radius: 8px 0 0 8px;
+    transition: background 0.15s;
+}
+
+.wm-date-filter-toggle:hover,
+.wm-date-filter-toggle:focus {
+    color: #10B981;
+    background: #f0fdf4;
+}
+
+.wm-date-filter-toggle .fa-calendar {
+    color: #059669;
+    font-size: 0.85rem;
+}
+
+/* Hide the Bootstrap caret — we have custom arrows */
+.wm-date-filter-toggle::after { display: none; }
+
+/* ── Prev / Next arrow buttons ─────────────────────────────────── */
+.wm-date-filter-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    border-left: 1px solid #ececef;
+    color: #6c6570;
+    font-size: 0.7rem;
+    text-decoration: none !important;
+    transition: background 0.15s, color 0.15s;
+    cursor: pointer;
+}
+
+.wm-date-filter-nav:last-of-type {
+    border-radius: 0 8px 8px 0;
+}
+
+.wm-date-filter-nav:hover {
+    background: #f0fdf4;
+    color: #10B981;
+}
+
+.wm-date-filter-nav.disabled {
+    color: #d4cfd8;
+    pointer-events: none;
+    cursor: default;
+}
+
+/* ── Dropdown menu ─────────────────────────────────────────────── */
+.wm-date-filter-menu {
+    min-width: 300px;
+    padding: 0.4rem 0;
+    border: 1px solid #ddd8e2;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10);
+    border-radius: 10px;
+    margin-top: 0.35rem !important;
+}
+
+/* ── Section separator ─────────────────────────────────────────── */
+.wm-df-sep {
+    margin: 0.3rem 0;
+    border-color: #ece9ef;
+}
+
+/* ── Simple clickable item (Today, Last 7 Days, etc.) ──────────── */
+.dropdown-item.wm-df-item {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    font-size: 0.84rem;
+    padding: 0.38rem 0.9rem;
+    color: #4a4453;
+    border-radius: 0;
+    transition: background 0.12s;
+}
+
+.dropdown-item.wm-df-item:hover {
+    background: #f0fdf4;
+    color: #10B981;
+}
+
+/* Active (selected) item */
+.dropdown-item.wm-df-item.active,
+.dropdown-item.wm-df-item:active {
+    background: #ecfdf5;
+    color: #10B981;
+    font-weight: 600;
+}
+
+/* Checkmark column — fixed width so labels stay aligned */
+.wm-df-check {
+    display: inline-block;
+    width: 1.3rem;
+    font-size: 0.78rem;
+    color: #10B981;
+    flex-shrink: 0;
+}
+
+/* ── Navigable period row (Month / Quarter / Year) ─────────────── */
+.wm-df-nav-row {
+    display: flex;
+    align-items: center;
+    padding: 0.32rem 0.9rem;
+    gap: 0.3rem;
+    font-size: 0.84rem;
+    color: #4a4453;
+    transition: background 0.12s;
+}
+
+.wm-df-nav-row:hover {
+    background: #f0fdf4;
+}
+
+.wm-df-nav-row-active {
+    background: #ecfdf5;
+    color: #10B981;
+    font-weight: 600;
+}
+
+/* Fixed-width left label so all ◀▶ arrows stay in the same column */
+.wm-df-nav-label {
+    flex: 0 0 5.5rem;
+    font-size: 0.84rem;
+}
+
+/* The period text link in the centre */
+.wm-df-nav-period {
+    flex: 1;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #4a4453;
+    text-decoration: none !important;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wm-df-nav-period:hover {
+    color: #10B981;
+    text-decoration: underline !important;
+}
+
+/* Arrow links inside nav rows */
+.wm-df-nav-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 4px;
+    color: #6c6570;
+    font-size: 0.68rem;
+    text-decoration: none !important;
+    flex-shrink: 0;
+    transition: background 0.12s, color 0.12s;
+}
+
+.wm-df-nav-arrow:hover {
+    background: #e6f9f0;
+    color: #10B981;
+}
+
+.wm-df-nav-arrow.disabled {
+    color: #ccc8d1;
+    pointer-events: none;
+    cursor: default;
+}
+
+/* ── Custom Range row ──────────────────────────────────────────── */
+.wm-df-custom-row {
+    display: flex;
+    flex-direction: column;
+    padding: 0.38rem 0.9rem 0.5rem;
+    gap: 0.35rem;
+    font-size: 0.84rem;
+    color: #4a4453;
+    transition: background 0.12s;
+}
+
+.wm-df-custom-row:hover {
+    background: #f0fdf4;
+}
+
+.wm-df-custom-row-active {
+    background: #ecfdf5;
+}
+
+.wm-df-custom-form {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-wrap: nowrap;
+}
+
+.wm-df-date-input {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.35rem;
+    border: 1px solid #d0cbd6;
+    border-radius: 5px;
+    color: #4a4453;
+    background: #fff;
+    outline: none;
+    height: 1.8rem;
+}
+
+.wm-df-date-input:focus {
+    border-color: #10B981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.wm-df-to {
+    font-size: 0.78rem;
+    color: #9b8fa3;
+    flex-shrink: 0;
+    padding: 0 0.1rem;
+}
+
+.wm-df-go-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    border: none;
+    border-radius: 5px;
+    background: #10B981;
+    color: #fff;
+    font-size: 0.72rem;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background 0.15s;
+    padding: 0;
+}
+
+.wm-df-go-btn:hover {
+    background: #059669;
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+    .wm-date-filter {
+        width: 100%;
+    }
+    .wm-date-filter-toggle {
+        flex-grow: 1;
+    }
+    .wm-date-filter-menu {
+        min-width: calc(100vw - 2rem);
+    }
+}
+
+/* ── Portal Status Timeline & Progress ────────────────────────── */
+.wm-status-timeline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    position: relative;
+}
+
+.wm-status-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.wm-status-step-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #E9ECEF;
+    color: #6C757D;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+}
+
+.wm-status-step.active .wm-status-step-icon {
+    background: #2EC4B6;
+    color: #FFFFFF;
+}
+
+.wm-status-step-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #495057;
+}
+

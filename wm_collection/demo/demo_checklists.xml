@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- CHECKLIST ITEMS -->
+    <record id="demo_item_tires" model="wm.checklist.item">
+        <field name="name">Tire Pressure &amp; Condition</field>
+        <field name="checklist_type">pre_trip</field>
+    </record>
+
+    <!-- Record: wm.checklist.item - Brake Systems -->
+    <record id="demo_item_brakes" model="wm.checklist.item">
+        <field name="name">Brake Systems</field>
+        <field name="checklist_type">pre_trip</field>
+    </record>
+
+    <!-- Record: wm.checklist.item - Fluid Levels (Oil, Coolant) -->
+    <record id="demo_item_fluid" model="wm.checklist.item">
+        <field name="name">Fluid Levels (Oil, Coolant)</field>
+        <field name="checklist_type">pre_trip</field>
+    </record>
+
+    <!-- Record: wm.checklist.item - All Lights & Indicators -->
+    <record id="demo_item_lights" model="wm.checklist.item">
+        <field name="name">All Lights &amp; Indicators</field>
+        <field name="checklist_type">pre_trip</field>
+    </record>
+
+    <!-- Record: wm.checklist.item - Compactor Hydraulics Checked -->
+    <record id="demo_item_compactor" model="wm.checklist.item">
+        <field name="name">Compactor Hydraulics Checked</field>
+        <field name="checklist_type">post_trip</field>
+    </record>
+
+    <!-- Record: wm.checklist.item - Cabin Cleaned & Secured -->
+    <record id="demo_item_cleaned" model="wm.checklist.item">
+        <field name="name">Cabin Cleaned &amp; Secured</field>
+        <field name="checklist_type">post_trip</field>
+    </record>
+
+    <!-- VEHICLES WITH CONTAINERS -->
+    <record id="demo_vehicle_garbage_1" model="fleet.vehicle">
+        <field name="model_id" search="[('name', '!=', False)]"/>
+        <field name="license_plate">TRK-1001</field>
+        <field name="wm_capacity_volume">20</field>
+        <field name="wm_container_id" ref="ct_skip_bin_4m3"/>
+    </record>
+
+    <!-- COMPLETED MAINTENANCE CHECKLIST -->
+    <record id="demo_checklist_1" model="wm.vehicle.maintenance.checklist">
+        <field name="name">CHK/2026/001</field>
+        <field name="vehicle_id" ref="demo_vehicle_garbage_1"/>
+        <field name="checklist_type">pre_trip</field>
+        <field name="date" eval="(DateTime.today() - relativedelta(days=1)).strftime('%Y-%m-%d')"/>
+        <field name="state">checked</field>
+        <field name="inspector_id" ref="base.user_demo"/>
+    </record>
+
+    <!-- Record: wm.checklist.line (demo_checklist_1_line_1) -->
+    <record id="demo_checklist_1_line_1" model="wm.checklist.line">
+        <field name="checklist_id" ref="demo_checklist_1"/>
+        <field name="item_id" ref="demo_item_tires"/>
+        <field name="is_passed" eval="True"/>
+        <field name="notes">All good, front left is 32 PSI.</field>
+    </record>
+
+    <!-- Record: wm.checklist.line (demo_checklist_1_line_2) -->
+    <record id="demo_checklist_1_line_2" model="wm.checklist.line">
+        <field name="checklist_id" ref="demo_checklist_1"/>
+        <field name="item_id" ref="demo_item_brakes"/>
+        <field name="is_passed" eval="True"/>
+    </record>
+
+    <!-- POST-TRIP MAINTENANCE CHECKLIST -->
+    <record id="demo_checklist_2" model="wm.vehicle.maintenance.checklist">
+        <field name="name">CHK/2026/002</field>
+        <field name="vehicle_id" ref="demo_vehicle_garbage_1"/>
+        <field name="checklist_type">post_trip</field>
+        <field name="date" eval="(DateTime.today() - relativedelta(days=1)).strftime('%Y-%m-%d')"/>
+        <field name="state">checked</field>
+        <field name="inspector_id" ref="base.user_admin"/>
+    </record>
+
+    <!-- Record: wm.checklist.line (demo_checklist_2_line_1) -->
+    <record id="demo_checklist_2_line_1" model="wm.checklist.line">
+        <field name="checklist_id" ref="demo_checklist_2"/>
+        <field name="item_id" ref="demo_item_compactor"/>
+        <field name="is_passed" eval="True"/>
+        <field name="notes">Hydraulic pressure normal at 210 bar.</field>
+    </record>
+
+    <!-- Record: wm.checklist.line (demo_checklist_2_line_2) -->
+    <record id="demo_checklist_2_line_2" model="wm.checklist.line">
+        <field name="checklist_id" ref="demo_checklist_2"/>
+        <field name="item_id" ref="demo_item_cleaned"/>
+        <field name="is_passed" eval="True"/>
+        <field name="notes">Cabin disinfected and lockbox secured.</field>
+    </record>
+
+    <!-- PRE-TRIP MAINTENANCE CHECKLIST (FLEET VEHICLE 4) -->
+    <record id="demo_checklist_3" model="wm.vehicle.maintenance.checklist">
+        <field name="name">CHK/2026/003</field>
+        <field name="vehicle_id" ref="fleet.vehicle_4"/>
+        <field name="checklist_type">pre_trip</field>
+        <field name="date" eval="DateTime.today().strftime('%Y-%m-%d')"/>
+        <field name="state">tocheck</field>
+        <field name="inspector_id" ref="base.user_admin"/>
+    </record>
+
+    <!-- Record: wm.checklist.line (demo_checklist_3_line_1) -->
+    <record id="demo_checklist_3_line_1" model="wm.checklist.line">
+        <field name="checklist_id" ref="demo_checklist_3"/>
+        <field name="item_id" ref="demo_item_fluid"/>
+        <field name="is_passed" eval="True"/>
+        <field name="notes">Engine oil level optimal.</field>
+    </record>
+
+    <!-- Record: wm.checklist.line (demo_checklist_3_line_2) -->
+    <record id="demo_checklist_3_line_2" model="wm.checklist.line">
+        <field name="checklist_id" ref="demo_checklist_3"/>
+        <field name="item_id" ref="demo_item_lights"/>
+        <field name="is_passed" eval="True"/>
+        <field name="notes">All beacon lamps and indicators fully functional.</field>
+    </record>
+
+</odoo>

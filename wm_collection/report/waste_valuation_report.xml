@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ── Report Action ─────────────────────────────────────────────────── -->
+    <record id="action_waste_valuation_report" model="ir.actions.report">
+        <field name="name">Waste Inventory Valuation</field>
+        <field name="model">waste.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wm_collection.report_waste_valuation</field>
+        <field name="report_file">wm_collection.report_waste_valuation</field>
+        <field name="print_report_name">'Waste-Valuation-Report'</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <!-- ── QWeb Template ─────────────────────────────────────────────────── -->
+    <template id="report_waste_valuation">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; font-size: 11px; line-height: 1.4;">
+                    <style>
+                        /* Strict Wkhtmltopdf Page Break Prevention */
+                        .wm-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 10px;
+                            page-break-inside: auto;
+                        }
+                        .wm-table thead {
+                            display: table-header-group;
+                        }
+                        .wm-table tbody {
+                            display: table-row-group;
+                        }
+                        .wm-table tr {
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                        }
+                        .wm-table td, .wm-table th {
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                        }
+                        .wm-table th {
+                            background-color: #0f172a;
+                            color: #ffffff;
+                            font-weight: 600;
+                            font-size: 10px;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                            padding: 8px 6px;
+                            border: 1px solid #0f172a;
+                        }
+                        .wm-table td {
+                            padding: 7px 6px;
+                            border-bottom: 1px solid #e2e8f0;
+                            vertical-align: middle;
+                        }
+                        .wm-table tr:nth-child(even) td {
+                            background-color: #f8fafc;
+                        }
+                        
+                        /* Status Badges */
+                        .wm-badge {
+                            display: inline-block;
+                            padding: 2px 6px;
+                            font-size: 9px;
+                            font-weight: 700;
+                            border-radius: 4px;
+                            text-transform: uppercase;
+                        }
+                        .wm-badge-draft { background: #e0f2fe; color: #0369a1; }
+                        .wm-badge-sorting { background: #fef3c7; color: #92400e; }
+                        .wm-badge-received { background: #dcfce7; color: #15803d; }
+                        .wm-badge-sorted { background: #dcfce7; color: #166534; }
+                        .wm-badge-recycled { background: #ccfbf1; color: #0f766e; }
+                        .wm-badge-disposed { background: #ffe4e6; color: #be123c; }
+                        .wm-badge-sold { background: #f1f5f9; color: #475569; }
+                        
+                        .wm-haz-tag {
+                            background: #ffe4e6;
+                            color: #e11d48;
+                            font-weight: 700;
+                            padding: 1px 4px;
+                            border-radius: 3px;
+                            font-size: 9px;
+                            margin-left: 4px;
+                        }
+
+                        .wm-main-title {
+                            font-size: 22px;
+                            font-weight: 700;
+                            color: #0f172a;
+                            letter-spacing: -0.5px;
+                            text-transform: uppercase;
+                        }
+                        .wm-subtitle {
+                            font-size: 11px;
+                            color: #64748b;
+                        }
+                        .wm-kpi-label {
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #64748b;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        }
+                        .wm-kpi-val {
+                            font-size: 16px;
+                            font-weight: 700;
+                            color: #0f172a;
+                            margin-top: 4px;
+                        }
+
+                        /* Totals */
+                        .wm-grand-total td {
+                            background-color: #0f172a !important;
+                            color: #ffffff !important;
+                            font-weight: 700 !important;
+                            font-size: 11px !important;
+                            padding: 9px 6px !important;
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                        }
+                        .text-right { text-align: right; }
+                        .text-center { text-align: center; }
+                    </style>
+
+                    <t t-set="total_qty" t-value="0.0"/>
+                    <t t-set="total_val" t-value="0.0"/>
+                    <t t-set="haz_count" t-value="0"/>
+                    <t t-set="currency_symbol" t-value="res_company.currency_id.symbol or '$'"/>
+
+                    <t t-foreach="docs" t-as="o">
+                        <t t-foreach="o.line_ids" t-as="line">
+                            <t t-set="line_val" t-value="line.quantity * line.product_id.standard_price"/>
+                            <t t-set="total_qty" t-value="total_qty + line.quantity"/>
+                            <t t-set="total_val" t-value="total_val + line_val"/>
+                            <t t-if="line.hazardous">
+                                <t t-set="haz_count" t-value="haz_count + 1"/>
+                            </t>
+                        </t>
+                    </t>
+
+                    <!-- Header Section (Pure Table Layout to Avoid WebKit Flexbox Break Bugs) -->
+                    <table style="width: 100%; border-bottom: 2px solid #0f172a; margin-bottom: 15px; padding-bottom: 8px;">
+                        <tr style="page-break-inside: avoid !important; break-inside: avoid !important;">
+                            <td style="border: none; padding: 0; text-align: left; vertical-align: bottom; background: none;">
+                                <div class="wm-main-title">Waste Inventory Valuation Report</div>
+                                <div class="wm-subtitle">Comprehensive Material Quantity &amp; Financial Valuation Summary</div>
+                            </td>
+                            <td style="border: none; padding: 0; text-align: right; vertical-align: bottom; background: none;" class="wm-subtitle">
+                                <strong>Date:</strong> <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d %b %Y %H:%M')"/><br/>
+                                <strong>Scope:</strong> <t t-esc="len(docs)"/> Waste Batches
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- KPI Summary Cards (Pure Table Layout) -->
+                    <table style="width: 100%; margin-bottom: 20px; border-collapse: separate; border-spacing: 6px 0;">
+                        <tr style="page-break-inside: avoid !important; break-inside: avoid !important;">
+                            <td style="width: 25%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; text-align: center; vertical-align: middle;">
+                                <div class="wm-kpi-label">Total Batches</div>
+                                <div class="wm-kpi-val"><t t-esc="len(docs)"/></div>
+                            </td>
+                            <td style="width: 25%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; text-align: center; vertical-align: middle;">
+                                <div class="wm-kpi-label">Total Material Quantity</div>
+                                <div class="wm-kpi-val"><t t-esc="'%.2f' % total_qty"/> kg</div>
+                            </td>
+                            <td style="width: 25%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; text-align: center; vertical-align: middle;">
+                                <div class="wm-kpi-label">Hazardous Items</div>
+                                <div class="wm-kpi-val" t-attf-style="color: #{'#e11d48' if haz_count > 0 else '#0f172a'};">
+                                    <t t-esc="haz_count"/>
+                                </div>
+                            </td>
+                            <td style="width: 25%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; text-align: center; vertical-align: middle;">
+                                <div class="wm-kpi-label">Total Valuation</div>
+                                <div class="wm-kpi-val" style="color: #0d9488;">
+                                    <t t-esc="currency_symbol"/> <t t-esc="'%.2f' % total_val"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Valuation Detail Table -->
+                    <table class="wm-table">
+                        <thead>
+                            <tr style="page-break-inside: avoid !important; break-inside: avoid !important;">
+                                <th style="width: 14%;">Batch No.</th>
+                                <th style="width: 16%;">Waste Category</th>
+                                <th style="width: 22%;">Waste Material Item</th>
+                                <th class="text-right" style="width: 10%;">Quantity</th>
+                                <th class="text-center" style="width: 6%;">UoM</th>
+                                <th class="text-right" style="width: 11%;">Std Price</th>
+                                <th class="text-right" style="width: 12%;">Total Value</th>
+                                <th style="width: 9%;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="o">
+                                <t t-foreach="o.line_ids" t-as="line">
+                                    <t t-set="line_val" t-value="line.quantity * line.product_id.standard_price"/>
+                                    <tr style="page-break-inside: avoid !important; break-inside: avoid !important;">
+                                        <td><strong><t t-esc="o.name"/></strong></td>
+                                        <td>
+                                            <t t-esc="line.category_id.name or o.category_id.name or '—'"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="line.product_id.name"/>
+                                            <t t-if="line.hazardous">
+                                                <span class="wm-haz-tag">HAZARDOUS</span>
+                                            </t>
+                                        </td>
+                                        <td class="text-right"><strong><t t-esc="'%.2f' % line.quantity"/></strong></td>
+                                        <td class="text-center"><t t-esc="line.uom_id.name or o.uom_id.name or 'kg'"/></td>
+                                        <td class="text-right"><t t-esc="currency_symbol"/> <t t-esc="'%.2f' % line.product_id.standard_price"/></td>
+                                        <td class="text-right" style="font-weight: 600; color: #0f172a;">
+                                            <t t-esc="currency_symbol"/> <t t-esc="'%.2f' % line_val"/>
+                                        </td>
+                                        <td>
+                                            <t t-set="badge_class" t-value="{'draft':'wm-badge-draft','inspection':'wm-badge-sorting','received':'wm-badge-received','sorting':'wm-badge-sorting','sorted':'wm-badge-sorted','recycled':'wm-badge-recycled','disposed':'wm-badge-disposed','sold':'wm-badge-sold'}.get(o.status,'wm-badge-draft')"/>
+                                            <span t-attf-class="wm-badge #{badge_class}">
+                                                <t t-esc="dict(o._fields['status'].selection).get(o.status, o.status)"/>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+
+                            <!-- Grand Total Footer -->
+                            <tr class="wm-grand-total" style="page-break-inside: avoid !important; break-inside: avoid !important;">
+                                <td colspan="3">TOTAL INVENTORY VALUATION</td>
+                                <td class="text-right"><t t-esc="'%.2f' % total_qty"/></td>
+                                <td colspan="2"/>
+                                <td class="text-right"><t t-esc="currency_symbol"/> <t t-esc="'%.2f' % total_val"/></td>
+                                <td/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

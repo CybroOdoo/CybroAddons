@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="web.NavBar" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_navbar_breadcrumbs')]" position="before">
+            <!-- App Brand Dashboard Trigger -->
+            <div t-if="!isSmallScreen and currentApp"
+                 class="o_menu_brand ef-custom-brand d-flex align-items-center me-3"
+                 t-on-click="toggleAppsDashboard"
+                 title="All Applications">
+                <div class="ef-brand-icon-wrap me-2">
+                    <img t-if="currentApp.webIconData" t-attf-src="{{currentApp.webIconData}}" class="ef-brand-app-icon" alt="App Icon"/>
+                    <i t-else="" class="oi oi-apps ef-brand-app-icon ef-brand-app-icon-fallback"/>
+                    <i class="oi oi-chevron-left ef-brand-back-icon"/>
+                </div>
+                <span t-esc="currentApp.name"/>
+            </div>
+
+            <!-- Navbar Sidebar Toggle Button (Mobile & Tablet Only) -->
+            <button class="ef-sidebar-toggle-btn btn border-0 shadow-none text-white p-2 me-2 d-lg-none"
+                    t-on-click="toggleMobileSidebar"
+                    title="Toggle Sidebar">
+                <i class="fa fa-bars fs-4 text-white"/>
+            </button>
+
+            <!-- ========================================================= -->
+            <!-- 1. DESKTOP SIDEBAR (Screens >= 1025px): Apps List Only -->
+            <!-- ========================================================= -->
+            <t t-if="!isSmallScreen">
+                <t t-portal="'body'">
+                    <div class="ef-custom-sidebar ef-desktop-sidebar d-none d-lg-flex flex-column" 
+                         t-att-class="{'collapsed': state.isSidebarCollapsed}">
+                        
+                        <!-- Desktop Sidebar Header -->
+                        <div class="ef-sidebar-header d-flex align-items-center justify-content-between w-100 px-3 py-3">
+                            <span class="ef-sidebar-header-title fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.8px; color: #6B7280;">
+                                SIDEBAR
+                            </span>
+                            <button class="ef-sidebar-inner-toggle btn btn-sm border-0 p-1 text-secondary shadow-none"
+                                    t-on-click="toggleSidebarCollapse"
+                                    title="Expand / Collapse Sidebar">
+                                <i t-att-class="state.isSidebarCollapsed ? 'fa fa-chevron-right' : 'fa fa-chevron-left'" style="font-size: 13px; color: #94A3B8;"/>
+                            </button>
+                        </div>
+
+                        <!-- Installed Applications List Only -->
+                        <div class="ef-sidebar-apps w-100 px-2 flex-grow-1 overflow-auto">
+                            <t t-foreach="menuService.getApps()" t-as="app" t-key="app.id">
+                                <div class="nav-item mb-1">
+                                    <a t-att-href="getMenuItemHref(app)" 
+                                       class="ef-app-link d-flex align-items-center w-100 text-decoration-none rounded-3 py-2 px-2"
+                                       t-att-class="{'active': menuService.getCurrentApp() === app}"
+                                       t-att-title="app.name"
+                                       t-on-click.prevent="() => this.onNavBarDropdownItemSelection(app)">
+                                        <div class="ef-sidebar-app-icon-wrap d-flex align-items-center justify-content-center me-2">
+                                            <img t-if="app.webIconData" t-attf-src="{{app.webIconData}}" class="ef-app-icon" />
+                                            <i t-else="" class="oi oi-apps fs-5 text-secondary"/>
+                                        </div>
+                                        <span class="ef-sidebar-app-name text-truncate fw-semibold" style="font-size: 13px;"><t t-esc="app.name"/></span>
+                                    </a>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </t>
+
+            <!-- ========================================================= -->
+            <!-- 2. MOBILE & IPAD 10 SIDEBAR DRAWER (< 1025px) -->
+            <!-- ========================================================= -->
+            <t t-if="isSmallScreen">
+                <!-- Mobile Slide-out Navigation Drawer Portaled to Body -->
+                <t t-portal="'body'">
+                    <div class="ef-custom-sidebar ef-mobile-sidebar d-flex flex-column d-lg-none" 
+                         t-att-class="{'mobile-open': state.isMobileSidebarOpen}">
+                        
+                        <!-- Mobile Drawer Header -->
+                        <div class="ef-sidebar-header d-flex align-items-center justify-content-between w-100 px-3 py-3">
+                            <span class="ef-sidebar-header-title fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.8px; color: #6B7280;">
+                                Navigation
+                            </span>
+                            <button class="btn-close shadow-none" 
+                                    t-on-click="toggleMobileSidebar" 
+                                    aria-label="Close"/>
+                        </div>
+
+                        <!-- Mobile Drawer Content: Active App Submenus + Installed Apps -->
+                        <div class="ef-sidebar-apps w-100 px-2 flex-grow-1 overflow-auto">
+                            
+                            <!-- Active App Submenus Section (Mobile / Tablet Only) -->
+                            <t t-if="currentApp &amp;&amp; currentAppSections &amp;&amp; currentAppSections.length">
+                                <div class="ef-sidebar-heading text-uppercase fw-bold px-2 mt-2 mb-1" style="color: #10B981; font-size: 10px; letter-spacing: 1px;">
+                                    <t t-esc="currentApp.name"/> Menu
+                                </div>
+                                <t t-call="wm_base.SidebarMenuTree">
+                                    <t t-set="menuItems" t-value="currentAppSections"/>
+                                </t>
+                                <hr class="my-2 border-secondary opacity-25"/>
+                            </t>
+
+                            <!-- Installed Applications Section -->
+                            <div class="ef-sidebar-heading text-uppercase fw-bold px-2 mt-1 mb-1" style="color: #6B7280; font-size: 10px; letter-spacing: 1px;">
+                                Applications
+                            </div>
+                            <t t-foreach="menuService.getApps()" t-as="app" t-key="app.id">
+                                <div class="nav-item mb-1">
+                                    <a t-att-href="getMenuItemHref(app)" 
+                                       class="ef-app-link d-flex align-items-center w-100 text-decoration-none rounded-3 py-2 px-2"
+                                       t-att-class="{'active': menuService.getCurrentApp() === app}"
+                                       t-att-title="app.name"
+                                       t-on-click.prevent="() => this.onSidebarAppClick(app)">
+                                        <div class="ef-sidebar-app-icon-wrap d-flex align-items-center justify-content-center me-2">
+                                            <img t-if="app.webIconData" t-attf-src="{{app.webIconData}}" class="ef-app-icon" />
+                                            <i t-else="" class="oi oi-apps fs-5 text-secondary"/>
+                                        </div>
+                                        <span class="ef-sidebar-app-name text-truncate fw-semibold" style="font-size: 13px;"><t t-esc="app.name"/></span>
+                                    </a>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Backdrop Overlay -->
+                    <div t-if="state.isMobileSidebarOpen" 
+                         class="ef-sidebar-mobile-backdrop position-fixed top-0 start-0 w-100 h-100 d-lg-none"
+                         t-on-click="toggleMobileSidebar"/>
+                </t>
+            </t>
+
+            <!-- Full-Screen All Apps Dashboard Overlay -->
+            <t t-portal="'body'">
+                <div t-if="state.isAppsDashboardOpen" 
+                     class="ef-apps-dashboard position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center overflow-auto p-4 p-md-5">
+                    
+
+                    <!-- Search Filter -->
+                    <div class="ef-apps-search-container mb-3 w-100">
+                        <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden ef-search-group">
+                            <span class="input-group-text bg-transparent border-0 pe-1 text-muted">
+                                <i class="oi oi-search fs-5 text-muted"/>
+                            </span>
+                            <input type="text" 
+                                   class="form-control border-0 shadow-none fs-6 ps-2" 
+                                   placeholder="Search applications..." 
+                                   t-model="state.appsSearchQuery"/>
+                        </div>
+                    </div>
+
+                    <!-- App Cards Grid -->
+                    <div class="ef-apps-grid d-grid gap-3 gap-md-4 w-100 mt-1 mb-auto">
+                        <t t-foreach="filteredApps" t-as="app" t-key="app.id">
+                            <a t-att-href="getMenuItemHref(app)" 
+                               class="ef-app-card d-flex flex-column align-items-center justify-content-center p-3 text-decoration-none rounded-4 text-center"
+                               t-on-click.prevent="() => this.onDashboardAppClick(app)">
+                                <div class="ef-app-card-icon-wrap d-flex align-items-center justify-content-center rounded-4 mb-2">
+                                    <img t-if="app.webIconData" t-attf-src="{{app.webIconData}}" class="ef-app-card-icon" />
+                                    <i t-else="" class="oi oi-apps fs-2 text-white"/>
+                                </div>
+                                <span class="ef-app-card-title fw-semibold text-truncate w-100 px-1 text-white"><t t-esc="app.name"/></span>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </t>
+
+    <!-- Recursive Submenu Tree Template -->
+    <t t-name="wm_base.SidebarMenuTree">
+        <t t-foreach="menuItems" t-as="menuItem" t-key="menuItem.id">
+            <t t-if="!menuItem.childrenTree || !menuItem.childrenTree.length">
+                <div class="nav-item mb-1">
+                    <a t-att-href="getMenuItemHref(menuItem)"
+                       class="ef-app-link ef-submenu-link d-flex align-items-center w-100 text-decoration-none rounded-3 py-1 px-2"
+                       t-att-title="menuItem.name"
+                       t-on-click.prevent="() => this.onSidebarMenuClick(menuItem)">
+                        <i class="fa fa-angle-right me-2" style="font-size: 11px !important; color: #10B981;"/>
+                        <span class="ef-sidebar-app-name text-truncate fw-medium" style="font-size: 12.5px;"><t t-esc="menuItem.name"/></span>
+                    </a>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="ef-sidebar-group mb-1 ps-1">
+                    <div class="ef-sidebar-group-title text-uppercase fw-bold px-2 py-1" style="font-size: 10.5px; letter-spacing: 0.5px; color: #6B7280;">
+                        <t t-esc="menuItem.name"/>
+                    </div>
+                    <t t-call="wm_base.SidebarMenuTree">
+                        <t t-set="menuItems" t-value="menuItem.childrenTree"/>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </t>
+</templates>

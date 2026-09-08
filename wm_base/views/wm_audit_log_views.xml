@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Audit Log Views -->
+    <record id="view_wm_audit_log_list" model="ir.ui.view">
+        <field name="name">wm.audit.log.list</field>
+        <field name="model">wm.audit.log</field>
+        <field name="arch" type="xml">
+            <list string="Audit Logs" create="false" edit="false" delete="false">
+                <field name="log_date"/>
+                <field name="model_id"/>
+                <field name="record_name"/>
+                <field name="field_name"/>
+                <field name="old_value"/>
+                <field name="new_value"/>
+                <field name="user_id"/>
+                <field name="action"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.audit.log - wm.audit.log.search (Search) -->
+    <record id="view_wm_audit_log_search" model="ir.ui.view">
+        <field name="name">wm.audit.log.search</field>
+        <field name="model">wm.audit.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Audit Logs">
+                <field name="model_id"/>
+                <field name="record_name"/>
+                <field name="field_name"/>
+                <field name="user_id"/>
+                <filter string="Create Action" name="create_action" domain="[('action', '=', 'create')]"/>
+                <filter string="Write Action" name="write_action" domain="[('action', '=', 'write')]"/>
+                <separator/>
+                <filter string="Log Date" name="filter_log_date" date="log_date"/>
+                <group>
+                    <filter string="Model" name="group_by_model" domain="[]" context="{'group_by':'model_id'}"/>
+                    <filter string="User" name="group_by_user" domain="[]" context="{'group_by':'user_id'}"/>
+                    <filter string="Date" name="group_by_date" domain="[]" context="{'group_by':'log_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Audit Logs -->
+    <record id="action_wm_audit_log" model="ir.actions.act_window">
+        <field name="name">Audit Logs</field>
+        <field name="res_model">wm.audit.log</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_group_by_model': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No audit logs found!
+            </p>
+        </field>
+    </record>
+
+    <!-- Status Transition Log Views -->
+    <record id="view_wm_status_transition_log_list" model="ir.ui.view">
+        <field name="name">wm.status.transition.log.list</field>
+        <field name="model">wm.status.transition.log</field>
+        <field name="arch" type="xml">
+            <list string="Status Transition Logs" create="false" edit="false" delete="false">
+                <field name="transition_date"/>
+                <field name="model_id"/>
+                <field name="record_name"/>
+                <field name="old_state"/>
+                <field name="new_state"/>
+                <field name="reason"/>
+                <field name="user_id"/>
+            </list>
+        </field>
+    </record>
+    
+    <!-- View: wm.status.transition.log - wm.status.transition.log.search (Search) -->
+    <record id="view_wm_status_transition_log_search" model="ir.ui.view">
+        <field name="name">wm.status.transition.log.search</field>
+        <field name="model">wm.status.transition.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Status Transitions">
+                <field name="model_id"/>
+                <field name="record_name"/>
+                <field name="user_id"/>
+                <separator/>
+                <filter string="Transition Date" name="filter_transition_date" date="transition_date"/>
+                <group>
+                    <filter string="Model" name="group_by_model" domain="[]" context="{'group_by':'model_id'}"/>
+                    <filter string="User" name="group_by_user" domain="[]" context="{'group_by':'user_id'}"/>
+                    <filter string="Date" name="group_by_date" domain="[]" context="{'group_by':'transition_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Status Transitions -->
+    <record id="action_wm_status_transition_log" model="ir.actions.act_window">
+        <field name="name">Status Transitions</field>
+        <field name="res_model">wm.status.transition.log</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_group_by_model': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No status transitions found!
+            </p>
+        </field>
+    </record>
+
+    <!-- Menus -->
+    <menuitem id="menu_wm_audit_trail" name="Audit Trail" parent="wm_base.menu_wm_root" sequence="80" groups="wm_base.group_wm_audit_trail"/>
+    <!-- Menu: Audit Logs -->
+    <menuitem id="menu_wm_audit_logs" name="Audit Logs" parent="menu_wm_audit_trail" action="action_wm_audit_log" sequence="10" groups="wm_base.group_wm_compliance_officer,wm_base.group_wm_admin"/>
+    <!-- Menu: Status Transitions -->
+    <menuitem id="menu_wm_status_transitions" name="Status Transitions" parent="menu_wm_audit_trail" action="action_wm_status_transition_log" sequence="20" groups="wm_base.group_wm_compliance_officer,wm_base.group_wm_admin"/>
+</odoo>

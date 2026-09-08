@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- LIST VIEW -->
+    <record id="view_wm_batch_inspection_list" model="ir.ui.view">
+        <field name="name">wm.batch.inspection.list</field>
+        <field name="model">wm.batch.inspection</field>
+        <field name="arch" type="xml">
+            <list string="Waste Batch Inspections" create="0">
+                <field name="name"/>
+                <field name="batch_id"/>
+                <field name="inspection_date"/>
+                <field name="inspector_id"/>
+                <field name="quality_grade"/>
+                <field name="signature_status" widget="badge" decoration-success="signature_status == 'presence_present'" decoration-warning="signature_status == 'presence_absent'"/>
+                <field name="state" widget="badge" 
+                       decoration-info="state == 'draft'" 
+                       decoration-warning="state == 'in_progress'" 
+                       decoration-success="state == 'passed'" 
+                       decoration-danger="state == 'failed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- FORM VIEW -->
+    <record id="view_wm_batch_inspection_form" model="ir.ui.view">
+        <field name="name">wm.batch.inspection.form</field>
+        <field name="model">wm.batch.inspection</field>
+        <field name="arch" type="xml">
+            <form string="Waste Batch Inspection" create="0">
+                <header>
+                    <button name="action_pass_inspection" string="Pass Inspection" type="object" class="btn-success" invisible="state != 'in_progress'"/>
+                    <button name="action_fail_inspection" string="Fail Inspection" type="object" class="btn-danger" invisible="state != 'in_progress'"/>
+                    <button name="action_sign_now" string="Sign Now" type="object" class="btn-primary" invisible="state not in ('passed', 'failed') or is_signed"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,passed"/>
+                </header>
+                <sheet>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="oe_title">
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <div class="o_presence_status_pill_wrapper">
+                            <span class="fw-bold text-center badge rounded-pill text-bg-success px-3 py-2 text-nowrap" title="Signed" invisible="not is_signed">
+                                <span role="img" class="me-1 fa fa-circle"/>
+                                Signed
+                            </span>
+                            <span class="fw-bold text-center badge rounded-pill text-bg-warning px-3 py-2 text-nowrap" title="Not Signed" invisible="is_signed">
+                                <span role="img" class="me-1 fa fa-circle"/>
+                                Not Signed
+                            </span>
+                        </div>
+
+                    </div>
+                    <field name="is_signed" invisible="1"/>
+                    <field name="use_quality_grading" invisible="1"/>
+                    <field name="use_hazardous_waste" invisible="1"/>
+                    <group>
+                        <group string="General">
+                            <field name="batch_id" readonly="state != 'draft'"/>
+                            <field name="inspector_id" readonly="state != 'draft'"/>
+                            <field name="inspection_date" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Quality" invisible="not use_quality_grading and not use_hazardous_waste">
+                            <field name="quality_grade" readonly="state in ('passed', 'failed')" invisible="not use_quality_grading"/>
+                            <field name="hazard_verified" readonly="state in ('passed', 'failed')" invisible="not use_hazardous_waste"/>
+                        </group>
+                    </group>
+                    <group string="Inspection Measurements" invisible="not use_quality_grading">
+                        <group>
+                            <field name="contamination_percentage" readonly="state in ('passed', 'failed')"/>
+                            <field name="moisture_percentage" readonly="state in ('passed', 'failed')"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Classification">
+                            <field name="batch_line_ids" readonly="state in ('passed', 'failed')">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="product_id" readonly="1" string="Product/Material"/>
+                                    <field name="category_id" readonly="1"/>
+                                    <field name="quantity" readonly="1"/>
+                                    <field name="uom_id" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes">
+                            <field name="notes" placeholder="Additional observations or remarks from the inspection..." readonly="state in ('passed', 'failed')"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter>
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </chatter>
+            </form>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW -->
+    <record id="view_wm_batch_inspection_search" model="ir.ui.view">
+        <field name="name">wm.batch.inspection.search</field>
+        <field name="model">wm.batch.inspection</field>
+        <field name="arch" type="xml">
+            <search string="Search Inspections">
+                <field name="name"/>
+                <field name="batch_id"/>
+                <field name="inspector_id"/>
+                <separator/>
+                <filter string="Passed" name="passed" domain="[('state', '=', 'passed')]"/>
+                <filter string="Failed" name="failed" domain="[('state', '=', 'failed')]"/>
+                <filter string="In Progress" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
+                <group>
+                    <filter string="Status" name="group_by_state" context="{'group_by':'state'}"/>
+                    <filter string="Inspector" name="group_by_inspector" context="{'group_by':'inspector_id'}"/>
+                    <filter string="Quality Grade" name="group_by_grade" context="{'group_by':'quality_grade'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- WINDOW ACTION -->
+    <record id="action_wm_batch_inspection" model="ir.actions.act_window">
+        <field name="name">Batch Inspections</field>
+        <field name="res_model">wm.batch.inspection</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No inspections found. Create one directly from a Waste Batch!
+            </p>
+        </field>
+    </record>
+</odoo>

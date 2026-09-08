@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: crm.lead - crm.lead.form.wm.inherit (Xpath) -->
+    <record id="view_crm_lead_form_wm_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.form.wm.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- 1. Smart button: shows contract count; hidden when no contracts exist -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_wm_contracts"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        invisible="wm_contract_count == 0">
+                    <field name="wm_contract_count" widget="statinfo" string="Contracts"/>
+                </button>
+            </xpath>
+
+            <!-- 2. Hide native blank 'New Quotation' button on Won opportunities to avoid duplicate buttons -->
+            <xpath expr="//button[@name='action_sale_quotations_new']" position="attributes">
+                <attribute name="invisible">type == 'lead' or (probability == 0 and not active) or won_status == 'won'</attribute>
+            </xpath>
+
+            <!-- 3. Create Quotation button in header — only on Won opportunities without a contract or quotation -->
+            <xpath expr="//header" position="inside">
+                <field name="sale_order_count" invisible="1"/>
+                <field name="won_status" invisible="1"/>
+                <button name="action_create_quotation"
+                        string="Create Quotation"
+                        type="object"
+                        class="btn-primary"
+                        invisible="won_status != 'won' or wm_contract_count != 0 or sale_order_count &gt; 0"/>
+            </xpath>
+
+            <!-- 3. Waste Services tab in the existing notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Waste Services" name="wm_waste_services">
+                    <group>
+                        <group string="Service Details">
+                            <field name="wm_service_type"/>
+                            <field name="wm_frequency"/>
+                            <field name="wm_no_of_sites"/>
+                            <field name="wm_estimated_weight_kg"/>
+                            <field name="wm_has_hazardous" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Requirements">
+                            <field name="wm_special_requirements"
+                                   nolabel="1"
+                                   placeholder="Site access notes, regulatory requirements, special handling…"/>
+                        </group>
+                    </group>
+                    <separator string="Quoted Waste Categories &amp; Rates"/>
+                    <field name="lead_line_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="category_id"/>
+                            <field name="product_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="estimated_weight_kg"/>
+                            <field name="price_unit"/>
+                            <field name="subtotal" sum="Total Expected Monthly Revenue"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

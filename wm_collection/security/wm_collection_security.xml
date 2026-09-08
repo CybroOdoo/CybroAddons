@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Global fallback: company-scope for any role without a specific rule above.
+             This does NOT restrict Driver/Dispatcher/Ops Manager/Admin/System —
+             their existing group-specific rules already grant them broader access.
+             This closes the gap for Finance, Compliance Officer, Recycler, and
+             Inventory Operator, who previously had no matching rule at all. -->
+        <record id="rule_wm_collection_order_company_fallback" model="ir.rule">
+            <field name="name">Collection Order: Company Scope (Fallback)</field>
+            <field name="model_id" ref="model_wm_collection_order"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Driver / Field Collector Rule: View and update collection orders assigned to driver, route, vehicle, or created by driver (while unassigned) -->
+        <record id="rule_wm_collection_order_driver" model="ir.rule">
+            <field name="name">Collection Order: Driver Access</field>
+            <field name="model_id" ref="model_wm_collection_order"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_driver'))]"/>
+            <field name="domain_force">['|', '|', '|', ('driver_id', '=', user.partner_id.id), ('route_id.driver_id', '=', user.partner_id.id), ('vehicle_id.driver_id', '=', user.partner_id.id), '&amp;', ('create_uid', '=', user.id), ('driver_id', 'in', [False, user.partner_id.id])]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Dispatcher & Operations Manager Rule: Full access to all collection orders -->
+        <record id="rule_wm_collection_order_all" model="ir.rule">
+            <field name="name">Collection Order: All Access for Dispatcher / Manager / System Admin</field>
+            <field name="model_id" ref="model_wm_collection_order"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_dispatcher')), (4, ref('wm_base.group_wm_ops_manager')), (4, ref('wm_base.group_wm_admin')), (4, ref('base.group_system'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Global fallback rule for Routes -->
+        <record id="rule_wm_route_company_fallback" model="ir.rule">
+            <field name="name">Route: Company Scope (Fallback)</field>
+            <field name="model_id" ref="model_wm_route"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Driver Rule for Route Lines -->
+        <record id="rule_wm_route_driver" model="ir.rule">
+            <field name="name">Route: Driver Access</field>
+            <field name="model_id" ref="model_wm_route"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_driver'))]"/>
+            <field name="domain_force">['|', '|', ('driver_id', '=', user.partner_id.id), ('vehicle_id.driver_id', '=', user.partner_id.id), ('create_uid', '=', user.id)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Dispatcher / Manager Rule for Routes -->
+        <record id="rule_wm_route_all" model="ir.rule">
+            <field name="name">Route: All Access for Dispatcher / Manager / System Admin</field>
+            <field name="model_id" ref="model_wm_route"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_dispatcher')), (4, ref('wm_base.group_wm_ops_manager')), (4, ref('wm_base.group_wm_admin')), (4, ref('base.group_system'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.batch.aging.report - wm.batch.aging.report.pivot (Pivot) -->
+    <record id="view_wm_batch_aging_report_pivot" model="ir.ui.view">
+        <field name="name">wm.batch.aging.report.pivot</field>
+        <field name="model">wm.batch.aging.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Batch Inventory Aging" sample="1">
+                <field name="category_id" type="row"/>
+                <field name="hazardous" type="col"/>
+                <field name="age_days" type="measure"/>
+                <field name="remaining_qty" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- View: wm.batch.aging.report - wm.batch.aging.report.graph (Graph) -->
+    <record id="view_wm_batch_aging_report_graph" model="ir.ui.view">
+        <field name="name">wm.batch.aging.report.graph</field>
+        <field name="model">wm.batch.aging.report</field>
+        <field name="arch" type="xml">
+            <graph string="Batch Inventory Aging" type="bar" sample="1">
+                <field name="category_id"/>
+                <field name="age_days" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- View: wm.batch.aging.report - wm.batch.aging.report.list (List) -->
+    <record id="view_wm_batch_aging_report_list" model="ir.ui.view">
+        <field name="name">wm.batch.aging.report.list</field>
+        <field name="model">wm.batch.aging.report</field>
+        <field name="arch" type="xml">
+            <list string="Batch Inventory Aging" decoration-danger="hazardous == True">
+                <field name="batch_id"/>
+                <field name="product_id"/>
+                <field name="category_id"/>
+                <field name="hazardous" widget="boolean_toggle"/>
+                <field name="inspection_state" widget="badge"/>
+                <field name="create_date"/>
+                <field name="age_days"/>
+                <field name="remaining_qty"/>
+                <field name="warehouse_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.batch.aging.report - wm.batch.aging.report.search (Search) -->
+    <record id="view_wm_batch_aging_report_search" model="ir.ui.view">
+        <field name="name">wm.batch.aging.report.search</field>
+        <field name="model">wm.batch.aging.report</field>
+        <field name="arch" type="xml">
+            <search string="Batch Inventory Aging">
+                <field name="batch_id"/>
+                <field name="category_id"/>
+                <filter string="Hazardous" name="filter_hazardous" domain="[('hazardous','=',True)]"/>
+                <filter string="Pending Inspection" name="filter_pending" domain="[('inspection_state','=','pending')]"/>
+                <group>
+                    <filter string="Category" name="group_category" context="{'group_by':'category_id'}"/>
+                    <filter string="Warehouse" name="group_warehouse" context="{'group_by':'warehouse_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Batch Inventory Aging -->
+    <record id="action_wm_batch_aging_report" model="ir.actions.act_window">
+        <field name="name">Batch Inventory Aging</field>
+        <field name="res_model">wm.batch.aging.report</field>
+        <field name="view_mode">graph,list,pivot</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="menu_wm_batch_aging_report"
+        name="Batch Inventory Aging"
+        parent="wm_base.menu_wm_reporting"
+        action="action_wm_batch_aging_report"
+        sequence="52"/>
+</odoo>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.recycling.efficiency.report - wm.recycling.efficiency.report.pivot (Pivot) -->
+    <record id="view_wm_recycling_efficiency_report_pivot" model="ir.ui.view">
+        <field name="name">wm.recycling.efficiency.report.pivot</field>
+        <field name="model">wm.recycling.efficiency.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Recycling Efficiency" sample="1">
+                <field name="source_product_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="input_qty" type="measure"/>
+                <field name="target_qty" type="measure"/>
+                <field name="actual_qty" type="measure"/>
+                <field name="co2_avoided_tons" type="measure"/>
+                <field name="efficiency_pct" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- View: wm.recycling.efficiency.report - wm.recycling.efficiency.report.graph (Graph) -->
+    <record id="view_wm_recycling_efficiency_report_graph" model="ir.ui.view">
+        <field name="name">wm.recycling.efficiency.report.graph</field>
+        <field name="model">wm.recycling.efficiency.report</field>
+        <field name="arch" type="xml">
+            <graph string="Recycling Efficiency &amp; Carbon Abatement" type="bar" sample="1">
+                <field name="category_id"/>
+                <field name="co2_avoided_tons" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- View: wm.recycling.efficiency.report - wm.recycling.efficiency.report.list (List) -->
+    <record id="view_wm_recycling_efficiency_report_list" model="ir.ui.view">
+        <field name="name">wm.recycling.efficiency.report.list</field>
+        <field name="model">wm.recycling.efficiency.report</field>
+        <field name="arch" type="xml">
+            <list string="Recycling Efficiency">
+                <field name="date"/>
+                <field name="source_product_id"/>
+                <field name="recovered_product_id"/>
+                <field name="category_id"/>
+                <field name="facility_location_id"/>
+                <field name="input_qty" sum="Total Input"/>
+                <field name="target_qty" sum="Total Target"/>
+                <field name="actual_qty" sum="Total Actual"/>
+                <field name="co2_avoided_tons" sum="Total CO2 Abated (tCO2e)"/>
+                <field name="efficiency_pct" widget="percentage" avg="Avg Efficiency"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.recycling.efficiency.report - wm.recycling.efficiency.report.search (Search) -->
+    <record id="view_wm_recycling_efficiency_report_search" model="ir.ui.view">
+        <field name="name">wm.recycling.efficiency.report.search</field>
+        <field name="model">wm.recycling.efficiency.report</field>
+        <field name="arch" type="xml">
+            <search string="Recycling Efficiency">
+                <field name="source_product_id"/>
+                <field name="recovered_product_id"/>
+                <field name="category_id"/>
+                <field name="facility_location_id"/>
+                <group>
+                    <filter string="Waste Material (Input)" name="group_source_product" context="{'group_by':'source_product_id'}"/>
+                    <filter string="Recovered Product" name="group_recovered_product" context="{'group_by':'recovered_product_id'}"/>
+                    <filter string="Waste Category" name="group_category" context="{'group_by':'category_id'}"/>
+                    <filter string="Facility Location" name="group_facility" context="{'group_by':'facility_location_id'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by':'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Recycling Efficiency -->
+    <record id="action_wm_recycling_efficiency_report" model="ir.actions.act_window">
+        <field name="name">Recycling Efficiency</field>
+        <field name="res_model">wm.recycling.efficiency.report</field>
+        <field name="view_mode">graph,list,pivot</field>
+        <field name="context">{'search_default_group_source_product': 1}</field>
+    </record>
+
+    <!-- Menu: Recycling Efficiency -->
+    <menuitem id="menu_wm_recycling_efficiency_report" 
+              name="Recycling Efficiency" 
+              parent="wm_base.menu_wm_reporting" 
+              action="action_wm_recycling_efficiency_report" 
+              sequence="30"/>
+</odoo>

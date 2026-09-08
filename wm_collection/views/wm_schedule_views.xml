@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.schedule - wm.schedule.list (List) -->
+    <record id="view_wm_schedule_list" model="ir.ui.view">
+        <field name="name">wm.schedule.list</field>
+        <field name="model">wm.schedule</field>
+        <field name="arch" type="xml">
+            <list string="Schedules">
+                <field name="name"/>
+                <field name="route_id"/>
+                <field name="recurrence"/>
+                <field name="next_run_date"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.schedule - wm.schedule.form (Form) -->
+    <record id="view_wm_schedule_form" model="ir.ui.view">
+        <field name="name">wm.schedule.form</field>
+        <field name="model">wm.schedule</field>
+        <field name="arch" type="xml">
+            <form string="Schedule">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active == True"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Schedule Name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="route_id" domain="[('state', '!=', 'completed')]"/>
+                            <field name="recurrence"/>
+                        </group>
+                        <group>
+                            <field name="next_run_date"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- View: wm.schedule - wm.schedule.search (Search) -->
+    <record id="view_wm_schedule_search" model="ir.ui.view">
+        <field name="name">wm.schedule.search</field>
+        <field name="model">wm.schedule</field>
+        <field name="arch" type="xml">
+            <search string="Search Schedules">
+                <field name="name"/>
+                <field name="route_id"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Route" name="group_route_id" context="{'group_by':'route_id'}"/>
+                    <filter string="Recurrence" name="group_recurrence" context="{'group_by':'recurrence'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Schedules -->
+    <record id="action_wm_schedule" model="ir.actions.act_window">
+        <field name="name">Schedules</field>
+        <field name="res_model">wm.schedule</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wm_schedule_search"/>
+    </record>
+</odoo>

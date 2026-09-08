@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit Waste Batch Form View to display Collection Order reference -->
+    <record id="view_waste_batch_form_inherit_wm_collection" model="ir.ui.view">
+        <field name="name">waste.batch.form.inherit.wm_collection</field>
+        <field name="model">waste.batch</field>
+        <field name="inherit_id" ref="wm_collection.view_waste_batch_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='received_date']" position="after">
+                <field name="route_id" invisible="not route_id" readonly="1"/>
+                <field name="collection_order_id" invisible="not collection_order_id" readonly="1"/>
+                <field name="collection_order_ids" widget="many2many_tags" invisible="not collection_order_ids" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Inherit Waste Batch List View to display Collection Order column -->
+    <record id="view_waste_batch_list_inherit_wm_collection" model="ir.ui.view">
+        <field name="name">waste.batch.list.inherit.wm_collection</field>
+        <field name="model">waste.batch</field>
+        <field name="inherit_id" ref="wm_collection.view_waste_batch_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='received_date']" position="after">
+                <field name="collection_order_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Inherit Waste Batch Search View to search and group by Collection Order -->
+    <record id="view_waste_batch_search_inherit_wm_collection" model="ir.ui.view">
+        <field name="name">waste.batch.search.inherit.wm_collection</field>
+        <field name="model">waste.batch</field>
+        <field name="inherit_id" ref="wm_collection.view_waste_batch_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="collection_order_id"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter string="Collection Order" name="group_by_collection_order" context="{'group_by': 'collection_order_id'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

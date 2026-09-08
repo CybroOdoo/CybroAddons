@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.customer.profitability.report - wm.customer.profitability.report.pivot (Pivot) -->
+    <record id="view_wm_customer_profitability_report_pivot" model="ir.ui.view">
+        <field name="name">wm.customer.profitability.report.pivot</field>
+        <field name="model">wm.customer.profitability.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Profitability &amp; Overage" sample="1">
+                <field name="partner_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="total_orders" type="measure"/>
+                <field name="total_weight_kg" type="measure"/>
+                <field name="overage_weight_kg" type="measure"/>
+                <field name="revenue" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- View: wm.customer.profitability.report - wm.customer.profitability.report.graph (Graph) -->
+    <record id="view_wm_customer_profitability_report_graph" model="ir.ui.view">
+        <field name="name">wm.customer.profitability.report.graph</field>
+        <field name="model">wm.customer.profitability.report</field>
+        <field name="arch" type="xml">
+            <graph string="Profitability &amp; Overage" type="bar" sample="1">
+                <field name="partner_id"/>
+                <field name="revenue" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- View: wm.customer.profitability.report - wm.customer.profitability.report.list (List) -->
+    <record id="view_wm_customer_profitability_report_list" model="ir.ui.view">
+        <field name="name">wm.customer.profitability.report.list</field>
+        <field name="model">wm.customer.profitability.report</field>
+        <field name="arch" type="xml">
+            <list string="Profitability &amp; Overage">
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="contract_id"/>
+                <field name="billing_basis"/>
+                <field name="total_orders"/>
+                <field name="total_weight_kg"/>
+                <field name="overage_weight_kg"/>
+                <field name="revenue"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.customer.profitability.report - wm.customer.profitability.report.search (Search) -->
+    <record id="view_wm_customer_profitability_report_search" model="ir.ui.view">
+        <field name="name">wm.customer.profitability.report.search</field>
+        <field name="model">wm.customer.profitability.report</field>
+        <field name="arch" type="xml">
+            <search string="Profitability &amp; Overage">
+                <field name="partner_id"/>
+                <field name="contract_id"/>
+                <filter string="Per Collection" name="per_collection" domain="[('billing_basis', '=', 'per_collection')]"/>
+                <filter string="Per Material" name="material" domain="[('billing_basis', '=', 'material')]"/>
+                <filter string="Hybrid" name="hybrid" domain="[('billing_basis', '=', 'hybrid')]"/>
+                <filter string="Has Overage" name="has_overage" domain="[('overage_weight_kg', '&gt;', 0)]"/>
+                <group>
+                    <filter string="Customer" name="group_partner" context="{'group_by':'partner_id'}"/>
+                    <filter string="Contract" name="group_contract" context="{'group_by':'contract_id'}"/>
+                    <filter string="Billing Basis" name="group_billing" context="{'group_by':'billing_basis'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by':'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Profitability & Overage -->
+    <record id="action_wm_customer_profitability_report" model="ir.actions.act_window">
+        <field name="name">Profitability &amp; Overage</field>
+        <field name="res_model">wm.customer.profitability.report</field>
+        <field name="view_mode">graph,list,pivot</field>
+        <field name="context">{'search_default_group_partner': 1}</field>
+    </record>
+
+    <!-- Menu: Profitability & Overage -->
+    <menuitem id="menu_wm_customer_profitability_report" 
+              name="Profitability &amp; Overage" 
+              parent="wm_base.menu_wm_reporting" 
+              action="action_wm_customer_profitability_report" 
+              sequence="40"
+              groups="wm_contracts_billing.group_wm_contract_manager,wm_base.group_wm_finance,wm_base.group_wm_admin"/>
+</odoo>

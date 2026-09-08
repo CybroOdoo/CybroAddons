@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Report Action -->
+    <record id="action_report_batch_inspection" model="ir.actions.report">
+        <field name="name">Inspection Report</field>
+        <field name="model">wm.batch.inspection</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wm_collection.report_batch_inspection</field>
+        <field name="report_file">wm_collection.report_batch_inspection</field>
+        <field name="print_report_name">'Inspection-Report-%s' % object.name</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="model_wm_batch_inspection"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- QWeb Template -->
+    <template id="report_batch_inspection">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <style>
+                            .inspection-header {
+                                border-bottom: 3px solid #005a70;
+                                padding-bottom: 12px;
+                                margin-bottom: 24px;
+                            }
+                            .inspection-title {
+                                color: #005a70;
+                                font-size: 28px;
+                                font-weight: bold;
+                            }
+                            .inspection-stamp-container {
+                                float: right;
+                                text-align: center;
+                                margin-top: 30px;
+                                margin-right: 20px;
+                            }
+                            .stamp {
+                                font-size: 26px;
+                                font-weight: 800;
+                                text-transform: uppercase;
+                                border: 4px solid;
+                                padding: 10px 24px;
+                                display: inline-block;
+                                border-radius: 8px;
+                                transform: rotate(-12deg);
+                                font-family: 'Impact', 'Arial Black', sans-serif;
+                                letter-spacing: 2px;
+                                box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+                            }
+                            .stamp-passed {
+                                color: #2e7d32;
+                                border-color: #2e7d32;
+                                background-color: rgba(46, 125, 50, 0.05);
+                            }
+                            .stamp-failed {
+                                color: #c62828;
+                                border-color: #c62828;
+                                background-color: rgba(198, 40, 40, 0.05);
+                            }
+                            .stamp-draft {
+                                color: #f57c00;
+                                border-color: #f57c00;
+                                background-color: rgba(245, 124, 0, 0.05);
+                            }
+                            .stamp-in-progress {
+                                color: #0277bd;
+                                border-color: #0277bd;
+                                background-color: rgba(2, 119, 189, 0.05);
+                            }
+                            .details-table td {
+                                padding: 6px 12px;
+                                border: none !important;
+                            }
+                            .details-table th {
+                                padding: 6px 12px;
+                                border: none !important;
+                                font-weight: bold;
+                                color: #555;
+                                width: 40%;
+                            }
+                            .section-title {
+                                font-size: 16px;
+                                font-weight: bold;
+                                color: #005a70;
+                                border-bottom: 1px solid #ddd;
+                                padding-bottom: 6px;
+                                margin-top: 25px;
+                                margin-bottom: 12px;
+                            }
+                        </style>
+
+                        <div>
+                            <!-- Title & Ref -->
+                            <div class="inspection-header">
+                                <div class="inspection-title">Waste Inspection Report</div>
+                                <div style="font-size: 14px; color: #666;">Reference: <t t-esc="o.name"/></div>
+                            </div>
+                        </div>
+
+                        <!-- General Info -->
+                        <div class="row">
+                            <div class="col-6">
+                                <table class="table table-sm details-table">
+                                    <tr>
+                                        <th>Inspector:</th>
+                                        <td><t t-esc="o.inspector_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date:</th>
+                                        <td><span t-field="o.inspection_date" t-options='{"widget": "datetime"}'/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Waste Batch:</th>
+                                        <td><t t-esc="o.batch_id.name"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-sm details-table">
+                                    <t t-if="o.use_quality_grading">
+                                        <tr>
+                                            <th>Quality Grade:</th>
+                                            <td><span t-field="o.quality_grade"/></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Contamination:</th>
+                                            <td><t t-esc="'%.1f' % o.contamination_percentage"/> %</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Moisture:</th>
+                                            <td><t t-esc="'%.1f' % o.moisture_percentage"/> %</td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="o.use_hazardous_waste">
+                                        <tr>
+                                            <th>Hazard Verified:</th>
+                                            <td>
+                                                <t t-if="o.hazard_verified">Yes</t>
+                                                <t t-else="">No</t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Materials Table -->
+                        <div class="section-title">Batch Material Details</div>
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr style="background-color: #005a70; color: white;">
+                                    <th>Product / Material</th>
+                                    <th>Category</th>
+                                    <th class="text-end">Quantity</th>
+                                    <th>Unit of Measure</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.batch_line_ids" t-as="line">
+                                    <tr>
+                                        <td><t t-esc="line.product_id.name"/></td>
+                                        <td><t t-esc="line.category_id.name"/></td>
+                                        <td class="text-end"><t t-esc="line.quantity"/></td>
+                                        <td><t t-esc="line.uom_id.name"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <!-- Notes -->
+                        <t t-if="o.notes">
+                            <div class="section-title">Inspection Notes</div>
+                            <div style="background-color: #f9f9f9; padding: 12px; border-left: 4px solid #005a70; font-style: italic; white-space: pre-line;">
+                                <t t-esc="o.notes"/>
+                            </div>
+                        </t>
+
+                        <!-- Stamp -->
+                        <div class="clearfix">
+                            <div class="inspection-stamp-container">
+                                <t t-if="o.state == 'passed'">
+                                    <div class="stamp stamp-passed">✓ PASSED</div>
+                                </t>
+                                <t t-elif="o.state == 'failed'">
+                                    <div class="stamp stamp-failed">✗ FAILED</div>
+                                </t>
+                                <t t-elif="o.state == 'in_progress'">
+                                    <div class="stamp stamp-in-progress">IN PROGRESS</div>
+                                </t>
+                                <t t-else="">
+                                    <div class="stamp stamp-draft">DRAFT</div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

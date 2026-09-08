@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: survey.user_input - survey.user.input.list.wm (List) -->
+    <record id="view_wm_survey_user_input_list" model="ir.ui.view">
+        <field name="name">survey.user.input.list.wm</field>
+        <field name="model">survey.user_input</field>
+        <field name="arch" type="xml">
+            <list string="Maintenance Checklists" create="1" edit="1">
+                <field name="create_date"/>
+                <field name="survey_id"/>
+                <field name="checklist_type"/>
+                <field name="vehicle_id"/>
+                <field name="partner_id" string="Driver"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-warning="state == 'in_progress'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: survey.user_input - survey.user.input.form.wm (Form) -->
+    <record id="view_wm_survey_user_input_form" model="ir.ui.view">
+        <field name="name">survey.user.input.form.wm</field>
+        <field name="model">survey.user_input</field>
+        <field name="arch" type="xml">
+            <form string="Maintenance Checklist" create="1" edit="1">
+                <header>
+                    <button name="action_start_survey" string="Fill out Checklist" type="object" class="oe_highlight" invisible="state == 'done'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="survey_id" required="1" readonly="0"/>
+                            <field name="checklist_type" required="1"/>
+                            <field name="vehicle_id" required="1"/>
+                        </group>
+                        <group>
+                            <field name="partner_id" string="Driver"/>
+                            <field name="email"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Answers" name="page_answers">
+                            <field name="user_input_line_ids" mode="list" readonly="1" no_label="1">
+                                <list>
+                                    <field name="question_id"/>
+                                    <field name="display_name" string="Answer"/>
+                                    <field name="answer_score" sum="Score"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Template: survey.survey_fill_form_done -->
+    <template id="survey_fill_form_done_inherited" inherit_id="survey.survey_fill_form_done">
+        <xpath expr="//div[hasclass('d-flex', 'gap-3', 'mt-3')]" position="inside">
+            <t t-if="answer and answer.route_id">
+                <p>
+                    <a role="button" class="btn btn-primary btn-lg"
+                        t-att-href="'/web#id=%s&amp;model=wm.route&amp;view_type=form' % answer.route_id.id">
+                        Return to Route
+                    </a>
+                </p>
+            </t>
+        </xpath>
+    </template>
+</odoo>

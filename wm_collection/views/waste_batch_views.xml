@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- LIST VIEW                                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_waste_batch_list" model="ir.ui.view">
+        <field name="name">waste.batch.list</field>
+        <field name="model">waste.batch</field>
+        <field name="arch" type="xml">
+            <list string="Waste Batches" decoration-danger="hazardous == True"
+                  decoration-muted="status == 'sold'" >
+                <field name="name"/>
+                <field name="category_id" optional="show"/>
+                <field name="batch_type" widget="badge" optional="show"/>
+                <field name="sorting_status" widget="badge" optional="show"/>
+                <field name="hazardous" widget="boolean" optional="show"
+                       string="⚠ Haz"/>
+                <field name="material_ids" widget="many2many_tags" string="Materials"/>
+                <field name="draft_quantity" sum="Total Qty" string="Draft Qty"/>
+                <field name="intake_weight" optional="hide"/>
+                <field name="weight_variance" optional="hide"/>
+                <field name="uom_id"/>
+                <field name="net_weight" optional="show" sum="Total Net Wt (kg)"/>
+                <field name="warehouse_id"/>
+                <field name="location_id"/>
+                <field name="received_date"/>
+                <field name="days_in_current_status" string="Age (days)" optional="show"/>
+                <field name="status" widget="badge"
+                       decoration-info="status == 'draft'"
+                       decoration-warning="status in ('inspection','sorting')"
+                       decoration-success="status in ('received','sorted','recycled','sold')"
+                       decoration-danger="status == 'disposed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- KANBAN VIEW                                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_waste_batch_kanban" model="ir.ui.view">
+        <field name="name">waste.batch.kanban</field>
+        <field name="model">waste.batch</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="status" class="o_kanban_small_column"
+                    group_create="false" create="0">
+                <field name="name"/>
+                <field name="hazardous"/>
+                <field name="material_ids"/>
+                <field name="draft_quantity"/>
+                <field name="uom_id"/>
+                <field name="received_date"/>
+                <field name="status"/>
+                <field name="is_received"/>
+                <field name="days_in_current_status"/>
+                <field name="warehouse_id"/>
+                <field name="line_ids"/>
+                <templates>
+                    <t t-name="card">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click ef-kanban-card--#{record.status.raw_value == 'recycled' or record.status.raw_value == 'arrived' ? 'success' : record.status.raw_value == 'disposed' or record.hazardous.raw_value ? 'danger' : record.status.raw_value == 'draft' ? 'warning' : 'info'}">
+                            <div class="o_kanban_record_top mb-0">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="name"/>
+                                    </strong>
+                                    <span t-if="record.hazardous.raw_value"
+                                          class="ef_status_badge ef_status_badge--danger ms-1">⚠ HAZ
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div>
+                                    <i class="fa fa-cubes me-1 text-muted" title="Materials"/>
+                                    <field name="material_ids" widget="many2many_tags"/>
+                                </div>
+                                <div class="mt-1">
+                                    <strong>
+                                        <field name="draft_quantity"/>
+                                    </strong>
+                                    <field name="uom_id"/>
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    <i class="fa fa-calendar me-1" title="Received Date"/>
+                                    <field name="received_date"/>
+                                    &amp;nbsp;·&amp;nbsp;
+                                    <field name="days_in_current_status"/>
+                                    days
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left text-muted small">
+                                    <field name="warehouse_id"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- FORM VIEW                                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_waste_batch_form" model="ir.ui.view">
+        <field name="name">waste.batch.form</field>
+        <field name="model">waste.batch</field>
+        <field name="arch" type="xml">
+            <form string="Waste Batch">
+                <header>
+                    <button name="action_start_inspection"
+                            string="Start Inspection"
+                            type="object"
+                            class="btn-primary"
+                            groups="wm_base.group_wm_inventory_operator,wm_base.group_wm_ops_manager"
+                            invisible="status != 'draft' or not use_batch_inspection"/>
+                    <button name="action_move_to_stock"
+                            string="Receive Batch"
+                            type="object"
+                            class="btn-primary"
+                            groups="wm_base.group_wm_inventory_operator,wm_base.group_wm_ops_manager"
+                            invisible="is_received or (use_batch_inspection and inspection_state != 'passed')"/>
+                    <button name="action_sort_batch"
+                            string="Sort Batch"
+                            type="object"
+                            class="btn-secondary"
+                            groups="wm_base.group_wm_inventory_operator,wm_base.group_wm_ops_manager"
+                            invisible="is_material_batch or not is_received or status in ('recycled','sold','sorted','disposed') or sorting_status == 'sorted'"/>
+                    <button name="action_sort_by_category"
+                            string="Sort by Category"
+                            type="object"
+                            class="btn-secondary"
+                            groups="wm_base.group_wm_inventory_operator,wm_base.group_wm_ops_manager"
+                            invisible="is_material_batch or wm_sort_based_on != 'category_and_material' or not is_received or status in ('recycled','sold','sorted','disposed')"/>
+                    <button name="action_sort_by_material"
+                            string="Sort by Material"
+                            type="object"
+                            class="btn-secondary"
+                            groups="wm_base.group_wm_inventory_operator,wm_base.group_wm_ops_manager"
+                            invisible="is_material_batch or wm_sort_based_on != 'category_and_material' or not is_received or status in ('recycled','sold','sorted','disposed')"/>
+                    <button name="action_dispose_batch"
+                            string="Dispose Batch"
+                            type="object"
+                            class="btn-secondary"
+                            groups="wm_base.group_wm_inventory_operator,wm_base.group_wm_ops_manager"
+                            invisible="status in ('recycled','sold','disposed') or is_fully_sorted"/>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="draft,arrived,inspection,received,sorting"/>
+
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Sorted" bg_color="bg-success" invisible="status != 'sorted'"/>
+                    <widget name="web_ribbon" title="Disposed" bg_color="bg-danger" invisible="status != 'disposed'"/>
+                    <field name="id" invisible="1"/>
+                    <field name="is_received" invisible="1"/>
+                    <field name="is_fully_sorted" invisible="1"/>
+                    <field name="use_batch_inspection" invisible="1"/>
+                    <field name="inspection_state" invisible="1"/>
+                    <field name="use_hazardous_waste" invisible="1"/>
+                    <field name="use_batch_labels" invisible="1"/>
+                    <field name="use_batch_approval" invisible="1"/>
+                    <field name="quantity" invisible="1"/>
+                    <field name="uom_id" invisible="1"/>
+                    <field name="is_category_batch" invisible="1"/>
+                    <field name="is_material_batch" invisible="1"/>
+                    <field name="has_multiple_materials" invisible="1"/>
+                    <field name="wm_sort_based_on" invisible="1"/>
+                    <field name="parent_batch_id" invisible="1"/>
+
+                    <!-- Smart Buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_inspections"
+                                icon="fa-check-square-o"
+                                invisible="not use_batch_inspection">
+                            <field name="inspection_count" widget="statinfo"
+                                   string="Inspections"/>
+                        </button>
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_pickings"
+                                icon="fa-truck" invisible="picking_count == 0">
+                            <field name="picking_count" widget="statinfo"
+                                   string="Transfers"/>
+                        </button>
+
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_sorted_batches"
+                                icon="fa-random" invisible="sorted_batch_count == 0">
+                            <field name="sorted_batch_count" widget="statinfo"
+                                   string="Sorted Into"/>
+                        </button>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <div class="badge bg-danger me-1" invisible="not hazardous or not use_hazardous_waste">
+                            ⚠ Contains Hazardous Material
+                        </div>
+                        <div class="badge bg-info me-1" invisible="not parent_batch_id">
+                            Sorted from
+                            <field name="parent_batch_id" readonly="1"
+                                   options="{'no_open': False}"/>
+                        </div>
+                    </div>
+
+                    <!-- Header Fields -->
+                    <group>
+                        <group string="Batch &amp; Stream Info">
+                            <field name="category_id" readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"/>
+                            <field name="batch_type" widget="badge"/>
+                            <field name="sorting_status" widget="badge"/>
+                            <field name="received_date" readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"/>
+                            <field name="days_in_current_status" string="Age (days)"/>
+                        </group>
+                        <group string="Location &amp; Stock Details">
+                            <field name="warehouse_id" readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"/>
+                            <field name="location_id" readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"/>
+                            <field name="lot_id" readonly="1"
+                                   options="{'no_open': False}"/>
+                        </group>
+                    </group>
+
+                    <!-- Notebook -->
+                    <notebook>
+                        <!-- TAB 1: Waste Composition Lines -->
+                        <page string="Waste Composition" name="waste_lines">
+                            <field name="line_ids"
+                                   readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"
+                                   context="{'default_uom_id': uom_id, 'default_category_id': category_id}">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id"
+                                           domain="[('is_waste_material', '=', True)] + ([('wm_waste_category_id', '=', parent.category_id)] if parent.category_id else [])"
+                                           context="{'default_is_waste_material': True, 'default_wm_waste_category_id': parent.category_id}"
+                                           options="{'no_create': False}"/>
+                                    <field name="category_id" readonly="1"
+                                           options="{'no_open': True}"/>
+                                    <field name="hazardous" readonly="1"
+                                           widget="boolean" column_invisible="parent.use_hazardous_waste == False"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="net_weight"
+                                           string="Net Wt (kg)"/>
+                                    <field name="sorted_qty" readonly="1" optional="show"/>
+                                    <field name="remaining_qty" readonly="1" optional="show"/>
+                                    <field name="notes"
+                                           optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- TAB 2: Intake &amp; Weight -->
+                        <page string="Intake &amp; Weight" name="intake_weight">
+                            <group>
+                                <group string="Intake Measurements">
+                                    <field name="intake_weight" readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"/>
+                                    <field name="intake_date" readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"/>
+                                    <field name="draft_quantity" string="Batch Draft Quantity" readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"/>
+                                    <field name="weight_variance" readonly="1"/>
+                                </group>
+                                <group string="Intake Notes">
+                                    <field name="intake_notes" placeholder="Notes captured during batch intake / weighbridge..." readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- TAB 3: Container &amp; Weight -->
+                        <page string="Container &amp; Weight" name="container_weight">
+                            <group>
+                                <group>
+                                    <field name="container_type_id"
+                                           readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"
+                                           options="{'no_create': True}"
+                                           domain="[('is_hazardous_suitable', '=', True)] if hazardous and use_hazardous_waste else []"/>
+                                    <field name="container_count" readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"/>
+                                </group>
+                                <group>
+                                    <field name="gross_weight" readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"/>
+                                    <field name="tare_weight" readonly="status in ('recycled', 'sold', 'disposed', 'cancel')"/>
+                                    <field name="net_weight" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SEARCH VIEW                                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_waste_batch_search" model="ir.ui.view">
+        <field name="name">waste.batch.search</field>
+        <field name="model">waste.batch</field>
+        <field name="arch" type="xml">
+            <search string="Search Waste Batches">
+                <field name="name"/>
+                <field name="category_id"/>
+                <field name="line_ids" string="Material"
+                       filter_domain="[('line_ids.product_id.name', 'ilike', self)]"/>
+                <field name="line_ids" string="Category"
+                       filter_domain="[('line_ids.category_id.name', 'ilike', self)]"/>
+                <field name="material_ids" string="Product/Material"/>
+                <field name="warehouse_id"/>
+                <field name="location_id"/>
+                <separator/>
+                <filter string="Collection Batches" name="batch_collection"
+                        domain="[('batch_type', '=', 'collection')]"/>
+                <filter string="Sorted Material Batches" name="batch_sorted_material"
+                        domain="[('batch_type', '=', 'sorted_material')]"/>
+                <separator/>
+                <filter string="Unsorted" name="sorting_unsorted"
+                        domain="[('sorting_status', '=', 'unsorted')]"/>
+                <filter string="Sorted" name="sorting_sorted"
+                        domain="[('sorting_status', '=', 'sorted')]"/>
+                <separator/>
+                <filter string="Hazardous" name="hazardous"
+                        domain="[('hazardous', '=', True)]"/>
+                <filter string="Not Yet Received" name="not_received"
+                        domain="[('is_received', '=', False)]"/>
+                <filter string="Draft" name="status_draft"
+                        domain="[('status', '=', 'draft')]"/>
+                <filter string="Inspection" name="status_inspection"
+                        domain="[('status', '=', 'inspection')]"/>
+                <filter string="Received" name="status_received"
+                        domain="[('status', '=', 'received')]"/>
+                <filter string="Sorting" name="status_sorting"
+                        domain="[('status', '=', 'sorting')]"/>
+                <filter string="Sorted" name="status_sorted"
+                        domain="[('status', '=', 'sorted')]"/>
+                <filter string="Recycled" name="status_recycled"
+                        domain="[('status', '=', 'recycled')]"/>
+                <filter string="Disposed" name="status_disposed"
+                        domain="[('status', '=', 'disposed')]"/>
+                <filter string="Sold" name="status_sold"
+                        domain="[('status', '=', 'sold')]"/>
+                <separator/>
+                <filter string="Aged &gt; 30 days" name="aged_30"
+                        domain="[('received_date', '&lt;=', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <group>
+                    <filter string="Waste Category" name="group_by_category"
+                            context="{'group_by': 'category_id'}"/>
+                    <filter string="Batch Type" name="group_by_batch_type"
+                            context="{'group_by': 'batch_type'}"/>
+                    <filter string="Sorting Status" name="group_by_sorting_status"
+                            context="{'group_by': 'sorting_status'}"/>
+                    <filter string="Warehouse" name="group_by_warehouse"
+                            context="{'group_by': 'warehouse_id'}"/>
+                    <filter string="Location" name="group_by_location"
+                            context="{'group_by': 'location_id'}"/>
+                    <filter string="Status" name="group_by_status"
+                            context="{'group_by': 'status'}"/>
+                    <filter string="Received Date" name="group_by_received_date"
+                            context="{'group_by': 'received_date'}"/>
+                    <filter string="Container Type" name="group_by_container"
+                            context="{'group_by': 'container_type_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- GRAPH VIEW                                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_waste_batch_graph" model="ir.ui.view">
+        <field name="name">waste.batch.graph</field>
+        <field name="model">waste.batch</field>
+        <field name="arch" type="xml">
+            <graph string="Waste Batch Volumes" type="bar" sample="1">
+                <field name="status" type="row"/>
+                <field name="draft_quantity" type="measure"/>
+                <field name="net_weight" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- PIVOT VIEW                                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_waste_batch_pivot" model="ir.ui.view">
+        <field name="name">waste.batch.pivot</field>
+        <field name="model">waste.batch</field>
+        <field name="arch" type="xml">
+            <pivot string="Waste Inventory Pivot" sample="1">
+                <field name="warehouse_id" type="row"/>
+                <field name="received_date" interval="month" type="col"/>
+                <field name="draft_quantity" type="measure"/>
+                <field name="net_weight" type="measure"/>
+                <field name="days_in_current_status" type="measure" string="Avg Age (days)"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- WINDOW ACTION                                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="action_waste_batch" model="ir.actions.act_window">
+        <field name="name">Waste Batches</field>
+        <field name="res_model">waste.batch</field>
+        <field name="view_mode">list,kanban,form,graph,pivot</field>
+        <field name="search_view_id" ref="view_waste_batch_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Register a new waste batch!
+            </p>
+            <p>
+                Trace collected waste batches before they enter processing or sorting.
+            </p>
+        </field>
+    </record>
+</odoo>

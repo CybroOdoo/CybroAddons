@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- COLLECTION POINTS                                                   -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+        <record id="demo_point_industrial_hub" model="wm.collection.point">
+            <field name="name">Central Industrial Hub</field>
+            <field name="partner_id" ref="base.res_partner_12"/>
+            <field name="street">100 Industrial Parkway</field>
+            <field name="city">New York</field>
+            <field name="zip">10001</field>
+            <field name="latitude">40.7501</field>
+            <field name="longitude">-73.9970</field>
+            <field name="category_ids" eval="[(6, 0, [ref('wm_base.wcat_industrial'), ref('wm_base.waste_category_recycle')])]"/>
+        </record>
+
+        <!-- Record: wm.collection.point - Metro Shopping Mall -->
+        <record id="demo_point_metro_mall" model="wm.collection.point">
+            <field name="name">Metro Shopping Mall</field>
+            <field name="partner_id" ref="base.res_partner_1"/>
+            <field name="street">450 Fifth Avenue</field>
+            <field name="city">New York</field>
+            <field name="zip">10018</field>
+            <field name="latitude">40.7527</field>
+            <field name="longitude">-73.9818</field>
+            <field name="category_ids" eval="[(6, 0, [ref('wm_base.waste_category_recycle'), ref('wm_base.waste_category_organic')])]"/>
+        </record>
+
+        <!-- Record: wm.collection.point - Green Valley Residential Complex -->
+        <record id="demo_point_green_valley" model="wm.collection.point">
+            <field name="name">Green Valley Residential Complex</field>
+            <field name="partner_id" ref="base.res_partner_2"/>
+            <field name="street">789 Park Avenue</field>
+            <field name="city">New York</field>
+            <field name="zip">10021</field>
+            <field name="latitude">40.7716</field>
+            <field name="longitude">-73.9653</field>
+            <field name="category_ids" eval="[(6, 0, [ref('wm_base.waste_category_organic'), ref('wm_base.waste_category_recycle')])]"/>
+        </record>
+
+        <!-- Record: wm.collection.point - Metro Health General Hospital -->
+        <record id="demo_point_general_hospital" model="wm.collection.point">
+            <field name="name">Metro Health General Hospital</field>
+            <field name="partner_id" ref="base.res_partner_4"/>
+            <field name="street">550 First Avenue, Health Campus</field>
+            <field name="city">New York</field>
+            <field name="zip">10016</field>
+            <field name="latitude">40.7421</field>
+            <field name="longitude">-73.9739</field>
+            <field name="category_ids" eval="[(6, 0, [ref('wm_base.wcat_biomedical'), ref('wm_base.waste_category_hazard')])]"/>
+        </record>
+
+        <!-- Record: wm.collection.point - Tech Park Innovation Center -->
+        <record id="demo_point_tech_park" model="wm.collection.point">
+            <field name="name">Tech Park Innovation Center</field>
+            <field name="partner_id" ref="base.res_partner_3"/>
+            <field name="street">12 Tech Plaza</field>
+            <field name="city">New York</field>
+            <field name="zip">10003</field>
+            <field name="latitude">40.7306</field>
+            <field name="longitude">-73.9903</field>
+            <field name="category_ids" eval="[(6, 0, [ref('wm_base.wcat_ewaste'), ref('wm_base.waste_category_hazard')])]"/>
+        </record>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- ROUTES & ROUTE LINES                                                -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+        <record id="demo_route_industrial" model="wm.route">
+            <field name="date" eval="DateTime.today().strftime('%Y-%m-%d')"/>
+            <field name="state">dispatched</field>
+            <field name="estimated_duration">3.5</field>
+            <field name="line_ids">
+                <record id="demo_route_ind_line_1" model="wm.route.line">
+                    <field name="collection_point_id" ref="demo_point_industrial_hub"/>
+                    <field name="sequence">10</field>
+                </record>
+                <record id="demo_route_ind_line_2" model="wm.route.line">
+                    <field name="collection_point_id" ref="demo_point_tech_park"/>
+                    <field name="sequence">20</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- Record: wm.route (demo_route_residential) -->
+        <record id="demo_route_residential" model="wm.route">
+            <field name="date" eval="DateTime.today().strftime('%Y-%m-%d')"/>
+            <field name="state">running</field>
+            <field name="estimated_duration">4.0</field>
+            <field name="line_ids">
+                <record id="demo_route_res_line_1" model="wm.route.line">
+                    <field name="collection_point_id" ref="demo_point_metro_mall"/>
+                    <field name="sequence">10</field>
+                </record>
+                <record id="demo_route_res_line_2" model="wm.route.line">
+                    <field name="collection_point_id" ref="demo_point_green_valley"/>
+                    <field name="sequence">20</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- Record: wm.route (demo_route_medical) -->
+        <record id="demo_route_medical" model="wm.route">
+            <field name="date" eval="(DateTime.today() - relativedelta(days=1)).strftime('%Y-%m-%d')"/>
+            <field name="state">completed</field>
+            <field name="estimated_duration">3.0</field>
+            <field name="line_ids">
+                <record id="demo_route_med_line_1" model="wm.route.line">
+                    <field name="collection_point_id" ref="demo_point_general_hospital"/>
+                    <field name="sequence">10</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- ROUTE SCHEDULES                                                     -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+        <record id="demo_schedule_industrial_weekly" model="wm.schedule">
+            <field name="name">Weekly Industrial Route Schedule</field>
+            <field name="route_id" ref="demo_route_industrial"/>
+            <field name="recurrence">weekly</field>
+            <field name="next_run_date" eval="(DateTime.now() + relativedelta(days=1)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Record: wm.schedule - Daily Residential & Commercial Schedule -->
+        <record id="demo_schedule_residential_daily" model="wm.schedule">
+            <field name="name">Daily Residential &amp; Commercial Schedule</field>
+            <field name="route_id" ref="demo_route_residential"/>
+            <field name="recurrence">daily</field>
+            <field name="next_run_date" eval="(DateTime.now() + relativedelta(days=2)).strftime('%Y-%m-%d 07:30:00')"/>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Record: wm.schedule - Bi-Weekly Healthcare & Biohazard Route -->
+        <record id="demo_schedule_medical_biweekly" model="wm.schedule">
+            <field name="name">Bi-Weekly Healthcare &amp; Biohazard Route</field>
+            <field name="route_id" ref="demo_route_medical"/>
+            <field name="recurrence">weekly</field>
+            <field name="next_run_date" eval="(DateTime.now() + relativedelta(days=3)).strftime('%Y-%m-%d 09:00:00')"/>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- COLLECTION ORDERS                                                   -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+        <!-- 1. Completed Collection Order (Industrial) -->
+        <record id="demo_order_completed_1" model="wm.collection.order">
+            <field name="partner_id" ref="base.res_partner_12"/>
+            <field name="collection_point_id" ref="demo_point_industrial_hub"/>
+            <field name="route_id" ref="demo_route_industrial"/>
+            <field name="scheduled_start" eval="(DateTime.now() - relativedelta(days=1, hours=3)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="scheduled_end" eval="(DateTime.now() - relativedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="actual_start" eval="(DateTime.now() - relativedelta(days=1, hours=2, minutes=50)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="actual_end" eval="(DateTime.now() - relativedelta(days=1, minutes=10)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="completed_date" eval="(DateTime.now() - relativedelta(days=1, minutes=10)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="state">completed</field>
+            <field name="estimated_weight">450.0</field>
+            <field name="order_line_ids">
+                <record id="demo_order_line_1" model="wm.collection.order.line">
+                    <field name="category_id" ref="wm_base.waste_category_recycle"/>
+                    <field name="product_id" ref="wm_base.wmat_cardboard"/>
+                    <field name="weight">280.0</field>
+                    <field name="price">0.45</field>
+                </record>
+                <record id="demo_order_line_2" model="wm.collection.order.line">
+                    <field name="category_id" ref="wm_base.wcat_industrial"/>
+                    <field name="product_id" ref="wm_base.wmat_metal_shavings"/>
+                    <field name="weight">170.0</field>
+                    <field name="price">1.20</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- 2. Completed Collection Order (Healthcare) -->
+        <record id="demo_order_completed_2" model="wm.collection.order">
+            <field name="partner_id" ref="base.res_partner_4"/>
+            <field name="collection_point_id" ref="demo_point_general_hospital"/>
+            <field name="route_id" ref="demo_route_medical"/>
+            <field name="scheduled_start" eval="(DateTime.now() - relativedelta(days=1, hours=6)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="scheduled_end" eval="(DateTime.now() - relativedelta(days=1, hours=4)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="actual_start" eval="(DateTime.now() - relativedelta(days=1, hours=5, minutes=45)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="actual_end" eval="(DateTime.now() - relativedelta(days=1, hours=4, minutes=15)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="completed_date" eval="(DateTime.now() - relativedelta(days=1, hours=4, minutes=15)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="state">completed</field>
+            <field name="estimated_weight">380.0</field>
+            <field name="order_line_ids">
+                <record id="demo_order_line_med_1" model="wm.collection.order.line">
+                    <field name="category_id" ref="wm_base.wcat_biomedical"/>
+                    <field name="product_id" ref="wm_base.wmat_sharps"/>
+                    <field name="weight">150.0</field>
+                    <field name="price">4.50</field>
+                </record>
+                <record id="demo_order_line_med_2" model="wm.collection.order.line">
+                    <field name="category_id" ref="wm_base.wcat_biomedical"/>
+                    <field name="product_id" ref="wm_base.wmat_pharma_waste"/>
+                    <field name="weight">230.0</field>
+                    <field name="price">5.00</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- 3. In Progress Collection Order -->
+        <record id="demo_order_in_progress_1" model="wm.collection.order">
+            <field name="partner_id" ref="base.res_partner_1"/>
+            <field name="collection_point_id" ref="demo_point_metro_mall"/>
+            <field name="route_id" ref="demo_route_residential"/>
+            <field name="scheduled_start" eval="(DateTime.now() - relativedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="scheduled_end" eval="(DateTime.now() + relativedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="actual_start" eval="(DateTime.now() - relativedelta(minutes=45)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="state">in_progress</field>
+            <field name="estimated_weight">320.0</field>
+            <field name="order_line_ids">
+                <record id="demo_order_line_3" model="wm.collection.order.line">
+                    <field name="category_id" ref="wm_base.waste_category_organic"/>
+                    <field name="product_id" ref="wm_base.wmat_food_waste"/>
+                    <field name="weight">200.0</field>
+                    <field name="price">0.25</field>
+                </record>
+                <record id="demo_order_line_4" model="wm.collection.order.line">
+                    <field name="category_id" ref="wm_base.waste_category_recycle"/>
+                    <field name="product_id" ref="wm_base.wmat_pet_plastic"/>
+                    <field name="weight">120.0</field>
+                    <field name="price">0.60</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- 4. Draft Collection Order -->
+        <record id="demo_order_draft_1" model="wm.collection.order">
+            <field name="partner_id" ref="base.res_partner_3"/>
+            <field name="collection_point_id" ref="demo_point_tech_park"/>
+            <field name="scheduled_start" eval="(DateTime.now() + relativedelta(days=1, hours=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="scheduled_end" eval="(DateTime.now() + relativedelta(days=1, hours=4)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="state">draft</field>
+            <field name="estimated_weight">150.0</field>
+            <field name="order_line_ids">
+                <record id="demo_order_line_5" model="wm.collection.order.line">
+                    <field name="category_id" ref="wm_base.wcat_ewaste"/>
+                    <field name="product_id" ref="wm_base.wmat_pcb"/>
+                    <field name="weight">80.0</field>
+                    <field name="price">3.50</field>
+                </record>
+                <record id="demo_order_line_6" model="wm.collection.order.line">
+                    <field name="category_id" ref="wm_base.wcat_hazardous"/>
+                    <field name="product_id" ref="wm_base.wmat_batteries"/>
+                    <field name="weight">70.0</field>
+                    <field name="price">2.80</field>
+                </record>
+            </field>
+        </record>
+
+        <!-- 5. Missed Collection Order -->
+        <record id="demo_order_missed_1" model="wm.collection.order">
+            <field name="partner_id" ref="base.res_partner_2"/>
+            <field name="collection_point_id" ref="demo_point_green_valley"/>
+            <field name="route_id" ref="demo_route_residential"/>
+            <field name="scheduled_start" eval="(DateTime.now() - relativedelta(days=2, hours=4)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="scheduled_end" eval="(DateTime.now() - relativedelta(days=2, hours=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="state">missed</field>
+            <field name="is_missed" eval="True"/>
+            <field name="missed_reason_id" ref="wm_collection.missed_reason_access_issue"/>
+            <field name="missed_notes">Access gate was locked and security guard was unavailable to provide entry clearance.</field>
+            <field name="estimated_weight">250.0</field>
+        </record>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- MISSED COLLECTION RECORDS                                           -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+        <record id="demo_missed_collection_1" model="wm.missed.collection">
+            <field name="order_id" ref="demo_order_missed_1"/>
+            <field name="reason_id" ref="wm_collection.missed_reason_access_issue"/>
+            <field name="customer_notified" eval="True"/>
+            <field name="missed_date" eval="(DateTime.now() - relativedelta(days=2, hours=2)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="notes">Automated notification sent to Green Valley Residential manager. Re-scheduled retry order requested.</field>
+        </record>
+
+    </data>
+</odoo>

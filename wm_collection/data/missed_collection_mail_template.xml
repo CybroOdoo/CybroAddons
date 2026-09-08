@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Mail Template: Missed Collection Notification -->
+        <record id="mail_template_missed_collection" model="mail.template">
+            <field name="name">Missed Collection Notification</field>
+            <field name="model_id" ref="model_wm_collection_order"/>
+            <field name="email_from">{{ (user.email_formatted or user.email) }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Missed Collection — {{ object.name }}</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 16px; font-size: 14px; color: #1f2937 !important; background-color: #ffffff !important; border: 1px solid #e5e7eb; border-radius: 8px;">
+    <p style="color: #1f2937 !important; margin: 0 0 10px 0;">Dear <t t-out="object.partner_id.name or 'Customer'">Customer</t>,</p>
+
+    <p style="color: #1f2937 !important; margin: 0 0 10px 0;">We regret to inform you that your scheduled waste collection
+    (<strong style="color: #111827 !important;"><t t-out="object.name">ORDER00001</t></strong>) on
+    <strong style="color: #111827 !important;"><t t-out="object.scheduled_start" t-options='{"widget": "datetime"}'>2026-01-01</t></strong>
+    could not be completed.</p>
+
+    <p style="color: #1f2937 !important; margin: 0 0 10px 0;"><strong style="color: #111827 !important;">Reason:</strong> <t t-out="object.missed_reason_id.name or 'N/A'">Access Issue</t></p>
+
+    <t t-if="object.retry_order_id">
+        <p style="color: #1f2937 !important; margin: 0 0 10px 0;">A retry collection has been automatically scheduled for
+        <strong style="color: #111827 !important;"><t t-out="object.retry_order_id.scheduled_start" t-options='{"widget": "datetime"}'>2026-01-02</t></strong>.
+        Your retry reference is <strong style="color: #111827 !important;"><t t-out="object.retry_order_id.name">ORDER00002</t></strong>.</p>
+    </t>
+
+    <p style="color: #1f2937 !important; margin: 0 0 10px 0;">If you have any questions or need to reschedule, please do not hesitate to contact us.</p>
+
+    <p style="color: #1f2937 !important; margin: 0 0 10px 0;">Thank you for your understanding.</p>
+
+    <p style="color: #1f2937 !important; margin: 0 0 10px 0;">Best regards,<br/>
+    <t t-out="user.company_id.name or 'Waste Management Team'">Waste Management Team</t></p>
+</div>
+            </field>
+        </record>
+    </data>
+</odoo>

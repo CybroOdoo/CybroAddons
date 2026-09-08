@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Inherit the Sales Order form view to add:
+        1. A "Create Contract" button in header when Quotation is confirmed (state == 'sale')
+        2. A "Contracts" smart button showing linked WM contract count
+    -->
+    <record id="view_order_form_wm_contract_inherit" model="ir.ui.view">
+        <field name="name">sale.order.form.wm.contract.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- 1. Contracts smart button -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_wm_contracts"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        invisible="wm_contract_count == 0">
+                    <field name="wm_contract_count" widget="statinfo" string="Contracts"/>
+                </button>
+            </xpath>
+
+            <!-- 2. Create Contract button in header (when quotation is confirmed) -->
+            <xpath expr="//header" position="inside">
+                <field name="wm_contract_count" invisible="1"/>
+                <button name="action_convert_to_wm_contract"
+                        string="Create Contract"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'sale' or wm_contract_count != 0"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

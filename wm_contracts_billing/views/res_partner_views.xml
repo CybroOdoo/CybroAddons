@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ─── res.partner — inherit form to add waste management fields ───────────── -->
+    <record id="res_partner_form_waste_management" model="ir.ui.view">
+        <field name="name">res.partner.form.waste.management</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <field name="is_contract_expiring" invisible="1"/>
+                <field name="is_contract_expired" invisible="1"/>
+                <div class="alert alert-warning text-center o_form_header" role="alert" invisible="not is_contract_expiring" style="margin-bottom: 0px;">
+                    <strong>Warning:</strong> The last contract created for this customer is about to expire (less than 15 days remaining)!
+                </div>
+                <div class="alert alert-danger text-center o_form_header" role="alert" invisible="not is_contract_expired" style="margin-bottom: 0px;">
+                    <strong>Warning:</strong> The last contract created for this customer has expired!
+                </div>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_collection_points" type="object"
+                        class="oe_stat_button" icon="fa-map-marker">
+                    <field name="collection_point_count" widget="statinfo" string="Collection Point"/>
+                </button>
+                <button name="action_view_collection_orders" type="object"
+                        class="oe_stat_button" icon="fa-truck">
+                    <field name="collection_order_count" widget="statinfo" string="Collections"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="is_driver"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Waste Management">
+
+                    <!-- Classification fields -->
+                    <group string="Waste Classification">
+                        <group>
+                            <field name="generator_type" placeholder="e.g. Industrial, Commercial"/>
+                        </group>
+                        <group>
+                            <field name="is_transporter"/>
+                            <field name="regulatory_id" placeholder="e.g. REG-2024-001"/>
+                        </group>
+                    </group>
+
+                    <separator string="Collection Point"/>
+                    <field name="collection_point_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="name"/>
+                            <field name="city"/>
+
+                        </list>
+                    </field>
+
+                    <separator string="Contracts"/>
+
+                    <!-- Contracts list — full width -->
+                    <field name="contract_id"
+                           nolabel="1"
+                           mode="list"
+                           readonly="1">
+                        <list>
+                            <field name="name" string="Contract Ref"/>
+                            <field name="from_date" string="From"/>
+                            <field name="to_date" string="To"/>
+                            <field name="sla_id"/>
+                            <field name="billing_basis"/>
+                            <field name="frequency"/>
+                            <field name="no_of_frequency"/>
+                            <field name="state" widget="badge"
+                                decoration-success="state in ('sent', 'signed', 'ongoing')"
+                                decoration-info="state == 'confirmed'"
+                                decoration-danger="state in ('expired', 'cancelled')"/>
+                        </list>
+                    </field>
+
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

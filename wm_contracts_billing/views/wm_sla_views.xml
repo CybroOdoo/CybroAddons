@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- SLA List View -->
+    <record id="view_wm_sla_list" model="ir.ui.view">
+        <field name="name">wm.sla.list</field>
+        <field name="model">wm.sla</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="breach_template_id"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- SLA Form View -->
+    <record id="view_wm_sla_form" model="ir.ui.view">
+        <field name="name">wm.sla.form</field>
+        <field name="model">wm.sla</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open_send_email_wizard" string="Send Email" type="object" class="btn-primary" invisible="not id"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="breach_template_id"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="SLA Terms">
+                            <field name="sla_line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="sla_type"/>
+                                    <field name="description"/>
+                                    <field name="target_value"/>
+                                    <field name="uom"/>
+                                    <field name="penalty_type"/>
+                                    <field name="penalty_value" invisible="penalty_type in ('none', 'service_credit')"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Description">
+                            <field name="description" placeholder="SLA description/details..."/>
+                        </page>
+                        <page string="Terms &amp; Conditions">
+                            <field name="terms_and_conditions" placeholder="SLA terms &amp; conditions..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- SLA Search View -->
+    <record id="view_wm_sla_search" model="ir.ui.view">
+        <field name="name">wm.sla.search</field>
+        <field name="model">wm.sla</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- SLA Action -->
+    <record id="action_wm_sla" model="ir.actions.act_window">
+        <field name="name">SLAs</field>
+        <field name="res_model">wm.sla</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Service Level Agreement
+            </p>
+        </field>
+    </record>
+
+    <!-- SLA Menu Item -->
+    <menuitem
+        id="menu_wm_sla"
+        action="action_wm_sla"
+        name="SLAs"
+        parent="menu_wm_config_customer"
+        sequence="20"
+        groups="wm_contracts_billing.group_wm_contract_manager,wm_base.group_wm_ops_manager,wm_base.group_wm_admin"/>
+
+</odoo>

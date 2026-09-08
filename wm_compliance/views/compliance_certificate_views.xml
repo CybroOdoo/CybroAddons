@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.compliance.certificate - wm.compliance.certificate.form (Form) -->
+    <record id="view_wm_compliance_certificate_form" model="ir.ui.view">
+        <field name="name">wm.compliance.certificate.form</field>
+        <field name="model">wm.compliance.certificate</field>
+        <field name="arch" type="xml">
+            <form string="Compliance Certificate">
+                <header>
+                    <button name="action_issue" type="object" string="Issue Certificate" class="oe_highlight" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,issued"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Treatment Certificate" readonly="state == 'issued'"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="certificate_no" readonly="state == 'issued'"/>
+                            <field name="certificate_type" readonly="state == 'issued'"/>
+                            <field name="facility_id" readonly="state == 'issued'"/>
+                            <field name="manifest_id" readonly="state == 'issued'"/>
+                        </group>
+                        <group>
+                            <field name="quantity" readonly="state == 'issued'"/>
+                            <field name="uom_id" readonly="state == 'issued'"/>
+                            <field name="issued_date" readonly="state == 'issued'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state == 'issued'"/>
+                        </group>
+                    </group>
+                    <notebook invisible="not signature_id">
+                        <page string="Digital Signature">
+                            <group>
+                                <group string="Signatory Details">
+                                    <field name="signature_signer_id" string="Signer"/>
+                                    <field name="signature_signed_at" string="Signed On"/>
+                                    <field name="signature_hash_verified" string="Verification Status" widget="badge" decoration-success="signature_hash_verified" decoration-danger="not signature_hash_verified"/>
+                                </group>
+                                
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- View: wm.compliance.certificate - wm.compliance.certificate.list (List) -->
+    <record id="view_wm_compliance_certificate_list" model="ir.ui.view">
+        <field name="name">wm.compliance.certificate.list</field>
+        <field name="model">wm.compliance.certificate</field>
+        <field name="arch" type="xml">
+            <list string="Compliance Certificates" decoration-info="state == 'draft'" decoration-success="state == 'issued'">
+                <field name="name"/>
+                <field name="certificate_no"/>
+                <field name="certificate_type"/>
+                <field name="facility_id"/>
+                <field name="quantity"/>
+                <field name="uom_id"/>
+                <field name="issued_date"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'issued'"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action: Compliance Certificates -->
+    <record id="action_wm_compliance_certificate" model="ir.actions.act_window">
+        <field name="name">Compliance Certificates</field>
+        <field name="res_model">wm.compliance.certificate</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Issue a treatment, recycling, or disposal certificate.
+            </p>
+        </field>
+    </record>
+    <!-- View: fleet.vehicle - fleet.vehicle.form.inherit.compliance (Xpath) -->
+    <record id="view_fleet_vehicle_form_inherit_compliance" model="ir.ui.view">
+        <field name="name">fleet.vehicle.form.inherit.compliance</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="wm_collection.view_fleet_vehicle_form_inherit_wm_fleet"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='wm_container_id']" position="after">
+                <field name="wm_compliance_cert_ids" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

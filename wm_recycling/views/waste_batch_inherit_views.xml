@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Extend the waste.batch form view (from wm_collection) to add:
+        - Smart button showing count of linked recycling orders
+        - Quick-create recycling order button in header
+    -->
+    <record id="view_waste_batch_form_inherit_recycling" model="ir.ui.view">
+        <field name="name">waste.batch.form.inherit.recycling</field>
+        <field name="model">waste.batch</field>
+        <field name="inherit_id" ref="wm_collection.view_waste_batch_form"/>
+        <field name="arch" type="xml">
+            <!-- Add recycling smart button to the button_box -->
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button" type="object"
+                        name="action_view_recycling_orders"
+                        icon="fa-recycle"
+                        invisible="recycling_order_count == 0">
+                    <field name="recycling_order_count" widget="statinfo"
+                           string="Recycling"/>
+                </button>
+            </div>
+
+            <!-- Add "Create Recycling Order" button to form header -->
+            <xpath expr="//header/field[@name='status']" position="before">
+                <button name="action_create_recycling_order"
+                        string="♻ Create Recycling Order"
+                        type="object"
+                        class="btn-secondary"
+                        groups="wm_base.group_wm_recycler,wm_base.group_wm_ops_manager"
+                        invisible="not is_received or status in ('recycled','sold','disposed') or has_multiple_materials or recycling_order_count > 0"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

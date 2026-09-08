@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.carbon.accounting.report - wm.carbon.accounting.report.pivot (Pivot) -->
+    <record id="view_wm_carbon_accounting_report_pivot" model="ir.ui.view">
+        <field name="name">wm.carbon.accounting.report.pivot</field>
+        <field name="model">wm.carbon.accounting.report</field>
+        <field name="arch" type="xml">
+            <pivot string="ESG &amp; Scope 3 Carbon Accounting" sample="1">
+                <field name="category_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="input_qty_kg" type="measure"/>
+                <field name="recycled_qty_kg" type="measure"/>
+                <field name="warm_factor_co2" type="measure"/>
+                <field name="co2_avoided_tons" type="measure"/>
+                <field name="landfill_diversion_pct" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- View: wm.carbon.accounting.report - wm.carbon.accounting.report.graph (Graph) -->
+    <record id="view_wm_carbon_accounting_report_graph" model="ir.ui.view">
+        <field name="name">wm.carbon.accounting.report.graph</field>
+        <field name="model">wm.carbon.accounting.report</field>
+        <field name="arch" type="xml">
+            <graph string="ESG Scope 3 Carbon Abatement (tCO2e Avoided)" type="bar" sample="1">
+                <field name="category_id"/>
+                <field name="co2_avoided_tons" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- View: wm.carbon.accounting.report - wm.carbon.accounting.report.list (List) -->
+    <record id="view_wm_carbon_accounting_report_list" model="ir.ui.view">
+        <field name="name">wm.carbon.accounting.report.list</field>
+        <field name="model">wm.carbon.accounting.report</field>
+        <field name="arch" type="xml">
+            <list string="ESG &amp; Carbon Accounting Ledger">
+                <field name="date"/>
+                <field name="category_id"/>
+                <field name="source_product_id"/>
+                <field name="facility_location_id"/>
+                <field name="input_qty_kg" sum="Total Intake (kg)"/>
+                <field name="recycled_qty_kg" sum="Total Recycled (kg)"/>
+                <field name="warm_factor_co2" avg="Avg WARM Factor"/>
+                <field name="co2_avoided_tons" sum="Total CO2 Abated (tCO2e)"/>
+                <field name="landfill_diversion_pct" widget="percentage" avg="Avg Diversion %"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.carbon.accounting.report - wm.carbon.accounting.report.search (Search) -->
+    <record id="view_wm_carbon_accounting_report_search" model="ir.ui.view">
+        <field name="name">wm.carbon.accounting.report.search</field>
+        <field name="model">wm.carbon.accounting.report</field>
+        <field name="arch" type="xml">
+            <search string="ESG &amp; Carbon Accounting Analysis">
+                <field name="category_id"/>
+                <field name="source_product_id"/>
+                <field name="facility_location_id"/>
+                <filter string="High Abatement (&gt; 1 tCO2e)" name="filter_high_abatement" domain="[('co2_avoided_tons', '&gt;', 1.0)]"/>
+                <group>
+                    <filter string="Waste Category" name="group_category" context="{'group_by':'category_id'}"/>
+                    <filter string="Waste Material" name="group_material" context="{'group_by':'source_product_id'}"/>
+                    <filter string="Facility Location" name="group_facility" context="{'group_by':'facility_location_id'}"/>
+                    <filter string="Month" name="group_date" context="{'group_by':'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: ESG & Carbon Accounting -->
+    <record id="action_wm_carbon_accounting_report" model="ir.actions.act_window">
+        <field name="name">ESG &amp; Carbon Accounting</field>
+        <field name="res_model">wm.carbon.accounting.report</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="context">{'search_default_group_category': 1}</field>
+    </record>
+
+    <!-- Menu: ESG & Carbon Accounting -->
+    <menuitem id="menu_wm_carbon_accounting_report"
+              name="ESG &amp; Carbon Accounting"
+              parent="wm_base.menu_wm_reporting"
+              action="action_wm_carbon_accounting_report"
+              sequence="25"/>
+</odoo>

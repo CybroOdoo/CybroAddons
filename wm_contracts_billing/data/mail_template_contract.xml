@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Mail Template: Contract: Send to Customer -->
+        <record id="email_template_wm_contract_send" model="mail.template">
+            <field name="name">Contract: Send to Customer</field>
+            <field name="model_id" ref="wm_contracts_billing.model_wm_partner_contract"/>
+            <field name="subject">Waste Management Contract (Ref {{ object.name or 'n/a' }})</field>
+            <field name="email_from">{{ user.email_formatted }}</field>
+            <field name="partner_to" eval="False"/>
+            <field name="use_default_to" eval="True"/>
+            <field name="report_template_ids" eval="[(4, ref('wm_contracts_billing.partner_contract_report'))]"/>
+            <field name="description">Sent to customers when a contract is sent from the backend.</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hello,
+        <br/><br/>
+        Your waste management contract <span style="font-weight: bold;" t-out="object.name or ''"></span>
+        is now available for your review.
+        <br/><br/>
+        <table width="100%" style="color: #454748; font-size: 12px; border-collapse: collapse;">
+            <tr style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 6px 8px; font-weight: bold; width: 40%; background: #f8f8f8;">Contract Reference</td>
+                <td style="padding: 6px 8px;" t-out="object.name or ''"></td>
+            </tr>
+            <tr style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 6px 8px; font-weight: bold; background: #f8f8f8;">Customer</td>
+                <td style="padding: 6px 8px;" t-out="object.partner_id.name or ''"></td>
+            </tr>
+            <tr style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 6px 8px; font-weight: bold; background: #f8f8f8;">From Date</td>
+                <td style="padding: 6px 8px;" t-out="object.from_date or ''"></td>
+            </tr>
+            <tr style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 6px 8px; font-weight: bold; background: #f8f8f8;">To Date</td>
+                <td style="padding: 6px 8px;" t-out="object.to_date or ''"></td>
+            </tr>
+            <tr t-if="object.sla_id" style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 6px 8px; font-weight: bold; background: #f8f8f8;">SLA Agreement</td>
+                <td style="padding: 6px 8px;" t-out="object.sla_id.name or ''"></td>
+            </tr>
+            <tr style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 6px 8px; font-weight: bold; background: #f8f8f8;">Collection Sites</td>
+                <td style="padding: 6px 8px;">
+                    <t t-foreach="object.collection_point_ids" t-as="site">
+                        <span t-out="site.name or ''"></span><t t-if="site.city">, <span t-out="site.city or ''"></span></t><br/>
+                    </t>
+                </td>
+            </tr>
+        </table>
+        <br/>
+        To review and sign the contract, please click the button below:
+        <br/><br/>
+        <t t-set="sign_url" t-value="object.get_portal_signature_url()"/>
+        <t t-if="sign_url">
+            <div style="text-align: center; margin: 24px 0;">
+                <a t-att-href="sign_url"
+                   style="display: inline-block; padding: 14px 36px; background-color: #0F5F97;
+                          color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none;
+                          border-radius: 6px; letter-spacing: 0.3px;">
+                    ✍ Sign the Contract
+                </a>
+            </div>
+            <p style="font-size: 11px; color: #888; text-align: center;">
+                If the button does not work, copy and paste this link into your browser:<br/>
+                <a t-att-href="sign_url" style="color: #0F5F97; word-break: break-all;"
+                   t-out="sign_url"/>
+            </p>
+        </t>
+        <br/>
+        Do not hesitate to contact us if you have any questions.
+        <t t-if="not is_html_empty(user.signature)">
+            <div>--<br/><t t-out="user.signature or ''">Admin</t></div>
+        </t>
+    </p>
+</div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

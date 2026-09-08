@@ -1,0 +1,1237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Portal Dashboard Entry Card: Collection Orders List -->
+    <template id="portal_my_home_collection_orders" name="Portal My Home: Collection Orders" inherit_id="portal.portal_my_home" priority="30">
+        <xpath expr="//div[@id='portal_common_category']" position="inside">
+            <t t-if="has_collection_module">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="icon" t-value="'/project/static/src/img/tasks.svg'"/>
+                    <t t-set="title">Collection Orders</t>
+                    <t t-set="text">Track your collection history and upcoming collections</t>
+                    <t t-set="url" t-value="'/my/collection/orders'"/>
+                    <t t-set="placeholder_count" t-value="'collection_order_count'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Portal Dashboard Entry Card: Contracts -->
+    <template id="portal_my_home_contracts" name="Portal My Home: Contracts" inherit_id="portal.portal_my_home" priority="25">
+        <xpath expr="//div[@id='portal_common_category']" position="inside">
+            <t t-if="has_customer_module">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="icon" t-value="'/web/static/img/rfq.svg'"/>
+                    <t t-set="title">Contracts</t>
+                    <t t-set="text">View and manage your waste agreements</t>
+                    <t t-set="url" t-value="'/my/contracts'"/>
+                    <t t-set="placeholder_count" t-value="'contract_count'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Portal Dashboard Entry Card: Subscriptions -->
+    <template id="portal_my_home_subscriptions" name="Portal My Home: Subscriptions" inherit_id="portal.portal_my_home" priority="20">
+        <xpath expr="//div[@id='portal_common_category']" position="inside">
+            <t t-if="has_subscription_module">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="icon" t-value="'/web/static/img/rfq.svg'"/>
+                    <t t-set="title">Subscriptions</t>
+                    <t t-set="text">View and manage your recurring waste collection plans</t>
+                    <t t-set="url" t-value="'/my/subscriptions'"/>
+                    <t t-set="placeholder_count" t-value="'subscription_count'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Portal Breadcrumbs: Collection Orders & Contracts & Subscriptions & Dashboard -->
+    <template id="portal_breadcrumbs_collection_orders" name="Portal Breadcrumbs: Collection Orders" inherit_id="portal.portal_breadcrumbs">
+        <xpath expr="//ol" position="inside">
+            <!-- Collection Orders Breadcrumbs -->
+            <li t-if="page_name == 'collection_order' or order" t-attf-class="breadcrumb-item #{'active ' if not order else ''}">
+                <a t-if="order" href="/my/collection/orders">Collection Orders</a>
+                <t t-else="">Collection Orders</t>
+            </li>
+            <li t-if="order" class="breadcrumb-item active">
+                <span t-field="order.name"/>
+            </li>
+
+            <!-- Contracts Breadcrumbs -->
+            <li t-if="page_name == 'contract' or contract" t-attf-class="breadcrumb-item #{'active ' if not contract else ''}">
+                <a t-if="contract" href="/my/contracts">Contracts</a>
+                <t t-else="">Contracts</t>
+            </li>
+            <li t-if="contract" class="breadcrumb-item active">
+                <span t-field="contract.name"/>
+            </li>
+
+            <!-- Subscriptions Breadcrumbs -->
+            <li t-if="page_name == 'subscription' or subscription or is_sub_request_page" t-attf-class="breadcrumb-item #{'active ' if (not subscription and not is_sub_request_page) else ''}">
+                <a t-if="subscription or is_sub_request_page" href="/my/subscriptions">Subscriptions</a>
+                <t t-else="">Subscriptions</t>
+            </li>
+            <li t-if="subscription" class="breadcrumb-item active">
+                <span t-field="subscription.name"/>
+            </li>
+            <li t-if="is_sub_request_page" class="breadcrumb-item active">
+                New Subscription
+            </li>
+
+            <!-- Collection Dashboard Breadcrumbs -->
+            <li t-if="page_name == 'collection_dashboard'" class="breadcrumb-item active">
+                Collection Dashboard
+            </li>
+        </xpath>
+    </template>
+
+    <!-- Portal List View: My Collection Orders -->
+    <template id="portal_my_collection_orders" name="My Collection Orders">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Collection Orders</t>
+            </t>
+            
+            <div class="d-flex justify-content-end mb-3 mt-2">
+                <a href="/my/collection/dashboard" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
+                    <i class="fa fa-line-chart"/> Collection Dashboard
+                </a>
+            </div>
+
+            <div class="card bg-white mt-1">
+                <t t-if="not orders">
+                    <div class="text-center py-5 text-muted">
+                        <i class="fa fa-folder-open-o fa-3x mb-3 text-secondary"/>
+                        <p class="mb-0">There are currently no collection orders for your account.</p>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr class="active">
+                                    <th>Order Ref</th>
+                                    <th>Collection Point</th>
+                                    <th>Scheduled Date</th>
+                                    <th class="text-end">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="orders" t-as="o">
+                                    <tr>
+                                        <td>
+                                            <a t-attf-href="/my/collection/orders/#{o.id}" class="fw-bold">
+                                                <span t-field="o.name"/>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span t-field="o.collection_point_id.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-if="'scheduled_start' in o._fields and o.scheduled_start" t-field="o.scheduled_start" t-options='{"widget": "datetime"}'/>
+                                            <span t-elif="'scheduled_date' in o._fields and o.scheduled_date" t-field="o.scheduled_date" t-options='{"widget": "datetime"}'/>
+                                            <span t-else="" class="text-muted">-</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-if="o.state == 'draft'" class="badge rounded-pill text-bg-secondary">Draft</span>
+                                            <span t-elif="o.state == 'scheduled'" class="badge rounded-pill text-bg-info">Scheduled</span>
+                                            <span t-elif="o.state == 'dispatched'" class="badge rounded-pill text-bg-info">Dispatched</span>
+                                            <span t-elif="o.state == 'in_progress'" class="badge rounded-pill text-bg-warning">In Progress</span>
+                                            <span t-elif="o.state == 'completed'" class="badge rounded-pill text-bg-primary">Completed</span>
+                                            <span t-elif="o.state == 'signed'" class="badge rounded-pill text-bg-success">Signed</span>
+                                            <span t-elif="o.state == 'invoiced'" class="badge rounded-pill text-bg-success">Invoiced</span>
+                                            <span t-elif="o.state == 'missed'" class="badge rounded-pill text-bg-danger">Missed</span>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div t-if="pager" class="card-footer d-flex justify-content-center">
+                        <t t-call="portal.pager"/>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- Portal Detail View: Collection Order Detail -->
+    <template id="portal_my_collection_order_detail" name="Collection Order Detail">
+        <t t-call="portal.portal_layout">
+            <div class="card bg-white mt-1">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0 fw-bold"><span t-field="order.name"/></h3>
+                    <div class="d-flex align-items-center gap-2">
+                        <a t-attf-href="/my/collection/orders/#{order.id}/pdf" class="btn btn-sm btn-outline-primary js_download_pdf">
+                            <i class="fa fa-download me-1"/> Download PDF
+                        </a>
+                        <t t-if="order.state in ('draft', 'scheduled', 'dispatched')">
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                                <i class="fa fa-times me-1"/> Cancel Order
+                            </button>
+
+                            <!-- Cancel Order Modal -->
+                            <div class="modal fade text-start" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form t-attf-action="/my/collection/orders/#{order.id}/cancel" method="post">
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="cancelOrderModalLabel">Confirm Cancellation</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to cancel collection order <strong><span t-field="order.name"/></strong>?</p>
+                                                <div class="mb-3">
+                                                    <label for="cancel_reason" class="form-label text-muted">Reason for cancellation (optional):</label>
+                                                    <textarea class="form-control" id="cancel_reason" name="cancel_reason" rows="2" placeholder="Tell us why you are cancelling..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Order</button>
+                                                <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                        <span t-if="order.state == 'draft'" class="badge rounded-pill text-bg-secondary">Draft</span>
+                        <span t-elif="order.state == 'scheduled'" class="badge rounded-pill text-bg-info">Scheduled</span>
+                        <span t-elif="order.state == 'dispatched'" class="badge rounded-pill text-bg-info">Dispatched</span>
+                        <span t-elif="order.state == 'in_progress'" class="badge rounded-pill text-bg-warning">In Progress</span>
+                        <span t-elif="order.state == 'completed'" class="badge rounded-pill text-bg-primary">Completed</span>
+                        <span t-elif="order.state == 'signed'" class="badge rounded-pill text-bg-success">Signed</span>
+                        <span t-elif="order.state == 'invoiced'" class="badge rounded-pill text-bg-success">Invoiced</span>
+                        <span t-elif="order.state == 'missed'" class="badge rounded-pill text-bg-danger">Missed</span>
+                        <span t-elif="order.state == 'cancelled'" class="badge rounded-pill text-bg-danger">Cancelled</span>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Portal Status Timeline Steps -->
+                    <div class="wm-status-timeline mb-4 px-3 bg-light rounded border">
+                        <div t-attf-class="wm-status-step #{'active' if order.state in ('draft', 'scheduled', 'dispatched', 'in_progress', 'completed', 'signed', 'invoiced') else ''}">
+                            <div class="wm-status-step-icon"><i class="fa fa-file-text-o"/></div>
+                            <div class="wm-status-step-label">Draft</div>
+                        </div>
+                        <div t-attf-class="wm-status-step #{'active' if order.state in ('dispatched', 'in_progress', 'completed', 'signed', 'invoiced') else ''}">
+                            <div class="wm-status-step-icon"><i class="fa fa-truck"/></div>
+                            <div class="wm-status-step-label">Dispatched</div>
+                        </div>
+                        <div t-attf-class="wm-status-step #{'active' if order.state in ('in_progress', 'completed', 'signed', 'invoiced') else ''}">
+                            <div class="wm-status-step-icon"><i class="fa fa-play-circle"/></div>
+                            <div class="wm-status-step-label">In Progress</div>
+                        </div>
+                        <div t-attf-class="wm-status-step #{'active' if order.state in ('completed', 'signed', 'invoiced') else ''}">
+                            <div class="wm-status-step-icon"><i class="fa fa-check-circle"/></div>
+                            <div class="wm-status-step-label">Completed</div>
+                        </div>
+                    </div>
+                    <div t-if="request.params.get('success') == 'cancelled'" class="alert alert-success d-flex align-items-center mb-4" role="alert">
+                        <i class="fa fa-check-circle fa-lg me-2"/>
+                        <div>Collection order has been successfully cancelled.</div>
+                    </div>
+                    <div class="row">
+                        <!-- Left Column: Location Info -->
+                        <div class="col-12 col-md-6 mb-4">
+                            <h5 class="border-bottom pb-2 mb-3 fw-bold">Collection Site Location</h5>
+                            <strong><span t-field="order.collection_point_id.name"/></strong>
+                            <div class="text-muted mt-2">
+                                <span t-field="order.collection_point_id.street"/><br/>
+                                <span t-field="order.collection_point_id.city"/>, <span t-field="order.collection_point_id.state_id.name"/> <span t-field="order.collection_point_id.zip"/><br/>
+                                <span t-field="order.collection_point_id.country_id.name"/>
+                            </div>
+                        </div>
+                        <!-- Right Column: Schedule / Info -->
+                        <div class="col-12 col-md-6 mb-4">
+                            <h5 class="border-bottom pb-2 mb-3 fw-bold">Order Details</h5>
+                             <div class="row mb-2">
+                                 <span class="col-6 text-muted">Scheduled Start:</span>
+                                 <span class="col-6 fw-bold">
+                                     <span t-if="'scheduled_start' in order._fields and order.scheduled_start" t-field="order.scheduled_start" t-options='{"widget": "datetime"}'/>
+                                     <span t-elif="'scheduled_date' in order._fields and order.scheduled_date" t-field="order.scheduled_date" t-options='{"widget": "datetime"}'/>
+                                     <t t-else="">-</t>
+                                 </span>
+                             </div>
+                             <div class="row mb-2">
+                                 <span class="col-6 text-muted">Completed Date:</span>
+                                 <span class="col-6 fw-bold">
+                                     <span t-if="order.completed_date" t-field="order.completed_date" t-options='{"widget": "datetime"}'/>
+                                     <t t-else="">-</t>
+                                 </span>
+                             </div>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">Estimated Weight:</span>
+                                <span class="col-6 fw-bold"><span t-field="order.estimated_weight"/> kg</span>
+                            </div>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">Confirmed Weight:</span>
+                                <span class="col-6 fw-bold"><span t-field="order.confirmed_weight"/> kg</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Lines -->
+                    <t t-if="order.order_line_ids">
+                        <h5 class="border-bottom pb-2 mb-3 fw-bold">Products to Collect</h5>
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                                <tr class="active">
+                                    <th>Waste Material / Category</th>
+                                    <th class="text-end">Confirmed Weight</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="order.order_line_ids" t-as="line">
+                                    <tr>
+                                        <td>
+                                            <span t-if="'product_id' in line._fields and line.product_id" t-field="line.product_id.name"/>
+                                            <span t-elif="'category_id' in line._fields and line.category_id" t-field="line.category_id.name"/>
+                                        </td>
+                                        <td class="text-end"><span t-field="line.weight"/> kg</td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- Related Invoices -->
+                    <t t-if="order.invoice_ids">
+                        <h5 class="border-bottom pb-2 mb-3 mt-4 fw-bold">Related Invoices</h5>
+                        <div class="list-group">
+                            <t t-foreach="order.invoice_ids" t-as="inv">
+                                <a t-attf-href="/my/invoices/#{inv.id}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="fa fa-file-text-o me-2 text-primary"/>
+                                        <span t-field="inv.name"/>
+                                    </span>
+                                    <span t-if="inv.payment_state == 'not_paid'" class="badge rounded-pill text-bg-danger">Not Paid</span>
+                                    <span t-elif="inv.payment_state == 'in_payment'" class="badge rounded-pill text-bg-warning">In Payment</span>
+                                    <span t-elif="inv.payment_state == 'paid'" class="badge rounded-pill text-bg-success">Paid</span>
+                                    <span t-elif="inv.payment_state == 'reversed'" class="badge rounded-pill text-bg-secondary">Reversed</span>
+                                    <span t-else="" class="badge rounded-pill text-bg-info"><span t-field="inv.state"/></span>
+                                </a>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Portal List View: My Contracts -->
+    <template id="portal_my_contracts" name="My Contracts">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Contracts</t>
+            </t>
+            
+            <div class="card bg-white mt-1">
+                <t t-if="not contracts">
+                    <div class="text-center py-5 text-muted">
+                        <i class="fa fa-folder-open-o fa-3x mb-3 text-secondary"/>
+                        <p class="mb-0">There are currently no contracts for your account.</p>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr class="active">
+                                    <th>Contract Ref</th>
+                                    <th>Collection Point</th>
+                                    <th>From Date</th>
+                                    <th>To Date</th>
+                                    <th class="text-end">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="contracts" t-as="c">
+                                    <tr>
+                                        <td>
+                                            <a t-attf-href="/my/contracts/#{c.id}" class="fw-bold">
+                                                <span t-field="c.name"/>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span t-esc="', '.join(c.collection_point_ids.mapped('name'))"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="c.from_date" t-options='{"widget": "date"}'/>
+                                        </td>
+                                        <td>
+                                            <span t-field="c.to_date" t-options='{"widget": "date"}'/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-if="c.state == 'draft'" class="badge rounded-pill text-bg-secondary">Draft</span>
+                                            <span t-elif="c.state == 'confirmed'" class="badge rounded-pill text-bg-info">Confirmed</span>
+                                            <span t-elif="c.state == 'signed'" class="badge rounded-pill text-bg-success">Signed</span>
+                                            <span t-elif="c.state == 'ongoing'" class="badge rounded-pill text-bg-success">Ongoing</span>
+                                            <span t-elif="c.state == 'expired'" class="badge rounded-pill text-bg-warning">Expired</span>
+                                            <span t-elif="c.state == 'cancelled'" class="badge rounded-pill text-bg-danger">Cancelled</span>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div t-if="pager" class="card-footer d-flex justify-content-center">
+                        <t t-call="portal.pager"/>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- Portal Detail View: Contract Detail -->
+    <template id="portal_my_contract_detail" name="Contract Detail">
+        <t t-call="portal.portal_layout">
+            <div class="card bg-white mt-1">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0 fw-bold"><span t-field="contract.name"/></h3>
+                    <div class="d-flex align-items-center gap-2">
+                        <a t-if="sign_url" t-att-href="sign_url" class="btn btn-sm btn-success fw-bold">
+                            <i class="fa fa-pencil me-1"/> Sign Contract
+                        </a>
+                        <a t-attf-href="/my/contracts/#{contract.id}/pdf" class="btn btn-sm btn-outline-primary js_download_pdf">
+                            <i class="fa fa-download me-1"/> Download PDF
+                        </a>
+                        <t t-if="contract.state in ('draft', 'sent', 'signed', 'confirmed', 'ongoing')">
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelContractModal">
+                                <i class="fa fa-times me-1"/> Cancel Contract
+                            </button>
+
+                            <!-- Cancel Contract Modal -->
+                            <div class="modal fade text-start" id="cancelContractModal" tabindex="-1" aria-labelledby="cancelContractModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form t-attf-action="/my/contracts/#{contract.id}/cancel" method="post">
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="cancelContractModalLabel">Confirm Cancellation</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to cancel contract <strong><span t-field="contract.name"/></strong>?</p>
+                                                <div class="mb-3">
+                                                    <label for="cancel_reason" class="form-label text-muted">Reason for cancellation (optional):</label>
+                                                    <textarea class="form-control" id="cancel_reason" name="cancel_reason" rows="2" placeholder="Tell us why you are cancelling..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Contract</button>
+                                                <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                        <span t-if="contract.state == 'draft'" class="badge rounded-pill text-bg-secondary">Draft</span>
+                        <span t-elif="contract.state == 'sent'" class="badge rounded-pill text-bg-info">Sent</span>
+                        <span t-elif="contract.state == 'confirmed'" class="badge rounded-pill text-bg-info">Confirmed</span>
+                        <span t-elif="contract.state == 'signed'" class="badge rounded-pill text-bg-success">Signed</span>
+                        <span t-elif="contract.state == 'ongoing'" class="badge rounded-pill text-bg-success">Ongoing</span>
+                        <span t-elif="contract.state == 'expired'" class="badge rounded-pill text-bg-warning">Expired</span>
+                        <span t-elif="contract.state == 'cancelled'" class="badge rounded-pill text-bg-danger">Cancelled</span>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Cancel Success Alert -->
+                    <div t-if="request.params.get('success') == 'cancelled'" class="alert alert-success d-flex align-items-center mb-4" role="alert">
+                        <i class="fa fa-check-circle fa-lg me-2"/>
+                        <div>Contract has been successfully cancelled.</div>
+                    </div>
+
+                    <!-- Pending Signature Banner -->
+                    <div t-if="sign_url and contract.state != 'cancelled'" class="alert alert-info d-flex align-items-center justify-content-between mb-4 shadow-sm" role="alert">
+                        <div>
+                            <i class="fa fa-info-circle fa-lg me-2 text-primary"/>
+                            <span><strong>Action Required:</strong> This contract is ready for your signature.</span>
+                        </div>
+                        <a t-att-href="sign_url" class="btn btn-success fw-bold px-3">
+                            <i class="fa fa-pencil me-1"/> Sign Contract Now
+                        </a>
+                    </div>
+
+                    <div class="row">
+                        <!-- Left Column: Site / Location -->
+                        <div class="col-12 col-md-6 mb-4">
+                             <h5 class="border-bottom pb-2 mb-3 fw-bold">Sites Covered</h5>
+                             <t t-if="contract.collection_point_ids">
+                                 <t t-foreach="contract.collection_point_ids" t-as="site">
+                                     <div class="mb-3">
+                                         <strong><span t-field="site.name"/></strong>
+                                         <div class="text-muted mt-1">
+                                             <span t-field="site.street"/><br/>
+                                             <span t-field="site.city"/>, <span t-field="site.state_id.name"/> <span t-field="site.zip"/><br/>
+                                             <span t-field="site.country_id.name"/>
+                                         </div>
+                                     </div>
+                                 </t>
+                             </t>
+                             <t t-else="">
+                                 <span class="text-muted">No collection points selected</span>
+                             </t>
+                        </div>
+                        <!-- Right Column: Contract details -->
+                        <div class="col-12 col-md-6 mb-4">
+                            <h5 class="border-bottom pb-2 mb-3 fw-bold">Contract Info</h5>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">From Date:</span>
+                                <span class="col-6 fw-bold"><span t-field="contract.from_date" t-options='{"widget": "date"}'/></span>
+                            </div>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">To Date:</span>
+                                <span class="col-6 fw-bold"><span t-field="contract.to_date" t-options='{"widget": "date"}'/></span>
+                            </div>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">Frequency:</span>
+                                <span class="col-6 fw-bold">
+                                    <span t-field="contract.frequency"/> 
+                                    (<span t-field="contract.no_of_frequency"/> times)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Waste Categories -->
+                    <t t-if="contract.contract_line_ids">
+                        <h5 class="border-bottom pb-2 mb-3 fw-bold">Waste Categories Covered</h5>
+                        <table class="table table-sm table-hover mb-4">
+                            <thead>
+                                <tr class="active">
+                                    <th>Category Name</th>
+                                    <th>Code</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="contract.contract_line_ids" t-as="line">
+                                    <tr>
+                                        <td><span t-field="line.category_id.name"/></td>
+                                        <td><span t-field="line.category_id.code"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- SLA Terms -->
+                    <t t-if="contract.sla_id">
+                        <h5 class="border-bottom pb-2 mb-3 fw-bold">SLA Terms &amp; Conditions</h5>
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-6 mb-2">
+                                <span class="text-muted">SLA Agreement:</span>
+                                <span class="fw-bold ms-2" t-field="contract.sla_id.name"/>
+                            </div>
+                        </div>
+                        <div class="mb-3" t-if="contract.sla_id.description">
+                            <div class="text-muted fw-bold mb-1">Description:</div>
+                            <div class="bg-light p-2 rounded" t-field="contract.sla_id.description"/>
+                        </div>
+                        <div class="mb-3" t-if="contract.sla_id.terms_and_conditions">
+                            <div class="text-muted fw-bold mb-1">Terms &amp; Conditions:</div>
+                            <div class="bg-light p-3 rounded" t-field="contract.sla_id.terms_and_conditions"/>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Collection Dashboard Template -->
+    <template id="portal_collection_dashboard" name="Collection Dashboard">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <div class="container-fluid py-4">
+                <!-- Breadcrumbs & Title -->
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-6">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb bg-transparent p-0 mb-1">
+                                <li class="breadcrumb-item"><a href="/my/home" class="text-decoration-none"><i class="fa fa-home"/> Home</a></li>
+                                <li class="breadcrumb-item"><a href="/my/collection/orders" class="text-decoration-none">Collection Orders</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                            </ol>
+                        </nav>
+                        <h2 class="h3 font-weight-bold text-dark mb-0">Collection Dashboard</h2>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-md-end mt-3 mt-md-0">
+                        <!-- Rich Date Range Filter -->
+                        <div class="wm-date-filter dropdown">
+                            <a href="#" class="wm-date-filter-toggle dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-calendar"/>
+                                <span t-esc="range_label"/>
+                            </a>
+                            <a t-attf-href="/my/collection/dashboard?date_start=#{prev_date_start}&amp;date_end=#{prev_date_end}&amp;preset=custom"
+                               class="wm-date-filter-nav" title="Previous period">
+                                <i class="fa fa-chevron-left"/>
+                            </a>
+                            <a t-if="has_next" t-attf-href="/my/collection/dashboard?date_start=#{next_date_start}&amp;date_end=#{next_date_end}&amp;preset=custom"
+                               class="wm-date-filter-nav" title="Next period">
+                                <i class="fa fa-chevron-right"/>
+                            </a>
+                            <span t-else="" class="wm-date-filter-nav disabled" title="Next period">
+                                <i class="fa fa-chevron-right"/>
+                            </span>
+
+                            <div class="dropdown-menu dropdown-menu-end wm-date-filter-menu">
+                                <!-- Section: Day -->
+                                <a href="/my/collection/dashboard?preset=today"
+                                   t-attf-class="dropdown-item wm-df-item #{'active' if current_preset == 'today' else ''}">
+                                    <span class="wm-df-check"><t t-if="current_preset == 'today'">&#x2713;</t></span>
+                                    Today
+                                </a>
+                                <a href="/my/collection/dashboard?preset=yesterday"
+                                   t-attf-class="dropdown-item wm-df-item #{'active' if current_preset == 'yesterday' else ''}">
+                                    <span class="wm-df-check"><t t-if="current_preset == 'yesterday'">&#x2713;</t></span>
+                                    Yesterday
+                                </a>
+                                <hr class="wm-df-sep"/>
+                                <!-- Section: Rolling Days -->
+                                <a href="/my/collection/dashboard?preset=last_7"
+                                   t-attf-class="dropdown-item wm-df-item #{'active' if current_preset == 'last_7' else ''}">
+                                    <span class="wm-df-check"><t t-if="current_preset == 'last_7'">&#x2713;</t></span>
+                                    Last 7 Days
+                                </a>
+                                <a href="/my/collection/dashboard?preset=last_30"
+                                   t-attf-class="dropdown-item wm-df-item #{'active' if current_preset == 'last_30' else ''}">
+                                    <span class="wm-df-check"><t t-if="current_preset == 'last_30'">&#x2713;</t></span>
+                                    Last 30 Days
+                                </a>
+                                <a href="/my/collection/dashboard?preset=last_90"
+                                   t-attf-class="dropdown-item wm-df-item #{'active' if current_preset == 'last_90' else ''}">
+                                    <span class="wm-df-check"><t t-if="current_preset == 'last_90'">&#x2713;</t></span>
+                                    Last 90 Days
+                                </a>
+                                <hr class="wm-df-sep"/>
+                                <!-- Section: Calendar Periods -->
+                                <a href="/my/collection/dashboard?preset=month_to_date"
+                                   t-attf-class="dropdown-item wm-df-item #{'active' if current_preset == 'month_to_date' else ''}">
+                                    <span class="wm-df-check"><t t-if="current_preset == 'month_to_date'">&#x2713;</t></span>
+                                    Month to Date
+                                </a>
+                                <a href="/my/collection/dashboard?preset=last_month"
+                                   t-attf-class="dropdown-item wm-df-item #{'active' if current_preset == 'last_month' else ''}">
+                                    <span class="wm-df-check"><t t-if="current_preset == 'last_month'">&#x2713;</t></span>
+                                    Last Month
+                                </a>
+                                <!-- Month row with navigator -->
+                                <div t-attf-class="wm-df-nav-row #{'wm-df-nav-row-active' if current_preset == 'month' else ''}">
+                                    <span class="wm-df-nav-label">Month</span>
+                                    <a t-att-href="month_prev_url" class="wm-df-nav-arrow" title="Previous month"><i class="fa fa-chevron-left"/></a>
+                                    <a t-attf-href="/my/collection/dashboard?preset=month" class="wm-df-nav-period"><t t-esc="month_label"/></a>
+                                    <a t-if="month_has_next" t-att-href="month_next_url" class="wm-df-nav-arrow" title="Next month"><i class="fa fa-chevron-right"/></a>
+                                    <span t-else="" class="wm-df-nav-arrow disabled"><i class="fa fa-chevron-right"/></span>
+                                </div>
+                                <!-- Quarter row with navigator -->
+                                <div t-attf-class="wm-df-nav-row #{'wm-df-nav-row-active' if current_preset == 'quarter' else ''}">
+                                    <span class="wm-df-nav-label">Quarter</span>
+                                    <a t-att-href="quarter_prev_url" class="wm-df-nav-arrow" title="Previous quarter"><i class="fa fa-chevron-left"/></a>
+                                    <a t-attf-href="/my/collection/dashboard?preset=quarter" class="wm-df-nav-period"><t t-esc="quarter_label"/></a>
+                                    <a t-if="quarter_has_next" t-att-href="quarter_next_url" class="wm-df-nav-arrow" title="Next quarter"><i class="fa fa-chevron-right"/></a>
+                                    <span t-else="" class="wm-df-nav-arrow disabled"><i class="fa fa-chevron-right"/></span>
+                                </div>
+                                <hr class="wm-df-sep"/>
+                                <!-- Section: Year-level -->
+                                <a href="/my/collection/dashboard?preset=ytd"
+                                   t-attf-class="dropdown-item wm-df-item #{'active' if current_preset == 'ytd' else ''}">
+                                    <span class="wm-df-check"><t t-if="current_preset == 'ytd'">&#x2713;</t></span>
+                                    Year to Date
+                                </a>
+                                <a href="/my/collection/dashboard?preset=last_12"
+                                   t-attf-class="dropdown-item wm-df-item #{'active' if current_preset == 'last_12' else ''}">
+                                    <span class="wm-df-check"><t t-if="current_preset == 'last_12'">&#x2713;</t></span>
+                                    Last 12 Months
+                                </a>
+                                <!-- Year row with navigator -->
+                                <div t-attf-class="wm-df-nav-row #{'wm-df-nav-row-active' if current_preset == 'year' else ''}">
+                                    <span class="wm-df-nav-label">Year</span>
+                                    <a t-att-href="year_prev_url" class="wm-df-nav-arrow" title="Previous year"><i class="fa fa-chevron-left"/></a>
+                                    <a t-attf-href="/my/collection/dashboard?preset=year" class="wm-df-nav-period"><t t-esc="year_label"/></a>
+                                    <a t-if="year_has_next" t-att-href="year_next_url" class="wm-df-nav-arrow" title="Next year"><i class="fa fa-chevron-right"/></a>
+                                    <span t-else="" class="wm-df-nav-arrow disabled"><i class="fa fa-chevron-right"/></span>
+                                </div>
+                                <hr class="wm-df-sep"/>
+                                <!-- Section: All time + Custom -->
+                                <a href="/my/collection/dashboard?preset=all_time"
+                                   t-attf-class="dropdown-item wm-df-item #{'active' if current_preset == 'all_time' else ''}">
+                                    <span class="wm-df-check"><t t-if="current_preset == 'all_time'">&#x2713;</t></span>
+                                    All time
+                                </a>
+                                <!-- Custom Range row -->
+                                <div t-attf-class="wm-df-custom-row #{'wm-df-custom-row-active' if current_preset == 'custom' else ''}">
+                                    <span class="wm-df-nav-label">Custom Range</span>
+                                    <form method="get" action="/my/collection/dashboard" class="wm-df-custom-form">
+                                        <input type="hidden" name="preset" value="custom"/>
+                                        <input type="date" name="date_start" t-att-value="date_start" class="wm-df-date-input" id="wm_dash_date_start"/>
+                                        <span class="wm-df-to">to</span>
+                                        <input type="date" name="date_end" t-att-value="date_end" class="wm-df-date-input" id="wm_dash_date_end"/>
+                                        <button type="submit" class="wm-df-go-btn" title="Apply"><i class="fa fa-check"/></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Metric Cards Grid -->
+                <div class="row g-4 mb-4">
+                    <!-- Total Weight Card -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card border-0 shadow-sm rounded-lg bg-white h-100 kpi-card-weight">
+                            <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted small text-uppercase font-weight-bold mb-1">Total Weight Collected</h6>
+                                    <h3 class="mb-0 font-weight-bold text-dark"><t t-esc="total_weight"/> kg</h3>
+                                </div>
+                                <div class="icon-box rounded-circle bg-success-light text-success p-3">
+                                    <i class="fa fa-cubes fa-2x"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Total Collections Card -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card border-0 shadow-sm rounded-lg bg-white h-100 kpi-card-orders">
+                            <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted small text-uppercase font-weight-bold mb-1">Total Collections</h6>
+                                    <h3 class="mb-0 font-weight-bold text-dark"><t t-esc="total_collections"/></h3>
+                                </div>
+                                <div class="icon-box rounded-circle bg-info-light text-info p-3">
+                                    <i class="fa fa-truck fa-2x"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Average Weight Card -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card border-0 shadow-sm rounded-lg bg-white h-100 kpi-card-avg">
+                            <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted small text-uppercase font-weight-bold mb-1">Avg Weight / Order</h6>
+                                    <h3 class="mb-0 font-weight-bold text-dark"><t t-esc="avg_weight"/> kg</h3>
+                                </div>
+                                <div class="icon-box rounded-circle bg-purple-light text-purple p-3">
+                                    <i class="fa fa-bar-chart fa-2x"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Estimated Cost Card -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card border-0 shadow-sm rounded-lg bg-white h-100 kpi-card-value">
+                            <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted small text-uppercase font-weight-bold mb-1">Total Value / Cost</h6>
+                                    <h3 class="mb-0 font-weight-bold text-dark">
+                                        <span t-esc="total_spent" t-options="{'widget': 'monetary', 'display_currency': request.env.company.currency_id}"/>
+                                    </h3>
+                                </div>
+                                <div class="icon-box rounded-circle bg-warning-light text-warning p-3">
+                                    <i class="fa fa-money fa-2x"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Breakdowns Row -->
+                <div class="row g-4 mb-4">
+                    <!-- Waste Category Breakdown -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm rounded-lg bg-white h-100">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+                                <h5 class="card-title font-weight-bold text-dark mb-0">Waste Categories</h5>
+                            </div>
+                            <div class="card-body px-4 pb-4 pt-2">
+                                <t t-if="not categories">
+                                    <div class="text-center py-5 text-muted">
+                                        <i class="fa fa-pie-chart fa-2x mb-2 text-secondary"/>
+                                        <p class="mb-0">No category breakdown data available for the selected dates.</p>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="d-flex flex-column gap-3">
+                                        <t t-foreach="categories" t-as="cat">
+                                            <div>
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <span class="font-weight-semibold text-dark"><t t-esc="cat['name']"/></span>
+                                                    <span class="text-muted small">
+                                                        <span class="fw-bold text-dark"><t t-esc="cat['weight']"/> kg</span> (<t t-esc="cat['percentage']"/>%)
+                                                    </span>
+                                                </div>
+                                                <div class="progress rounded-pill" style="height: 10px;">
+                                                    <div class="progress-bar rounded-pill bg-primary" role="progressbar" t-attf-style="width: #{cat['percentage']}%" t-att-aria-valuenow="cat['percentage']" aria-valuemin="0" aria-valuemax="100"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Collection Points Summary -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm rounded-lg bg-white h-100">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+                                <h5 class="card-title font-weight-bold text-dark mb-0">Collection Points</h5>
+                            </div>
+                            <div class="card-body px-4 pb-4 pt-2">
+                                <t t-if="not collection_points">
+                                    <div class="text-center py-5 text-muted">
+                                        <i class="fa fa-map-marker fa-2x mb-2 text-secondary"/>
+                                        <p class="mb-0">No collection point data available for the selected dates.</p>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="table-responsive">
+                                        <table class="table table-borderless align-middle mb-0">
+                                            <thead>
+                                                <tr class="text-muted border-bottom small">
+                                                    <th class="pb-2">Name</th>
+                                                    <th class="text-center pb-2">Collections</th>
+                                                    <th class="text-end pb-2">Total Weight</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="collection_points" t-as="pt">
+                                                    <tr class="border-bottom">
+                                                        <td class="py-2 text-dark font-weight-semibold"><t t-esc="pt['name']"/></td>
+                                                        <td class="py-2 text-center text-dark"><span class="badge bg-light text-dark rounded-pill px-2 py-1"><t t-esc="pt['orders_count']"/></span></td>
+                                                        <td class="py-2 text-end text-dark font-weight-bold"><t t-esc="pt['weight']"/> kg</td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Distribution & Recent Collections -->
+                <div class="row g-4">
+                    <!-- Status Distribution -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm rounded-lg bg-white h-100">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+                                <h5 class="card-title font-weight-bold text-dark mb-0">Status Distribution</h5>
+                            </div>
+                            <div class="card-body px-4 pb-4 pt-2">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 py-2">
+                                        <span class="text-muted"><span class="badge bg-secondary rounded-circle me-2" style="width: 10px; height: 10px; display: inline-block; padding: 0;"/>Draft</span>
+                                        <span class="font-weight-bold text-dark"><t t-esc="status_counts['draft']"/></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 py-2">
+                                        <span class="text-muted"><span class="badge bg-info rounded-circle me-2" style="width: 10px; height: 10px; display: inline-block; padding: 0;"/>Scheduled</span>
+                                        <span class="font-weight-bold text-dark"><t t-esc="status_counts['scheduled']"/></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 py-2">
+                                        <span class="text-muted"><span class="badge bg-info rounded-circle me-2" style="width: 10px; height: 10px; display: inline-block; padding: 0;"/>Dispatched</span>
+                                        <span class="font-weight-bold text-dark"><t t-esc="status_counts['dispatched']"/></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 py-2">
+                                        <span class="text-muted"><span class="badge bg-warning rounded-circle me-2" style="width: 10px; height: 10px; display: inline-block; padding: 0;"/>In Progress</span>
+                                        <span class="font-weight-bold text-dark"><t t-esc="status_counts['in_progress']"/></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 py-2">
+                                        <span class="text-muted"><span class="badge bg-primary rounded-circle me-2" style="width: 10px; height: 10px; display: inline-block; padding: 0;"/>Completed</span>
+                                        <span class="font-weight-bold text-dark"><t t-esc="status_counts['completed']"/></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 py-2">
+                                        <span class="text-muted"><span class="badge bg-success rounded-circle me-2" style="width: 10px; height: 10px; display: inline-block; padding: 0;"/>Signed / Invoiced</span>
+                                        <span class="font-weight-bold text-dark"><t t-esc="status_counts['signed'] + status_counts['invoiced']"/></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 py-2">
+                                        <span class="text-muted"><span class="badge bg-danger rounded-circle me-2" style="width: 10px; height: 10px; display: inline-block; padding: 0;"/>Missed</span>
+                                        <span class="font-weight-bold text-dark"><t t-esc="status_counts['missed']"/></span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Collections -->
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm rounded-lg bg-white h-100">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+                                <h5 class="card-title font-weight-bold text-dark mb-0">Recent Collections</h5>
+                                <a href="/my/collection/orders" class="btn btn-link btn-sm text-decoration-none">View All</a>
+                            </div>
+                            <div class="card-body px-4 pb-4 pt-2">
+                                <t t-if="not orders">
+                                    <div class="text-center py-5 text-muted">
+                                        <i class="fa fa-history fa-2x mb-2 text-secondary"/>
+                                        <p class="mb-0">No recent collections found.</p>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead>
+                                                <tr class="text-muted border-bottom small">
+                                                    <th>Ref</th>
+                                                    <th>Collection Point</th>
+                                                    <th>Date</th>
+                                                    <th>Weight</th>
+                                                    <th class="text-end">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="orders" t-as="o">
+                                                    <tr>
+                                                        <td>
+                                                            <a t-attf-href="/my/collection/orders/#{o.id}" class="fw-bold text-decoration-none">
+                                                                <t t-esc="o.name"/>
+                                                            </a>
+                                                        </td>
+                                                        <td><t t-esc="o.collection_point_id.name"/></td>
+                                                        <td>
+                                                            <span t-if="o.create_date" t-field="o.create_date" t-options='{"widget": "date"}'/>
+                                                        </td>
+                                                        <td class="font-weight-bold"><t t-esc="o.confirmed_weight"/> kg</td>
+                                                        <td class="text-end">
+                                                            <span t-if="o.state == 'draft'" class="badge rounded-pill text-bg-secondary">Draft</span>
+                                                            <span t-elif="o.state == 'scheduled'" class="badge rounded-pill text-bg-info">Scheduled</span>
+                                                            <span t-elif="o.state == 'dispatched'" class="badge rounded-pill text-bg-info">Dispatched</span>
+                                                            <span t-elif="o.state == 'in_progress'" class="badge rounded-pill text-bg-warning">In Progress</span>
+                                                            <span t-elif="o.state == 'completed'" class="badge rounded-pill text-bg-primary">Completed</span>
+                                                            <span t-elif="o.state == 'signed'" class="badge rounded-pill text-bg-success">Signed</span>
+                                                            <span t-elif="o.state == 'invoiced'" class="badge rounded-pill text-bg-success">Invoiced</span>
+                                                            <span t-elif="o.state == 'missed'" class="badge rounded-pill text-bg-danger">Missed</span>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Portal List View: My Subscriptions -->
+    <template id="portal_my_subscriptions" name="My Subscriptions">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Subscriptions</t>
+            </t>
+
+            <div class="d-flex justify-content-end mb-3 mt-2">
+                <a href="/my/subscriptions/new" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
+                    <i class="fa fa-plus-circle"/> Create Subscription
+                </a>
+            </div>
+
+            <div class="card bg-white mt-1">
+                <t t-if="not subscriptions">
+                    <div class="text-center py-5 text-muted">
+                        <i class="fa fa-folder-open-o fa-3x mb-3 text-secondary"/>
+                        <p class="mb-0">There are currently no subscriptions for your account.</p>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr class="active">
+                                    <th>Subscription Ref</th>
+                                    <th>Plan</th>
+                                    <th>Collection Point</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th class="text-end">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="subscriptions" t-as="sub">
+                                    <tr t-attf-class="#{'table-success fw-semibold' if sub.state == 'active' else ''}">
+                                        <td>
+                                            <a t-attf-href="/my/subscriptions/#{sub.id}" class="fw-bold">
+                                                <span t-field="sub.name"/>
+                                            </a>
+                                            <span t-if="sub.state == 'active'" class="badge text-bg-success ms-1"><i class="fa fa-check-circle me-1"/>Active</span>
+                                        </td>
+                                        <td>
+                                            <span t-field="sub.plan_id.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="sub.collection_point_id.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="sub.start_date" t-options='{"widget": "date"}'/>
+                                        </td>
+                                        <td>
+                                            <span t-field="sub.end_date" t-options='{"widget": "date"}'/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-if="sub.state == 'draft'" class="badge rounded-pill text-bg-secondary">Draft</span>
+                                            <span t-elif="sub.state == 'active'" class="badge rounded-pill text-bg-success">Active</span>
+                                            <span t-elif="sub.state == 'paused'" class="badge rounded-pill text-bg-warning">Paused</span>
+                                            <span t-elif="sub.state == 'cancelled'" class="badge rounded-pill text-bg-danger">Cancelled</span>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div t-if="pager" class="card-footer d-flex justify-content-center">
+                        <t t-call="portal.pager"/>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- Portal Detail View: Subscription Detail -->
+    <template id="portal_my_subscription_detail" name="Subscription Detail">
+        <t t-call="portal.portal_layout">
+            <div class="card bg-white mt-1">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0 fw-bold"><span t-field="subscription.name"/></h3>
+                    <div class="d-flex align-items-center gap-2">
+                        <a t-attf-href="/my/subscriptions/#{subscription.id}/pdf" class="btn btn-sm btn-outline-primary js_download_pdf">
+                            <i class="fa fa-download me-1"/> Download PDF
+                        </a>
+                        <t t-if="subscription.state in ['active', 'draft', 'paused']">
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelSubModal">
+                                <i class="fa fa-times me-1"/> Cancel Subscription
+                            </button>
+
+                            <div class="modal fade" id="cancelSubModal" tabindex="-1" aria-labelledby="cancelSubModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form t-attf-action="/my/subscriptions/#{subscription.id}/cancel" method="post">
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title" id="cancelSubModalLabel">Confirm Cancellation</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to cancel your subscription <strong><span t-field="subscription.name"/></strong>?</p>
+                                                <div class="mb-3">
+                                                    <label for="cancel_reason" class="form-label text-muted">Reason for cancellation (optional):</label>
+                                                    <textarea class="form-control" id="cancel_reason" name="cancel_reason" rows="2" placeholder="Tell us why you are cancelling..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                        <span t-if="subscription.state == 'draft'" class="badge rounded-pill text-bg-secondary">Draft</span>
+                        <span t-elif="subscription.state == 'active'" class="badge rounded-pill text-bg-success">Active</span>
+                        <span t-elif="subscription.state == 'paused'" class="badge rounded-pill text-bg-warning">Paused</span>
+                        <span t-elif="subscription.state == 'cancelled'" class="badge rounded-pill text-bg-danger">Cancelled</span>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Left Column: Subscription Plan Info -->
+                        <div class="col-12 col-md-6 mb-4">
+                            <h5 class="border-bottom pb-2 mb-3 fw-bold">Plan &amp; Pricing</h5>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">Plan:</span>
+                                <span class="col-6 fw-bold"><span t-field="subscription.plan_id.name"/></span>
+                            </div>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">Billing Frequency:</span>
+                                <span class="col-6 fw-bold"><span t-field="subscription.plan_id.frequency"/></span>
+                            </div>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">Price:</span>
+                                <span class="col-6 fw-bold">
+                                    <span t-field="subscription.price" t-options='{"widget": "monetary", "display_currency": subscription.currency_id}'/>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Site & Term Info -->
+                        <div class="col-12 col-md-6 mb-4">
+                            <h5 class="border-bottom pb-2 mb-3 fw-bold">Site &amp; Term Details</h5>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">Collection Point:</span>
+                                <span class="col-6 fw-bold"><span t-field="subscription.collection_point_id.name"/></span>
+                            </div>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">Start Date:</span>
+                                <span class="col-6 fw-bold"><span t-field="subscription.start_date" t-options='{"widget": "date"}'/></span>
+                            </div>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">End Date:</span>
+                                <span class="col-6 fw-bold"><span t-field="subscription.end_date" t-options='{"widget": "date"}'/></span>
+                            </div>
+                            <div class="row mb-2">
+                                <span class="col-6 text-muted">Auto-Renew:</span>
+                                <span class="col-6 fw-bold">
+                                    <span t-if="subscription.auto_renew" class="badge text-bg-info">Yes</span>
+                                    <span t-else="" class="badge text-bg-secondary">No</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bundled Categories -->
+                    <t t-if="subscription.plan_id.category_ids">
+                        <h5 class="border-bottom pb-2 mb-3 fw-bold">Bundled Waste Categories</h5>
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                                <tr class="active">
+                                    <th>Category Code</th>
+                                    <th>Waste Category</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="subscription.plan_id.category_ids" t-as="cat">
+                                    <tr>
+                                        <td><span t-field="cat.code"/></td>
+                                        <td><span t-field="cat.name"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- Related Invoices -->
+                    <t t-if="subscription.invoice_ids">
+                        <h5 class="border-bottom pb-2 mb-3 mt-4 fw-bold">Subscription Invoices</h5>
+                        <div class="list-group">
+                            <t t-foreach="subscription.invoice_ids" t-as="inv">
+                                <a t-attf-href="/my/invoices/#{inv.id}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="fa fa-file-text-o me-2 text-primary"/>
+                                        <span t-field="inv.name"/>
+                                    </span>
+                                    <span t-if="inv.payment_state == 'not_paid'" class="badge rounded-pill text-bg-danger">Not Paid</span>
+                                    <span t-elif="inv.payment_state == 'in_payment'" class="badge rounded-pill text-bg-warning">In Payment</span>
+                                    <span t-elif="inv.payment_state == 'paid'" class="badge rounded-pill text-bg-success">Paid</span>
+                                    <span t-elif="inv.payment_state == 'reversed'" class="badge rounded-pill text-bg-secondary">Reversed</span>
+                                    <span t-else="" class="badge rounded-pill text-bg-info"><span t-field="inv.state"/></span>
+                                </a>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Portal Form View: Create Subscription -->
+    <template id="portal_create_subscription_template" name="Create Subscription">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <div class="container py-4">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-8">
+                        <div class="card shadow-sm border-0 rounded-3">
+                            <div class="card-header bg-primary text-white p-3 d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0 fw-bold">
+                                    <i class="fa fa-refresh me-2"/>New Subscription Request
+                                </h4>
+                                <a href="/my/subscriptions" class="btn btn-sm btn-outline-light">
+                                    <i class="fa fa-arrow-left me-1"/> Back to Subscriptions
+                                </a>
+                            </div>
+                            <div class="card-body p-4">
+                                <t t-if="error">
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <i class="fa fa-exclamation-circle me-2"/>
+                                        <t t-if="error == 'missing_fields'">Please fill in all required fields.</t>
+                                        <t t-elif="error == 'invalid_dates'">End date must be after the start date.</t>
+                                        <t t-elif="error == 'past_start_date'">Start date cannot be in the past.</t>
+                                        <t t-elif="error == 'invalid_point'">Please select a valid collection point associated with your account.</t>
+                                        <t t-elif="error == 'invalid_plan'">Please select a valid subscription plan.</t>
+                                        <t t-elif="error == 'active_point_subscription'">The selected collection point already has an active subscription.</t>
+                                        <t t-else=""><span t-esc="error"/></t>
+                                    </div>
+                                </t>
+
+                                <form action="/my/subscriptions/submit" method="post" class="needs-validation">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                    <div class="mb-3">
+                                        <label for="plan_id" class="form-label fw-bold">Select Subscription Plan <span class="text-danger">*</span></label>
+                                        <select id="plan_id" name="plan_id" class="form-select" required="1">
+                                            <option value="">-- Choose a Plan --</option>
+                                            <t t-foreach="plans" t-as="plan">
+                                                <option t-att-value="plan.id">
+                                                    <t t-esc="plan.name"/> - <t t-esc="plan.frequency.title()"/> (<t t-esc="plan.currency_id.symbol or ''"/><t t-esc="'%.2f' % plan.price"/>)
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="collection_point_id" class="form-label fw-bold">Select Collection Point <span class="text-danger">*</span></label>
+                                        <t t-if="not collection_points">
+                                            <div class="alert alert-warning mb-0" role="alert">
+                                                <i class="fa fa-warning me-2"/> No eligible collection points found. All your collection points may already have active subscriptions or none are configured.
+                                            </div>
+                                        </t>
+                                        <t t-else="">
+                                            <select id="collection_point_id" name="collection_point_id" class="form-select" required="1">
+                                                <option value="">-- Choose Collection Location --</option>
+                                                <t t-foreach="collection_points" t-as="cp">
+                                                    <option t-att-value="cp.id"><t t-esc="cp.name"/> (<t t-esc="cp.street or ''"/> <t t-esc="cp.city or ''"/>)</option>
+                                                </t>
+                                            </select>
+                                        </t>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="start_date" class="form-label fw-bold">Start Date <span class="text-danger">*</span></label>
+                                            <input type="date" id="start_date" name="start_date" class="form-control" t-att-value="today_date" t-att-min="today_date" required="1"/>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="end_date" class="form-label fw-bold">End Date <span class="text-danger">*</span></label>
+                                            <input type="date" id="end_date" name="end_date" class="form-control" t-att-min="today_date" required="1"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-check mb-4">
+                                        <input class="form-check-input" type="checkbox" id="auto_renew" name="auto_renew" value="1" checked="1"/>
+                                        <label class="form-check-label" for="auto_renew">
+                                            Auto-renew subscription at end date
+                                        </label>
+                                    </div>
+
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary btn-lg fw-bold" t-att-disabled="not collection_points or not plans">
+                                            <i class="fa fa-paper-plane me-2"/> Submit Subscription Request
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

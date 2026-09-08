@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 1. Unified Compliance Manifest Template -->
+    <template id="report_compliance_manifest_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Helvetica Neue', Arial, sans-serif; color: #212529;">
+                        <style>
+                            /* Strict Page Break Prevention for Wkhtmltopdf */
+                            table {
+                                page-break-inside: auto;
+                            }
+                            tr {
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                            }
+                            td, th {
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                            }
+                            thead {
+                                display: table-header-group;
+                            }
+                            tbody {
+                                display: table-row-group;
+                            }
+                            tfoot {
+                                display: table-footer-group;
+                            }
+                            h2, h3, h4, h5 {
+                                page-break-after: avoid !important;
+                                break-after: avoid !important;
+                            }
+                            .avoid-page-break {
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                            }
+                        </style>
+                        <div class="row text-center" style="margin-bottom: 30px;">
+                            <h2 style="color: #1b4d3e; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 10px;">WASTE COMPLIANCE MANIFEST</h2>
+                            <h4 style="text-transform: uppercase; color: #444;">Manifest Ref: <strong style="color: #000;"><t t-out="doc.name"/></strong></h4>
+                        </div>
+
+                        <div class="row avoid-page-break" style="margin-bottom: 30px; border: 1px solid #d1dfd8; border-radius: 8px; background: #f9fbf9; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); page-break-inside: avoid !important; break-inside: avoid !important;">
+                            <div class="col-4">
+                                <h5 style="color: #1b4d3e; font-weight: bold; border-bottom: 2px solid #d1dfd8; padding-bottom: 5px; margin-bottom: 15px;">1. GENERATOR</h5>
+                                <strong style="font-size: 18px;"><t t-out="doc.generator_id.name"/></strong><br/>
+                                <span style="color: #555;"><t t-out="doc.generator_id.street"/></span><br/>
+                                <span style="color: #555;"><t t-out="doc.generator_id.city"/></span>
+                            </div>
+                            <div class="col-4" style="border-left: 1px dashed #c0d1c8; padding-left: 20px;">
+                                <h5 style="color: #1b4d3e; font-weight: bold; border-bottom: 2px solid #d1dfd8; padding-bottom: 5px; margin-bottom: 15px;">2. TRANSPORTER</h5>
+                                <strong style="font-size: 18px;"><t t-out="doc.transporter_id.name"/></strong><br/>
+                                <span style="color: #555;"><t t-out="doc.transporter_id.street"/></span><br/>
+                                <span style="color: #555;"><t t-out="doc.transporter_id.city"/></span><br/><br/>
+                                <div style="background: #fff3cd; color: #856404; padding: 5px; border-radius: 4px; font-size: 14px; border: 1px solid #ffeeba;">
+                                        <strong>Transport Mode:</strong> <t t-out="dict(doc._fields['transport_mode'].selection).get(doc.transport_mode)"/>
+                                    </div>
+                            </div>
+                            <div class="col-4" style="border-left: 1px dashed #c0d1c8; padding-left: 20px;">
+                                <h5 style="color: #1b4d3e; font-weight: bold; border-bottom: 2px solid #d1dfd8; padding-bottom: 5px; margin-bottom: 15px;">3. DISPOSAL FACILITY</h5>
+                                <strong style="font-size: 18px;"><t t-out="doc.disposal_facility_id.name"/></strong><br/>
+                                <span style="color: #555;"><t t-out="doc.disposal_facility_id.address"/></span><br/><br/>
+                                <strong>Licence No:</strong> <span style="color: #1b4d3e; font-weight: bold;"><t t-out="doc.disposal_facility_id.license_no"/></span><br/>
+                                <strong>Authority:</strong> <t t-out="doc.disposal_facility_id.license_authority"/>
+                            </div>
+                        </div>
+
+                        <h5 style="color: #1b4d3e; font-weight: bold; margin-bottom: 15px; page-break-after: avoid !important; break-after: avoid !important;">4. WASTE DETAILS</h5>
+                        <table class="table table-bordered" style="margin-bottom: 30px; border-color: #d1dfd8; page-break-inside: auto;">
+                            <thead style="background-color: #1b4d3e !important; color: #ffffff !important; font-size: 15px; display: table-header-group;">
+                                <tr style="background-color: #1b4d3e !important; page-break-inside: avoid !important; break-inside: avoid !important;">
+                                    <th style="padding: 12px; border-color: #1b4d3e; background-color: #1b4d3e !important; color: #ffffff !important; page-break-inside: avoid !important;">Category</th>
+                                    <th style="padding: 12px; border-color: #1b4d3e; background-color: #1b4d3e !important; color: #ffffff !important; page-break-inside: avoid !important;">Material / Description</th>
+                                    <th class="text-end" style="padding: 12px; border-color: #1b4d3e; background-color: #1b4d3e !important; color: #ffffff !important; page-break-inside: avoid !important;">Quantity</th>
+                                    <th style="padding: 12px; border-color: #1b4d3e; background-color: #1b4d3e !important; color: #ffffff !important; page-break-inside: avoid !important;">UoM</th>
+                                    <th style="padding: 12px; border-color: #1b4d3e; background-color: #1b4d3e !important; color: #ffffff !important; page-break-inside: avoid !important;">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size: 16px; background: #ffffff;">
+                                <t t-foreach="doc.line_ids" t-as="line">
+                                    <tr style="page-break-inside: avoid !important; break-inside: avoid !important;">
+                                        <td style="padding: 12px; vertical-align: middle; page-break-inside: avoid !important;"><t t-out="line.waste_category_id.name"/></td>
+                                        <td style="padding: 12px; vertical-align: middle; page-break-inside: avoid !important;"><strong><t t-out="line.product_id.display_name or 'N/A'"/></strong></td>
+                                        <td class="text-end" style="padding: 12px; vertical-align: middle; page-break-inside: avoid !important;"><t t-out="line.quantity" t-options="{'widget': 'float', 'precision': 2}"/></td>
+                                        <td style="padding: 12px; vertical-align: middle; page-break-inside: avoid !important;"><t t-out="line.uom_id.name or 'N/A'"/></td>
+                                        <td style="padding: 12px; vertical-align: middle; color: #555; page-break-inside: avoid !important;"><t t-out="line.notes or ''"/></td>
+                                    </tr>
+                                </t>
+                                <tr style="font-weight: bold; background: #f0f4f2; font-size: 18px; page-break-inside: avoid !important; break-inside: avoid !important;">
+                                    <td colspan="2" style="padding: 15px; color: #1b4d3e; page-break-inside: avoid !important;">TOTAL MANIFESTED WEIGHT</td>
+                                    <td class="text-end" style="padding: 15px; color: #1b4d3e; page-break-inside: avoid !important;"><t t-out="doc.total_quantity"/></td>
+                                    <td colspan="2" style="padding: 15px; page-break-inside: avoid !important;"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <t t-if="doc.compliance_code_ids">
+                            <h5 style="color: #1b4d3e; font-weight: bold; margin-bottom: 15px; page-break-after: avoid !important; break-after: avoid !important;">5. APPLICABLE COMPLIANCE CODES</h5>
+                            <div class="avoid-page-break" style="background: #f9fbf9; border: 1px solid #d1dfd8; border-radius: 8px; padding: 15px; margin-bottom: 30px; page-break-inside: avoid !important; break-inside: avoid !important;">
+                                <ul style="list-style-type: none; padding-left: 0; margin-bottom: 0;">
+                                    <t t-foreach="doc.compliance_code_ids" t-as="code">
+                                        <li style="padding: 5px 0; border-bottom: 1px solid #eee;">
+                                            <span style="color: #1b4d3e; margin-right: 10px;">✓</span>
+                                            <strong>Code:</strong> <t t-out="code.name"/>
+                                            <t t-if="code.jurisdiction"> <span style="color: #666; font-style: italic;">(Jurisdiction: <t t-out="code.jurisdiction"/>)</span></t>
+                                        </li>
+                                    </t>
+                                </ul>
+                            </div>
+                        </t>
+
+                        <t t-if="doc.custody_ids">
+                            <div style="page-break-inside: auto;">
+                                <h5 style="color: #1b4d3e; font-weight: bold; margin-bottom: 15px; page-break-after: avoid !important; break-after: avoid !important;">6. CHAIN OF CUSTODY HISTORY</h5>
+                                <table class="table table-bordered" style="margin-bottom: 30px; page-break-inside: auto;">
+                                    <thead style="background: #f0f4f2; color: #333; display: table-header-group;">
+                                        <tr style="page-break-inside: avoid !important; break-inside: avoid !important;">
+                                            <th style="padding: 10px; page-break-inside: avoid !important;">Action</th>
+                                            <th style="padding: 10px; page-break-inside: avoid !important;">Custodian</th>
+                                            <th style="padding: 10px; page-break-inside: avoid !important;">Timestamp</th>
+                                            <th style="padding: 10px; page-break-inside: avoid !important;">Location</th>
+                                            <th style="padding: 10px; page-break-inside: avoid !important;">Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="doc.custody_ids" t-as="c">
+                                            <tr style="page-break-inside: avoid !important; break-inside: avoid !important;">
+                                                <td style="padding: 10px; page-break-inside: avoid !important;"><strong><t t-out="dict(c._fields['action'].selection).get(c.action)"/></strong></td>
+                                                <td style="padding: 10px; page-break-inside: avoid !important;"><t t-out="c.custodian_id.name"/></td>
+                                                <td style="padding: 10px; page-break-inside: avoid !important;"><t t-out="c.timestamp"/></td>
+                                                <td style="padding: 10px; page-break-inside: avoid !important;"><t t-out="c.location or ''"/></td>
+                                                <td style="padding: 10px; color: #666; page-break-inside: avoid !important;"><t t-out="c.notes or ''"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </t>
+
+                        <hr style="border-top: 2px solid #1b4d3e; margin-top: 50px; opacity: 0.3;"/>
+                        <div class="row text-center avoid-page-break" style="margin-top: 30px; font-size: 16px; page-break-inside: avoid !important; break-inside: avoid !important;">
+                            <div class="col-4">
+                                <div style="height: 80px;"></div>
+                                <span style="color: #aaa;">_________________________________</span><br/><br/>
+                                <strong style="color: #1b4d3e;">Generator Sign</strong>
+                            </div>
+                            <div class="col-4">
+                                <div style="height: 80px;"></div>
+                                <span style="color: #aaa;">_________________________________</span><br/><br/>
+                                <strong style="color: #1b4d3e;">Transporter Sign</strong>
+                            </div>
+                            <div class="col-4">
+                                <div style="height: 80px;"></div>
+                                <span style="color: #aaa;">_________________________________</span><br/><br/>
+                                <strong style="color: #1b4d3e;">Facility Receiver Sign</strong>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- 2. Compliance Certificate Template (Executive Theme) -->
+    <template id="report_compliance_certificate_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Helvetica Neue', Arial, sans-serif; color: #212529;">
+                        <style>
+                            .cert-outer-wrapper {
+                                border: 3px double #1b4d3e;
+                                padding: 6px;
+                                background: #ffffff;
+                                border-radius: 6px;
+                                margin-top: 10px;
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                            }
+                            .cert-inner-wrapper {
+                                border: 1.5px solid #c8a14d;
+                                padding: 24px 28px;
+                                background: #fafdfb;
+                                border-radius: 4px;
+                                position: relative;
+                            }
+                            .cert-header {
+                                text-align: center;
+                                border-bottom: 2px solid #1b4d3e;
+                                padding-bottom: 16px;
+                                margin-bottom: 18px;
+                            }
+                            .cert-title-badge {
+                                display: inline-block;
+                                font-size: 11px;
+                                font-weight: 700;
+                                letter-spacing: 2px;
+                                text-transform: uppercase;
+                                color: #1b4d3e;
+                                background: #e8f3ee;
+                                border: 1px solid #c0dcd0;
+                                border-radius: 20px;
+                                padding: 3px 14px;
+                                margin-bottom: 8px;
+                            }
+                            .cert-main-title {
+                                font-size: 23px;
+                                font-weight: 800;
+                                color: #1b4d3e;
+                                letter-spacing: 1px;
+                                text-transform: uppercase;
+                                margin: 4px 0 2px 0;
+                            }
+                            .cert-sub-title {
+                                font-size: 12px;
+                                font-weight: 600;
+                                color: #8a702b;
+                                letter-spacing: 1.5px;
+                                text-transform: uppercase;
+                                margin: 0;
+                            }
+                            .cert-ref-bar {
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                margin-top: 12px;
+                                padding: 6px 14px;
+                                background: #ffffff;
+                                border: 1px solid #e1ebe5;
+                                border-radius: 4px;
+                                font-size: 13px;
+                            }
+                            .cert-proclamation {
+                                text-align: center;
+                                font-size: 13.5px;
+                                line-height: 1.6;
+                                color: #2c3e50;
+                                margin: 16px 0 20px 0;
+                                padding: 12px 20px;
+                                background: #f0f7f3;
+                                border-left: 4px solid #1b4d3e;
+                                border-right: 4px solid #1b4d3e;
+                                border-radius: 4px;
+                                font-style: italic;
+                            }
+                            .cert-section-title {
+                                font-size: 12px;
+                                font-weight: 800;
+                                text-transform: uppercase;
+                                letter-spacing: 1px;
+                                color: #1b4d3e;
+                                border-bottom: 1.5px solid #1b4d3e;
+                                padding-bottom: 4px;
+                                margin-bottom: 12px;
+                                margin-top: 8px;
+                                page-break-after: avoid !important;
+                                break-after: avoid !important;
+                            }
+                            table.cert-grid {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-bottom: 18px;
+                                font-size: 12.5px;
+                                page-break-inside: auto;
+                            }
+                            table.cert-grid tr,
+                            table.cert-grid td {
+                                padding: 7px 10px;
+                                border: 1px solid #dce8e1;
+                                vertical-align: middle;
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                            }
+                            table.cert-grid td.cert-lbl {
+                                font-weight: 700;
+                                color: #444;
+                                background: #f4f8f5;
+                                width: 22%;
+                            }
+                            table.cert-grid td.cert-val {
+                                color: #111;
+                                width: 28%;
+                            }
+                            .cert-seal-box {
+                                border: 2px dashed #c8a14d;
+                                border-radius: 50%;
+                                width: 88px;
+                                height: 88px;
+                                padding: 10px 4px;
+                                text-align: center;
+                                color: #8a702b;
+                                font-size: 9px;
+                                font-weight: 700;
+                                letter-spacing: 0.5px;
+                                text-transform: uppercase;
+                                margin: 0 auto;
+                                background: #ffffff;
+                                box-shadow: 0 0 0 4px #fafdfb;
+                            }
+                            .cert-hash-box {
+                                background: #ffffff;
+                                border: 1px solid #c2d8cc;
+                                border-radius: 4px;
+                                padding: 8px 12px;
+                                font-size: 11px;
+                                line-height: 1.4;
+                            }
+                        </style>
+
+                        <!-- Certificate Double-Border Frame -->
+                        <div class="cert-outer-wrapper">
+                            <div class="cert-inner-wrapper">
+
+                                <!-- Header -->
+                                <div class="cert-header">
+                                    <span class="cert-title-badge">Statutory Environmental Document</span>
+                                    <h2 class="cert-main-title">Certificate of Environmental Compliance</h2>
+                                    <p class="cert-sub-title">Official Verification of Waste Processing, Treatment &amp; Disposal</p>
+
+                                    <!-- Reference Bar -->
+                                    <div class="cert-ref-bar">
+                                        <div>
+                                            <span style="color: #666;">Certificate No:</span>
+                                            <strong style="color: #1b4d3e; font-size: 14px; margin-left: 4px;"><t t-out="doc.certificate_no"/></strong>
+                                        </div>
+                                        <div>
+                                            <span style="color: #666;">Operation Type:</span>
+                                            <span class="badge" style="background:#1b4d3e; color:#fff; font-size:11px; padding:3px 9px; margin-left:4px; text-transform:uppercase;">
+                                                <t t-out="dict(doc._fields['certificate_type'].selection).get(doc.certificate_type)"/>
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <t t-if="doc.state == 'draft'">
+                                                <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 10px; font-weight: 700;">⚠ DRAFT PREVIEW</span>
+                                            </t>
+                                            <t t-if="doc.state == 'issued'">
+                                                <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 10px; font-weight: 700;">✓ OFFICIAL / ISSUED</span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Draft Watermark Banner -->
+                                <t t-if="doc.state == 'draft'">
+                                    <div style="background: #fff8e1; border: 1.5px dashed #ffa000; border-radius: 4px; padding: 8px 14px; margin-bottom: 14px; text-align: center;">
+                                        <strong style="color: #b78103; font-size: 12px;">⚠ DRAFT PREVIEW — This certificate is unissued and subject to formal verification prior to authorization.</strong>
+                                    </div>
+                                </t>
+
+                                <!-- Formal Proclamation Statement -->
+                                <div class="cert-proclamation">
+                                    "This is to officially certify that the waste materials described herein have been lawfully received, inspected, and processed at an authorized environmental facility in strict compliance with applicable environmental protection standards, statutory regulations, and facility operational permits."
+                                </div>
+
+                                <!-- Certified Specifications Matrix -->
+                                <div class="cert-section-title">Certification Specifications</div>
+                                <table class="cert-grid">
+                                    <tr>
+                                        <td class="cert-lbl">Certificate Scope:</td>
+                                        <td class="cert-val"><strong style="color: #1b4d3e;"><t t-out="doc.name"/></strong></td>
+                                        <td class="cert-lbl">Operation Type:</td>
+                                        <td class="cert-val"><strong><t t-out="dict(doc._fields['certificate_type'].selection).get(doc.certificate_type)"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="cert-lbl">Certified Facility:</td>
+                                        <td class="cert-val"><strong><t t-out="doc.facility_id.name"/></strong></td>
+                                        <td class="cert-lbl">Facility Operating Licence:</td>
+                                        <td class="cert-val">
+                                            <strong style="color: #1b4d3e;"><t t-out="doc.facility_id.license_no or 'N/A'"/></strong>
+                                            <t t-if="doc.facility_id.license_authority">
+                                                <span style="font-size: 11px; color: #666;"> (<t t-out="doc.facility_id.license_authority"/>)</span>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="cert-lbl">Facility Address:</td>
+                                        <td class="cert-val"><t t-out="doc.facility_id.address or 'N/A'"/></td>
+                                        <td class="cert-lbl">Issue Date:</td>
+                                        <td class="cert-val">
+                                            <t t-if="doc.issued_date">
+                                                <strong><t t-out="doc.issued_date"/></strong>
+                                            </t>
+                                            <t t-else="">
+                                                <span style="color: #888; font-style: italic;">Pending Issuance</span>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="cert-lbl">Certified Net Quantity:</td>
+                                        <td class="cert-val">
+                                            <strong style="font-size: 14px; color: #1b4d3e;"><t t-out="'%.3f' % doc.quantity"/> <t t-out="doc.uom_id.name or ''"/></strong>
+                                        </td>
+                                        <td class="cert-lbl">Issuing Company:</td>
+                                        <td class="cert-val"><t t-out="doc.company_id.name"/></td>
+                                    </tr>
+                                </table>
+
+                                <!-- Linked Manifest Details (if any) -->
+                                <t t-if="doc.manifest_id">
+                                    <div class="cert-section-title">Linked Manifest &amp; Custody Traceability</div>
+                                    <table class="cert-grid">
+                                        <tr>
+                                            <td class="cert-lbl">Linked Manifest:</td>
+                                            <td class="cert-val"><strong style="color: #1b4d3e;"><t t-out="doc.manifest_id.name"/></strong></td>
+                                            <td class="cert-lbl">Waste Generator:</td>
+                                            <td class="cert-val"><strong><t t-out="doc.manifest_id.generator_id.name or 'N/A'"/></strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="cert-lbl">Licensed Transporter:</td>
+                                            <td class="cert-val"><t t-out="doc.manifest_id.transporter_id.name or 'N/A'"/></td>
+                                            <td class="cert-lbl">Transport Mode:</td>
+                                            <td class="cert-val">
+                                                <t t-if="doc.manifest_id.transport_mode">
+                                                    <t t-out="dict(doc.manifest_id._fields['transport_mode'].selection).get(doc.manifest_id.transport_mode)"/>
+                                                </t>
+                                                <t t-else="">—</t>
+                                            </td>
+                                        </tr>
+                                        <t t-if="doc.manifest_id.compliance_code_ids">
+                                            <tr>
+                                                <td class="cert-lbl">Regulatory Codes:</td>
+                                                <td class="cert-val" colspan="3">
+                                                    <t t-foreach="doc.manifest_id.compliance_code_ids" t-as="code">
+                                                        <span class="badge bg-light text-dark border me-1" style="font-size: 11px; padding: 2px 7px;">
+                                                            <t t-out="code.name"/><t t-if="code.jurisdiction"> (<t t-out="code.jurisdiction"/>)</t>
+                                                        </span>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </table>
+                                </t>
+
+                                <!-- Authentication & Signatures -->
+                                <div class="row" style="margin-top: 20px; align-items: flex-end;">
+                                    <!-- SHA-256 Digital Verification -->
+                                    <div class="col-5">
+                                        <t t-if="doc.signature_id">
+                                            <div class="cert-hash-box">
+                                                <strong style="color: #1b4d3e; font-size: 11.5px;">✓ SHA-256 Digitally Signed Document</strong><br/>
+                                                <span style="color: #555;">Signer:</span> <strong><t t-out="doc.signature_signer_id.name"/></strong><br/>
+                                                <span style="color: #555;">Timestamp:</span> <t t-out="doc.signature_signed_at"/><br/>
+                                                <span style="color: #555;">Digest:</span> <span style="font-family: monospace; font-size: 9.5px; color: #1b4d3e; word-break: break-all;"><t t-out="doc.signature_pdf_hash"/></span>
+                                            </div>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="cert-hash-box" style="border-style: dashed; color: #888; text-align: center; padding: 14px 10px;">
+                                                <span>Digital Signature &amp; Cryptographic Seal applied upon formal issuance.</span>
+                                            </div>
+                                        </t>
+                                    </div>
+
+                                    <!-- Certified Emblem Seal -->
+                                    <div class="col-3 text-center">
+                                        <div class="cert-seal-box">
+                                            <span style="font-size: 13px;">★ ★ ★</span><br/>
+                                            <span>OFFICIALLY</span><br/>
+                                            <span style="color: #1b4d3e; font-size: 10px;">CERTIFIED</span><br/>
+                                            <span>COMPLIANCE</span><br/>
+                                            <span style="font-size: 8px;">★ ★ ★</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Authorized Signatory -->
+                                    <div class="col-4 text-center">
+                                        <div style="height: 45px;"></div>
+                                        <div style="border-bottom: 1.5px solid #1b4d3e; width: 90%; margin: 0 auto 6px auto;"></div>
+                                        <strong style="font-size: 13px; color: #1b4d3e;">Authorized Facility Signatory</strong><br/>
+                                        <span style="font-size: 11px; color: #666;"><t t-out="doc.facility_id.name"/></span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.vehicle.maintenance.checklist - wm.vehicle.maintenance.checklist.form (Form) -->
+    <record id="view_wm_vehicle_maintenance_checklist_form" model="ir.ui.view">
+        <field name="name">wm.vehicle.maintenance.checklist.form</field>
+        <field name="model">wm.vehicle.maintenance.checklist</field>
+        <field name="arch" type="xml">
+            <form string="Maintenance Checklist">
+                <header>
+                    <field name="state" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="vehicle_id" required="1"/>
+                            <field name="checklist_type" required="1"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="inspector_id" required="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Items">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="item_id" domain="[('checklist_type', '=', parent.checklist_type)]"/>
+                                    <field name="is_passed"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- View: wm.vehicle.maintenance.checklist - wm.vehicle.maintenance.checklist.list (List) -->
+    <record id="view_wm_vehicle_maintenance_checklist_list" model="ir.ui.view">
+        <field name="name">wm.vehicle.maintenance.checklist.list</field>
+        <field name="model">wm.vehicle.maintenance.checklist</field>
+        <field name="arch" type="xml">
+            <list string="Maintenance Checklists">
+                <field name="name"/>
+                <field name="vehicle_id"/>
+                <field name="checklist_type"/>
+                <field name="date"/>
+                <field name="inspector_id"/>
+                <field name="state" widget="badge" decoration-success="state == 'checked'" decoration-warning="state == 'tocheck'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action: Maintenance Checklists -->
+    <record id="action_wm_vehicle_maintenance_checklist" model="ir.actions.act_window">
+        <field name="name">Maintenance Checklists</field>
+        <field name="res_model">wm.vehicle.maintenance.checklist</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Checklist Item Views -->
+    <record id="view_wm_checklist_item_form" model="ir.ui.view">
+        <field name="name">wm.checklist.item.form</field>
+        <field name="model">wm.checklist.item</field>
+        <field name="arch" type="xml">
+            <form string="Checklist Item">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Item Name..."/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="checklist_type"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- View: wm.checklist.item - wm.checklist.item.list (List) -->
+    <record id="view_wm_checklist_item_list" model="ir.ui.view">
+        <field name="name">wm.checklist.item.list</field>
+        <field name="model">wm.checklist.item</field>
+        <field name="arch" type="xml">
+            <list string="Checklist Items" editable="bottom">
+                <field name="name"/>
+                <field name="checklist_type"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action: Pre-Trip Checklist Items -->
+    <record id="action_wm_checklist_item_pre_trip" model="ir.actions.act_window">
+        <field name="name">Pre-Trip Checklist Items</field>
+        <field name="res_model">wm.checklist.item</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('checklist_type', '=', 'pre_trip')]</field>
+        <field name="context">{'default_checklist_type': 'pre_trip'}</field>
+    </record>
+
+    <!-- Action: Post-Trip Checklist Items -->
+    <record id="action_wm_checklist_item_post_trip" model="ir.actions.act_window">
+        <field name="name">Post-Trip Checklist Items</field>
+        <field name="res_model">wm.checklist.item</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('checklist_type', '=', 'post_trip')]</field>
+        <field name="context">{'default_checklist_type': 'post_trip'}</field>
+    </record>
+</odoo>

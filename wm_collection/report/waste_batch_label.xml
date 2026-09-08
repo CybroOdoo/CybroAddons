@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ── Report Action ─────────────────────────────────────────────────── -->
+    <record id="action_waste_batch_label" model="ir.actions.report">
+        <field name="name">Waste Batch Label</field>
+        <field name="model">waste.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wm_collection.report_waste_batch_label</field>
+        <field name="report_file">wm_collection.report_waste_batch_label</field>
+        <field name="print_report_name">'Waste-Label-%s' % object.name</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="model_waste_batch"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- ── QWeb Template ─────────────────────────────────────────────────── -->
+    <template id="report_waste_batch_label">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <style>
+                            .wm-label-box {
+                                border: 2px solid #333;
+                                border-radius: 8px;
+                                padding: 20px 24px;
+                                font-family: 'Helvetica Neue', Arial, sans-serif;
+                                max-width: 560px;
+                                margin: 0 auto;
+                            }
+                            .wm-label-header {
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: flex-start;
+                                border-bottom: 2px solid #333;
+                                padding-bottom: 10px;
+                                margin-bottom: 14px;
+                            }
+                            .wm-batch-no {
+                                font-size: 22px;
+                                font-weight: 700;
+                                color: #1a1a1a;
+                            }
+                            .wm-haz-badge {
+                                background: #dc3545;
+                                color: #fff;
+                                font-size: 11px;
+                                font-weight: 700;
+                                border-radius: 4px;
+                                padding: 4px 8px;
+                            }
+                            .wm-label-row {
+                                display: flex;
+                                margin-bottom: 6px;
+                                font-size: 13px;
+                            }
+                            .wm-label-key {
+                                font-weight: 600;
+                                min-width: 140px;
+                                color: #555;
+                            }
+                            .wm-label-val {
+                                color: #1a1a1a;
+                            }
+                            .wm-barcode-section {
+                                text-align: center;
+                                margin-top: 18px;
+                                padding-top: 14px;
+                                border-top: 1px dashed #aaa;
+                            }
+                            .wm-barcode-section img {
+                                height: 55px;
+                            }
+                            .wm-lot-text {
+                                font-size: 11px;
+                                color: #666;
+                                margin-top: 4px;
+                                letter-spacing: 1.5px;
+                            }
+                        </style>
+
+                        <div class="wm-label-box">
+                            <!-- Header -->
+                            <div class="wm-label-header">
+                                <div class="wm-batch-no">
+                                    <t t-esc="o.name"/>
+                                </div>
+                                <div t-if="o.hazardous" class="wm-haz-badge">
+                                    ⚠ HAZARDOUS
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="wm-label-row">
+                                <span class="wm-label-key">Materials:</span>
+                                <span class="wm-label-val">
+                                    <t t-esc="', '.join(o.line_ids.mapped('product_id.name'))"/>
+                                </span>
+                            </div>
+                            <div class="wm-label-row">
+                                <span class="wm-label-key">Categories:</span>
+                                <span class="wm-label-val">
+                                    <t t-esc="', '.join(o.line_ids.mapped('category_id.name'))"/>
+                                </span>
+                            </div>
+                            <div class="wm-label-row">
+                                <span class="wm-label-key">Total Quantity:</span>
+                                <span class="wm-label-val">
+                                    <t t-esc="o.draft_quantity"/>
+                                    <t t-esc="o.uom_id.name"/>
+                                </span>
+                            </div>
+                            <div t-if="o.net_weight" class="wm-label-row">
+                                <span class="wm-label-key">Net Weight:</span>
+                                <span class="wm-label-val">
+                                    <t t-esc="'%.3f' % o.net_weight"/> kg
+                                </span>
+                            </div>
+                            <div class="wm-label-row">
+                                <span class="wm-label-key">Location:</span>
+                                <span class="wm-label-val">
+                                    <t t-esc="o.location_id.complete_name"/>
+                                </span>
+                            </div>
+                            <div class="wm-label-row">
+                                <span class="wm-label-key">Received Date:</span>
+                                <span class="wm-label-val">
+                                    <t t-esc="o.received_date"/>
+                                </span>
+                            </div>
+                            <div t-if="o.container_type_id" class="wm-label-row">
+                                <span class="wm-label-key">Container:</span>
+                                <span class="wm-label-val">
+                                    <t t-esc="o.container_count"/> x
+                                    <t t-esc="o.container_type_id.name"/>
+                                </span>
+                            </div>
+
+                            <!-- Barcode -->
+                            <div class="wm-barcode-section">
+                                <img t-att-src="'/report/barcode/Code128/' + o.name"
+                                     alt="Batch Barcode"/>
+                                <div class="wm-lot-text">
+                                    <t t-esc="o.name"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template: Missed Collection Report Document (report_missed_collection_document) -->
+    <template id="report_missed_collection_document" name="Missed Collection Report Document">
+        <!-- Template for report missed collection document -->
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <t t-set="rd" t-value="report_data[wizard.id]"/>
+                <t t-call="web.external_layout">
+                <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #333333; line-height: 1.5;">
+
+                    <!-- Header -->
+                    <div style="border-bottom: 2px solid #007bff; padding-bottom: 15px; margin-bottom: 20px;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td>
+                                    <h1 style="margin: 0; color: #007bff; font-size: 22px; font-weight: bold; text-transform: uppercase;">Missed Collection Report</h1>
+                                    <p style="margin: 3px 0 0 0; color: #666; font-size: 12px;">Weekly Operations Review</p>
+                                </td>
+                                <td style="text-align: right; vertical-align: middle;">
+                                    <p style="margin: 0; font-size: 12px;">
+                                        <strong>Period:</strong>
+                                        <span t-esc="wizard.date_from"/> — <span t-esc="wizard.date_to"/>
+                                    </p>
+                                    <p style="margin: 0; font-size: 12px;" t-if="wizard.route_id">
+                                        <strong>Route:</strong> <span t-esc="wizard.route_id.display_name"/>
+                                    </p>
+                                    <p style="margin: 0; font-size: 12px;" t-if="wizard.reason_id">
+                                        <strong>Reason:</strong> <span t-esc="wizard.reason_id.name"/>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Summary -->
+                    <h2 style="font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 3px; color: #333; margin-bottom: 10px; font-weight: bold;">Summary</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr>
+                            <td style="width: 50%; padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Total Missed Collections</td>
+                            <td style="width: 50%; padding: 6px; border: 1px solid #eee;"><span t-esc="rd['total']"/></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px; font-weight: bold; background: #f9f9f9; border: 1px solid #eee;">Customers Not Yet Notified</td>
+                            <td style="padding: 6px; border: 1px solid #eee;"><span t-esc="rd['not_notified']"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- By Reason / By Route -->
+                    <table style="width: 100%; margin-bottom: 20px;">
+                        <tr>
+                            <td style="width: 48%; vertical-align: top;">
+                                <h2 style="font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 3px; color: #333; margin-bottom: 10px; font-weight: bold;">By Reason</h2>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <th style="text-align: left; padding: 6px; background: #f1f3f5; border: 1px solid #eee;">Reason</th>
+                                        <th style="text-align: right; padding: 6px; background: #f1f3f5; border: 1px solid #eee;">Count</th>
+                                    </tr>
+                                    <tr t-foreach="rd['by_reason']" t-as="row">
+                                        <td style="padding: 6px; border: 1px solid #eee;"><span t-esc="row['label']"/></td>
+                                        <td style="text-align: right; padding: 6px; border: 1px solid #eee;"><span t-esc="row['count']"/></td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td style="width: 4%;"/>
+                            <td style="width: 48%; vertical-align: top;">
+                                <h2 style="font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 3px; color: #333; margin-bottom: 10px; font-weight: bold;">By Route</h2>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <th style="text-align: left; padding: 6px; background: #f1f3f5; border: 1px solid #eee;">Route</th>
+                                        <th style="text-align: right; padding: 6px; background: #f1f3f5; border: 1px solid #eee;">Count</th>
+                                    </tr>
+                                    <tr t-foreach="rd['by_route']" t-as="row">
+                                        <td style="padding: 6px; border: 1px solid #eee;"><span t-esc="row['label']"/></td>
+                                        <td style="text-align: right; padding: 6px; border: 1px solid #eee;"><span t-esc="row['count']"/></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- By Customer -->
+                    <h2 style="font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 3px; color: #333; margin-bottom: 10px; font-weight: bold;">By Customer</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr>
+                            <th style="text-align: left; padding: 6px; background: #f1f3f5; border: 1px solid #eee;">Customer</th>
+                            <th style="text-align: right; padding: 6px; background: #f1f3f5; border: 1px solid #eee;">Missed Count</th>
+                        </tr>
+                        <tr t-foreach="rd['by_customer']" t-as="row">
+                            <td style="padding: 6px; border: 1px solid #eee;"><span t-esc="row['label']"/></td>
+                            <td style="text-align: right; padding: 6px; border: 1px solid #eee;"><span t-esc="row['count']"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- Detail -->
+                    <h2 style="font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 3px; color: #333; margin-bottom: 10px; font-weight: bold;">Detail</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px;">
+                        <tr>
+                            <th style="text-align: left; padding: 5px; background: #f1f3f5; border: 1px solid #eee;">Reference</th>
+                            <th style="text-align: left; padding: 5px; background: #f1f3f5; border: 1px solid #eee;">Date</th>
+                            <th style="text-align: left; padding: 5px; background: #f1f3f5; border: 1px solid #eee;">Customer</th>
+                            <th style="text-align: left; padding: 5px; background: #f1f3f5; border: 1px solid #eee;">Reason</th>
+                            <th style="text-align: left; padding: 5px; background: #f1f3f5; border: 1px solid #eee;">Route</th>
+                            <th style="text-align: left; padding: 5px; background: #f1f3f5; border: 1px solid #eee;">Retry Order</th>
+                            <th style="text-align: center; padding: 5px; background: #f1f3f5; border: 1px solid #eee;">Notified</th>
+                        </tr>
+                        <tr t-foreach="rd['records']" t-as="line">
+                            <td style="padding: 5px; border: 1px solid #eee;"><span t-esc="line.name"/></td>
+                            <td style="padding: 5px; border: 1px solid #eee;"><span t-esc="line.missed_date" t-options="{'widget': 'datetime'}"/></td>
+                            <td style="padding: 5px; border: 1px solid #eee;"><span t-esc="line.partner_id.display_name"/></td>
+                            <td style="padding: 5px; border: 1px solid #eee;"><span t-esc="line.reason_id.name"/></td>
+                            <td style="padding: 5px; border: 1px solid #eee;"><span t-esc="line.route_id.display_name"/></td>
+                            <td style="padding: 5px; border: 1px solid #eee;"><span t-esc="line.retry_order_id.name or '-'"/></td>
+                            <td style="text-align: center; padding: 5px; border: 1px solid #eee;">
+                                <span t-if="line.customer_notified">Yes</span>
+                                <span t-else="">No</span>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <p style="font-size: 10px; color: #888; margin-top: 30px;">
+                        Use this report to identify recurring patterns by customer, reason, or route
+                        and inform operational changes such as customer education on bin placement
+                        or route timing adjustments.
+                    </p>
+                </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

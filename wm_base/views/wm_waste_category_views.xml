@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.waste.category - wm.waste.category.list (List) -->
+    <record id="view_wm_waste_category_list" model="ir.ui.view">
+        <field name="name">wm.waste.category.list</field>
+        <field name="model">wm.waste.category</field>
+        <field name="arch" type="xml">
+            <list string="Waste Categories">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="price"/>
+                <field name="warm_factor_co2"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.waste.category - wm.waste.category.form (Form) -->
+    <record id="view_wm_waste_category_form" model="ir.ui.view">
+        <field name="name">wm.waste.category.form</field>
+        <field name="model">wm.waste.category</field>
+        <field name="arch" type="xml">
+            <form string="Waste Category">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Category Name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="price"/>
+                            <field name="service_product_id"/>
+                            <field name="warm_factor_co2"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                            <field name="sequence"/>
+                            <field name="default_processing"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Products" name="products">
+                            <field name="product_ids" widget="many2many" domain="['|', ('wm_waste_category_id', '=', False), ('wm_waste_category_id', '=', id)]"
+                                   context="{'default_is_waste_material': True}">
+                                <list string="Products" editable="bottom">
+                                    <field name="name"/>
+                                    <field name="default_code"/>
+                                    <field name="list_price"/>
+                                    <field name="uom_id"/>
+                                    <field name="hazardous"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- View: wm.waste.category - wm.waste.category.search (Search) -->
+    <record id="view_wm_waste_category_search" model="ir.ui.view">
+        <field name="name">wm.waste.category.search</field>
+        <field name="model">wm.waste.category</field>
+        <field name="arch" type="xml">
+            <search string="Search Waste Categories">
+                <field name="name"/>
+                <field name="code"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Waste Categories -->
+    <record id="action_wm_waste_category" model="ir.actions.act_window">
+        <field name="name">Waste Categories</field>
+        <field name="res_model">wm.waste.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu: Waste Categories -->
+    <menuitem id="menu_wm_waste_category" name="Waste Categories" parent="menu_wm_master_data" action="action_wm_waste_category" sequence="5"/>
+</odoo>

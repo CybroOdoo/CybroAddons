@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Contract Manager: Full contract and SLA management -->
+        <record id="group_wm_contract_manager" model="res.groups">
+            <field name="name">Contract Manager</field>
+            <field name="privilege_id" ref="wm_base.privilege_wm_role"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('wm_base.group_signature_user'))]"/>
+        </record>
+
+        <!-- Extend WM Admin to inherit Contract Manager access -->
+        <record id="wm_base.group_wm_admin" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('group_wm_contract_manager'))]"/>
+        </record>
+
+        <!-- Global Multi-Company Rule for Partner Contract -->
+        <record id="rule_wm_partner_contract_company" model="ir.rule">
+            <field name="name">Partner Contract Multi-Company Rule</field>
+            <field name="model_id" ref="model_wm_partner_contract"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+    </data>
+</odoo>

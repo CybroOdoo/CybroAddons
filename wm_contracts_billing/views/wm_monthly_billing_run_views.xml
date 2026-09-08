@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.monthly.billing.run - wm.monthly.billing.run.list (List) -->
+    <record id="view_wm_monthly_billing_run_list" model="ir.ui.view">
+        <field name="name">wm.monthly.billing.run.list</field>
+        <field name="model">wm.monthly.billing.run</field>
+        <field name="arch" type="xml">
+            <list string="Monthly Billing Runs" decoration-info="state == 'draft'" decoration-success="state == 'done'" decoration-danger="state == 'error'">
+                <field name="name"/>
+                <field name="period_start"/>
+                <field name="period_end"/>
+                <field name="invoice_count"/>
+                <field name="state" widget="badge"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.monthly.billing.run - wm.monthly.billing.run.form (Form) -->
+    <record id="view_wm_monthly_billing_run_form" model="ir.ui.view">
+        <field name="name">wm.monthly.billing.run.form</field>
+        <field name="model">wm.monthly.billing.run</field>
+        <field name="arch" type="xml">
+            <form string="Monthly Billing Run">
+                <header>
+                    <button name="action_run_billing" string="Run Billing" type="object" class="btn-primary" invisible="state == 'done'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="invoice_count == 0">
+                            <field name="invoice_count" widget="statinfo" string="Invoices"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="period_start"/>
+                            <field name="period_end"/>
+                        </group>
+                        <group>
+                            <field name="partner_ids" widget="many2many_tags" placeholder="All Monthly Customers"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Run Summary" name="lines">
+                            <field name="line_ids" readonly="1">
+                                <list string="Billed Partners">
+                                    <field name="partner_id"/>
+                                    <field name="invoice_id"/>
+                                    <field name="total_amount" sum="Total Billed"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Execution Log" name="logs">
+                            <field name="error_message" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- View: wm.monthly.billing.run - wm.monthly.billing.run.search (Search) -->
+    <record id="view_wm_monthly_billing_run_search" model="ir.ui.view">
+        <field name="name">wm.monthly.billing.run.search</field>
+        <field name="model">wm.monthly.billing.run</field>
+        <field name="arch" type="xml">
+            <search string="Search Billing Runs">
+                <field name="name"/>
+                <field name="period_start"/>
+                <field name="period_end"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Completed" name="done" domain="[('state', '=', 'done')]"/>
+                <filter string="Errors" name="error" domain="[('state', '=', 'error')]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Monthly Billing Runs -->
+    <record id="action_wm_monthly_billing_run" model="ir.actions.act_window">
+        <field name="name">Monthly Billing Runs</field>
+        <field name="res_model">wm.monthly.billing.run</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wm_monthly_billing_run_search"/>
+    </record>
+</odoo>

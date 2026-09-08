@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Window view for Machine Menu-->
+    <record id="action_menu_partner_contract_wm" model="ir.actions.act_window">
+        <field name="name">Contracts</field>
+        <field name="res_model">wm.partner.contract</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first Partner Contract</p>
+        </field>
+    </record>
+
+    <!-- Standalone list view: opens the form on click, not inline-editable.
+         Used by the main Contracts menu/action. -->
+    <record id="view_partner_contract_list" model="ir.ui.view">
+        <field name="name">partner.contract.list</field>
+        <field name="model">wm.partner.contract</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="from_date"/>
+                <field name="to_date"/>
+                <field name="collection_point_ids" widget="many2many_tags"/>
+                <field name="sla_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state in ('sent', 'signed', 'ongoing')"
+                       decoration-info="state == 'confirmed'"
+                       decoration-danger="state in ('expired', 'cancelled')"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.partner.contract - wm.partner.contract.search (Search) -->
+    <record id="view_partner_contract_search" model="ir.ui.view">
+        <field name="name">wm.partner.contract.search</field>
+        <field name="model">wm.partner.contract</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <filter string="Ongoing" name="ongoing" domain="[('state', '=', 'ongoing')]"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <group>
+                    <filter string="Customer" name="group_partner" context="{'group_by':'partner_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by':'state'}"/>
+                    <filter string="Billing Basis" name="group_billing" context="{'group_by':'billing_basis'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- View: wm.partner.contract - wm.partner.contract.form (Form) -->
+    <record id="wm_partner_contract_form" model="ir.ui.view">
+        <field name="name">wm.partner.contract.form</field>
+        <field name="model">wm.partner.contract</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_send" type="object" string="Send"
+                            class="btn-primary" invisible="state not in ('draft', 'sent')"/>
+                    <button name="action_confirm" type="object" string="Confirm"
+                            class="btn-primary" invisible="state != 'signed'"
+                            groups="wm_contracts_billing.group_wm_contract_manager"/>
+                    <button name="action_start" type="object" string="Start"
+                            class="btn-primary" invisible="state != 'confirmed'"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state in ('cancelled', 'expired')"
+                            groups="wm_contracts_billing.group_wm_contract_manager"/>
+                    <button name="action_reset_to_draft" type="object" string="Reset to Draft"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,sent,signed,confirmed,ongoing"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning text-center o_form_header" role="alert"
+                         invisible="state not in ('sent', 'signed', 'confirmed') or not is_from_date_passed"
+                         style="margin-bottom: 0px;">
+                        <strong>Warning:</strong> This contract's start date has already passed but it has not been activated yet.
+                    </div>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_signatures" type="object" class="oe_stat_button" icon="fa-pencil" invisible="signature_signer_count == 0">
+                            <field name="signature_signer_count" widget="statinfo" string="Signatures"/>
+                        </button>
+                        <button name="action_view_collection_point" type="object" class="oe_stat_button" icon="fa-map-marker" invisible="not partner_id">
+                            <field name="collection_point_count" widget="statinfo" string="Collection Point"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <field name="selected_product_ids" invisible="1"/>
+                    <field name="is_from_date_passed" invisible="1"/>
+                    <group>
+                        <group string="Contract &amp; Billing Terms">
+                            <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                            <field name="sla_id" readonly="state != 'draft'"/>
+                            <field name="billing_basis" string="Billing Basis" readonly="state != 'draft'"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="fixed_price" invisible="billing_basis not in ('per_collection', 'hybrid')" readonly="state != 'draft'"/>
+                            <field name="max_weight" invisible="billing_basis != 'per_collection'" readonly="state != 'draft'"/>
+                            <field name="overweight_price" invisible="billing_basis != 'per_collection'" readonly="state != 'draft'"/>
+                            <field name="included_weight" invisible="billing_basis != 'hybrid'" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Validity &amp; Schedule">
+                            <field name="from_date" readonly="state != 'draft'"/>
+                            <field name="to_date" readonly="state != 'draft'"/>
+                            <field name="frequency" readonly="state != 'draft'"/>
+                            <field name="no_of_frequency" readonly="state != 'draft'"/>
+                            <label for="monday" string="Collection Weekdays" invisible="frequency != 'weekly'"/>
+                            <div class="o_row d-flex flex-wrap align-items-center gap-1" invisible="frequency != 'weekly'">
+                                <span class="d-inline-flex align-items-center me-2"><field name="monday" readonly="state != 'draft'"/> <label for="monday" class="ms-1 mb-0"/></span>
+                                <span class="d-inline-flex align-items-center me-2"><field name="tuesday" readonly="state != 'draft'"/> <label for="tuesday" class="ms-1 mb-0"/></span>
+                                <span class="d-inline-flex align-items-center me-2"><field name="wednesday" readonly="state != 'draft'"/> <label for="wednesday" class="ms-1 mb-0"/></span>
+                                <span class="d-inline-flex align-items-center me-2"><field name="thursday" readonly="state != 'draft'"/> <label for="thursday" class="ms-1 mb-0"/></span>
+                                <span class="d-inline-flex align-items-center me-2"><field name="friday" readonly="state != 'draft'"/> <label for="friday" class="ms-1 mb-0"/></span>
+                                <span class="d-inline-flex align-items-center me-2"><field name="saturday" readonly="state != 'draft'"/> <label for="saturday" class="ms-1 mb-0"/></span>
+                                <span class="d-inline-flex align-items-center me-2"><field name="sunday" readonly="state != 'draft'"/> <label for="sunday" class="ms-1 mb-0"/></span>
+                            </div>
+                            <field name="monthly_option" invisible="frequency != 'monthly'" readonly="state != 'draft'"/>
+                            <field name="day_of_month" invisible="frequency != 'monthly' or monthly_option != 'date'" readonly="state != 'draft'"/>
+                            <field name="template_id" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <label for="collection_point_ids"/>
+                        <div>
+                            <field name="collection_point_ids"
+                                   widget="many2many_tags"
+                                   context="{'default_partner_id': partner_id}"
+                                   domain="[('partner_id', '=', partner_id)]"
+                                   placeholder="Sites covered by this contract..."
+                                   readonly="state != 'draft'"/>
+                        </div>
+                    </group>
+                    <notebook>
+                        <page string="Waste Categories">
+                                <field name="contract_line_ids" readonly="state != 'draft'">
+                                    <list editable="bottom">
+                                        <field name="category_id" domain="[('id', 'not in', parent.selected_product_ids)]"/>
+                                        <field name="product_ids" widget="many2many_tags" string="Materials" options="{'no_create': True}"/>
+                                        <field name="price" string="Rate per kg" column_invisible="parent.billing_basis != 'category_rate'"/>
+                                    </list>
+                                </field>
+                        </page>
+                        <page string="SLA Terms" invisible="not sla_snapshot_html">
+                            <field name="sla_snapshot_html" readonly="1"/>
+                        </page>
+                     </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- View: wm.collection.order - wm.collection.order.form.inherit.wm.customer (Xpath) -->
+    <record id="view_wm_collection_order_form_inherit_wm_customer" model="ir.ui.view">
+        <field name="name">wm.collection.order.form.inherit.wm.customer</field>
+        <field name="model">wm.collection.order</field>
+        <field name="inherit_id" ref="wm_collection.view_wm_collection_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='collection_point_id']" position="after">
+                <field name="contract_id" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
+                <field name="contract_product_ids" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line_ids']//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('id', 'in', parent.contract_product_ids)]</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

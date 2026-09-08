@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.driver.performance.report - wm.driver.performance.report.pivot (Pivot) -->
+    <record id="view_wm_driver_performance_report_pivot" model="ir.ui.view">
+        <field name="name">wm.driver.performance.report.pivot</field>
+        <field name="model">wm.driver.performance.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Driver Performance" sample="1">
+                <field name="driver_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="completion_rate" type="measure"/>
+                <field name="missed_rate" type="measure"/>
+                <field name="route_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- View: wm.driver.performance.report - wm.driver.performance.report.graph (Graph) -->
+    <record id="view_wm_driver_performance_report_graph" model="ir.ui.view">
+        <field name="name">wm.driver.performance.report.graph</field>
+        <field name="model">wm.driver.performance.report</field>
+        <field name="arch" type="xml">
+            <graph string="Driver Performance" type="bar" sample="1">
+                <field name="driver_id"/>
+                <field name="completion_rate" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- View: wm.driver.performance.report - wm.driver.performance.report.list (List) -->
+    <record id="view_wm_driver_performance_report_list" model="ir.ui.view">
+        <field name="name">wm.driver.performance.report.list</field>
+        <field name="model">wm.driver.performance.report</field>
+        <field name="arch" type="xml">
+            <list string="Driver Performance Report">
+                <field name="date"/>
+                <field name="driver_id"/>
+                <field name="route_count"/>
+                <field name="total_orders"/>
+                <field name="completed_orders"/>
+                <field name="missed_orders"/>
+                <field name="completion_rate"/>
+                <field name="missed_rate"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.driver.performance.report - wm.driver.performance.report.search (Search) -->
+    <record id="view_wm_driver_performance_report_search" model="ir.ui.view">
+        <field name="name">wm.driver.performance.report.search</field>
+        <field name="model">wm.driver.performance.report</field>
+        <field name="arch" type="xml">
+            <search string="Driver Performance">
+                <field name="driver_id"/>
+                <filter string="Date (Month)" name="group_date_month" context="{'group_by':'date:month'}"/>
+                <filter string="Driver" name="group_driver" context="{'group_by':'driver_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Driver Performance -->
+    <record id="action_wm_driver_performance_report" model="ir.actions.act_window">
+        <field name="name">Driver Performance</field>
+        <field name="res_model">wm.driver.performance.report</field>
+        <field name="view_mode">graph,list,pivot</field>
+        <field name="context">{'search_default_group_driver': 1}</field>
+    </record>
+
+    <menuitem
+        id="menu_wm_driver_performance_report"
+        name="Driver Performance"
+        parent="wm_base.menu_wm_reporting"
+        action="action_wm_driver_performance_report"
+        sequence="55"
+        groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_base.group_wm_admin"/>
+</odoo>

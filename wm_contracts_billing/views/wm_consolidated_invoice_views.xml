@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_wm_consolidated_invoice_list" model="ir.ui.view">
+        <field name="name">wm.consolidated.invoice.list</field>
+        <field name="model">wm.consolidated.invoice</field>
+        <field name="arch" type="xml">
+            <list string="Consolidated Invoices"
+                  decoration-info="state == 'draft'"
+                  decoration-success="state == 'invoiced'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="billing_month"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="order_count"/>
+                <field name="invoice_id"/>
+                <field name="invoice_state" widget="badge"
+                       decoration-success="invoice_state == 'paid'"
+                       decoration-warning="invoice_state == 'partial'"
+                       decoration-muted="invoice_state == 'not_paid'"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'invoiced'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_wm_consolidated_invoice_form" model="ir.ui.view">
+        <field name="name">wm.consolidated.invoice.form</field>
+        <field name="model">wm.consolidated.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Consolidated Invoice">
+                <header>
+                    <button name="action_generate_invoice"
+                            string="Generate Invoice"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"
+                            confirm="This will create a single monthly invoice for all selected orders. Continue?"/>
+                    <button name="action_reset_to_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            invisible="state != 'invoiced'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,invoiced"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                invisible="not invoice_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Invoice</span>
+                            </div>
+                        </button>
+                        <button name="action_view_orders"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-truck"
+                                invisible="order_count == 0">
+                            <field name="order_count" widget="statinfo" string="Orders"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="billing_month" readonly="1"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="invoice_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Collection Orders" name="orders">
+                            <field name="order_ids"
+                                   widget="many2many_tags"
+                                   invisible="1"/>
+                            <field name="order_ids"
+                                   domain="[('partner_id', '=', partner_id), ('state', 'in', ('completed', 'signed')), ('consolidated_invoice_id', '=', False), ('billing_run_line_id', '=', False)]"
+                                   readonly="state == 'invoiced'">
+                                <list string="Collection Orders">
+                                    <field name="name"/>
+                                    <field name="collection_point_id"/>
+                                    <field name="scheduled_start"/>
+                                    <field name="actual_end"/>
+                                    <field name="confirmed_weight" sum="Total Weight (kg)"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state in ('completed', 'signed')"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_wm_consolidated_invoice_search" model="ir.ui.view">
+        <field name="name">wm.consolidated.invoice.search</field>
+        <field name="model">wm.consolidated.invoice</field>
+        <field name="arch" type="xml">
+            <search string="Consolidated Invoices">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <filter string="Draft" name="filter_draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Invoiced" name="filter_invoiced" domain="[('state', '=', 'invoiced')]"/>
+                <separator/>
+                <filter string="This Month" name="filter_this_month"
+                        domain="[('date_from', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                 ('date_to', '&lt;=', (context_today() + relativedelta(months=1, day=1, days=-1)).strftime('%Y-%m-%d'))]"/>
+                <group>
+                    <filter name="groupby_partner" context="{'group_by': 'partner_id'}" string="Customer"/>
+                    <filter name="groupby_state" context="{'group_by': 'state'}" string="Status"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_wm_consolidated_invoice" model="ir.actions.act_window">
+        <field name="name">Consolidated Invoices</field>
+        <field name="res_model">wm.consolidated.invoice</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wm_consolidated_invoice_search"/>
+    </record>
+</odoo>

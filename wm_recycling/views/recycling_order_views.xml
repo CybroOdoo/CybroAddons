@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ═══ LIST VIEW ════════════════════════════════════════════════════════ -->
+    <record id="view_recycling_order_list" model="ir.ui.view">
+        <field name="name">recycling.order.list</field>
+        <field name="model">recycling.order</field>
+        <field name="arch" type="xml">
+            <list string="Recycling Orders"
+                  decoration-success="state == 'done'"
+                  decoration-info="state == 'in_progress'"
+                  decoration-muted="state in ('cancelled', 'draft')"
+                  create="0">
+                <field name="name"/>
+                <field name="waste_batch_id"/>
+                <field name="product_id" string="Waste Product/Material"/>
+                <field name="category_id" optional="show"/>
+                <field name="hazardous" optional="show"/>
+                <field name="input_qty" string="Input Qty"/>
+                <field name="input_uom_id" string="UoM"/>
+                <field name="total_recovered_qty" sum="Total Recovered"/>
+                <field name="overall_recovery_rate" string="Recovery %" optional="show"/>
+                <field name="total_recovered_value" sum="Est. Value" optional="show"/>
+                <field name="date_start"/>
+                <field name="date_done" optional="show"/>
+                <field name="responsible_id" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-warning="state == 'draft'"
+                       decoration-info="state == 'confirmed'"
+                       decoration-primary="state == 'in_progress'"
+                       decoration-success="state == 'done'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ═══ KANBAN VIEW ══════════════════════════════════════════════════════ -->
+    <record id="view_recycling_order_kanban" model="ir.ui.view">
+        <field name="name">recycling.order.kanban</field>
+        <field name="model">recycling.order</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column"
+                    group_create="false">
+                <field name="name"/>
+                <field name="waste_batch_id"/>
+                <field name="product_id"/>
+                <field name="hazardous"/>
+                <field name="total_recovered_qty"/>
+                <field name="overall_recovery_rate"/>
+                <field name="total_recovered_value"/>
+                <field name="state"/>
+                <field name="date_start"/>
+                <field name="responsible_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_record_top mb-0">
+                            <div class="o_kanban_record_headings">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
+                                <span t-if="record.hazardous.raw_value"
+                                      class="badge bg-danger ms-1">⚠ HAZ
+                                </span>
+                            </div>
+                        </div>
+                        <div class="o_kanban_record_body">
+                            <div>
+                                <i class="fa fa-recycle me-1 text-success" title="Waste Batch"
+                                   aria-label="Waste Batch"/>
+                                <field name="waste_batch_id"/>
+                            </div>
+                            <div>
+                                <i class="fa fa-cube me-1 text-muted" title="Material" aria-label="Material"/>
+                                <field name="product_id"/>
+                            </div>
+                            <div class="mt-2 d-flex justify-content-between">
+                                <span class="text-muted small">Recovered:</span>
+                                <strong>
+                                    <field name="total_recovered_qty"/>
+                                </strong>
+                            </div>
+                            <div class="progress mt-1" style="height:6px;">
+                                <div class="progress-bar bg-success"
+                                     t-attf-style="width:#{record.overall_recovery_rate.raw_value}%">
+                                </div>
+                            </div>
+                            <div class="text-end small text-muted">
+                                <field name="overall_recovery_rate"/>%
+                            </div>
+                        </div>
+                        <div class="o_kanban_record_bottom">
+                            <div class="oe_kanban_bottom_left text-muted small">
+                                <i class="fa fa-calendar me-1" title="Start Date" aria-label="Start Date"/>
+                                <field name="date_start"/>
+                            </div>
+                            <div class="oe_kanban_bottom_right">
+                                <field name="responsible_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ═══ FORM VIEW ════════════════════════════════════════════════════════ -->
+    <record id="view_recycling_order_form" model="ir.ui.view">
+        <field name="name">recycling.order.form</field>
+        <field name="model">recycling.order</field>
+        <field name="arch" type="xml">
+            <form string="Recycling Order" create="0">
+                <header>
+                    <button name="action_confirm" string="Confirm"
+                            type="object" class="btn-primary"
+                            groups="wm_base.group_wm_recycler,wm_base.group_wm_ops_manager"
+                            invisible="state != 'draft'"/>
+                    <button name="action_start" string="Start Processing"
+                            type="object" class="btn-primary"
+                            groups="wm_base.group_wm_recycler,wm_base.group_wm_ops_manager"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_done" string="Mark as Done"
+                            type="object" class="btn-success"
+                            groups="wm_base.group_wm_recycler,wm_base.group_wm_ops_manager"
+                            invisible="state != 'in_progress'"/>
+                    <button name="action_create_sale_order"
+                            string="Create Sale Order"
+                            type="object" class="btn-secondary"
+                            groups="wm_base.group_wm_recycler,wm_base.group_wm_ops_manager"
+                            invisible="state != 'done'"/>
+                    <button name="action_cancel" string="Cancel"
+                            type="object" class="btn-danger"
+                            groups="wm_base.group_wm_recycler,wm_base.group_wm_ops_manager"
+                            invisible="state in ('done','cancelled')"/>
+                    <button name="action_reset_draft" string="Reset to Draft"
+                            type="object"
+                            groups="wm_base.group_wm_recycler,wm_base.group_wm_ops_manager"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,in_progress,done"/>
+                </header>
+                <sheet>
+                    <field name="hazardous" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+
+                    <!-- Smart Buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_sales"
+                                icon="fa-shopping-cart"
+                                invisible="sale_order_count == 0">
+                            <field name="sale_order_count" widget="statinfo"
+                                   string="Sale Orders"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="waste_batch_id"
+                                   options="{'no_create': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="product_id" readonly="1" force_save="1"
+                                   string="Material"
+                                   options="{'no_open': True}"/>
+                            <label for="input_qty" string="Input Quantity"/>
+                            <div class="o_row">
+                                <field name="input_qty" readonly="1"/>
+                                <field name="input_uom_id" readonly="1"/>
+                                <span class="badge bg-danger ms-2" invisible="not hazardous">⚠ Hazardous</span>
+                            </div>
+                        </group>
+                        <group>
+                            <field name="date_start"
+                                   readonly="state not in ('draft','confirmed')"/>
+                            <field name="date_done" readonly="1" invisible="not date_done"/>
+                            <field name="responsible_id"/>
+                            <field name="facility_location_id"
+                                   options="{'no_create': True}"/>
+                            <label for="overall_recovery_rate" string="Batch Yield" help="Overall Yield = Total Actual Output ÷ Batch Input Qty"/>
+                            <div class="o_row">
+                                <field name="overall_recovery_rate" readonly="1"/>
+                                <span>%  of batch input</span>
+                            </div>
+                        </group>
+                    </group>
+
+                    <!-- Recovery Lines -->
+                    <notebook>
+                        <page string="Recovery Lines" name="lines">
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-3">
+                                    <div class="wm-kpi-panel p-2 text-center">
+                                        <div class="wm-kpi-title">Recovered Qty</div>
+                                        <div class="wm-kpi-value">
+                                            <field name="total_recovered_qty" readonly="1"/> / <field name="input_qty" readonly="1"/> <field name="input_uom_id" readonly="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="wm-kpi-panel p-2 text-center">
+                                        <div class="wm-kpi-title">Batch Yield</div>
+                                        <div class="wm-kpi-value text-primary">
+                                            <field name="overall_recovery_rate" readonly="1"/>%
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="wm-kpi-panel p-2 text-center">
+                                        <div class="wm-kpi-title">Est. Value</div>
+                                        <div class="wm-kpi-value text-dark">
+                                            <field name="total_recovered_value" readonly="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="wm-kpi-panel p-2 text-center">
+                                        <div class="wm-kpi-title">Carbon Abated</div>
+                                        <div class="wm-kpi-value text-success">
+                                            🌱 <field name="co2_avoided_tons" readonly="1"/> tCO₂e
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-muted small mb-2 ms-1">
+                                <i class="fa fa-info-circle me-1" title="Note"/>
+                                <span>Note: <strong>Batch Yield</strong> measures total recovered output vs raw batch input weight. <strong>Carbon Abated (tCO2e)</strong> calculates Scope 3 greenhouse gas emissions avoided based on EPA WARM standards.</span>
+                            </div>
+                            <field name="line_ids" readonly="state in ('done','cancelled')">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" string="Output Material" options="{'no_create': True}"/>
+                                    <field name="expected_qty" string="Target Qty" help="Target output planned for this material stream"/>
+                                    <field name="recovered_qty" string="Actual Qty" help="Actual quantity recovered"
+                                           readonly="parent.state != 'in_progress'"
+                                           decoration-danger="recovered_qty &lt; expected_qty and expected_qty &gt; 0"
+                                           decoration-success="recovered_qty &gt;= expected_qty and recovered_qty &gt; 0"/>
+                                    <field name="recovery_rate" widget="progressbar" string="Target Achievement %"
+                                           help="Line Target Achievement = Actual Output ÷ Target Output × 100. Measures performance against target, independent of overall batch yield."
+                                           decoration-danger="recovery_rate &lt; 100 and expected_qty &gt; 0"
+                                           decoration-success="recovery_rate &gt;= 100 and recovered_qty &gt; 0"/>
+                                    <field name="co2_avoided_tons" string="Carbon Abated (tCO2e)" sum="Total tCO2e Abated"/>
+                                    <field name="line_value" string="Est. Value" sum="Total Est. Value"/>
+                                </list>
+                                <form string="Recovery Line Detail">
+                                    <sheet>
+                                        <field name="currency_id" invisible="1"/>
+                                        <group>
+                                            <group string="Output Material">
+                                                <field name="product_id" options="{'no_create': True}"/>
+                                                <field name="uom_id"/>
+                                                <field name="expected_qty" string="Target Qty"/>
+                                                <field name="recovered_qty" string="Actual Qty" readonly="parent.state != 'in_progress'"/>
+                                                <field name="recovery_rate" string="Target Achievement (%)" widget="progressbar"/>
+                                            </group>
+                                            <group string="Valuation &amp; Stock Destination">
+                                                <field name="sale_price"/>
+                                                <field name="line_value" readonly="1"/>
+                                                <field name="dest_location_id" options="{'no_create': True}"/>
+                                                <field name="is_stocked" readonly="1"/>
+                                                <field name="stock_move_id" readonly="1"/>
+                                            </group>
+                                        </group>
+                                        <group string="Notes">
+                                            <field name="notes" placeholder="Notes for this line..."/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                            <group class="mt-2">
+                                <field name="notes" placeholder="Internal notes…"/>
+                            </group>
+                        </page>
+                    </notebook>
+
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══ SEARCH VIEW ══════════════════════════════════════════════════════ -->
+    <record id="view_recycling_order_search" model="ir.ui.view">
+        <field name="name">recycling.order.search</field>
+        <field name="model">recycling.order</field>
+        <field name="arch" type="xml">
+            <search string="Search Recycling Orders">
+                <field name="name"/>
+                <field name="waste_batch_id"/>
+                <field name="product_id"/>
+                <field name="category_id"/>
+                <field name="responsible_id"/>
+                <separator/>
+                <filter string="Draft" name="state_draft"
+                        domain="[('state','=','draft')]"/>
+                <filter string="Confirmed" name="state_confirmed"
+                        domain="[('state','=','confirmed')]"/>
+                <filter string="In Progress" name="state_in_progress"
+                        domain="[('state','=','in_progress')]"/>
+                <filter string="Done" name="state_done"
+                        domain="[('state','=','done')]"/>
+                <filter string="Hazardous" name="hazardous"
+                        domain="[('hazardous','=',True)]"/>
+                <filter string="My Orders" name="my_orders"
+                        domain="[('responsible_id','=',uid)]"/>
+                <separator/>
+                <group>
+                    <filter string="Material" name="grp_product"
+                            context="{'group_by':'product_id'}"/>
+                    <filter string="Category" name="grp_category"
+                            context="{'group_by':'category_id'}"/>
+                    <filter string="Status" name="grp_state"
+                            context="{'group_by':'state'}"/>
+                    <filter string="Start Date" name="grp_date"
+                            context="{'group_by':'date_start:month'}"/>
+                    <filter string="Responsible" name="grp_responsible"
+                            context="{'group_by':'responsible_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══ GRAPH VIEW ═══════════════════════════════════════════════════════ -->
+    <record id="view_recycling_order_graph" model="ir.ui.view">
+        <field name="name">recycling.order.graph</field>
+        <field name="model">recycling.order</field>
+        <field name="arch" type="xml">
+            <graph string="Recycling Analytics" type="bar" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="total_recovered_qty" type="measure"/>
+                <field name="total_recovered_value" type="measure"/>
+                <field name="overall_recovery_rate" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ═══ PIVOT VIEW ═══════════════════════════════════════════════════════ -->
+    <record id="view_recycling_order_pivot" model="ir.ui.view">
+        <field name="name">recycling.order.pivot</field>
+        <field name="model">recycling.order</field>
+        <field name="arch" type="xml">
+            <pivot string="Recycling Pivot" sample="1">
+                <field name="category_id" type="row"/>
+                <field name="product_id" type="row"/>
+                <field name="date_start" interval="month" type="col"/>
+                <field name="total_recovered_qty" type="measure"/>
+                <field name="total_recovered_value" type="measure"/>
+                <field name="overall_recovery_rate" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ═══ WINDOW ACTION ════════════════════════════════════════════════════ -->
+    <record id="action_recycling_order" model="ir.actions.act_window">
+        <field name="name">Recycling Orders</field>
+        <field name="res_model">recycling.order</field>
+        <field name="view_mode">list,kanban,form,graph,pivot</field>
+        <field name="search_view_id" ref="view_recycling_order_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Recycling Order!
+            </p>
+            <p>
+                Recycling orders track the recovery of valuable materials from
+                waste batches — from processing through stock and sales.
+            </p>
+        </field>
+    </record>
+</odoo>

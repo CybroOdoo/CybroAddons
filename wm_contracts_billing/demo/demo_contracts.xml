@@ -1,0 +1,239 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data noupdate="1">
+        <!-- 1. Standard Service Level Agreement -->
+        <record id="demo_sla_1" model="wm.sla">
+            <field name="name">Standard Commercial SLA</field>
+            <field name="description">Standard municipal and commercial waste collection tier with 24-hour service guarantee.</field>
+            <field name="terms_and_conditions"><![CDATA[
+                <h4>Standard Commercial Waste Service Level Agreement</h4>
+                <p>This Service Level Agreement (SLA) defines the standard performance metrics and remedies for general commercial waste collection.</p>
+                <ul>
+                    <li><strong>Response Time:</strong> Scheduled collections executed within 24 hours of designated booking window.</li>
+                    <li><strong>Missed Pickups:</strong> Remedy pickup executed within 12 hours of customer notification.</li>
+                    <li><strong>Service Credits:</strong> 10% billing credit applied for unexcused delays exceeding 48 hours.</li>
+                </ul>
+            ]]></field>
+            <field name="sla_line_ids" eval="[
+                (0, 0, {
+                    'sequence': 10,
+                    'sla_type': 'response_time',
+                    'description': 'Customer inquiry and on-demand collection dispatch response time',
+                    'target_value': 24.0,
+                    'uom': 'hours',
+                    'penalty_type': 'percentage_credit',
+                    'penalty_value': 5.0
+                }),
+                (0, 0, {
+                    'sequence': 20,
+                    'sla_type': 'missed_pickup',
+                    'description': 'Remedy pickup completion after reported missed route',
+                    'target_value': 12.0,
+                    'uom': 'hours',
+                    'penalty_type': 'fixed_credit',
+                    'penalty_value': 25.0
+                })
+            ]"/>
+        </record>
+
+        <!-- 2. Premium Enterprise SLA -->
+        <record id="demo_sla_2" model="wm.sla">
+            <field name="name">Premium Enterprise SLA (High Priority)</field>
+            <field name="description">High-frequency industrial and corporate campus service with rapid 12-hour turnaround.</field>
+            <field name="terms_and_conditions"><![CDATA[
+                <h4>Premium Enterprise Service Level Agreement</h4>
+                <p>Designed for industrial parks, manufacturing facilities, and corporate headquarters requiring high reliability.</p>
+                <ul>
+                    <li><strong>Priority Scheduling:</strong> Dedicated vehicle dispatch within 12 hours.</li>
+                    <li><strong>Penalties:</strong> 15% discount for any service interruption over 24 hours.</li>
+                </ul>
+            ]]></field>
+            <field name="sla_line_ids" eval="[
+                (0, 0, {
+                    'sequence': 10,
+                    'sla_type': 'response_time',
+                    'description': 'Priority emergency callout response time',
+                    'target_value': 12.0,
+                    'uom': 'hours',
+                    'penalty_type': 'percentage_credit',
+                    'penalty_value': 10.0
+                }),
+                (0, 0, {
+                    'sequence': 20,
+                    'sla_type': 'missed_pickup',
+                    'description': 'Rapid corrective collection for missed bins',
+                    'target_value': 6.0,
+                    'uom': 'hours',
+                    'penalty_type': 'fixed_credit',
+                    'penalty_value': 40.0
+                })
+            ]"/>
+        </record>
+
+        <!-- 3. Healthcare & Hazardous Materials SLA -->
+        <record id="demo_sla_3" model="wm.sla">
+            <field name="name">Healthcare &amp; Biohazard Strict SLA</field>
+            <field name="description">Hospital clinical waste, sharps, and hazardous chemical disposal with regulatory custody compliance.</field>
+            <field name="terms_and_conditions"><![CDATA[
+                <h4>Healthcare &amp; Hazardous Material SLA (Grade 1 Compliance)</h4>
+                <p>Strict bio-safety and statutory compliance service agreement for hospitals, clinics, and laboratories.</p>
+                <ul>
+                    <li><strong>Emergency Hazmat Response:</strong> Rapid response within 4 hours.</li>
+                    <li><strong>Zero Missed Pickups:</strong> Guaranteed daily collection of infectious red-bag waste.</li>
+                </ul>
+            ]]></field>
+            <field name="sla_line_ids" eval="[
+                (0, 0, {
+                    'sequence': 10,
+                    'sla_type': 'response_time',
+                    'description': 'Emergency biohazard spill &amp; critical containment response',
+                    'target_value': 4.0,
+                    'uom': 'hours',
+                    'penalty_type': 'fixed_credit',
+                    'penalty_value': 150.0
+                }),
+                (0, 0, {
+                    'sequence': 20,
+                    'sla_type': 'missed_pickup',
+                    'description': 'Immediate corrective remedy for biohazard containment bins',
+                    'target_value': 2.0,
+                    'uom': 'hours',
+                    'penalty_type': 'fixed_credit',
+                    'penalty_value': 200.0
+                })
+            ]"/>
+        </record>
+
+        <!-- Record: wm.partner.contract - CON-2026-001 (material billing) -->
+        <record id="demo_contract_1" model="wm.partner.contract">
+            <field name="name">CON-2026-001</field>
+            <field name="partner_id" ref="demo_res_partner_customer_1"/>
+            <field name="sla_id" ref="demo_sla_1"/>
+            <field name="from_date">2026-01-01</field>
+            <field name="to_date">2026-12-31</field>
+            <field name="frequency">weekly</field>
+            <field name="no_of_frequency">1</field>
+            <field name="billing_basis">material</field>
+            <field name="collection_point_ids" eval="[(6, 0, [ref('demo_point_1')])]"/>
+            <field name="contract_line_ids" eval="[(0, 0, {'category_id': ref('wm_base.waste_category_general'), 'price': 2.50})]"/>
+            <field name="state">ongoing</field>
+        </record>
+
+        <!-- Record: wm.partner.contract - CON-2026-002 (per collection billing) -->
+        <record id="demo_contract_2" model="wm.partner.contract">
+            <field name="name">CON-2026-002</field>
+            <field name="partner_id" ref="demo_res_partner_customer_2"/>
+            <field name="sla_id" ref="demo_sla_2"/>
+            <field name="from_date">2026-01-01</field>
+            <field name="to_date">2026-12-31</field>
+            <field name="frequency">monthly</field>
+            <field name="no_of_frequency">2</field>
+            <field name="billing_basis">per_collection</field>
+            <field name="fixed_price">150.00</field>
+            <field name="max_weight">100.0</field>
+            <field name="overweight_price">8.00</field>
+            <field name="collection_point_ids" eval="[(6, 0, [ref('demo_point_2')])]"/>
+            <field name="contract_line_ids" eval="[(0, 0, {'category_id': ref('wm_base.waste_category_recycle')})]"/>
+            <field name="state">ongoing</field>
+        </record>
+
+        <!-- Record: wm.partner.contract - CON-2026-006 (healthcare, biohazard SLA) -->
+        <record id="demo_contract_6" model="wm.partner.contract">
+            <field name="name">CON-2026-006</field>
+            <field name="partner_id" ref="demo_res_partner_customer_4"/>
+            <field name="sla_id" ref="demo_sla_3"/>
+            <field name="template_id" ref="wm_base.demo_sig_template_2"/>
+            <field name="from_date">2026-01-01</field>
+            <field name="to_date">2026-12-31</field>
+            <field name="frequency">daily</field>
+            <field name="no_of_frequency">2</field>
+            <field name="billing_basis">per_collection</field>
+            <field name="fixed_price">275.00</field>
+            <field name="max_weight">150.0</field>
+            <field name="overweight_price">12.50</field>
+            <field name="collection_point_ids" eval="[(6, 0, [ref('demo_point_4')])]"/>
+            <field name="contract_line_ids" eval="[
+                (0, 0, {'category_id': ref('wm_base.waste_category_hazard')}),
+                (0, 0, {'category_id': ref('wm_base.waste_category_organic')})
+            ]"/>
+            <field name="state">ongoing</field>
+        </record>
+
+        <!-- Record: wm.partner.contract - CON-2025-010 (expired) -->
+        <record id="demo_contract_10" model="wm.partner.contract">
+            <field name="name">CON-2025-010</field>
+            <field name="partner_id" ref="demo_res_partner_customer_10"/>
+            <field name="sla_id" ref="demo_sla_1"/>
+            <field name="template_id" ref="wm_base.demo_sig_template_1"/>
+            <field name="from_date">2025-01-01</field>
+            <field name="to_date">2025-12-31</field>
+            <field name="frequency">monthly</field>
+            <field name="no_of_frequency">1</field>
+            <field name="billing_basis">per_collection</field>
+            <field name="fixed_price">195.00</field>
+            <field name="max_weight">250.0</field>
+            <field name="overweight_price">9.50</field>
+            <field name="collection_point_ids" eval="[(6, 0, [ref('demo_point_10')])]"/>
+            <field name="contract_line_ids" eval="[(0, 0, {'category_id': ref('wm_base.waste_category_general')})]"/>
+            <field name="state">expired</field>
+        </record>
+
+        <!-- Record: wm.partner.contract - CON-2026-012 (category rate billing) -->
+        <record id="demo_contract_12" model="wm.partner.contract">
+            <field name="name">CON-2026-012</field>
+            <field name="partner_id" ref="demo_res_partner_customer_4"/>
+            <field name="sla_id" ref="demo_sla_3"/>
+            <field name="template_id" ref="wm_base.demo_sig_template_2"/>
+            <field name="from_date">2026-06-01</field>
+            <field name="to_date">2027-05-31</field>
+            <field name="frequency">daily</field>
+            <field name="no_of_frequency">1</field>
+            <field name="billing_basis">category_rate</field>
+            <field name="collection_point_ids" eval="[(6, 0, [ref('demo_point_12')])]"/>
+            <field name="contract_line_ids" eval="[
+                (0, 0, {'category_id': ref('wm_base.wcat_biomedical'), 'price': 4.50}),
+                (0, 0, {'category_id': ref('wm_base.wcat_hazardous'), 'price': 3.80})
+            ]"/>
+            <field name="state">ongoing</field>
+        </record>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- PRICING RULES                                                       -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <record id="demo_pricing_rule_ewaste_std" model="wm.pricing.rule">
+            <field name="name">Standard Electronic Waste Pricing</field>
+            <field name="sequence">10</field>
+            <field name="waste_category_id" ref="wm_base.wcat_ewaste"/>
+            <field name="price_per_kg">2.80</field>
+            <field name="min_weight">25.0</field>
+            <field name="min_charge">60.00</field>
+            <field name="effective_date">2026-01-01</field>
+        </record>
+
+        <!-- Record: wm.pricing.rule - Hazardous Waste Disposal Tier 1 -->
+        <record id="demo_pricing_rule_hazard_std" model="wm.pricing.rule">
+            <field name="name">Hazardous Waste Disposal Tier 1</field>
+            <field name="sequence">20</field>
+            <field name="waste_category_id" ref="wm_base.wcat_hazardous"/>
+            <field name="price_per_kg">3.90</field>
+            <field name="min_weight">50.0</field>
+            <field name="min_charge">150.00</field>
+            <field name="effective_date">2026-01-01</field>
+        </record>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- CRM LEADS (Waste Qualification Inquiries)                           -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <record id="demo_crm_lead_waste_1" model="crm.lead">
+            <field name="name">Hospital Biomedical Waste Management Retainer</field>
+            <field name="partner_id" ref="demo_res_partner_customer_4"/>
+            <field name="expected_revenue">48000.00</field>
+            <field name="probability">80.0</field>
+            <field name="wm_service_type">hazardous</field>
+            <field name="wm_estimated_weight_kg">4500.0</field>
+            <field name="wm_no_of_sites">3</field>
+            <field name="wm_frequency">daily</field>
+        </record>
+
+    </data>
+</odoo>

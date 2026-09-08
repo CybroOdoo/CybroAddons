@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+    ══════════════════════════════════════════════════════════════════════════
+    RECYCLING ORDER DEMO DATA  (wm_recycling)
+    ══════════════════════════════════════════════════════════════════════════
+    -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- RECOVERED PRODUCT CATALOG (sellable recovered materials)           -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Compost / Soil Amendment -->
+    <record id="demo_prod_compost_product" model="product.product">
+        <field name="name">Recovered Compost — Grade A (Demo)</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="list_price">0.18</field>
+    </record>
+
+    <!-- Biogas / Biomethane (compressed, per kg) -->
+    <record id="demo_prod_biogas_product" model="product.product">
+        <field name="name">Recovered Biogas — Compressed (Demo)</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="list_price">1.25</field>
+    </record>
+
+    <!-- Recycled PET Pellets -->
+    <record id="demo_prod_pet_pellets_product" model="product.product">
+        <field name="name">Recycled PET Pellets — Clear Grade (Demo)</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="list_price">0.62</field>
+    </record>
+
+    <!-- Recovered Copper (granules/wire rod) -->
+    <record id="demo_prod_copper_granules_product" model="product.product">
+        <field name="name">Recovered Copper Granules (Demo)</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="list_price">7.80</field>
+    </record>
+
+    <!-- Precious Metal Concentrate (gold/silver from PCB / phones) -->
+    <record id="demo_prod_precious_concentrate_product" model="product.product">
+        <field name="name">Precious Metal Concentrate — E-Scrap (Demo)</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="list_price">420.00</field>
+    </record>
+
+    <!-- Aluminium Ingot (secondary) -->
+    <record id="demo_prod_aluminium_ingot_product" model="product.product">
+        <field name="name">Secondary Aluminium Ingot (Demo)</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="list_price">1.85</field>
+    </record>
+
+    <!-- Recovered Paper Fibre / Pulp -->
+    <record id="demo_prod_paper_fibre_product" model="product.product">
+        <field name="name">Recovered Paper Fibre — OCC Grade (Demo)</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="list_price">0.14</field>
+    </record>
+
+    <!-- Recycled Steel / Ferrous Scrap (shredded) -->
+    <record id="demo_prod_recycled_steel_product" model="product.product">
+        <field name="name">Recycled Steel Scrap — HMS Grade 1 (Demo)</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="list_price">0.38</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- RECYCLING ORDER 1 — DONE                                           -->
+    <!-- Source: WB/00005 Organic Waste (Food + Garden)                    -->
+    <!-- Outputs: Compost Grade A + Biogas                                 -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="demo_ro_001" model="recycling.order">
+        <field name="name">RO/00001</field>
+        <field name="waste_batch_id" ref="wm_collection.demo_batch_wb0005"/>
+        <field name="product_id" ref="wm_base.wmat_food_waste"/>
+        <field name="date_start">2026-06-14</field>
+        <field name="date_done">2026-06-28</field>
+        <field name="state">done</field>
+        <field name="facility_location_id" ref="stock.stock_location_stock"/>
+        <field name="notes">
+            Organic batch WB/00005 processed through anaerobic digestion (AD) facility.
+            Food waste feedstock produced premium-grade compost and compressed biogas.
+            Overall recovery rate exceeded 85% target. Batch cleared for sold status.
+        </field>
+        <field name="line_ids" eval="[
+            (0, 0, {
+                'sequence': 10,
+                'product_id': ref('demo_prod_compost_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 820.0,
+                'recovered_qty': 705.0,
+                'sale_price': 0.18,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Matured Grade A compost — 8-week curing cycle completed'
+            }),
+            (0, 0, {
+                'sequence': 20,
+                'product_id': ref('demo_prod_biogas_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 120.0,
+                'recovered_qty': 98.0,
+                'sale_price': 1.25,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Compressed biomethane from AD digestate; 97% CH4 purity'
+            }),
+        ]"/>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- RECYCLING ORDER 2 — DONE                                           -->
+    <!-- Source: WB/00009 Dry Recyclables (PET Plastic + Glass)            -->
+    <!-- Outputs: Recycled PET Pellets                                      -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="demo_ro_002" model="recycling.order">
+        <field name="name">RO/00002</field>
+        <field name="waste_batch_id" ref="wm_collection.demo_batch_wb0009"/>
+        <field name="product_id" ref="wm_base.wmat_pet_plastic"/>
+        <field name="date_start">2026-06-24</field>
+        <field name="date_done">2026-07-05</field>
+        <field name="state">done</field>
+        <field name="facility_location_id" ref="stock.stock_location_stock"/>
+        <field name="notes">
+            PET plastic fraction from batch WB/00009 processed through hot-wash, 
+            flake separation and re-pelletisation line. Glass fraction sent to 
+            downstream cullet buyer — tracked separately. PET output sold to 
+            plastic reprocessor at spot market rate.
+        </field>
+        <field name="line_ids" eval="[
+            (0, 0, {
+                'sequence': 10,
+                'product_id': ref('demo_prod_pet_pellets_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 880.0,
+                'recovered_qty': 841.0,
+                'sale_price': 0.62,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Clear-grade rPET pellets; IV 0.74 dL/g — food-contact approved'
+            }),
+        ]"/>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- RECYCLING ORDER 3 — IN PROGRESS                                    -->
+    <!-- Source: WB/00004 E-Waste (Cables + Mobile Phones)                 -->
+    <!-- Outputs: Copper Granules + Precious Metal Concentrate              -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="demo_ro_003" model="recycling.order">
+        <field name="name">RO/00003</field>
+        <field name="waste_batch_id" ref="wm_collection.demo_batch_wb0004"/>
+        <field name="product_id" ref="wm_base.wmat_cables"/>
+        <field name="date_start">2026-07-01</field>
+        <field name="state">in_progress</field>
+        <field name="facility_location_id" ref="stock.stock_location_stock"/>
+        <field name="notes">
+            Shredding and eddy-current separation of copper cables underway.
+            Handsets queued for hydrometallurgical precious-metal recovery.
+            Expected completion: 2026-07-18. Hazardous battery fraction from 
+            mobile phones segregated and sent to licensed processor.
+        </field>
+        <field name="line_ids" eval="[
+            (0, 0, {
+                'sequence': 10,
+                'product_id': ref('demo_prod_copper_granules_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 285.0,
+                'recovered_qty': 142.0,
+                'sale_price': 7.80,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Copper granules from cable shredding — 99.2% Cu purity target; 50% recovered so far'
+            }),
+            (0, 0, {
+                'sequence': 20,
+                'product_id': ref('demo_prod_precious_concentrate_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 2.4,
+                'recovered_qty': 0.0,
+                'sale_price': 420.00,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Precious metal concentrate from PCB/handset acid leach — assay pending'
+            }),
+        ]"/>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- RECYCLING ORDER 4 — CONFIRMED                                      -->
+    <!-- Source: WB/00003 Dry Recyclables (Aluminium + Cardboard + Steel)  -->
+    <!-- Outputs: Aluminium Ingot + Recovered Paper Fibre                  -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="demo_ro_004" model="recycling.order">
+        <field name="name">RO/00004</field>
+        <field name="waste_batch_id" ref="wm_collection.demo_batch_wb0003"/>
+        <field name="product_id" ref="wm_base.wmat_aluminium"/>
+        <field name="date_start">2026-07-07</field>
+        <field name="state">confirmed</field>
+        <field name="facility_location_id" ref="stock.stock_location_stock"/>
+        <field name="notes">
+            Multi-material batch WB/00003 to be processed in two streams:
+            (1) Aluminium fraction melted and cast into secondary ingots at smelter.
+            (2) OCC cardboard bales dispatched to paper mill as recovered fibre feedstock.
+            Steel fraction (~800 kg) to be weighed and sold separately to steel mill.
+            Processing scheduled to begin 2026-07-08 following equipment availability.
+        </field>
+        <field name="line_ids" eval="[
+            (0, 0, {
+                'sequence': 10,
+                'product_id': ref('demo_prod_aluminium_ingot_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 1140.0,
+                'recovered_qty': 0.0,
+                'sale_price': 1.85,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Secondary Al ingots — 95% recovery expected from pre-sorted cans &amp; extrusions'
+            }),
+            (0, 0, {
+                'sequence': 20,
+                'product_id': ref('demo_prod_paper_fibre_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 1720.0,
+                'recovered_qty': 0.0,
+                'sale_price': 0.14,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'OCC bales to paper mill — moisture content tested at 8%; within mill spec'
+            }),
+        ]"/>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- RECYCLING ORDER 5 — DRAFT                                          -->
+    <!-- Source: WB/00008 Industrial (Metal Swarf + Textiles + Rubber)     -->
+    <!-- Outputs: Recycled Steel (Swarf)                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="demo_ro_005" model="recycling.order">
+        <field name="name">RO/00005</field>
+        <field name="waste_batch_id" ref="wm_collection.demo_batch_wb0008"/>
+        <field name="product_id" ref="wm_base.wmat_metal_shavings"/>
+        <field name="date_start">2026-07-10</field>
+        <field name="state">draft</field>
+        <field name="facility_location_id" ref="stock.stock_location_stock"/>
+        <field name="notes">
+            Draft recycling order for industrial batch WB/00008. Three streams 
+            to be planned:
+            (1) Metal swarf → recycled steel sold to foundry.
+            (2) Textile offcuts → sorted for re-spinning or industrial wipers.
+            (3) Rubber offcuts → crumb rubber production for road asphalt.
+            Recovery lines and pricing under review pending commodity market rates.
+            Requires confirmation from plant manager before processing begins.
+        </field>
+        <field name="line_ids" eval="[
+            (0, 0, {
+                'sequence': 10,
+                'product_id': ref('demo_prod_recycled_steel_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 2660.0,
+                'recovered_qty': 0.0,
+                'sale_price': 0.38,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Shredded steel swarf — HMS Grade 1; ~95% ferrous content after magnetic separation'
+            }),
+        ]"/>
+    </record>
+
+    <!-- Additional Recovered Products -->
+    <record id="demo_prod_recycled_aggregate" model="product.product">
+        <field name="name">Recycled Concrete Aggregate — Type 2 Base (Demo)</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="list_price">0.08</field>
+    </record>
+
+    <!-- Record: product.product - Recycled Glass Cullet — Mixed Flakes (Demo) -->
+    <record id="demo_prod_glass_cullet" model="product.product">
+        <field name="name">Recycled Glass Cullet — Mixed Flakes (Demo)</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="list_price">0.12</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- RECYCLING ORDER 6 — DONE (Concrete to Road Base Aggregate)          -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="demo_ro_006" model="recycling.order">
+        <field name="name">RO/00006</field>
+        <field name="waste_batch_id" ref="wm_collection.demo_batch_wb0011"/>
+        <field name="product_id" ref="wm_base.wmat_concrete_rubble"/>
+        <field name="date_start">2026-07-02</field>
+        <field name="date_done">2026-07-05</field>
+        <field name="state">done</field>
+        <field name="facility_location_id" ref="stock.stock_location_stock"/>
+        <field name="notes">Crushing and magnetic rebar extraction completed. High yield rate achieved.</field>
+        <field name="line_ids" eval="[
+            (0, 0, {
+                'sequence': 10,
+                'product_id': ref('demo_prod_recycled_aggregate'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 11400.0,
+                'recovered_qty': 11250.0,
+                'sale_price': 0.08,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Screened aggregate (0-40mm) dispatched for municipal road sub-base'
+            }),
+            (0, 0, {
+                'sequence': 20,
+                'product_id': ref('demo_prod_recycled_steel_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 450.0,
+                'recovered_qty': 430.0,
+                'sale_price': 0.38,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Extracted reinforcing steel rebar mesh'
+            }),
+        ]"/>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- RECYCLING ORDER 7 — IN PROGRESS (PET Bottles Pelletizing)           -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="demo_ro_007" model="recycling.order">
+        <field name="name">RO/00007</field>
+        <field name="waste_batch_id" ref="wm_collection.demo_batch_wb0006"/>
+        <field name="product_id" ref="wm_base.wmat_pet_plastic"/>
+        <field name="date_start">2026-08-01</field>
+        <field name="state">in_progress</field>
+        <field name="facility_location_id" ref="stock.stock_location_stock"/>
+        <field name="notes">Hot-wash flake line operating. Optical sorter active.</field>
+        <field name="line_ids" eval="[
+            (0, 0, {
+                'sequence': 10,
+                'product_id': ref('demo_prod_pet_pellets_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 3100.0,
+                'recovered_qty': 1800.0,
+                'sale_price': 0.62,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Clear food-grade rPET flakes'
+            }),
+        ]"/>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- RECYCLING ORDER 8 — DONE (Glass Bottle Beneficiation)              -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="demo_ro_008" model="recycling.order">
+        <field name="name">RO/00008</field>
+        <field name="waste_batch_id" ref="wm_collection.demo_batch_wb0009"/>
+        <field name="product_id" ref="wm_base.wmat_glass"/>
+        <field name="date_start">2026-07-25</field>
+        <field name="date_done">2026-07-28</field>
+        <field name="state">done</field>
+        <field name="facility_location_id" ref="stock.stock_location_stock"/>
+        <field name="notes">Cullet cleaning and color separation finished. Delivered to bottling plant.</field>
+        <field name="line_ids" eval="[
+            (0, 0, {
+                'sequence': 10,
+                'product_id': ref('demo_prod_glass_cullet'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 1020.0,
+                'recovered_qty': 995.0,
+                'sale_price': 0.12,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Clean flint and amber glass cullet'
+            }),
+        ]"/>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- RECYCLING ORDER 9 — CONFIRMED (Organic Food & Garden Feedstock)    -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="demo_ro_009" model="recycling.order">
+        <field name="name">RO/00009</field>
+        <field name="waste_batch_id" ref="wm_collection.demo_batch_wb0014"/>
+        <field name="product_id" ref="wm_base.wmat_garden_waste"/>
+        <field name="date_start">2026-08-08</field>
+        <field name="state">confirmed</field>
+        <field name="facility_location_id" ref="stock.stock_location_stock"/>
+        <field name="notes">Scheduled for Windrow Composting and Biogas Digester intake.</field>
+        <field name="line_ids" eval="[
+            (0, 0, {
+                'sequence': 10,
+                'product_id': ref('demo_prod_compost_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 1850.0,
+                'recovered_qty': 0.0,
+                'sale_price': 0.18,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Organic Grade A garden compost'
+            }),
+            (0, 0, {
+                'sequence': 20,
+                'product_id': ref('demo_prod_biogas_product'),
+                'uom_id': ref('uom.product_uom_kgm'),
+                'expected_qty': 320.0,
+                'recovered_qty': 0.0,
+                'sale_price': 1.25,
+                'dest_location_id': ref('stock.stock_location_stock'),
+                'notes': 'Compressed biomethane gas'
+            }),
+        ]"/>
+    </record>
+
+</odoo>

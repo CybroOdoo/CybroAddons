@@ -1,0 +1,71 @@
+<templates xml:space="preserve">
+    <t t-name="wm_base.SignNowDashboard">
+        <div class="o_wm_sign_now_container d-flex flex-column h-100 bg-light overflow-hidden">
+            <!-- Control Panel Header -->
+            <div class="o_control_panel d-flex justify-content-between align-items-center px-4 py-3 bg-white border-bottom shadow-sm">
+                <div class="o_cp_left d-flex align-items-center">
+                    <ol class="breadcrumb mb-0 fs-5 fw-semibold me-4">
+                        <li class="breadcrumb-item text-dark">Sign Now</li>
+                        <t t-if="state.mode === 'edit'">
+                            <li class="breadcrumb-item active text-muted" style="font-size: 0.9rem;">Designer</li>
+                        </t>
+                    </ol>
+                    <t t-if="state.mode === 'upload'">
+                        <button class="btn btn-primary fw-bold px-4 py-2 shadow-sm d-flex align-items-center" t-on-click="triggerUpload">
+                            <i class="fa fa-cloud-upload me-2"></i> Upload PDF
+                        </button>
+                        <!-- Hidden File Input -->
+                        <input type="file" t-ref="fileInput" accept="application/pdf" class="d-none" t-on-change="onFileChange"/>
+                    </t>
+                </div>
+                <div class="o_cp_right">
+                    <t t-if="state.mode === 'edit'">
+                        <button class="btn btn-secondary fw-bold px-3 py-2" t-on-click="closeEditor">
+                            <i class="fa fa-times me-1"></i> Exit Designer
+                        </button>
+                    </t>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="o_content_area flex-grow-1 position-relative overflow-auto">
+                <t t-if="state.mode === 'upload'">
+                    <div class="d-flex justify-content-center align-items-center h-100 p-4">
+                        <div class="o_upload_dropzone d-flex flex-column align-items-center justify-content-center text-center p-5 border border-2 border-dashed rounded-4 bg-white shadow"
+                             t-att-class="{'border-primary bg-primary-light': state.isDragging}"
+                             t-on-dragover.prevent="onDragOver"
+                             t-on-dragenter.prevent="onDragEnter"
+                             t-on-dragleave.prevent="onDragLeave"
+                             t-on-drop.prevent="onDrop">
+                            
+                            <div class="o_upload_icon_wrapper mb-4 rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                                <i class="fa fa-file-text-o text-primary" style="font-size: 4rem;"></i>
+                            </div>
+
+                            <h3 class="fw-bold text-dark mb-2">Drag and drop or <a href="#" class="text-decoration-none text-primary fw-bold" t-on-click.prevent="triggerUpload">Upload</a> a file</h3>
+                            <p class="text-muted mb-4 fs-6">Document to send for signature or to sign yourself.</p>
+                            
+                            <button class="btn btn-outline-primary btn-lg fw-bold px-4 py-2" t-on-click="createSample">
+                                Try a sample contract
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading Overlay -->
+                    <t t-if="state.isLoading">
+                        <div class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex flex-column justify-content-center align-items-center z-index-100">
+                            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <h5 class="fw-bold text-dark" t-esc="state.loadingMessage || 'Processing...'"/>
+                        </div>
+                    </t>
+                </t>
+
+                <t t-if="state.mode === 'edit'">
+                    <iframe t-att-src="editorUrl" class="w-100 h-100 border-0" id="sign_designer_iframe"></iframe>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

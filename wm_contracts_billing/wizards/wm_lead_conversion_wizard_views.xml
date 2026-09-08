@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Form view for the conversion wizard.
+
+        Layout:
+        - Warning banner (alert-warning) when the customer already has an
+          active contract — informational only, does NOT block creation.
+        - Customer & service type (read-only, pre-filled from lead context).
+        - Contract Terms: dates, SLA, frequency, billing basis.
+        - Collection Sites: many2many_tags filtered to the customer's sites.
+        - Footer: "Create Contract" (primary) / "Cancel".
+    -->
+    <record id="view_wm_lead_conversion_wizard_form" model="ir.ui.view">
+        <field name="name">wm.lead.conversion.wizard.form</field>
+        <field name="model">wm.lead.conversion.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Convert to Waste Management Contract">
+                <!-- Warning banner: customer already has an active contract -->
+                <div class="alert alert-warning"
+                     role="alert"
+                     invisible="not has_existing_contract">
+                    <strong>Warning:</strong>
+                    This customer already has an active contract
+                    (<field name="existing_contract_name" readonly="1" nolabel="1"/>).
+                    You can still create a new contract in Draft state, but it cannot
+                    be confirmed until the existing contract expires or is cancelled.
+                </div>
+
+                <group string="Customer">
+                    <field name="partner_id" readonly="1"/>
+                    <field name="lead_id" readonly="1" invisible="1"/>
+                    <field name="has_existing_contract" invisible="1"/>
+                    <field name="service_type" readonly="1"/>
+                </group>
+
+                <group string="Contract Terms">
+                    <group>
+                        <field name="contract_from_date"/>
+                        <field name="contract_to_date"/>
+                        <field name="sla_id"/>
+                    </group>
+                    <group>
+                        <field name="frequency"/>
+                        <field name="no_of_frequency"/>
+                        <field name="billing_basis"/>
+                    </group>
+                </group>
+
+                <group string="Pricing Terms" invisible="billing_basis not in ('per_collection', 'hybrid')">
+                    <field name="fixed_price" invisible="billing_basis not in ('per_collection', 'hybrid')"/>
+                    <field name="max_weight" invisible="billing_basis != 'per_collection'"/>
+                    <field name="overweight_price" invisible="billing_basis != 'per_collection'"/>
+                    <field name="included_weight" invisible="billing_basis != 'hybrid'"/>
+                </group>
+
+                <group string="Collection Sites">
+                    <field name="collection_point_ids"
+                           widget="many2many_tags"
+                           nolabel="1"
+                           domain="[('partner_id', '=', partner_id)]"
+                           placeholder="Select sites covered by this contract…"/>
+                    <div class="text-muted" style="font-size:12px; margin-top:4px;">
+                        Tip: If no sites appear, create them first via
+                        Waste Management → Collection → Collection Points.
+                    </div>
+                </group>
+                <footer>
+                    <button name="action_confirm_conversion"
+                            string="Create Contract"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action used when the wizard is opened programmatically -->
+    <record id="action_wm_lead_conversion_wizard" model="ir.actions.act_window">
+        <field name="name">Convert to WM Contract</field>
+        <field name="res_model">wm.lead.conversion.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

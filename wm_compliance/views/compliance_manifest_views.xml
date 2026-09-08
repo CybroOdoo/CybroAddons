@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Search View -->
+    <record id="view_wm_compliance_manifest_search" model="ir.ui.view">
+        <field name="name">wm.compliance.manifest.search</field>
+        <field name="model">wm.compliance.manifest</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Manifest Ref"/>
+                <field name="generator_id"/>
+                <field name="transporter_id"/>
+                <field name="disposal_facility_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Submitted" name="submitted" domain="[('state', '=', 'submitted')]"/>
+                <filter string="Collected" name="collected" domain="[('state', '=', 'collected')]"/>
+                <filter string="Disposed" name="disposed" domain="[('state', '=', 'disposed')]"/>
+                <group>
+                    <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Disposal Facility" name="group_by_facility" context="{'group_by': 'disposal_facility_id'}"/>
+                    <filter string="Generator" name="group_by_generator" context="{'group_by': 'generator_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_wm_compliance_manifest_list" model="ir.ui.view">
+        <field name="name">wm.compliance.manifest.list</field>
+        <field name="model">wm.compliance.manifest</field>
+        <field name="arch" type="xml">
+            <list string="Compliance Manifests" decoration-info="state == 'draft'" decoration-warning="state == 'submitted'" decoration-muted="state == 'collected'" decoration-success="state == 'disposed'">
+                <field name="name"/>
+                <field name="manifest_date"/>
+                <field name="generator_id"/>
+                <field name="transporter_id"/>
+                <field name="disposal_facility_id"/>
+                <field name="total_quantity" sum="Total Quantity"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'submitted'" decoration-muted="state == 'collected'" decoration-success="state == 'disposed'"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_wm_compliance_manifest_form" model="ir.ui.view">
+        <field name="name">wm.compliance.manifest.form</field>
+        <field name="model">wm.compliance.manifest</field>
+        <field name="arch" type="xml">
+            <form string="Compliance Manifest">
+                <header>
+                    <button name="action_submit" type="object" string="Submit Manifest" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_collect" type="object" string="Mark as Collected" class="oe_highlight" invisible="state != 'submitted'"/>
+                    <button name="action_dispose" type="object" string="Mark as Disposed" class="oe_highlight" invisible="state != 'collected'"/>
+                    <button name="action_export_and_notify" type="object" string="Export &amp; Notify" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,collected,disposed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="generator_id" readonly="state == 'disposed'" domain="[('is_generator', '=', True)]" context="{'default_is_generator': True}"/>
+                            <field name="transporter_id" readonly="state == 'disposed'" domain="[('is_transporter', '=', True)]" context="{'default_is_transporter': True}"/>
+                            <field name="manifest_date" readonly="state == 'disposed'"/>
+                        </group>
+                        <group>
+                            <field name="disposal_facility_id" readonly="state == 'disposed'"/>
+                            <field name="transport_mode" readonly="state == 'disposed'"/>
+                            <field name="compliance_code_ids" widget="many2many_tags" readonly="state == 'disposed'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state == 'disposed'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Waste Items">
+                            <field name="line_ids" readonly="state == 'disposed'">
+                                <list editable="bottom">
+                                    <field name="waste_category_id"/>
+                                    <field name="product_id" domain="[('wm_waste_category_id', '=', waste_category_id)]"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id"/>
+                                    <field name="notes" placeholder="e.g. Yellow bag, serial num..."/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_quantity" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        <page string="Chain of Custody">
+                            <field name="custody_ids">
+                                <list editable="bottom">
+                                    <field name="action"/>
+                                    <field name="custodian_id" readonly="1"/>
+                                    <field name="timestamp"/>
+                                    <field name="location"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Digital Signature" invisible="not signature_id">
+                            <group>
+                                <group string="Signatory Details">
+                                    <field name="signature_signer_id" string="Signer"/>
+                                    <field name="signature_signed_at" string="Signed On"/>
+                                    <field name="signature_hash_verified" string="Verification Status" widget="badge" decoration-success="signature_hash_verified" decoration-danger="not signature_hash_verified"/>
+                                </group>
+                                <group string="Security &amp; Cryptographic Audit" groups="base.group_no_one">
+                                    <field name="signature_pdf_hash" string="SHA-256 Hash"/>
+                                    <field name="signature_id" string="Signature Record" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_wm_compliance_manifest" model="ir.actions.act_window">
+        <field name="name">Compliance Manifests</field>
+        <field name="res_model">wm.compliance.manifest</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wm_compliance_manifest_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a waste manifest to track a waste stream.
+            </p>
+        </field>
+    </record>
+</odoo>

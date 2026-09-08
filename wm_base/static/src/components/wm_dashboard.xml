@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+<t t-name="wm_dashboard.Dashboard">
+    <div class="wm_dashboard_root wm_dark_theme">
+
+        <!-- ── HEADER COMMAND BAR ─────────────────────────────────── -->
+        <div class="wm_db_header">
+            <div class="wm_db_header_left">
+                <div>
+                    <h1 class="wm_db_title">Operations Dashboard</h1>
+                    <div class="wm_db_subtitle">My Company · San Francisco</div>
+                </div>
+                <div class="wm_db_time_pills">
+                    <button t-att-class="state.activeTimeframe === 'today' ? 'time_pill active' : 'time_pill'" t-on-click="() => this.selectTimeframe('today')">Today</button>
+                    <button t-att-class="state.activeTimeframe === 'week' ? 'time_pill active' : 'time_pill'" t-on-click="() => this.selectTimeframe('week')">Week</button>
+                    <button t-att-class="state.activeTimeframe === 'month' ? 'time_pill active' : 'time_pill'" t-on-click="() => this.selectTimeframe('month')">Month</button>
+                </div>
+            </div>
+            <div class="wm_db_header_right">
+                <button class="wm_db_btn_refresh" t-on-click="onRefresh" t-att-disabled="state.loading">
+                    <i t-att-class="state.loading ? 'fa fa-spinner fa-spin' : 'fa fa-refresh'"/>
+                    <span t-if="!state.loading"> Refresh</span>
+                    <span t-if="state.loading"> Loading…</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── LOADING STATE ──────────────────────────────────── -->
+        <div t-if="state.loading &amp;&amp; !state.data" class="wm_db_loader">
+            <i class="fa fa-spinner fa-spin wm_db_spinner"/>
+            <p>Loading dashboard data…</p>
+        </div>
+
+        <!-- ── MAIN CONTENT ───────────────────────────────────── -->
+        <div t-if="state.data" class="wm_db_content">
+
+            <!-- ── ROW 1: TOP 4 KPI CARDS ──────────────────────── -->
+            <div class="wm_db_top_kpi_row">
+
+                <!-- 1. Today's Orders -->
+                <div class="wm_db_kpi_card kpi_orders" t-on-click="() => this.onRouteClick('all')" title="View all collection orders">
+                    <div class="kpi_label">ORDERS (<t t-esc="state.activeTimeframe.toUpperCase()"/>)</div>
+                    <div class="kpi_main_val_wrap" t-on-click.stop="() => this.onRouteClick('pending')" title="View pending orders">
+                        <span class="kpi_val text_amber"><t t-esc="state.data.pending_count"/></span>
+                        <span class="kpi_unit text_muted_lg">pending</span>
+                    </div>
+                    <div class="kpi_sub_info">
+                        <span class="sub_item" t-on-click.stop="() => this.onRouteClick('in_progress')" style="cursor: pointer;" title="View in-progress orders"><strong class="text_blue"><t t-esc="state.data.in_progress_count"/></strong> in progress</span>
+                        <span class="sub_item" t-on-click.stop="() => this.onRouteClick('completed')" style="cursor: pointer;" title="View completed orders"><strong class="text_teal"><t t-esc="state.data.completed_count"/></strong> completed</span>
+                    </div>
+                    <div class="kpi_progress_bar">
+                        <div class="bar_segment bg_amber" t-attf-style="width: #{ordersProgressStyle.pending}" title="Pending Orders"/>
+                        <div class="bar_segment bg_blue" t-attf-style="width: #{ordersProgressStyle.in_progress}" title="In-Progress Orders"/>
+                        <div class="bar_segment bg_teal" t-attf-style="width: #{ordersProgressStyle.completed}" title="Completed Orders"/>
+                    </div>
+                </div>
+
+                <!-- 2. Fleet Status -->
+                <div class="wm_db_kpi_card kpi_fleet" t-on-click="() => this.onFleetClick('all')" title="View all fleet vehicles">
+                    <div class="kpi_label">FLEET STATUS</div>
+                    <div class="kpi_main_val_wrap" t-on-click.stop="() => this.onFleetClick('available')" title="View available vehicles">
+                        <span class="kpi_val text_teal"><t t-esc="state.data.fleet_available"/></span>
+                        <span class="kpi_unit text_muted_lg">available</span>
+                    </div>
+                    <div class="kpi_sub_info">
+                        <span class="sub_item" t-on-click.stop="() => this.onFleetClick('dispatched')" style="cursor: pointer;" title="View dispatched vehicles"><strong class="text_teal"><t t-esc="state.data.fleet_dispatched"/></strong> dispatched</span>
+                        <span class="sub_item" t-on-click.stop="() => this.onFleetClick('maintenance')" style="cursor: pointer;" title="View maintenance vehicles"><strong class="text_amber"><t t-esc="state.data.fleet_maintenance"/></strong> maintenance</span>
+                    </div>
+                    <div class="kpi_segmented_bar">
+                        <div class="segment active"></div>
+                        <div class="segment active"></div>
+                        <div class="segment active"></div>
+                        <div class="segment active"></div>
+                        <div class="segment active"></div>
+                    </div>
+                </div>
+
+                <!-- 3. Revenue -->
+                <div class="wm_db_kpi_card kpi_revenue" t-on-click="onRevenueClick" title="View customer invoices">
+                    <div class="kpi_label">REVENUE (<t t-esc="state.activeTimeframe.toUpperCase()"/>)</div>
+                    <div class="kpi_main_val_wrap">
+                        <span class="kpi_val text_white"><t t-esc="state.data.currency_symbol || '$'"/><t t-esc="formatCurrency(state.data.revenue_cur_month)"/></span>
+                        <span t-att-class="revenueTrend.cssClass" t-esc="revenueTrend.label"/>
+                    </div>
+                    <div class="kpi_sub_info">
+                        <t t-if="state.data.has_account and state.data.revenue_invoice">
+                            <span class="sub_item" t-on-click.stop="() => this.onRevenueSourceClick('invoice')" style="cursor: pointer;" title="View Customer Invoices">
+                                Inv: <strong class="text_teal"><t t-esc="state.data.currency_symbol || '$'"/><t t-esc="formatCurrency(state.data.revenue_invoice)"/></strong>
+                            </span>
+                        </t>
+                        <t t-if="state.data.has_collection and state.data.revenue_collection">
+                            <span class="sub_item" t-on-click.stop="() => this.onRevenueSourceClick('collection')" style="cursor: pointer;" title="View Collection Orders">
+                                Orders: <strong class="text_blue"><t t-esc="state.data.currency_symbol || '$'"/><t t-esc="formatCurrency(state.data.revenue_collection)"/></strong>
+                            </span>
+                        </t>
+                        <t t-if="state.data.has_recycling and state.data.revenue_recycling">
+                            <span class="sub_item" t-on-click.stop="() => this.onRevenueSourceClick('recycling')" style="cursor: pointer;" title="View Recycling Orders">
+                                Rec: <strong class="text_amber"><t t-esc="state.data.currency_symbol || '$'"/><t t-esc="formatCurrency(state.data.revenue_recycling)"/></strong>
+                            </span>
+                        </t>
+                        <span class="sub_item text_muted_sm" style="cursor: default;">Prior: <t t-esc="state.data.currency_symbol || '$'"/><t t-esc="formatCurrency(state.data.revenue_prior_month)"/></span>
+                    </div>
+                    <div class="kpi_progress_bar">
+                        <t t-set="rev_cur" t-value="state.data.revenue_cur_month || 0"/>
+                        <t t-set="rev_prior" t-value="state.data.revenue_prior_month || 0"/>
+                        <t t-set="rev_max" t-value="Math.max(rev_cur, rev_prior, 1)"/>
+                        <div class="bar_segment bg_teal" t-attf-style="width: #{Math.min((rev_cur / rev_max) * 100, 100).toFixed(1)}%" title="Current Period Revenue"/>
+                        <div class="bar_segment bg_blue_dim" t-attf-style="width: #{Math.min((rev_prior / rev_max) * 100, 100).toFixed(1)}%; opacity: 0.35;" title="Prior Period Revenue"/>
+                    </div>
+                </div>
+
+                <!-- 4. Inspection Pass Rate -->
+                <div class="wm_db_kpi_card kpi_inspection" t-on-click="() => this.onInspectionStateClick('all')" title="View batch inspections">
+                    <div class="kpi_label">INSPECTION PASS RATE</div>
+                    <div class="kpi_main_val_wrap">
+                        <span class="kpi_val text_orange"><t t-esc="state.data.inspection_pass_rate"/>%</span>
+                    </div>
+                    <div class="kpi_sub_info">
+                        <span class="sub_item" t-on-click.stop="() => this.onInspectionStateClick('passed')" style="cursor: pointer;" title="View passed inspections"><strong class="text_teal"><t t-esc="state.data.inspection_passed"/></strong> passed</span>
+                        <span class="sub_item" t-on-click.stop="() => this.onInspectionStateClick('failed')" style="cursor: pointer;" title="View failed inspections"><strong class="text_red"><t t-esc="state.data.inspection_failed"/></strong> failed</span>
+                        <span class="sub_item" t-on-click.stop="() => this.onInspectionStateClick('pending')" style="cursor: pointer;" title="View pending inspections"><strong class="text_amber"><t t-esc="state.data.inspection_pending"/></strong> pending</span>
+                    </div>
+                    <div class="kpi_progress_bar">
+                        <div class="bar_segment bg_teal" t-attf-style="width: #{inspectionProgressStyle.passed}" title="Passed Inspections"/>
+                        <div class="bar_segment bg_red" t-attf-style="width: #{inspectionProgressStyle.failed}" title="Failed Inspections"/>
+                        <div class="bar_segment bg_amber" t-attf-style="width: #{inspectionProgressStyle.pending}" title="Pending Inspections"/>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ── ROW 2: MAIN CHARTS (2/3 + 1/3) ────────────────── -->
+            <div class="wm_db_main_charts_grid">
+
+                <!-- Left Column: Tonnage Bar Chart -->
+                <div class="wm_db_chart_card chart_tonnage">
+                    <div class="chart_card_header">
+                        <div class="chart_title">Tonnage collected by waste stream (<t t-esc="state.activeTimeframe"/>)</div>
+                        <div class="chart_custom_legend">
+                            <span class="legend_item"><span class="dot bg_teal"></span> Selected Period</span>
+                            <span class="legend_item"><span class="dot bg_dark_teal"></span> Prior Period</span>
+                        </div>
+                    </div>
+                    <div class="chart_card_body">
+                        <canvas t-ref="tonnageChart"/>
+                    </div>
+                </div>
+
+                <!-- Right Column: 2 Stacked Donut Cards -->
+                <div class="wm_db_right_donuts_col">
+
+                    <!-- Collection Efficiency -->
+                    <div class="wm_db_chart_card donut_card">
+                        <div class="chart_title mb-2">Collection efficiency</div>
+                        <div class="donut_wrapper">
+                            <div class="donut_canvas_box">
+                                <canvas t-ref="efficiencyChart"/>
+                                <div class="donut_center_text">
+                                    <div class="center_val text_teal"><t t-esc="state.data.on_time_pct"/>%</div>
+                                    <div class="center_lbl">ON-TIME</div>
+                                </div>
+                            </div>
+                            <div class="donut_custom_legend">
+                                <div class="legend_line" t-on-click="() => this.onEfficiencyClick('on_time')" title="View on-time collection orders"><span class="sq bg_teal"></span> On-time · <t t-esc="state.data.efficiency_on_time_ids ? state.data.efficiency_on_time_ids.length : 9"/></div>
+                                <div class="legend_line" t-on-click="() => this.onEfficiencyClick('late')" title="View delayed collection orders"><span class="sq bg_red"></span> Delayed · <t t-esc="state.data.efficiency_late_ids ? state.data.efficiency_late_ids.length : 0"/></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Batch Inspections -->
+                    <div class="wm_db_chart_card donut_card" t-if="state.data.has_inspection">
+                        <div class="chart_title mb-2">Batch Inspections</div>
+                        <div class="donut_wrapper">
+                            <div class="donut_canvas_box">
+                                <canvas t-ref="inspectionChart"/>
+                                <div class="donut_center_text">
+                                    <div class="center_val text_white"><t t-esc="state.data.inspection_passed + state.data.inspection_failed + state.data.inspection_pending"/></div>
+                                    <div class="center_lbl">BATCHES</div>
+                                </div>
+                            </div>
+                            <div class="donut_custom_legend">
+                                <div class="legend_line" t-on-click="() => this.onInspectionStateClick('passed')" title="View passed inspections"><span class="sq bg_teal"></span> Passed · <t t-esc="state.data.inspection_passed"/></div>
+                                <div class="legend_line" t-on-click="() => this.onInspectionStateClick('failed')" title="View failed inspections"><span class="sq bg_red"></span> Failed · <t t-esc="state.data.inspection_failed"/></div>
+                                <div class="legend_line" t-on-click="() => this.onInspectionStateClick('pending')" title="View pending inspections"><span class="sq bg_grey"></span> Pending · <t t-esc="state.data.inspection_pending"/></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ── ROW 3: BOTTOM 3 COLUMNS ────────────────────────── -->
+            <div class="wm_db_bottom_3col_grid">
+
+                <!-- Col 1: Stream Distribution -->
+                <div class="wm_db_chart_card bottom_card">
+                    <div class="chart_title">Stream distribution
+                        <span class="text_muted_sm" style="font-size:11px; font-weight:400; margin-left:6px;">
+                            (<t t-esc="state.activeTimeframe"/> · kg collected)
+                        </span>
+                    </div>
+                    <div class="donut_wrapper horizon align-items-center">
+                        <div class="donut_canvas_box_lg">
+                            <canvas t-ref="categoryChart"/>
+                        </div>
+                        <!-- Legend: use stream_distribution (timeframe tonnage) if available -->
+                        <div class="donut_grid_legend"
+                             t-if="state.data and state.data.stream_distribution and state.data.stream_distribution.length">
+                            <t t-set="sd_total"
+                               t-value="state.data.stream_distribution.reduce((s,d) => s + d.tonnage, 0)"/>
+                            <t t-foreach="state.data.stream_distribution.slice(0, 8)" t-as="sd" t-key="sd.id">
+                                <div class="leg_item">
+                                    <span class="sq" t-attf-style="background-color: #{['#3B82F6','#10B981','#F59E0B','#06B6D4','#F97316','#8B5CF6','#EAB308','#14B8A6'][sd_index]} !important;"/>
+                                    <t t-esc="sd.code"/> <t t-esc="sd_total ? ((sd.tonnage / sd_total) * 100).toFixed(1) : '0.0'"/>% ·
+                                    <span class="text_teal" style="font-size:10px;"><t t-esc="sd.tonnage"/> kg</span>
+                                </div>
+                            </t>
+                        </div>
+                        <!-- Fallback: catalogue material counts (no collection data for period) -->
+                        <div class="donut_grid_legend"
+                             t-elif="state.data and state.data.category_data and state.data.category_data.length">
+                            <t t-foreach="state.data.category_data.slice(0, 8)" t-as="cat" t-key="cat.id">
+                                <div class="leg_item">
+                                    <span class="sq" t-attf-style="background-color: #{['#3B82F6','#10B981','#F59E0B','#06B6D4','#F97316','#8B5CF6','#EAB308','#14B8A6'][cat_index]} !important;"/>
+                                    <t t-esc="cat.code"/> <t t-esc="state.data.total_materials ? ((cat.total / state.data.total_materials) * 100).toFixed(1) : '0.0'"/>%
+                                </div>
+                            </t>
+                        </div>
+                        <!-- No data fallback -->
+                        <div class="donut_grid_legend" t-else="">
+                            <div class="leg_item"><span class="sq bg_blue"></span> REC 26%</div>
+                            <div class="leg_item"><span class="sq bg_teal"></span> EW 14%</div>
+                            <div class="leg_item"><span class="sq bg_amber"></span> HAZ 14%</div>
+                            <div class="leg_item"><span class="sq bg_cyan"></span> IW 12%</div>
+                            <div class="leg_item"><span class="sq bg_orange"></span> ORG 13%</div>
+                            <div class="leg_item"><span class="sq bg_purple"></span> BMW 7%</div>
+                            <div class="leg_item"><span class="sq bg_yellow"></span> CDW 9%</div>
+                            <div class="leg_item"><span class="sq bg_teal_light"></span> GEN 5%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Col 2: Recent Failed Inspections -->
+                <div class="wm_db_chart_card bottom_card" t-if="state.data.has_inspection">
+                    <div class="panel_header_with_badge">
+                        <span class="chart_title">Recent failed inspections</span>
+                        <span class="badge_pill bg_red_pill"><t t-esc="state.data.recent_failed_inspections.length"/> OPEN</span>
+                    </div>
+                    <div class="dark_list_container">
+                        <t t-foreach="state.data.recent_failed_inspections" t-as="insp" t-key="insp.id">
+                            <div class="dark_failed_item" t-on-click="() => this.onInspectionClick(insp.id)">
+                                <div class="failed_item_content">
+                                    <span class="failed_code"><t t-esc="insp.name"/></span>
+                                    <span class="failed_desc">Batch <t t-esc="insp.batch"/> · Contamination <t t-esc="insp.contamination"/>%</span>
+                                </div>
+                                <span class="failed_date"><t t-esc="insp.date"/></span>
+                            </div>
+                        </t>
+                        <t t-if="state.data.recent_failed_inspections.length === 0">
+                            <div class="empty_text_dark">No failed inspections.</div>
+                        </t>
+                        <t t-else="">
+                            <div class="mt-2" t-if="state.data.inspection_failed &gt; state.data.recent_failed_inspections.length">
+                                <a href="#" class="view_all_failed_link" t-on-click.prevent="() => this.onInspectionStateClick('failed')" style="color: #3b82f6; text-decoration: none; font-weight: 600; font-size: 12px; cursor: pointer;">
+                                    Show all failed inspections (<t t-esc="state.data.inspection_failed"/>) →
+                                </a>
+                            </div>
+                            <div class="subtext_muted mt-2" t-else="">
+                                No other failures in the selected period.
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Col 3: Collection Orders Awaiting Signature -->
+                <div class="wm_db_chart_card bottom_card">
+                    <div class="panel_header_with_badge">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="chart_title">Awaiting signature</span>
+                            <span class="badge_pill bg_amber_pill"><t t-esc="state.data.open_manifests.length"/> ORDERS</span>
+                        </div>
+                        <button class="btn_view_all_link" t-on-click="onViewAllAwaitingSignature" title="View all orders awaiting signature">
+                            View all <i class="fa fa-arrow-right ms-1"/>
+                        </button>
+                    </div>
+                    <div class="dark_list_container">
+                        <t t-foreach="state.data.open_manifests.slice(0, 5)" t-as="manifest" t-key="manifest.name">
+                            <div class="dark_list_item" t-on-click="() => this.onManifestClick(manifest.id)">
+                                <span class="code_pill blue_code_pill"><t t-esc="manifest.name"/></span>
+                                <div class="item_desc text_light_partner"><t t-esc="manifest.partner"/></div>
+                                <span class="item_date"><t t-esc="manifest.date"/></span>
+                            </div>
+                        </t>
+                        <t t-if="state.data.open_manifests.length === 0">
+                            <div class="empty_text_dark">No open orders awaiting signature.</div>
+                        </t>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</t>
+
+</templates>

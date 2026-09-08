@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ── Report Action ─────────────────────────────────────────────────── -->
+    <record id="action_recycling_order_report" model="ir.actions.report">
+        <field name="name">Recycling Order Report</field>
+        <field name="model">recycling.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wm_recycling.report_recycling_order</field>
+        <field name="report_file">wm_recycling.report_recycling_order</field>
+        <field name="print_report_name">'Recycling-Order-%s' % object.name</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <!-- ── QWeb Template ─────────────────────────────────────────────────── -->
+    <template id="report_recycling_order">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <style>
+                            .rc-header { border-bottom: 3px solid #1a7f4b; padding-bottom: 10px; margin-bottom: 16px; }
+                            .rc-title  { font-size: 22px; font-weight: 700; color: #1a7f4b; }
+                            .rc-ref    { font-size: 13px; color: #555; }
+                            .rc-badge  { display:inline-block; border-radius:4px; padding:3px 8px; font-size:11px; font-weight:600; }
+                            .rc-green  { background:#d1e7dd; color:#0a3622; }
+                            .rc-blue   { background:#cfe2ff; color:#084298; }
+                            .rc-orange { background:#fff3cd; color:#664d03; }
+                            .rc-red    { background:#f8d7da; color:#842029; }
+                            .rc-grey   { background:#e2e3e5; color:#41464b; }
+                            .rc-haz    { background:#dc3545; color:#fff; font-weight:700; border-radius:4px; padding:2px 7px; }
+                            table.rc-meta { width:100%; font-size:12px; margin-bottom:16px; }
+                            table.rc-meta td { padding: 4px 6px; }
+                            table.rc-meta td:first-child { font-weight:600; color:#555; width:160px; }
+                            table.rc-lines { width:100%; border-collapse:collapse; font-size:11px; }
+                            table.rc-lines th { background:#1a7f4b; color:#fff; padding:7px 6px; text-align:left; }
+                            table.rc-lines th.text-right, table.rc-lines th.text-end,
+                            table.rc-lines td.text-right, table.rc-lines td.text-end { text-align:right !important; }
+                            table.rc-lines td { padding:6px 6px; border-bottom:1px solid #e5e5e5; }
+                            table.rc-lines tr:nth-child(even) td { background:#f8f9fa; }
+                            .rc-total-row td { font-weight:700; border-top:2px solid #1a7f4b; background:#d1e7dd !important; }
+                            .text-right, .text-end { text-align:right !important; }
+                            .rc-summary { background:#f0faf5; border:1px solid #b2dfdb; border-radius:6px; padding:14px 18px; margin-top:18px; }
+                            .rc-summary-title { font-weight:700; color:#1a7f4b; margin-bottom:8px; }
+                        </style>
+
+                        <!-- Header -->
+                        <div class="rc-header">
+                            <div class="rc-title">♻ Recycling Order</div>
+                            <div class="rc-ref">
+                                <t t-esc="o.name"/>
+                                <t t-if="o.hazardous">
+                                    &amp;nbsp;<span class="rc-haz">⚠ HAZARDOUS</span>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Metadata Table -->
+                        <table class="rc-meta">
+                            <tr>
+                                <td>Waste Batch:</td>
+                                <td><t t-esc="o.waste_batch_id.name"/></td>
+                                <td>Status:</td>
+                                <td>
+                                    <t t-set="sc" t-value="{'draft':'rc-grey','confirmed':'rc-blue','in_progress':'rc-orange','done':'rc-green','cancelled':'rc-red'}.get(o.state,'rc-grey')"/>
+                                    <span t-attf-class="rc-badge #{sc}">
+                                        <t t-esc="dict(o._fields['state'].selection).get(o.state, o.state)"/>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Material:</td>
+                                <td><t t-esc="o.product_id.name"/></td>
+                                <td>Category:</td>
+                                <td><t t-esc="o.category_id.name"/> (<t t-esc="o.category_id.code"/>)</td>
+                            </tr>
+                            <tr>
+                                <td>Input Quantity:</td>
+                                <td><t t-esc="'%.3f' % o.input_qty"/> <t t-esc="o.input_uom_id.name"/></td>
+                                <td>Start Date:</td>
+                                <td><t t-esc="o.date_start"/></td>
+                            </tr>
+                            <tr>
+                                <td>Responsible:</td>
+                                <td><t t-esc="o.responsible_id.name"/></td>
+                                <td>Completion Date:</td>
+                                <td><t t-esc="o.date_done or '—'"/></td>
+                            </tr>
+                            <t t-if="o.facility_location_id">
+                                <tr>
+                                    <td>Facility Location:</td>
+                                    <td colspan="3"><t t-esc="o.facility_location_id.complete_name"/></td>
+                                </tr>
+                            </t>
+                        </table>
+
+                        <!-- Recovery Lines -->
+                        <table class="rc-lines">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Recovered Product</th>
+                                    <th class="text-right">Expected Qty</th>
+                                    <th class="text-right">Recovered Qty</th>
+                                    <th>UoM</th>
+                                    <th class="text-right">Recovery Rate</th>
+                                    <th class="text-right">Sale Price</th>
+                                    <th class="text-right">Est. Value</th>
+                                    <th>Destination</th>
+                                    <th>Stocked</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.line_ids" t-as="line">
+                                    <tr>
+                                        <td><t t-esc="line_index + 1"/></td>
+                                        <td><t t-esc="line.product_id.display_name"/></td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.3f' % line.expected_qty"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.3f' % line.recovered_qty"/>
+                                        </td>
+                                        <td><t t-esc="line.uom_id.name"/></td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.2f' % line.recovery_rate"/>%
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.2f' % line.sale_price"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.2f' % line.line_value"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="line.dest_location_id.complete_name if line.dest_location_id else '—'"/>
+                                        </td>
+                                        <td>
+                                            <t t-if="line.is_stocked">✅</t>
+                                            <t t-else="">—</t>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <!-- Totals row -->
+                                <tr class="rc-total-row">
+                                    <td colspan="3">TOTAL</td>
+                                    <td class="text-right">
+                                        <t t-esc="'%.3f' % o.total_recovered_qty"/>
+                                    </td>
+                                    <td/>
+                                    <td class="text-right">
+                                        <t t-esc="'%.2f' % o.overall_recovery_rate"/>%
+                                    </td>
+                                    <td/>
+                                    <td class="text-right">
+                                        <t t-esc="'%.2f' % o.total_recovered_value"/>
+                                    </td>
+                                    <td colspan="2"/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Summary Box -->
+                        <div class="rc-summary">
+                            <div class="rc-summary-title">Recovery Summary</div>
+                            <table style="width:100%;font-size:12px;">
+                                <tr>
+                                    <td style="width:33%"><strong>Input:</strong>
+                                        <t t-esc="'%.3f' % o.input_qty"/>
+                                        <t t-esc="o.input_uom_id.name"/>
+                                    </td>
+                                    <td style="width:33%"><strong>Recovered:</strong>
+                                        <t t-esc="'%.3f' % o.total_recovered_qty"/>
+                                    </td>
+                                    <td style="width:33%"><strong>Overall Rate:</strong>
+                                        <t t-esc="'%.2f' % o.overall_recovery_rate"/>%
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2"><strong>Estimated Revenue:</strong>
+                                        <t t-esc="'%.2f' % o.total_recovered_value"/>
+                                    </td>
+                                    <td>
+                                        <t t-if="o.notes">
+                                            <strong>Notes:</strong> <t t-esc="o.notes"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

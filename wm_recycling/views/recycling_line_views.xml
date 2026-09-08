@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Stand-alone list view for all recovery lines across all orders -->
+    <record id="view_recycling_line_list" model="ir.ui.view">
+        <field name="name">recycling.line.list</field>
+        <field name="model">recycling.line</field>
+        <field name="arch" type="xml">
+            <list string="Recovery Lines"
+                  decoration-danger="recovered_qty &lt; expected_qty and expected_qty &gt; 0"
+                  decoration-success="recovered_qty >= expected_qty and recovered_qty &gt; 0">
+                <field name="order_id"/>
+                <field name="source_product_id" string="Source Product/Material"/>
+                <field name="product_id"/>
+                <field name="uom_id"/>
+                <field name="expected_qty" sum="Expected"/>
+                <field name="recovered_qty" sum="Recovered"/>
+                <field name="recovery_rate" string="Rate (%)"/>
+                <field name="sale_price"/>
+                <field name="line_value" sum="Est. Value"/>
+                <field name="dest_location_id" optional="show"/>
+                <field name="is_stocked" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search view -->
+    <record id="view_recycling_line_search" model="ir.ui.view">
+        <field name="name">recycling.line.search</field>
+        <field name="model">recycling.line</field>
+        <field name="arch" type="xml">
+            <search string="Search Recovery Lines">
+                <field name="order_id"/>
+                <field name="product_id"/>
+                <field name="source_product_id" string="Source Product/Material"/>
+                <filter string="Not yet stocked" name="not_stocked"
+                        domain="[('is_stocked','=',False),('recovered_qty','>',0)]"/>
+                <filter string="Stocked" name="stocked"
+                        domain="[('is_stocked','=',True)]"/>
+                <group>
+                    <filter string="Recovered Product" name="grp_product"
+                            context="{'group_by':'product_id'}"/>
+                    <filter string="Source Material/Product" name="grp_source_product"
+                            context="{'group_by':'source_product_id'}"/>
+                    <filter string="Order" name="grp_order"
+                            context="{'group_by':'order_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window Action for stand-alone line list -->
+    <record id="action_recycling_line" model="ir.actions.act_window">
+        <field name="name">Recovery Lines</field>
+        <field name="res_model">recycling.line</field>
+        <field name="view_mode">list</field>
+        <field name="search_view_id" ref="view_recycling_line_search"/>
+    </record>
+</odoo>
