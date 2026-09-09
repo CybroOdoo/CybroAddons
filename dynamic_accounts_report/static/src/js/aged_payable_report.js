@@ -230,7 +230,7 @@ class AgedPayable extends owl.Component {
         };
         BlockUI;
         await download({
-            url: '/xlsx_report',
+            url: '/dynamic_accounts_report/xlsx_report',
             data: action.data,
             complete: () => unblockUI,
             error: (error) => self.call('crash_manager', 'rpc_error', error),

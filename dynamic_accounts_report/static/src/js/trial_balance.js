@@ -496,7 +496,7 @@ class TrialBalance extends owl.Component {
         const block = new BlockUI();
 
         await download({
-            url: '/xlsx_report',
+            url: '/dynamic_accounts_report/xlsx_report',
             data: action.data,
             complete: () => block.unblock(),
             error: (error) => self.call('crash_manager', 'rpc_error', error),
