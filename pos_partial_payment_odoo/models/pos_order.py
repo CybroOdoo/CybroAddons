@@ -48,22 +48,21 @@ class PosOrder(models.Model):
                               help="The amount remaining to be paid for this"
                                    "POS order.")
 
-    @api.depends('amount_total', 'amount_paid', 'account_move')
+    @api.depends('amount_total', 'amount_paid', 'account_move.amount_residual', 'account_move.amount_total')
     def _compute_due_amount(self):
         """
         Compute the due amount for the POS order.
 
-        If an invoice is linked to the POS order, take the paid amount from the
-        invoice instead of the POS payment records.
+        If an invoice is linked to the POS order, calculate the remaining due amount
+        from the invoice residual; otherwise use amount_total - amount_paid.
         """
         for order in self:
-            paid_amount = order.amount_paid
             invoice = order.account_move
             if invoice:
-                invoice_paid = invoice.amount_total - invoice.amount_residual
-                paid_amount = invoice_paid
-                order.amount_paid = invoice_paid
-            order.due_amount = order.amount_total - paid_amount
+                paid_amount = invoice.amount_total - invoice.amount_residual
+            else:
+                paid_amount = order.amount_paid
+            order.due_amount = max(0.0, order.amount_total - paid_amount)
 
     def _order_fields(self, ui_order):
         """
@@ -96,11 +95,8 @@ class PosOrder(models.Model):
         isPaid = float_is_zero(total - self.amount_paid,
                                precision_rounding=self.currency_id.rounding)
 
-        if not isPaid:
-            pos_config = self.env['pos.config'].search([])
-            for shop in pos_config:
-                if shop.partial_payment:
-                    isPaid = True
+        if not isPaid and self.is_partial_payment and self.config_id.partial_payment:
+            isPaid = True
         if not isPaid and not self.config_id.cash_rounding:
             raise UserError(_("Order %s is not fully paid.", self.name))
         elif not isPaid and self.config_id.cash_rounding:

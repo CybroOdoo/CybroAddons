@@ -54,10 +54,9 @@ class PosPayment(models.Model):
             pos_session = order.session_id
             journal = pos_session.config_id.journal_id
 
-            # ✅ Your modified condition here
-            if change_payment or payment == payment_to_change:
-                pos_payment_ids = payment.ids + change_payment.ids
-                payment_amount = payment.amount
+            if change_payment and payment == payment_to_change:
+                pos_payment_ids = (payment | change_payment).ids
+                payment_amount = payment.amount + sum(change_payment.mapped('amount'))
             else:
                 pos_payment_ids = payment.ids
                 payment_amount = payment.amount
@@ -76,6 +75,8 @@ class PosPayment(models.Model):
 
             # Link payment with its move
             payment.write({'account_move_id': payment_move.id})
+            if change_payment and payment == payment_to_change:
+                change_payment.write({'account_move_id': payment_move.id})
 
             # Compute amounts
             amounts = pos_session._update_amounts({'amount': 0, 'amount_converted': 0},

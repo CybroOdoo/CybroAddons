@@ -137,7 +137,10 @@ patch(TicketScreen.prototype, {
                     if (!cachedOrder) return true;
                     if (write_date) {
                         const parsedWriteDate = parseDateTime(write_date, { tz: "UTC" }).setZone("local");
-                        if (parsedWriteDate.ts > cachedOrder.date_order.ts) {
+                        const cachedWriteDate = cachedOrder.write_date
+                            ? (cachedOrder.write_date.ts ? cachedOrder.write_date : parseDateTime(cachedOrder.write_date, { tz: "UTC" }).setZone("local"))
+                            : null;
+                        if (!cachedWriteDate || parsedWriteDate.ts > cachedWriteDate.ts) {
                             return true;
                         }
                     }

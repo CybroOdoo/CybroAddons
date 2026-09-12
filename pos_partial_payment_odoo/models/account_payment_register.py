@@ -71,14 +71,25 @@ class AccountPaymentRegister(models.TransientModel):
         ])
 
         for pos_order in pos_orders:
-            if self.pos_payment_method_id:
+            # Determine payment amount allocated to this POS order's invoice
+            order_lines = self.line_ids.filtered(lambda l: l.move_id == pos_order.account_move)
+            if order_lines and len(self.line_ids.move_id) > 1:
+                allocated_amount = sum(abs(l.amount_residual) for l in order_lines)
+                payment_amount = min(allocated_amount, self.amount) if allocated_amount else (self.amount / len(pos_orders))
+            else:
+                payment_amount = self.amount
+
+            if self.pos_payment_method_id and payment_amount > 0:
+                payment_date = fields.Datetime.to_datetime(self.payment_date) if self.payment_date else fields.Datetime.now()
                 self.env['pos.payment'].create({
                     'pos_order_id': pos_order.id,
-                    'amount': self.amount,
+                    'amount': payment_amount,
                     'payment_method_id': self.pos_payment_method_id.id,
+                    'payment_date': payment_date,
+                    'session_id': pos_order.session_id.id,
                 })
                 pos_order.write({
-                    'amount_paid': pos_order.amount_paid + self.amount,
+                    'amount_paid': pos_order.amount_paid + payment_amount,
                 })
             if pos_order.amount_paid >= pos_order.amount_total:
                 pos_order.write({
