@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Editable list to manage menu restrictions in one place -->
+    <record id="hide_menu_restriction_view_list" model="ir.ui.view">
+        <field name="name">ir.ui.menu.view.list.hide.menu.restriction</field>
+        <field name="model">ir.ui.menu</field>
+        <field name="arch" type="xml">
+            <list string="Menu Restrictions" editable="bottom" create="false">
+                <field name="complete_name" string="Menu" readonly="1"/>
+                <field name="restrict_user_ids" widget="many2many_tags"
+                       options="{'no_create': True}"/>
+                <field name="restrict_group_ids" widget="many2many_tags"
+                       options="{'no_create': True}"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search view with a "Restricted" filter and grouping -->
+    <record id="hide_menu_restriction_view_search" model="ir.ui.view">
+        <field name="name">ir.ui.menu.view.search.hide.menu.restriction</field>
+        <field name="model">ir.ui.menu</field>
+        <field name="arch" type="xml">
+            <search string="Menu Restrictions">
+                <field name="complete_name" string="Menu"/>
+                <field name="restrict_user_ids"/>
+                <field name="restrict_group_ids"/>
+                <filter name="restricted" string="Restricted"
+                        domain="['|', ('restrict_user_ids', '!=', False), ('restrict_group_ids', '!=', False)]"/>
+                <group name="group_by">
+                    <filter name="group_parent" string="Parent Menu"
+                            context="{'group_by': 'parent_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action opening the menu restrictions management screen -->
+    <record id="action_hide_menu_restrictions" model="ir.actions.act_window">
+        <field name="name">Menu Restrictions</field>
+        <field name="res_model">ir.ui.menu</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="hide_menu_restriction_view_list"/>
+        <field name="search_view_id" ref="hide_menu_restriction_view_search"/>
+        <field name="context">{'search_default_restricted': 1}</field>
+    </record>
+
+    <!-- Menu items under Settings > Users & Companies -->
+    <menuitem id="menu_hide_menu_root"
+              name="Menu Restrictions"
+              parent="base.menu_users"
+              sequence="5"
+              groups="base.group_system"/>
+    <menuitem id="menu_hide_menu_restrictions"
+              name="Menu Restrictions"
+              parent="menu_hide_menu_root"
+              action="action_hide_menu_restrictions"
+              sequence="1"/>
+    <menuitem id="menu_hide_menu_copy_wizard"
+              name="Copy Hidden Menus"
+              parent="menu_hide_menu_root"
+              action="action_hide_menu_copy_wizard"
+              sequence="2"/>
+</odoo>

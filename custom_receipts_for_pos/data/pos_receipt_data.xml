@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pos_receipt_template_primary_design" model="pos.receipt">
+        <field name="name">Design 1</field>
+        <field name="design_receipt"><![CDATA[
+        <div class="pos-receipt">
+            <div style="text-align:center;">
+                <t t-if="image and image.logo">
+                    <img t-att-src="image.logo" style="max-height: 75px" />
+                    <br />
+                </t>
+                <div class="pos-receipt-contact">
+                    <t t-if="company.name">
+                        <div><t t-out="company.name" /></div>
+                    </t>
+                    <t t-if="company.phone">
+                        <div>Tel: <t t-out="company.phone" /></div>
+                    </t>
+                    <t t-if="company.vat">
+                        <div><t t-out="extra_data.partner_vat_label || company.vat_label || 'VAT'"/>: <t t-out="company.vat" /></div>
+                    </t>
+                    <t t-if="company.email">
+                        <div><t t-out="company.email" /></div>
+                    </t>
+                    <t t-if="company.website">
+                        <div><t t-out="company.website" /></div>
+                    </t>
+                    <t t-if="extra_data.cashier_name">
+                        <div class="cashier" style="margin-top:10px;">
+                            <div>Served by <t t-out="extra_data.cashier_name" /></div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+            
+            <div t-if="conditions.simplified_receipt" class="w-100 text-center text-huge mt-3" name="simplified_receipt_label" style="text-align:center;">
+                <strong>Receipt</strong>
+            </div>
+            <div t-else="" class="w-100 mt-3">
+                <table class='receipt-orderlines' style="font-size:15px; border-style:double; border-left:none; border-right:none; border-bottom:none; width:100%;">
+                    <colgroup>
+                        <col width='40%' />
+                        <col width='30%' />
+                        <col width='30%' />
+                    </colgroup>
+                    <tr style="border-bottom:1px dashed black;">
+                        <th style="text-align:left;">Product</th>
+                        <th style="text-align:right;">Qty</th>
+                        <th style="text-align:right;">Amount</th>
+                    </tr>
+                    <t t-if="lines and lines.length > 0">
+                        <tr t-foreach="lines" t-as="line" t-key="line_index">
+                            <td style="padding-top:1%; padding-bottom:1%; text-align:left;">
+                                <t t-out="line.product_data.display_name"/>
+                                <t t-if="line.discount and line.discount > 0">
+                                    <div style="font-size:12px; font-style:italic; color:#808080;">
+                                        <t t-out="line.discount"/>% discount
+                                    </div>
+                                </t>
+                                <t t-if="line.customer_note">
+                                    <div style="font-size:14px;" t-out="line.customer_note"/>
+                                </t>
+                            </td>
+                            <td style="text-align:right; font-size:14px;">
+                                <t t-out="line.qty"/>
+                            </td>
+                            <td style="text-align:right; font-size:14px;">
+                                <t t-out="line.price_subtotal_incl"/>
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+            </div>
+            <br />
+            
+            <div style="padding-top:6px;" t-if="!conditions.basic_receipt">
+                <t t-if="extra_data.prices">
+                    <br/>
+                    <div style="font-weight:700; font-size:14px; border-top:1px dashed;">
+                        <span style="margin-left:40%;">Subtotal : </span>
+                        <span t-out="extra_data.prices.subtotal_amount" class="pos-receipt-right-align"/>
+                    </div>
+                    <t t-if="extra_data.prices.taxes">
+                        <t t-foreach="extra_data.prices.taxes" t-as="tax" t-key="tax_index">
+                            <div style="font-weight:700; font-size:14px;">
+                                <span style="margin-left:40%;"><t t-out="tax.name" /></span>
+                                <span t-out="tax.amount" class="pos-receipt-right-align"/>
+                            </div>
+                        </t>
+                    </t>
+                </t>
+                <br/>
+                <div style="font-weight:700; font-size:14px;">
+                    <span style="margin-left:40%;">TOTAL : </span>
+                    <span t-out="extra_data.prices.total_amount" class="pos-receipt-right-align"/>
+                </div>
+                <br/><br/>
+            </div>
+            
+            <t t-if="payments">
+                <t t-foreach="payments" t-as="payment" t-key="payment_index">
+                    <div style="font-size:14px; border-top:1px dashed; padding-top:5px;">
+                        <span style="margin-left:40%;"><t t-out="payment.payment_method_data.name" /></span>
+                        <span t-out="payment.amount" class="pos-receipt-right-align"/>
+                    </div>
+                </t>
+            </t>
+            <t t-if="order and order.amount_return and order.amount_return != '0.00' and order.amount_return != 0">
+                <br/>
+                <div class="receipt-change" style="font-size:14px;">
+                    <span style="margin-left:40%;">CHANGE : </span>
+                    <span t-out="order.amount_return" class="pos-receipt-right-align"/>
+                </div>
+            </t>
+            
+            <div class='before-footer' />
+            <br/><br/>
+            <div class="pos-receipt-order-data">
+                <div><t t-if="order" t-out="order.name || order.pos_reference" /></div>
+                <div><t t-if="extra_data" t-out="extra_data.formated_date_order" /></div>
+            </div>
+            <br/><br/>
+            <div style="font-size:14px; text-align:center;">
+                Thank You... Please Visit Again ...
+            </div>
+        </div>]]></field>
+    </record>
+
+    <record id="pos_receipt_template_secondary_design" model="pos.receipt">
+        <field name="name">Design 2</field>
+        <field name="design_receipt"><![CDATA[
+        <div class="pos-receipt">
+            <div class="w-100 text-center mb-3">
+                <t t-if="image and image.logo">
+                    <img t-att-src="image.logo" style="max-height: 75px" alt="Logo" class="pos-receipt-logo"/>
+                    <br />
+                 </t>
+            </div>
+            <div style="font-size:13px; text-align:center;">
+                <t t-if="company.name"><t t-out="company.name"/><br /></t>
+                <t t-if="company.phone">Phone: <t t-out="company.phone"/><br /></t>
+            </div>
+            <br/>
+            <div style="font-size:13px; text-align:center;">
+                <t t-if="extra_data and extra_data.formated_date_order">
+                    Date: <t t-out="extra_data.formated_date_order"/><br />
+                </t>
+                <t t-if="order and (order.name || order.pos_reference)">
+                    Order: <t t-out="order.name || order.pos_reference"/><br />
+                </t>
+            </div>
+            <br />
+            <div style="font-size:13px; text-align:center;">
+                <t t-if="extra_data and extra_data.cashier_name">
+                    Cashier: <t t-out="extra_data.cashier_name" /><br />
+                </t>
+                <t t-if="partner and partner.name">
+                    Customer: <t t-out="partner.name" style="font-style:bold" /><br />
+                </t>
+            </div>
+            <br/>
+            <t t-if="config and config.receipt_header">
+                <div style='text-align:center; font-size:13px'>
+                    <t t-out="config.receipt_header" />
+                </div>
+                <br />
+            </t>
+            
+            <div t-if="conditions.simplified_receipt" class="w-100 text-center text-huge mt-3" name="simplified_receipt_label">
+                <strong>Receipt</strong>
+            </div>
+            <div t-else="">
+                <table class='receipt-orderlines' style="font-size:15px; border-style:double; border-left:none; border-right:none; border-bottom:none; width:100%;">
+                    <colgroup>
+                        <col width='40%' />
+                        <col width='30%' />
+                        <col width='30%' />
+                    </colgroup>
+                    <tr style="border-bottom:1px dashed black;">
+                        <th style="text-align:left;">Product</th>
+                        <th style="text-align:right;">Qty</th>
+                        <th style="text-align:right;">Amount</th>
+                    </tr>
+                    <t t-if="lines and lines.length > 0">
+                        <tr t-foreach="lines" t-as="line" t-key="line_index">
+                            <td style="padding-top:1%; padding-bottom:1%; text-align:left;">
+                                <t t-out="line.product_data.display_name"/>
+                                <t t-if="line.discount and line.discount > 0">
+                                    <div style="font-size:12px; font-style:italic; color:#808080;">
+                                        <t t-out="line.discount"/>% discount
+                                    </div>
+                                </t>
+                                <t t-if="line.customer_note">
+                                    <div style="font-size:14px;" t-out="line.customer_note"/>
+                                </t>
+                            </td>
+                            <td style="text-align:right; font-size:14px;">
+                                <t t-out="line.qty"/>
+                            </td>
+                            <td style="text-align:right; font-size:14px;">
+                                <t t-out="line.price_subtotal_incl"/>
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+            </div>
+            <br />
+            
+            <div style="padding-top:6px;" t-if="!conditions.basic_receipt">
+                <t t-if="extra_data.prices">
+                    <br/>
+                    <div style="font-weight:700; font-size:14px; border-top:1px dashed;">
+                        <span style="margin-left:40%;">Subtotal : </span>
+                        <span t-out="extra_data.prices.subtotal_amount" class="pos-receipt-right-align"/>
+                    </div>
+                    <t t-if="extra_data.prices.taxes">
+                        <t t-foreach="extra_data.prices.taxes" t-as="tax" t-key="tax_index">
+                            <div style="font-weight:700; font-size:14px;">
+                                <span style="margin-left:40%;"><t t-out="tax.name" /></span>
+                                <span t-out="tax.amount" class="pos-receipt-right-align"/>
+                            </div>
+                        </t>
+                    </t>
+                </t>
+                <br/>
+                <div style="font-weight:700; font-size:14px;">
+                    <span style="margin-left:40%;">TOTAL : </span>
+                    <span t-out="extra_data.prices.total_amount" class="pos-receipt-right-align"/>
+                </div>
+                <br/><br/>
+            </div>
+            
+            <!-- Payment Lines -->
+            <t t-if="payments">
+                <t t-foreach="payments" t-as="payment" t-key="payment_index">
+                    <div style="font-size:14px; border-top:1px dashed; padding-top:5px;">
+                        <span style="margin-left:40%;"><t t-out="payment.payment_method_data.name" /></span>
+                        <span t-out="payment.amount" class="pos-receipt-right-align"/>
+                    </div>
+                </t>
+            </t>
+            
+            <t t-if="order and order.amount_return and order.amount_return != '0.00' and order.amount_return != 0">
+                <br/>
+                <div class="receipt-change" style="font-size:14px;">
+                    <span style="margin-left:40%;">CHANGE : </span>
+                    <span t-out="order.amount_return" class="pos-receipt-right-align"/>
+                </div>
+            </t>
+            <br/>
+            
+            <div class='before-footer' />
+            <!-- Footer -->
+            <div t-if="config and config.receipt_footer" style="text-align:center; font-size:14px;">
+                <t t-out="config.receipt_footer"/>
+            </div>
+            <div class='after-footer' style="font-size:14px;">
+                <t t-if="payments">
+                    <t t-foreach="payments" t-as="payment" t-key="payment_ticket_index">
+                        <t t-if="payment.ticket">
+                            <br />
+                            <div class="pos-payment-terminal-receipt">
+                                <t t-out="payment.ticket"/>
+                            </div>
+                        </t>
+                    </t>
+                </t>
+            </div>
+            <br/><br/>
+            <div style="font-size:14px; text-align:center;">
+                Thank You... Please Visit Again ...
+            </div>
+        </div>]]></field>
+    </record>
+</odoo>

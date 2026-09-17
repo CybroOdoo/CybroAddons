@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_cash_flow">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.internal_layout">
+                    <div class="page">
+                        <h2 t-out="data['account_report_id'][1]"/>
+
+                        <div class="row mt32 mb32">
+                            <div class="col-4">
+                                <strong>Target Moves:</strong>
+                                <p>
+                                    <span t-if="data['target_move'] == 'all'">All Entries</span>
+                                    <span t-if="data['target_move'] == 'posted'">All Posted Entries</span>
+                                </p>
+                            </div>
+                            <div class="col-4">
+                                <p>
+                                    <strong>Date from :</strong>
+                                    <span t-out="data['date_from']"/>
+                                    <br/>
+                                    <strong>Date to :</strong>
+                                    <span t-out="data['date_to']"/>
+                                </p>
+                            </div>
+                        </div>
+                        <table class="table table-sm table-reports">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <strong>Name</strong>
+                                    </th>
+                                    <th class="text-end" t-if="data['debit_credit']">
+                                        <strong>Debit</strong>
+                                    </th>
+                                    <th class="text-end" t-if="data['debit_credit']">
+                                        <strong>Credit</strong>
+                                    </th>
+                                    <th class="text-end">
+                                        <strong>Balance</strong>
+                                    </th>
+                                    <th class="text-end" t-if="data['enable_filter']">
+                                        <strong t-out="data['label_filter']"/>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="get_account_lines" t-as="a">
+                                    <t t-if="a['level'] != 0">
+                                        <t t-if="a.get('level') &gt; 3">
+                                            <t t-set="style" t-value="'font-weight: normal;'"/>
+                                        </t>
+                                        <t t-if="not a.get('level') &gt; 3">
+                                            <t t-set="style" t-value="'font-weight: bold;'"/>
+                                        </t>
+                                        <td>
+                                            <span style="color: white;" t-out="'..' * a.get('level', 0)"/>
+                                            <span t-out="a.get('name')"/>
+                                        </td>
+                                        <td t-if="data['debit_credit']" class="text-end" style="white-space: text-nowrap;">
+                                            <span t-out="a.get('debit')" t-if="data['debit_credit']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                        </td>
+                                        <td t-if="data['debit_credit']" class="text-end" style="white-space: text-nowrap;">
+                                            <span t-out="a.get('credit')"
+                                                  t-if="data['debit_credit']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                        </td>
+                                        <td class="text-end" style="white-space: text-nowrap;">
+                                            <span t-out="a.get('balance')"
+                                                  t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                        </td>
+                                        <td class="text-end" t-if="data['enable_filter']">
+                                            <span t-out="a.get('balance_cmp')"
+                                                  t-if="data['enable_filter']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/>
+                                        </td>
+                                    </t>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_account_recurring_invoice" model="ir.sequence">
+            <field name="name">Recurring Invoice</field>
+            <field name="code">account.recurring.invoice</field>
+            <field name="prefix">RECINV/</field>
+            <field name="padding">4</field>
+            <!-- Global (all companies) so numbering works in every company. -->
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Generates the invoices due for every running template. Active:
+             it only acts on templates the user explicitly set to Running and,
+             with auto-post off, produces drafts that still need review. -->
+        <record id="account_recurring_invoice_cron" model="ir.cron">
+            <field name="name">Generate Recurring Invoices</field>
+            <field name="model_id" ref="model_account_recurring_invoice"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_generate_invoices()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inheriting portal.share wizard -->
+    <record id="portal_share_wizard" model="ir.ui.view">
+        <field name="name">portal.share.view.form.inherit.whatsapp.mail.messaging</field>
+        <field name="model">portal.share</field>
+        <field name="inherit_id" ref="portal.portal_share_wizard"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='share_link']" position="before">
+                <field name="share_type" widget="radio"/>
+            </xpath>
+            <xpath expr="//button[@name='action_send_mail']" position="replace">
+                <button string="Send" name="action_send_mail" invisible="share_type == 'whatsapp' or access_warning != ''"
+                        type="object" class="btn-primary"/>
+            </xpath>
+            <xpath expr="//button[@name='action_send_mail']" position="after">
+                <button string="Send" name="action_send_whatsapp" invisible="share_type == 'mail' or access_warning != ''"
+                        type="object" class="oe_highlight" icon="fa-whatsapp"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_ids']" position="replace">
+                <field name="partner_ids" widget="many2many_tags_email"
+                       invisible="share_type == 'whatsapp' " required=" share_type == 'mail' "
+                       placeholder="Add contacts to share the document..."/>
+            </xpath>
+            <xpath expr="//field[@name='share_link']" position="after">
+                <field name="partner_id" invisible ="share_type == 'mail'" required="share_type == 'whatsapp' "/>
+                <field name="mobile_number" invisible="share_type == 'mail'" required=" share_type == 'whatsapp' "/>
+            </xpath>
+            <xpath expr="//field[@name='note']" position="replace">
+                <field name="note" placeholder="Add a note" widget="text_emojis" required="share_type == 'whatsapp' "/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
