@@ -50,7 +50,7 @@
             'custom_receipts_for_pos/static/src/plugins/pos_ticket_printer_plugin.js',
         ],
     },
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,

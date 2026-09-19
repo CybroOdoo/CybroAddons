@@ -6,7 +6,6 @@ import { useInputField } from "@web/views/fields/input_field_hook";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { Component, proxy, signal, onMounted, onWillUnmount } from "@odoo/owl";
 
-// Function to format minutes into HH:MM:SS format
 export function formatMinutes(value) {
     if (value === false || value === undefined || value === null) {
         return "";
@@ -33,7 +32,6 @@ export class StopWatch extends Component {
 
     setup() {
         console.group("[StopWatch] setup()");
-        console.log("Props:", this.props);
 
         const initialValue = this.props.record?.data?.[this.props.name] || 0;
         const isLive = Boolean(this.props.record?.data?.is_live_capture);
@@ -50,7 +48,6 @@ export class StopWatch extends Component {
         });
 
         onMounted(() => {
-            console.log("[StopWatch] Mounted");
             if (this.state.liveCapture) {
                 const startTimeStr = this.props.record?.data?.live_capture_start_time;
                 if (startTimeStr) {
@@ -64,7 +61,6 @@ export class StopWatch extends Component {
         });
 
         onWillUnmount(() => {
-            console.log("[StopWatch] Unmounting, clearing timer");
             if (this.timer) {
                 clearTimeout(this.timer);
                 this.timer = null;
