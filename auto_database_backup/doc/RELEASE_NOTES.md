@@ -19,3 +19,12 @@
 - Code Refactored
 - New Features added
 
+
+#### 12.08.2026
+#### Version 19.0.2.0.3
+#### UPDT
+
+- Added cybrosys_support_client as a dependency module
+
+
+
