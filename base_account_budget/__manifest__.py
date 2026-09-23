@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Odoo 19 Budget Management',
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.2',
     'category': 'Accounting',
     'summary': """ Budget Management for Odoo 19 Community Edition. """,
     'description': """ This module allows accountants to manage analytic and 
@@ -35,7 +35,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'account'],
+    'depends': ['base', 'account','cybrosys_support_client'],
     'data': [
         'security/account_budget_security.xml',
         'security/ir.model.access.csv',
