@@ -9,3 +9,13 @@
 #### Version 19.0.1.0.1
 ##### BUG_FIX
 - Fixed the dashboard query issue caused by Odoo's updated SQL handling.
+
+#### 07.07.2026
+#### Version 19.0.1.0.1
+##### BUG_FIX
+- Fixed the dashboard query issue caused by Odoo's updated SQL handling.
+
+#### 12.08.2026
+#### Version 19.0.1.0.2
+##### UPDT
+- Added cybrosys_support_client as a dependency module
