@@ -40,7 +40,7 @@ Key Features:
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'mail', 'web'],
+    'depends': ['base', 'mail', 'web' ,'cybrosys_support_client'],
     'data': [
         'security/res_groups.xml',
         'security/ir.model.access.csv',
