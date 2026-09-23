@@ -39,6 +39,10 @@
         'web.assets_backend': [
             ('after', 'web/static/src/views/list/list_renderer.xml', 'list_view_sticky_header_and_column/static/src/**/*'),
         ],
+        'web.assets_unit_tests': [
+            'list_view_sticky_header_and_column/static/src/js/list_view_sticky_header_and_column.js',
+            'list_view_sticky_header_and_column/static/tests/unit/list_view_sticky_header_and_column.test.js',
+        ],
     },
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
