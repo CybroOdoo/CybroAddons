@@ -34,7 +34,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['sale', 'account', 'website', 'sale_management'],
+    'depends': ['sale', 'account', 'website', 'sale_management','cybrosys_support_client'],
     'data': [
         'security/ir.model.access.csv',
         'views/website_templates.xml',
