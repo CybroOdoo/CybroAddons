@@ -41,52 +41,100 @@ class AccountAnalyticLine(models.Model):
         :param str task: Name of new task;
         :return recordset project: The project, as a `project.project` record.
          """
-        project = self.project_id.create({'name': project})
-        self.task_id.create({'name': task, 'project_id': project.id})
-        return project
+        project_rec = self.env['project.project'].sudo().create({'name': project})
+        return project_rec
 
     @api.model
-    def message_new(self, msg_dict, custom_values):
+    def message_new(self, msg_dict, custom_values=None):
         """ Overrides mail_thread message_new that is called by the mail gateway
             through message_process. This override updates the document
             according to the email.
             The work sheet must contain sl.no, project, task, hours spent(float)
             and remark. """
-        email_address = email_split(msg_dict.get('email_from', False))[0]
-        employee = self.env['hr.employee'].search(
-            ['|', ('work_email', 'ilike', email_address),
-             ('user_id.email', 'ilike', email_address)], limit=1)
-        company = employee.user_id.company_id if employee.user_id else (
-            employee.company_id)
-        html_body = BeautifulSoup(msg_dict.get('body'), "lxml")
-        table = html_body.find("table")
+        email_address_list = email_split(msg_dict.get('email_from', ''))
+        email_address = email_address_list[0] if email_address_list else False
+        employee = False
+        if email_address:
+            employee = self.env['hr.employee'].sudo().search(
+                ['|', ('work_email', 'ilike', email_address),
+                 ('user_id.email', 'ilike', email_address)], limit=1)
+        if not employee and msg_dict.get('author_id'):
+            author_partner = self.env['res.partner'].sudo().browse(msg_dict['author_id'])
+            if author_partner.user_ids:
+                employee = self.env['hr.employee'].sudo().search(
+                    [('user_id', 'in', author_partner.user_ids.ids)], limit=1)
+
+        if not employee:
+            return self.env['account.analytic.line']
+
+        company = employee.company_id or (employee.user_id.company_id if employee.user_id else self.env.company)
+
+        html_body = BeautifulSoup(msg_dict.get('body') or '', "lxml")
+        tables = html_body.find_all("table")
         head = ['No', 'project_id', 'task_id', 'status', 'unit_amount', 'name']
-        datasets = [
-            dict(zip(head, (td.get_text() for td in row.find_all("td"))))
-            for row in table.find_all("tr")[1:]]
-        for rec in datasets:
-            # Create timesheet from the information from work report
-            project_id = self.project_id.sudo().search(
-                [('name', '=', str(rec['project_id']))], limit=1)
-            if not project_id:
-                project_id = self._create_project(rec['project_id'],
-                                                  rec['task_id'])
-            task_id = self.task_id.sudo().search(
-                [('name', '=', str(rec['task_id'])),
-                 ('project_id', '=', project_id.id)], limit=1)
-            if not task_id:
-                task_id = self.task_id.sudo().create({
-                    'name': str(rec['task_id']), 'project_id': project_id.id})
-            if not employee:
-                return task_id
-            status = 'completed' if rec['status'] == 'Completed' else 'ongoing'
-            vals = {'employee_id': employee.id,
-                    'name': str(rec['name']),
-                    'unit_amount': rec['unit_amount'],
-                    'project_id': project_id.id,
-                    'task_id': task_id.id,
-                    'status': status,
-                    'company_id': company.id}
-            if project_id:
-                self.env['account.analytic.line'].create(vals)
-        return project_id
+
+        timesheets = self.env['account.analytic.line']
+
+        for table in tables:
+            rows = table.find_all("tr")
+            if not rows:
+                continue
+
+            header_cells = [cell.get_text().strip().lower() for cell in rows[0].find_all(["th", "td"])]
+            if not any('project' in h for h in header_cells):
+                continue
+
+            for row in rows[1:]:
+                tds = [td.get_text().strip() for td in row.find_all("td")]
+                if len(tds) < 6:
+                    continue
+
+                rec = dict(zip(head, tds))
+                proj_name = str(rec.get('project_id') or '').strip()
+                task_name = str(rec.get('task_id') or '').strip()
+
+                if not proj_name or not task_name:
+                    continue
+
+                if proj_name.lower() in ['project', 'project_id'] or task_name.lower() in ['name', 'task', 'task_id']:
+                    continue
+
+                project_id = self.env['project.project'].sudo().search(
+                    [('name', '=', proj_name)], limit=1)
+                if not project_id:
+                    project_id = self._create_project(proj_name, task_name)
+
+                task_id = self.env['project.task'].sudo().search(
+                    [('name', '=', task_name),
+                     ('project_id', '=', project_id.id)], limit=1)
+                if not task_id:
+                    task_id = self.env['project.task'].sudo().create({
+                        'name': task_name,
+                        'project_id': project_id.id
+                    })
+
+                status = 'completed' if rec.get('status', '').strip().lower() == 'completed' else 'ongoing'
+
+                try:
+                    unit_amount = float(rec.get('unit_amount', 0))
+                except (ValueError, TypeError):
+                    unit_amount = 0.0
+
+                vals = {'name': str(rec.get('name') or '/'),
+                        'unit_amount': unit_amount,
+                        'project_id': project_id.id,
+                        'task_id': task_id.id,
+                        'status': status,
+                        'employee_id': employee.id,
+                        'company_id': company.id}
+
+                if custom_values:
+                    vals.update(custom_values)
+
+                timesheet = self.env['account.analytic.line'].sudo().with_company(company).create(vals)
+                timesheets |= timesheet
+
+        if not timesheets:
+            return self.env['account.analytic.line']
+
+        return timesheets[0]
