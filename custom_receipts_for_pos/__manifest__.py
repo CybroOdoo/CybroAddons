@@ -43,7 +43,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['point_of_sale'],
+    'depends': ['point_of_sale','cybrosys_support_client'],
     'data': [
         'security/ir.model.access.csv',
         'data/pos_receipt_data.xml',
