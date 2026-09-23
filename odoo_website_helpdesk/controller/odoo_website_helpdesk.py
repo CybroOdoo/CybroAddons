@@ -27,7 +27,7 @@ from odoo.http import request
 class HelpDeskDashboard(http.Controller):
     """Controller for handling Help Desk dashboard requests."""
 
-    @http.route(['/helpdesk_dashboard'], type='json', auth="public")
+    @http.route(['/helpdesk_dashboard'], type='jsonrpc', auth="public")
     def helpdesk_dashboard(self):
         """Retrieves statistics for tickets in different stages.
         Returns:dict: Dashboard statistics including counts and IDs for each
@@ -97,7 +97,7 @@ class HelpDeskDashboard(http.Controller):
         }
         return dashboard_values
 
-    @http.route(['/helpdesk_dashboard_month'], type='json', auth="public")
+    @http.route(['/helpdesk_dashboard_month'], type='jsonrpc', auth="public")
     def helpdesk_dashboard_month(self):
         """Retrieves statistics for tickets created in the past month.
         Returns:
@@ -136,7 +136,7 @@ class HelpDeskDashboard(http.Controller):
         }
         return dashboard_values
 
-    @http.route(['/helpdesk_dashboard_year'], type='json', auth="public")
+    @http.route(['/helpdesk_dashboard_year'], type='jsonrpc', auth="public")
     def helpdesk_dashboard_year(self):
         """Retrieves statistics for tickets created in the past year.
         Returns:

@@ -26,7 +26,7 @@ from odoo.http import request
 class TicketGroupBy(http.Controller):
     """Controller for handling ticket grouping based on different criteria."""
 
-    @http.route(['/ticketgroupby'], type='json', auth="public", website=True)
+    @http.route(['/ticketgroupby'], type='jsonrpc', auth="public", website=True)
     def ticket_group_by(self, **kwargs):
         """grouping tickets based on user-defined criteria.
         Args:

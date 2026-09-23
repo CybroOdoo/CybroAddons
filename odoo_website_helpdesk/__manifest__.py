@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': "Website Helpdesk Management",
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Website',
     'summary': """The website allows for the creation of tickets, which can 
     then be controlled from the backend.""",

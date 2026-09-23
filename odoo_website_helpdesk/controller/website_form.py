@@ -32,7 +32,7 @@ class HelpdeskProduct(http.Controller):
     """    Controller for handling helpdesk products.
     """
 
-    @http.route('/product', auth='public', type='json')
+    @http.route('/product', auth='public', type='jsonrpc')
     def product(self):
         prols = []
         acc = request.env['product.template'].sudo().search([])

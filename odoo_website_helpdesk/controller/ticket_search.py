@@ -24,7 +24,7 @@ from odoo.http import request
 
 
 class TicketSearch(http.Controller):
-    @http.route(['/ticketsearch'], type='json', auth="public", website=True)
+    @http.route(['/ticketsearch'], type='jsonrpc', auth="public", website=True)
     def ticket_search(self, **kwargs):
         """
         Search for tickets based on the provided search value.

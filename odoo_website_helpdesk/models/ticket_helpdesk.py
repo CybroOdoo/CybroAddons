@@ -122,6 +122,7 @@ class TicketHelpDesk(models.Model):
                                    compute='_compute_team_head_id',
                                    help='Team Leader Name', store = True)
     assigned_user_id = fields.Many2one('res.users', string='Assigned User',
+                                       default=lambda self: self.env.user,
                                        domain=lambda self: [('group_ids', 'in',
                                                              self.env.ref(
                                                                  'odoo_website_helpdesk.helpdesk_user').id)],
