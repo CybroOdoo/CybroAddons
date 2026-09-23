@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Theme Boec',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Theme/eCommerce',
     'summary': "Theme Boec is an attractive and modern eCommerce Website theme",
     'description': "Theme Boec is new kind of Theme.The theme is very "

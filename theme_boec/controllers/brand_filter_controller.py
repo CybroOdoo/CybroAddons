@@ -202,6 +202,13 @@ class ProductBrand(WebsiteSale):
         offset = pager['offset']
         products = search_product[offset:offset + ppg]
 
+        # The product grid needs each template's first possible variant for ribbons.
+        variants = request.env['product.product'].sudo().browse(
+            product._get_first_possible_variant_id() for product in products
+        )
+        variants.fetch()
+        product_variants = dict(zip(products, variants))
+
         ProductAttribute = request.env['product.attribute']
         if products:
             # get all products without limit
@@ -240,6 +247,7 @@ class ProductBrand(WebsiteSale):
             'attrib_set': attribute_value_ids,
             'pager': pager,
             'products': products,
+            'product_variants': product_variants,
             'search_product': search_product,
             'search_count': product_count,  # common for all searchbox
             'bins': lazy(lambda: TableCompute().process(products, ppg, ppr)),
