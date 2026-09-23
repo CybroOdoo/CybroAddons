@@ -38,6 +38,12 @@
             'pos_magnify_image/static/src/js/prouct_magnify_image.js',
             'pos_magnify_image/static/src/xml/product_magnify_image.xml',
         ],
+        'web.assets_unit_tests': [
+            'pos_magnify_image/static/src/js/MagnifyProductPopup.js',
+            'pos_magnify_image/static/tests/unit/magnify_product_popup.test.js',
+            'pos_magnify_image/static/src/js/prouct_magnify_image.js',
+            'pos_magnify_image/static/tests/unit/product_magnify_image.test.js',
+        ],
     },
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
