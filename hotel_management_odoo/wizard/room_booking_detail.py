@@ -1,0 +1,175 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
+import io
+import json
+from datetime import datetime, timedelta
+from odoo import api, fields, models
+from odoo.exceptions import ValidationError
+from odoo.tools import json_default
+
+try:
+    from odoo.tools.misc import xlsxwriter
+except ImportError:
+    import xlsxwriter
+
+
+class RoomBookingWizard(models.TransientModel):
+    """Pdf Report for room Booking"""
+
+    _name = "room.booking.detail"
+    _description = "Room Booking Details"
+
+    checkin = fields.Date(help="Choose the Checkin Date", string="Checkin")
+    checkout = fields.Date(help="Choose the Checkout Date", string="Checkout")
+    room_id = fields.Many2one("product.template", string="Room",
+                              help="Choose The Room")
+
+    def action_room_booking_pdf(self):
+        """Button action_room_booking_pdf function"""
+        data = {
+            "booking": self.generate_data(),
+        }
+        return self.env.ref(
+            "hotel_management_odoo.action_report_room_booking"
+        ).report_action(self, data=data)
+
+    def action_room_booking_excel(self):
+        """Button action for creating Room Booking Excel report"""
+        data = {
+            "booking": self.generate_data(),
+        }
+        return {
+            "type": "ir.actions.report",
+            "data": {
+                "model": "room.booking.detail",
+                "options": json.dumps(data, default=json_default),
+                "output_format": "xlsx",
+                "report_name": "Excel Report",
+            },
+            "report_type": "xlsx",
+        }
+
+    def generate_data(self):
+        """Generate data to be printed in the report"""
+        domain = []
+        room_list = []
+        if self.checkin and self.checkout:
+            if self.checkin > self.checkout:
+                raise ValidationError(
+                    ("Check-in date should be less than Check-out date")
+                )
+        if self.checkin:
+            domain.append(
+                ("checkin_date", ">=", self.checkin),
+            )
+        if self.checkout:
+            domain.append(
+                ("checkout_date", "<", self.checkout + timedelta(days=1)),
+            )
+        if self.room_id:
+            domain.append(
+                ("room_id", "=", self.room_id.id),
+            )
+
+        room_booking_lines = self.env["room.booking.line"].search(domain)
+        for line in room_booking_lines:
+            room_list.append({
+                "partner_id": line.booking_id.partner_id.name,
+                "name": line.booking_id.name,
+                "checkin_date": line.checkin_date,
+                "checkout_date": line.checkout_date,
+                "room": line.room_id.name
+            })
+        return room_list
+
+    def _format_datetime(self, value):
+        """Safely format a datetime value that may be a str or datetime object."""
+        if not value:
+            return ""
+        if isinstance(value, str):
+            # search_read / JSON round-trip returns ISO strings like
+            # '2026-06-01 10:00:00' — parse then reformat for consistency
+            try:
+                value = datetime.strptime(value[:19], '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                return value  # return as-is if unparseable
+        return value.strftime('%Y-%m-%d %H:%M:%S')
+
+    def get_xlsx_report(self, data, response):
+        """Organizing xlsx report"""
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {"in_memory": True})
+        sheet = workbook.add_worksheet()
+        cell_format = workbook.add_format(
+            {"font_size": "14px", "bold": True, "align": "center",
+             "border": True}
+        )
+        head = workbook.add_format(
+            {"align": "center", "bold": True, "font_size": "23px",
+             "border": True}
+        )
+        body = workbook.add_format(
+            {"align": "left", "text_wrap": True, "border": True})
+        sheet.merge_range("A1:F1", "Room Booking", head)
+        sheet.set_column("A2:F2", 18)
+        sheet.set_row(0, 30)
+        sheet.set_row(1, 20)
+        sheet.write("A2", "Sl No.", cell_format)
+        sheet.write("B2", "Guest Name", cell_format)
+        sheet.write("C2", "Room No.", cell_format)
+        sheet.write("D2", "Check In", cell_format)
+        sheet.write("E2", "Check Out", cell_format)
+        sheet.write("F2", "Reference No.", cell_format)
+        row = 2
+        column = 0
+        value = 1
+        for i in data["booking"]:
+            sheet.write(row, column, value, body)
+            sheet.write(row, column + 1, i["partner_id"], body)
+            sheet.write(row, column + 2, i["room"], body)
+            sheet.write(row, column + 3, self._format_datetime(i["checkin_date"]), body)
+            sheet.write(row, column + 4, self._format_datetime(i["checkout_date"]), body)
+            sheet.write(row, column + 5, i["name"], body)
+            row = row + 1
+            value = value + 1
+        workbook.close()
+        output.seek(0)
+        response.stream.write(output.read())
+        output.close()
+
+
+class ReportRoomBooking(models.AbstractModel):
+    """Report context model for Room Booking PDF.
+
+    Odoo resolves the QWeb rendering context by looking for a model named
+    'report.<report_name>', i.e. 'report.hotel_management_odoo.report_room_booking'.
+    Defining it here avoids the need for a separate file.
+    """
+    _name = 'report.hotel_management_odoo.report_room_booking'
+    _description = 'Room Booking Report'
+
+    @api.model
+    def _get_report_values(self, docids, data=None):
+        """Inject wizard-generated booking data into the QWeb template context."""
+        return {
+            'booking': (data or {}).get('booking', []),
+        }
