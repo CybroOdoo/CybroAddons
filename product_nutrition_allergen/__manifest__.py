@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': "Product Nutrition",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "eCommerce",
     "summary": "Nutrition and allergen information of products",
     "description": "We can add nutrition ,ingredient and allergen information"
