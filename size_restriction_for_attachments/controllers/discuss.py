@@ -31,7 +31,8 @@ class DiscussController(AttachmentController):
     def mail_attachment_upload(self, ufile, thread_id, thread_model,
                                is_pending=False, **kwargs):
         """ Shows warning if the attachment size exceeds the maximum size allowed """
-        thread = request.env[thread_model].search([("id", "=", thread_id)])
+        thread = self._get_thread_with_access_for_post(
+            thread_model, thread_id, **kwargs)
         if not thread:
             raise NotFound()
 
@@ -45,10 +46,10 @@ class DiscussController(AttachmentController):
 
         # Check size restriction BEFORE creating attachment
         if set_restriction and file_size > max_size:
-            attachmentData = {
+            res = {
                 'error': _('Attachment size cannot exceed %s MB.') % request.env.user.max_size
             }
-            return request.make_json_response(attachmentData)
+            return request.make_json_response(res)
 
         vals = {
             "name": ufile.filename,
@@ -57,8 +58,19 @@ class DiscussController(AttachmentController):
             "res_model": thread_model,
         }
 
+        if company_id := thread._mail_get_companies()[thread.id]:
+            vals["company_id"] = company_id.id
+        elif cids := request.cookies.get("cids", False):
+            active_company_ids = [int(cid) for cid in cids.split("-")]
+            company_id = (
+                request.env.user.company_id.id
+                if request.env.user.company_id.id in active_company_ids
+                else active_company_ids[0]
+            )
+            vals["company_id"] = company_id
+
         if is_pending and is_pending != "false":
-            # Add this point, the message related to the uploaded file does
+            # At this point, the message related to the uploaded file does
             # not exist yet, so we use those placeholder values instead.
             vals.update(
                 {
@@ -67,28 +79,25 @@ class DiscussController(AttachmentController):
                 }
             )
 
-        if request.env.user.share:
-            # Only generate the access token if absolutely necessary
-            # (= not for internal user).
-            vals["access_token"] = request.env[
-                "ir.attachment"]._generate_access_token()
-
         try:
             # sudo: ir.attachment - posting a new attachment on an
             # accessible thread
             attachment = request.env["ir.attachment"].sudo().create(vals)
             attachment._post_add_create(**kwargs)
-
-            # Create Store object without extra_fields parameter (Odoo 19 change)
-            store = Store(attachment)
-            attachmentData = {"data": store.get_result()}
-
-            if attachment.access_token:
-                attachmentData["accessToken"] = attachment.access_token
-
+            res = {
+                "data": {
+                    "store_data": Store().add(
+                        attachment,
+                        extra_fields=request.env[
+                            "ir.attachment"
+                        ]._get_store_ownership_fields(),
+                    ).get_result(),
+                    "attachment_id": attachment.id,
+                }
+            }
         except AccessError:
-            attachmentData = {
+            res = {
                 "error": _("You are not allowed to upload an attachment here.")
             }
 
-        return request.make_json_response(attachmentData)
+        return request.make_json_response(res)

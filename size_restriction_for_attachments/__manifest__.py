@@ -22,7 +22,7 @@
 
 {
     'name': 'Size Restriction for Attachments',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Document Management',
     'summary': (
         "Shows an error message if attachment size is greater than "
