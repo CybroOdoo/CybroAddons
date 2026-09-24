@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-name="trl_b_template_new" owl="1">
+        <!-- Section contains a structure for the Trial Balance report, including a filter
+        view and a table view. It has div elements for the filter view and table view,
+         with respective classes for styling.-->
+        <div class="container">
+            <div class="fin_report">
+                <!--  Filter View  -->
+                <div class="filter_view_gl pt-3 pb-5">
+                    <div class="">
+                        <h1 class="text-uppercase" style="padding:10px">
+                            <t t-out="this.props?.action?.display_name || this.props?.action?.name || this.state.title || 'Trial Balance'"/>
+                        </h1>
+                    </div>
+                    <div style="margin-right: 10px; margin-left: 10px;margin-bottom: 15px;display: flex;">
+                        <div class="sub_container_left" style="width:70%;">
+                            <div class="report_print">
+                                <!-- Print (PDF) Button -->
+                                <button type="button"
+                                        class="btn btn-primary btn-report-print"
+                                        t-on-click="this.printPdf"
+                                        style="margin-right: 8px;">
+                                    Print (PDF)
+                                </button>
+                                <!-- Export (XLSX) Button -->
+                                <button type="button"
+                                        class="btn btn-primary btn-report-print"
+                                        t-on-click="this.print_xlsx">
+                                    Export (XLSX)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <!-- Time Range -->
+                            <div class="time_range" style="">
+                                <a type="button" class="dropdown-toggle"
+                                   data-bs-toggle="dropdown">
+                                    <!-- Date Range Dropdown -->
+                                    <span class="oi oi-fw" data-icon="calendar_today" title="Dates"
+                                          role="img"
+                                          aria-label="Dates"/>
+                                    Date Range
+                                </a>
+                                <div class="dropdown-menu" role="menu">
+                                    <!-- Date Range Options -->
+                                    <div class="list-group">
+                                        <!-- This Month Button -->
+                                        <button class="report-filter-button"
+                                                t-att-data-value="'month'"
+                                                type="button"
+                                                t-on-click="this.applyFilter">
+                                            This Month
+                                        </button>
+                                        <!-- This Quarter Button -->
+                                        <button class="report-filter-button"
+                                                t-att-data-value="'quarter'"
+                                                type="button"
+                                                t-on-click="this.applyFilter">
+                                            This Quarter
+                                        </button>
+                                        <!-- This Year Button -->
+                                        <button class="report-filter-button"
+                                                t-att-data-value="'year'"
+                                                type="button"
+                                                t-on-click="this.applyFilter">
+                                            This Year
+                                        </button>
+                                        <!-- Separator -->
+                                        <div role="separator"
+                                             class="dropdown-divider"/>
+                                        <!-- Last Month Button -->
+                                        <button class="report-filter-button"
+                                                t-att-data-value="'last-month'"
+                                                type="button"
+                                                t-on-click="this.applyFilter">
+                                            Last month
+                                        </button>
+                                        <!-- Last Quarter Button -->
+                                        <button class="report-filter-button"
+                                                t-att-data-value="'last-quarter'"
+                                                type="button"
+                                                t-on-click="this.applyFilter">
+                                            Last quarter
+                                        </button>
+                                        <!-- Last Year Button -->
+                                        <button class="report-filter-button"
+                                                t-att-data-value="'last-year'"
+                                                type="button"
+                                                t-on-click="this.applyFilter">
+                                            Last year
+                                        </button>
+                                        <!-- Separator -->
+                                        <div role="separator"
+                                             class="dropdown-divider"/>
+                                        <!-- Start Date -->
+                                        <label class="" for="date_from">Start
+                                            Date :
+                                        </label>
+                                        <div class="input-group date"
+                                             data-target-input="nearest">
+
+                                            <input type="date" id="start_date"
+                                                   t-on-change="this.applyFilter"
+                                                   t-ref="this.start_date"
+                                                   style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
+                                                   name="start_date"/>
+                                        </div>
+                                        <!-- End Date -->
+                                        <label class="" for="date_to">End Date
+                                            :
+                                        </label>
+                                        <div class="input-group date"
+                                             data-target-input="nearest">
+                                            <input type="date" id="end_date"
+                                                   t-on-change="this.applyFilter"
+                                                   t-ref="this.end_date"
+                                                   style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
+                                                   name="end_date"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="comparison_range" style="">
+                                <a type="button" class="dropdown-toggle"
+                                   data-bs-toggle="dropdown">
+                                    <span class="oi oi-fw" data-icon="bar_chart"
+                                          title="Comparison"
+                                          role="img"
+                                          aria-label="Comparison"/>
+                                    Comparison
+                                </a>
+                                <div class="dropdown-menu" role="menu">
+                                    <div class="list-group">
+                                        <button class="report-filter-button"
+                                                t-att-data-value="'no comparison'"
+                                                type="button"
+                                                t-on-click="this.applyComparison">
+                                            No Comparison
+                                        </button>
+                                        <div role="separator"
+                                             class="dropdown-divider"/>
+                                        <label class="" for="periods"
+                                               style="display: flex;padding: 4px 20px;color: #000;">
+                                            Previous Period
+                                            <br/>
+                                            Number of Periods:
+                                        </label>
+                                        <div class="input-group comparison"
+                                             data-target-input="nearest">
+
+                                            <input type="number"
+                                                   t-ref="this.periods"
+                                                   min="1"
+                                                   t-on-input="this.onPeriodChange"
+                                                   style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
+                                                   name="previous_period"/>
+                                        </div>
+                                        <button class="btn btn-primary"
+                                                type="button"
+                                                style="margin-left: 19px;margin-top: 4px;"
+                                                t-on-click="this.applyComparisonPeriod">
+                                            Apply
+                                        </button>
+                                        <div role="separator"
+                                             class="dropdown-divider"/>
+                                        <label class="" for="period_year"
+                                               style="display: flex;padding: 4px 20px;color: #000;">
+                                            Same Period Last Year
+                                            <br/>
+                                            Number of Periods:
+                                        </label>
+                                        <div class="input-group comparison"
+                                             data-target-input="nearest">
+                                            <input type="number"
+                                                   t-ref="this.period_year"
+                                                   t-on-input="this.onPeriodYearChange"
+                                                   min="1"
+                                                   style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
+                                                   name="period_year"/>
+                                        </div>
+                                        <button class="btn btn-primary"
+                                                type="button"
+                                                style="margin-left: 19px;margin-top: 4px;"
+                                                t-on-click="this.applyComparisonYear">
+                                            Apply
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="journal" style="">
+                                <a type="button" class="dropdown-toggle"
+                                   data-bs-toggle="dropdown" style="display: flex;
+                                                                    text-wrap: wrap;
+                                                                    flex-direction: row;
+                                                                    align-items: center;
+                                                                    justify-content: flex-start;
+                                                                    min-width: 105px;">
+                                    <span class="oi oi-fw" data-icon="book" title="Journals"
+                                          role="img"/>
+                                    Journals
+                                    <t t-if="this.state.selected_journal_list &amp;&amp; this.state.selected_journal_list.length &gt; 0 &amp;&amp; this.state.journals">:
+                                        <t t-foreach="this.state.selected_journal_list"
+                                           t-as="Journal_key"
+                                           t-key="Journal_key_index">
+                                            <t t-if="this.state.journals">
+                                                <t t-foreach="this.state.journals"
+                                                   t-as="Journal"
+                                                   t-key="Journal_index">
+                                                    <t t-if="Journal['id'] == Journal_key">
+                                                        <t t-out="Journal['name']"/>
+                                                    </t>
+                                                </t>
+                                            </t>
+                                            <t t-if="Journal_key_index != Object.keys(this.state.selected_journal_list).length - 1">
+                                                ,
+                                            </t>
+                                        </t>
+                                    </t>
+                                </a>
+                                <div class="dropdown-menu" role="menu">
+                                    <div class="list-group">
+                                        <t t-if="this.state.journals">
+                                            <t t-foreach="this.state.journals"
+                                               t-as="journal"
+                                               t-key="journal.id">
+                                                <button class="report-filter-button"
+                                                        t-att-data-value="'journal'"
+                                                        t-att-data-id="journal.id"
+                                                        type="button"
+                                                        t-on-click="this.applyFilter">
+                                                    <t t-out="journal.name"/>
+                                                </button>
+                                            </t>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Options Dropdown -->
+                            <div class="option" style="">
+                                <a type="button" class="dropdown-toggle"
+                                   data-bs-toggle="dropdown">
+                                    <span class="oi oi-fw" data-icon="settings" title="Accounts"
+                                          role="img"
+                                          aria-label="Dates"/>
+                                    Options : Posted Entries ,
+                                    <t t-out="Object.keys(this.state.method)[(Object.keys(this.state.method).length)-1]"/>
+                                </a>
+                                <div class="dropdown-menu" role="menu">
+                                    <div class="list-group">
+                                        <!-- Include Draft Entries Button -->
+                                        <button class="report-filter-button"
+                                                t-att-data-value="'draft'"
+                                                type="button"
+                                                t-on-click="this.applyFilter">
+                                            Include Draft Entries
+                                        </button>
+                                        <button class="report-filter-button"
+                                                t-att-data-value="'cash-basis'"
+                                                type="button"
+                                                t-on-click="this.applyFilter">
+                                            Cash basis method
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table_style" style="height: 650px; overflow-y: scroll;">
+                <!-- Table View -->
+                <div class="table_view_gl" style="right:20px;width:100%;"
+                     t-ref="this.table_view_gl">
+                    <div>
+                        <div class="table_main_view">
+                            <table cellspacing="0" width="100%">
+                                <thead>
+                                    <tr class="o_heading"
+                                        style="text-align:center;">
+                                        <th colspan="6"/>
+                                        <th colspan="2">Initial Balance</th>
+                                        <t t-if="this.state.date_viewed.length != 0">
+                                            <t t-foreach="this.state.date_viewed"
+                                               t-as="date_view"
+                                               t-key="date_view_index">
+                                                <th colspan="2">
+                                                    <t t-out="date_view"/>
+                                                </th>
+                                            </t>
+                                        </t>
+                                        <t t-if="this.state.apply_comparison == true">
+                                            <t t-if="this.state.data and this.state.data[0].dynamic_date_num">
+                                                <!-- Safely create a list of numbers to loop over, adding one extra period -->
+                                                <t t-set="number_of_periods"
+                                                   t-value="Array.from({length: ((comparison_number_range || []).length + 1)}, (_, i) => i)"/>
+                                                <t t-foreach="number_of_periods" t-as="number" t-key="number">
+                                                    <th colspan="2">
+                                                        <t t-out="this.state.data[0].dynamic_date_num['dynamic_date_num' + number] or ''"/>
+                                                    </th>
+                                                </t>
+                                            </t>
+                                        </t>
+                                        <th colspan="2">End Balance</th>
+                                    </tr>
+                                    <tr class="o_heading"
+                                        style="text-align:center;">
+                                        <th colspan="6"/>
+                                        <th>Debit</th>
+                                        <th>Credit</th>
+                                        <th>Debit</th>
+                                        <th>Credit</th>
+                                        <th>Debit</th>
+                                        <th>Credit</th>
+                                        <t t-if="this.state.apply_comparison == true">
+                                            <t t-set="number_of_periods"
+                                               t-value="comparison_number_range"/>
+                                            <t t-foreach="number_of_periods"
+                                               t-as="number" t-key="number">
+                                                <th>Debit</th>
+                                                <th>Credit</th>
+                                            </t>
+                                        </t>
+                                    </tr>
+                                </thead>
+                                <tbody t-ref="this.tbody">
+                                    <t t-set="show" t-value="True"/>
+                                    <t t-if="this.state.default_report == false">
+                                        <t t-if="this.state.data">
+                                            <t t-foreach="this.state.data" t-as="each" t-key="each.account_id">
+                                                <t t-set="show" t-value="False"/>
+                                                <tr class="border-bottom"
+                                                    style="border-spacing: 0 10px;">
+                                                    <th colspan="6">
+                                                        <span class="dropdown">
+                                                            <a class="dropdown-toggle"
+                                                               data-bs-toggle="dropdown"
+                                                               style="color: black;">
+                                                                <span>
+                                                                    <t t-out="each['account']"/>
+                                                                </span>
+                                                            </a>
+                                                            <span class="dropdown-menu">
+                                                                <a role="menuitem"
+                                                                   t-on-click="this.show_gl"
+                                                                   class="show_gl">
+                                                                    General Ledger
+                                                                </a>
+                                                                <div role="separator"
+                                                                     class="dropdown-divider"/>
+                                                                <a role="menuitem"
+                                                                   t-att-data-id="each['account_id']"
+                                                                   t-on-click="this.gotoJournalItem"
+                                                                   class="show_gl">
+                                                                    Journal Items
+                                                                </a>
+                                                            </span>
+                                                        </span>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="each['initial_total_credit']"
+                                                           t-out="each['initial_total_credit']"/>
+                                                    </th>
+                                                    <t t-if="this.state.apply_comparison == true">
+                                                        <t t-set="number_of_periods"
+                                                           t-value="comparison_number_range"/>
+                                                        <t t-foreach="number_of_periods"
+                                                           t-as="num" t-key="num">
+                                                            <th style="text-align:center;">
+                                                                <t t-if="each['dynamic_total_debit_' + num]"
+                                                                   t-out="each['dynamic_total_debit_' + num]"/>
+                                                            </th>
+                                                            <th style="text-align:center;">
+                                                                <t t-if="each['dynamic_total_credit_' + num]"
+                                                                   t-out="each['dynamic_total_credit_' + num]"/>
+                                                            </th>
+                                                        </t>
+                                                    </t>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="each['total_debit']"
+                                                           t-out="each['total_debit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="each['total_credit']"
+                                                           t-out="each['total_credit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="each['end_total_debit']"
+                                                           t-out="each['end_total_debit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="each['end_total_credit']"
+                                                           t-out="each['end_total_credit']"/>
+                                                    </th>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                    </t>
+                                    <t t-if="this.state.default_report == true">
+                                        <t t-if="this.state.data &amp;&amp; this.state.accounts">
+                                            <t t-set="i" t-value="0"/>
+                                            <t t-foreach="this.state.accounts"
+                                               t-as="move_line"
+                                               t-key="move_line_index">
+                                                <t t-set="i" t-value="i + 1"/>
+                                                <tr class="border-bottom"
+                                                    style="border-spacing: 0 10px;">
+                                                    <th colspan="6">
+                                                        <span class="dropdown">
+                                                            <a class="dropdown-toggle"
+                                                               data-bs-toggle="dropdown"
+                                                               style="color: black;">
+                                                                <span>
+                                                                    <t t-out="move_line['account']"/>
+                                                                </span>
+                                                            </a>
+                                                            <span class="dropdown-menu">
+                                                                <a role="menuitem"
+                                                                   t-on-click="this.show_gl"
+                                                                   class="show_gl">
+                                                                    General Ledger
+                                                                </a>
+                                                                <div role="separator"
+                                                                     class="dropdown-divider"/>
+                                                                <a role="menuitem"
+                                                                   t-att-data-id="move_line['account_id']"
+                                                                   t-on-click="this.gotoJournalItem"
+                                                                   class="show_gl">
+                                                                    Journal Items
+                                                                </a>
+                                                            </span>
+                                                        </span>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['initial_total_debit']"
+                                                           t-out="move_line['initial_total_debit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['initial_total_credit']"
+                                                           t-out="move_line['initial_total_credit']"/>
+                                                    </th>
+                                                    <t t-if="this.state.apply_comparison == true">
+                                                        <t t-set="number_of_periods"
+                                                           t-value="comparison_number_range"/>
+                                                        <t t-foreach="number_of_periods"
+                                                           t-as="num" t-key="num">
+                                                            <th style="text-align:center;">
+                                                                <t t-if="move_line['dynamic_total_debit_' + num]"
+                                                                   t-out="move_line['dynamic_total_debit_' + num]"/>
+                                                            </th>
+                                                            <th style="text-align:center;">
+                                                                <t t-if="move_line['dynamic_total_credit_' + num]"
+                                                                   t-out="move_line['dynamic_total_credit_' + num]"/>
+                                                            </th>
+                                                        </t>
+                                                    </t>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['total_debit']"
+                                                           t-out="move_line['total_debit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['total_credit']"
+                                                           t-out="move_line['total_credit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['end_total_debit']"
+                                                           t-out="move_line['end_total_debit']"/>
+                                                    </th>
+                                                    <th style="text-align:center;">
+                                                        <t t-if="move_line['end_total_credit']"
+                                                           t-out="move_line['end_total_credit']"/>
+                                                    </th>
+                                                </tr>
+                                            </t>
+                                            <tr class="border-bottom"
+                                                style="border-spacing: 0 10px;color:#000">
+                                                <th colspan="6">Total</th>
+                                                <th style="text-align:center;">
+                                                    <t t-out="this.sumByKey(this.state.accounts, 'initial_total_debit')"/>
+                                                </th>
+                                                <th style="text-align:center;">
+                                                    <t t-out="this.sumByKey(this.state.accounts, 'initial_total_credit')"/>
+                                                </th>
+                                                <t t-if="this.state.apply_comparison == true">
+                                                    <t t-set="number_of_periods"
+                                                       t-value="comparison_number_range"/>
+                                                    <t t-foreach="number_of_periods"
+                                                       t-as="nb" t-key="nb">
+                                                        <th style="text-align:center;">
+                                                            <t t-out="this.sumByKey(this.state.accounts, 'dynamic_total_debit_' + nb)"/>
+                                                        </th>
+                                                        <th style="text-align:center;">
+                                                            <t t-out="this.sumByKey(this.state.accounts, 'dynamic_total_credit_' + nb)"/>
+                                                        </th>
+                                                    </t>
+                                                </t>
+                                                <th style="text-align:center;">
+                                                    <t t-out="this.sumByKey(this.state.accounts, 'total_debit')"/>
+                                                </th>
+                                                <th style="text-align:center;">
+                                                    <t t-out="this.sumByKey(this.state.accounts, 'total_credit')"/>
+                                                </th>
+                                                <th style="text-align:center;">
+                                                    <t t-out="this.sumByKey(this.state.accounts, 'end_total_debit')"/>
+                                                </th>
+                                                <th style="text-align:center;">
+                                                    <t t-out="this.sumByKey(this.state.accounts, 'end_total_credit')"/>
+                                                </th>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

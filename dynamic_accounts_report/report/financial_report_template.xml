@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Report Template for Profit and Book.-->
+    <template id="profit_loss">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-set="data_report_margin_top" t-value="12"/>
+                <t t-set="data_report_header_spacing" t-value="9"/>
+                <t t-set="data_report_dpi" t-value="110"/>
+                <t t-set="report_title"
+                   t-value="report_name or (data and data.get('report_name')) or (data and data.get('data') and data['data'].get('title')) or 'Profit and Loss'"/>
+                <t t-set="report_years"
+                   t-value="year or (data and data.get('year')) or (data and data.get('data') and data['data'].get('year')) or []"/>
+                <t t-set="report_datas"
+                   t-value="datas or (data and data.get('datas')) or (data and data.get('data') and data['data'].get('datas')) or []"/>
+                <div class="page">
+                    <h3>
+                        <center>
+                            <b>
+                                <span t-out="report_title"/>
+                            </b>
+                        </center>
+                    </h3>
+                    <br/>
+                    <br/>
+                    <div class="filters">
+                        <table class="table table-sm table-reports">
+                            <thead class="filter_table"
+                                   style="background:#808080;">
+                                <tr>
+                                    <th>Date Range</th>
+                                    <th>Comparison</th>
+                                    <th>Account</th>
+                                    <th>Journal</th>
+                                    <th>Analytic Account</th>
+                                    <th>Target move</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <t t-set="d_from" t-value="date_from or (data and data.get('date_from'))"/>
+                                        <t t-set="d_to" t-value="date_to or (data and data.get('date_to'))"/>
+                                        <t t-if="d_from">
+                                            <span t-out="d_from"/>
+                                        </t>
+                                        <t t-if="d_to">
+                                            –
+                                            <span t-out="d_to"/>
+                                        </t>
+                                        <t t-if="not d_from and not d_to">
+                                            <span t-out="date_range or (data and data.get('date_range')) or 'All'"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <span t-out="comparison or (data and data.get('comparison')) or '-'"/>
+                                    </td>
+                                    <td>
+                                        <t t-set="acc_ids" t-value="account_ids or (data and data.get('account_ids'))"/>
+                                        <t t-if="acc_ids">
+                                            <t t-foreach="acc_ids" t-as="acc">
+                                                <span t-out="acc"/>
+                                                <t>,</t>
+                                            </t>
+                                        </t>
+                                        <t t-if="not acc_ids">All</t>
+                                    </td>
+                                    <td>
+                                        <t t-set="jrn_ids" t-value="journal_ids or (data and data.get('journal_ids'))"/>
+                                        <t t-if="jrn_ids">
+                                            <t t-foreach="jrn_ids" t-as="jrn">
+                                                <span t-out="jrn"/>
+                                                <t>,</t>
+                                            </t>
+                                        </t>
+                                        <t t-if="not jrn_ids">All</t>
+                                    </td>
+                                    <td>
+                                        <t t-set="ana_ids"
+                                           t-value="analytic_ids or (data and data.get('analytic_ids'))"/>
+                                        <t t-if="ana_ids">
+                                            <t t-foreach="ana_ids" t-as="ana">
+                                                <span t-out="ana"/>
+                                                <t>,</t>
+                                            </t>
+                                        </t>
+                                        <t t-if="not ana_ids">All</t>
+                                    </td>
+                                    <td>
+                                        <span t-out="target or (data and data.get('target')) or 'posted'"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <table cellspacing="0" width="100%" style="border: 1px solid white; text-align: left;">
+                        <thead>
+                            <tr class="o_heading">
+                                <th colspan="6"/>
+                                <t t-if="report_years">
+                                    <t t-foreach="report_years" t-as="periodData">
+                                        <th class="text-end">
+                                            <span t-out="periodData"/>
+                                        </th>
+                                    </t>
+                                </t>
+                            </tr>
+                            <tr class="o_heading">
+                                <th colspan="6"/>
+                                <t t-if="report_years">
+                                    <t t-foreach="report_years" t-as="periodData">
+                                        <th class="text-end">Balance</th>
+                                    </t>
+                                </t>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th colspan="6">
+                                    <span class="fw-bolder">
+                                        Net Profit
+                                    </span>
+                                </th>
+                                <t t-foreach="report_datas" t-as="total">
+                                    <th class="text-end">
+                                        <span class="fw-bolder">
+                                            <t t-if="total.get('total') is not None">
+                                                <span t-out="total.get('total')"/>
+                                            </t>
+                                        </span>
+                                    </th>
+                                </t>
+                            </tr>
+                            <tr class="border-bottom border-dark" style="border-right:0px solid transparent;">
+                                <th colspan="9">
+                                    <span class="fw-bolder ms-2">
+                                        Income
+                                    </span>
+                                </th>
+                            </tr>
+                            <tr class="border-bottom border-gainsboro">
+                                <th colspan="9">
+                                    <span class="fw-bolder ms-3">
+                                        Gross Profit
+                                    </span>
+                                </th>
+                            </tr>
+                            <tr class="border-bottom border-gainsboro">
+                                <th colspan="6">
+                                    <span class="ms-3">Operating Income</span>
+                                </th>
+                                <t t-foreach="report_datas" t-as="total">
+                                    <th class="text-end">
+                                        <span>
+                                            <t t-out="total.get('income')[1] if total.get('income') else '0.00'"/>
+                                        </span>
+                                    </th>
+                                </t>
+                            </tr>
+                            <tr class="border-bottom border-gainsboro">
+                                <th colspan="6">
+                                    <span class="ms-3">Cost of
+                                        Revenue
+                                    </span>
+                                </th>
+                                <t t-foreach="report_datas" t-as="total">
+                                    <th class="text-end">
+                                        <span>
+                                            <t t-out="total.get('expense_direct_cost')[1] if total.get('expense_direct_cost') else '0.00'"/>
+                                        </span>
+                                    </th>
+                                </t>
+                            </tr>
+                            <tr class="border-bottom">
+                                <th colspan="6">
+                                    <span class="ms-3">Other Income
+                                    </span>
+                                </th>
+                                <t t-foreach="report_datas" t-as="total">
+                                    <th class="text-end">
+                                        <span>
+                                            <t t-out="total.get('income_other')[1] if total.get('income_other') else '0.00'"/>
+                                        </span>
+                                    </th>
+                                </t>
+                            </tr>
+                            <tr class="border-bottom">
+                                <th colspan="6">
+                                    <span class="fw-bolder ms-2">
+                                        Total Income
+                                    </span>
+                                </th>
+                                <t t-foreach="report_datas" t-as="total">
+                                    <th class="text-end">
+                                        <span class="fw-bolder">
+                                            <t t-out="total.get('total_income') or '0.00'"/>
+                                        </span>
+                                    </th>
+                                </t>
+                            </tr>
+                            <tr class="border-bottom border-dark" style="border-right:0px solid transparent;">
+                                <th colspan="9">
+                                    <span class="fw-bolder ms-1">
+                                        Expenses
+                                    </span>
+                                </th>
+                            </tr>
+                            <tr class="border-bottom" style="border-right:0px solid transparent;">
+                                <th colspan="6">
+                                    <span class="ms-3">Expenses</span>
+                                </th>
+                                <t t-foreach="report_datas" t-as="total">
+                                    <th class="text-end">
+                                        <span>
+                                            <t t-out="total.get('expense')[1] if total.get('expense') else '0.00'"/>
+                                        </span>
+                                    </th>
+                                </t>
+                            </tr>
+                            <tr class="border-bottom border-gainsboro">
+                                <th colspan="6">
+                                    <span class="ms-3">Depreciation
+                                    </span>
+                                </th>
+                                <t t-foreach="report_datas" t-as="total">
+                                    <th class="text-end">
+                                        <span>
+                                            <t t-out="total.get('expense_depreciation')[1] if total.get('expense_depreciation') else '0.00'"/>
+                                        </span>
+                                    </th>
+                                </t>
+                            </tr>
+                            <tr class="border-bottom">
+                                <th colspan="6">
+                                    <span class="fw-bolder ms-2">Total Expenses
+                                    </span>
+                                </th>
+                                <t t-foreach="report_datas" t-as="total">
+                                    <th class="text-end">
+                                        <span class="fw-bolder">
+                                            <t t-out="total.get('total_expense') or '0.00'"/>
+                                        </span>
+                                    </th>
+                                </t>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
+

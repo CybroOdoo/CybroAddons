@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Report Template for Bank Book.-->
+    <template id="bank_book">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-set="data_report_margin_top" t-value="12"/>
+                <t t-set="data_report_header_spacing" t-value="9"/>
+                <t t-set="data_report_dpi" t-value="110"/>
+                <div class="page">
+                    <h3>
+                        <center>
+                            <b>
+                                <span t-out="report_name"/>
+                            </b>
+                        </center>
+                    </h3>
+                    <br/>
+                    <br/>
+                    <div class="filters">
+                        <table class="table table-sm table-reports">
+                            <thead class="filter_table"
+                                   style="background:#808080;">
+                                <tr>
+                                    <th>Date Range</th>
+                                    <th>Partner</th>
+                                    <th>Account</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size:11px;font-weight:100;">
+                                <tr>
+                                    <th>
+                                        <t t-if="filters and filters.get('start_date')"
+                                           t-out="filters['start_date']"/>
+                                        <t t-if="filters and filters.get('end_date')">
+                                            to
+                                            <t t-out="filters['end_date']"/>
+                                        </t>
+                                    </th>
+                                    <th>
+                                        <t t-if="filters and filters.get('partner')">
+                                            <t t-foreach="filters['partner']"
+                                               t-as="selected_partner">
+                                                <t t-out="selected_partner.get('display_name', '')"/>,
+                                            </t>
+                                        </t>
+                                    </th>
+                                    <th>
+                                        <t t-if="filters and filters.get('account')">
+                                            <t t-set="first_account" t-value="True"/>
+                                            <t t-foreach="filters['account']" t-as="selected_account">
+                                                <t t-if="not first_account">,</t>
+                                                <t t-out="selected_account"/>
+                                                <t t-set="first_account" t-value="False"/>
+                                            </t>
+                                        </t>
+                                    </th>
+                                    <th>
+                                        Posted,
+                                        <t t-if="filters and filters.get('options')">
+                                            <t t-foreach="filters['options']"
+                                               t-as="selected_options">
+                                                <t t-out="selected_options"/>,
+                                            </t>
+                                        </t>
+                                    </th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <t t-if="move_lines">
+                        <t t-foreach="move_lines"
+                           t-as="move_line">
+                            <table class="table table-sm table-reports">
+                                <thead style="background:#808080;">
+                                    <tr>
+                                        <th style="width:10%" colspan="6"/>
+                                        <th style="width:10%">Journal</th>
+                                        <th style="width:10%">Partner</th>
+                                        <th style="width:10%">Reference</th>
+                                        <th style="width:10%">Move</th>
+                                        <th style="width:10%">Entry label</th>
+                                        <th class="text-right"
+                                            style="padding-right:6px;width:10%;">
+                                            Debit
+                                        </th>
+                                        <th class="text-right"
+                                            style="padding-right:6px;width:10%;">
+                                            Credit
+                                        </th>
+                                        <th class="text-right"
+                                            style="padding-right:6px;width:10%;">
+                                            Balance
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size:11px;font-weight:100;">
+                                    <tr class="border-bottom"
+                                        style="background:#D3D3D3;">
+                                        <th colspan="8"
+                                            style="border:0px solid transparent;">
+                                            <div class="ms-3">
+                                                <span class="fw-bolder">
+                                                    <strong>
+                                                        <b>
+                                                            <t t-out="move_line"/>
+                                                        </b>
+                                                    </strong>
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th style="width:10%; border:0px solid transparent;"/>
+                                        <th style="width:10%; border:0px solid transparent;"/>
+                                        <th style="width:10%; border:0px solid transparent;"/>
+                                        <th style="width:10%; border:0px solid transparent;">
+                                            <strong>
+                                                <span>
+                                                    <t t-if="total and move_line in total and total[move_line].get('total_debit') is not None"
+                                                       t-out="total[move_line].get('currency_id', '')"/>
+                                                    <t t-if="total and move_line in total and total[move_line].get('total_debit') is not None"
+                                                       t-out="total[move_line]['total_debit']"/>
+                                                </span>
+                                            </strong>
+                                        </th>
+                                        <th style="width:10%; border:0px solid transparent;">
+                                            <strong>
+                                                <span>
+                                                    <t t-if="total and move_line in total and total[move_line].get('total_credit') is not None"
+                                                       t-out="total[move_line].get('currency_id', '')"/>
+                                                    <t t-if="total and move_line in total and total[move_line].get('total_credit') is not None"
+                                                       t-out="total[move_line]['total_credit']"/>
+                                                </span>
+                                            </strong>
+                                        </th>
+                                        <th style="width:10%; border:0px solid transparent;">
+                                            <strong>
+                                                <span class="fw-bolder">
+                                                    <t t-if="total and move_line in total" t-out="total[move_line].get('currency_id', '')"/>
+                                                    <t t-if="total and move_line in total" t-out="total[move_line].get('total_debit', 0) - total[move_line].get('total_credit', 0)"/>
+                                                </span>
+                                            </strong>
+                                        </th>
+                                    </tr>
+                                    <t t-if="data and move_line in data">
+                                        <t t-foreach="data[move_line]"
+                                           t-as="valuelist">
+                                            <tr class="border-bottom">
+                                                <th colspan="6" style="width:10%">
+                                                    <span>
+                                                        <t t-out="valuelist.get('date', '')"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist.get('journal_id') and len(valuelist['journal_id']) > 1"
+                                                           t-out="valuelist['journal_id'][1]"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist.get('partner_id') and len(valuelist['partner_id']) > 1"
+                                                           t-out="valuelist['partner_id'][1]"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist.get('ref')"
+                                                           t-out="valuelist['ref']"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist.get('move_name')"
+                                                           t-out="valuelist['move_name']"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist.get('name')"
+                                                           t-out="valuelist['name']"/>
+                                                    </span>
+                                                </th>
+                                                <th>
+                                                    <span>
+                                                        <t t-if="valuelist.get('debit') and total and move_line in total"
+                                                           t-out="total[move_line].get('currency_id', '')"/>
+                                                        <t t-if="valuelist.get('debit')"
+                                                           t-out="valuelist['debit']"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist.get('credit') and total and move_line in total"
+                                                           t-out="total[move_line].get('currency_id', '')"/>
+                                                        <t t-if="valuelist.get('credit')"
+                                                           t-out="valuelist['credit']"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%"/>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                    </t>
+                    <table class="table table-sm table-reports">
+                        <tbody>
+                            <tr>
+                                <th style="width:60%;">Total</th>
+                                <th style="width:10%">
+                                    <t t-if="grand_total and grand_total.get('currency')" t-out="grand_total['currency']"/>
+                                    <t t-if="grand_total and grand_total.get('total_debit') is not None" t-out="grand_total['total_debit']"/>
+                                </th>
+                                <th style="width:10%">
+                                    <t t-if="grand_total and grand_total.get('currency')" t-out="grand_total['currency']"/>
+                                    <t t-if="grand_total and grand_total.get('total_credit') is not None" t-out="grand_total['total_credit']"/>
+                                </th>
+                                <th style="width:10%">
+                                    <t t-if="grand_total and grand_total.get('currency')" t-out="grand_total['currency']"/>
+                                    <t t-if="grand_total and grand_total.get('total_debit') is not None and grand_total.get('total_credit') is not None"
+                                       t-out="float(grand_total['total_debit']) - float(grand_total['total_credit'])"/>
+                                </th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

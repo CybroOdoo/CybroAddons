@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Report Template for Partner Ledger.-->
+    <template id="partner_ledger">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-set="data_report_margin_top" t-value="12"/>
+                <t t-set="data_report_header_spacing" t-value="9"/>
+                <t t-set="data_report_dpi" t-value="110"/>
+                <div class="page">
+                    <h3>
+                        <center>
+                            <b>
+                                <span t-out="report_name"/>
+                            </b>
+                        </center>
+                    </h3>
+                    <br/>
+                    <br/>
+                    <div class="filters">
+                        <table class="table table-sm table-reports">
+                            <thead class="filter_table"
+                                   style="background:#808080;">
+                                <tr>
+                                    <th>Date Range</th>
+                                    <th>Partner</th>
+                                    <th>Account</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size:11px;font-weight:100;">
+                                <tr>
+                                    <th>
+                                        <t t-if="filters and filters.get('start_date')"
+                                           t-out="filters['start_date']"/>
+                                        <t t-if="filters and filters.get('end_date')">
+                                            to
+                                            <t t-out="filters['end_date']"/>
+                                        </t>
+                                    </th>
+                                    <th>
+                                        <t t-if="filters and filters.get('partner')">
+                                            <t t-foreach="filters['partner']"
+                                               t-as="selected_partner">
+                                                <t t-out="selected_partner.get('display_name', '')"/>,
+                                            </t>
+                                        </t>
+                                    </th>
+                                    <th>
+                                        <t t-if="filters and filters.get('account')">
+                                            <t t-foreach="filters['account']"
+                                               t-as="selected_account">
+                                                <t t-out="selected_account"/>,
+                                            </t>
+                                        </t>
+                                    </th>
+                                    <th>
+                                        <t t-if="filters and filters.get('options')">
+                                            <t t-foreach="filters['options']"
+                                               t-as="selected_options">
+                                                <t t-out="selected_options"/>,
+                                            </t>
+                                        </t>
+                                    </th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <t t-if="partners">
+                        <t t-foreach="partners"
+                           t-as="partner">
+                            <table class="table table-sm table-reports">
+                                <thead style="background:#808080;">
+                                    <tr>
+                                        <th style="width:10%" colspan="6"/>
+                                        <th style="width:10%">JRNL</th>
+                                        <th style="width:10%">Account</th>
+                                        <th style="width:10%">Ref</th>
+                                        <th style="width:10%">Due Date</th>
+                                        <th style="width:10%">Matching Number
+                                        </th>
+                                        <th style="width:10%">Debit</th>
+                                        <th style="width:10%">Credit</th>
+                                        <th style="width:10%">Amount Currency
+                                        </th>
+                                        <th style="width:10%">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size:11px;font-weight:100;">
+                                    <tr class="border-bottom"
+                                        style="background:#D3D3D3;">
+                                        <th colspan="9"
+                                            style="border:0px solid transparent;border-left: thin solid #dee2e6;">
+                                            <div class="ms-3">
+                                                <span class="fw-bolder">
+                                                    <t t-if="partner != 'false'">
+                                                        <strong>
+                                                            <b>
+                                                                <t t-out="partner"/>
+                                                            </b>
+                                                        </strong>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span>Unknown Partner</span>
+                                                    </t>
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th style="width:10%; border:0px solid transparent;"/>
+                                        <th style="width:10%; border:0px solid transparent;"/>
+                                        <th style="width:10%; border:0px solid transparent;">
+                                            <strong>
+                                                <span>
+                                                    <t t-if="total and partner in total and total[partner].get('total_debit') is not None"
+                                                       t-out="total[partner].get('currency_id', '')"/>
+                                                    <t t-if="total and partner in total and total[partner].get('total_debit') is not None"
+                                                       t-out="total[partner]['total_debit']"/>
+                                                </span>
+                                            </strong>
+                                        </th>
+                                        <th style="width:10%; border:0px solid transparent;">
+                                            <strong>
+                                                <span>
+                                                    <t t-if="total and partner in total and total[partner].get('total_credit') is not None"
+                                                       t-out="total[partner].get('currency_id', '')"/>
+                                                    <t t-if="total and partner in total and total[partner].get('total_credit') is not None"
+                                                       t-out="total[partner]['total_credit']"/>
+                                                </span>
+                                            </strong>
+                                        </th>
+                                        <th style="width:10%; border:0px solid transparent;"/>
+                                        <th style="width:10%; border:0px solid transparent;border-right: thin solid #dee2e6;">
+                                            <strong>
+                                                <span class="fw-bolder">
+                                                    <t t-if="total and partner in total" t-out="total[partner].get('currency_id', '')"/>
+                                                    <t t-if="total and partner in total" t-out="total[partner].get('total_debit', 0) - total[partner].get('total_credit', 0)"/>
+                                                </span>
+                                            </strong>
+                                        </th>
+                                    </tr>
+                                    <!-- Iterate over partner's initial balance -->
+                                    <t t-set="j" t-value="0"/>
+                                    <t t-foreach="partners"
+                                       t-as="partner_initial">
+                                        <t t-set="j" t-value="j + 1"/>
+                                        <t t-if="j == 1 and total and partner in total and total[partner].get('initial_balance', 0) != 0">
+                                            <tr>
+                                                <th colspan="6">
+                                                    <span style="gap: 12px;display: flex;"></span>
+                                                </th>
+                                                <th></th>
+                                                <th></th>
+                                                <th>
+                                                    <span>
+                                                        <t t-out="total[partner].get('move_name', '')"/>
+                                                    </span>
+                                                </th>
+                                                <th></th>
+                                                <th></th>
+                                                <th>
+                                                    <span>
+                                                        <t t-out="total[partner].get('initial_debit', 0)"/>
+                                                    </span>
+                                                </th>
+                                                <th>
+                                                    <span>
+                                                        <t t-out="total[partner].get('initial_credit', 0)"/>
+                                                    </span>
+                                                </th>
+                                                <th/>
+                                                <th>
+                                                    <span>
+                                                        <t t-out="total[partner].get('initial_balance', 0)"/>
+                                                    </span>
+                                                </th>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                    <!-- Iterate over partner's value list -->
+                                    <t t-if="data and partner in data">
+                                        <t t-foreach="data[partner]"
+                                           t-as="valuelist">
+                                            <tr class="border-bottom">
+                                                <th colspan="6" style="width:10%">
+                                                    <span>
+                                                        <t t-out="valuelist[0].get('date', '')"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-out="valuelist[0].get('jrnl', '')"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-out="valuelist[0].get('code', '')"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist[0].get('move_name')"
+                                                           t-out="valuelist[0]['move_name']"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist[0].get('date_maturity')"
+                                                           t-out="valuelist[0]['date_maturity']"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist[0].get('matching_number')"
+                                                           t-out="valuelist[0]['matching_number']"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist[0].get('debit') and total and partner in total"
+                                                           t-out="total[partner].get('currency_id', '')"/>
+                                                        <t t-if="valuelist[0].get('debit')"
+                                                           t-out="valuelist[0]['debit']"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist[0].get('credit') and total and partner in total"
+                                                           t-out="total[partner].get('currency_id', '')"/>
+                                                        <t t-if="valuelist[0].get('credit')"
+                                                           t-out="valuelist[0]['credit']"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="valuelist[0].get('amount_currency') and total and partner in total"
+                                                           t-out="total[partner].get('currency_id', '')"/>
+                                                        <t t-if="valuelist[0].get('amount_currency')"
+                                                           t-out="valuelist[0]['amount_currency']"/>
+                                                    </span>
+                                                </th>
+                                                <th style="width:10%"/>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                    </t>
+                    <table class="table table-sm table-reports">
+                        <tbody>
+                            <tr>
+                                <th style="width:60%;">Total</th>
+                                <th style="width:10%">
+                                    <t t-if="grand_total and grand_total.get('currency')" t-out="grand_total['currency']"/>
+                                    <t t-if="grand_total and grand_total.get('total_debit') is not None" t-out="grand_total['total_debit']"/>
+                                </th>
+                                <th style="width:10%">
+                                    <t t-if="grand_total and grand_total.get('currency')" t-out="grand_total['currency']"/>
+                                    <t t-if="grand_total and grand_total.get('total_credit') is not None" t-out="grand_total['total_credit']"/>
+                                </th>
+                                <th style="width:10%"/>
+                                <th style="width:10%">
+                                    <t t-if="grand_total and grand_total.get('currency')" t-out="grand_total['currency']"/>
+                                    <t t-if="grand_total and grand_total.get('total_debit') is not None and grand_total.get('total_credit') is not None">
+                                        <t t-out="grand_total['total_debit'] - grand_total['total_credit']"/>
+                                    </t>
+                                </th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Report Template for trial balance-->
+    <template id="trial_balance">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-set="data_report_margin_top" t-value="12"/>
+                <t t-set="data_report_header_spacing" t-value="9"/>
+                <t t-set="data_report_dpi" t-value="110"/>
+                <div class="page">
+                    <h3>
+                        <center>
+                            <b>
+                                <span t-out="report_name"/>
+                            </b>
+                        </center>
+                    </h3>
+                    <br/>
+                    <br/>
+                    <div class="filters">
+                        <table class="table table-sm table-reports">
+                            <thead class="filter_table"
+                                   style="background:#808080;">
+                                <tr>
+                                    <th>Date Range</th>
+                                    <th>Comparison</th>
+                                    <th>Account</th>
+                                    <th>Journal</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size:11px;font-weight:100;">
+                                <tr>
+                                    <th>
+                                        <t t-if="filters and filters.get('start_date')"
+                                           t-out="filters['start_date']"/>
+                                        <t t-if="filters and filters.get('end_date')">
+                                            to
+                                            <t t-out="filters['end_date']"/>
+                                        </t>
+                                    </th>
+                                    <th>
+                                        <t t-if="filters and filters.get('comparison_number_range')">
+                                            <t t-out="filters.get('comparison_type', '')"/>
+                                            :
+                                            <t t-out="filters['comparison_number_range']"/>
+                                        </t>
+                                    </th>
+                                    <th>
+                                        <t t-if="filters and filters.get('journal')">
+                                            <t t-foreach="filters['journal']"
+                                               t-as="selected_journal">
+                                                <t t-out="selected_journal"/>,
+                                            </t>
+                                        </t>
+                                    </th>
+                                    <th>
+                                        <t t-if="filters and filters.get('account')">
+                                            <t t-foreach="filters['account']"
+                                               t-as="selected_account">
+                                                <t t-out="selected_account.get('display_name', '')"/>,
+                                            </t>
+                                        </t>
+                                    </th>
+                                    <th>
+                                        <t t-if="filters and filters.get('options')">
+                                            <t t-foreach="filters['options']"
+                                               t-as="selected_options">
+                                                <t t-out="selected_options"/>,
+                                            </t>
+                                        </t>
+                                    </th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <table class="table table-sm table-reports"
+                           style="width: fit-content;">
+                        <thead style="background:#808080;">
+                            <tr>
+                                <th colspan="6"/>
+                                <th colspan="2">Initial Balance</th>
+                                <t t-if="date_viewed">
+                                    <t t-foreach="date_viewed" t-as="date_view">
+                                        <th colspan="2">
+                                            <t t-out="date_view"/>
+                                        </th>
+                                    </t>
+                                </t>
+                                <t t-if="apply_comparison == true and data and data[0] and data[0][0] and data[0][0].get('dynamic_date_num')">
+                                    <t t-foreach="data[0][0]['dynamic_date_num'].items()" t-as="item">
+                                        <th colspan="2">
+                                            <t t-out="item[1]"/>
+                                        </th>
+                                    </t>
+                                </t>
+                                <th colspan="2">End Balance</th>
+                            </tr>
+                            <tr class="o_heading" style="text-align:center;background:#D3D3D3;">
+                                <th colspan="6"/>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <t t-if="apply_comparison == true and comparison_number_range">
+                                    <t t-set="number_of_periods"
+                                       t-value="comparison_number_range"/>
+                                    <t t-foreach="number_of_periods"
+                                       t-as="number">
+                                        <th>Debit</th>
+                                        <th>Credit</th>
+                                    </t>
+                                </t>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="data and len(data) > 0">
+                                <t t-set="i" t-value="0"/>
+                                <t t-foreach="data[0]"
+                                   t-as="move_line">
+                                    <t t-set="i" t-value="i + 1"/>
+                                    <tr class="border-bottom"
+                                        style="border-spacing: 0 10px;">
+                                        <th colspan="6">
+                                            <t t-out="move_line.get('account', '')"/>
+                                        </th>
+                                        <th style="text-align:center;">
+                                            <t t-if="move_line.get('initial_total_debit')"
+                                               t-out="move_line['initial_total_debit']"/>
+                                        </th>
+                                        <th style="text-align:center;">
+                                            <t t-if="move_line.get('initial_total_credit')"
+                                               t-out="move_line['initial_total_credit']"/>
+                                        </th>
+                                        <t t-if="apply_comparison == true and comparison_number_range">
+                                            <t t-set="number_of_periods"
+                                               t-value="comparison_number_range"/>
+                                            <t t-foreach="number_of_periods"
+                                               t-as="num">
+                                                <th style="text-align:center;">
+                                                    <t t-if="move_line.get('dynamic_total_debit_' + str(num))"
+                                                       t-out="move_line['dynamic_total_debit_' + str(num)]"/>
+                                                </th>
+                                                <th style="text-align:center;">
+                                                    <t t-if="move_line.get('dynamic_total_credit_' + str(num))"
+                                                       t-out="move_line['dynamic_total_credit_' + str(num)]"/>
+                                                </th>
+                                            </t>
+                                        </t>
+                                        <th style="text-align:center;">
+                                            <t t-if="move_line.get('total_debit')"
+                                               t-out="move_line['total_debit']"/>
+                                        </th>
+                                        <th style="text-align:center;">
+                                            <t t-if="move_line.get('total_credit')"
+                                               t-out="move_line['total_credit']"/>
+                                        </th>
+                                        <th style="text-align:center;">
+                                            <t t-if="move_line.get('end_total_debit')"
+                                               t-out="move_line['end_total_debit']"/>
+                                        </th>
+                                        <th style="text-align:center;">
+                                            <t t-if="move_line.get('end_total_credit')"
+                                               t-out="move_line['end_total_credit']"/>
+                                        </th>
+                                    </tr>
+                                </t>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
