@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="telegram_message_view_tree" model="ir.ui.view">
+        <field name="name">telegram.message.view.tree</field>
+        <field name="model">telegram.message</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="direction"/>
+                <field name="partner_id"/>
+                <field name="bot_id"/>
+                <field name="date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="telegram_message_view_form" model="ir.ui.view">
+        <field name="name">telegram.message.view.form</field>
+        <field name="model">telegram.message</field>
+        <field name="arch" type="xml">
+            <form string="Telegram Message" class="o_form_readonly">
+                <header>
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="received,error"
+                           attrs="{'invisible': [('direction', '!=', 'incoming')]}"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="new,sent,error"
+                           attrs="{'invisible': [('direction', '!=', 'outgoing')]}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Message Details" colspan="2">
+                            <field name="direction"/>
+                            <field name="date"/>
+                        </group>
+                        <group string="Sender &amp; Chat Info" colspan="2">
+                            <field name="bot_id"/>
+                            <field name="partner_id"/>
+                            <field name="chat_id"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Message Body">
+                            <field name="message_text"
+                                   placeholder="Internal notes..."/>
+                        </page>
+                        <page string="Attachments">
+                            <field name="attachment_ids">
+                                <kanban>
+                                    <field name="id"/>
+                                    <field name="name"/>
+                                    <field name="mimetype"/>
+                                    <field name="file_size"/>
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <div class="oe_kanban_global_click">
+                                                <div class="o_kanban_image">
+                                                    <t t-if="record.mimetype.raw_value and record.mimetype.raw_value.indexOf('image') !== -1">
+                                                        <img t-att-src="'/web/image/' + record.id.raw_value + '/datas'"
+                                                             style="max-width: 100%; max-height: 150px;"
+                                                             alt="Preview"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <div style="text-align: center; padding: 20px;">
+                                                            <i class="fa fa-file-o fa-3x"/>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                                <div class="oe_kanban_details">
+                                                    <strong>
+                                                        <field name="name"/>
+                                                    </strong>
+                                                    <div>
+                                                        <field name="file_size"
+                                                               widget="integer"/>
+                                                        bytes
+                                                    </div>
+                                                    <div>
+                                                        <field name="mimetype"/>
+                                                    </div>
+                                                    <div style="margin-top: 10px;">
+                                                        <a t-att-href="'/web/content/' + record.id.raw_value + '?download=true'"
+                                                           class="btn btn-primary btn-sm"
+                                                           onclick="event.stopPropagation();"
+                                                           target="_blank">
+                                                            <i class="fa fa-download"/>
+                                                            Download
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="telegram_message_view_search" model="ir.ui.view">
+        <field name="name">telegram.message.view.search</field>
+        <field name="model">telegram.message</field>
+        <field name="arch" type="xml">
+            <search string="Telegram Messages">
+                <!-- Searchable fields -->
+                <field name="partner_id"/>
+                <field name="bot_id"/>
+                <field name="direction"/>
+                <field name="state"/>
+                <field name="date"/>
+
+                <!-- Predefined filters -->
+                <filter string="Sent" name="sent"
+                        domain="[('state','=', 'sent')]"/>
+                <filter string="Received" name="received"
+                        domain="[('state','=', 'received')]"/>
+                <filter string="Failed" name="failed"
+                        domain="[('state','=', 'error')]"/>
+                <filter string="Has Attachments" name="has_attachments"
+                        domain="[('attachment_ids','!=', False)]"/>
+
+                <!-- Group By options -->
+                <group expand="0" string="Group By">
+                    <filter string="By Date" name="group_by_date"
+                            context="{'group_by':'date:day'}"/>
+                    <filter string="By Bot" name="group_by_bot"
+                            context="{'group_by':'bot_id'}"/>
+                    <filter string="By Partner" name="group_by_partner"
+                            context="{'group_by':'partner_id'}"/>
+                    <filter string="By Direction" name="group_by_direction"
+                            context="{'group_by':'direction'}"/>
+                </group>
+
+                <!-- Optional: Search-panel (left sidebar quick filters) -->
+                <searchpanel>
+                    <field name="state" icon="fa fa-envelope"/>
+                    <field name="direction" icon="fa fa-exchange"/>
+                    <field name="bot_id" icon="fa fa-robot"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+</odoo>
