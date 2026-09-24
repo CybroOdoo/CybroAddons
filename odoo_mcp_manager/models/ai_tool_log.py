@@ -29,7 +29,6 @@ class AiToolLog(models.Model):
     _description = 'AI Tool Execution Log'
     _order = 'timestamp desc'
 
-    display_name = fields.Char(compute='_compute_display_name')
     tool_id = fields.Many2one('ai.tool', string='Tool', ondelete='cascade')
     user_id = fields.Many2one('res.users', string='Executed By')
     timestamp = fields.Datetime(default=fields.Datetime.now, string='Execution Time')
@@ -64,6 +63,7 @@ class AiToolLog(models.Model):
 
     @api.depends('tool_id.name', 'timestamp')
     def _compute_display_name(self) -> None:
-        """Display name combining tool name and execution timestamp (Odoo 19)."""
+        """Compute display name combining tool name and execution timestamp."""
         for rec in self:
-            rec.display_name = f'{rec.tool_id.name} - {rec.timestamp}'
+            tool_name = rec.tool_id.name or 'Unknown Tool'
+            rec.display_name = f'{tool_name} - {rec.timestamp}'

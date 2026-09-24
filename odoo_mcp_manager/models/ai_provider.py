@@ -276,6 +276,7 @@ class AiProvider(models.Model):
         else:
             msg = ', '.join(success) + ' connected successfully.'
             msg_type = 'success'
+        print(f"[MCP CONNECTIVITY CHECK] Finished all checks. Notification: [{msg_type.upper()}] {msg}", flush=True)
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -297,11 +298,16 @@ class AiProvider(models.Model):
             (False, error_message) on failure
         """
         self.ensure_one()
+        print("\n" + "=" * 70, flush=True)
+        print(f"[MCP CONNECTIVITY CHECK] Starting check for provider '{self.name}' (ID: {self.id}, Service: {self.service})...", flush=True)
         try:
             ok, err = self._ping_service()
         except Exception as e:
             ok, err = False, str(e)
+            print(f"[MCP CONNECTIVITY CHECK] Unhandled Exception during ping: {type(e).__name__}: {e}", flush=True)
 
+        print(f"[MCP CONNECTIVITY CHECK] Result: ok={ok}, err={err!r}", flush=True)
+        print(f"[MCP CONNECTIVITY CHECK] Updating database: connection_status={'connected' if ok else 'error'}", flush=True)
         self.env.cr.execute(
             "UPDATE ai_provider SET connection_status=%s, connection_error=%s, "
             "last_checked=%s WHERE id=%s",
@@ -309,6 +315,7 @@ class AiProvider(models.Model):
              fields.Datetime.now(), self.id)
         )
         self.invalidate_recordset(['connection_status', 'connection_error', 'last_checked'])
+        print("=" * 70 + "\n", flush=True)
         return ok, err
 
     def _ping_service(self) -> tuple:
@@ -318,69 +325,138 @@ class AiProvider(models.Model):
         Network error / timeout → not reachable.
         """
         self.ensure_one()
-        timeout = 8  # seconds — fast enough for a dashboard check
+        timeout = 15  # seconds — allows sufficient time for slow network/proxy
 
         service = self.service
+        raw_key = self.api_key
+        sudo_key = self.sudo().api_key
+        effective_key = sudo_key or raw_key
+
+        print(f"  > Current Odoo user: {self.env.user.name} (ID: {self.env.uid})", flush=True)
+        print(f"  > User is admin (base.group_system): {self.env.user.has_group('base.group_system')}", flush=True)
+        print(f"  > self.api_key (normal): {'Present (length %d)' % len(raw_key) if raw_key else 'None/False'}", flush=True)
+        print(f"  > self.sudo().api_key:   {'Present (length %d)' % len(sudo_key) if sudo_key else 'None/False'}", flush=True)
+
+        if not raw_key and sudo_key:
+            print("  > NOTICE: api_key is hidden from normal environment due to groups='base.group_system'. Using sudo key.", flush=True)
+
+        if effective_key:
+            has_leading = effective_key != effective_key.lstrip()
+            has_trailing = effective_key != effective_key.rstrip()
+            if has_leading or has_trailing:
+                print(f"  > WARNING: API key contains whitespace! leading={has_leading}, trailing={has_trailing}", flush=True)
+            masked = effective_key[:7] + "..." + effective_key[-4:] if len(effective_key) > 11 else "***"
+            print(f"  > Effective key format: starts with '{effective_key[:7]}', ends with '{effective_key[-4:]}', length={len(effective_key)}", flush=True)
+        else:
+            masked = None
+            print("  > WARNING: No API key is present on this provider record!", flush=True)
 
         # ── OpenAI / Custom (OpenAI-compatible) ────────────────────────────
         if service in ('openai', 'custom'):
             base = (self.api_base or 'https://api.openai.com/v1').rstrip('/')
+            url = f'{base}/models'
             headers = {'Content-Type': 'application/json'}
-            if self.api_key:
-                headers['Authorization'] = f'Bearer {self.api_key}'
-            resp = requests.get(f'{base}/models', headers=headers, timeout=timeout)
-            if resp.status_code == 200:
-                return True, ''
-            return False, f'HTTP {resp.status_code}: {resp.text[:120]}'
+            if effective_key:
+                headers['Authorization'] = f'Bearer {effective_key.strip()}'
+                print(f"  > Authorization header: Bearer {masked}", flush=True)
+            else:
+                print("  > Authorization header: [NONE - No API key provided]", flush=True)
+
+            print(f"  > Sending GET request to: {url} (timeout={timeout}s)...", flush=True)
+            try:
+                resp = requests.get(url, headers=headers, timeout=timeout)
+                print(f"  > HTTP Response Status: {resp.status_code}", flush=True)
+                print(f"  > HTTP Response Headers: {dict(resp.headers)}", flush=True)
+                print(f"  > HTTP Response Body:\n{resp.text[:1000]}", flush=True)
+                if resp.status_code == 200:
+                    return True, ''
+                return False, f'HTTP {resp.status_code}: {resp.text[:120]}'
+            except requests.exceptions.Timeout as e:
+                err = f'Timeout after {timeout}s connecting to {url}: {e}'
+                print(f"  > TIMEOUT EXCEPTION: {err}", flush=True)
+                return False, err
+            except requests.exceptions.ConnectionError as e:
+                err = f'Connection/DNS Error connecting to {url}: {e}'
+                print(f"  > CONNECTION EXCEPTION: {err}", flush=True)
+                return False, err
+            except Exception as e:
+                err = f'{type(e).__name__}: {e}'
+                print(f"  > REQUEST EXCEPTION: {err}", flush=True)
+                return False, err
 
         # ── Anthropic ──────────────────────────────────────────────────────
         elif service == 'anthropic':
-            if not self.api_key:
+            if not effective_key:
+                print("  > FAILED: API key is not configured for Anthropic.", flush=True)
                 return False, 'API key is not configured.'
             base = (self.api_base or 'https://api.anthropic.com/v1').rstrip('/')
+            url = f'{base}/messages'
             headers = {
-                'x-api-key': self.api_key,
+                'x-api-key': effective_key.strip(),
                 'anthropic-version': '2023-06-01',
                 'Content-Type': 'application/json',
             }
-            # Anthropic has no public /models endpoint; send a minimal messages
-            # request with max_tokens=1 — 200 means connected, 400 bad request
-            # is also fine (means auth passed), anything else is an error.
             payload = {
                 'model': 'claude-3-haiku-20240307',
                 'max_tokens': 1,
                 'messages': [{'role': 'user', 'content': 'ping'}],
             }
-            resp = requests.post(
-                f'{base}/messages', headers=headers,
-                json=payload, timeout=timeout
-            )
-            if resp.status_code in (200, 400):  # 400 = bad request but auth ok
-                return True, ''
-            return False, f'HTTP {resp.status_code}: {resp.text[:120]}'
+            print(f"  > Sending POST request to: {url} (timeout={timeout}s)...", flush=True)
+            try:
+                resp = requests.post(
+                    url, headers=headers,
+                    json=payload, timeout=timeout
+                )
+                print(f"  > HTTP Response Status: {resp.status_code}", flush=True)
+                print(f"  > HTTP Response Body:\n{resp.text[:1000]}", flush=True)
+                if resp.status_code in (200, 400):  # 400 = bad request but auth ok
+                    return True, ''
+                return False, f'HTTP {resp.status_code}: {resp.text[:120]}'
+            except Exception as e:
+                err = f'{type(e).__name__}: {e}'
+                print(f"  > REQUEST EXCEPTION: {err}", flush=True)
+                return False, err
 
         # ── Google Gemini ──────────────────────────────────────────────────
         elif service == 'google':
-            if not self.api_key:
+            if not effective_key:
+                print("  > FAILED: API key is not configured for Google Gemini.", flush=True)
                 return False, 'API key is not configured.'
             base = (
                 self.api_base or 'https://generativelanguage.googleapis.com/v1beta'
             ).rstrip('/')
-            resp = requests.get(
-                f'{base}/models', params={'key': self.api_key}, timeout=timeout
-            )
-            if resp.status_code == 200:
-                return True, ''
-            return False, f'HTTP {resp.status_code}: {resp.text[:120]}'
+            url = f'{base}/models'
+            print(f"  > Sending GET request to: {url}?key={masked} (timeout={timeout}s)...", flush=True)
+            try:
+                resp = requests.get(
+                    url, params={'key': effective_key.strip()}, timeout=timeout
+                )
+                print(f"  > HTTP Response Status: {resp.status_code}", flush=True)
+                print(f"  > HTTP Response Body:\n{resp.text[:1000]}", flush=True)
+                if resp.status_code == 200:
+                    return True, ''
+                return False, f'HTTP {resp.status_code}: {resp.text[:120]}'
+            except Exception as e:
+                err = f'{type(e).__name__}: {e}'
+                print(f"  > REQUEST EXCEPTION: {err}", flush=True)
+                return False, err
 
         # ── Ollama (local — no auth) ────────────────────────────────────────
         elif service == 'ollama':
             base = (self.api_base or 'http://localhost:11434').rstrip('/')
             url = f'{base}/tags' if base.endswith('/api') else f'{base}/api/tags'
-            resp = requests.get(url, timeout=timeout)
-            if resp.status_code == 200:
-                return True, ''
-            return False, f'HTTP {resp.status_code}: {resp.text[:120]}'
+            print(f"  > Sending GET request to: {url} (timeout={timeout}s)...", flush=True)
+            try:
+                resp = requests.get(url, timeout=timeout)
+                print(f"  > HTTP Response Status: {resp.status_code}", flush=True)
+                print(f"  > HTTP Response Body:\n{resp.text[:1000]}", flush=True)
+                if resp.status_code == 200:
+                    return True, ''
+                return False, f'HTTP {resp.status_code}: {resp.text[:120]}'
+            except Exception as e:
+                err = f'{type(e).__name__}: {e}'
+                print(f"  > REQUEST EXCEPTION: {err}", flush=True)
+                return False, err
 
         return False, f'Unknown service type: {service}'
 

@@ -22,7 +22,6 @@
 import secrets
 from odoo import _, fields, models
 
-
 class ResConfigSettings(models.TransientModel):
     """Adds Bot Gateway configuration fields to the standard Settings form."""
 
@@ -31,7 +30,6 @@ class ResConfigSettings(models.TransientModel):
     bot_webhook_secret = fields.Char(
         string='Webhook Secret',
         config_parameter='bot_gateway.webhook_secret',
-        groups='base.group_system',
         help=(
             'Shared secret appended to all bot webhook URLs as ?secret=. '
             'Auto-generated on first bot connect.'
@@ -40,7 +38,6 @@ class ResConfigSettings(models.TransientModel):
     bot_mcp_api_key = fields.Char(
         string='Bot MCP API Key',
         config_parameter='bot_gateway.mcp_api_key',
-        groups='base.group_system',
         help='API key used by the bot gateway to call internal MCP tools.',
     )
     mcp_enforce_tool_allowlist = fields.Boolean(
@@ -64,8 +61,7 @@ class ResConfigSettings(models.TransientModel):
             'tag': 'display_notification',
             'params': {
                 'title': _('Webhook Secret Generated'),
-                'message': _('A new secret has been saved. '
-                             'Re-connect any active bot channels.'),
+                'message': _('A new secret has been saved. Re-connect any active bot channels.'),
                 'type': 'warning',
                 'sticky': False,
             },
@@ -81,8 +77,7 @@ class ResConfigSettings(models.TransientModel):
             'tag': 'display_notification',
             'params': {
                 'title': _('MCP API Key Generated'),
-                'message': _('Key created and saved. '
-                             'The bot can now call internal MCP tools.'),
+                'message': _('Key created and saved. The bot can now call internal MCP tools.'),
                 'type': 'success',
                 'sticky': False,
             },

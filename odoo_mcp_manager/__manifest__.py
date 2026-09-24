@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': 'Odoo MCP Server',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Productivity/AI',
     'summary': 'MCP Server, MCP Connector, Odoo MCP, Odoo Claude Connector, Claude Odoo, MCP Odoo, AI Odoo Connector, AI Odoo',
     'description': """

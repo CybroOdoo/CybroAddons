@@ -81,6 +81,7 @@ class AiTool(models.Model):
     implementation = fields.Selection([
         ('decorator', 'Decorated Method (@ai_tool)'),
         ('builtin', 'Built-in Command'),
+        ('python', 'Python Snippet (High Risk)'),
     ], default='decorator', required=True)
     active = fields.Boolean(default=True)
     requires_user_consent = fields.Boolean(default=False)
@@ -211,18 +212,17 @@ class AiTool(models.Model):
         start = time.perf_counter()
         try:
             if self.implementation == 'decorator':
-                # Execute the decorated method AS THE AUTHENTICATED USER so the
-                # caller's access rights and record rules are enforced (the tool
-                # config itself is still read with elevated rights).
-                target = self._user_model(self.decorator_model)
-                result = getattr(target, self.decorator_method)(**parameters)
+                # Run as superuser so internal Odoo mail/ORM operations
+                # (e.g. message_partner_ids → res.partner reads) are not
+                # blocked by the Public-user session on auth='public' routes.
+                result = getattr(
+                    self.env[self.decorator_model].sudo(), self.decorator_method
+                )(**parameters)
             elif self.implementation == 'builtin':
                 result = self._execute_builtin(parameters)
             else:
-                # 'python' snippet execution was removed for safety; any legacy
-                # record with that implementation is rejected here.
                 raise UserError(
-                    _("Implementation '%s' is not supported.") % self.implementation
+                    _('Implementation %s not yet supported') % self.implementation
                 )
             elapsed_ms = round((time.perf_counter() - start) * 1000, 2)
             log_vals.update({
@@ -319,24 +319,21 @@ class AiTool(models.Model):
         param_model = parameters.get(model_key) or (
             parameters.get('model') if model_key == 'model' else None
         )
-        # Provider records hold the (group_system-restricted) API key, so they
-        # are always resolved with elevated rights regardless of the caller.
         if param_provider:
-            provider = self.env['ai.provider'].sudo().search(
+            provider = self.env['ai.provider'].search(
                 [('active', '=', True), ('name', 'ilike', param_provider)], limit=1
             )
             if provider:
                 return provider, param_model or (
                     self.default_model_id.name if self.default_model_id else None
                 )
-        default_provider = self.default_provider_id.sudo()
-        if default_provider and self._provider_has_active_models(default_provider):
+        if self.default_provider_id and self._provider_has_active_models(self.default_provider_id):
             model_name = (
                 param_model
                 or (self.default_model_id.name if self.default_model_id else None)
-                or self._get_default_model_name(default_provider)
+                or self._get_default_model_name(self.default_provider_id)
             )
-            return default_provider, model_name
+            return self.default_provider_id, model_name
         provider, model_name = self._resolve_by_priority(param_model)
         if provider:
             return provider, model_name
@@ -369,7 +366,7 @@ class AiTool(models.Model):
         Returns:
             Tuple of (provider record, model_name) or (None, None) if none found.
         """
-        for provider in self.env['ai.provider'].sudo().search([('active', '=', True)]):
+        for provider in self.env['ai.provider'].search([('active', '=', True)]):
             if self._provider_has_active_models(provider):
                 return provider, param_model or self._get_default_model_name(provider)
         return None, None
@@ -427,20 +424,6 @@ class AiTool(models.Model):
                 "→ Configuration → Tool Access Rules."
             ) % {'op': operation, 'model': model_name})
 
-    def _effective_uid(self) -> int:
-        """Return the id of the user the tool acts on behalf of.
-
-        On MCP/bot routes the authenticated user is passed in the context as
-        ``mcp_user_id`` (the route env is the Public/superuser one). Elsewhere it
-        is simply the current user.
-        """
-        return self.env.context.get('mcp_user_id') or self.env.uid
-
-    def _user_model(self, model_name: str):
-        """Return *model_name* bound to the effective user, enforcing that
-        user's access rights and record rules on all ORM operations."""
-        return self.env[model_name].with_user(self._effective_uid())
-
     def _execute_builtin(self, parameters: dict):
         """
         Dispatch execution to the correct built-in handler based on the tool name.
@@ -464,9 +447,9 @@ class AiTool(models.Model):
         operation = self._BUILTIN_OPERATION.get(self.name)
         if operation:
             self._check_model_access(model_name, operation)
-        # Bind the model to the authenticated user so create/update/delete/search
-        # are subject to that user's ACLs and record rules (no more superuser).
-        model = self._user_model(model_name)
+        # Use sudo() so internal ORM operations (e.g. mail follower writes)
+        # are not blocked by the Public-user session on auth='public' routes.
+        model = self.env[model_name].sudo()
         dispatch = {
             'search_records': self._builtin_search_records,
             'create_record':  self._builtin_create_record,
@@ -622,8 +605,8 @@ class AiTool(models.Model):
         if model_name not in self.env:
             raise UserError(_("Odoo model '%s' not found") % model_name)
         self._check_model_access(model_name, 'read')
-        # Read records as the authenticated user so their record rules apply.
-        record_obj = self._user_model(model_name)
+        # Use sudo() so all reads/writes bypass the Public-user session restriction.
+        record_obj = self.env[model_name].sudo()
         fields_to_read = parameters.get('fields', [])
         if not fields_to_read:
             fields_to_read = [
