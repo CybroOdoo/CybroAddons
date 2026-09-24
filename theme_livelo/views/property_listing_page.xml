@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template Docstring: Manages the Unknown template structure -->
+    <template id="property_listing_page" name="Property Listing Page">
+    <t t-call="website.layout">
+            <t t-set="title">Properties Listing</t>
+            <t t-set="head">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+                <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+            </t>
+            <div id="wrap">
+                <div class="oe_structure" id="oe_structure_theme_livelo_property_listing_1"/>
+                <!-- ===================== NAVBAR ===================== -->
+            <section class="section-navbar-header w-100 d-none">
+            </section>
+            <!-- ===================== MAIN LISTING SECTION ===================== -->
+            <section class="float-start w-100 section-properties-listing mt-5 mb-5">
+                <div class="container">
+                    <div class="row">
+                        <!-- Heading + Sort Controls -->
+                        <div class="col-lg-7">
+                            <h2 class="fw-bold float-start me-3">Property Listing</h2>
+                            <span class="span-property-listing-heading">
+                                There are currently
+                                <t t-esc="total_count or 0"/> properties.
+                            </span>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="properties-listing-sort float-start w-100 text-end">
+                                <form method="get" action="/shop" class="d-inline-flex gap-2">
+                                    <!-- preserve existing filters when sorting -->
+                                    <input type="hidden" name="search" t-att-value="search or ''"/>
+                                    <input type="hidden" name="location" t-att-value="location or ''"/>
+                                    <input type="hidden" name="type" t-att-value="filter_type or ''"/>
+                                    <input type="hidden" name="listing" t-att-value="listing_type or ''"/>
+                                    <select name="per_page" class="form-select me-2" onchange="this.form.submit()">
+                                        <option t-att-selected="(per_page == '12') or None" value="12">Show 12</option>
+                                        <option t-att-selected="(per_page == '24') or None" value="24">Show 24</option>
+                                        <option t-att-selected="(per_page == '48') or None" value="48">Show 48</option>
+                                    </select>
+                                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                                        <option t-att-selected="(sort == 'newest') or None" value="newest">Newest First</option>
+                                        <option t-att-selected="(sort == 'price_asc') or None" value="price_asc">Price: Low to High</option>
+                                        <option t-att-selected="(sort == 'price_desc') or None" value="price_desc">Price: High to Low</option>
+                                    </select>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- ===================== LEFT SIDEBAR ===================== -->
+                        <div class="col-lg-4">
+                            <div class="property-list-rent-sale mt-5 float-start w-100">
+                                <!-- For Rent / For Sale toggle -->
+                                <div class="float-start w-50 text-center pt-3">
+                                    <a t-att-href="'/shop?listing=rent' + ('&amp;search=' + search if search else '') + ('&amp;location=' + location if location else '')"
+                                       t-attf-class="rent-button text-decoration-none {{ 'active-tab' if listing_type == 'rent' else '' }}"
+                                       style="text-transform:uppercase;">For Rent</a>
+                                </div>
+                                <div class="float-start w-50 text-center pt-3">
+                                    <a t-att-href="'/shop?listing=sale' + ('&amp;search=' + search if search else '') + ('&amp;location=' + location if location else '')"
+                                       t-attf-class="sale-button text-decoration-none {{ 'active-tab' if listing_type == 'sale' else '' }}"
+                                       style="text-transform:uppercase;">For Sale</a>
+                                </div>
+                                <!-- Filter Form -->
+                                <form method="get" action="/shop" class="w-100 float-start">
+                                    <input type="hidden" name="listing" t-att-value="listing_type or ''"/>
+                                    <input type="hidden" name="per_page" t-att-value="per_page or '12'"/>
+                                    <input type="hidden" name="sort" t-att-value="sort or 'newest'"/>
+                                    <input name="search" t-att-value="search or ''"
+                                           placeholder="Type Keyword" class="keyword-type mt-5"/>
+                                    <input name="location" t-att-value="location or ''"
+                                           placeholder="Location" class="keyword-type mt-3"/>
+                                    <select name="type" class="form-select mt-3">
+                                        <option value="">Property Type</option>
+                                        <option t-att-selected="(filter_type == 'house') or None" value="house">House</option>
+                                        <option t-att-selected="(filter_type == 'villa') or None" value="villa">Villa</option>
+                                        <option t-att-selected="(filter_type == 'apartment') or None" value="apartment">Apartment</option>
+                                        <option t-att-selected="(filter_type == 'commercial') or None" value="commercial">Commercial</option>
+                                        <option t-att-selected="(filter_type == 'studio') or None" value="studio">Studio</option>
+                                        <option t-att-selected="(filter_type == 'office') or None" value="office">Office</option>
+                                    </select>
+                                    <select name="beds" class="form-select mt-3">
+                                        <option value="">Bedrooms</option>
+                                        <option t-att-selected="(filter_beds == '1') or None" value="1">1 Bed</option>
+                                        <option t-att-selected="(filter_beds == '2') or None" value="2">2 Beds</option>
+                                        <option t-att-selected="(filter_beds == '3') or None" value="3">3 Beds</option>
+                                        <option t-att-selected="(filter_beds == '4') or None" value="4">4+ Beds</option>
+                                    </select>
+                                    <select name="baths" class="form-select mt-3">
+                                        <option value="">Bathrooms</option>
+                                        <option t-att-selected="(filter_baths == '1') or None" value="1">1 Bath</option>
+                                        <option t-att-selected="(filter_baths == '2') or None" value="2">2 Baths</option>
+                                        <option t-att-selected="(filter_baths == '3') or None" value="3">3+ Baths</option>
+                                    </select>
+                                    <select name="price_range" class="form-select mt-3">
+                                        <option value="">Price Range</option>
+                                        <option t-att-selected="(price_range == '0-5000') or None" value="0-5000">Up to $5,000</option>
+                                        <option t-att-selected="(price_range == '5000-10000') or None" value="5000-10000">$5,000 – $10,000</option>
+                                        <option t-att-selected="(price_range == '10000-50000') or None" value="10000-50000">$10,000 – $50,000</option>
+                                        <option t-att-selected="(price_range == '50000+') or None" value="50000+">$50,000+</option>
+                                    </select>
+                                    <!-- Amenities checkboxes -->
+                                    <div class="property-list float-start mt-3 w-100">
+                                        <ul class="ps-0">
+                                            <li class="mt-4"><b class="text-dark">Amenities:</b></li>
+                                            <t t-if="all_amenities">
+                                                <t t-foreach="all_amenities" t-as="amenity">
+                                                    <li class="mt-3">
+                                                        <input type="checkbox"
+                                                               name="amenities"
+                                                               t-att-value="amenity.id"
+                                                               t-att-checked="amenity.id in selected_amenities if selected_amenities else None"
+                                                               onchange="this.form.submit()"/>
+                                                        <span class="ms-2" t-esc="amenity.name"/>
+                                                    </li>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <li class="mt-3"><input type="checkbox"/> <span class="ms-2">Smoke Alarm</span></li>
+                                                <li class="mt-3"><input type="checkbox"/> <span class="ms-2">Security Cameras</span></li>
+                                                <li class="mt-3"><input type="checkbox"/> <span class="ms-2">Swimming Pool</span></li>
+                                                <li class="mt-3"><input type="checkbox"/> <span class="ms-2">Gym</span></li>
+                                                <li class="mt-3"><input type="checkbox"/> <span class="ms-2">Parking</span></li>
+                                            </t>
+                                        </ul>
+                                    </div>
+                                    <button type="submit"
+                                            class="btn-findproperties float-start w-100 text-white text-center mt-5 mb-3 py-3 text-decoration-none border-0">
+                                        Find Properties
+                                    </button>
+                                </form>
+                                <!-- Latest Properties -->
+                                <h4 class="mt-3 float-start"><b>Latest Properties</b></h4>
+                                <div class="latest-properties w-100 float-start">
+                                    <t t-if="latest_properties">
+                                        <t t-foreach="latest_properties" t-as="lp">
+                                            <a t-att-href="'/shop/%s' % slug(lp)"
+                                               class="container-latest-properties mt-4 float-start w-100 text-decoration-none text-dark">
+                                                <div class="w-25 float-start properties-img">
+                                                    <img class="w-100"
+                                                         t-att-src="'/web/image/product.template/%s/image_128' % lp.id"
+                                                         t-att-alt="lp.name"/>
+                                                </div>
+                                                <div class="w-75 float-start ps-3">
+                                                    <h4 class="h4-property-list"><b t-esc="lp.name"/></h4>
+                                                    <div class="container-spec">
+                                                        <img src="/theme_livelo/static/src/images/icon-bed.png" class="me-1" alt="Beds"/>
+                                                        <span>Beds: <t t-esc="lp.bed"/></span>
+                                                        <img src="/theme_livelo/static/src/images/icon-baths.png" class="ms-2 me-1" alt="Baths"/>
+                                                        <span>Baths: <t t-esc="lp.bath"/></span>
+                                                        <img src="/theme_livelo/static/src/images/icon-sqft.png" class="ms-2 me-1" alt="Sqft"/>
+                                                        <span class="me-0">Sqft: <t t-esc="lp.squarefeet"/></span>
+                                                    </div>
+                                                    <h4 class="h4-property-list"><b>$<t t-esc="lp.list_price"/></b></h4>
+                                                </div>
+                                            </a>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="p-3 text-muted">No recently added properties.</div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- ===================== MAIN GRID: PROPERTY CARDS ===================== -->
+                        <div class="col-lg-8">
+                            <div class="properti-list float-start w-100 mt-5 d-flex justify-content-start">
+                                <t t-if="properties">
+                                    <div class="row g-4 justify-content-start w-100">
+                                        <t t-foreach="properties" t-as="prop">
+                                            <div class="col-lg-6 col-md-6 col-sm-12 mb-4">
+                                                <a t-att-href="'/shop/%s' % slug(prop)" class="text-decoration-none text-dark">
+                                                    <div class="container-featured-properties h-100 shadow-sm rounded-3 overflow-hidden bg-white border">
+                                                        <div class="position-relative">
+                                                            <!-- Property image -->
+                                                            <div class="properties-img" style="height: 200px;">
+                                                                <img class="w-100 h-100" style="object-fit: cover;"
+                                                                     t-att-src="'/web/image/product.template/%s/image_1024' % prop.id"
+                                                                     t-att-alt="prop.name"/>
+                                                            </div>
+                                                            <!-- Badges overlaid on image -->
+                                                            <div class="position-absolute top-0 start-0 m-2 px-3 py-1 rounded-pill text-white bg-primary"
+                                                                 t-if="prop.is_featured" style="z-index: 2; font-size: 11px; font-weight: 500;">
+                                                                Featured
+                                                            </div>
+                                                            <div class="position-absolute top-0 end-0 m-2 px-3 py-1 rounded-pill text-white"
+                                                                 style="z-index: 2; font-size: 11px; font-weight: 500; background-color: rgba(0,0,0,0.5);">
+                                                                <t t-if="prop.listing_type == 'rent'">For Rent</t>
+                                                                <t t-else="">For Sale</t>
+                                                            </div>
+                                                            <!-- Location overlaid at bottom -->
+                                                            <div class="position-absolute bottom-0 start-0 m-2 text-white d-flex align-items-center" style="z-index: 2;">
+                                                                <img src="/theme_livelo/static/src/images/location-img.png" alt="Location" style="width: 12px;" class="me-2"/>
+                                                                <span style="font-size: 11px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);" t-esc="prop.location or '—'"/>
+                                                            </div>
+                                                        </div>
+                                                        <div class="p-3">
+                                                            <!-- Title -->
+                                                            <h6 class="fw-bold mb-2 text-truncate" t-att-title="prop.name" t-esc="prop.name"/>
+                                                            <!-- Features row -->
+                                                            <div class="container-spec d-flex align-items-center flex-wrap" style="color: #888; font-size: 12px;">
+                                                                <div class="me-2 d-flex align-items-center">
+                                                                    <img src="/theme_livelo/static/src/images/icon-bed.png" alt="Beds" class="me-1" style="width: 14px; opacity: 0.6;"/>
+                                                                    <span>Beds: <t t-esc="prop.bed or 0"/></span>
+                                                                </div>
+                                                                <div class="me-2 d-flex align-items-center">
+                                                                    <img src="/theme_livelo/static/src/images/icon-baths.png" alt="Baths" class="me-1" style="width: 14px; opacity: 0.6;"/>
+                                                                    <span>Baths: <t t-esc="prop.bath or 0"/></span>
+                                                                </div>
+                                                                <div class="d-flex align-items-center">
+                                                                    <img src="/theme_livelo/static/src/images/icon-sqft.png" alt="Sqft" class="me-1" style="width: 14px; opacity: 0.6;"/>
+                                                                    <span>Sqft: <t t-esc="prop.squarefeet or 0"/></span>
+                                                                </div>
+                                                            </div>
+                                                            <hr class="my-2" style="opacity: 0.1;"/>
+                                                            <!-- Agent + Price -->
+                                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                                <div class="d-flex align-items-center">
+                                                                    <img src="/theme_livelo/static/src/images/person.png" class="me-2 rounded-circle" alt="Agent" style="width: 20px;"/>
+                                                                    <span class="text-muted" style="font-size: 12px;">Arlene McCoy</span>
+                                                                </div>
+                                                                <div class="fw-bold text-dark" style="font-size: 14px;">
+                                                                    $<t t-esc="'{:,.0f}'.format(prop.list_price)"/>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="col-12 text-center py-5">
+                                        <p class="text-muted">No properties found matching your criteria.</p>
+                                        <a href="/shop" class="btn btn-primary">Clear Filters</a>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                        <!-- ===================== PAGINATION ===================== -->
+                        <div class="col-lg-4"/>
+                        <div class="col-lg-8">
+                            <div class="pagenation-property mt-5 float-start w-100">
+                                <t t-if="pager">
+                                    <t t-call="website.pager"/>
+                                </t>
+                                <t t-else="">
+                                    <!-- Fallback static pagination -->
+                                    <nav aria-label="Property pages">
+                                        <ul class="pagination">
+                                            <li class="page-item disabled">
+                                                <a class="page-link text-dark fw-bold" href="#" tabindex="-1" aria-disabled="true">&lt;</a>
+                                            </li>
+                                            <li class="page-item"><a class="page-link text-dark fw-bold" href="?page=1">1</a></li>
+                                            <li class="page-item active" aria-current="page">
+                                                <a class="page-link text-white fw-bold" href="#">2</a>
+                                            </li>
+                                            <li class="page-item"><a class="page-link text-dark fw-bold" href="?page=3">3</a></li>
+                                            <li class="page-item"><a class="page-link text-dark fw-bold" href="?page=4">4</a></li>
+                                            <li class="page-item">
+                                                <a class="page-link text-dark fw-bold" href="?page=3">&gt;</a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- ===================== FOOTER ===================== -->
+            <section class="section-footer float-start w-100 d-none">
+            </section>
+                <div class="oe_structure" id="oe_structure_theme_livelo_property_listing_2"/>
+            </div>
+            <t t-set="foot">
+                <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"/>
+            </t>
+        </t>
+    </template>
+</odoo>

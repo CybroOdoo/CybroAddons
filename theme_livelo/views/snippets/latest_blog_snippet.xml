@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--    This file defines and customizes the Latest Blog Posts snippet-->
+<!--    for the Theme Livelo website.-->
+<odoo>
+    <template id="latest_blog_snippet" name="Latest Blogs">
+        <section class="section-latest-blog py-5 w-100 oe_snippet_body" data-snippet="latest_blog_snippet" data-name="Blogs">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 text-center mb-5">
+                        <p class="latest-blog-subtitle mb-1" style="font-family: 'Poppins', sans-serif !important; color: #35B4F8 !important; font-size: 15px; font-weight: 600; letter-spacing: 0.2px; font-style: normal !important;">Latest New</p>
+                        <h2 class="latest-blog-title font-weight-bold" style="font-family: 'Poppins', sans-serif !important; color: #161E2D !important; font-size: 36px; font-weight: 700 !important; margin-bottom: 0; font-style: normal !important;">From Our Blog</h2>
+                    </div>
+                    <div class="col-lg-12">
+                        <div class="swiper mySwiper-1">
+                            <div class="swiper-wrapper">
+                                <t t-set="blogs" t-value="request.env['blog.post'].search([('website_published', '=', True)], limit=6)"/>
+                                <t t-if="blogs">
+                                    <t t-foreach="blogs" t-as="blog">
+                                        <t t-set="cover_properties" t-value="json.loads(blog.cover_properties or '{}')"/>
+                                        <t t-set="bg_img_raw" t-value="cover_properties.get('background-image', '')"/>
+                                        <t t-set="blogs_img" t-value="bg_img_raw[4:-1].strip('\'&quot;') if bg_img_raw and bg_img_raw.startswith('url(') else ''"/>
+                                        <div class="swiper-slide">
+                                            <div class="latest-blog-card mb-4" style="font-family: 'Poppins', sans-serif !important;">
+                                                <div class="blog-image-container overflow-hidden" style="border-radius: 16px;">
+                                                    <a t-att-href="blog.website_url" class="d-block">
+                                                        <img t-if="blogs_img"
+                                                             t-att-src="blogs_img"
+                                                             class="img-fluid w-100 blog-card-img"
+                                                             style="height: 240px; object-fit: cover; width: 100%; border-radius: 16px; transition: transform 0.3s ease;"/>
+                                                        <img t-else=""
+                                                             src="/website_blog/static/src/img/blog_post_default_image.png"
+                                                             t-att-alt="blog.name"
+                                                             class="img-fluid w-100 blog-card-img"
+                                                             style="height: 240px; object-fit: cover; width: 100%; border-radius: 16px; transition: transform 0.3s ease;"/>
+                                                    </a>
+                                                </div>
+                                                <p class="latest-blog-meta mt-3 mb-1" style="font-family: 'Poppins', sans-serif !important; font-size: 13px; font-weight: 500; color: #374151 !important; text-align: left; font-style: normal !important;">
+                                                    <t t-esc="blog.sudo().author_id.name or 'Jerome Bell'"/>
+                                                    <span class="mx-1">|</span>
+                                                    <t t-esc="blog.tag_ids[0].name if blog.tag_ids else (blog.blog_id.name if blog.blog_id else 'Furniture')"/>
+                                                </p>
+                                                <h3 class="latest-blog-card-title mb-1" style="text-align: left; font-style: normal !important; margin: 0;">
+                                                    <a t-att-href="blog.website_url" class="text-decoration-none" style="font-family: 'Poppins', sans-serif !important; font-size: 19px; font-weight: 700 !important; color: #111827 !important; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: normal !important;">
+                                                        <t t-esc="blog.name"/>
+                                                    </a>
+                                                </h3>
+                                                <p class="latest-blog-card-teaser m-0" style="text-align: left; font-style: normal !important;">
+                                                    <a t-att-href="blog.website_url" class="text-decoration-none" style="font-family: 'Poppins', sans-serif !important; font-size: 14px; font-weight: 400; color: #6B7280 !important; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: normal !important;">
+                                                        <t t-esc="blog.subtitle or blog.teaser or ''"/>
+                                                    </a>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <!-- Fallback Demo Cards if no blog posts published -->
+                                    <div class="swiper-slide">
+                                        <div class="latest-blog-card mb-4" style="font-family: 'Poppins', sans-serif !important;">
+                                            <div class="blog-image-container overflow-hidden" style="border-radius: 16px;">
+                                                <a href="/blog" class="d-block">
+                                                    <img src="/theme_livelo/static/src/images/about-image.png" class="img-fluid w-100 blog-card-img" style="height: 240px; object-fit: cover; width: 100%; border-radius: 16px;"/>
+                                                </a>
+                                            </div>
+                                            <p class="latest-blog-meta mt-3 mb-1" style="font-family: 'Poppins', sans-serif !important; font-size: 13px; font-weight: 500; color: #374151 !important; text-align: left; font-style: normal !important;">
+                                                Jerome Bell <span class="mx-1">|</span> Furniture
+                                            </p>
+                                            <h3 class="latest-blog-card-title mb-1" style="text-align: left; font-style: normal !important; margin: 0;">
+                                                <a href="/blog" class="text-decoration-none" style="font-family: 'Poppins', sans-serif !important; font-size: 19px; font-weight: 700 !important; color: #111827 !important; line-height: 1.3;">
+                                                    Building gains into housing
+                                                </a>
+                                            </h3>
+                                            <p class="latest-blog-card-teaser m-0" style="text-align: left; font-style: normal !important;">
+                                                <a href="/blog" class="text-decoration-none" style="font-family: 'Poppins', sans-serif !important; font-size: 14px; font-weight: 400; color: #6B7280 !important; line-height: 1.4;">
+                                                    The average contract interest rate for 30-year fixed-rate mortgages...
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="swiper-slide">
+                                        <div class="latest-blog-card mb-4" style="font-family: 'Poppins', sans-serif !important;">
+                                            <div class="blog-image-container overflow-hidden" style="border-radius: 16px;">
+                                                <a href="/blog" class="d-block">
+                                                    <img src="/theme_livelo/static/src/images/buy-a-home-img.png" class="img-fluid w-100 blog-card-img" style="height: 240px; object-fit: cover; width: 100%; border-radius: 16px;"/>
+                                                </a>
+                                            </div>
+                                            <p class="latest-blog-meta mt-3 mb-1" style="font-family: 'Poppins', sans-serif !important; font-size: 13px; font-weight: 500; color: #374151 !important; text-align: left; font-style: normal !important;">
+                                                Jerome Bell <span class="mx-1">|</span> Furniture
+                                            </p>
+                                            <h3 class="latest-blog-card-title mb-1" style="text-align: left; font-style: normal !important; margin: 0;">
+                                                <a href="/blog" class="text-decoration-none" style="font-family: 'Poppins', sans-serif !important; font-size: 19px; font-weight: 700 !important; color: #111827 !important; line-height: 1.3;">
+                                                    Building gains into housing
+                                                </a>
+                                            </h3>
+                                            <p class="latest-blog-card-teaser m-0" style="text-align: left; font-style: normal !important;">
+                                                <a href="/blog" class="text-decoration-none" style="font-family: 'Poppins', sans-serif !important; font-size: 14px; font-weight: 400; color: #6B7280 !important; line-height: 1.4;">
+                                                    The average contract interest rate for 30-year fixed-rate mortgages...
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="swiper-slide">
+                                        <div class="latest-blog-card mb-4" style="font-family: 'Poppins', sans-serif !important;">
+                                            <div class="blog-image-container overflow-hidden" style="border-radius: 16px;">
+                                                <a href="/blog" class="d-block">
+                                                    <img src="/theme_livelo/static/src/images/banner-bg-image.png" class="img-fluid w-100 blog-card-img" style="height: 240px; object-fit: cover; width: 100%; border-radius: 16px;"/>
+                                                </a>
+                                            </div>
+                                            <p class="latest-blog-meta mt-3 mb-1" style="font-family: 'Poppins', sans-serif !important; font-size: 13px; font-weight: 500; color: #374151 !important; text-align: left; font-style: normal !important;">
+                                                Jerome Bell <span class="mx-1">|</span> Furniture
+                                            </p>
+                                            <h3 class="latest-blog-card-title mb-1" style="text-align: left; font-style: normal !important; margin: 0;">
+                                                <a href="/blog" class="text-decoration-none" style="font-family: 'Poppins', sans-serif !important; font-size: 19px; font-weight: 700 !important; color: #111827 !important; line-height: 1.3;">
+                                                    Building gains into housing
+                                                </a>
+                                            </h3>
+                                            <p class="latest-blog-card-teaser m-0" style="text-align: left; font-style: normal !important;">
+                                                <a href="/blog" class="text-decoration-none" style="font-family: 'Poppins', sans-serif !important; font-size: 14px; font-weight: 400; color: #6B7280 !important; line-height: 1.4;">
+                                                    The average contract interest rate for 30-year fixed-rate mortgages...
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="swiper-pagination">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+    <!-- Backward compatibility view alias for database views referencing old snippet ID -->
+    <template id="blogs_snippet" name="Blogs">
+        <t t-call="theme_livelo.latest_blog_snippet"/>
+    </template>
+    <!-- Override Odoo's default website_blog.s_blog_posts snippet template -->
+    <template id="s_blog_posts_override" inherit_id="website_blog.s_blog_posts" priority="99">
+        <xpath expr="//t[@t-call='website.s_dynamic_snippet_template']" position="replace">
+            <t t-call="theme_livelo.latest_blog_snippet"/>
+        </xpath>
+    </template>
+    <!-- Replace Odoo's default Blog Posts snippet in website building block sidebar -->
+    <template id="replace_default_blog_snippet_building_block" inherit_id="website_blog.website_blog" priority="99">
+        <xpath expr="//t[@t-snippet='website_blog.s_blog_posts']" position="replace">
+            <t t-snippet="theme_livelo.latest_blog_snippet" string="Blog Posts" group="blogs"/>
+        </xpath>
+    </template>
+</odoo>
