@@ -73,7 +73,7 @@
             'dynamic_accounts_report/static/src/js/tax_report.js',
         ],
     },
-    'images': ['static/description/banner.gif'],
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
