@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -24,7 +24,7 @@
     'version': '20.0.1.0.0',
     'category': 'Accounting',
     'live_test_url': 'https://kit.easyinstance.com/web/login?redirect=/odoo/accounting',
-    'summary': """Odoo20 Accounting, Accounting Kit, Accounting for community, odoo accounting, accounting reports for commumity, community accounting, odoo20 account reports, odoo20, accounting""",
+    'summary': """Odoo20 Accounting, Accounting Kit, Accounting for community, odoo accounting, accounting reports for community, community accounting, odoo20 account reports, odoo20, accounting""",
     'description': """ 
       Full Accounting Kit for Odoo 20 Community
       =========================================
