@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dynamic Products Carousel
+         Fetches the latest published products from the database. -->
+    <template id="s_products_carousel" name="Lantero Products Carousel">
+        <!-- Fetch Lantero jewelry categories, then products in those categories -->
+        <t t-set="lantero_categ_names" t-value="['Rings', 'Necklaces', 'Earrings', 'Bracelets']"/>
+        <t t-set="lantero_categs"
+           t-value="request.env['product.public.category'].sudo().search(
+               [('name', 'in', lantero_categ_names)])"/>
+        <t t-set="carousel_products"
+           t-value="request.env['product.template'].sudo().search(
+               [('is_published', '=', True),
+                ('public_categ_ids', 'in', lantero_categs.ids)],
+               order='create_date desc', limit=8)
+               if lantero_categs else
+               request.env['product.template'].sudo().search(
+               [('is_published', '=', True)],
+               order='create_date desc', limit=8)"/>
+        <section class="products-section bg-white s_products_carousel oe_website_sale"
+                 data-snippet="theme_lantero.s_products_carousel"
+                 data-name="Products Carousel">
+            <div class="container">
+                <div class="products-header">
+                    <h2 class="products-title o_editable">New arrivals</h2>
+                    <div class="slider-nav">
+                        <button class="slider-btn" data-slider-prev="1"
+                                aria-label="Previous">
+                            <i class="bi bi-chevron-left"/>
+                        </button>
+                        <button class="slider-btn" data-slider-next="1"
+                                aria-label="Next">
+                            <i class="bi bi-chevron-right"/>
+                        </button>
+                    </div>
+                </div>
+                <div class="products-slider" data-slider-track="1">
+                    <t t-if="carousel_products">
+                        <t t-foreach="carousel_products" t-as="product">
+                            <t t-set="product_variant_id"
+                               t-value="product._get_first_possible_variant_id()"/>
+                            <form action="/shop/cart/update" method="post"
+                                  class="product-card js_product text-decoration-none">
+                                <input type="hidden" name="csrf_token"
+                                       t-att-value="request.csrf_token()"
+                                       t-nocache="The csrf token must always be up to date."/>
+                                <input type="hidden" class="product_template_id"
+                                       name="product_template_id"
+                                       t-att-value="product.id"/>
+                                <input t-if="product_variant_id" type="hidden"
+                                       class="product_id" name="product_id"
+                                       t-att-value="product_variant_id"/>
+                                <div class="product-img-wrapper">
+                                    <t t-if="product.website_ribbon_id">
+                                        <span class="product-badge"
+                                              t-esc="product.website_ribbon_id.name"/>
+                                    </t>
+                                    <t t-elif="product.compare_list_price and product.compare_list_price &gt; product.list_price">
+                                        <span class="product-badge bg-danger">Sale</span>
+                                    </t>
+                                    <a t-att-href="product.website_url"
+                                       class="product-img-link"
+                                       aria-label="View product">
+                                        <img t-attf-src="/web/image/product.template/#{product.id}/image_512"
+                                             t-att-alt="product.name"
+                                             class="img img-fluid"
+                                             loading="lazy"
+                                             style="width:100%;height:100%;object-fit:cover;"/>
+                                    </a>
+                                    <t t-nocache="The wishlist state depends on the current visitor."
+                                       t-nocache-product_tmpl_id="product.id"
+                                       t-nocache-product_variant_id="product_variant_id">
+                                        <t t-set="in_wish" t-value="False"/>
+                                        <button t-if="product_variant_id"
+                                                type="button"
+                                                role="button"
+                                                class="btn btn-outline-primary bg-white o_add_wishlist product-wishlist-btn"
+                                                t-att-disabled="in_wish or None"
+                                                t-att-data-product-template-id="product_tmpl_id"
+                                                t-att-data-product-product-id="product_variant_id"
+                                                data-action="o_wishlist"
+                                                title="Add to Wishlist"
+                                                aria-label="Add to Wishlist">
+                                            <span class="fa fa-heart" role="img"
+                                                  aria-label="Add to wishlist"/>
+                                        </button>
+                                    </t>
+                                </div>
+                                <h4 class="product-title">
+                                    <a t-att-href="product.website_url"
+                                       class="text-decoration-none text-reset"
+                                       t-esc="product.name"/>
+                                </h4>
+                                <span class="product-price">
+                                    <t t-if="product.compare_list_price and product.compare_list_price &gt; product.list_price">
+                                        <del class="text-muted me-2">
+                                            <t t-esc="product.currency_id.symbol"/><t t-esc="'%.2f' % product.compare_list_price"/>
+                                        </del>
+                                    </t>
+                                    <t t-esc="product.currency_id.symbol"/><t t-esc="'%.2f' % product.list_price"/>
+                                </span>
+                            </form>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <div class="w-100 text-center py-5">
+                            <p class="text-muted">No products published
+                            yet. Add products in the Shop to see them
+                            here.</p>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </template>
+    <!-- Products Carousel Snippet -->
+    <template id="s_products_carousel_snippet"
+              inherit_id="website.snippets" priority="16">
+        <xpath expr="//div[@id='snippet_lantero']/div[hasclass('o_panel_body')]"
+               position="inside">
+            <t t-snippet="theme_lantero.s_products_carousel"
+               string="Products Carousel"
+               t-thumbnail="/theme_lantero/static/src/img/product_1_1777448174198.png"
+               group="lantero_section"/>
+        </xpath>
+    </template>
+</odoo>
