@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <!--    Dashboard template-->
+    <t t-name="odoo_queue_manager.QueueDashboard" owl="1">
+        <div t-ref="root"
+             style="padding:25px;
+                    max-width:1400px;
+                    margin:auto;
+                    background:#f8f9fa;
+                    height:calc(100vh - 80px);
+                    overflow-y:auto;
+                    overflow-x:hidden;
+                    font-family:Inter,Arial,sans-serif;">
+            <!-- Title -->
+            <div style="font-size:26px;
+                    font-weight:600;
+                    margin-bottom:25px;
+                    color:#212529;">
+                Queue Management Dashboard
+            </div>
+            <!-- KPI Grid -->
+            <div style="display:grid;
+                    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+                    gap:20px;
+                    margin-bottom:30px;">
+                <!-- Total -->
+                <div data-id="1"
+                     t-on-click="onclick_tiles"
+                     style="background:#fff;
+                        border-radius:12px;
+                        padding:20px;
+                        box-shadow:0 2px 6px rgba(0,0,0,.08);
+                        cursor:pointer;
+                        border-top:4px solid #0d6efd;">
+                    <div style="font-size:14px;
+                            color:#6c757d;
+                            margin-bottom:6px;">
+                        Total Tokens
+                    </div>
+                    <div style="font-size:30px;
+                            font-weight:600;
+                            color:#212529;">
+                        <t t-out="state.total_token.total_queue_count"/>
+                    </div>
+                </div>
+                <!-- Served -->
+                <div data-id="2"
+                     t-on-click="onclick_tiles"
+                     style="background:#fff;
+                        border-radius:12px;
+                        padding:20px;
+                        box-shadow:0 2px 6px rgba(0,0,0,.08);
+                        cursor:pointer;
+                        border-top:4px solid #198754;">
+                    <div style="font-size:14px;
+                            color:#6c757d;
+                            margin-bottom:6px;">
+                        Served Tokens
+                    </div>
+                    <div style="font-size:30px;
+                            font-weight:600;
+                            color:#212529;">
+                        <t t-out="state.total_token.total_queue_served"/>
+                    </div>
+                </div>
+                <!-- Left -->
+                <div data-id="3"
+                     t-on-click="onclick_tiles"
+                     style="background:#fff;
+                        border-radius:12px;
+                        padding:20px;
+                        box-shadow:0 2px 6px rgba(0,0,0,.08);
+                        cursor:pointer;
+                        border-top:4px solid #fd7e14;">
+                    <div style="font-size:14px;
+                            color:#6c757d;
+                            margin-bottom:6px;">
+                        Tokens Left
+                    </div>
+                    <div style="font-size:30px;
+                            font-weight:600;
+                            color:#212529;">
+                        <t t-out="state.total_token.total_queue_left"/>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;
+            gap:10px;
+            margin-bottom:20px;
+            align-items:center;">
+                <select class="btn btn-primary" style="
+                    background-color: #ffffff;
+                    color: #212529;
+                    border: 1px solid #ced4da;
+                " t-on-change="onchange_stock_moves_selection">
+                    <option value="today">Today</option>
+                    <option value="10" selected="selected">Last 10 Days</option>
+                    <option value="20">Last 20 Days</option>
+                    <option value="30">Last 1 Month</option>
+                    <option value="custom">Custom</option>=
+                </select>
+                <input type="date"
+                       t-ref="fromDate"
+                       t-on-change="onchange_custom_date"
+                       style="padding:6px 10px;
+                  border:1px solid #ced4da;
+                  border-radius:6px;"/>
+                <input type="date"
+                       t-ref="toDate"
+                       t-on-change="onchange_custom_date"
+                       style="padding:6px 10px;
+                  border:1px solid #ced4da;
+                  border-radius:6px;"/>
+
+            </div>
+            <!-- Chart Section -->
+            <div style="background:#fff;
+                    border-radius:12px;
+                    padding:20px 25px;
+                    box-shadow:0 2px 6px rgba(0,0,0,.08);
+                    margin-bottom:30px;">
+                <div style="font-size:18px;
+                        font-weight:600;
+                        margin-bottom:15px;
+                        color:#212529;">
+                    Token Distribution
+                </div>
+                <div style="height:350px;
+                        width:100%;">
+                    <canvas id="stock_moves"
+                            style="max-width:100%;"/>
+                </div>
+            </div>
+            <!-- Table Section -->
+            <div style="background:#fff;
+                    border-radius:12px;
+                    padding:20px 25px;
+                    box-shadow:0 2px 6px rgba(0,0,0,.08);">
+                <div style="font-size:18px;
+                        font-weight:600;
+                        margin-bottom:15px;
+                        color:#212529;">
+                    Department Performance
+                </div>
+                <table style="width:100%;
+                          border-collapse:collapse;
+                          margin-top:15px;">
+                    <thead>
+                        <tr style="background:#f1f3f5;">
+                            <th style="padding:12px;
+                                   border-bottom:2px solid #dee2e6;
+                                   text-align:center;">
+                                Department
+                            </th>
+                            <th style="padding:12px;
+                                   border-bottom:2px solid #dee2e6;
+                                   text-align:center;">
+                                Served
+                            </th>
+                            <th style="padding:12px;
+                                   border-bottom:2px solid #dee2e6;
+                                   text-align:center;">
+                                Cancelled
+                            </th>
+                            <th style="padding:12px;
+                                   border-bottom:2px solid #dee2e6;
+                                   text-align:center;">
+                                Left
+                            </th>
+                            <th style="padding:12px;
+                                   border-bottom:2px solid #dee2e6;
+                                   text-align:center;">
+                                Total
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="state.token_data"
+                           t-as="token"
+                           t-key="token_index">
+                            <tr>
+                                <td style="padding:11px;
+                                       text-align:center;
+                                       border-bottom:1px solid #dee2e6;">
+                                    <t t-out="token['department']"/>
+                                </td>
+                                <td style="padding:11px;
+                                       text-align:center;
+                                       border-bottom:1px solid #dee2e6;">
+                                    <t t-esc="token['done']"/>
+                                </td>
+                                <td style="padding:11px;
+                                       text-align:center;
+                                       border-bottom:1px solid #dee2e6;">
+                                    <t t-esc="token['cancelled']"/>
+                                </td>
+                                <td style="padding:11px;
+                                       text-align:center;
+                                       border-bottom:1px solid #dee2e6;">
+                                    <t t-esc="token['draft']"/>
+                                </td>
+                                <td style="padding:11px;
+                                       text-align:center;
+                                       border-bottom:1px solid #dee2e6;">
+                                    <t t-esc="token['count']"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>
