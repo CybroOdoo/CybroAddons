@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <!--  Inherit navbar  -->
+    <t t-inherit="web.NavBar" t-inherit-mode="extension">
+        <xpath expr="//nav[hasclass('o_main_navbar')]" position="replace">
+            <nav class="o_main_navbar d-flex justify-content-between"
+                 t-ref="this.mainNavBar"
+                 t-on-dropdown-item-selected="this.onNavBarDropdownItemSelection"
+                 data-command-category="navbar">
+                <div class="d-flex align-items-center">
+                    <div class="top_heading" t-ref="this.topHeading">
+                        <!-- Apps Menu -->
+                        <div style="padding: 6px;" class="d-flex align-items-center">
+                            <t t-call="web.NavBar.AppsMenu" apps="this.menuService.getApps()"/>
+                        </div>
+                        <!-- App Brand -->
+                        <DropdownItem
+                                t-if="this.currentApp"
+                                t-out="this.currentApp.name"
+                                class="'o_menu_brand d-none d-md-block'"
+                                onSelected="() => this.onNavBarDropdownItemSelection(this.currentApp)"
+                                attrs="{ href: this.getMenuItemHref(this.currentApp), 'data-menu-xmlid': this.currentApp.xmlid, 'data-section': this.currentApp.id }"
+                        />
+                    </div>
+                    <!-- Current App Sections -->
+                    <div class="d-none d-md-block">
+                        <t t-if="this.currentAppSections.length" t-call="web.NavBar.SectionsMenu" sections="this.currentAppSections"/>
+                    </div>
+                    <div class="d-xs-block d-sm-block  d-md-none">
+                        <t t-call="web.NavBar.SectionsMenu.MoreDropdown" sections="this.currentAppSections"/>
+                    </div>
+                </div>
+                <!-- Systray -->
+                <div class="o_menu_systray d-flex" role="menu">
+                    <t t-foreach="this.systrayItems" t-as="item" t-key="item.key or item_index">
+                        <ErrorHandler onError="error => this.handleItemError(error, item)">
+                            <t t-component="item.Component"
+                               t-props="item.props"/>
+                        </ErrorHandler>
+                    </t>
+                </div>
+            </nav>
+            <div class="sidebar_panel" id="sidebar_panel" t-ref="this.sidebarPanel">
+                <div class="sidebar">
+                    <div class="sidebar_close">
+                        <a id="closeSidebar" style="cursor: pointer;" t-on-click="() => this.closeSidebar()">
+                            <img src="/code_backend_theme/static/src/img/icons/close.png"/>
+                        </a>
+                    </div>
+                    <div class="sidebar_logo">
+                        <img src="/code_backend_theme/static/src/img/code_logo.png"
+                             class="logo_img"/>
+                    </div>
+                    <h6 class="sidebar_head">MENU</h6>
+                    <ul class="sidebar_menu" t-ref="this.sidebarLinks">
+                        <t t-foreach="this.menuService.getApps()" t-as="app"
+                           t-key="app.id or app_index">
+                            <t t-log="app"/>
+                            <li data-toggle="tooltip" data-placement="right"
+                                t-att-title="app.name">
+                                <a role="menuitem"
+                                   t-attf-href="#menu_id={{app.id}}"
+                                   t-att-data-id="app.id"
+                                   attrs="{ href: this.getMenuItemHref(app), 'data-menu-xmlid': app.xmlid, 'data-section': app.id }"
+                                   class="nav-link"
+                                   t-on-click="() => this.onNavBarDropdownItemSelection(app)">
+                                    <img style="height: 3em;"
+                                         t-if="app.webIconData"
+                                         class="o_app_icon me-2"
+                                         t-attf-src="{{app.webIconData}}"/>
+                                    <span class="sidebar_app_name">
+                                        <t t-out="app.name"/>
+                                    </span>
+                                </a>
+                            </li>
+                        </t>
+                    </ul>
+                </div>
+            </div>
+        </xpath>
+    </t>
+    <!--  Apps Menu  -->
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension">
+        <xpath expr="/*" position="replace">
+            <div class="o_navbar_apps_menu">
+                <a id="openSidebar" style="display: block; cursor: pointer;" t-ref="this.openElement" t-on-click="() => this.openSidebar()">
+                    <i class="fa fa-bars oi" data-icon="menu" style="font-size: 1.2rem; color: #2a3042;"/>
+                </a>
+                <a id="closeSidebar" style="display: none; cursor: pointer;" t-ref="this.closeElement" t-on-click="() => this.closeSidebar()">
+                    <i class="fa fa-bars oi" data-icon="menu" style="font-size: 1.2rem; color: #2a3042;"/>
+                </a>
+            </div>
+        </xpath>
+    </t>
+    <!--  User Menu  -->
+    <t t-inherit="web.UserMenu" t-inherit-mode="extension">
+        <xpath expr="//small[hasclass('oe_topbar_name')]" position="replace">
+            <div class="oe_topbar_name"/>
+        </xpath>
+    </t>
+</templates>
