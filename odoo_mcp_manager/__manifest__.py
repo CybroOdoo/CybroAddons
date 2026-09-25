@@ -21,7 +21,7 @@
 ##############################################################################
 {
     'name': 'Odoo MCP Server',
-    'version': '19.0.2.0.0',
+    'version': '19.0.2.0.1',
     'category': 'Productivity/AI',
     'summary': 'MCP Server, MCP Connector, Odoo MCP, Odoo Claude Connector, Claude Odoo, MCP Odoo, AI Odoo Connector, AI Odoo',
     'description': """
@@ -40,7 +40,7 @@ Key Features:
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'mail', 'web' ,'cybrosys_support_client'],
+    'depends': ['base', 'mail', 'web', 'cybrosys_support_client'],
     'data': [
         'security/res_groups.xml',
         'security/ir.model.access.csv',
@@ -84,5 +84,5 @@ Key Features:
     'license': 'LGPL-3',
     'installable': True,
     'application': True,
-    'auto_install': False,
+
 }

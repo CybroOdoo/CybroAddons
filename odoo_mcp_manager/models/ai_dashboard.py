@@ -1,25 +1,4 @@
 # -*- coding: utf-8 -*-
-#############################################################################
-#
-#    Cybrosys Technologies Pvt. Ltd.
-#
-#    Copyright (C) 2026-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
-#    Author: Cybrosys Techno Solutions (<https://www.cybrosys.com>)
-#
-#    This program is free software: you can modify it under the terms of the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
-#
-#    This program is distributed in the hope that it will be useful, but
-#    WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
-#
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-#############################################################################
-
 import logging
 from datetime import timedelta
 from odoo import _, api, fields, models
@@ -63,7 +42,7 @@ class AiDashboard(models.Model):
                 [('active', '=', True)]
             )
             rec.custom_tool_count = self.env['ai.tool'].search_count(
-                [('active', '=', True), ('implementation', '=', 'builtin')]
+                [('active', '=', True), ('implementation', '=', 'python')]
             )
             rec.session_count = self.env['ai.session'].search_count(
                 [('state', '=', 'initialized')]
@@ -164,7 +143,7 @@ class AiDashboard(models.Model):
         all_tools = self.env['ai.tool'].search([])
         enabled_tools = all_tools.filtered(lambda t: t.active)
         custom_tools = all_tools.filtered(
-            lambda t: t.active and t.implementation == 'builtin'
+            lambda t: t.active and t.implementation == 'python'
         )
 
         # ── Log stats ────────────────────────────────────────────────────
