@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_cs_cart_config_list" model="ir.ui.view">
+        <field name="name">cs.cart.config.list</field>
+        <field name="model">cs.cart.config</field>
+        <field name="arch" type="xml">
+            <list string="CsCart Configuration">
+                <field name="name"/>
+                <field name="store_url"/>
+                <field name="connected_status" widget="badge"
+                       decoration-success="connected_status == 'connected'"
+                       decoration-danger="connected_status == 'disconnected'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_cs_cart_config_form" model="ir.ui.view">
+        <field name="name">cs.cart.config.form</field>
+        <field name="model">cs.cart.config</field>
+        <field name="arch" type="xml">
+            <form string="CsCart Settings">
+                <header>
+                    <button name="action_test_connection"
+                            type="object"
+                            string="Test Connection"
+                            class="btn-primary"
+                            invisible="connected_status != 'disconnected'"/>
+                    <button name="action_disconnect"
+                            type="object"
+                            string="Disconnect"
+                            class="btn-secondary"
+                            invisible="connected_status != 'connected'"/>
+                    <field name="connected_status" widget="statusbar"/>
+                </header>
+                    <sheet>
+                        <field name="last_sync_status" invisible="1"/>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="store_url"/>
+                            </group>
+                            <group>
+                                <field name="email"/>
+                                <field name="api_key" password="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Synchronization Settings">
+                                <group>
+                                    <group string="Entities to Synchronize">
+                                        <field name="sync_categories" />
+                                        <field name="sync_attributes" />
+                                        <field name="sync_products" />
+                                        <field name="sync_customers" />
+                                        <field name="sync_orders" />
+                                    </group>
+                                </group>
+                                <div class="o_row mt-3">
+                                    <button name="action_import_selected"
+                                            type="object"
+                                            string="Import Selected"
+                                            class="btn btn-primary me-2"/>
+                                    <button name="action_export_selected"
+                                            type="object"
+                                            string="Export Selected"
+                                            class="btn btn-secondary"/>
+                                </div>
+                            </page>
+                        </notebook>
+                    </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_cs_cart_config" model="ir.actions.act_window">
+        <field name="name">CsCart Instances</field>
+        <field name="res_model">cs.cart.config</field>
+        <field name="view_mode">list,form</field>
+<!--        <field name="context">{'reset_sync_flags_on_open': True}</field>-->
+    </record>
+
+</odoo>
