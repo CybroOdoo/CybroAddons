@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Google Search Systray",
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': "Extra Tools",
     'summary': """Manage to browse anything in Odoo itself""",
     'description': """This module will helps to browse anything in 
