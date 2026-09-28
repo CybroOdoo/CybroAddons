@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.account.anomaly</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="25"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Anomaly Detection" string="Anomaly Detection" name="account_anomaly_detector" groups="account_anomaly_detector.group_anomaly_manager">
+                    <block title="Scan Settings" name="anomaly_scan_settings">
+                        <div class="row mt16 o_settings_container">
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane">
+                                    <field name="anomaly_auto_scan_enabled"/>
+                                </div>
+                                <div class="o_setting_right_pane">
+                                    <label for="anomaly_auto_scan_enabled"/>
+                                    <div class="text-muted">
+                                        Enable scheduled recurring anomaly scans
+                                    </div>
+                                    <div class="content-group" invisible="not anomaly_auto_scan_enabled">
+                                        <div class="mt16">
+                                            <label for="anomaly_scan_frequency" class="o_light_label"/>
+                                            <field name="anomaly_scan_frequency" class="oe_inline" required="anomaly_auto_scan_enabled"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane">
+                                    <field name="anomaly_scan_on_post"/>
+                                </div>
+                                <div class="o_setting_right_pane">
+                                    <label for="anomaly_scan_on_post"/>
+                                    <div class="text-muted">
+                                        Automatically scan journal entries right when they are posted
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </block>
+
+                    <block title="Detection Algorithms" name="anomaly_algorithm_settings">
+                        <div class="row mt16 o_settings_container">
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane">
+                                    <field name="anomaly_enable_benfords_law"/>
+                                </div>
+                                <div class="o_setting_right_pane">
+                                    <label for="anomaly_enable_benfords_law"/>
+                                    <div class="text-muted">
+                                        Enable Benford&apos;s Law analysis against vendor balances
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <label for="anomaly_zscore_threshold"/>
+                                    <div class="text-muted">
+                                        Z-Score Threshold for extreme outlier detection
+                                    </div>
+                                    <field name="anomaly_zscore_threshold"/>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <label for="anomaly_duplicate_window_days"/>
+                                    <div class="text-muted">
+                                        Number of days to check backwards for duplicate entries
+                                    </div>
+                                    <field name="anomaly_duplicate_window_days"/>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <div class="text-muted">
+                                        Days window for rapid transaction velocity alerts
+                                    </div>
+                                    <div class="content-group border-start ps-3 mt-2">
+                                        <div><label for="anomaly_velocity_window_days" class="o_light_label me-2"/> <field name="anomaly_velocity_window_days" class="oe_inline"/> days</div>
+                                        <div><label for="anomaly_velocity_max_count" class="o_light_label me-2"/> <field name="anomaly_velocity_max_count" class="oe_inline"/> txns max</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </block>
+
+                    <block title="Notifications" name="anomaly_notification_settings">
+                        <div class="row mt16 o_settings_container">
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Notify on Alert Levels</span>
+                                    <div class="text-muted">Choose which risk levels trigger notifications</div>
+                                    <div class="content-group mt-2">
+                                        <div><field name="anomaly_notify_critical" class="oe_inline"/> <label for="anomaly_notify_critical" class="o_light_label"/></div>
+                                        <div><field name="anomaly_notify_high" class="oe_inline"/> <label for="anomaly_notify_high" class="o_light_label"/></div>
+                                        <div><field name="anomaly_notify_medium" class="oe_inline"/> <label for="anomaly_notify_medium" class="o_light_label"/></div>
+                                        <div><field name="anomaly_notify_low" class="oe_inline"/> <label for="anomaly_notify_low" class="o_light_label"/></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane">
+                                    <field name="anomaly_notify_auditor_group"/>
+                                </div>
+                                <div class="o_setting_right_pane">
+                                    <label for="anomaly_notify_auditor_group"/>
+                                    <div class="text-muted">
+                                        Notify all users in the active Auditor group
+                                    </div>
+                                    <div class="mt8">
+                                        <label for="anomaly_notification_user_ids" class="o_light_label"/>
+                                        <field name="anomaly_notification_user_ids" widget="many2many_tags"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </block>
+
+                    <block title="Exclusions" name="anomaly_exclusion_settings">
+                        <div class="row mt16 o_settings_container">
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <label for="anomaly_excluded_account_ids"/>
+                                    <div class="text-muted">Charts of accounts to ignore</div>
+                                    <field name="anomaly_excluded_account_ids" widget="many2many_tags" class="mt-2 w-100"/>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <label for="anomaly_excluded_partner_ids"/>
+                                    <div class="text-muted">Partners and Vendors to ignore</div>
+                                    <field name="anomaly_excluded_partner_ids" widget="many2many_tags" class="mt-2 w-100"/>
+                                </div>
+                            </div>
+                        </div>
+                    </block>
+
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_anomaly_config_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'account_anomaly_detector', 'bin_size': False}</field>
+    </record>
+
+</odoo>

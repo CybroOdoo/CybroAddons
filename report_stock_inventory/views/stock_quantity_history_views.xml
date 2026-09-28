@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Inherited views of stock.quant and stock.quantity.history for inventory stock report -->
+    <!-- Tree view inheritance for stock.quant list header button -->
+    <record model="ir.ui.view" id="inventory_report_quant_list_view">
+        <field name="name">stock.quant.inventory.report.button</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_simple"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <header>
+                    <button name="%(stock.action_inventory_at_date)d"
+                            string="Inventory at Date"
+                            type="action"
+                            class="btn-primary ms-1"
+                            invisible="context.get('no_at_date')"
+                            display="always"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="inventory_report_quant_editable_list_view">
+        <field name="name">stock.quant.inventory.report.button.editable</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_editable"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_stock_quant_relocate']" position="after">
+                <button name="%(stock.action_inventory_at_date)d"
+                        string="Inventory at Date"
+                        type="action"
+                        class="btn-primary ms-1"
+                        invisible="context.get('no_at_date')"
+                        display="always"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- View customization for the 'stock.quantity.history' model.-->
+    <record model="ir.ui.view" id="inventory_report_view">
+        <field name="name">stock.quantity.history.inherit</field>
+        <field name="model">stock.quantity.history</field>
+        <field name="inherit_id" ref="stock.view_stock_quantity_history"/>
+        <field name="arch" type="xml">
+            <field name="inventory_datetime" position="after">
+                <field name="location" widget="many2many_tags"/>
+                <field name="category" widget="many2many_tags"/>
+            </field>
+            <xpath expr="//button[@name='open_at_date']" position="after">
+                <button string="PDF" name="action_print_pdf" type="object"
+                        default_focus="1" class="btn-primary"/>
+                <button string="Excel" name="action_xlsx_report" type="object"
+                        default_focus="1" class="btn-primary"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

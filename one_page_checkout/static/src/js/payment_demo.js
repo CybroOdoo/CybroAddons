@@ -1,0 +1,13 @@
+/** @odoo-module **/
+
+import publicWidget from "@web/legacy/js/public/public_widget";
+
+
+publicWidget.registry.determine_checkout = publicWidget.Widget.extend({
+    selector: '#wrap',
+    willStart: function () {
+        var self = this;
+                    this.$el.find('#o_demo_express_checkout_container_6').css('display', 'none')
+        return this._super(...arguments);
+    },
+});

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. Extend Portal Home Dashboard with Information Card -->
+    <template id="portal_my_home_info" inherit_id="portal.portal_my_home" priority="100">
+        <xpath expr="//div[@id='portal_common_category']" position="inside">
+            <t t-if="request.env.user.shared_article_count &gt; 0">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="icon" t-value="'/info_hub/static/src/img/Books.svg'"/>
+                    <t t-set="title">Information</t>
+                    <t t-set="text">Find all articles shared with you</t>
+                    <t t-set="url" t-value="'/info/shared'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- 4. Portal Standalone OWL Web Client View-->
+    <template id="portal_webclient_view" name="Information Portal Webclient View">
+        <t t-call="web.layout">
+            <t t-set="head_info_portal_webclient_view">
+                <script type="text/javascript">
+                    odoo.__session_info__ = <t t-out="json.dumps(session_info)"/>;
+                    odoo.loadMenusPromise = Promise.resolve();
+                </script>
+                <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+                <base target="_parent"/>
+                <t t-call-assets="info_hub.webclient"/>
+                <t t-call="web.conditional_assets_tests"/>
+            </t>
+            <t t-set="head" t-value="head_info_portal_webclient_view + (head or '')"/>
+            <t t-set="body_classname" t-value="'o_web_client o_info_portal_webclient_view'"/>
+        </t>
+    </template>
+</odoo>

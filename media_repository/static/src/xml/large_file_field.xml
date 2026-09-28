@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Large File Binary Field Template
+     Handles file upload, download, clear, and preview for media repository assets. -->
+<templates xml:space="preserve">
+    <t t-name="media_repository.LargeFileBinaryField">
+        <t t-if="!props.readonly">
+            <t t-if="hasFile">
+                <div class="d-flex align-items-center mb-2 gap-2">
+                    <span class="text-truncate" t-esc="fileName"/>
+                    <button class="btn btn-sm btn-link text-danger o_clear_button p-0 m-0" t-on-click="onFileRemove">
+                        <i class="fa fa-trash-o"/>
+                    </button>
+                    <button class="btn btn-sm btn-link text-primary p-0 m-0" t-on-click="onFileDownload" t-if="props.record.resId and !props.record.dirty">
+                        <i class="fa fa-download"/>
+                    </button>
+                </div>
+            </t>
+            <t t-else="">
+                <t t-if="props.record.resId">
+                    <FileInput
+                        acceptedFileExtensions="'*'"
+                        route="uploadRoute"
+                        resModel="props.record.resModel"
+                        resId="props.record.resId"
+                        onUpload.bind="onFileUploaded"
+                    >
+                        <button class="btn btn-primary">
+                            <i class="fa fa-upload"/> Upload your file
+                        </button>
+                    </FileInput>
+                </t>
+                <t t-else="">
+                    <button class="btn btn-primary" disabled="disabled">
+                        <i class="fa fa-upload"/> Upload your file
+                    </button>
+                    <div class="text-muted small mt-1">
+                        Please save the record first before uploading large files.
+                    </div>
+                </t>
+            </t>
+        </t>
+        <t t-elif="props.record.resId and hasFile">
+            <a class="o_form_uri" href="#" t-on-click.prevent="onFileDownload">
+                <span class="fa fa-download me-2" />
+                <t t-if="fileName" t-esc="fileName" />
+            </a>
+        </t>
+    </t>
+</templates>

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- This template defines a custom dashboard for Venue Booking Management.
+The dashboard displays various statistics and graphs related to venue bookings,
+amounts, invoices, and customer analysis. It also includes tables showing
+upcoming events, top customers, and top venues. -->
+<templates>
+    <t t-name="CustomDashBoard">
+        <!-- This template defines a custom dashboard. -->
+        <div class="oh_dashboards" style="margin-top: 20px;">
+            <div class="container-fluid o_pj_dashboard">
+                <t t-call="DashboardVenueBooking"/>
+            </div>
+        </div>
+    </t>
+    <t t-name="DashboardVenueBooking">
+        <div class="scrollbar" id="style-1">
+            <div class="col-xs-12">
+                <div class="row" style="margin:0px;">
+                    <h2 class="section-header"
+                        style="font-size: 2em; color: #7d7eaf;">Venue Booking Management Dashboard</h2>
+                    <div class="select" id="top_product_button" style="margin-bottom: 1%;">
+                        <select name="filter" t-ref="stock_selection"
+                                style="width: 283px; height: 30px; border-color:#7d7eaf; background-color: #fff; border-radius: 10px;"
+                                t-on-change="on_change_booking_values">
+                            <option value="day">Day</option>
+                            <option value="month" selected="selected">Month</option>
+                            <option value="week">Week</option>
+                            <option value="year">Year</option>
+                        </select>
+                    </div>
+                    <div class="crm_dash_cards row">
+                        <div class="col-sm-12 col-md-3">
+                            <div class="dashboard-card card-shadow my_lead">
+                                <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                                    <i class="fa fa-line-chart text-mauve"/>
+                                </div>
+                                <div class="dashboard-card__details">
+                                    <h3>
+                                        <div t-ref="total_booking" class="total">
+                                            <t t-esc="props.booking_count"/>
+                                        </div>
+                                        <span>
+                                            <div t-ref="booking_this_year" id="booking_this_year"/>
+                                            <div t-ref="booking_this_day" id="booking_this_day"/>
+                                            <div t-ref="booking_this_month" id="booking_this_month"/>
+                                            <div t-ref="booking_this_week" id="booking_this_week"/>
+                                        </span>
+                                    </h3>
+                                    <h4>Total Booking</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 col-md-3">
+                            <div class="dashboard-card card-shadow my_lead">
+                                <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                                    <i class="fa fa-map-marker text-mauve"/>
+                                </div>
+                                <div class="dashboard-card__details">
+                                    <h3>
+                                        <div t-ref="total_venue" class="total">
+                                            <t t-esc="props.total_venue"/>
+                                        </div>
+                                        <span>
+                                            <div t-ref="venue_this_year" id="venue_this_year"/>
+                                            <div t-ref="venue_this_day" id="venue_this_day"/>
+                                            <div t-ref="venue_this_month" id="venue_this_month"/>
+                                            <div t-ref="venue_this_week" id="venue_this_week"/>
+                                        </span>
+                                    </h3>
+                                    <h4>Total Venue</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 col-md-3">
+                            <div class="dashboard-card card-shadow exp_revenue">
+                                <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                                    <i class="fa fa-usd text-mauve"/>
+                                </div>
+                                <div class="dashboard-card__details">
+                                    <h3>
+                                        <div t-ref="total_amount" class="total">
+                                            <t t-esc="props.total_amount"/>
+                                        </div>
+                                        <span>
+                                            <div t-ref="amount_this_year" id="amount_this_year"/>
+                                            <div t-ref="amount_this_day" id="amount_this_day"/>
+                                            <div t-ref="amount_this_month" id="amount_this_month"/>
+                                            <div t-ref="amount_this_week" id="amount_this_week"/>
+                                        </span>
+                                    </h3>
+                                    <h4>Total Amount</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 col-md-3">
+                            <div class="dashboard-card card-shadow revenue_card">
+                                <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                                    <i class="fa fa-usd text-mauve"/>
+                                </div>
+                                <div class="dashboard-card__details">
+                                    <h3>
+                                        <div t-ref="total_invoice" class="total">
+                                            <t t-esc="props.total_invoice"/>
+                                        </div>
+                                        <span>
+                                            <div t-ref="invoice_this_year" id="invoice_this_year"/>
+                                            <div t-ref="invoice_this_day" id="invoice_this_day"/>
+                                            <div t-ref="invoice_this_month" id="invoice_this_month"/>
+                                            <div t-ref="invoice_this_week" id="invoice_this_week"/>
+                                        </span>
+                                    </h3>
+                                    <h4>Invoiced Amount</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-6">
+                        <div class="oh-card text-color graph">
+                            <div class="oh-card-body pb-0">
+                                <h4 class="head">Customer Analysis By Invoice</h4>
+                                <hr/>
+                            </div>
+                            <canvas t-ref="booking" id="booking" width="300" height="200"/>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-6 head">
+                        <div class="oh-card text-color graph" style="width: 68%;">
+                            <div class="oh-card-body pb-0">
+                                <h4 class="head">Venue Analysis By Invoice</h4>
+                            </div>
+                            <hr/>
+                            <canvas t-ref="venue" id="venue" width="300" height="200"/>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-4">
+                        <div class="customer">
+                            <div class="customer_head">Upcoming</div>
+                            <div class="col-sm-12 col-lg-12" style="padding:0;">
+                                <div class="text-color">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Seq.No</th>
+                                                <th>Customer Name</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="props.upcoming" t-as="upcoming" t-key="upcoming_index">
+                                                <tr>
+                                                    <td><t t-esc="upcoming['ref']"/></td>
+                                                    <td><t t-esc="upcoming['name']"/></td>
+                                                    <td><t t-esc="upcoming['date']"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-4">
+                        <div class="customer">
+                            <div class="customer_head">Top 10 Customers</div>
+                            <div class="col-sm-12 col-lg-12" style="padding:0;">
+                                <div class="text-color">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align:center;">S.NO</th>
+                                                <th>Customer Name</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="props.customer" t-as="customer" t-key="customer_index">
+                                                <tr>
+                                                    <td><div class="circle"><t t-esc="customer_index + 1"/></div></td>
+                                                    <td><t t-esc="customer['name']"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-4">
+                        <div class="customer">
+                            <div class="customer_head">Top 10 Venues</div>
+                            <div class="col-sm-12 col-lg-12" style="padding:0;">
+                                <div class="text-color">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align:center;">Count</th>
+                                                <th>Venue Name</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="props.venue" t-as="venue" t-key="venue_index">
+                                                <tr>
+                                                    <td><div class="circle"><t t-esc="venue_index + 1"/></div></td>
+                                                    <td><t t-esc="venue['name']"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

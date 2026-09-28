@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- Extend journal entry FORM with anomaly indicators      -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <record id="view_account_move_form_anomaly" model="ir.ui.view">
+        <field name="name">account.move.form.anomaly</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Alert banner injected just inside the <sheet> tag -->
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-danger d-flex align-items-center gap-2 mb-0"
+                     role="alert"
+                     invisible="anomaly_risk_level not in ['critical', 'high']">
+                    <i class="fa fa-exclamation-triangle fa-2x"/>
+                    <div>
+                        <strong>Anomaly Alert:</strong>
+                        This journal entry has been flagged by the AI Internal Auditor.
+                        <button name="action_view_anomaly_alerts"
+                                type="object"
+                                string="View alerts →"
+                                class="btn btn-link p-0 ms-1"/>
+                    </div>
+                </div>
+                <div class="alert alert-warning d-flex align-items-center gap-2 mb-0"
+                     role="alert"
+                     invisible="anomaly_risk_level != 'medium'">
+                    <i class="fa fa-info-circle fa-2x"/>
+                    <div>
+                        <strong>Anomaly Notice:</strong>
+                        A potential anomaly was detected on this entry.
+                        <button name="action_view_anomaly_alerts"
+                                type="object"
+                                string="View alerts →"
+                                class="btn btn-link p-0 ms-1"/>
+                    </div>
+                </div>
+            </xpath>
+
+            <!-- Smart button in the stat-button box -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_anomaly_alerts"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-exclamation-triangle"
+                        invisible="anomaly_alert_count == 0">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="anomaly_alert_count"/>
+                        </span>
+                        <span class="o_stat_text">Alert(s)</span>
+                    </div>
+                </button>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- Extend journal entry LIST with anomaly column          -->
+    <!-- account.view_move_tree is the correct external ID      -->
+    <!-- in Odoo 17/18/19 for the main journal entry list       -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <record id="view_account_move_list_anomaly" model="ir.ui.view">
+        <field name="name">account.move.list.anomaly</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_tree"/>
+        <field name="arch" type="xml">
+            <!-- Append the anomaly column after the last field -->
+            <xpath expr="//list" position="inside">
+                <field name="anomaly_risk_level" column_invisible="1"/>
+                <field name="anomaly_alert_count"
+                       string="⚠ Alerts"
+                       optional="show"
+                       decoration-danger="anomaly_risk_level in ['critical']"
+                       decoration-warning="anomaly_risk_level in ['high', 'medium']"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

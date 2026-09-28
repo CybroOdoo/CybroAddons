@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Application List View -->
+    <record id="view_university_application_tree" model="ir.ui.view">
+        <field name="name">university.application.list</field>
+        <field name="model">university.application</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="create_date" string="Submitted On"/>
+                <field name="name"/>
+                <field name="email"/>
+                <field name="application_type_id"/>
+                <field name="admission_round_id"/>
+                <field name="program"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'submitted'"
+                       decoration-warning="state == 'in_review'"
+                       decoration-success="state == 'accepted'"
+                       decoration-danger="state == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+    <!-- Application Form View -->
+    <record id="view_university_application_form" model="ir.ui.view">
+        <field name="name">university.application.form</field>
+        <field name="model">university.application</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_set_in_review" type="object" string="Mark In Review"
+                            class="btn-primary" invisible="state != 'submitted'"/>
+                    <button name="action_accept" type="object" string="Accept"
+                            class="btn-primary" invisible="state in ('accepted', 'rejected')"/>
+                    <button name="action_reject" type="object" string="Reject"
+                            invisible="state in ('accepted', 'rejected')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="submitted,in_review,accepted"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Applicant Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="email" widget="email"/>
+                            <field name="phone" widget="phone"/>
+                            <field name="program"/>
+                        </group>
+                        <group>
+                            <field name="application_type_id"/>
+                            <field name="admission_round_id"/>
+                            <field name="create_date" string="Submitted On" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Message">
+                        <field name="message" nolabel="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Search View -->
+    <record id="view_university_application_search" model="ir.ui.view">
+        <field name="name">university.application.search</field>
+        <field name="model">university.application</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="email"/>
+                <field name="program"/>
+                <filter name="submitted" string="Submitted" domain="[('state', '=', 'submitted')]"/>
+                <filter name="in_review" string="In Review" domain="[('state', '=', 'in_review')]"/>
+                <filter name="accepted" string="Accepted" domain="[('state', '=', 'accepted')]"/>
+                <filter name="rejected" string="Rejected" domain="[('state', '=', 'rejected')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_type" string="Application Type" context="{'group_by': 'application_type_id'}"/>
+                    <filter name="group_round" string="Admission Round" context="{'group_by': 'admission_round_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Application Action -->
+    <record id="action_university_application" model="ir.actions.act_window">
+        <field name="name">Applications</field>
+        <field name="res_model">university.application</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_university_application_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No applications yet</p>
+            <p>Applications submitted through the website "Start Your Application" form will appear here.</p>
+        </field>
+    </record>
+    <!-- Menus -->
+    <menuitem id="menu_university_admissions_root"
+              name="Admissions"
+              web_icon="theme_university,static/description/thumbnail_screenshot.jpg"
+              sequence="45"/>
+    <menuitem id="menu_university_application"
+              name="Applications"
+              parent="menu_university_admissions_root"
+              action="action_university_application"
+              sequence="10"/>
+</odoo>

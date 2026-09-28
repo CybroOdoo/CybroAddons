@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_anomaly_alerts_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+
+                <!-- HEADER (Table Layout for PDF safety) -->
+                <table style="width: 100%; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;">
+                    <tr>
+                        <td style="width: 70%; vertical-align: bottom;">
+                            <h1 style="color: #4f46e5; margin: 0; font-size: 28px; font-weight: bold;">AI Internal Audit Report</h1>
+                            <div style="color: #64748b; font-size: 18px; margin-top: 5px;">Anomaly Detection Summary</div>
+                        </td>
+                        <td style="width: 30%; text-align: right; vertical-align: bottom; color: #94a3b8; font-size: 12px;">
+                            Generated on:<br/>
+                            <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SUMMARY STATS (Table Layout for PDF safety) -->
+                <table style="width: 100%; margin-bottom: 40px; border-spacing: 15px; border-collapse: separate;">
+                    <tr>
+                        <!-- Critical -->
+                        <td style="width: 25%; background-color: #ef4444; color: white; text-align: center; padding: 20px 10px; border-radius: 8px;">
+                            <div style="font-size: 36px; font-weight: bold; margin-bottom: 5px;"><t t-esc="len(docs.filtered(lambda a: a.risk_level == 'critical'))"/></div>
+                            <div style="font-size: 12px; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Critical</div>
+                        </td>
+                        <!-- High -->
+                        <td style="width: 25%; background-color: #f97316; color: white; text-align: center; padding: 20px 10px; border-radius: 8px;">
+                            <div style="font-size: 36px; font-weight: bold; margin-bottom: 5px;"><t t-esc="len(docs.filtered(lambda a: a.risk_level == 'high'))"/></div>
+                            <div style="font-size: 12px; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">High Risk</div>
+                        </td>
+                        <!-- Medium -->
+                        <td style="width: 25%; background-color: #f59e0b; color: white; text-align: center; padding: 20px 10px; border-radius: 8px;">
+                            <div style="font-size: 36px; font-weight: bold; margin-bottom: 5px;"><t t-esc="len(docs.filtered(lambda a: a.risk_level == 'medium'))"/></div>
+                            <div style="font-size: 12px; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Medium Risk</div>
+                        </td>
+                        <!-- Low -->
+                        <td style="width: 25%; background-color: #10b981; color: white; text-align: center; padding: 20px 10px; border-radius: 8px;">
+                            <div style="font-size: 36px; font-weight: bold; margin-bottom: 5px;"><t t-esc="len(docs.filtered(lambda a: a.risk_level == 'low'))"/></div>
+                            <div style="font-size: 12px; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; opacity: 0.9;">Low Risk</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- ALERTS TABLE -->
+                <h3 style="color: #1e293b; font-weight: bold; margin-bottom: 15px;">Active Anomaly Alerts</h3>
+                <table class="table" style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 12px 8px; border-bottom: 2px solid #cbd5e1; background-color: #f8fafc; color: #64748b; text-transform: uppercase; text-align: left; width: 12%;">Risk</th>
+                            <th style="padding: 12px 8px; border-bottom: 2px solid #cbd5e1; background-color: #f8fafc; color: #64748b; text-transform: uppercase; text-align: left; width: 35%;">Alert Title</th>
+                            <th style="padding: 12px 8px; border-bottom: 2px solid #cbd5e1; background-color: #f8fafc; color: #64748b; text-transform: uppercase; text-align: right; width: 15%;">Amount</th>
+                            <th style="padding: 12px 8px; border-bottom: 2px solid #cbd5e1; background-color: #f8fafc; color: #64748b; text-transform: uppercase; text-align: left; width: 18%;">Partner</th>
+                            <th style="padding: 12px 8px; border-bottom: 2px solid #cbd5e1; background-color: #f8fafc; color: #64748b; text-transform: uppercase; text-align: left; width: 10%;">Date</th>
+                            <th style="padding: 12px 8px; border-bottom: 2px solid #cbd5e1; background-color: #f8fafc; color: #64748b; text-transform: uppercase; text-align: center; width: 10%;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="docs" t-as="alert">
+                            <tr>
+                                <td style="padding: 12px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: top;">
+                                    <!-- Explicit inline pill styling to prevent wkhtmltopdf artifacts -->
+                                    <div t-attf-style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; color: white; background-color: #{alert.risk_level == 'critical' and '#ef4444' or alert.risk_level == 'high' and '#f97316' or alert.risk_level == 'medium' and '#f59e0b' or '#10b981'};">
+                                        <t t-esc="(alert.risk_level or '').upper()"/>
+                                    </div>
+                                </td>
+                                <td style="padding: 12px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: top; color: #0f172a; font-weight: bold;">
+                                    <t t-esc="alert.title"/>
+                                </td>
+                                <td style="padding: 12px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: top; text-align: right; font-family: monospace; font-size: 14px;">
+                                    <t t-if="alert.move_amount">
+                                        <t t-esc="alert.currency_id.symbol or ''"/><t t-esc="'{:,.2f}'.format(alert.move_amount)"/>
+                                    </t>
+                                    <t t-else="">-</t>
+                                </td>
+                                <td style="padding: 12px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: top; color: #475569;">
+                                    <t t-esc="alert.partner_id.name or '-'"/>
+                                </td>
+                                <td style="padding: 12px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: top; color: #475569;">
+                                    <t t-esc="alert.move_date"/>
+                                </td>
+                                <td style="padding: 12px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: top; text-align: center;">
+                                    <div style="display: inline-block; padding: 4px 8px; background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 10px; text-transform: uppercase; color: #475569;">
+                                        <t t-esc="alert.state"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- DETAILED ALERT DESCRIPTIONS -->
+                <div style="page-break-before: always;"/>
+                <h3 style="color: #1e293b; font-weight: bold; margin-top: 40px; margin-bottom: 25px;">Detailed Alert Analysis</h3>
+                
+                <t t-foreach="docs" t-as="alert">
+                    <div style="margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; page-break-inside: avoid;">
+                        
+                        <!-- Detail Header -->
+                        <table style="width: 100%; border-collapse: collapse; background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                            <tr>
+                                <td t-attf-style="padding: 15px; width: 65%; border-left: 6px solid #{alert.risk_level == 'critical' and '#ef4444' or alert.risk_level == 'high' and '#f97316' or alert.risk_level == 'medium' and '#f59e0b' or '#10b981'};">
+                                    <div style="font-size: 18px; font-weight: bold; color: #0f172a;">
+                                        <t t-esc="alert.title"/>
+                                    </div>
+                                </td>
+                                <td style="padding: 15px; width: 35%; text-align: right; vertical-align: middle;">
+                                    <span style="display: inline-block; padding: 4px 10px; background-color: white; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; margin-right: 8px; color: #334155;">
+                                        Score: <strong><t t-esc="alert.anomaly_score"/>/100</strong>
+                                    </span>
+                                    <span style="display: inline-block; padding: 4px 10px; background-color: white; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; color: #334155;">
+                                        Type: <t t-esc="alert.alert_type"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Detail Body -->
+                        <div style="padding: 20px; background-color: white;">
+                            <!-- Meta Data Table -->
+                            <table style="width: 100%; margin-bottom: 20px; font-size: 13px;">
+                                <tr>
+                                    <td style="width: 33%; vertical-align: top;">
+                                        <div style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 4px;">Reference</div>
+                                        <div style="font-weight: bold; color: #0f172a;"><t t-esc="alert.move_id.name or 'N/A'"/></div>
+                                    </td>
+                                    <td style="width: 33%; vertical-align: top;">
+                                        <div style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 4px;">Assigned Auditor</div>
+                                        <div style="color: #334155;"><t t-esc="alert.assigned_to.name or 'Unassigned'"/></div>
+                                    </td>
+                                    <td style="width: 33%; vertical-align: top;">
+                                        <div style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 4px;">Detection Date</div>
+                                        <div style="color: #334155;"><t t-esc="alert.detected_date"/></div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- AI Finding Box -->
+                            <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 15px;">
+                                <div style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 8px;">AI Finding</div>
+                                <div style="color: #1e293b; font-size: 14px; line-height: 1.5;">
+                                    <t t-esc="alert.description"/>
+                                </div>
+                            </div>
+
+                            <!-- Resolution Box (if exists) -->
+                            <t t-if="alert.resolution_note">
+                                <div style="margin-top: 15px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #22c55e; border-radius: 6px; padding: 15px;">
+                                    <div style="font-size: 11px; text-transform: uppercase; color: #166534; font-weight: bold; margin-bottom: 8px;">Resolution Note</div>
+                                    <div style="color: #14532d; font-size: 14px; line-height: 1.5;">
+                                        <t t-esc="alert.resolution_note"/>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- FOOTER -->
+                <div style="margin-top: 50px; padding-top: 20px; border-top: 2px solid #f1f5f9; text-align: center; color: #64748b; font-size: 11px; line-height: 1.5;">
+                    <strong style="text-transform: uppercase; letter-spacing: 0.5px;">AI Internal Auditor Module</strong><br/>
+                    All flagged anomalies require human review before final classification.<br/>
+                    Machine learning results are indicative and not conclusive financial advice.
+                </div>
+
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

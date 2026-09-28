@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Application Form Page -->
+    <template id="application_form_page" name="University Application Form">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <!-- HERO -->
+                <section class="inner-hero">
+                    <div class="inner-hero-bg"/>
+                    <div class="inner-hero-shape inner-hero-shape-1"/>
+                    <div class="inner-hero-shape inner-hero-shape-2"/>
+                    <div class="container">
+                        <div class="inner-hero-content">
+                            <div class="inner-breadcrumb">
+                                <a href="/">Home</a>
+                                <span class="sep">
+                                    <i class="bi bi-chevron-right"/>
+                                </span>
+                                <a href="/apply">Apply</a>
+                                <span class="sep">
+                                    <i class="bi bi-chevron-right"/>
+                                </span>
+                                <span class="current">Application Form</span>
+                            </div>
+                            <div class="section-eyebrow d-inline-flex mb-3"
+                                 style="background:rgba(232,160,32,.15);border-color:rgba(232,160,32,.3);color:#f5c842">
+                                <i class="bi bi-pencil-square"/>
+                                Fall 2026 Admissions
+                            </div>
+                            <h1 class="inner-hero-title">Start Your Application</h1>
+                            <p class="inner-hero-subtitle">Tell us a little about yourself and our admissions team will
+                                be in touch. Fields marked with * are required.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+                <!-- FORM -->
+                <section class="py-5">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <form action="/apply/submit" method="post" class="card border-0 shadow-sm p-4 p-md-5"
+                                      style="border-radius:1rem">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="app_name">Full Name *</label>
+                                            <input type="text" id="app_name" name="name"
+                                                   t-att-class="'form-control' + (' is-invalid' if error.get('name') else '')"
+                                                   t-att-value="values.get('name')"/>
+                                            <div class="invalid-feedback" t-if="error.get('name')"
+                                                 t-esc="error.get('name')"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="app_email">Email *</label>
+                                            <input type="email" id="app_email" name="email"
+                                                   t-att-class="'form-control' + (' is-invalid' if error.get('email') else '')"
+                                                   t-att-value="values.get('email')"/>
+                                            <div class="invalid-feedback" t-if="error.get('email')"
+                                                 t-esc="error.get('email')"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="app_phone">Phone</label>
+                                            <input type="text" id="app_phone" name="phone" class="form-control"
+                                                   t-att-value="values.get('phone')"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="app_program">Program of
+                                                Interest
+                                            </label>
+                                            <input type="text" id="app_program" name="program" class="form-control"
+                                                   t-att-value="values.get('program')"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="app_type">Application Type
+                                            </label>
+                                            <select id="app_type" name="application_type_id" class="form-select">
+                                                <option value="">— Select —</option>
+                                                <t t-foreach="application_types" t-as="atype">
+                                                    <option t-att-value="atype.id"
+                                                            t-att-selected="'selected' if values.get('application_type_id') == str(atype.id) else None"
+                                                            t-esc="atype.name"/>
+                                                </t>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="app_round">Admission Round
+                                            </label>
+                                            <select id="app_round" name="admission_round_id" class="form-select">
+                                                <option value="">— Select —</option>
+                                                <t t-foreach="admission_rounds" t-as="around">
+                                                    <option t-att-value="around.id"
+                                                            t-att-selected="'selected' if values.get('admission_round_id') == str(around.id) else None"
+                                                            t-esc="around.name"/>
+                                                </t>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold" for="app_message">Message</label>
+                                            <textarea id="app_message" name="message" rows="4" class="form-control"
+                                                      t-out="values.get('message') or ''"/>
+                                        </div>
+                                        <div class="col-12 mt-4">
+                                            <button type="submit" class="btn rounded-pill px-5 fw-semibold"
+                                                    style="background:var(--primary);color:white;padding:.75rem 2rem">
+                                                <i class="bi bi-send me-2"/>Submit Application
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+    <!-- Thank You Page -->
+    <template id="application_thank_you_page" name="University Application Thank You">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="py-5 my-5">
+                    <div class="container">
+                        <div class="row justify-content-center text-center">
+                            <div class="col-lg-7">
+                                <div class="mb-4" style="font-size:4rem;color:var(--success, #1a7a4a)">
+                                    <i class="bi bi-check-circle-fill"/>
+                                </div>
+                                <h1 class="mb-3">Application Received!</h1>
+                                <p class="text-muted mb-4">
+                                    Thank you for applying. Our admissions team has received your application
+                                    and will reach out to you by email with the next steps. We look forward to
+                                    getting to know you.
+                                </p>
+                                <a href="/" class="btn rounded-pill px-5 fw-semibold"
+                                   style="background:var(--primary);color:white;padding:.75rem 2rem">
+                                    <i class="bi bi-house-door me-2"/>Back to Home
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>
