@@ -9,3 +9,8 @@
 #### Version 18.0.1.0.1
 ##### FIX
 - Fixed the issue of creating stock picking before approval.
+
+#### 09.07.2026
+#### Version 18.0.1.0.2
+##### UPDT
+- Added test cases

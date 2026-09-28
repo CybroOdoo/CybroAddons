@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Sales Order Double Approval',
-    'version': '18.0.1.0.1',
+    'version': '18.0.1.0.2',
     'category': 'Sales',
     'summary': """This module helps to set two separate approvals process for a
      sale order to ensure accuracy and compliance.""",
