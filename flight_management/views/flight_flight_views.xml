@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Defines the list view for managing flight records. -->
+    <record id="view_flight_flight_list" model="ir.ui.view">
+        <field name="name">flight.flight.list</field>
+        <field name="model">flight.flight</field>
+        <field name="arch" type="xml">
+            <list string="Flights" decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="aircraft_id"/>
+                <field name="origin_id"/>
+                <field name="destination_id"/>
+                <field name="scheduled_departure"/>
+                <field name="scheduled_arrival"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-primary="state == 'scheduled'"
+                       decoration-warning="state == 'dispatched'"
+                       decoration-success="state in ('in_progress', 'completed')"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Defines the form view for managing flight details. -->
+    <record id="view_flight_flight_form" model="ir.ui.view">
+        <field name="name">flight.flight.form</field>
+        <field name="model">flight.flight</field>
+        <field name="arch" type="xml">
+            <form string="Flight">
+                <header>
+                    <button name="action_confirm_schedule" string="Confirm Schedule" type="object"
+                            class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_dispatch" string="Dispatch" type="object"
+                            class="oe_highlight" invisible="state != 'scheduled'"/>
+                    <button name="action_start" string="Start Flight" type="object"
+                            class="oe_highlight" invisible="state != 'dispatched'"/>
+                    <button name="action_complete" string="Mark Completed" type="object"
+                            class="oe_highlight" invisible="state != 'in_progress'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state in ('completed', 'cancelled')"/>
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,scheduled,dispatched,in_progress,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="aircraft_id"/>
+                            <field name="origin_id"/>
+                            <field name="destination_id"/>
+                        </group>
+                        <group>
+                            <field name="scheduled_departure"/>
+                            <field name="scheduled_arrival"/>
+                            <field name="actual_departure" readonly="1"/>
+                            <field name="actual_arrival" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Flight Events">
+                            <field name="event_ids">
+                                <list editable="bottom">
+                                    <field name="event_type"/>
+                                    <field name="timestamp"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Defines the search view for filtering flight records. -->
+    <record id="view_flight_flight_search" model="ir.ui.view">
+        <field name="name">flight.flight.search</field>
+        <field name="model">flight.flight</field>
+        <field name="arch" type="xml">
+            <search string="Flights">
+                <field name="name"/>
+                <field name="aircraft_id"/>
+                <field name="origin_id"/>
+                <field name="destination_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Scheduled" name="scheduled" domain="[('state', '=', 'scheduled')]"/>
+                <filter string="Dispatched" name="dispatched" domain="[('state', '=', 'dispatched')]"/>
+                <filter string="In Progress" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter string="Completed" name="completed" domain="[('state', '=', 'completed')]"/>
+                <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Aircraft" name="group_aircraft" context="{'group_by': 'aircraft_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Defines the window action for accessing flight records. -->
+    <record id="action_flight_flight" model="ir.actions.act_window">
+        <field name="name">Flights</field>
+        <field name="res_model">flight.flight</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_flight_flight_search"/>
+    </record>
+
+</odoo>
