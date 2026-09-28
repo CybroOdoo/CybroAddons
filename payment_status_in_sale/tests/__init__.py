@@ -19,25 +19,4 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-{
-    'name': 'Sale Order Payment Status',
-    'version': '18.0.1.0.5',
-    'category': 'Sales',
-    'summary': 'Displays the payment status and details in the Sale Order.',
-    'description': """This module is used to display the invoice status of the
-    corresponding sale order in the form view. It provides details about the
-    sale order's payment status, payment information and the amount due.""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': 'https://www.cybrosys.com',
-    'depends': ['sale_management', 'account'],
-    'data': [
-        'views/sale_order_views.xml'
-    ],
-    'images': ['static/description/banner.png'],
-    'license': 'AGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+from . import test_payment_status_in_sale

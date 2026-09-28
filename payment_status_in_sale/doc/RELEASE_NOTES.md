@@ -24,3 +24,8 @@
 #### Version 18.0.1.0.4
 ##### BUG_FIX
 - Resolved the issue where the badge was not appearing as “NOT PAID”.
+
+#### 09.07.2026
+#### Version 18.0.1.0.5
+##### UPDT
+- Added testcases
