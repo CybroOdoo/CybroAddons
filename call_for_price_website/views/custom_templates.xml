@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="cta_wrapper_inherit" inherit_id="website_sale.cta_wrapper"
+              name="CTA Wrapper">
+        <!--                hiding the add to cart section based on price call-->
+        <xpath expr="//a[@id='add_to_cart']" position="replace">
+            <t t-if="not combination_info['price_call']">
+                <a
+                        id="add_to_cart"
+                        role="button"
+                        href="#"
+                        t-attf-class="yesss btn btn-primary js_check_product a-submit flex-grow-1"
+                        t-att-data-show-quantity="is_view_active('website_sale.product_quantity')"
+                        data-animation-selector=".o_wsale_product_images"
+                >
+                    <i class="fa fa-shopping-cart me-2"/>
+                    Add to cart
+                </a>
+            </t>
+            <t t-else="">
+                <div id="add_to_cart_wrap"
+                     t-attf-class="{{'d-none' if combination_info['prevent_zero_price_sale'] else 'd-flex'}} flex-grow-1 flex-lg-grow-0 flex-wrap align-items-center gap-2 {{'' if is_50_pc else ' w-100'}}">
+                    <a role="button" id="call_for_price_button_sale"
+                       data-bs-toggle="modal" t-attf-data-bs-target="#cfp_pop_up_{{product.id if product else wish.product_id.id}}"
+                       class="btn btn-primary btn_cta">
+                        Call for Price
+                    </a>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//div[contains(@t-attf-class, 'css_quantity')]"
+               position="attributes">
+            <attribute
+                    name="t-attf-class"
+                    add=" {{(' d-none' if combination_info['price_call'] else '')}}"
+                    separator=" "
+            />
+        </xpath>
+    </template>
+    <template id="product_price_div"
+              inherit_id="website_sale.product_price"
+              name="Product Price Div">
+        <xpath expr="//div[@name='product_price']" position="replace">
+            <t t-if="not combination_info['price_call']">
+                <div
+                        name="product_price"
+                        t-attf-class="product_price {{'d-none' if combination_info['prevent_zero_price_sale'] else 'd-inline-block'}}">
+                    <div
+                            name="product_price_container"
+                            class="css_editable_mode_hidden d-flex align-items-baseline justify-content-end gap-2 flex-wrap h5 mb-0 text-wrap"
+                    >
+                        <span class="oe_price"
+                              style="white-space: nowrap;"
+                              t-out="combination_info['price']"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span t-attf-class="text-muted oe_default_price mb-0 h6 {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                              style="text-decoration: line-through; white-space: nowrap;"
+                              t-out="combination_info['list_price']"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                              name="product_list_price"
+                        />
+                        <t t-if="is_view_active('website_sale.tax_indication')"
+                           t-call="website_sale.tax_indication"/>
+                        <del
+                                name="product_price_strikethrough"
+                                t-if="combination_info.get('compare_list_price') and (combination_info['compare_list_price'] &gt; combination_info['price'])"
+                                class="text-muted ms-1 h6 oe_compare_list_price"
+                        >
+                            <bdi dir="inherit">
+                                <span t-out="combination_info['compare_list_price']"
+                                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            </bdi>
+                        </del>
+                    </div>
+                    <div
+                            t-if="editable"
+                            name="product_list_price_container"
+                            class="css_non_editable_mode_hidden decimal_precision h5"
+                            t-att-data-precision="str(website.currency_id.decimal_places)"
+                    >
+                        <span t-field="product.list_price"
+                              t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                        <t t-if="is_view_active('website_sale.tax_indication')"
+                           t-call="website_sale.tax_indication"/>
+                        <del t-if="combination_info.get('compare_list_price') and (combination_info['compare_list_price'] &gt; combination_info['price'])">
+                            <bdi dir="inherit">
+                                <span t-field="product.compare_list_price"
+                                      t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                            </bdi>
+                        </del>
+                    </div>
+                    <small t-if="combination_info.get('tax_disclaimer')"
+                           class="text-muted">
+                        <t t-out="combination_info['tax_disclaimer']"/>
+                    </small>
+                </div>
+            </t>
+            <t t-else="">
+                <div name="product_price" class="product_price d-inline-block">
+                    <div class="d-flex align-items-baseline justify-content-end h5 mb-0">
+                        <span>Not Available For Sale</span>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!--    website product form page-->
+    <template id="product" inherit_id="website_sale.product"
+              name="Call For Price">
+        <!--        adding the call for price buttion if price_call is enabled-->
+        <xpath expr="//div[@id='contact_us_wrapper']" position="after">
+            <div id="call_for_price_wrapper"
+                 t-attf-class="{{'d-flex' if combination_info['price_call'] else 'd-none'}} oe_structure oe_structure_solo #{_div_classes}">
+                <section class="s_text_block" data-snippet="s_text_block"
+                         data-name="Text">
+                    <div class="container">
+                    </div>
+                </section>
+            </div>
+        </xpath>
+        <!--        adding the modal pop up-->
+        <xpath expr="//section[@id='product_detail']"
+               position="after">
+            <t t-call="call_for_price_website.call_fro_price_modal"/>
+        </xpath>
+        <!--        hiding the contact us form product form incase the price call feature is available-->
+        <xpath expr="//div[@id='contact_us_wrapper']"
+               position="replace">
+            <t t-if="not combination_info['price_call']">
+                <div id="contact_us_wrapper"
+                     t-attf-class="{{'d-flex' if combination_info['prevent_zero_price_sale'] else 'd-none'}} oe_structure oe_structure_solo #{_div_classes}">
+                    <section class="s_text_block" data-snippet="s_text_block"
+                             data-name="Text">
+                        <div class="container">
+                            <a t-att-href="website.contact_us_button_url"
+                               class="btn btn-primary btn_cta">Contact Us
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    <!--  Common template for pop up modal-->
+    <template id="call_fro_price_modal">
+        <t t-set="path" t-value="request.httprequest.path"/>
+        <t t-set="cfp_modal_id" t-value="product.id if product else wish.product_id.id"/>
+        <div t-attf-id="cfp_pop_up_{{cfp_modal_id}}" class="modal fade"
+             aria-hidden="true"
+             t-att-style="'position:fixed;' if path.startswith('/shop/wishlist') else 'position:relative;'"
+             tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-lg pt-5">
+                <div class="modal-content">
+                    <form method="POST" action="/call_for_price/submit">
+                        <input type="hidden" name="csrf_token"
+                               t-att-value="request.csrf_token()"/>
+                        <!-- Header -->
+                        <div class="modal-header">
+                            <h5 class="modal-title">Call For Price</h5>
+                            <button type="button" class="btn-close"
+                                    data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="modal-body">
+                            <t t-if="product">
+                                <input type="hidden" name="product_id"
+                                       t-att-value="product.product_tmpl_id.id if product._name == 'product.product' else product.id"/>
+                            </t>
+                            <t t-else="">
+                                <input type="hidden" name="product_id"
+                                       t-att-value="wish.product_id.product_tmpl_id.id"/>
+                            </t>
+
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td>First Name *</td>
+                                    <td>
+                                        <input required="required"
+                                               class="form-control"
+                                               name="first_name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Last Name</td>
+                                    <td>
+                                        <input class="form-control"
+                                               name="last_name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Email *</td>
+                                    <td>
+                                        <input required="required" type="email"
+                                               class="form-control"
+                                               name="email"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Contact No *</td>
+                                    <td>
+                                        <input class="form-control"
+                                               name="phone"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Quantity</td>
+                                    <td>
+                                        <input type="number"
+                                               class="form-control"
+                                               name="quantity" value="1"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Message</td>
+                                    <td>
+                                        <input class="form-control"
+                                               name="message"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Send
+                            </button>
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    data-bs-dismiss="modal">
+                                Close
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!--    inheriting the products items to hide price if call for price is enabled-->
+    <template id="products_call_for_price"
+              inherit_id="website_sale.products_item"
+              name="Product Call for price">
+        <xpath expr="//*[hasclass('product_price')]" position="replace">
+            <div class="product_price" itemprop="offers" itemscope="itemscope"
+                 itemtype="http://schema.org/Offer">
+                <t t-if="not product.price_call">
+                    <t t-if="'base_price' in template_price_vals and (template_price_vals['base_price'] &gt; template_price_vals['price_reduce']) and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)">
+                        <del t-attf-class="text-muted me-1 h6 mb-0"
+                             style="white-space: nowrap;">
+                            <em class="small"
+                                t-esc="template_price_vals['base_price']"
+                                t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </del>
+                    </t>
+                    <span class="h6 mb-0"
+                          t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale"
+                          t-esc="template_price_vals['price_reduce']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span class="h6 mb-0" t-else=""
+                          t-field="website.prevent_zero_price_sale_text"/>
+                    <span itemprop="price" style="display:none;"
+                          t-esc="template_price_vals['price_reduce']"/>
+                    <span itemprop="priceCurrency" style="display:none;"
+                          t-esc="website.currency_id.name"/>
+                </t>
+                <t t-else="">
+                    <span class="h6 mb-0">Not Available For Sale</span>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <!--    product comparison page-->
+    <template id="product_compare_call_for_price"
+              inherit_id="website_sale_comparison.product_compare"
+              name="Product Call for price">
+        <!--        here we call the call for price pop up to the current template-->
+        <xpath expr="//div[hasclass('product_summary')]" position="after">
+            <t t-call="call_for_price_website.call_fro_price_modal"/>
+        </xpath>
+        <!--        hide price tag from comparison page-->
+        <xpath expr="//*[@id='o_comparelist_product_name']//span"
+               position="replace">
+            <t t-if="combination_info['price_call']">
+                <span class="o_comparison_price">
+                    <strong>Not Available For Sale</strong>
+                </span>
+            </t>
+            <t t-else="">
+                <span t-if="not combination_info['prevent_zero_price_sale']">
+                    <span t-out="combination_info['price']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <del
+                            t-if="combination_info.get('compare_list_price') and (combination_info['compare_list_price'] &gt; combination_info['price'])"
+                            class="me-2 text-muted text-nowrap"
+                            t-out="combination_info['compare_list_price']"
+                            t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                    />
+                    <del
+                            t-else=""
+                            t-attf-class="text-muted me-2 text-nowrap {{'' if combination_info['has_discounted_price'] else 'd-none'}}"
+                            t-out="combination_info['list_price']"
+                            t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                    />
+                    <small t-if="combination_info.get('base_unit_price')"
+                           class="d-block text-muted">
+                        <t t-call="website_sale.base_unit_price">
+                            <t t-set="base_unit_price"
+                               t-value="combination_info['base_unit_price']"/>
+                        </t>
+                    </small>
+                </span>
+            </t>
+        </xpath>
+        <!--    now adding the call for price button in the comparison page based on the existing conditions-->
+        <xpath expr="//div[hasclass('mt-auto')]" position="replace">
+            <div class="mt-auto pt-3">
+                <t t-if="combination_info['price_call']">
+                    <a role="button"
+                       id="call_for_price_button" data-bs-toggle="modal"
+                       t-attf-data-bs-target="#cfp_pop_up_{{product.id if product else wish.product_id.id}}"
+                       href="#" class="btn btn-primary">
+                        Call for Price
+                    </a>
+                </t>
+                <t t-else="">
+                    <a t-if="combination_info['prevent_zero_price_sale']"
+                       t-att-href="website.contact_us_button_url + '?subject=' + combination_info['display_name']"
+                       class="btn btn-primary btn_cta"
+                    >
+                        Contact Us
+                    </a>
+                    <button
+                            t-else=""
+                            name="comparison_add_to_cart"
+                            class="btn btn-primary"
+                            t-att-data-show-quantity="is_view_active('website_sale.product_quantity')"
+                            t-att-data-product-template-id="product.product_tmpl_id.id"
+                            t-att-data-product-product-id="product.id"
+                    >
+                        <i class="fa fa-shopping-cart me-2" aria-hidden="true"/>
+                        Add
+                        to Cart
+                    </button>
+                </t>
+            </div>
+        </xpath>
+    </template>
+    <!--    product comparison page-->
+
+    <!--    product wishlist page-->
+    <template id="product_wishlist_call_for_price"
+              inherit_id="website_sale_wishlist.product_wishlist"
+              name="Product Call for price Wishlist">
+        <!--        here we call the call for price pop up to the current template-->
+        <xpath expr="//t[@t-set='product_actions']"
+               position="replace">
+            <t t-set="product_actions">
+                <div class="o_wsale_product_action_row">
+                    <t t-if="combination_info['price_call']">
+                        <t t-call="call_for_price_website.call_fro_price_modal"/>
+                        <a role="button"
+                           id="call_for_price_button" data-bs-toggle="modal"
+                           t-attf-data-bs-target="#cfp_pop_up_{{product.id if product else wish.product_id.id}}"
+                           href="#"
+                           class="o_wsale_product_btn_primary btn btn-primary">
+                            Call for Price
+                        </a>
+                    </t>
+                    <t t-elif="combination_info['prevent_zero_price_sale']">
+                        <a t-att-href="website.contact_us_button_url + '?subject=' + combination_info['display_name']"
+                           class="btn btn-primary btn_cta">
+                            Contact Us
+                        </a>
+                    </t>
+                    <t t-else="">
+                        <button id="add_to_cart_button"
+                                type="button"
+                                class="o_wsale_product_btn_primary btn btn-primary o_wish_add"
+                                t-att-data-show-quantity="is_view_active('website_sale.product_quantity')"
+                                t-att-data-product-template-id="product.id"
+                                t-att-data-product-product-id="product_variant.id"
+                                t-att-data-product-type="product.type"
+                                t-att-data-ptav-ids="json.dumps(product_variant.product_template_attribute_value_ids.ids)"
+                        >
+                            <span class="d-inline-flex align-items-baseline">
+                                <i
+                                        class="fa fa-fw fa-shopping-cart o_not-animable"
+                                        role="presentation"
+                                />
+                                <span class="o_label small ms-1">
+                                    Add to Cart
+                                </span>
+                            </span>
+                        </button>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+
+        <!--        hide price tag from wishlist page-->
+        <xpath expr="//t[@t-set='product_price']"
+               position="replace">
+            <t t-set="product_price">
+                <t t-if="combination_info['price_call']">
+                    <span class="align-middle o_wish_price">
+                        <strong aria-label="Not Available For Sale">
+                            Not Available For Sale
+                        </strong>
+                    </span>
+                </t>
+                <t t-else="">
+                    <br t-if="combination_info['prevent_zero_price_sale']"/>
+                    <div t-else="" class="align-middle o_wish_price">
+                        <span aria-label="Sale price">
+                            <t t-out="combination_info['price']"
+                               t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                            />
+                        </span>
+                        <small
+                                t-if="combination_info['has_discounted_price']"
+                                class="cart_product_base_unit_price text-muted"
+                        >
+                            <del
+                                    aria-label="Original price"
+                                    t-out="combination_info['list_price']"
+                                    class="text-nowrap"
+                                    t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                                    name="product_list_price"
+                            />
+                        </small>
+                    </div>
+                </t>
+            </t>
+        </xpath>
+    </template>
+</odoo>
