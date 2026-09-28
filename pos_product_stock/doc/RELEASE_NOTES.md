@@ -9,3 +9,8 @@
 #### Version 19.0.1.0.1
 #### UPDT   
 - Added Test Case
+
+#### 28.09.2026
+#### Version 19.0.1.0.2
+#### FIX
+- Fixed Payment validation issue in POS

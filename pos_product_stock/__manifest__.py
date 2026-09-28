@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'POS Product Stock',
-    'version': "19.0.1.0.1",
+    'version': "19.0.1.0.2",
     'category': 'Point Of Sale',
     'summary': "Quantity of  all Products in each Warehouse",
     'description': "Shows Stock quantity in POS  for all Products in each "
