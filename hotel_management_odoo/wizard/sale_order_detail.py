@@ -38,6 +38,18 @@ class SaleOrderWizard(models.TransientModel):
 
     checkin = fields.Date(help="Choose the Checkin Date", string="Check In")
     checkout = fields.Date(help="Choose the Checkout Date", string="Check Out")
+    filter_draft = fields.Boolean(help="Include bookings in Draft state",
+                                  string="Draft")
+    filter_reserved = fields.Boolean(
+        help="Include bookings in Reserved state", string="Reserved")
+    filter_check_in = fields.Boolean(
+        help="Include bookings in Check In state", string="Check In")
+    filter_check_out = fields.Boolean(
+        help="Include bookings in Check Out state", string="Check Out")
+    filter_cancel = fields.Boolean(
+        help="Include bookings in Cancelled state", string="Cancelled")
+    filter_done = fields.Boolean(help="Include bookings in Done state",
+                                 string="Done")
 
     def action_sale_order_pdf(self):
         """Button action for creating Sale Order Pdf Report"""
@@ -75,15 +87,31 @@ class SaleOrderWizard(models.TransientModel):
             domain.append(('checkin_date', '>=', self.checkin), )
         if self.checkout:
             domain.append(('checkout_date', '<=', self.checkout), )
+        state_map = {
+            'filter_draft': 'draft',
+            'filter_reserved': 'reserved',
+            'filter_check_in': 'check_in',
+            'filter_check_out': 'check_out',
+            'filter_cancel': 'cancel',
+            'filter_done': 'done',
+        }
+        states = [state for field_name, state in state_map.items() if
+                  self[field_name]]
+        if states:
+            domain.append(('state', 'in', states))
         room_booking = self.env['room.booking'].search_read(domain=domain,
                                                             fields=[
                                                                 'partner_id',
                                                                 'name',
                                                                 'checkin_date',
                                                                 'checkout_date',
-                                                                'amount_total'])
+                                                                'amount_total',
+                                                                'state'])
+        state_selection = dict(
+            self.env['room.booking']._fields['state'].selection)
         for rec in room_booking:
             rec['partner_id'] = rec['partner_id'][1]
+            rec['state'] = state_selection.get(rec['state'], rec['state'])
         return room_booking
 
     def get_xlsx_report(self, data, response):
@@ -99,8 +127,8 @@ class SaleOrderWizard(models.TransientModel):
              'border': True})
         body = workbook.add_format(
             {'align': 'left', 'text_wrap': True, 'border': True})
-        sheet.merge_range('A1:F1', 'Sale Order', head)
-        sheet.set_column('A2:F2', 18)
+        sheet.merge_range('A1:G1', 'Sale Order', head)
+        sheet.set_column('A2:G2', 18)
         sheet.set_row(0, 30)
         sheet.set_row(1, 20)
         sheet.write('A2', 'Sl No.', cell_format)
@@ -109,6 +137,7 @@ class SaleOrderWizard(models.TransientModel):
         sheet.write('D2', 'Check Out', cell_format)
         sheet.write('E2', 'Reference No.', cell_format)
         sheet.write('F2', 'Total Amount', cell_format)
+        sheet.write('G2', 'State', cell_format)
         row = 2
         column = 0
         value = 1
@@ -120,6 +149,7 @@ class SaleOrderWizard(models.TransientModel):
             sheet.write(row, column + 4, i['name'], body)
             sheet.write(row, column + 5, "{:.2f}".format(i['amount_total']),
                         body)
+            sheet.write(row, column + 6, i['state'], body)
             row = row + 1
             value = value + 1
         workbook.close()

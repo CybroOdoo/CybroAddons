@@ -39,3 +39,8 @@
 #### Version 18.0.1.1.5
 #### UPDT
 - Fixed the issue of reserved room can not be reserved although the reserve date is different.
+
+#### 09.07.2026
+#### Version 18.0.1.1.6
+#### UPDT
+- Updated the Sale Order report to include a state selection field, and updated the index file.

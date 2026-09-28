@@ -68,8 +68,9 @@ class CleaningRequest(models.Model):
     assigned_id = fields.Many2one('res.users', string="Assigned To",
                                   help="The team member to whom the request is"
                                        "Assigned To")
-    domain_partner_ids = fields.Many2many('res.partner',
+    domain_partner_ids = fields.Many2many('res.users',
                                           string="Domain Partner",
+                                          compute="_onchange_team_id",
                                           help="Choose the Domain Partner")
 
     @api.model
@@ -88,6 +89,16 @@ class CleaningRequest(models.Model):
 
     def action_assign_cleaning(self):
         """Button action for updating the state to assign"""
+        if not self.assigned_id:
+            raise ValidationError(_('Please select an Assigned To person before assigning.'))
+        if self.cleaning_type == 'room' and not self.room_id:
+            raise ValidationError(_('Please choose a Room.'))
+        if self.cleaning_type == 'hotel' and not self.hotel:
+            raise ValidationError(_('Please enter the Hotel.'))
+        if self.cleaning_type == 'vehicle' and not self.vehicle_id:
+            raise ValidationError(_('Please choose a Vehicle.'))
+
+        self.update({'state': 'assign'})
         self.update({'state': 'assign'})
 
     def action_start_cleaning(self):
