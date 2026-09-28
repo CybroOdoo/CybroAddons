@@ -5,3 +5,9 @@
 #### ADD
 
 - Initial commit for User Warehouse Restriction
+
+#### 18.09.2026
+#### Version 18.0.1.0.1
+#### UPDT
+
+- Fixed issues after installing the module; the warehouse configuration page will disappear from the warehouse.
