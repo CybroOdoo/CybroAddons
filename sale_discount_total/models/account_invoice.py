@@ -62,6 +62,11 @@ class AccountInvoice(models.Model):
         'state',
     )
     def _compute_amount(self):
+        try:
+            super(AccountInvoice, self)._compute_amount()
+        except NameError:
+            pass
+
         for move in self:
             total_untaxed, total_untaxed_currency = 0.0, 0.0
             total_tax, total_tax_currency = 0.0, 0.0
