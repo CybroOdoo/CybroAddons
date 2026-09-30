@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- OCR AI configuration list view -->
+        <record id="odoo_ocr_ai_config_tree_view" model="ir.ui.view">
+            <field name="name">odoo.ocr.ai.config.list</field>
+            <field name="model">odoo.ocr.ai.config</field>
+            <field name="arch" type="xml">
+                <tree string="OCR Model Configurations">
+                    <field name="model_id"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- OCR AI configuration form view -->
+        <record id="odoo_ocr_ai_config_form_view" model="ir.ui.view">
+            <field name="name">odoo.ocr.ai.config.form</field>
+            <field name="model">odoo.ocr.ai.config</field>
+            <field name="arch" type="xml">
+                <form string="OCR AI Configuration">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="model_id"
+                                       options="{'no_create': True}"
+                                       help="Only models flagged as OCR-enabled appear here."/>
+                            </group>
+                            <group>
+                                <field name="active" widget="boolean_toggle"/>
+                            </group>
+                        </group>
+
+                        <group string="Options">
+                            <group>
+                                <field name="create_products_if_not_found"
+                                       help="Auto-create products when not found during line-item mapping."/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Field Mapping" name="field_mapping">
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fa fa-info-circle"/>
+                                    Map each AI-extracted field (Title) to the corresponding Odoo field.
+                                    For One2many fields (invoice/order lines), you must also specify
+                                    <strong>Related Child Fields</strong> so the AI knows which
+                                    sub-fields to return. Many2one fields (partner, currency etc.)
+                                    do not require child fields.
+                                </div>
+                                <field name="model_ids" editable="bottom">
+                                    <tree editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="title" required="1"
+                                               placeholder="e.g. Invoice Number"/>
+                                        <field name="ocr_field_id"
+                                               required="1"
+                                               options="{'no_create': True, 'no_create_edit': True}"
+                                               domain="[
+                                                   ('model_id', '=', parent.model_id),
+                                                   ('ttype', 'in', [
+                                                       'char','date','datetime','integer',
+                                                       'many2one','monetary','one2many',
+                                                       'float','text','many2many'
+                                                   ])
+                                               ]"/>
+                                        <field name="ttype" column_invisible="1"/>
+                                        <field name="ocr_ir_field_ids_domain" column_invisible="1"/>
+                                        <field name="ocr_ir_field_ids"
+                                               widget="many2many_tags"
+                                               domain="ocr_ir_field_ids_domain"
+                                               options="{'no_create': True, 'no_create_edit': True}"/>
+                                        <field name="create_if_not_found"
+                                               invisible="ttype not in ['many2one']"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- OCR AI configuration search view -->
+        <record id="odoo_ocr_ai_config_search_view" model="ir.ui.view">
+            <field name="name">odoo.ocr.ai.config.search</field>
+            <field name="model">odoo.ocr.ai.config</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="model_id"/>
+                    <filter string="Active"   name="active"   domain="[('active','=',True)]"/>
+                    <filter string="Archived" name="archived" domain="[('active','=',False)]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Window action for OCR AI configurations -->
+        <record id="odoo_ocr_ai_config_action" model="ir.actions.act_window">
+            <field name="name">OCR AI Configurations</field>
+            <field name="res_model">odoo.ocr.ai.config</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Window action for model configuration -->
+        <record id="ocr_ai_integration_action" model="ir.actions.act_window">
+            <field name="name">Model Configuration</field>
+            <field name="res_model">odoo.ocr.ai.config</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Main menu for OCR AI integration -->
+        <menuitem id="ocr_ai_integration_main_menu"
+                  name="OCR AI Integration"
+                  parent="base.menu_administration"
+                  action="odoo_ocr_ai_config_action"
+                  sequence="20"/>
+        <!-- Menu to manage OCR AI model configurations -->
+        <menuitem id="ocr_ai_configuration_menu"
+                  name="Model Configuration"
+                  action="ocr_ai_integration_action"
+                  parent="ocr_ai_integration_main_menu"
+                  sequence="2"/>
+
+    </data>
+</odoo>

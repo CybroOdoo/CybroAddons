@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- ── Inject JS class into the Customer Invoices list view ────────── -->
+        <record id="view_out_invoice_tree_inherit_ocr" model="ir.ui.view">
+            <field name="name">account.move.list.ocr.inherit</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_invoice_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="js_class">ocr_button_invoice</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- ── Inject JS class into the Vendor Bills list view ─────────────── -->
+        <record id="view_in_invoice_tree_inherit_ocr" model="ir.ui.view">
+            <field name="name">account.move.vendor.bill.list.ocr.inherit</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_in_invoice_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="js_class">ocr_button_invoice</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- ── Add OCR Details tab + hidden fields to Invoice / Bill form ── -->
+        <record id="view_ocr_ai_invoice_form_inherit" model="ir.ui.view">
+            <field name="name">account.move.form.ocr.inherit</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//group//group[1]" position="inside">
+                    <field name="is_created_ocr" invisible="1"/>
+                </xpath>
+
+                <xpath expr="//form/sheet/notebook/page[@name='other_info']"
+                       position="after">
+                    <page string="OCR Details"
+                          name="ocr_details"
+                          invisible="not is_created_ocr">
+                        <group>
+                            <group string="Source">
+                                <field name="is_created_ocr"
+                                       string="Created via OCR"
+                                       readonly="1"/>
+                                <field name="ocr_attachment_id"
+                                       string="Uploaded Document"
+                                       readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Raw OCR Response">
+                            <field name="ocr_response_text"
+                                   string="Extracted JSON"
+                                   readonly="1"
+                                   nolabel="1"/>
+                        </group>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>
