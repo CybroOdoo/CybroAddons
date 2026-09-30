@@ -1,0 +1,42 @@
+<templates>
+    <t t-inherit="web.NavBar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//header[hasclass('o_navbar')]" position="after">
+            <div class="sidebar" t-ref="sidebar">
+                <div class="wrapper">
+                    <div class="sidebar_brand d-flex justify-content-center align-items-center mb-3" t-on-click="() => this._onClickMenusPanel()">
+                        <a href="#" class="sidebar_logo_link" t-on-click.prevent="() => this._onClickMenusPanel()">
+                            <img class="sidebar_logo" t-att-src="'/theme_diwy/static/src/img/brand-icon.svg'" alt="Diwy"/>
+                        </a>
+                    </div>
+                    <ul class="sidebar_links">
+                        <t t-foreach="menuService.getApps()" t-as="app"
+                           t-key="app.id">
+                            <li t-attf-class="sidbar-item {{ app.id === state.activeApp ? 'active' : '' }}">
+                                <a role="menuitem"
+                                   t-attf-href="#menu_id={{app.id}}"
+                                   class="nav-link"
+                                   t-att-data-id="app.id"
+                                   t-att-data-menu-xmlid="app.xmlid || app.xmlID"
+                                   t-att-data-section="app.id"
+                                   t-on-click="() => this.onAppClick(app)">
+                                    <t t-if="this.getAppIcon(app)">
+                                        <img class="sidebar_img"
+                                             t-att-src="this.getAppIcon(app)"
+                                             t-att-title="app.name"
+                                             t-att-alt="app.name"/>
+                                    </t>
+                                    <t t-else="">
+                                        <i t-attf-class="bi bi-#{this.getIconClass(app.name)}"/>
+                                    </t>
+                                    <span class="a_app_menu_title">
+                                        <t t-esc="app.name"/>
+                                    </span>
+                                </a>
+                            </li>
+                        </t>
+                    </ul>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>
