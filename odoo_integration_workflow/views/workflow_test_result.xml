@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Tree View for Test Results -->
+        <record id="view_workflow_test_results_tree" model="ir.ui.view">
+            <field name="name">api.workflow.test.result.tree</field>
+            <field name="model">api.workflow.test.result</field>
+            <field name="arch" type="xml">
+                <tree string="Test Results">
+                    <field name="test_date"/>
+                    <field name="success" widget="boolean_button"/>
+                    <field name="total_nodes"/>
+                    <field name="successful_nodes"/>
+                    <field name="failed_nodes"/>
+                    <field name="success_rate" string="Success Rate"/>
+                    <field name="total_response_time" string="Total Time (s)"/>
+                    <button name="action_open_node_structure"
+                            type="object"
+                            string="View Details"
+                            class="btn-secondary"
+                            icon="fa-sitemap"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form View for Test Results -->
+        <record id="view_workflow_test_results_form" model="ir.ui.view">
+            <field name="name">api.workflow.test.result.form</field>
+            <field name="model">api.workflow.test.result</field>
+            <field name="arch" type="xml">
+                <form string="Test Result Details">
+                    <sheet>
+                        <group>
+                            <group string="Test Information">
+                                <field name="test_date" readonly="1"/>
+                                <field name="success" readonly="1" widget="boolean_button"/>
+                                <field name="total_nodes" readonly="1"/>
+                                <field name="successful_nodes" readonly="1"/>
+                                <field name="failed_nodes" readonly="1"/>
+                                <field name="success_rate" readonly="1"/>
+                            </group>
+                            <group string="Performance">
+                                <field name="total_response_time" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Node Structure">
+                                <label for="node_structure" string="Workflow Node Configuration"/>
+                                <field name="node_structure" nolabel="1" readonly="1"
+                                       widget="json_widget" options="{'mode': 'tree'}"
+                                       style="height: 400px;"/>
+                            </page>
+                            <page string="Test Responses">
+                                <label for="test_responses" string="API Test Responses"/>
+                                <field name="test_responses" nolabel="1" readonly="1"
+                                       widget="json_widget" options="{'mode': 'tree'}"
+                                       style="height: 400px;"/>
+                            </page>
+                            <page string="Error Information" invisible="[('error_message', '=', False)]">
+                                <label for="error_message" string="Error Details"/>
+                                <field name="error_message" nolabel="1" readonly="1"
+                                       style="height: 200px;"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Popup View for Node Structure -->
+        <record id="view_test_result_node_structure_form" model="ir.ui.view">
+            <field name="name">api.workflow.test.result.node.structure.form</field>
+            <field name="model">api.workflow.test.result</field>
+            <field name="arch" type="xml">
+                <form string="Node Structure Details">
+                    <sheet>
+                        <group>
+                            <group string="Test Summary">
+                                <field name="test_date" readonly="1"/>
+                                <field name="success" readonly="1" widget="boolean_button"/>
+                                <field name="total_nodes" readonly="1"/>
+                                <field name="successful_nodes" readonly="1"/>
+                                <field name="failed_nodes" readonly="1"/>
+                                <field name="success_rate" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Node Configuration">
+                            <field name="node_structure" nolabel="1" readonly="1"
+                                   widget="json_widget" options="{'mode': 'tree'}"
+                                   style="height: 500px;"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Close" class="btn-primary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- Action for Test Results -->
+        <record id="action_workflow_test_results" model="ir.actions.act_window">
+            <field name="name">Workflow Test Results</field>
+            <field name="res_model">api.workflow.test.result</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_workflow_test_results_tree"/>
+        </record>
+
+    </data>
+</odoo>

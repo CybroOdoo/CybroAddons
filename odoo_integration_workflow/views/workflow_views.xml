@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_api_workflow_form" model="ir.ui.view">
+            <field name="name">api.workflow.form</field>
+            <field name="model">api.workflow</field>
+            <field name="arch" type="xml">
+                <form string="API Workflow">
+                    <header>
+                        <button name="open_workflow_builder" type="object" string="Open Workflow Builder"
+                                class="btn-primary"/>
+                        <button name="run_workflow_from_record" type="object" string="Run Workflow"
+                                class="btn-secondary"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="description"/>
+                            <field name="created_date" readonly="1"/>
+                            <field name="active" widget="boolean_toggle" options='{"terminology": "archive"}'
+                                   string="Active"/>
+                        </group>
+                        <!-- Test Results Summary -->
+                        <group string="Latest Test Result" invisible="[('last_test_result', '=', False)]">
+                            <label for="last_test_result" string="Last Test"/>
+                            <div>
+                                <field name="last_test_result" readonly="1" nolabel="1"/>
+                                <button name="action_view_test_history" type="object"
+                                        string="View Full History" class="btn-link"/>
+                            </div>
+                        </group>
+                        <notebook>
+                            <page string="Workflow Data" groups="base.group_no_one">
+                                <group string="Workflow Data" attr="{'invisible': [('workflow_data', '=', False)]}">
+                                    <field name="workflow_data" nolabel="1" readonly="1" style="height: 300px;"/>
+                                </group>
+                            </page>
+                            <page string="Test History">
+                                <field name="test_result_ids" readonly="true" nolabel="1">
+                                    <tree>
+                                        <field name="test_date"/>
+                                        <field name="success" widget="boolean_button"/>
+                                        <field name="total_nodes"/>
+                                        <field name="successful_nodes"/>
+                                        <field name="failed_nodes"/>
+                                        <field name="success_rate" string="Success %"/>
+                                        <field name="total_response_time" string="Total Time (s)"/>
+                                        <!-- Add button to open node structure -->
+                                        <button name="action_open_node_structure"
+                                                type="object"
+                                                string="View Structure"
+                                                class="btn-primary"
+                                                icon="fa-sitemap"/>
+                                    </tree>
+
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="view_api_workflow_list" model="ir.ui.view">
+            <field name="name">api.workflow.tree</field>
+            <field name="model">api.workflow</field>
+            <field name="arch" type="xml">
+                <tree string="API Workflows">
+                    <field name="name"/>
+                    <field name="description"/>
+                    <field name="created_date"/>
+                    <field name="active"/>
+                    <button name="open_workflow_builder" type="object" string="Open" class="btn-primary"  />
+                    <button name="run_workflow_from_record" type="object" string="Run" class="btn-secondary" confirm="Are you sure you want to run this workflow? This will modify live data."/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_api_workflow" model="ir.actions.act_window">
+            <field name="name">API Workflows</field>
+            <field name="res_model">api.workflow</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Action to open workflow builder -->
+        <record id="action_open_workflow_builder" model="ir.actions.act_window">
+            <field name="name">Workflow Builder</field>
+            <field name="res_model">api.workflow</field>
+            <field name="view_mode">form</field>
+            <field name="target">current</field>
+            <field name="view_id" ref="view_api_workflow_form"/>
+        </record>
+
+        <record id="action_workflow_builder" model="ir.actions.client">
+            <field name="name">Workflow Builder</field>
+            <field name="tag">workflow_builder</field>
+            <field name="params">{}</field>
+        </record>
+
+    </data>
+</odoo>

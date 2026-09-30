@@ -1,0 +1,2063 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <t t-name="api_workflow_builder.WorkflowBuilderConfig">
+        <div class="" t-ref="config-panel">
+            <!-- 1. GLOBAL SETTINGS MODE -->
+            <!-- MODE: GLOBAL SETTINGS (When Gear Icon is Clicked) -->
+            <t t-if="state.rightPanelMode === 'settings'">
+                <!-- Header -->
+                <div class="config-header">
+
+                    <div class="config-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                             viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                  d="m9.25 22l-.4-3.2q-.325-.125-.612-.3t-.563-.375L4.7 19.375l-2.75-4.75l2.575-1.95Q4.5 12.5 4.5 12.338v-.675q0-.163.025-.338L1.95 9.375l2.75-4.75l2.975 1.25q.275-.2.575-.375t.6-.3l.4-3.2h5.5l.4 3.2q.325.125.613.3t.562.375l2.975-1.25l2.75 4.75l-2.575 1.95q.025.175.025.338v.674q0 .163-.05.338l2.575 1.95l-2.75 4.75l-2.95-1.25q-.275.2-.575.375t-.6.3l-.4 3.2zm2.8-6.5q1.45 0 2.475-1.025T15.55 12t-1.025-2.475T12.05 8.5q-1.475 0-2.488 1.025T8.55 12t1.013 2.475T12.05 15.5"/>
+                        </svg>
+                        Automation Settings
+                    </div>
+                    <div class="config-subtitle">Configure triggers and schedules</div>
+                </div>
+
+                <!-- Content -->
+                <div class="config-content">
+                    <div class="config-section">
+                        <div class="alert alert-info py-2 mb-3" style="font-size: 0.85rem;">
+                            Configure when this workflow runs automatically.
+                        </div>
+
+                        <!-- Trigger Type (Manual Binding) -->
+                        <label class="config-label">Trigger Type</label>
+                        <select class="config-select"
+                                style="color: white;"
+                                t-att-value="state.workflowSettings.trigger_type"
+                                t-on-change="(ev) => this.updateWorkflowSetting('trigger_type', ev.target.value)">
+                            <option value="manual" style="color:black">Manual / Test Only</option>
+                            <option value="cron" style="color:black">Scheduled Action (Cron)</option>
+                            <option value="model" style="color:black">Odoo Record Event</option>
+                        </select>
+
+                        <!-- 1. CRON SETTINGS -->
+                        <t t-if="state.workflowSettings.trigger_type === 'cron'">
+                            <div class="mt-3 p-3 bg-light rounded border border-secondary">
+                                <h6 class="text-muted fw-bold mb-3">Schedule Settings</h6>
+
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-4">
+                                        <label class="small text-muted d-block">Run Every</label>
+                                        <input type="number" class="config-input" min="1"
+                                               style="height: 34px; padding: 4px 8px;"
+                                               t-att-value="state.workflowSettings.interval_number"
+                                               t-on-input="(ev) => this.updateWorkflowSetting('interval_number', parseInt(ev.target.value))"/>
+                                    </div>
+                                    <div class="col-8">
+                                        <label class="small text-muted d-block">Unit</label>
+                                        <select class="config-select"
+                                                style="color: white; height: 34px; padding: 4px 8px; width: 100%;"
+                                                t-att-value="state.workflowSettings.interval_type"
+                                                t-on-change="(ev) => this.updateWorkflowSetting('interval_type', ev.target.value)">
+                                            <option value="minutes" style="color:black">Minutes</option>
+                                            <option value="hours" style="color:black">Hours</option>
+                                            <option value="days" style="color:black">Days</option>
+                                            <option value="weeks" style="color:black">Weeks</option>
+                                            <option value="months" style="color:black">Months</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-check form-switch mt-3">
+                                    <input class="form-check-input" type="checkbox" id="cronActive"
+                                           t-att-checked="state.workflowSettings.cron_active"
+                                           t-on-change="(ev) => this.updateWorkflowSetting('cron_active', ev.target.checked)"/>
+                                    <label class="form-check-label text-white" for="cronActive">Enable Scheduler</label>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- 2. MODEL EVENT SETTINGS -->
+                        <t t-if="state.workflowSettings.trigger_type === 'model'">
+                            <div class="mt-3 p-3 bg-light rounded border border-secondary">
+                                <h6 class="text-muted fw-bold mb-3">Record Event Settings</h6>
+
+                                <div class="position-relative">
+                                    <label class="config-label">Target Model</label>
+                                    <input type="text" class="config-input"
+                                           placeholder="Search model (e.g. res.partner)..."
+                                           t-att-value="state.workflowSettings.trigger_model"
+                                           t-on-input="onModelSearchInput"
+                                           t-on-focus="onModelInputFocus"
+                                           t-on-blur="onModelInputBlur"/>
+
+                                    <!-- Search Results Dropdown -->
+                                    <ul t-if="state.isModelListOpen" class="dropdown-menu show w-100 shadow"
+                                        style="max-height: 200px; overflow-y: auto; position: absolute; z-index: 1000; background: #fff;">
+                                        <t t-foreach="state.filteredModels" t-as="m" t-key="m.id">
+                                            <li>
+                                                <a class="dropdown-item" href="#" style="color: black;"
+                                                   t-on-click.prevent="() => this.selectModel(m.model)">
+                                                    <span class="fw-bold text-primary">
+                                                        <t t-esc="m.model"/>
+                                                    </span>
+                                                    <small class="d-block text-muted">
+                                                        <t t-esc="m.name"/>
+                                                    </small>
+                                                </a>
+                                            </li>
+                                        </t>
+                                    </ul>
+                                </div>
+
+                                <label class="config-label mt-3">Trigger On</label>
+                                <select class="config-select" style="color: white;"
+                                        t-att-value="state.workflowSettings.trigger_on"
+                                        t-on-change="(ev) => this.updateWorkflowSetting('trigger_on', ev.target.value)">
+                                    <optgroup label="Standard Events" style="color: grey; font-weight: bold;">
+                                        <option value="on_create" style="color:black">On Creation</option>
+                                        <option value="on_write" style="color:black">On Update</option>
+                                        <option value="on_unlink" style="color:black">On Deletion</option>
+                                    </optgroup>
+                                    <optgroup label="Value Changes" style="color: grey; font-weight: bold;">
+                                        <option value="on_archive" style="color:black">On Archived</option>
+                                        <option value="on_unarchive" style="color:black">On Unarchived</option>
+                                    </optgroup>
+                                    <optgroup label="Email Events" style="color: grey; font-weight: bold;">
+                                        <option value="on_message_received" style="color:black">On Incoming Message
+                                        </option>
+                                        <option value="on_message_sent" style="color:black">On Outgoing Message</option>
+                                    </optgroup>
+                                </select>
+
+                                <div class="form-check form-switch mt-3">
+                                    <input class="form-check-input" type="checkbox" id="autoActive"
+                                           t-att-checked="state.workflowSettings.cron_active"
+                                           t-on-change="(ev) => this.updateWorkflowSetting('cron_active', ev.target.checked)"/>
+                                    <label class="form-check-label text-white" for="autoActive">Enable Automation
+                                    </label>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+            <!-- 2. NODE SETTINGS MODE (Default) -->
+            <t t-else="">
+                <div class="config-header">
+                    <div class="config-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="currentColor" fill-rule="evenodd"
+                                  d="M14.279 2.152C13.909 2 13.439 2 12.5 2s-1.408 0-1.779.152a2 2 0 0 0-1.09 1.083c-.094.223-.13.484-.145.863a1.62 1.62 0 0 1-.796 1.353a1.64 1.64 0 0 1-1.579.008c-.338-.178-.583-.276-.825-.308a2.03 2.03 0 0 0-1.49.396c-.318.242-.553.646-1.022 1.453c-.47.807-.704 1.21-.757 1.605c-.07.526.074 1.058.4 1.479c.148.192.357.353.68.555c.477.297.783.803.783 1.361s-.306 1.064-.782 1.36c-.324.203-.533.364-.682.556a2 2 0 0 0-.399 1.479c.053.394.287.798.757 1.605s.704 1.21 1.022 1.453c.424.323.96.465 1.49.396c.242-.032.487-.13.825-.308a1.64 1.64 0 0 1 1.58.008c.486.28.774.795.795 1.353c.015.38.051.64.145.863c.204.49.596.88 1.09 1.083c.37.152.84.152 1.779.152s1.409 0 1.779-.152a2 2 0 0 0 1.09-1.083c.094-.223.13-.483.145-.863c.02-.558.309-1.074.796-1.353a1.64 1.64 0 0 1 1.579-.008c.338.178.583.276.825.308c.53.07 1.066-.073 1.49-.396c.318-.242.553-.646 1.022-1.453c.47-.807.704-1.21.757-1.605a2 2 0 0 0-.4-1.479c-.148-.192-.357-.353-.68-.555c-.477-.297-.783-.803-.783-1.361s.306-1.064.782-1.36c.324-.203.533-.364.682-.556a2 2 0 0 0 .399-1.479c-.053-.394-.287-.798-.757-1.605s-.704-1.21-1.022-1.453a2.03 2.03 0 0 0-1.49-.396c-.242.032-.487.13-.825.308a1.64 1.64 0 0 1-1.58-.008a1.62 1.62 0 0 1-.795-1.353c-.015-.38-.051-.64-.145-.863a2 2 0 0 0-1.09-1.083M12.5 15c1.67 0 3.023-1.343 3.023-3S14.169 9 12.5 9s-3.023 1.343-3.023 3s1.354 3 3.023 3"
+                                  clip-rule="evenodd"/>
+                        </svg>
+                        Node Settings
+                    </div>
+                    <div class="config-subtitle">Select a node to configure its parameters</div>
+                </div>
+                <div class="config-content">
+                    <t t-if="state.selectedNode">
+                        <t t-set="nodeConfig" t-value="state.nodeConfigs[state.selectedNode]"/>
+                        <t t-if="nodeConfig">
+                            <!-- Start Node Config -->
+                            <t t-if="nodeConfig.type === 'start'">
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23"
+                                             viewBox="0 0 48 48">
+                                            <defs>
+                                                <mask id="SVG3lzW5d7M">
+                                                    <g fill="none" stroke-linejoin="round" stroke-width="4">
+                                                        <rect width="36" height="36" x="6" y="6" fill="#fff"
+                                                              stroke="#fff" stroke-linecap="round" rx="3"/>
+                                                        <path fill="#000" stroke="#000"
+                                                              d="M18.5 24v-7.794l6.75 3.897L32 24l-6.75 3.897l-6.75 3.897z"/>
+                                                    </g>
+                                                </mask>
+                                            </defs>
+                                            <path fill="currentColor" d="M0 0h48v48H0z" mask="url(#SVG3lzW5d7M)"/>
+                                        </svg>
+                                        Start Configuration
+                                    </div>
+
+                                    <div class="help-text">
+                                        This is the entry point of your workflow logic.
+                                    </div>
+
+                                    <div style="    display: flex;
+    align-items: center;
+    gap: 10px;margin-top: 15px; padding: 15px; background: rgba(40, 167, 69, 0.1);border-radius: 6px; color: #28a745; text-align: center;">
+                                        <strong>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                 viewBox="0 0 24 24">
+                                                <path fill="currentColor"
+                                                      d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10s10-4.5 10-10S17.5 2 12 2m-2 15l-5-5l1.41-1.41L10 14.17l7.59-7.59L19 8z"/>
+                                            </svg>
+                                            Workflow Starts Here
+                                        </strong>
+                                    </div>
+                                </div>
+                            </t>
+
+
+                            <!-- End Node Config -->
+                            <t t-if="nodeConfig.type === 'end'">
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                             viewBox="0 0 48 48">
+                                            <defs>
+                                                <mask id="SVGHfF3VcIU">
+                                                    <g fill="none" stroke-linejoin="round" stroke-width="4">
+                                                        <path fill="#fff" stroke="#fff"
+                                                              d="M8 6a2 2 0 0 1 2-2h20l10 10v28a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z"/>
+                                                        <path stroke="#000" stroke-linecap="round"
+                                                              d="M16 20h16m-16 8h16"/>
+                                                    </g>
+                                                </mask>
+                                            </defs>
+                                            <path fill="currentColor" d="M0 0h48v48H0z" mask="url(#SVGHfF3VcIU)"/>
+                                        </svg>
+                                        End Configuration
+                                    </div>
+                                    <div class="help-text">This marks the final node in your workflow chain.</div>
+                                    <div style="    display: flex;
+    align-items: center;
+    gap: 10px;text-align: center; padding: 15px; background: rgba(220,53,69,0.1); border-radius: 6px; color: #dc3545;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                             viewBox="0 0 48 48">
+                                            <defs>
+                                                <mask id="SVGHfF3VcIU">
+                                                    <g fill="none" stroke-linejoin="round" stroke-width="4">
+                                                        <path fill="#fff" stroke="#fff"
+                                                              d="M8 6a2 2 0 0 1 2-2h20l10 10v28a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z"/>
+                                                        <path stroke="#000" stroke-linecap="round"
+                                                              d="M16 20h16m-16 8h16"/>
+                                                    </g>
+                                                </mask>
+                                            </defs>
+                                            <path fill="currentColor" d="M0 0h48v48H0z" mask="url(#SVGHfF3VcIU)"/>
+                                        </svg>
+                                        Workflow ends here
+                                    </div>
+                                </div>
+                            </t>
+
+                            <!-- Endpoint Node Config -->
+                            <t t-if="nodeConfig.type === 'endpoint'">
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                             viewBox="0 0 48 48">
+                                            <defs>
+                                                <mask id="SVGHfF3VcIU">
+                                                    <g fill="none" stroke-linejoin="round" stroke-width="4">
+                                                        <path fill="#fff" stroke="#fff"
+                                                              d="M8 6a2 2 0 0 1 2-2h20l10 10v28a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z"/>
+                                                        <path stroke="#000" stroke-linecap="round"
+                                                              d="M16 20h16m-16 8h16"/>
+                                                    </g>
+                                                </mask>
+                                            </defs>
+                                            <path fill="currentColor" d="M0 0h48v48H0z" mask="url(#SVGHfF3VcIU)"/>
+                                        </svg>
+                                        Base API Setup
+                                    </div>
+                                    <!-- Platform Preset Selector -->
+                                    <div class="config-section">
+                                        <div class="section-title">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                                 viewBox="0 0 24 24">
+                                                <path fill="currentColor"
+                                                      d="M21 5.653L11.998.45L3 5.652l9 5.194zm.998 1.733l-9 5.192v10.395l9-5.203zm-11 15.58V12.577l-9-5.194V17.7z"/>
+                                            </svg>
+                                            API Platform
+                                        </div>
+                                        <label class="config-label">Service Type</label>
+                                        <select class="config-select"
+                                                style="color: white;"
+                                                t-att-value="nodeConfig.config.apiPlatform || 'generic'"
+                                                data-config-key="apiPlatform"
+                                                t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'apiPlatform', ev.target.value)">
+                                            <option value="generic" style="color: black;">Generic / Custom</option>
+                                            <option value="woocommerce" style="color: black;">WooCommerce (WordPress)
+                                            </option>
+                                            <option value="shopify" style="color: black;">Shopify</option>
+                                            <!--                                        <option value="magento">Magento 2 / Adobe Commerce</option>-->
+                                            <option value="hubspot">Hubspot</option>
+                                            <option value="bigcommerce">BigCommerce</option>
+                                            <!--                                        <option value="odoo_json">Odoo External API (JSON-RPC)</option>-->
+                                        </select>
+
+                                        <!-- Dynamic Help Text -->
+                                        <t t-if="nodeConfig.config.apiPlatform === 'woocommerce'">
+                                            <div style="font-size: 0.8rem; color: #00e676; margin-top:5px;">
+                                                ✅ Auto-configured for WooCommerce. Just enter your main website URL
+                                                below
+                                                (e.g. https://myshop.com).
+                                            </div>
+                                        </t>
+                                        <t t-if="nodeConfig.config.apiPlatform === 'hubspot'">
+                                            <div style="font-size: 0.8rem; color: #00e676; margin-top:5px;">
+                                                ✅ Auto-configured for HubSpot. Just enter https://api.hubapi.com or
+                                                leave it
+                                                to use default.
+                                            </div>
+                                        </t>
+                                        <t t-if="nodeConfig.config.apiPlatform === 'shopify'">
+                                            <div style="font-size: 0.8rem; color: #00e676; margin-top:5px;">
+                                                ✅ Auto-configured for Shopify. Just enter your store URL (e.g.
+                                                https://mystore.myshopify.com).
+                                            </div>
+                                        </t>
+                                        <t t-if="nodeConfig.config.apiPlatform === 'bigcommerce'">
+                                            <div style="font-size: 0.8rem; color: #00e676; margin-top:5px;">
+                                                ✅ Auto-configured for BigCommerce. Use your Store API URL.
+                                            </div>
+                                        </t>
+
+                                    </div>
+                                    <label class="config-label">Base API URL</label>
+                                    <input type="text"
+                                           class="config-input"
+                                           data-config-key="baseUrl"
+                                           placeholder="https://api.example.com"
+                                           t-att-value="nodeConfig.config.baseUrl || ''"/>
+                                    <div class="help-text">The common base URL for all API calls in the workflow.</div>
+                                </div>
+
+
+                                <!-- Authentication Configuration -->
+                                <t t-if="['endpoint', 'authentication'].includes(nodeConfig.type)">
+
+                                    <div class="config-section">
+                                        <div class="section-title">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                                 viewBox="0 0 24 24">
+                                                <path fill="currentColor"
+                                                      d="M6 22q-.825 0-1.412-.587T4 20V10q0-.825.588-1.412T6 8h1V6q0-2.075 1.463-3.537T12 1t3.538 1.463T17 6v2h1q.825 0 1.413.588T20 10v10q0 .825-.587 1.413T18 22zm7.413-5.587Q14 15.825 14 15t-.587-1.412T12 13t-1.412.588T10 15t.588 1.413T12 17t1.413-.587M9 8h6V6q0-1.25-.875-2.125T12 3t-2.125.875T9 6z"/>
+                                            </svg>
+                                            Authentication Configuration
+                                        </div>
+                                        <label class="config-label">Auth Type</label>
+                                        <select class="config-select" style="color: white;"
+                                                t-att-value="nodeConfig.config.authType || 'none'"
+                                                data-config-key="authType"
+                                                t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'authType', ev.target.value)">
+                                            <option value="none" style="color: #000;">None</option>
+                                            <option value="basic" style="color: #000;">Basic Auth</option>
+                                            <option value="bearer" style="color: #000;">Bearer Token</option>
+                                            <option value="api-key" style="color: #000;">API Key</option>
+                                        </select>
+
+                                        <!-- 1. BASIC AUTH FIELDS (Simplified, no radio buttons) -->
+                                        <t t-if="nodeConfig.config.authType === 'basic'">
+                                            <div class="auth-config-container mt-3">
+                                                <h4 class="config-section-title">Credentials</h4>
+                                                <div class="credentials-grid">
+                                                    <div class="input-group mb-2">
+                                                        <label class="config-label">Username</label>
+                                                        <input type="text" class="config-input"
+                                                               data-config-key="username"
+                                                               placeholder="admin"
+                                                               t-att-value="nodeConfig.config.username || ''"
+                                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'username', ev.target.value)"/>
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label class="config-label">Password</label>
+                                                        <input type="password" class="config-input"
+                                                               data-config-key="password"
+                                                               placeholder="secret"
+                                                               t-att-value="nodeConfig.config.password || ''"
+                                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'password', ev.target.value)"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+
+                                        <!-- 2. BEARER TOKEN FIELDS -->
+                                        <t t-if="nodeConfig.config.authType === 'bearer'">
+                                            <div class="mt-3">
+                                                <label class="config-label">Bearer Token</label>
+                                                <input type="text" class="config-input"
+                                                       data-config-key="token"
+                                                       placeholder="Bearer eyJhbGciOiJIUzI1Ni..."
+                                                       t-att-value="nodeConfig.config.token || ''"
+                                                       t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'token', ev.target.value)"/>
+                                                <div class="help-text">Enter your access token here.</div>
+                                            </div>
+                                        </t>
+                                        <!-- 3. API KEY FIELDS -->
+                                        <t t-if="nodeConfig.config.authType === 'api-key'">
+                                            <div class="mt-3">
+                                                <label class="config-label">Key Name</label>
+                                                <input type="text" class="config-input mb-2"
+                                                       data-config-key="keyName"
+                                                       placeholder="X-API-Key"
+                                                       t-att-value="nodeConfig.config.keyName || 'X-API-Key'"
+                                                       t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'keyName', ev.target.value)"/>
+
+                                                <label class="config-label">Key Value</label>
+                                                <input type="text" class="config-input mb-2"
+                                                       data-config-key="apiKey"
+                                                       placeholder="YourSecretKey"
+                                                       t-att-value="nodeConfig.config.apiKey || ''"
+                                                       t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'apiKey', ev.target.value)"/>
+
+                                                <label class="config-label">Location</label>
+                                                <select class="config-select" style="color: white;"
+                                                        t-att-value="nodeConfig.config.keyLocation || 'header'"
+                                                        data-config-key="keyLocation"
+                                                        t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'keyLocation', ev.target.value)">
+                                                    <option value="header" style="color: #000;">Header</option>
+                                                    <option value="query" style="color: #000;">Query Parameter</option>
+                                                </select>
+                                            </div>
+                                        </t>
+
+                                        <t t-if="!nodeConfig.config.authType or nodeConfig.config.authType === 'none'">
+                                            <div style="font-size: 0.8rem; opacity: 0.8; padding: 10px; text-align: center;">
+                                                No authentication is required.
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <!-- END OF AUTH BLOCK -->
+                            </t>
+
+                            <!-- HTTP Methods Configuration (GET, POST, PUT, DELETE) -->
+                            <t t-if="['get', 'post', 'put', 'delete'].includes(nodeConfig.type)">
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                             viewBox="0 0 24 24">
+                                            <g fill="none" stroke="currentColor" stroke-linecap="round"
+                                               stroke-linejoin="round" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"/>
+                                                <path d="M12 2a14.5 14.5 0 0 0 0 20a14.5 14.5 0 0 0 0-20M2 12h20"/>
+                                            </g>
+                                        </svg>
+                                        Endpoint Details
+                                    </div>
+                                    <label class="config-label">API URL Path</label>
+
+                                    <!-- ✅ FIXED INPUT -->
+                                    <input type="text"
+                                           class="config-input"
+                                           data-config-key="url"
+                                           placeholder="/products"
+                                           t-att-value="nodeConfig.config.url || ''"/>
+
+                                    <div class="help-text">The relative path (e.g., /products) or full URL.</div>
+                                </div>
+
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                             viewBox="0 0 48 48">
+                                            <g fill="none" stroke="currentColor" stroke-width="4">
+                                                <path d="M13.5 39.37A16.93 16.93 0 0 0 24 43c3.963 0 7.61-1.356 10.5-3.63M19 9.747C12.051 11.882 7 18.351 7 26c0 1.925.32 3.775.91 5.5M29 9.747C35.949 11.882 41 18.351 41 26c0 1.925-.32 3.775-.91 5.5"/>
+                                                <path fill="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M43 36c0 1.342-.528 2.56-1.388 3.458A5 5 0 1 1 43 36m-28 0c0 1.342-.528 2.56-1.388 3.458A5 5 0 1 1 15 36M29 9c0 1.342-.528 2.56-1.388 3.458A5 5 0 1 1 29 9"/>
+                                            </g>
+                                        </svg>
+                                        Request Details
+                                    </div>
+                                    <label class="config-label">HTTP Method</label>
+                                    <div style="font-size: 1rem; font-weight: bold; color: #714b67; text-align: center; padding: 10px; background: rgb(113 75 103 / 17%); border-radius: 6px;">
+                                        <t t-esc="nodeConfig.type.toUpperCase()"/>
+                                    </div>
+                                    <label class="config-label" style="margin-top: 12px;">Timeout (ms)</label>
+                                    <input type="number"
+                                           class="config-input"
+                                           placeholder="10000"
+                                           t-att-value="nodeConfig.config.timeout || 10000"
+                                           t-on-input="(ev) => this.updateNodeConfig('timeout', parseInt(ev.target.value))"/>
+                                    <div class="help-text">Time (in milliseconds) before the request is aborted.</div>
+                                </div>
+                                <!--                            <div class="config-section">-->
+                                <!--                                <div class="section-title">-->
+                                <!--                                    <span class="section-icon">🔐</span>-->
+                                <!--                                    Authentication Configuration-->
+                                <!--                                </div>-->
+                                <!--                                <label class="config-label">Auth Type</label>-->
+                                <!--                                <select class="config-select" style="color: white;"-->
+                                <!--                                        t-att-value="nodeConfig.config.authType || 'none'"-->
+                                <!--                                        t-on-change="(ev) => this.updateAuthType(activeNodeId, ev.target.value)">-->
+                                <!--                                    <option value="none" style="color: #000;">None</option>-->
+                                <!--                                    <option value="basic" style="color: #000;">Basic Auth</option>-->
+                                <!--                                    <option value="api-key" style="color: #000;">API Key</option>-->
+                                <!--                                </select>-->
+
+                                <!--                                &lt;!&ndash; Basic Auth Fields &ndash;&gt;-->
+                                <!--                                <t t-if="nodeConfig.config.authType === 'basic'">-->
+                                <!--                                    <div class="auth-config-container">-->
+                                <!--                                        &lt;!&ndash; Authentication Method Selection &ndash;&gt;-->
+                                <!--                                        <div class="config-section">-->
+                                <!--                                            <h4 class="config-section-title">Authentication Type</h4>-->
+                                <!--                                            <div class="radio-group">-->
+                                <!--                                                <label class="radio-option">-->
+                                <!--                                                    <input type="radio"-->
+                                <!--                                                           class="form-radio"-->
+                                <!--                                                           name="basicAuthType"-->
+                                <!--                                                           value="username-password"-->
+                                <!--                                                           t-att-checked="nodeConfig.config.basicAuthMethod !== 'api-key-secret'"-->
+                                <!--                                                           t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'basicAuthMethod', 'username-password')"/>-->
+                                <!--                                                    <span class="radio-label">Username &amp; Password</span>-->
+                                <!--                                                </label>-->
+                                <!--                                                <label class="radio-option">-->
+                                <!--                                                    <input type="radio"-->
+                                <!--                                                           class="form-radio"-->
+                                <!--                                                           name="basicAuthType"-->
+                                <!--                                                           value="api-key-secret"-->
+                                <!--                                                           t-att-checked="nodeConfig.config.basicAuthMethod === 'api-key-secret'"-->
+                                <!--                                                           t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'basicAuthMethod', 'api-key-secret')"/>-->
+                                <!--                                                    <span class="radio-label">API Key &amp; Secret</span>-->
+                                <!--                                                </label>-->
+                                <!--                                            </div>-->
+                                <!--                                        </div>-->
+
+                                <!--                                        &lt;!&ndash; Username &amp; Password Configuration &ndash;&gt;-->
+                                <!--                                        <t t-if="nodeConfig.config.basicAuthMethod !== 'api-key-secret'">-->
+                                <!--                                            <div class="config-section">-->
+                                <!--                                                <h4 class="config-section-title">Credentials</h4>-->
+                                <!--                                                <div class="credentials-grid">-->
+                                <!--                                                    <div class="input-group">-->
+                                <!--                                                        <label class="config-label">Username</label>-->
+                                <!--                                                        <input type="text"-->
+                                <!--                                                               class="config-input"-->
+                                <!--                                                               placeholder="Enter username"-->
+                                <!--                                                               t-att-value="nodeConfig.config.username || ''"-->
+                                <!--                                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'username', ev.target.value)"/>-->
+                                <!--                                                    </div>-->
+                                <!--                                                    <div class="input-group">-->
+                                <!--                                                        <label class="config-label">Password</label>-->
+                                <!--                                                        <input type="password"-->
+                                <!--                                                               class="config-input"-->
+                                <!--                                                               placeholder="Enter password"-->
+                                <!--                                                               t-att-value="nodeConfig.config.password || ''"-->
+                                <!--                                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'password', ev.target.value)"/>-->
+                                <!--                                                    </div>-->
+                                <!--                                                </div>-->
+                                <!--                                            </div>-->
+                                <!--                                        </t>-->
+
+                                <!--                                        &lt;!&ndash; API Key &amp; Secret Configuration &ndash;&gt;-->
+                                <!--                                        <t t-if="nodeConfig.config.basicAuthMethod === 'api-key-secret'">-->
+                                <!--                                            <div class="config-section">-->
+                                <!--                                                <h4 class="config-section-title">API Credentials</h4>-->
+                                <!--                                                <div class="credentials-grid">-->
+                                <!--                                                    <div class="input-group">-->
+                                <!--                                                        <label class="config-label">API Key</label>-->
+                                <!--                                                        <input type="text"-->
+                                <!--                                                               class="config-input"-->
+                                <!--                                                               placeholder="Enter API key"-->
+                                <!--                                                               t-att-value="nodeConfig.config.apiKey || ''"-->
+                                <!--                                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'apiKey', ev.target.value)"/>-->
+                                <!--                                                    </div>-->
+                                <!--                                                    <div class="input-group">-->
+                                <!--                                                        <label class="config-label">Secret Key</label>-->
+                                <!--                                                        <input type="password"-->
+                                <!--                                                               class="config-input"-->
+                                <!--                                                               placeholder="Enter secret key"-->
+                                <!--                                                               t-att-value="nodeConfig.config.secretKey || ''"-->
+                                <!--                                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'secretKey', ev.target.value)"/>-->
+                                <!--                                                    </div>-->
+                                <!--                                                </div>-->
+                                <!--                                            </div>-->
+
+                                <!--                                            &lt;!&ndash; Key Placement Configuration &ndash;&gt;-->
+                                <!--                                            <div class="config-section">-->
+                                <!--                                                <h4 class="config-section-title">Key Placement</h4>-->
+                                <!--                                                <div class="input-group">-->
+                                <!--                                                    <label class="config-label">Location</label>-->
+                                <!--                                                    <select class="config-select" style="color: white;"-->
+                                <!--                                                            t-att-value="nodeConfig.config.keyLocation || 'header'"-->
+                                <!--                                                            data-config-key="keyLocation"-->
+                                <!--                                                            t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'keyLocation', ev.target.value)">-->
+                                <!--                                                        <option value="header" style="color: #000;">HTTP Header</option>-->
+                                <!--                                                        <option value="query" style="color: #000;">Query Parameter-->
+                                <!--                                                        </option>-->
+                                <!--                                                        <option value="basic-auth" style="color: #000;">Basic-->
+                                <!--                                                            Authentication-->
+                                <!--                                                        </option>-->
+                                <!--                                                    </select>-->
+                                <!--                                                    <div class="help-text">-->
+                                <!--                                                        <t t-if="nodeConfig.config.keyLocation === 'header'">-->
+                                <!--                                                            API key will be sent in the request headers-->
+                                <!--                                                        </t>-->
+                                <!--                                                        <t t-if="nodeConfig.config.keyLocation === 'query'">-->
+                                <!--                                                            API key will be added as a URL query parameter-->
+                                <!--                                                        </t>-->
+                                <!--                                                        <t t-if="nodeConfig.config.keyLocation === 'basic-auth'">-->
+                                <!--                                                            API key as username, Secret as password in Basic Auth-->
+                                <!--                                                        </t>-->
+                                <!--                                                    </div>-->
+                                <!--                                                </div>-->
+
+                                <!--                                                &lt;!&ndash; Custom Field Name Configuration &ndash;&gt;-->
+                                <!--                                                <t t-if="nodeConfig.config.keyLocation !== 'basic-auth'">-->
+                                <!--                                                    <div class="input-group">-->
+                                <!--                                                        <label class="config-label">-->
+                                <!--                                                            <t t-if="nodeConfig.config.keyLocation === 'header'">Header-->
+                                <!--                                                                Name-->
+                                <!--                                                            </t>-->
+                                <!--                                                            <t t-if="nodeConfig.config.keyLocation === 'query'">-->
+                                <!--                                                                Parameter Name-->
+                                <!--                                                            </t>-->
+                                <!--                                                        </label>-->
+                                <!--                                                        <input type="text"-->
+                                <!--                                                               class="config-input"-->
+                                <!--                                                               t-att-placeholder="nodeConfig.config.keyLocation === 'header' ? 'X-API-Key' : 'api_key'"-->
+                                <!--                                                               t-att-value="nodeConfig.config.keyName || (nodeConfig.config.keyLocation === 'header' ? 'X-API-Key' : 'api_key')"-->
+                                <!--                                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'keyName', ev.target.value)"/>-->
+                                <!--                                                        <div class="help-text">-->
+                                <!--                                                            Customize the field name used in the-->
+                                <!--                                                            <t t-esc="nodeConfig.config.keyLocation"/>-->
+                                <!--                                                        </div>-->
+                                <!--                                                    </div>-->
+                                <!--                                                </t>-->
+                                <!--                                            </div>-->
+                                <!--                                        </t>-->
+                                <!--                                    </div>-->
+                                <!--                                </t>-->
+
+                                <!--                                &lt;!&ndash; Bearer Token Fields &ndash;&gt;-->
+                                <!--                                <t t-if="nodeConfig.config.authType === 'bearer'">-->
+                                <!--                                    <label class="config-label">Bearer Token</label>-->
+                                <!--                                    <input type="text"-->
+                                <!--                                           class="config-input"-->
+                                <!--                                           placeholder="eyJhbGciOiJIUzI1Ni..."-->
+                                <!--                                           t-att-value="nodeConfig.config.token || ''"-->
+                                <!--                                           t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'token', ev.target.value)"/>-->
+                                <!--                                </t>-->
+
+                                <!--                                &lt;!&ndash; API Key Fields &ndash;&gt;-->
+                                <!--                                <t t-if="nodeConfig.config.authType === 'api-key'">-->
+                                <!--                                    <label class="config-label">API Key</label>-->
+                                <!--                                    <input type="text"-->
+                                <!--                                           class="config-input"-->
+                                <!--                                           placeholder="YourSecretKey"-->
+                                <!--                                           t-att-value="nodeConfig.config.apiKey || ''"-->
+                                <!--                                           t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'apiKey', ev.target.value)"/>-->
+
+                                <!--                                    <label class="config-label">Key Location</label>-->
+                                <!--                                    <select class="config-select" style="color: white;"-->
+                                <!--                                            t-att-value="nodeConfig.config.keyLocation || 'header'"-->
+                                <!--                                            t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'keyLocation', ev.target.value)">-->
+                                <!--                                        <option value="header" style="color: #000;">Header</option>-->
+                                <!--                                        <option value="query" style="color: #000;">Query Parameter</option>-->
+                                <!--                                    </select>-->
+
+                                <!--                                    &lt;!&ndash; API Key Name (Custom Header/Parameter Name) &ndash;&gt;-->
+                                <!--                                    <label class="config-label">Key Name</label>-->
+                                <!--                                    <input type="text"-->
+                                <!--                                           class="config-input"-->
+                                <!--                                           placeholder="X-API-Key"-->
+                                <!--                                           t-att-value="nodeConfig.config.keyName || 'X-API-Key'"-->
+                                <!--                                           t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'keyName', ev.target.value)"/>-->
+                                <!--                                    <div class="help-text">Custom name for the API key (e.g., X-API-Key,-->
+                                <!--                                        Authorization, api_key)-->
+                                <!--                                    </div>-->
+                                <!--                                </t>-->
+
+                                <!--                                <t t-if="nodeConfig.config.authType === 'none'">-->
+                                <!--                                    <div style="font-size: 0.8rem; opacity: 0.8; padding: 10px; text-align: center;">-->
+                                <!--                                        No authentication is required.-->
+                                <!--                                    </div>-->
+                                <!--                                </t>-->
+
+                                <!--                                <div class="help-text">Configure the security parameters for the API.</div>-->
+                                <!--                            </div>-->
+
+                                <!-- Request Body for POST/PUT -->
+                                <t t-if="nodeConfig.type === 'post' or nodeConfig.type === 'put'">
+                                    <div class="config-section">
+                                        <div class="section-title">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23"
+                                                 viewBox="0 0 16 16">
+                                                <g fill="none" stroke="currentColor" stroke-linecap="round"
+                                                   stroke-linejoin="round" stroke-width="1.5">
+                                                    <circle cx="12.5" cy="12.5" r="1.75"/>
+                                                    <circle cx="3.5" cy="12.5" r="1.75"/>
+                                                    <circle cx="3.5" cy="3.5" r="1.75"/>
+                                                    <path d="m9.25 1.75-1.5 2 1.5 2m3 4.5v-5c0-1-.5-1.5-1.5-1.5h-2m-5 2v4.5"/>
+                                                </g>
+                                            </svg>
+                                            Request Body
+                                        </div>
+
+                                        <!-- Body Type Selection -->
+                                        <div class="config-section">
+                                            <div class="section-title">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                                     viewBox="0 0 24 24">
+                                                    <path fill="currentColor"
+                                                          d="m12.89 3l1.96.4L11.11 21l-1.96-.4zm6.7 9L16 8.41V5.58L22.42 12L16 18.41v-2.83zM1.58 12L8 5.58v2.83L4.41 12L8 15.58v2.83z"/>
+                                                </svg>
+                                                Body Format
+                                            </div>
+                                            <label class="config-label">Body Type</label>
+                                            <div class="body-type-selector">
+                                                <label class="radio-label">
+                                                    <input type="radio"
+                                                           name="bodyType"
+                                                           value="json"
+                                                           t-att-checked="nodeConfig.config.bodyType !== 'form'"
+                                                           t-on-change="(ev) => this.updateBodyType('json')"/>
+                                                    <span class="radio-custom"></span>
+                                                    JSON Raw
+                                                </label>
+                                                <label class="radio-label">
+                                                    <input type="radio"
+                                                           name="bodyType"
+                                                           value="form"
+                                                           t-att-checked="nodeConfig.config.bodyType === 'form'"
+                                                           t-on-change="(ev) => this.updateBodyType('form')"/>
+                                                    <span class="radio-custom"></span>
+                                                    Form Data
+                                                </label>
+                                            </div>
+                                            <div class="help-text">Choose between raw JSON or form-based data
+                                                structure
+                                            </div>
+                                        </div>
+
+                                        <!-- JSON Structure -->
+                                        <t t-if="nodeConfig.config.bodyType !== 'form'">
+                                            <div class="config-section">
+                                                <div class="section-title">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                                         viewBox="0 0 24 24">
+                                                        <path fill="currentColor" fill-rule="evenodd"
+                                                              d="M7.835 3.97A1 1 0 0 1 6.865 5c-.41.012-.722.077-.955.17a.87.87 0 0 0-.398.29c-.051.085-.116.263-.116.606V9.23c0 .928-.25 1.782-.84 2.459l-.01.012q-.136.15-.288.281q.159.141.3.306c.592.666.838 1.515.838 2.436v3.231c0 .34.07.514.124.598l.012.019c.062.1.152.183.323.244l.033.013c.23.092.547.158.976.17a1 1 0 0 1-.057 2c-.591-.017-1.147-.11-1.646-.307a2.57 2.57 0 0 1-1.324-1.059c-.322-.5-.441-1.084-.441-1.678v-3.23c0-.568-.147-.9-.337-1.112l-.023-.026c-.18-.214-.53-.438-1.212-.56A1 1 0 0 1 1 12.044v-.132a1 1 0 0 1 .821-.984c.665-.12 1.032-.338 1.233-.558c.198-.231.342-.578.342-1.14V6.067c0-.605.118-1.204.447-1.71l.02-.028a2.86 2.86 0 0 1 1.304-1.015c.5-.2 1.053-.295 1.639-.313a1 1 0 0 1 1.029.97m8.33 0a1 1 0 0 1 1.03-.97c.585.018 1.138.113 1.638.313a2.86 2.86 0 0 1 1.324 1.043c.33.506.447 1.105.447 1.71V9.23c0 .56.144.908.343 1.139c.2.22.567.437 1.232.558a1 1 0 0 1 .821.984v.132a1 1 0 0 1-.824.984c-.682.122-1.033.346-1.212.56l-.023.026c-.19.211-.337.544-.337 1.111v3.231c0 .594-.12 1.179-.44 1.678a2.57 2.57 0 0 1-1.325 1.06c-.499.196-1.055.289-1.646.306a1 1 0 1 1-.057-2c.429-.012.746-.078.976-.17l.029-.011l.004-.002a.58.58 0 0 0 .323-.244l.012-.02c.055-.083.124-.257.124-.597v-3.23c0-.922.246-1.771.839-2.437q.14-.165.3-.306a3 3 0 0 1-.288-.281l-.011-.012c-.59-.677-.84-1.53-.84-2.46V6.067c0-.343-.065-.521-.116-.607a.87.87 0 0 0-.398-.289c-.233-.093-.544-.158-.955-.17a1 1 0 0 1-.97-1.03M9 14a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1m3 0a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1m3 0a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1"
+                                                              clip-rule="evenodd"/>
+                                                    </svg>
+                                                    JSON Payload
+                                                </div>
+                                                <div class="help-text">Enter the JSON payload for POST/PUT requests. Use
+                                                    double quotes for keys and string values.
+                                                </div>
+                                                <div class="template-buttons">
+                                                    <button class="template-btn"
+                                                            t-on-click="() => this.applyBodyTemplate('object')">
+                                                        { "key": "value" }
+                                                    </button>
+                                                    <!--                                                <button class="template-btn"-->
+                                                    <!--                                                        t-on-click="() => this.applyBodyTemplate('array')">-->
+                                                    <!--&lt;!&ndash;                                                    [ { "item": 1 } ]&ndash;&gt;-->
+                                                    <!--                                                </button>-->
+                                                    <button class="template-btn"
+                                                            t-on-click="() => this.formManager.convertJsonToForm()">
+                                                        JSON to Form
+                                                    </button>
+                                                </div>
+                                                <label class="config-label">JSON Payload</label>
+                                                <textarea class="config-textarea json-payload"
+                                                          placeholder='{"key": "value"}'
+                                                          data-config-key="body"
+                                                          t-att-value="nodeConfig.config.body || ''"
+                                                          t-on-input="(ev) => this.updateNodeConfig('body', ev.target.value)"
+                                                          t-on-change="(ev) => this.saveTextareaValue('body', ev)"
+                                                          t-on-blur="(ev) => this.updateNodeConfig(nodeConfig.nodeId, 'body', ev.target.value)"/>
+                                            </div>
+                                        </t>
+
+                                        <!-- Form Structure -->
+                                        <t t-if="nodeConfig.config.bodyType === 'form'">
+                                            <div class="config-section">
+                                                <div class="section-title">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                                         viewBox="0 0 24 24">
+                                                        <path fill="currentColor"
+                                                              d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21zM5 8.325h14V5H5zm0 5.35h14v-3.35H5zM5 19h14v-3.325H5zM6 7.65v-2h2v2zM6 13v-2h2v2zm0 5.35v-2h2v2z"/>
+                                                    </svg>
+                                                    Form Data Structure
+                                                </div>
+                                                <div class="help-text">Add key-value pairs for your request body. These
+                                                    will be converted to JSON format.
+                                                </div>
+
+                                                <!-- Add Field Button at TOP -->
+                                                <div class="form-header-actions">
+                                                    <t t-if="formManager.hasFormFields(state.selectedNode)">
+                                                        <button class="clear-all-fields-btn bttn-suc"
+                                                                t-on-click="() => this.clearAllFormFields()">
+                                                            Clear All
+                                                        </button>
+                                                    </t>
+                                                </div>
+
+                                                <!-- Form Fields List -->
+                                                <div class="form-fields-container">
+                                                    <t t-if="!formManager.hasFormFields(state.selectedNode)">
+                                                        <div class="no-fields-message">
+                                                            <div class="no-fields-icon">📝</div>
+                                                            <h4>No Form Fields Added</h4>
+                                                            <p>Click "Add New Field" above to start building your form
+                                                                data structure
+                                                            </p>
+                                                        </div>
+                                                    </t>
+
+                                                    <t t-foreach="nodeConfig.config.formFields" t-as="field"
+                                                       t-key="field_index">
+                                                        <div class="form-field-row">
+                                                            <div class="form-field-inputs">
+
+                                                                <label class="input-label">Field Name (Key)</label>
+                                                                <input type="text"
+                                                                       class="config-input form-field-key"
+                                                                       placeholder="Enter field name (e.g., username, email, age)"
+                                                                       t-att-value="field.key"
+                                                                       t-on-input="(ev) => this.updateFormField(field_index, 'key', ev.target.value)"/>
+
+                                                                <label class="input-label">Field Value</label>
+                                                                <input type="text"
+                                                                       class="config-input form-field-value"
+                                                                       placeholder="Enter field value (e.g., john_doe, user@example.com, 25)"
+                                                                       t-att-value="field.value"
+                                                                       t-on-input="(ev) => this.updateFormField(field_index, 'value', ev.target.value)"/>
+
+                                                                <div class="form-field-header">
+                                                                    <button class="remove-form-field-btn"
+                                                                            t-on-click="() => this.removeFormField(field_index)"
+                                                                            title="Remove this field">
+                                                                        Remove
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </t>
+                                                </div>
+
+                                                <!-- Bottom Actions -->
+                                                <t t-if="formManager.hasFormFields(state.selectedNode)">
+                                                    <div class="form-footer-actions">
+                                                        <button class="add-form-field-btn"
+                                                                t-on-click="() => this.addFormField()">
+                                                            Add Another Field
+                                                        </button>
+                                                        <button class="convert-to-json-btn"
+                                                                t-on-click="() => this.convertFormToJson()">
+                                                            Convert to JSON
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- JSON Preview -->
+                                                    <div class="config-section">
+                                                        <div class="section-title">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="22"
+                                                                 height="22" viewBox="0 0 48 48">
+                                                                <g fill="none" stroke="currentColor"
+                                                                   stroke-linejoin="round" stroke-width="4">
+                                                                    <path d="M24 36c11.046 0 20-12 20-12s-8.954-12-20-12S4 24 4 24s8.954 12 20 12Z"/>
+                                                                    <path d="M24 29a5 5 0 1 0 0-10a5 5 0 0 0 0 10Z"/>
+                                                                </g>
+                                                            </svg>
+                                                            JSON Preview
+                                                        </div>
+                                                        <label class="config-label">Generated JSON</label>
+                                                        <div class="json-preview">
+                                                            <t t-esc="formManager.generateJsonFromForm(nodeConfig.config.formFields)"/>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <!-- Test Button and Response Area -->
+                            </t>
+
+                            <!-- Authentication Node Config -->
+                            <t t-if="nodeConfig.type === 'auth'">
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                             viewBox="0 0 24 24">
+                                            <path fill="currentColor"
+                                                  d="m14 12l-2 2l-2-2l2-2zm-2-6l2.12 2.12l2.5-2.5L12 1L7.38 5.62l2.5 2.5zm-6 6l2.12-2.12l-2.5-2.5L1 12l4.62 4.62l2.5-2.5zm12 0l-2.12 2.12l2.5 2.5L23 12l-4.62-4.62l-2.5 2.5zm-6 6l-2.12-2.12l-2.5 2.5L12 23l4.62-4.62l-2.5-2.5z"/>
+                                        </svg>
+                                        Base API Setup
+                                    </div>
+                                    <label class="config-label">Base API URL</label>
+                                    <input type="text"
+                                           class="config-input"
+                                           placeholder="https://api.example.com"
+                                           t-att-value="nodeConfig.config.baseUrl || ''"
+                                           t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'baseUrl', ev.target.value)"/>
+                                    <div class="help-text">The common base URL for all API calls in the workflow.</div>
+                                </div>
+
+                                <!-- Authentication Configuration -->
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                             viewBox="0 0 24 24">
+                                            <path fill="currentColor"
+                                                  d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"/>
+                                        </svg>
+                                        Authentication Configuration
+                                    </div>
+                                    <label class="config-label">Auth Type</label>
+                                    <select class="config-select" style="color: white;"
+                                            t-att-value="nodeConfig.config.authType || 'none'"
+                                            t-on-change="(ev) => this.updateAuthType(state.selectedNode,
+                                         ev.target.value)">
+                                        <option value="none" style="color: #000;">None</option>
+                                        <option value="basic" style="color: #000;">Basic Auth</option>
+                                        <option value="bearer" style="color: #000;">Bearer Token</option>
+                                        <option value="api-key" style="color: #000;">API Key</option>
+                                    </select>
+
+                                    <!-- Basic Auth Fields -->
+                                    <t t-if="nodeConfig.config.authType === 'basic'">
+                                        <div class="auth-config-container">
+                                            <!-- Authentication Method Selection -->
+                                            <div class="config-section">
+                                                <h4 class="config-section-title">Authentication Type</h4>
+                                                <div class="radio-group">
+                                                    <label class="radio-option">
+                                                        <input type="radio"
+                                                               class="form-radio"
+                                                               name="basicAuthType"
+                                                               value="username-password"
+                                                               t-att-checked="nodeConfig.config.basicAuthMethod !== 'api-key-secret'"
+                                                               t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'basicAuthMethod', 'username-password')"/>
+                                                        <span class="radio-label">Username &amp; Password</span>
+                                                    </label>
+                                                    <label class="radio-option">
+                                                        <input type="radio"
+                                                               class="form-radio"
+                                                               name="basicAuthType"
+                                                               value="api-key-secret"
+                                                               t-att-checked="nodeConfig.config.basicAuthMethod === 'api-key-secret'"
+                                                               t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'basicAuthMethod', 'api-key-secret')"/>
+                                                        <span class="radio-label">API Key &amp; Secret</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <!-- Username &amp; Password Configuration -->
+                                            <t t-if="nodeConfig.config.basicAuthMethod !== 'api-key-secret'">
+                                                <div class="config-section">
+                                                    <h4 class="config-section-title">Credentials</h4>
+                                                    <div class="credentials-grid">
+                                                        <div class="input-group">
+                                                            <label class="config-label">Username</label>
+                                                            <input type="text"
+                                                                   class="config-input"
+                                                                   placeholder="Enter username"
+                                                                   t-att-value="nodeConfig.config.username || ''"
+                                                                   t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'username', ev.target.value)"/>
+                                                        </div>
+                                                        <div class="input-group">
+                                                            <label class="config-label">Password</label>
+                                                            <input type="password"
+                                                                   class="config-input"
+                                                                   placeholder="Enter password"
+                                                                   t-att-value="nodeConfig.config.password || ''"
+                                                                   t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'password', ev.target.value)"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+
+                                            <!-- API Key &amp; Secret Configuration -->
+                                            <t t-if="nodeConfig.config.basicAuthMethod === 'api-key-secret'">
+                                                <div class="config-section">
+                                                    <h4 class="config-section-title">API Credentials</h4>
+                                                    <div class="credentials-grid">
+                                                        <div class="input-group">
+                                                            <label class="config-label">API Key</label>
+                                                            <input type="text"
+                                                                   class="config-input"
+                                                                   placeholder="Enter API key"
+                                                                   t-att-value="nodeConfig.config.apiKey || ''"
+                                                                   t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'apiKey', ev.target.value)"/>
+                                                        </div>
+                                                        <div class="input-group">
+                                                            <label class="config-label">Secret Key</label>
+                                                            <input type="password"
+                                                                   class="config-input"
+                                                                   placeholder="Enter secret key"
+                                                                   t-att-value="nodeConfig.config.secretKey || ''"
+                                                                   t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'secretKey', ev.target.value)"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Key Placement Configuration -->
+                                                <div class="config-section">
+                                                    <h4 class="config-section-title">Key Placement</h4>
+                                                    <div class="input-group">
+                                                        <label class="config-label">Location</label>
+                                                        <select class="config-select" style="color: white;"
+                                                                data-config-key="keyLocation"
+                                                                t-att-value="nodeConfig.config.keyLocation || 'header'"
+                                                                t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'keyLocation', ev.target.value)">
+                                                            <option value="header" style="color: #000;">HTTP Header
+                                                            </option>
+                                                            <option value="query" style="color: #000;">Query Parameter
+                                                            </option>
+                                                            <option value="basic-auth" style="color: #000;">Basic
+                                                                Authentication
+                                                            </option>
+                                                        </select>
+                                                        <div class="help-text">
+                                                            <t t-if="nodeConfig.config.keyLocation === 'header'">
+                                                                API key will be sent in the request headers
+                                                            </t>
+                                                            <t t-if="nodeConfig.config.keyLocation === 'query'">
+                                                                API key will be added as a URL query parameter
+                                                            </t>
+                                                            <t t-if="nodeConfig.config.keyLocation === 'basic-auth'">
+                                                                API key as username, Secret as password in Basic Auth
+                                                            </t>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Custom Field Name Configuration -->
+                                                    <t t-if="nodeConfig.config.keyLocation !== 'basic-auth'">
+                                                        <div class="input-group">
+                                                            <label class="config-label">
+                                                                <t t-if="nodeConfig.config.keyLocation === 'header'">
+                                                                    Header Name
+                                                                </t>
+                                                                <t t-if="nodeConfig.config.keyLocation === 'query'">
+                                                                    Parameter Name
+                                                                </t>
+                                                            </label>
+                                                            <input type="text"
+                                                                   class="config-input"
+                                                                   t-att-placeholder="nodeConfig.config.keyLocation === 'header' ? 'X-API-Key' : 'api_key'"
+                                                                   t-att-value="nodeConfig.config.keyName || (nodeConfig.config.keyLocation === 'header' ? 'X-API-Key' : 'api_key')"
+                                                                   t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'keyName', ev.target.value)"/>
+                                                            <div class="help-text">
+                                                                Customize the field name used in the
+                                                                <t t-esc="nodeConfig.config.keyLocation"/>
+                                                            </div>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </t>
+
+                                    <!-- Bearer Token Fields -->
+                                    <t t-if="nodeConfig.config.authType === 'bearer'">
+                                        <label class="config-label">Bearer Token</label>
+                                        <input type="text"
+                                               class="config-input"
+                                               placeholder="eyJhbGciOiJIUzI1Ni..."
+                                               t-att-value="nodeConfig.config.token || ''"
+                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode,'token', ev.target.value)"/>
+                                    </t>
+
+                                    <!-- API Key Fields -->
+                                    <t t-if="nodeConfig.config.authType === 'api-key'">
+                                        <label class="config-label">API Key</label>
+                                        <input type="text"
+                                               class="config-input"
+                                               placeholder="YourSecretKey"
+                                               t-att-value="nodeConfig.config.apiKey || ''"
+                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'apiKey', ev.target.value)"/>
+
+                                        <label class="config-label">Key Location</label>
+                                        <select class="config-select" style="color: white;"
+                                                t-att-value="nodeConfig.config.keyLocation || 'header'"
+                                                t-on-change="(ev) => this.updateNodeConfig(state.selectedNode,'keyLocation','authType',
+                                             ev.target.value)">
+                                            <option value="header" style="color: #000;">Header</option>
+                                            <option value="query">Query Parameter</option>
+                                        </select>
+                                    </t>
+
+                                    <t t-if="nodeConfig.config.authType === 'none'">
+                                        <div style="font-size: 0.8rem; opacity: 0.8; padding: 10px; text-align: center;">
+                                            No authentication is required.
+                                        </div>
+                                    </t>
+
+                                    <div class="help-text">Configure the security parameters for the API.</div>
+                                </div>
+                            </t>
+
+                            <!-- Query Parameters Node Config -->
+                            <t t-if="nodeConfig.type === 'params'">
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <span class="section-icon">❓</span>
+                                        Query Parameters
+                                    </div>
+                                    <div class="help-text">Add query parameters (e.g., `?userId=1`). Key and Value are
+                                        added to the URL.
+                                    </div>
+
+                                    <!-- Parameters List -->
+                                    <div class="param-builder">
+                                        <t t-foreach="nodeConfig.config.params || []" t-as="param" t-key="param_index">
+                                            <div class="param-item">
+                                                <span t-esc="param.key + ': ' + param.value"/>
+                                                <span class="remove-btn"
+                                                      t-on-click="() => this.removeParam(state.selectedNode, 'params', param_index)">
+                                                    ×
+                                                </span>
+                                            </div>
+                                        </t>
+                                    </div>
+
+                                    <label class="config-label">Parameter Key</label>
+                                    <input type="text"
+                                           class="config-input"
+                                           placeholder="key_name"
+                                           t-att-id="'param-key-' + state.selectedNode"/>
+
+                                    <label class="config-label">Parameter Value</label>
+                                    <input type="text"
+                                           class="config-input"
+                                           placeholder="value_content"
+                                           t-att-id="'param-value-' + state.selectedNode"/>
+
+                                    <button class="add-btn"
+                                            t-on-click="() => this.addParamFromInputs(state.selectedNode, 'params')">
+                                        + Add Parameter
+                                    </button>
+                                </div>
+                            </t>
+
+                            <!-- Headers Node Config -->
+                            <t t-if="nodeConfig.type === 'headers'">
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <span class="section-icon">📋</span>
+                                        Custom Headers
+                                    </div>
+                                    <div class="help-text">Add custom HTTP headers (e.g., `Content-Type:
+                                        application/json`).
+                                    </div>
+
+                                    <!-- Headers List -->
+                                    <div class="param-builder">
+                                        <t t-foreach="nodeConfig.config.headers || []" t-as="header"
+                                           t-key="header_index">
+                                            <div class="param-item">
+                                                <span t-esc="header.key + ': ' + header.value"/>
+                                                <span class="remove-btn"
+                                                      t-on-click="() => this.removeParam(state.selectedNode, 'headers', header_index)">
+                                                    ×
+                                                </span>
+                                            </div>
+                                        </t>
+                                    </div>
+
+                                    <label class="config-label">Header Key</label>
+                                    <input type="text"
+                                           class="config-input"
+                                           placeholder="Content-Type"
+                                           t-att-id="'header-key-' + state.selectedNode"/>
+
+                                    <label class="config-label">Header Value</label>
+                                    <input type="text"
+                                           class="config-input"
+                                           placeholder="application/json"
+                                           t-att-id="'header-value-' + state.selectedNode"/>
+
+                                    <button class="add-btn"
+                                            t-on-click="() => this.addParamFromInputs(state.selectedNode, 'headers')">
+                                        + Add Header
+                                    </button>
+                                </div>
+                            </t>
+
+                            <!-- Request Body Node Config -->
+                            <t t-if="nodeConfig.type === 'body'">
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <span class="section-icon">📝</span>
+                                        Request Body (JSON)
+                                    </div>
+                                    <div class="help-text">Enter the JSON payload for POST/PUT requests. Use double
+                                        quotes for keys and string values.
+                                    </div>
+                                    <div class="template-buttons">
+                                        <button class="template-btn"
+                                                t-on-click="() => this.applyBodyTemplate(state.selectedNode, 'object')">
+                                            { "key": "value" }
+                                        </button>
+                                        <button class="template-btn"
+                                                t-on-click="() => this.applyBodyTemplate(state.selectedNode, 'array')">[
+                                            { "item": 1 } ]
+                                        </button>
+                                    </div>
+                                    <label class="config-label">JSON Payload</label>
+                                    <textarea class="config-textarea"
+                                              placeholder='{"key": "value"}'
+                                              t-att-value="nodeConfig.config.body || ''"
+                                              t-on-input="(ev) => this.updateNodeConfig('body', ev.target.value)"></textarea>
+                                </div>
+                            </t>
+
+                            <!-- Loop Node Config -->
+                            <t t-if="nodeConfig.type === 'loop'">
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                             viewBox="0 0 24 24">
+                                            <path fill="currentColor" fill-rule="evenodd"
+                                                  d="M6.25 8.25a3.75 3.75 0 0 0 0 7.5c1.426 0 2.538-.884 3.375-2A9.3 9.3 0 0 0 10.649 12l-.11-.237a9.3 9.3 0 0 0-.914-1.513c-.837-1.116-1.95-2-3.375-2m7.1 3.75l.111-.237c.203-.419.506-.97.914-1.513c.837-1.116 1.95-2 3.375-2a3.75 3.75 0 0 1 0 7.5c-1.425 0-2.538-.884-3.375-2A9.3 9.3 0 0 1 13.351 12M12 9.283q-.173-.264-.375-.533c-1.038-1.384-2.8-3-5.375-3a6.25 6.25 0 0 0 0 12.5c2.575 0 4.337-1.616 5.375-3q.202-.27.375-.533q.173.264.375.533c1.038 1.384 2.8 3 5.375 3a6.25 6.25 0 0 0 0-12.5c-2.574 0-4.337 1.616-5.375 3q-.202.27-.375.533"
+                                                  clip-rule="evenodd"/>
+                                        </svg>
+                                        Loop Configuration
+                                    </div>
+
+                                    <div class="help-text"
+                                         style="margin-bottom: 15px; background: #eef2f5; padding: 10px; border-radius: 4px; border-left: 3px solid #17a2b8;">
+                                        <strong>Mode: For Each</strong>
+                                        <br/>
+                                        Process items one by one from a list.
+                                    </div>
+
+                                    <!-- 1. GET DATA FROM PREVIOUS NODE -->
+                                    <t t-set="prevNodeId"
+                                       t-value="workflowIO.getInputConnectedNode(state.selectedNode)"/>
+                                    <t t-set="prevData" t-value="workflowIO.getNodeResponseData(prevNodeId)"/>
+
+                                    <!-- 2. SMART DROPDOWN (If data exists) -->
+                                    <t t-if="prevData">
+                                        <div class="loop-foreach">
+                                            <label class="config-label">Select List to Process</label>
+                                            <select class="config-select"
+                                                    data-config-key="collectionPath"
+                                                    t-att-value="nodeConfig.config.collectionPath || '$'"
+                                                    t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'collectionPath', ev.target.value)">
+
+                                                <option value="" disabled="disabled">-- Choose a List --</option>
+
+                                                <!-- Automatically generate options from the helper -->
+                                                <t t-foreach="workflowIO.getArrayFields(prevData)" t-as="field"
+                                                   t-key="field.path">
+                                                    <option t-att-value="field.path">
+                                                        <t t-esc="field.label"/>
+                                                        (
+                                                        <t t-esc="field.count"/>
+                                                        items)
+                                                    </option>
+                                                </t>
+                                            </select>
+                                            <div class="help-text" style="color: #28a745; margin-top: 5px;">
+                                                Detected lists from connected node.
+                                            </div>
+                                        </div>
+                                    </t>
+
+                                    <!-- 3. FALLBACK INPUT (If no data) -->
+                                    <t t-else="">
+                                        <div class="loop-foreach">
+                                            <div class="alert alert-warning"
+                                                 style="padding: 10px; font-size: 0.9rem; margin-bottom: 10px;">
+                                                <strong>No data detected.</strong>
+                                                <br/>
+                                                Run a workflow test on the previous node to see a dropdown list here.
+                                            </div>
+
+                                            <label class="config-label">
+                                                JSON Path to List
+                                                <i class="fa fa-info-circle ms-2"
+                                                   style="color: #17a2b8; cursor: help;"
+                                                   title="Where is the list located in the JSON?&#013;Use '$' if the response IS the list.&#013;Use 'data.items' if the list is nested inside 'data'."></i>
+                                            </label>
+                                            <input type="text"
+                                                   class="config-input"
+                                                   placeholder="$"
+                                                   data-config-key="collectionPath"
+                                                   t-att-value="nodeConfig.config.collectionPath || ''"
+                                                   t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'collectionPath', ev.target.value)"
+                                            />
+                                        </div>
+                                    </t>
+                                </div>
+                            </t>
+                            <t t-if="nodeConfig.type === 'orm'">
+
+                                <!-- 1. MODEL SELECTION -->
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                             viewBox="0 0 20 20">
+                                            <path fill="currentColor"
+                                                  d="M9.998 11.5a1.5 1.5 0 1 0 0-3a1.5 1.5 0 0 0 0 3m-5-1.5a5 5 0 1 1 10 0a5 5 0 0 1-10 0m5-3.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7M1.996 9.997a7.999 7.999 0 1 1 15.998 0a7.999 7.999 0 0 1-15.998 0m8-6.499a6.5 6.5 0 1 0 0 12.998a6.5 6.5 0 0 0 0-12.998"/>
+                                        </svg>
+                                        Target Model
+                                    </div>
+
+                                    <div class="position-relative">
+                                        <label class="config-label">Odoo Model</label>
+                                        <input type="text"
+                                               class="config-input"
+                                               placeholder="Search model (e.g. res.partner)..."
+                                               t-att-value="nodeConfig.config.model || ''"
+                                               t-on-input="onModelSearchInput"
+                                               t-on-focus="onModelInputFocus"
+                                               t-on-blur="onModelInputBlur"/>
+
+                                        <!-- Search Results Dropdown -->
+                                        <ul t-if="state.isModelListOpen"
+                                            class="dropdown-menu show w-100 shadow"
+                                            style="max-height: 200px; overflow-y: auto; position: absolute; z-index: 1000; background: #fff;">
+                                            <t t-foreach="state.filteredModels" t-as="m" t-key="m.id">
+                                                <li>
+                                                    <a class="dropdown-item" href="#"
+                                                       style="color: black; padding: 8px 15px; border-bottom: 1px solid #eee;"
+                                                       t-on-click.prevent="() => this.selectModel(m.model)">
+                                                        <span class="fw-bold text-primary">
+                                                            <t t-esc="m.model"/>
+                                                        </span>
+                                                        <small class="d-block text-muted">
+                                                            <t t-esc="m.name"/>
+                                                        </small>
+                                                    </a>
+                                                </li>
+                                            </t>
+                                            <li t-if="state.filteredModels.length === 0"
+                                                class="p-2 text-center text-muted">
+                                                No models found
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="help-text">The database table you want to interact with.</div>
+                                </div>
+
+                                <!-- 2. OPERATION SELECTION -->
+                                <div class="config-section">
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                             viewBox="0 0 24 24">
+                                            <path fill="currentColor"
+                                                  d="m9.25 22l-.4-3.2q-.325-.125-.612-.3t-.563-.375L4.7 19.375l-2.75-4.75l2.575-1.95Q4.5 12.5 4.5 12.338v-.675q0-.163.025-.338L1.95 9.375l2.75-4.75l2.975 1.25q.275-.2.575-.375t.6-.3l.4-3.2h5.5l.4 3.2q.325.125.613.3t.562.375l2.975-1.25l2.75 4.75l-2.575 1.95q.025.175.025.338v.674q0 .163-.05.338l2.575 1.95l-2.75 4.75l-2.95-1.25q-.275.2-.575.375t-.6.3l-.4 3.2zm2.8-6.5q1.45 0 2.475-1.025T15.55 12t-1.025-2.475T12.05 8.5q-1.475 0-2.488 1.025T8.55 12t1.013 2.475T12.05 15.5"/>
+                                        </svg>
+                                        Action Settings
+                                    </div>
+
+                                    <label class="config-label">Operation</label>
+                                    <select class="config-select"
+                                            style="color: white;"
+                                            data-config-key="operation"
+                                            t-att-value="nodeConfig.config.operation || 'create'"
+                                            t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'operation', ev.target.value)">
+
+                                        <option value="create" style="color: black;">Create New Record</option>
+                                        <option value="write" style="color: black;">Update Existing (Write)</option>
+                                        <option value="search_read" style="color: black;">Search &amp; Get Data</option>
+                                        <option value="search_count" style="color: black;">Check Existence (Count)
+                                        </option>
+                                        <option value="read" style="color: black;">Read ID (Get Details)</option>
+                                        <option value="unlink" style="color: black;">Delete Record</option>
+
+                                    </select>
+                                </div>
+
+                                <!-- 3. RECORD ID (Conditional) -->
+                                <t t-if="['write', 'unlink', 'read'].includes(nodeConfig.config.operation)">
+                                    <div class="config-section">
+                                        <div class="section-title">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                                 viewBox="0 0 24 24">
+                                                <path fill="currentColor"
+                                                      d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2m0 2a8 8 0 1 1 0 16A8 8 0 0 1 12 4m0 2a6 6 0 1 0 0 12A6 6 0 0 0 12 6m0 2a4 4 0 1 1 0 8a4 4 0 0 1 0-8m0 2a2 2 0 1 0 0 4a2 2 0 0 0 0-4"/>
+                                            </svg>
+                                            Target Record
+                                        </div>
+                                        <label class="config-label">Record ID</label>
+                                        <input type="text"
+                                               class="config-input"
+                                               placeholder="e.g. 15 or {{ data.id }}"
+                                               t-att-value="nodeConfig.config.record_id || ''"
+                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'record_id', ev.target.value)"/>
+                                        <div class="help-text">The specific ID of the record to update or delete.</div>
+                                    </div>
+                                </t>
+
+                                <!-- 4. NO-CODE FIELD MAPPER (Create/Write) -->
+                                <t t-if="['create', 'write'].includes(nodeConfig.config.operation)">
+                                    <div class="config-section">
+                                        <div class="section-title">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                                 viewBox="0 0 24 24">
+                                                <path fill="currentColor"
+                                                      d="M19.903 8.586a1 1 0 0 0-.196-.293l-6-6a1 1 0 0 0-.293-.196c-.03-.014-.062-.022-.094-.033a1 1 0 0 0-.259-.051C13.04 2.011 13.021 2 13 2H6c-1.103 0-2 .897-2 2v16c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2V9c0-.021-.011-.04-.013-.062a1 1 0 0 0-.051-.259q-.014-.048-.033-.093M16.586 8H14V5.414zM6 20V4h6v5a1 1 0 0 0 1 1h5l.002 10z"/>
+                                                <path fill="currentColor" d="M8 12h8v2H8zm0 4h8v2H8zm0-8h2v2H8z"/>
+                                            </svg>
+                                            Field Mapping
+                                        </div>
+                                        <div class="help-text mb-2">
+                                            Map data to Odoo fields. Use {{ variable }} for dynamic values from previous
+                                            nodes.
+                                        </div>
+
+                                        <div class="orm-field-builder"
+                                             style="background: rgba(255,255,255,0.05); border-radius: 6px;"
+                                             t-on-mouseleave="() => this.closeAllOrmDropdowns()">
+                                            <t t-foreach="nodeConfig.config.ormFields || []" t-as="f" t-key="f_index">
+                                                <div class="d-flex gap-2 mb-2 align-items-start">
+
+                                                    <!-- Field Key (Left Side) -->
+                                                    <div class="position-relative" style="width: 40%;">
+                                                        <input type="text"
+                                                               class="config-input"
+                                                               placeholder="Field name..."
+                                                               style="font-size: 12px;"
+                                                               t-att-value="f.key"
+                                                               t-on-input="(ev) => this.updateOrmField(f_index, 'key', ev.target.value)"
+                                                               t-on-focus="() => this.onOrmKeyFocus(f_index)"
+                                                               t-on-blur="() => this.onOrmKeyBlur(f_index)"
+                                                               autocomplete="off"/>
+
+                                                        <!-- Dropdown for Field Names -->
+                                                        <ul t-if="f.isDropdownOpen and f.filteredFields and f.filteredFields.length > 0"
+                                                            class="dropdown-menu show w-100 shadow"
+                                                            style="position: absolute; top: 100%; left: 0; z-index: 1050; max-height: 180px; overflow-y: auto; background: #fff;">
+                                                            <t t-foreach="f.filteredFields" t-as="field"
+                                                               t-key="field.name">
+                                                                <li>
+                                                                    <a class="dropdown-item py-1" href="#"
+                                                                       style="color: black; font-size: 11px; border-bottom: 1px solid #eee;"
+                                                                       t-on-mousedown.prevent="() => this.selectMapperField(f_index, field.name)">
+                                                                        <b>
+                                                                            <t t-esc="field.name"/>
+                                                                        </b>
+                                                                        <span class="text-muted">-
+                                                                            <t t-esc="field.string"/>
+                                                                        </span>
+                                                                    </a>
+                                                                </li>
+                                                            </t>
+                                                        </ul>
+                                                    </div>
+
+                                                    <!-- Field Value (Right Side) -->
+                                                    <div class="position-relative" style="flex: 1;">
+                                                        <input type="text"
+                                                               class="config-input orm-value-input"
+                                                               style="font-size: 12px;"
+                                                               placeholder="Value or {{ variable }}..."
+                                                               t-att-value="f.value"
+                                                               t-on-input="(ev) => this.updateOrmField(f_index, 'value', ev.target.value)"
+                                                               t-on-focus="() => this.onOrmValueFocus(f_index)"
+                                                               autocomplete="off"/>
+
+                                                        <!-- Dropdown for Values (Previous Node Data) -->
+                                                        <t t-if="f.isValueDropdownOpen and f.valueSuggestions and f.valueSuggestions.length > 0">
+                                                            <div class="dropdown-menu show w-100 shadow"
+                                                                 style="position: absolute; top: 100%; left: 0; z-index: 1050; max-height: 250px; overflow-y: auto; background: #fff;">
+
+                                                                <t t-foreach="f.valueSuggestions" t-as="suggestionGroup"
+                                                                   t-key="suggestionGroup_index">
+                                                                    <!-- Group Header -->
+                                                                    <div t-if="suggestionGroup.group"
+                                                                         class="dropdown-header"
+                                                                         style="background: #f8f9fa; font-weight: bold; font-size: 11px; color: #495057; padding: 6px 12px;">
+                                                                        <t t-esc="suggestionGroup.group"/>
+                                                                    </div>
+
+                                                                    <!-- Group Items -->
+                                                                    <t t-foreach="suggestionGroup.items || []"
+                                                                       t-as="item"
+                                                                       t-key="item.value">
+                                                                        <a class="dropdown-item py-1"
+                                                                           href="#"
+                                                                           t-att-class="{'disabled': item.disabled}"
+                                                                           style="color: black; font-size: 13px; padding: 6px 12px; border-bottom: 1px solid #eee;"
+                                                                           t-on-click.prevent="() => !item.disabled &amp;&amp; this.selectMapperValue(f_index, item.value)">
+                                                                            <span t-if="item.value.includes('{{')"
+                                                                                  class="badge bg-info me-1"
+                                                                                  style="font-size: 9px;">VAR
+                                                                            </span>
+                                                                            <t t-esc="item.label"/>
+                                                                            <small t-if="item.value"
+                                                                                   class="text-muted d-block"
+                                                                                   style="font-size: 10px;">
+                                                                                <t t-esc="item.value"/>
+                                                                            </small>
+                                                                        </a>
+                                                                    </t>
+                                                                </t>
+
+                                                                <!-- Empty State -->
+                                                                <div t-if="f.valueSuggestions.length === 0"
+                                                                     class="p-2 text-center text-muted"
+                                                                     style="font-size: 11px;">
+                                                                    No previous node data available
+                                                                </div>
+                                                            </div>
+                                                        </t>
+
+
+                                                    </div>
+
+                                                    <!-- Remove Button -->
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                            style="height: 30px; line-height: 1; padding: 0 8px;"
+                                                            title="Remove field"
+                                                            t-on-click="() => this.removeOrmField(f_index)">×
+                                                    </button>
+                                                </div>
+                                            </t>
+
+                                            <button class=" w-100 mt-2"
+                                                    style="border: 1px dashed #714b67;
+    color: #714b67;
+    font-size: 15px;
+    padding: 10px 0;"
+                                                    t-on-click="() => this.addOrmField()">
+                                                + Add Field Mapping
+                                            </button>
+                                        </div>
+
+                                        <!-- Example Helper -->
+                                        <div class="alert alert-info mt-2 p-2"
+                                             style="    font-size: 11px;
+    background: rgb(228 229 236);
+    border: 1px solid rgb(222 224 237);">
+                                            <strong>Examples:</strong>
+                                            <br/>
+                                            <br/>
+                                            • From API: <code>{{ data.email }}</code>,
+                                            <code>{{ data.phone }}</code>
+                                            <br/>
+                                            • From Loop: <code>{{ item.name }}</code>,
+                                            <code>{{ item.price }}</code>
+                                        </div>
+                                    </div>
+                                </t>
+
+                                <!-- 5. DOMAIN BUILDER (Search) -->
+                                <!-- 5. DOMAIN BUILDER (Search, Search Read, Count) -->
+                                <t t-if="['search', 'search_read', 'search_count'].includes(nodeConfig.config.operation)">
+                                    <div class="config-section">
+                                        <div class="section-title">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                                 viewBox="0 0 24 24">
+                                                <path fill="currentColor"
+                                                      d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39M11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7"/>
+                                                <path fill="currentColor"
+                                                      d="M14 10h-2V8a1 1 0 0 0-2 0v2H8a1 1 0 0 0 0 2h2v2a1 1 0 0 0 2 0v-2h2a1 1 0 0 0 0-2"/>
+                                            </svg>
+                                            Filter Logic
+                                        </div>
+                                        <div class="help-text mb-2">
+                                            Filter records using field conditions.
+                                        </div>
+
+                                        <div class="orm-domain-builder"
+                                             style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px;">
+                                            <t t-foreach="nodeConfig.config.ormDomains || []" t-as="d" t-key="d_index">
+                                                <div class="d-flex gap-2 mb-2 align-items-start">
+
+                                                    <!-- 1. Field Input (Left) WITH DROPDOWN -->
+                                                    <div class="position-relative" style="width: 35%;">
+                                                        <input type="text"
+                                                               class="config-input"
+                                                               placeholder="Field..."
+                                                               style="font-size: 12px;"
+                                                               t-att-value="d.field"
+                                                               t-on-input="(ev) => this.updateOrmDomain(d_index, 'field', ev.target.value)"
+                                                               t-on-focus="() => this.onOrmDomainFieldFocus(d_index)"
+                                                               t-on-blur="() => this.onOrmDomainFieldBlur(d_index)"
+                                                               autocomplete="off"/>
+
+                                                        <!-- Dropdown for Field Names -->
+                                                        <ul t-if="d.isDropdownOpen and d.filteredFields and d.filteredFields.length > 0"
+                                                            class="dropdown-menu show w-100 shadow"
+                                                            style="position: absolute; top: 100%; left: 0; z-index: 1050; max-height: 180px; overflow-y: auto; background: #fff;">
+                                                            <t t-foreach="d.filteredFields" t-as="field"
+                                                               t-key="field.name">
+                                                                <li>
+                                                                    <a class="dropdown-item py-1" href="#"
+                                                                       style="color: black; font-size: 11px; border-bottom: 1px solid #eee;"
+                                                                       t-on-mousedown.prevent="() => this.selectDomainField(d_index, field.name)">
+                                                                        <b>
+                                                                            <t t-esc="field.name"/>
+                                                                        </b>
+                                                                        <span class="text-muted">-
+                                                                            <t t-esc="field.string"/>
+                                                                        </span>
+                                                                    </a>
+                                                                </li>
+                                                            </t>
+                                                        </ul>
+                                                    </div>
+
+                                                    <!-- 2. Operator (Middle) -->
+                                                    <div style="width: 25%;">
+                                                        <select class="config-select"
+                                                                style="font-size: 12px; width: 100%; color: white; padding: 6px; height: 35px;"
+                                                                t-on-change="(ev) => this.updateOrmDomain(d_index, 'operator', ev.target.value)">
+                                                            <option value="=" style="color: black;"
+                                                                    t-att-selected="d.operator === '='">=
+                                                            </option>
+                                                            <option value="!=" style="color: black;"
+                                                                    t-att-selected="d.operator === '!='">!=
+                                                            </option>
+                                                            <option value="ilike" style="color: black;"
+                                                                    t-att-selected="d.operator === 'ilike'">contains
+                                                            </option>
+                                                            <option value="not ilike" style="color: black;"
+                                                                    t-att-selected="d.operator === 'not ilike'">not
+                                                                contains
+                                                            </option>
+                                                            <option value="&gt;" style="color: black;"
+                                                                    t-att-selected="d.operator === '&gt;'">&gt;
+                                                            </option>
+                                                            <option value="&lt;" style="color: black;"
+                                                                    t-att-selected="d.operator === '&lt;'">&lt;
+                                                            </option>
+                                                            <option value="&gt;=" style="color: black;"
+                                                                    t-att-selected="d.operator === '&gt;='">&gt;=
+                                                            </option>
+                                                            <option value="&lt;=" style="color: black;"
+                                                                    t-att-selected="d.operator === '&lt;='">&lt;=
+                                                            </option>
+                                                            <option value="in" style="color: black;"
+                                                                    t-att-selected="d.operator === 'in'">in
+                                                            </option>
+                                                        </select>
+                                                    </div>
+
+                                                    <!-- 3. Value Input (Right) -->
+                                                    <div class="position-relative" style="flex: 1;">
+                                                        <input type="text"
+                                                               class="config-input"
+                                                               placeholder="Value..."
+                                                               style="font-size: 12px;"
+                                                               t-att-value="d.value"
+                                                               t-on-input="(ev) => this.updateOrmDomain(d_index, 'value', ev.target.value)"
+                                                               autocomplete="off"/>
+                                                    </div>
+
+                                                    <!-- 4. Remove Button -->
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                            style="height: 30px; line-height: 1; padding: 0 8px;"
+                                                            title="Remove filter"
+                                                            t-on-click="() => this.removeOrmDomain(d_index)">×
+                                                    </button>
+                                                </div>
+                                            </t>
+
+                                            <button class="w-100 mt-2"
+                                                    style="border: 1px dashed #714b67; color: #714b67; font-size: 15px; padding: 10px 0;"
+                                                    t-on-click="() => this.addOrmDomain()">
+                                                + Add Filter
+                                            </button>
+                                        </div>
+
+                                        <!-- Example Helper -->
+                                        <div class="alert alert-info mt-2 p-2"
+                                             style="font-size: 11px; background: rgb(228 229 236); border: 1px solid rgb(222 224 237);">
+                                            <strong>Examples:</strong>
+                                            <br/>
+                                            • <code>{{ item.name }}</code> (Variable)
+                                            <br/>
+                                            • <code>Draft</code> (Static Text)
+                                        </div>
+                                    </div>
+                                </t>
+                                <!-- 6. Additional Options for Search Operations -->
+                                <t t-if="['search_read'].includes(nodeConfig.config.operation)">
+                                    <div class="config-section">
+                                        <div class="section-title">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
+                                                 height="24" fill="none" stroke="black" stroke-width="1.5"
+                                                 stroke-linecap="round" stroke-linejoin="round">
+                                                <!-- Three horizontal slider rails -->
+                                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                                <circle cx="8" cy="6" r="2" fill="white"/>
+
+                                                <line x1="3" y1="12" x2="21" y2="12"/>
+                                                <circle cx="14" cy="12" r="2" fill="white"/>
+
+                                                <line x1="3" y1="18" x2="21" y2="18"/>
+                                                <circle cx="10" cy="18" r="2" fill="white"/>
+                                            </svg>
+                                            Query Options
+                                        </div>
+
+                                        <label class="config-label">Fields to Return (comma-separated)</label>
+                                        <input type="text"
+                                               class="config-input"
+                                               placeholder="e.g. name,email,phone or leave empty for all"
+                                               t-att-value="nodeConfig.config.fields || ''"
+                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'fields', ev.target.value)"/>
+
+                                        <label class="config-label mt-2">Limit Results</label>
+                                        <input type="number"
+                                               class="config-input"
+                                               placeholder="e.g. 10 (0 = no limit)"
+                                               t-att-value="nodeConfig.config.limit || ''"
+                                               t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'limit', ev.target.value)"/>
+                                    </div>
+                                </t>
+                                <!-- 7. RAW JSON DEBUGGER (Always Visible for Safety) -->
+                                <div class="config-section">
+                                    <label class="config-label text-warning">
+                                        Raw Logic
+                                    </label>
+                                    <textarea class="config-textarea font-monospace"
+                                              rows="3"
+                                              style="font-size: 11px; background: #222; color: #00ff00;"
+                                              data-config-key="field_values_json"
+                                              placeholder="[ ]"
+                                              t-att-value="nodeConfig.config.field_values_json || '[]'"
+                                              t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'field_values_json', ev.target.value)"></textarea>
+                                </div>
+                            </t>
+
+
+                            <!-- Condition Node Config -->
+                            <t t-if="nodeConfig.type === 'condition'">
+
+                                <div class="config-section">
+
+
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                             viewBox="0 0 24 24">
+                                            <path fill="currentColor" fill-rule="evenodd"
+                                                  d="M6.25 8.25a3.75 3.75 0 0 0 0 7.5c1.426 0 2.538-.884 3.375-2A9.3 9.3 0 0 0 10.649 12l-.11-.237a9.3 9.3 0 0 0-.914-1.513c-.837-1.116-1.95-2-3.375-2m7.1 3.75l.111-.237c.203-.419.506-.97.914-1.513c.837-1.116 1.95-2 3.375-2a3.75 3.75 0 0 1 0 7.5c-1.425 0-2.538-.884-3.375-2A9.3 9.3 0 0 1 13.351 12M12 9.283q-.173-.264-.375-.533c-1.038-1.384-2.8-3-5.375-3a6.25 6.25 0 0 0 0 12.5c2.575 0 4.337-1.616 5.375-3q.202-.27.375-.533q.173.264.375.533c1.038 1.384 2.8 3 5.375 3a6.25 6.25 0 0 0 0-12.5c-2.574 0-4.337 1.616-5.375 3q-.202.27-.375.533"
+                                                  clip-rule="evenodd"/>
+                                        </svg>
+                                        Condition Configuration
+                                    </div>
+
+                                    <!-- 1. Connection Info -->
+                                    <t t-if="inputConnectedNode">
+                                        <div class="connection-info"
+                                             style="background: #e8f5e8; padding: 10px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #4caf50;">
+                                            <div style="font-size: 0.9rem; color: #666;">
+                                                <strong>Connected Source:</strong>
+                                                <span t-esc="inputConnectedNode"/>
+                                            </div>
+                                        </div>
+                                    </t>
+
+                                    <!-- 2. Data Source Selection -->
+                                    <label class="config-label">Data Source</label>
+                                    <select class="cond-input"
+                                            style="height: 38px !important;"
+                                            data-config-key="sourceData"
+                                            t-att-value="nodeConfig.config.sourceData || 'static'"
+                                            t-on-change="(ev) => this.handleSourceDataChange(state.selectedNode, ev.target.value)">
+                                        <option value="static" style="color: black;">Static Value (Manual Input)
+                                        </option>
+                                        <option value="previous_response" style="color: black;">Connected Node
+                                            Response
+                                        </option>
+                                    </select>
+
+                                    <!-- 3. Node Selector (Only if Connected Node Response) -->
+                                    <t t-if="nodeConfig.config.sourceData === 'previous_response'"
+                                       t-key="'source_node_container'">
+                                        <div class="previous-node-selection" style="margin-top: 15px;">
+                                            <label class="config-label">Select Source Node</label>
+                                            <select class="cond-input"
+                                                    t-key="'node_selector_dropdown'"
+                                                    data-config-key="previousNodeId"
+                                                    t-att-value="nodeConfig.config.previousNodeId || inputConnectedNode || ''"
+                                                    t-on-change="(ev) => this.handlePreviousNodeChange(state.selectedNode, ev.target.value)">
+
+                                                <option value="" style="color: black;">-- Select a node --</option>
+
+                                                <t t-foreach="workflowIO.getPreviousNodesWithResponses(state.selectedNode)"
+                                                   t-as="prevNode" t-key="prevNode.id">
+                                                    <option t-att-value="prevNode.id"
+                                                            style="color: black;"
+                                                            t-att-selected="nodeConfig.config.previousNodeId === prevNode.id">
+                                                        <t t-esc="prevNode.title"/>
+                                                        (<t t-esc="prevNode.type"/>)
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                    </t>
+
+                                    <!-- 4. Condition Comparison (Main Logic) -->
+                                    <div class="condition-comparison"
+                                         style="margin-top: 20px; border-top: 1px solid #e3e3e8; padding-top: 15px;">
+                                        <div class="section-title">
+                                            Comparison Logic
+                                        </div>
+
+                                        <div class="comparison-row">
+
+                                            <!-- A. Left Operand (42%) -->
+                                            <div class="col-left">
+                                                <label class="cond-label" title="Variable or Value">
+                                                    Field 1
+                                                    <i class="fa fa-info-circle ms-1" style="color: #17a2b8;"
+                                                       title="The value to compare against. Can be a static value like 42 or true, or a dynamic variable like {{ data.status }}">
+                                                    </i>
+                                                </label>
+
+                                                <t t-set="prevNodeId" t-value="nodeConfig.config.previousNodeId"/>
+
+                                                <!-- Mode 1: Dropdown -->
+                                                <t t-if="nodeConfig.config.sourceData === 'previous_response'"
+                                                   t-key="'mode_select'">
+                                                    <select class="cond-input"
+                                                            t-key="'left_select_' + (prevNodeId || 'none')"
+                                                            data-config-key="leftOperand"
+                                                            t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'leftOperand', ev.target.value)">
+
+                                                        <option value="" style="color: black;">-- Select --</option>
+
+                                                        <t t-foreach="getLeftOperandOptions(state.selectedNode)"
+                                                           t-as="optGroup" t-key="optGroup.group">
+                                                            <optgroup t-att-label="optGroup.group"
+                                                                      style="color: black; font-weight: bold;">
+                                                                <t t-foreach="optGroup.items" t-as="field"
+                                                                   t-key="field.value">
+                                                                    <option t-att-value="field.value"
+                                                                            style="color: black; font-weight: normal;"
+                                                                            t-att-selected="nodeConfig.config.leftOperand === field.value">
+                                                                        <t t-esc="field.label"/>
+                                                                    </option>
+                                                                </t>
+                                                            </optgroup>
+                                                        </t>
+                                                    </select>
+                                                </t>
+
+                                                <!-- Mode 2: Manual Input -->
+                                                <t t-else="" t-key="'mode_manual'">
+                                                    <input type="text" class="cond-input"
+                                                           placeholder="{{loopItem.price}}"
+                                                           data-config-key="leftOperand"
+                                                           t-att-value="nodeConfig.config.leftOperand || ''"
+                                                           t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'leftOperand', ev.target.value)"/>
+                                                </t>
+                                            </div>
+
+                                            <!-- B. Operator (23%) -->
+                                            <div class="col-mid">
+                                                <label class="cond-label">Op</label>
+                                                <select class="cond-input"
+                                                        style="text-align: center; padding-left: 5px;"
+                                                        t-key="'operator_select'"
+                                                        data-config-key="operator"
+                                                        t-att-value="nodeConfig.config.operator || 'equals'"
+                                                        t-on-change="(ev) => this.updateNodeConfig(state.selectedNode, 'operator', ev.target.value)">
+                                                    <option value="equals" style="color: black;">==</option>
+                                                    <option value="not_equals" style="color: black;">!=</option>
+                                                    <option value="greater_than" style="color: black;">&gt;</option>
+                                                    <option value="less_than" style="color: black;">&lt;</option>
+                                                    <option value="contains" style="color: black;">Has</option>
+                                                    <option value="exists" style="color: black;">Exist</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- C. Right Operand (35%) -->
+                                            <div class="col-right">
+                                                <label class="cond-label">Target Value</label>
+                                                <input type="text" class="cond-input"
+                                                       placeholder="Value"
+                                                       data-config-key="rightOperand"
+                                                       t-att-value="nodeConfig.config.rightOperand || ''"
+                                                       t-on-input="(ev) => this.updateNodeConfig(state.selectedNode, 'rightOperand', ev.target.value)"/>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 5. Test Button -->
+                                    <div style="margin-top: 25px; text-align: center;">
+                                        <button class="bttn-suc w-100"
+                                                t-on-click="() => this.runWorkflowTest()">
+                                            Test Condition
+                                        </button>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <div class="empty-config">
+                            <h3>Select a Node</h3>
+                            <p>Click on any node in your workflow to configure its settings and parameters here.</p>
+                        </div>
+                    </t>
+                    <!-- 🧪 TESTING ACTIONS PANEL -->
+                    <div class="config-section">
+                        <div class="section-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                      d="m13.293 2.707l.818.818L3.318 14.318C2.468 15.168 2 16.298 2 17.5s.468 2.332 1.318 3.183C4.169 21.532 5.299 22 6.5 22s2.331-.468 3.182-1.318L20.475 9.889l.818.818l1.414-1.414l-8-8zm3.182 8.354l-2.403-2.404l-1.414 1.414l2.403 2.404l-1.414 1.415l-.99-.99l-1.414 1.414l.99.99l-1.415 1.415l-2.403-2.404L7 15.728l2.403 2.404l-1.136 1.136c-.945.944-2.59.944-3.535 0C4.26 18.795 4 18.168 4 17.5s.26-1.295.732-1.768L15.525 4.939l3.535 3.535z"/>
+                            </svg>
+                            Testing Actions
+                        </div>
+
+                        <div class="d-flex flex-column gap-2">
+
+                            <!-- OPTION 2: Single Node -->
+                            <button class="bttn"
+                                    t-on-click="() => this.testSelectedNode()">
+                                Test This Node Only
+
+                            </button>
+
+                            <!-- OPTION 3: Until Here -->
+                            <button class="bttn"
+                                    t-on-click="() => this.testUntilSelectedNode()">
+                                Test Until Here
+
+                            </button>
+
+                            <!-- OPTION 1: Full Run -->
+                            <button class="bttn-suc"
+                                    t-on-click="() => this.testWorkflow()">
+                                <svg class="me-2" style="color: white;" xmlns="http://www.w3.org/2000/svg" width="24"
+                                     height="24" viewBox="0 0 24 24">
+                                    <path fill="currentColor"
+                                          d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m-2 14.5v-9l6 4.5z"/>
+                                </svg>
+                                Run Full Workflow
+                            </button>
+                        </div>
+                    </div>
+                    <!-- WORKFLOW TEST RESULTS SECTION - Shows when workflow test was run -->
+                    <t t-if="state.workflowTestResults">
+                        <div class="workflow-test-results"
+                             style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9;">
+                            <h5 style="margin-bottom: 15px; color: #333;">
+                                Workflow Test Results
+                                <small class="mt-2" style="    font-size: 0.8rem;
+    color: #666;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;">
+                                    <span>Last test:</span>
+                                    <span>
+                                        <t t-esc="new Date(state.lastTestTimestamp).toLocaleString()"/>
+                                    </span>
+                                </small>
+                            </h5>
+                            <!-- Show selected node's test result -->
+                            <t t-if="state.selectedNode">
+                                <t t-set="nodeResult"
+                                   t-value="this.getSelectedNodeTestResult ? this.getSelectedNodeTestResult() : null"/>
+                                <t t-if="nodeResult">
+                                    <div class="node-test-result"
+                                         style="margin-top: 15px; border-radius: 4px; border: 1px solid #eee;">
+                                        <h6 class="mt-4" style="margin-bottom: 10px; color: #444;    display: flex;
+    justify-content: space-between;">
+                                            <span>Selected Node:
+                                                <span style="text-transform: uppercase;">
+                                                    <t t-esc="nodeResult.node_type || 'unknown'"/>
+                                                </span>
+                                            </span>
+                                            <span t-attf-class="badge badge-{{ nodeResult.status === 'success' ? 'success' : 'danger' }} ml-2">
+                                                <t t-esc="nodeResult.status || 'unknown'"/>
+                                            </span>
+                                        </h6>
+
+                                        <!-- Node Test Details -->
+                                        <div t-attf-class="alert alert-{{ nodeResult.status === 'success' ? 'success' : 'danger' }} mb-2">
+                                            <strong>Status:</strong>
+                                            <t t-if="nodeResult.status === 'success'">Success</t>
+                                            <t t-else="">Failed</t>
+                                            |
+                                            <strong>Code:</strong>
+                                            <t t-esc="nodeResult.status_code or 'N/A'"/>
+                                            <t t-if="nodeResult.response_time">
+                                                |
+                                                <strong>Time:</strong>
+                                                <t t-esc="nodeResult.response_time"/>s
+                                            </t>
+                                        </div>
+
+                                        <!-- Node Message -->
+                                        <t t-if="nodeResult.message">
+                                            <div class="mb-2 p-2 bg-light border rounded" style="color: gray;">
+                                                <strong>Message:</strong>
+                                                <t t-esc="nodeResult.message"/>
+                                            </div>
+                                        </t>
+
+                                        <!-- Response Data -->
+                                        <div class="mb-2">
+                                            <h6>Response Data:</h6>
+                                            <pre style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border: 1px solid #333; border-radius: 6px; max-height: 400px; overflow: auto; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 13px; white-space: pre-wrap;">
+                                                <t t-if="nodeResult.response_data">
+                                                    <!-- FIX: Use a safe approach to display response data -->
+                                                    <t t-esc="this.formatResponseData(nodeResult.response_data)"/>
+                                                </t>
+                                                <t t-else="">
+                                                    No response data
+                                                </t>
+                                            </pre>
+                                        </div>
+
+                                        <!-- Error Display -->
+                                        <t t-if="nodeResult.error">
+                                            <div class="alert alert-danger">
+                                                <strong>Error:</strong>
+                                                <t t-esc="nodeResult.error"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="alert alert-warning">
+                                        <i class="fa fa-info-circle"></i>
+                                        No test data available for the selected node.
+                                    </div>
+                                </t>
+                            </t>
+
+                            <!-- Show when no node is selected -->
+                            <t t-else="">
+                                <div class="alert alert-info">
+                                    <i class="fa fa-mouse-pointer"></i>
+                                    Select a node to view its individual test results.
+                                </div>
+
+                                <!-- Show summary of all tested nodes -->
+                                <div class="test-summary">
+                                    <h6>Test Summary:</h6>
+                                    <!-- Replace this section in your XML file -->
+                                    <div class="node-results-list">
+                                        <t t-foreach="state.workflowTestResults.results" t-as="result"
+                                           t-key="result_index">
+                                            <div class="node-result-item"
+                                                 style="padding: 8px; margin: 5px 0; background: white; border-radius: 4px; border-left: 4px solid #28a745;"
+                                                 t-attf-style="border-left-color: {{ result.status === 'success' ? '#28a745' : '#dc3545' }};">
+                                                <strong>
+                                                    <t t-if="result.node_type">
+                                                        <t t-esc="(result.node_type || '').toUpperCase()"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        UNKNOWN
+                                                    </t>
+                                                </strong>
+                                                :
+                                                <t t-esc="result.message || 'No message'"/>
+                                                <t t-if="result.status_code">(HTTP<t t-esc="result.status_code"/>)
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <!-- Clear Results Button -->
+                            <div class="text-center mt-3">
+                                <button class="btn btn-secondary btn-sm"
+                                        t-on-click="() => this.clearWorkflowTestResults()">
+                                    <i class="fa fa-trash"></i>
+                                    Clear Test Results
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+</odoo>
