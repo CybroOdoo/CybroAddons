@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ─── Inherit fleet.vehicle form to add Traccar section ──────────── -->
+    <record id="fleet_vehicle_traccar_form_inherit" model="ir.ui.view">
+        <field name="name">fleet.vehicle.traccar.inherit</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Insert TRACCAR DETAILS section after the main fields group -->
+            <xpath expr="//sheet/group[last()]" position="after">
+
+                <group string="TRACCAR DETAILS" name="traccar_details">
+                    <group>
+                        <field name="activate_traccar" widget="boolean_toggle"/>
+                        <field name="traccar_unique_id"
+                               invisible="not activate_traccar"
+                               placeholder="e.g. 123456789012345"/>
+                        <field name="traccar_device_id"
+                               invisible="not activate_traccar"/>
+                        <field name="current_status"
+                               invisible="not activate_traccar"
+                               widget="badge"
+                               decoration-success="current_status == 'running'"
+                               decoration-warning="current_status == 'idle'"
+                               decoration-danger="current_status == 'offline'"/>
+                    </group>
+                    <group invisible="not activate_traccar">
+                        <field name="last_longitude" string="Device Longitude" readonly="1"/>
+                        <field name="last_latitude" string="Device Latitude" readonly="1"/>
+                        <field name="last_update" string="Last Trip Update" readonly="1"/>
+                        <field name="last_route_update" string="Last Route Update" readonly="1"/>
+                    </group>
+                </group>
+
+                <!-- Action buttons row (visible only when Traccar is active) -->
+                <div class="o_row" invisible="not activate_traccar" name="traccar_buttons">
+                    <button name="action_view_device_summary"
+                            string="View Device Summary"
+                            type="object"
+                            class="btn btn-success btn-sm me-1"
+                            icon="fa-desktop"/>
+                    <button name="action_fetch_trips"
+                            string="Fetch Trips"
+                            type="object"
+                            class="btn btn-success btn-sm me-1"
+                            icon="fa-car"/>
+                    <button name="action_fetch_routes"
+                            string="Fetch Routes"
+                            type="object"
+                            class="btn btn-success btn-sm me-1"
+                            icon="fa-car"/>
+                    <button name="action_view_current_location"
+                            string="View Current Location"
+                            type="object"
+                            class="btn btn-success btn-sm me-1"
+                            icon="fa-map-marker"/>
+                </div>
+
+            </xpath>
+
+            <!-- Smart buttons at the top -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_trips"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-road"
+                        invisible="not activate_traccar">
+                    <field name="trip_count" widget="statinfo" string="Trips"/>
+                </button>
+                <button name="action_view_events"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-bell"
+                        invisible="not activate_traccar">
+                    <field name="event_count" widget="statinfo" string="Events"/>
+                </button>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ─── Traccar Vehicles list action ─────────────────────────────────── -->
+    <record id="action_fleet_traccar_vehicles" model="ir.actions.act_window">
+        <field name="name">Traccar Vehicles</field>
+        <field name="res_model">fleet.vehicle</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('activate_traccar', '=', True)]</field>
+        <field name="context">{'search_default_activate_traccar': 1}</field>
+    </record>
+
+    <!-- ─── Traccar Devices views ─────────────────────────────────────────── -->
+    <record id="view_fleet_traccar_device_list" model="ir.ui.view">
+        <field name="name">fleet.traccar.device.list</field>
+        <field name="model">fleet.traccar.device</field>
+        <field name="arch" type="xml">
+            <tree string="Traccar Devices">
+                <field name="name"/>
+                <field name="traccar_id"/>
+                <field name="unique_id"/>
+                <field name="status"/>
+                <field name="category"/>
+                <field name="vehicle_id"/>
+                <field name="position_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_fleet_traccar_device_form" model="ir.ui.view">
+        <field name="name">fleet.traccar.device.form</field>
+        <field name="model">fleet.traccar.device</field>
+        <field name="arch" type="xml">
+            <form string="Traccar Device">
+                <header>
+                    <button name="action_view_positions"
+                            string="View Positions"
+                            type="object"
+                            class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="traccar_id"/>
+                            <field name="unique_id"/>
+                            <field name="status"/>
+                            <field name="category"/>
+                        </group>
+                        <group>
+                            <field name="vehicle_id"/>
+                            <field name="position_count" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_fleet_traccar_devices" model="ir.actions.act_window">
+        <field name="name">Traccar Devices</field>
+        <field name="res_model">fleet.traccar.device</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

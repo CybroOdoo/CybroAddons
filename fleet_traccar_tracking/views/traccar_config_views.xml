@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ─── Form view ─────────────────────────────────────────────────────── -->
+    <record id="view_fleet_traccar_config_form" model="ir.ui.view">
+        <field name="name">fleet.traccar.config.form</field>
+        <field name="model">fleet.traccar.config</field>
+        <field name="arch" type="xml">
+            <form string="Traccar Configuration" duplicate="0">
+                <header>
+                    <button name="action_test_connection"
+                            string="Test Connection"
+                            type="object"
+                            class="btn-primary"/>
+                    <button name="action_sync_devices"
+                            string="Sync Devices"
+                            type="object"
+                            class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon"
+                            text="Connected"
+                            bg_color="bg-success"
+                            invisible="not connection_status or '✅' not in connection_status"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <p class="text-muted" invisible="not connection_status">
+                            <field name="connection_status" readonly="1"/>
+                        </p>
+                    </div>
+                    <group string="TRACCAR API SETTINGS">
+                        <group>
+                            <field name="traccar_url"
+                                   placeholder="http://your-traccar-server:8082"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="API Credentials">
+                            <group>
+                                <group string="Credentials">
+                                    <field name="traccar_username" placeholder="admin"/>
+                                    <field name="traccar_password" password="True"/>
+                                </group>
+                                <group string="Webhook Security">
+                                    <field name="webhook_secret"
+                                           placeholder="optional secret token"/>
+                                    <div class="text-muted small" colspan="2">
+                                        Set this token in Traccar forwarding header:
+                                        <code>X-Webhook-Token</code>
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Map Settings">
+                            <group>
+                                <field name="map_provider"/>
+                                <field name="google_maps_api_key"
+                                       invisible="map_provider != 'google'"
+                                       placeholder="AIzaSy..."/>
+                            </group>
+                        </page>
+                        <page string="Sync Settings">
+                            <group>
+                                <field name="sync_interval_minutes"/>
+                                <field name="last_sync" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Setup Guide">
+                            <div class="o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <h4>Quick Setup</h4>
+                                    <ol>
+                                        <li>Install Traccar server:
+                                            <code>docker run -p 8082:8082 -p 5055:5055 traccar/traccar</code>
+                                        </li>
+                                        <li>Open Traccar UI, create a Device, copy the <b>uniqueId</b></li>
+                                        <li>Install <b>Traccar Client</b> app on driver phone, set server URL + uniqueId</li>
+                                        <li>Enter Traccar URL and credentials above → click <b>Test Connection</b></li>
+                                        <li>In Traccar config.xml add:<br/>
+                                            <code>event.forward.url = https://YOUR-ODOO/traccar/webhook/event</code>
+                                        </li>
+                                        <li>On each vehicle form, enable <b>Activate Traccar</b> and enter the Device Identifier</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ─── Action ───────────────────────────────────────────────────────── -->
+    <!-- Delete the old act_window record before recreating as server action -->
+    <delete model="ir.actions.act_window" search="[('name','=','Traccar Configuration'),('res_model','=','fleet.traccar.config')]"/>
+
+    <!-- Server action resolves res_id at runtime — singleton pattern -->
+    <record id="action_fleet_traccar_config" model="ir.actions.server">
+        <field name="name">Traccar Configuration</field>
+        <field name="model_id" ref="model_fleet_traccar_config"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_config()</field>
+    </record>
+
+</odoo>
