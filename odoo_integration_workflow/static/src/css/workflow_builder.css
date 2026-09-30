@@ -1,0 +1,3245 @@
+.workflow-builder-container {
+    position: fixed;
+    top: 45px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    /* Changed from Grid to Flex for easier manual sizing */
+    /*background: #1a1a1a;*/
+    overflow: hidden;
+    color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    border-top: 1px solid #e3e3e8;
+}
+
+/* --- Resizers --- */
+.resizer {
+    width: 1px;
+    background: white;
+    cursor: col-resize;
+    z-index: 50;
+    flex-shrink: 0;
+    position: relative;
+    transition: .3s;
+}
+
+.resizer:hover,
+.resizer.resizing {
+    background: #667eea;
+}
+
+/* Optional: Add a subtle line in the center of the resizer */
+.resizer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: #404040;
+    transform: translateX(-50%);
+}
+
+.resizer:hover::after {
+    background: #818cf8;
+}
+
+.node-library {
+    background: #2d2d2d;
+
+    padding: 25px;
+    overflow-y: auto;
+}
+
+.canvas-container {
+    background: #ECECEC;
+    position: relative;
+    overflow: scroll;
+}
+
+.config-panel {
+    background: #2d2d2d;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.workflow-node {
+    position: absolute;
+    background: white;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 16px;
+    min-width: 160px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+}
+
+.workflow-node:hover {
+    border-color: #667eea;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.25);
+
+}
+
+.workflow-node.selected {
+    border-color: #10b981;
+
+}
+
+.workflow-node.dragging {
+    z-index: 100;
+    box-shadow: 0 12px 32px rgb(0 0 0 / 34%);
+    transform: scale(1);
+    cursor: grabbing !important;
+    transition: transform 0.1s ease;
+}
+
+.workflow-node:active {
+    cursor: grabbing;
+}
+
+.node-header {
+    display: flex;
+    align-items: center;
+
+}
+
+.workflow-node.dragging * {
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+}
+
+.workflow-node.dragging .connection-point {
+    pointer-events: auto;
+}
+
+.node-icon {
+    display: none;
+}
+
+.node-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.node-status {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.node-template {
+        border: 1px solid #E5E7EB;
+    border-radius: 5px;
+    padding: 10px 13px;
+    margin-bottom: 10px;
+    cursor: grab;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.node-template:hover {
+    border-color: #399EA1;
+    /* box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2); */
+    background: #E4F3F3;
+}
+
+.node-template-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.node-template-header svg{
+color: #989ba1;
+}
+
+.node-template-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-size: 0.8rem;
+}
+
+.node-template-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.node-template-desc {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    line-height: 1.4;
+    padding-left: 38px;
+}
+
+.connection-point {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #667eea;
+    border: 3px solid #374151;
+    cursor: crosshair;
+    z-index: 20;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.connection-point.input {
+    top: 50%;
+    left: -7px;
+    transform: translateY(-50%);
+
+}
+
+/* Connection point states */
+/*.connection-point.connecting {
+    animation: pulse 0.6s infinite;
+    transform: scale(1.2);
+}*/
+
+.connection-point:hover {
+    transform: scale(1.3);
+    transition: transform 0.2s;
+}
+
+.connection-point.output {
+    top: 50%;
+    right: -7px;
+    transform: translateY(-50%);
+    background: #28a745;
+}
+
+.connection-point:hover {
+    background: #10b981;
+    transform: translateY(-50%) scale(1.4);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.connection-point.connected {
+    background: #10b981;
+}
+
+.delete-node {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 22px;
+    height: 22px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.7rem;
+    display: none;
+    z-index: 30;
+    transition: all 0.2s ease;
+}
+
+.delete-node:hover {
+    background: #dc2626;
+}
+
+.workflow-node:hover .delete-node {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.config-section {
+    padding-top: 20px;
+    margin-bottom: 18px;
+
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    color: #000;
+    gap: 10px;
+}
+.section-title svg{
+color: #989ba1;
+}
+
+
+.config-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.config-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #4b5563;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    background: white;
+    color: #f3f4f6;
+    transition: all 0.2s ease;
+}
+
+.config-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* Ensure dropdowns don't break layout */
+.config-select {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.config-input::placeholder {
+    color: #6b7280;
+}
+
+.help-text {
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.workflow-controls {
+    position: absolute;
+    top: 20px;
+    right: -130px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    z-index: 1000;
+}
+
+.control-btn {
+    background: #ffffff;
+    border: unset;
+    border-radius: 3px;
+    padding: 0 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    color: #333;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: max-content;
+}
+
+.control-btn:hover {
+    background: #714B67;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.connections-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+    cursor: default;
+    min-height: 100vh;
+}
+
+.instructions {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #9ca3af;
+    background: rgba(55, 65, 81, 0.8);
+    padding: 30px;
+    border-radius: 12px;
+    border: 2px dashed #4b5563;
+    backdrop-filter: blur(10px);
+    max-width: 500px;
+}
+
+.instructions h3 {
+    color: #f3f4f6;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.instructions p {
+    margin: 12px 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.library-header,
+.canvas-header,
+.config-header {
+    margin-bottom: 20px;
+}
+
+.library-title,
+.canvas-title,
+.config-title {
+        font-weight: 700;
+    color: #000;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+}
+
+.library-subtitle,
+.canvas-subtitle,
+.config-subtitle {
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.node-category {
+    margin-bottom: 20px;
+}
+
+.category-title {
+        font-size: 0.95rem;
+    font-weight: 600;
+    color: #714B67;
+    /* border-bottom: 1px solid #404040; */
+    display: flex;
+    align-items: center;
+    margin-bottom: 3px;
+}
+
+.category-icon {
+    margin-right: 8px;
+}
+
+.test-results {
+    background: #374151;
+    border-radius: 8px;
+    padding: 18px;
+    margin-top: 18px;
+    border: 1px solid #4b5563;
+}
+
+.test-result-item {
+    padding: 10px;
+    margin: 6px 0;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.test-result-success {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.test-result-error {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.test-result-warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Scrollbar styling */
+.node-library::-webkit-scrollbar,
+.config-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.node-library::-webkit-scrollbar-track,
+.config-panel::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+.node-library::-webkit-scrollbar-thumb,
+.config-panel::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 3px;
+}
+
+.node-library::-webkit-scrollbar-thumb:hover,
+.config-panel::-webkit-scrollbar-thumb:hover {
+    background: #667eea;
+}
+
+/* Add these new styles to your existing CSS */
+
+/* ========== VISUAL FEEDBACK STYLES ========== */
+.connection-feedback {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.connection-feedback.show {
+    transform: translateX(0);
+}
+
+.connection-feedback-success {
+    background: #10b981;
+    border-left: 4px solid #059669;
+}
+
+.connection-feedback-error {
+    background: #ef4444;
+    border-left: 4px solid #dc2626;
+}
+
+/* Node hover states */
+.workflow-node.node-hover {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+}
+
+.workflow-node.connection-hover {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.2);
+    }
+}
+
+/* Active connection highlighting */
+.connection-active {
+    stroke: #f59e0b !important;
+    stroke-width: 4 !important;
+    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
+    animation: glow 1s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        stroke-width: 4;
+    }
+
+    to {
+        stroke-width: 5;
+    }
+}
+
+/* ========== VALIDATION STYLES ========== */
+.validation-panel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 8px;
+    padding: 16px;
+    max-width: 400px;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/*.validation-header {*/
+/*    display: flex;*/
+/*    justify-content: between;*/
+/*    align-items: center;*/
+/*    margin-bottom: 12px;*/
+/*}*/
+
+.validation-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-valid {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.status-invalid {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.status-warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.validation-error {
+    padding: 8px;
+    margin: 6px 0;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    border-left: 3px solid;
+}
+
+.error-error {
+    background: rgba(239, 68, 68, 0.1);
+    border-left-color: #ef4444;
+}
+
+.error-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border-left-color: #f59e0b;
+}
+
+.error-nodes {
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+/* Node validation indicators */
+.node-validation {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #374151;
+}
+
+.node-valid {
+    background: #10b981;
+}
+
+.node-invalid {
+    background: #ef4444;
+}
+
+.node-warning {
+    background: #f59e0b;
+}
+
+/* ========== TEMPLATES & PRESETS ========== */
+.templates-panel {
+    background: #374151;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.template-card {
+    background: #4b5563;
+    border: 1px solid #6b7280;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.template-card:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.template-name {
+    font-weight: 600;
+    color: #f3f4f6;
+    margin-bottom: 4px;
+}
+
+.template-desc {
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+/* ========== COLLABORATION STYLES ========== */
+.collaboration-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    max-width: 300px;
+    z-index: 100;
+}
+
+.collaboration-activity {
+    background: #374151;
+    border-left: 4px solid;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.activity-user {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.activity-message {
+    color: #9ca3af;
+}
+
+.user-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.user-online {
+    background: #10b981;
+}
+
+.user-offline {
+    background: #6b7280;
+}
+
+/* ========== VERSION HISTORY ========== */
+.version-history {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.version-item {
+    background: #4b5563;
+    border: 1px solid #6b7280;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.version-item:hover {
+    border-color: #667eea;
+}
+
+.version-time {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-bottom: 4px;
+}
+
+.version-desc {
+    font-weight: 500;
+    color: #f3f4f6;
+}
+
+/* ========== TEST RESULTS ========== */
+.test-results-panel {
+    background: #374151;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.test-progress {
+    background: #4b5563;
+    border-radius: 4px;
+    height: 6px;
+    margin: 8px 0;
+    overflow: hidden;
+}
+
+.test-progress-bar {
+    height: 100%;
+    background: #667eea;
+    transition: width 0.3s ease;
+}
+
+.test-result-path {
+    background: #4b5563;
+    border-radius: 4px;
+    padding: 8px;
+    margin: 6px 0;
+    border-left: 3px solid;
+}
+
+.path-success {
+    border-left-color: #10b981;
+}
+
+.path-failed {
+    border-left-color: #ef4444;
+}
+
+.path-skipped {
+    border-left-color: #6b7280;
+}
+
+/* ========== DOCUMENTATION STYLES ========== */
+.docs-button {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 18px;
+    height: 18px;
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: help;
+    font-size: 0.6rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+}
+
+.workflow-node:hover .docs-button {
+    display: flex;
+}
+
+.docs-button:hover {
+    background: #667eea;
+    transform: scale(1.1);
+}
+
+/* ========== ENHANCED CONNECTION STYLES ========== */
+.connection-valid {
+    stroke: #10b981 !important;
+    stroke-width: 3 !important;
+}
+
+.connection-invalid {
+    stroke: #ef4444 !important;
+    stroke-dasharray: 5, 5 !important;
+}
+
+.connection-warning {
+    stroke: #f59e0b !important;
+    stroke-width: 2 !important;
+}
+
+/* ========== WORKFLOW STATUS INDICATORS ========== */
+.workflow-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.status-draft {
+    background: #6b7280;
+    color: white;
+}
+
+.status-valid {
+    background: #10b981;
+    color: white;
+}
+
+.status-invalid {
+    background: #ef4444;
+    color: white;
+}
+
+/* ========== RESPONSIVE IMPROVEMENTS ========== */
+@media (max-width: 1200px) {
+    .workflow-builder-container {
+        grid-template-columns: 250px 1fr 350px;
+    }
+}
+
+@media (max-width: 768px) {
+    .workflow-builder-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+    }
+
+    .node-library,
+    .config-panel {
+        max-height: 200px;
+    }
+}
+
+/* ========== ACCESSIBILITY IMPROVEMENTS ========== */
+.workflow-node:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.control-btn:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 1px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast) {
+    .workflow-node {
+        border-width: 2px;
+    }
+
+    .connection-point {
+        border-width: 3px;
+        border-color: #000;
+    }
+}
+
+/* Enhanced status indicators */
+.node-status.status-configured {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.node-status.status-not-configured {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.node-status.error {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Response area styles */
+.response-area {
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.response-area.loading {
+    border-left: 4px solid #f59e0b;
+}
+
+.response-area.success {
+    border-left: 4px solid #10b981;
+}
+
+.response-area.error {
+    border-left: 4px solid #ef4444;
+}
+
+/* Enhanced configuration panel */
+/*.config-input:valid {
+    border-color: #10b981;
+}*/
+
+.config-input:invalid {
+    border-color: #ef4444;
+}
+
+/* Parameter builder enhancements */
+.param-builder {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    padding: 8px;
+}
+
+.param-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    margin: 4px 0;
+    background: #374151;
+    border-radius: 4px;
+    border-left: 3px solid #667eea;
+}
+
+.param-item span {
+    flex: 1;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.remove-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+}
+
+.remove-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* Body Type Selector */
+.body-type-selector {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.radio-label input[type="radio"] {
+    display: none;
+}
+
+.radio-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #a9a9a9;
+    border-radius: 50%;
+    margin-right: 8px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.radio-label input[type="radio"]:checked+.radio-custom {
+    border-color: #714b67;
+    background: #714b67;
+}
+
+.radio-label input[type="radio"]:checked+.radio-custom::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+
+/* Form Fields Container */
+.form-fields-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+
+    border-radius: 6px;
+
+
+}
+
+
+.form-field-inputs {
+    display: flex;
+    flex: 1;
+    gap: 8px;
+
+}
+
+.form-field-key,
+.form-field-value {
+    flex: 1;
+    min-width: 0;
+}
+
+.form-field-key {
+    border-right: 1px solid #4b5563;
+}
+
+.remove-form-field-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.remove-form-field-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* Form Action Buttons */
+.add-form-field-btn,
+.convert-to-json-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    margin-bottom: 10px;
+}
+
+.add-form-field-btn:hover {
+    background: #5a67d8;
+}
+
+.convert-to-json-btn {
+    background: #10b981;
+}
+
+.convert-to-json-btn:hover {
+    background: #059669;
+
+}
+
+/* JSON Preview */
+.json-preview {
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    padding: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+    color: #10b981;
+    border-left: 4px solid #10b981;
+}
+
+/* No Fields Message */
+.no-fields-message {
+    text-align: center;
+    padding: 20px;
+    color: #9ca3af;
+    font-style: italic;
+    background: rgba(55, 65, 81, 0.3);
+    border-radius: 4px;
+    border: 1px dashed #4b5563;
+}
+
+/* Template Buttons Enhancement */
+.template-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.template-btn {
+    background: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: #e5e7eb;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', monospace;
+}
+
+.template-btn:hover {
+    background: #714b67;
+    border-color: #714b67;
+}
+
+/* Enhanced JSON Textarea */
+.json-payload {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    min-height: 150px;
+    resize: vertical;
+    background: #374151;
+    color: #e5e7eb;
+    border-radius: 5px;
+}
+
+/* Scrollbar for form fields */
+.form-fields-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.form-fields-container::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+.form-fields-container::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 3px;
+}
+
+.form-fields-container::-webkit-scrollbar-thumb:hover {
+    background: #667eea;
+}
+
+
+
+.form-fields-container .form-field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.form-fields-container .form-field-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: start;
+}
+
+
+
+
+.form-fields-container .input-label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: black;
+}
+
+.form-fields-container .config-input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.form-header-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.form-fields-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.form-field-row {
+
+    border-radius: 6px;
+
+    margin-bottom: 10px;
+
+}
+
+.form-field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.field-number {
+    font-weight: bold;
+    color: #495057;
+}
+
+.form-field-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.input-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.no-fields-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.no-fields-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.form-footer-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.json-preview {
+    background: #374151;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 10px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.workflow-node {
+    position: absolute;
+    z-index: 2;
+    /* Higher than connections */
+}
+
+.connections-layer {
+    z-index: 1;
+    /* Lower than nodes */
+}
+
+.radio-group {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.radio-label {
+    font-size: 14px;
+}
+
+/*.credentials-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}*/
+
+
+
+.config-input,
+.config-select {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px !important;
+    font-size: 14px;
+    transition: all 0.2s;
+    color: #333;
+
+}
+
+.config-input:focus,
+.config-select:focus {
+    outline: none;
+    border-color: #714b67;
+    box-shadow: unset;
+}
+
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .credentials-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .radio-group {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+.config-section-title {
+    color: white;
+}
+
+/* You can add specific colors for PUT nodes if desired */
+.workflow-node[data-type="put"] {
+
+    /* Orange border for PUT */
+}
+
+.workflow-node[data-type="put"]:hover {
+    border-color: #ff8c00;
+    box-shadow: 0 6px 20px rgba(255, 165, 0, 0.25);
+}
+
+.workflow-node[data-type="put"] .node-icon {
+    background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+}
+
+/* Start Node Styling */
+.workflow-node.start-node {
+    background: #374151;
+    border: 2px solid #1e7e34;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    z-index: 10;
+    /* Ensure it's above other elements */
+}
+
+.workflow-node.start-node .node-header {
+    background: #374151;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.workflow-node.start-node .node-status {
+    color: #e8f5e8;
+    font-weight: 500;
+}
+
+/* End Node Styling */
+.workflow-node.end-node {
+    background: #374151;
+    border: 2px solid #c82333;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    z-index: 10;
+    /* Ensure it's above other elements */
+}
+
+.workflow-node.end-node .node-header {
+    background: #374151;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.workflow-node.end-node .node-status {
+    color: #e8f5e8;
+    font-weight: 500;
+}
+
+/* Remove connection points from start/end nodes */
+.workflow-node.start-node .connection-point.input,
+.workflow-node.end-node .connection-point.output {
+    display: none;
+}
+
+/* Ensure nodes are properly positioned */
+.workflow-node {
+    position: absolute;
+    z-index: 99;
+    border-radius: 8px;
+    cursor: move;
+    user-select: none;
+}
+
+/* Conditional Node Styles */
+.workflow-node.condition-node {
+    background: linear-gradient(135deg, #6f42c1, #e83e8c);
+    border: 2px solid #5a3791;
+    min-height: 100px;
+}
+
+.workflow-node.condition-node .node-header {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.workflow-node.condition-node .condition-preview {
+    background: rgba(0, 0, 0, 0.3);
+    margin: 5px 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-family: monospace;
+    color: #fff;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Conditional Connection Points */
+.connection-point.true-branch {
+    background: #28a745;
+    right: -6px;
+    top: 30%;
+}
+
+.connection-point.false-branch {
+    background: #dc3545;
+    right: -6px;
+    top: 70%;
+}
+
+.connection-point.true-branch::after {
+    content: "T";
+    font-size: 0.6rem;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.connection-point.false-branch::after {
+    content: "F";
+    font-size: 0.6rem;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Condition Builder Styles */
+.condition-builder {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    background: #f8f9fa;
+}
+
+.condition-row {
+    margin-bottom: 15px;
+}
+
+.branch-configuration {
+    display: grid;
+    gap: 15px;
+}
+
+.branch-row {
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 4px solid #ddd;
+}
+
+.branch-row.true-branch {
+    border-left-color: #28a745;
+    background: rgba(40, 167, 69, 0.05);
+}
+
+.branch-row.false-branch {
+    border-left-color: #dc3545;
+    background: rgba(220, 53, 69, 0.05);
+}
+
+.branch-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.branch-status {
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+}
+
+/* Connection Highlights */
+.connection-highlight {
+    filter: drop-shadow(0 0 8px gold);
+    stroke-width: 4px !important;
+}
+
+/* Conditional node specific styling */
+.condition-node .connection-point.output.true-branch {
+    background-color: #28a745;
+    right: -8px;
+    top: 30%;
+}
+
+.condition-node .connection-point.output.false-branch {
+    background-color: #dc3545;
+    right: -8px;
+    top: 70%;
+}
+
+.condition-node .connection-point.output.true-branch::after {
+    content: "✓";
+    position: absolute;
+    font-size: 8px;
+    color: white;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.condition-node .connection-point.output.false-branch::after {
+    content: "✕";
+    position: absolute;
+    font-size: 8px;
+    color: white;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.condition-preview {
+    font-size: 10px;
+    color: #666;
+    margin-top: 5px;
+    padding: 2px 5px;
+    background: #f8f9fa;
+    border-radius: 3px;
+    display: none;
+}
+
+.condition-node .connection-point.output {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #28a745;
+    cursor: crosshair;
+    z-index: 10;
+    border: 2px solid white;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+.condition-node .connection-point.output.true-branch::after {
+    content: "T";
+    position: absolute;
+    font-size: 8px;
+    color: white;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.condition-node .connection-point.output.false-branch::after {
+    content: "F";
+    position: absolute;
+    font-size: 8px;
+    color: white;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Hover effects */
+.condition-node .connection-point.output:hover {
+    transform: scale(1.2);
+    transition: transform 0.2s;
+}
+
+.condition-node .connection-point.output.true-branch:hover {
+    background: #218838;
+    box-shadow: 0 0 5px #28a745;
+}
+
+.condition-node .connection-point.output.false-branch:hover {
+    background: #c82333;
+    box-shadow: 0 0 5px #dc3545;
+}
+
+/* Connection mode styling */
+.connection-mode .connection-point.output {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.3);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Ensure fixed nodes stay visible */
+.workflow-node.fixed-node {
+    z-index: 100;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Start node specific styling */
+.workflow-node[data-type="start"] {
+        background: #E4A900;
+    text-transform: uppercase;
+    border-radius: 50%;
+    height: 78px;
+    width: 78px;
+    min-height: auto;
+    min-width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.workflow-node[data-type="start"] .node-title{
+color: white;
+}
+.workflow-node[data-type="start"] .btn-clone, .workflow-node[data-type="start"] .delete-node{
+display: none !important;
+}
+.workflow-node[data-type="end"] .btn-clone, .workflow-node[data-type="end"] .delete-node{
+display: none !important;
+}
+
+/* End node specific styling */
+.workflow-node[data-type="end"] {
+
+    background: #E46E78;
+    text-transform: uppercase;
+    border-radius: 50%;
+    height: 78px;
+    width: 78px;
+    min-height: auto;
+    min-width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.workflow-node[data-type="end"] .node-title{
+color: white;
+}
+
+/* Special styling for Start and End nodes */
+.workflow-node[data-type="start"] .connection-point.input {
+    display: none !important;
+}
+
+.workflow-node[data-type="end"] .connection-point.output {
+    display: none !important;
+}
+
+/* Visual indication for single-connection nodes */
+.workflow-node[data-type="start"]::after {
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #28a745;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.workflow-node[data-type="end"]::before {
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #dc3545;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Conditional Node Styling */
+.workflow-node[data-type="condition"] {
+
+    position: relative;
+    width: 250px;
+}
+
+.connection-point.true-output {
+    content: 'T';
+    background-color: #28a745;
+
+}
+
+.connection-point.false-output {
+    content: 'F';
+    background-color: #dc3545;
+    border: 2px solid #c82333;
+}
+
+.workflow-node[data-type="condition"] .node-status {
+    font-style: italic;
+    color: #6c757d;
+}
+
+.workflow-node[data-type="condition"] .true-output,
+.workflow-node[data-type="condition"] .false-output {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    transform: none !important;
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.workflow-node[data-type="condition"] .true-output:hover,
+.workflow-node[data-type="condition"] .false-output:hover {
+    transform: scale(1.3) !important;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+}
+
+.workflow-node[data-type="condition"] .node-header {
+    padding-right: 25px;
+    /* Make space for dual outputs */
+}
+
+.condition-badge {
+    position: absolute;
+    top: 13px;
+    right: 5px;
+    background: #ffc107;
+    color: #000;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.workflow-node .connection-point.input {
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.workflow-node:not([data-type="condition"]) .connection-point.output {
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.workflow-node[data-type="condition"] .connection-points-output {
+        position: absolute;
+    right: -8px;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    gap: 3px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 16px;
+}
+
+.workflow-node[data-type="condition"] .true-output {
+    background: #28a745;
+    align-self: flex-start;
+    margin-top: 15px;
+}
+
+.workflow-node[data-type="condition"] .false-output {
+    background: #dc3545;
+    align-self: flex-end;
+    margin-bottom: 15px;
+}
+
+.workflow-node[data-type="condition"] .true-output:hover {
+    background: #218838;
+    box-shadow: 0 0 8px rgba(40, 167, 69, 0.6);
+}
+
+.workflow-node[data-type="condition"] .false-output:hover {
+    background: #c82333;
+    box-shadow: 0 0 8px rgba(220, 53, 69, 0.6);
+}
+
+/* Remove the old positioning styles that placed them inside */
+.workflow-node[data-type="condition"] .connection-point.output {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    transform: none !important;
+    border: unset !important;
+}
+
+/* Ensure the condition node has enough height for border outputs */
+.workflow-node[data-type="condition"] {
+    padding-bottom: 20px;
+}
+
+/* Connection point connecting animation */
+/*.workflow-node[data-type="condition"] .connection-point.connecting {
+    animation: border-pulse 0.8s infinite;
+}*/
+
+@keyframes border-pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+
+    50% {
+        transform: scale(1.4);
+        box-shadow: 0 0 0 8px rgba(40, 167, 69, 0);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* Condition node styling */
+.condition-test-result {
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    border-left: 4px solid #ccc;
+}
+
+.condition-test-result.condition-true {
+    background-color: #d4edda;
+    border-left-color: #28a745;
+}
+
+.condition-test-result.condition-false {
+    background-color: #f8d7da;
+    border-left-color: #dc3545;
+}
+
+.condition-test-result.condition-pending {
+    background-color: #fff3cd;
+    border-left-color: #ffc107;
+}
+
+.condition-result-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.condition-icon {
+    font-size: 1.2em;
+}
+
+.condition-details {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.condition-details div {
+    margin-bottom: 4px;
+}
+
+/* Visual feedback for condition nodes */
+.workflow-node.condition-true {
+    box-shadow: 0 0 0 2px #28a745;
+}
+
+.workflow-node.condition-false {
+    box-shadow: 0 0 0 2px #dc3545;
+}
+
+/* Enhanced node status styles */
+.node-status.node-success {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.node-status.node-error {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.node-failed {
+    border: 2px solid #dc3545 !important;
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+}
+
+/* Response area styles */
+.response-success {
+    border-left: 4px solid #28a745;
+    background-color: #f8fff9;
+}
+
+.response-error {
+    border-left: 4px solid #dc3545;
+    background-color: #fff8f8;
+}
+
+.http-response,
+.http-error {
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.response-status.status-success {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.response-status.status-error {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.error-details {
+    background: #fff3f3;
+    border: 1px solid #ffcdd2;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+/* Enhanced node status styles */
+.node-status.node-success {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.node-status.node-error {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.node-failed {
+    border: 2px solid #dc3545 !important;
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+}
+
+/* Response area styles */
+.response-success {
+    border-left: 4px solid #28a745;
+    background-color: #f8fff9;
+}
+
+.response-error {
+    border-left: 4px solid #dc3545;
+    background-color: #fff8f8;
+}
+
+.http-response,
+.http-error {
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.response-status.status-success {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.response-status.status-error {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.error-details {
+    background: #fff3f3;
+    border: 1px solid #ffcdd2;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+/* 🆕 Enhanced Flow Visualization Styles */
+
+/* Node status enhancements */
+.node-status.node-success {
+    color: #28a745;
+    font-weight: bold;
+    background: rgba(40, 167, 69, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.node-status.node-error {
+    color: #dc3545;
+    font-weight: bold;
+    background: rgba(220, 53, 69, 0.1);
+    padding: 5px 6px;
+    border-radius: 3px;
+}
+
+.node-failed {
+    border: 2px solid #dc3545 !important;
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+    animation: pulse-error 2s infinite;
+}
+
+@keyframes pulse-error {
+    0% {
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(220, 53, 69, 0.5);
+    }
+
+    100% {
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+    }
+}
+
+/* Connection execution styles */
+.connection-executed {
+    stroke-width: 4px !important;
+    filter: drop-shadow(0 0 3px rgba(81, 207, 102, 0.5));
+}
+
+.connection-failed {
+    stroke-width: 3px !important;
+    filter: drop-shadow(0 0 3px rgba(255, 107, 107, 0.5));
+}
+
+/* Response area enhancements */
+.response-success {
+    border-left: 4px solid #28a745;
+    background-color: #f8fff9;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.response-error {
+    border-left: 4px solid #dc3545;
+    background-color: #fff8f8;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.http-response,
+.http-error {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.response-status.status-success {
+    color: #28a745;
+    font-weight: bold;
+    padding: 5px;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 3px;
+}
+
+.response-status.status-error {
+    color: #dc3545;
+    font-weight: bold;
+    padding: 5px;
+    background: rgba(220, 53, 69, 0.1);
+    border-radius: 3px;
+}
+
+.response-time {
+    color: #6c757d;
+    font-size: 11px;
+    margin: 5px 0;
+}
+
+.response-headers,
+.response-data {
+    margin: 10px 0;
+}
+
+.response-headers pre,
+.response-data pre {
+    background: #f8f9fa;
+    padding: 8px;
+    border-radius: 3px;
+    border: 1px solid #e9ecef;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.error-details {
+    background: #fff3f3;
+    border: 1px solid #ffcdd2;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #c1121f;
+}
+
+/* Flow badges and info */
+.flow-badge {
+    background: #667eea;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-left: 10px;
+}
+
+.flow-execution-info {
+    background: #e7f5ff;
+    border: 1px solid #a5d8ff;
+    border-radius: 4px;
+    padding: 8px;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+/* Test button enhancements */
+.test-button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 10px 0;
+    transition: background 0.3s;
+}
+
+.test-button:hover {
+    background: #5a67d8;
+}
+
+.clear-response-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.clear-response-btn:hover {
+    background: #545b62;
+}
+
+/* Tooltip styles for connections */
+.connections-layer path[data-tooltip] {
+    position: relative;
+}
+
+.connections-layer path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.connections-layer path[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    background: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* 🆕 COMPLETE CSS FOR NEW FEATURES */
+
+/* Node status enhancements */
+.node-status {
+    font-size: 11px;
+    margin-top: 5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-align: center;
+}
+
+.node-status.node-success {
+    color: #28a745;
+    font-weight: bold;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.node-status.node-error {
+    color: #dc3545;
+    font-weight: bold;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.node-failed {
+    border: 2px solid #dc3545 !important;
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+}
+
+/* Response area styles */
+.response-area {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.response-area.response-success {
+    border-left: 4px solid #28a745;
+    background-color: #f8fff9;
+}
+
+.response-area.response-error {
+    border-left: 4px solid #dc3545;
+    background-color: #fff8f8;
+}
+
+/* HTTP response formatting */
+.http-response .response-status {
+    font-weight: bold;
+    margin-bottom: 8px;
+    padding: 4px 8px;
+    border-radius: 3px;
+}
+
+.http-response .status-success {
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.http-response .status-error {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.http-response .response-time {
+    color: #6c757d;
+    font-size: 11px;
+    margin: 5px 0;
+}
+
+.http-response .response-headers,
+.http-response .response-data {
+    margin: 10px 0;
+}
+
+.http-response .response-headers pre,
+.http-response .response-data pre {
+    background: #fff;
+    padding: 8px;
+    border-radius: 3px;
+    border: 1px solid #dee2e6;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+/* Error details styling */
+.error-details {
+    background: #fff3f3;
+    border: 1px solid #ffcdd2;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #c1121f;
+}
+
+.error-details strong {
+    color: #a61e4d;
+}
+
+/* Flow badges */
+.flow-badge {
+    background: #667eea;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-left: 10px;
+    display: inline-block;
+}
+
+.flow-execution-info {
+    background: #e7f5ff;
+    border: 1px solid #a5d8ff;
+    border-radius: 4px;
+    padding: 8px;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+/* Button enhancements */
+.test-button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 10px 0;
+    transition: background 0.3s;
+    display: inline-block;
+}
+
+.test-button:hover {
+    background: #5a67d8;
+}
+
+.clear-response-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.clear-response-btn:hover {
+    background: #545b62;
+}
+
+/* Connection animation */
+@keyframes connection-pulse {
+    0% {
+        stroke-width: 3px;
+        opacity: 1;
+    }
+
+    50% {
+        stroke-width: 5px;
+        opacity: 0.8;
+    }
+
+    100% {
+        stroke-width: 3px;
+        opacity: 1;
+    }
+}
+
+.connection-executed {
+    animation: connection-pulse 2s ease-in-out infinite;
+}
+
+/* Response preview styles */
+.response-preview-content {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    background: #f8f9fa;
+}
+
+.preview-header {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+.json-preview-container {
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    padding: 8px;
+}
+
+.json-preview {
+    font-size: 12px;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.preview-help,
+.preview-error {
+    font-size: 12px;
+    margin-top: 8px;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.preview-help {
+    background: #e7f3ff;
+    border: 1px solid #b3d7ff;
+}
+
+.preview-error {
+    background: #ffe6e6;
+    border: 1px solid #ffb3b3;
+    color: #dc3545;
+}
+
+.manual-path-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #dee2e6;
+}
+
+.condition-help-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 15px;
+    border-left: 4px solid #007bff;
+}
+
+.condition-help-section ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.condition-help-section li {
+    margin-bottom: 5px;
+}
+
+.condition-test-result {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #28a745;
+}
+
+.condition-true {
+    background: #f8fff9;
+    border-left-color: #28a745;
+}
+
+.condition-false {
+    background: #fff8f8;
+    border-left-color: #dc3545;
+}
+
+.condition-result-header {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.condition-details {
+    font-size: 0.9rem;
+}
+
+.response-preview-content {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    background: #f8f9fa;
+}
+
+.preview-header {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+.json-preview-container {
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    padding: 8px;
+}
+
+.json-preview {
+    font-size: 12px;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.manual-path-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #dee2e6;
+}
+
+.condition-help-section ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.condition-help-section li {
+    margin-bottom: 5px;
+}
+
+/* ========== FIXED SELECT INPUT VISIBILITY ========== */
+.config-select {
+        background-color: #ffffff !important;
+    color: #333 !important;
+    border: 1px solid #4b5563;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 0.9rem;
+    appearance: none;
+}
+
+.config-select option {
+
+    padding: 10px !important;
+}
+
+
+
+/* Specific select elements */
+.previous-node-select,
+.response-field-select {
+    background: #1f2937;
+    color: #ffffff;
+}
+
+.previous-node-select option,
+.response-field-select option {
+    background: #1f2937;
+    color: #ffffff;
+}
+
+/* Selected state for options with data */
+.previous-node-select option[value]:not([value=""]),
+.response-field-select option[value]:not([value=""]) {
+    color: #ffffff;
+}
+
+/* Empty option styling */
+
+
+/* Radio group select styling */
+.radio-group select.config-select {
+    margin-bottom: 0;
+}
+
+/* Authentication select styling */
+.auth-config-container .config-select {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+
+
+/* Ensure selected values are always white */
+.config-select:valid {
+    color: #ffffff;
+}
+
+.config-select:invalid {
+    color: #ffffff;
+}
+
+/* Hover states */
+.config-select:hover {
+    border-color: #667eea;
+    background-color: #000000;
+}
+
+/* Active state */
+.config-select:active {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* Disabled state */
+.config-select:disabled {
+    background-color: #000000;
+    color: #ffffff;
+    border-color: #4b5563;
+    opacity: 0.6;
+}
+
+/* Multiple select styling */
+.config-select[multiple] {
+    background: #1f2937;
+    color: #ffffff;
+    min-height: 120px;
+}
+
+.config-select[multiple] option {
+    background: #1f2937;
+    color: #ffffff;
+    padding: 8px 12px;
+    margin: 2px 0;
+}
+
+.config-select[multiple] option:checked {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.config-select[multiple] option:hover {
+    background: #374151;
+    color: #ffffff;
+}
+
+.config-select {
+    background-color: white !important;
+    /* Black background */
+    color: #ffffff !important;
+    /* White text */
+   border: 1px solid #e3e3e8 !important;
+    /* Subtle border */
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 0.9rem;
+    appearance: none;
+    /* Removes default browser arrow style */
+}
+
+/* Specific styling for comparison operator select */
+select[data-config-key="operator"] {
+    background: #white !important;
+    color: #333 !important;
+}
+
+select[data-config-key="operator"] option {
+    background: white !important;
+    color: #333 !important;
+}
+
+select[data-config-key="operator"] option:checked {
+    background: #667eea !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+}
+
+/* Dropdown (Select box) styling */
+.config-select {
+    background-color: white !important;
+    /* Black background */
+    color: #333 !important;
+    /* White text */
+    border: 1px solid #4b5563;
+    /* Subtle border */
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 0.9rem;
+    appearance: none;
+    /* Removes default browser arrow style */
+}
+
+/* Optional: change dropdown options */
+
+
+/* Optional: add hover/focus style */
+.config-select:focus {
+    outline: none;
+    border-color: #714b67 !important;
+    /* Highlight border on focus */
+    box-shadow: unset;
+}
+
+/* Style for the left operand dropdown */
+.left-operand-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #2d3748;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.left-operand-select option {
+    background: white;
+    color: black;
+}
+
+.operand-group {
+    position: relative;
+}
+
+/* ========================================= */
+/* 🛠️ CONDITION NODE STYLING FIXES          */
+/* ========================================= */
+
+/* 1. Ensure Consistent Input Height & Colors */
+.cond-input {
+    background-color: white !important;
+    color: #333 !important;
+    border: 1px solid #e3e3e8 !important;
+    border-radius: 4px;
+    padding: 0 10px;
+    width: 100%;
+    height: 38px !important;       /* FORCE HEIGHT */
+    line-height: 36px !important;  /* Center text vertically */
+    display: block;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    appearance: none; /* Remove default arrow for cleaner look */
+    -webkit-appearance: none;
+}
+
+.cond-input:focus {
+    border-color: #00bc8c !important;
+    outline: none;
+}
+
+/* 2. Grid Layout Adjustment */
+.comparison-row {
+    display: flex !important;      /* Use Flex, not Grid for better width control */
+    flex-direction: row;
+    gap: 8px;
+    align-items: flex-end;         /* Align bottom edge */
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* 3. Explicit Column Widths */
+.col-left {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+}
+.col-mid {
+    width: 20%;
+    display: flex;
+    flex-direction: column;
+}
+.col-right {
+    width: 35%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 4. Labels */
+.cond-label {
+    font-size: 0.8rem;
+    color: #333;
+    margin-bottom: 5px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 5. Custom Dropdown Arrow (Since we removed appearance) */
+select.cond-input {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    padding-right: 30px; /* Space for arrow */
+}
+
+.operator-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 20px;
+    /* Align with inputs */
+}
+
+.response-field-dropdown {
+    margin-bottom: 10px;
+}
+
+
+.connection-point.loop-body {
+    background: #ff6b35;
+}
+
+.connection-point.loop-exit {
+    background: #4ecdc4;
+}
+
+.delete-connection-btn {
+    transition: opacity 0.15s;
+    user-select: none;
+    pointer-events: auto;
+}
+/* Fix the Instruction Overlay */
+.workflow-instructions-overlay {
+    position: fixed !important; /* Force it to stay on screen */
+    top: 50% !important;
+    left: 55% !important; /* Adjusted for sidebar width */
+    transform: translate(-50%, -50%) !important;
+    z-index: 1000;
+    pointer-events: none; /* Let clicks pass through if needed, or remove if it has buttons */
+}
+
+/* If the instructions are inside the canvas-wrapper,
+   we might need to ensure the wrapper supports this positioning */
+.workflow-canvas-wrapper {
+    position: relative;
+}
+/* Container for connection points to make positioning relative to the node */
+.workflow-node {
+    /* Existing styles... */
+    overflow: visible !important; /* Critical: Allows dots to stick out */
+}
+
+/* Base Dot Style */
+.connection-point {
+       position: absolute;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    cursor: crosshair;
+    z-index: 10;
+    transition: all 0.2s;
+    border: 1px solid #714b678a;
+    box-shadow: unset;
+}
+
+.connection-point:hover {
+    background: #00f2fe;
+    transform: scale(1.2);
+}
+
+/* Positions */
+.connection-point.top {
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.connection-point.bottom {
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.connection-point.left {
+    left: -18px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.connection-point.right {
+    right: -18px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Hiding dots when occupied (The Constraint) */
+.workflow-node.has-input .connection-point:not(.connected),
+.workflow-node.has-output .connection-point:not(.connected) {
+    /* Optional: Hide unused dots to enforce 1-in-1-out visual simplicity */
+    /* opacity: 0.2; */
+    /* pointer-events: none; */
+}
+
+/* --- CONTAINER LAYOUT --- */
+.workflow-builder-container {
+    position: fixed;
+    top: 45px;
+    left: 0; right: 0; bottom: 0;
+    display: flex; /* Use Flexbox, not Grid, for smooth resizing */
+    background: #1a1a1a;
+    overflow: hidden;
+}
+
+/* --- LEFT & RIGHT PANELS --- */
+.node-library,
+.config-panel {
+    width: 280px;          /* Default Width */
+    min-width: 280px;      /* Prevent squishing */
+    background: white;
+    transition: all 0.3s ease-in-out; /* Smooth slide animation */
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    z-index: 20;
+}
+
+.node-library { border-right-width: 1px; }
+.config-panel { border-left-width: 1px; }
+
+/* --- CLOSED STATE (Hidden) --- */
+.node-library.closed,
+.config-panel.closed {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    opacity: 0; /* Fade content out so it doesn't look messy while shrinking */
+}
+
+/* --- CENTER CANVAS --- */
+.canvas-container {
+    flex-grow: 1; /* Takes up all remaining space */
+    position: relative;
+    background: #ECECEC;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+}
+
+/* --- TOGGLE BUTTONS --- */
+.panel-toggle-btn {
+       position: absolute;
+    top: 15px;
+    z-index: 100;
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: unset;
+    border-radius: 3px;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);*/
+}
+
+.panel-toggle-btn:hover {
+    background: #714B67;
+    color: white;
+}
+
+/* Positions */
+.left-toggle {
+    left: 15px;
+}
+
+.right-toggle {
+    left: 50px;
+}
+/* Container for the floating buttons */
+.node-controls {
+    position: absolute;
+    top: -12px;         /* Sits on the top edge */
+    right: 0;           /* Aligned to right side */
+    left: 0;            /* Spans full width */
+    display: flex;
+    justify-content: space-between; /* Clone left, Delete right */
+    padding: 0 -8px;    /* Slight overhang */
+    z-index: 30;
+
+    /* 👻 Hidden by default */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* 👁️ Show on Hover */
+.workflow-node:hover .node-controls {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Common Button Style */
+.node-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+}
+
+.node-btn:hover {
+    transform: scale(1.2);
+}
+
+.btn-clone {
+    background: #3b82f6; /* Blue */
+    margin-left: -5px;   /* Tiny overlap on left */
+}
+
+.btn-delete {
+    background: #ef4444; /* Red */
+    margin-right: -5px;  /* Tiny overlap on right */
+}
+/*.canvas {*/
+/*    !* ... existing styles ... *!*/
+/*    background-color: #212529;*/
+/*    background-image: radial-gradient(#4b5563 1px, transparent 1px);*/
+/*    background-size: 20px 20px; !* The Grid Size *!*/
+/*}*/
+
+.bttn{
+    background: #ECECEC;
+    border: 1px solid #dbdbdb;
+    color: #000;
+    padding: 10px;
+    border-radius: 3px;
+    transition: .3s;
+}
+.bttn:hover{
+    border-color: #399EA1;
+    background: #E4F3F3;
+}
+.bttn-suc{
+background: #714B67;
+color: white;
+padding: 10px;
+    border-radius: 3px;
+        border: unset;
+        transition: .3s;
+}
+.bttn-suc:hover{
+background: #57364e;
+}
+.canvas-scroll-wrapper{
+position: relative;
+}
+/* width */
+.canvas-scroll-wrapper::-webkit-scrollbar {
+  width: 3px;
+}
+
+/* Scroll thumb */
+.canvas-scroll-wrapper::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
+}
+.canvas-scroll-wrapper::-webkit-scrollbar:horizontal {
+  height: 3px;   /* reduce thickness */
+}
+
+
+
+
+.zoom-controls{
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+    right: 0;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    background: white;
+    width: max-content;
+    padding: 0 10px;
+    border-radius: 10px;
+    box-shadow: 0px 8px 20px #00000036;
+}
+.zoom-controls span{
+    width: 40px;
+    display: flex;
+    justify-content: center;
+}
+.zoom-controls button{
+        border: unset;
+    font-size: 1.3rem;
+    background: unset;
+}
+.zoom-controls .first{
+font-size: 1.8rem;
+}
+.btn-outline-success{
+transition: 0.3s;
+}
+/*.canvas-scroll-wrapper {*/
+/*    background-color: #212529;*/
+
+/*    background-image: radial-gradient(#4b5563 1px, transparent 1px);*/
+/*    background-size: 20px 20px; !* Match your snap grid size *!*/
+/*    background-position: -19px -19px; !* Align dots *!*/
+/*}*/
+/* Base Style: Hide unused connection points */
+.connection-point {
+    /* ... keep your existing size/color styles ... */
+
+    opacity: 0; /* Make invisible by default */
+    transform: scale(0); /* Shrink them down */
+    transition: all 0.2s ease-in-out;
+}
+
+/* Scenario 1: The dot is active (has a line connected) */
+.connection-point.connected {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    background-color: #ffffff; /* Optional: distinct color for active dots */
+    border-color: #667eea;
+}
+
+/* Scenario 2: The user hovers the node (Show all options) */
+.workflow-node:hover .connection-point {
+    opacity: 0.6; /* Slightly dim to show they are available */
+    transform: scale(1);
+}
+
+.workflow-node:hover .connection-point:hover {
+    opacity: 1;
+    transform: scale(1.3); /* Pop effect on direct hover */
+    background-color: #667eea;
+}
+
+/* Scenario 3: While dragging a line (Connection Mode) */
+/* We want target dots to appear so we know where to drop */
+.connection-mode .connection-point {
+    opacity: 1;
+    transform: scale(1);
+}
+/* When dragging, valid targets glow green */
+/*.connection-mode .connection-point:not(.connecting) {*/
+/*    background-color: #28a745;*/
+/*    transform: scale(1.2);*/
+/*    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.3);*/
+/*    animation: target-pulse 1s infinite;*/
+/*}*/
+
+/*@keyframes target-pulse {*/
+/*    0% { transform: scale(1.2); }*/
+/*    50% { transform: scale(1.4); }*/
+/*    100% { transform: scale(1.2); }*/
+/*}*/
