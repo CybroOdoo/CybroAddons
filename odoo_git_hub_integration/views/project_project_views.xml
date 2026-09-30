@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend Project Form -->
+    <record id="view_project_project_form_github" model="ir.ui.view">
+        <field name="name">project.project.form.github</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe_stat_button" type="object"
+                        name="action_view_github_repositories"
+                        icon="fa-github">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="repositories_count"/>
+                        </span>
+                        <span class="o_stat_text">Repositories</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='date_start']" position="after">
+                <field name="enable_github" widget="boolean_toggle"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="GitHub" name="github_integration" invisible="not enable_github">
+                    <group>
+                        <group name="github_config">
+                            <field name="github_repository_id" options="{'no_create': True}" invisible="not enable_github"/>
+                            <field name="github_repository_url" widget="url" readonly="1" invisible="not github_repository_id"/>
+                            <button name="action_import_issues_from_github" type="object" string="Import Issues" 
+                                    class="btn-primary mt-2 text-nowrap" invisible="not github_repository_id"/>
+                        </group>
+                        <group name="github_stats">
+                            <field name="github_collaborator_ids" widget="many2many_tags" invisible="not github_repository_id"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

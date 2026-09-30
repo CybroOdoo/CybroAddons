@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Commit List View -->
+    <record id="view_github_commit_list" model="ir.ui.view">
+        <field name="name">github.commit.list</field>
+        <field name="model">github.commit</field>
+        <field name="arch" type="xml">
+            <tree create="0" edit="0" delete="0">
+                <field name="repository_id"/>
+                <field name="branch_id"/>
+                <field name="sha" string="Commit ID"/>
+                <field name="author_name"/>
+                <field name="message"/>
+                <field name="committed_date"/>
+                <button name="action_view_github_commit" string="Open on GitHub" type="object" icon="fa-external-link"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Commit Search View -->
+    <record id="view_github_commit_search" model="ir.ui.view">
+        <field name="name">github.commit.search</field>
+        <field name="model">github.commit</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="message"/>
+                <field name="sha"/>
+                <field name="author_name"/>
+                <field name="repository_id"/>
+                <field name="branch_id"/>
+                <group expand="0" string="Group By">
+                    <filter string="Repository" name="group_by_repo" context="{'group_by': 'repository_id'}"/>
+                    <filter string="Author" name="group_by_author" context="{'group_by': 'author_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Commit Action -->
+    <record id="action_github_commit" model="ir.actions.act_window">
+        <field name="name">Commits</field>
+        <field name="res_model">github.commit</field>
+        <field name="view_mode">tree</field>
+        <field name="search_view_id" ref="view_github_commit_search"/>
+        <field name="context">{'search_default_group_by_repo': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No commits found!
+            </p>
+            <p>
+                Sync your repositories to fetch the latest commits from GitHub.
+            </p>
+        </field>
+    </record>
+</odoo>

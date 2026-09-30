@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_github_branch_create_wizard" model="ir.actions.act_window">
+        <field name="name">Create Branch</field>
+        <field name="res_model">github.branch.create.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_repository_id': active_id}</field>
+    </record>
+    <record id="view_github_repository_list" model="ir.ui.view">
+        <field name="name">github.repository.list</field>
+        <field name="model">github.repository</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="sync_status == 'success'"
+                  decoration-danger="sync_status == 'error'"
+                  decoration-warning="sync_status == 'syncing'">
+                <field name="name"/>
+                <field name="owner"/>
+                <field name="project_ids" widget="many2many_tags"/>
+                <field name="task_ids" widget="many2many_tags"/>
+                <field name="stars_count"/>
+                <field name="open_issues_count"/>
+                <field name="last_sync"/>
+                <field name="sync_status"/>
+                <button name="action_sync_repository" type="object"
+                        string="Sync" icon="fa-refresh"
+                        invisible="sync_status == 'syncing'"/>
+                <button name="action_sync_commits" type="object"
+                        string="Sync Commits" icon="fa-code-fork"
+                        invisible="sync_status == 'syncing'"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Repository Form View -->
+    <record id="view_github_repository_form" model="ir.ui.view">
+        <field name="name">github.repository.form</field>
+        <field name="model">github.repository</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_sync_repository" type="object"
+                            string="Sync Repository" class="btn-primary"
+                            invisible="sync_status == 'syncing'"/>
+                    <button name="action_sync_commits" type="object"
+                            string="Sync Commits" class="btn-primary"
+                            invisible="sync_status == 'syncing'"/>
+                    <button name="%(action_github_branch_create_wizard)d"
+                            string="Create Branch"
+                            type="action"
+                            class="btn-primary"/>
+                    <button name="action_export_to_github" string="Export to GitHub" type="object" class="btn-primary" invisible="github_id"/>
+                    <button name="open_in_github" string="Open in GitHub" type="object" class="btn-secondary"/>
+                    <field name="github_id" invisible="1"/>
+                    <field name="sync_status" widget="statusbar" statusbar_visible="never,syncing,success,error"/>
+                </header>
+                <sheet>
+                    <div class="row">
+                        <div class="col-8">
+                            <group>
+                                <field name="name" string="Repository Name" class="fw-bold"/>
+                                <field name="project_ids" widget="many2many_tags" string="Project Name"/>
+                                <field name="url" widget="url" string="Repository Url" readonly="1"/>
+                                <field name="private" string="Visibility"/>
+                            </group>
+                        </div>
+                        <div class="col-4">
+                            <group>
+                                <field name="last_sync" string="Updated At" readonly="1"/>
+                                <field name="last_sync" string="Created At" readonly="1"/>
+                                <field name="branches_count" string="Branch Count" readonly="1"/>
+                                <field name="collaborators_count" string="Collaborater Count" readonly="1"/>
+                            </group>
+                        </div>
+                    </div>
+                    <notebook>
+                        <page string="Branches" name="branches">
+                            <field name="branch_ids" readonly="1">
+                                <tree>
+                                    <field name="name" string="Branch"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Collaborators" name="collaborators">
+                            <field name="collaborator_ids" readonly="1">
+                                <tree>
+                                    <field name="login"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Commits" name="commits">
+                            <field name="commit_ids" readonly="1">
+                                <tree>
+                                    <field name="branch_id" string="Branch"/>
+                                    <field name="sha" string="ID"/>
+                                    <field name="author_name" string="Author"/>
+                                    <field name="message" string="Message"/>
+                                    <field name="committed_date" string="Date"/>
+                                    <button name="action_view_github_commit" string="GitHub" type="object" icon="fa-external-link"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Repository Kanban View -->
+    <record id="view_github_repository_kanban" model="ir.ui.view">
+        <field name="name">github.repository.kanban</field>
+        <field name="model">github.repository</field>
+        <field name="arch" type="xml">
+            <kanban class="o_github_dashboard" sample="1">
+                <header>
+                    <div class="o_github_dashboard_header d-flex justify-content-around align-items-center w-100">
+                        <div class="o_github_header_stat">
+                            <span class="o_github_header_stat_val"><field name="stars_count" aggregate="sum"/></span>
+                            <span class="o_github_header_stat_label">Total Stars</span>
+                        </div>
+                        <div class="o_github_header_stat">
+                            <span class="o_github_header_stat_val"><field name="open_issues_count" aggregate="sum"/></span>
+                            <span class="o_github_header_stat_label">Open Issues</span>
+                        </div>
+                        <div class="o_github_header_stat">
+                            <span class="o_github_header_stat_val"><field name="branches_count" aggregate="sum"/></span>
+                            <span class="o_github_header_stat_label">Branches</span>
+                        </div>
+                        <div class="o_github_header_stat">
+                            <span class="o_github_header_stat_val"><field name="pull_requests_count" aggregate="sum"/></span>
+                            <span class="o_github_header_stat_label">Pull Requests</span>
+                        </div>
+                        <div class="o_github_header_actions">
+                            <button name="action_create_new_repository" type="object" class="btn btn-light shadow-sm rounded-pill px-4 text-primary fw-bold">
+                                <i class="fa fa-plus-circle me-2"/>Create Repository
+                            </button>
+                        </div>
+                    </div>
+                </header>
+                <field name="name"/>
+                <field name="owner"/>
+                <field name="description"/>
+                <field name="stars_count"/>
+                <field name="open_issues_count"/>
+                <field name="sync_status"/>
+                <templates>
+                    <!-- Kanban box template for GitHub repository dashboard -->
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click p-3">
+                            <div class="o_kanban_record_top d-flex align-items-center mb-2">
+                                <div class="o_github_stat_icon bg-primary-light text-primary">
+                                    <i class="fa fa-github fa-2x"/>
+                                </div>
+                                <div class="o_kanban_record_headings flex-grow-1">
+                                    <strong class="o_github_title text-primary d-block">
+                                        <field name="name"/>
+                                    </strong>
+                                    <small class="text-muted">
+                                        <i class="fa fa-user-circle-o me-1"/>
+                                        <field name="owner"/>
+                                    </small>
+                                </div>
+                                <div class="o_kanban_record_right">
+                                    <span t-attf-class="badge rounded-pill p-2 #{['success'].includes(record.sync_status.raw_value) ? 'bg-success' : (['syncing'].includes(record.sync_status.raw_value) ? 'bg-warning' : 'bg-danger')}">
+                                        <field name="sync_status"/>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="o_kanban_record_body my-3">
+                                <div class="text-muted text-truncate-2 small mb-3" style="height: 40px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                    <field name="description"/>
+                                </div>
+                                
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <div class="o_github_stat_item">
+                                            <i class="fa fa-star text-warning me-2"/>
+                                            <strong class="text-dark"><field name="stars_count"/></strong>
+                                            <span class="text-muted small ms-1">Stars</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="o_github_stat_item">
+                                            <i class="fa fa-bug text-danger me-2"/>
+                                            <strong class="text-dark"><field name="open_issues_count"/></strong>
+                                            <span class="text-muted small ms-1">Issues</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="o_github_stat_item">
+                                            <i class="fa fa-code-fork text-info me-2"/>
+                                            <strong class="text-dark"><field name="branches_count"/></strong>
+                                            <span class="text-muted small ms-1">Branches</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="o_github_stat_item">
+                                            <i class="fa fa-users text-success me-2"/>
+                                            <strong class="text-dark"><field name="collaborators_count"/></strong>
+                                            <span class="text-muted small ms-1">Users</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="o_kanban_record_bottom border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
+                                <div class="small text-muted">
+                                    <i class="fa fa-clock-o me-1"/>
+                                    <field name="last_sync" widget="remaining_days"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="activity_ids" widget="kanban_activity"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!-- Repository Graph View -->
+    <record id="view_github_repository_graph" model="ir.ui.view">
+        <field name="name">github.repository.graph</field>
+        <field name="model">github.repository</field>
+        <field name="arch" type="xml">
+            <graph string="Repository Statistics" type="bar">
+                <field name="name"/>
+                <field name="stars_count" type="measure"/>
+                <field name="open_issues_count" type="measure"/>
+                <field name="branches_count" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Repository Pivot View -->
+    <record id="view_github_repository_pivot" model="ir.ui.view">
+        <field name="name">github.repository.pivot</field>
+        <field name="model">github.repository</field>
+        <field name="arch" type="xml">
+            <pivot string="Repository Analysis">
+                <field name="name" type="row"/>
+                <field name="stars_count" type="measure"/>
+                <field name="open_issues_count" type="measure"/>
+                <field name="branches_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- GitHub Repositories -->
+    <record id="action_github_repository" model="ir.actions.act_window">
+        <field name="name">Repositories</field>
+        <field name="res_model">github.repository</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first GitHub repository integration!
+            </p>
+            <p>
+                Connect your GitHub repositories to sync issues, pull requests, and commits with your Odoo projects.
+            </p>
+        </field>
+    </record>
+</odoo>

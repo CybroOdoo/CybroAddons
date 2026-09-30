@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend Project Task Form -->
+    <record id="view_project_task_form_github" model="ir.ui.view">
+        <field name="name">project.task.form.github</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_export_to_github" string="Export to GitHub" type="object" 
+                        class="btn-primary" invisible="github_issue_id != False"/>
+            </xpath>
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="github_issue_id" invisible="1"/>
+                <button class="oe_stat_button" type="object"
+                        name="action_view_github_issue"
+                        invisible="github_issue_id == False"
+                        icon="fa-github">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            #
+                            <field name="github_issue_number"/>
+                        </span>
+                        <span class="o_stat_text">GitHub Issue</span>
+                    </div>
+                </button>
+                <button class="oe_stat_button" type="object"
+                        name="action_view_commits"
+                        invisible="commits_count == 0"
+                        icon="fa-code">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="commits_count"/>
+                        </span>
+                        <span class="o_stat_text">Commits</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="GitHub" name="github_integration">
+                    <group>
+                        <field name="github_branch_name"/>
+                        <field name="github_branch_url" widget="url"/>
+                    </group>
+                    <notebook>
+                        <page string="Create Pull Request">
+                            <group>
+                                <group>
+                                    <field name="github_pr_title" string="Title"/>
+                                    <field name="github_pr_description" string="Description"/>
+                                    <label for="user_ids" string="Reviewers"/>
+                                    <div>
+                                        <field name="user_ids" nolabel="1" widget="many2many_tags"/>
+                                        <button name="action_open_pr_wizard" string="Create Pull Request" type="object" class="btn btn-sm btn-primary d-block mt-2"/>
+                                    </div>
+                                </group>
+                                <group>
+                                    <field name="github_merge_into" string="Merge Into"/>
+                                    <field name="github_pr_url" string="Pull Request URL" widget="url"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
