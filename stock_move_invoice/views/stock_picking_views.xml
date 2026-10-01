@@ -12,7 +12,8 @@
             </xpath>
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_open_picking_invoice" type="object"
-                        class="oe_stat_button" icon="fa-file-text"
+                        groups="account.group_account_invoice,account.group_account_manager"
+                        class="oe_stat_button" icon="article"
                         invisible="invoice_count == 0">
                     <field name="invoice_count" widget="statinfo"/>
                 </button>
@@ -21,15 +22,19 @@
                    position="after">
                 <button name="action_create_invoice" class="oe_highlight"
                         string="Create Invoice" type="object"
+                        groups="account.group_account_invoice,account.group_account_manager"
                         invisible="invoice_count != 0 or state != 'done' or operation_code == 'incoming' or is_return == True"/>
                 <button name="action_create_bill" class="oe_highlight"
                         string="Create Bill" type="object"
+                        groups="account.group_account_invoice,account.group_account_manager"
                         invisible="invoice_count != 0 or state != 'done' or operation_code == 'outgoing' or is_return == True"/>
                 <button name="action_create_customer_credit" class="oe_highlight"
                         string="Create Credit Note" type="object"
+                        groups="account.group_account_invoice,account.group_account_manager"
                         invisible="invoice_count != 0 or state != 'done' or operation_code == 'outgoing' or is_return == False"/>
                 <button name="action_create_vendor_credit" class="oe_highlight"
                         string="Create Vendor Credit" type="object"
+                        groups="account.group_account_invoice,account.group_account_manager"
                         invisible="invoice_count != 0 or state != 'done' or operation_code == 'incoming' or is_return == False"/>
             </xpath>
         </field>
@@ -37,7 +42,7 @@
     <!--    add invoice/bill create menu in tree view action-->
     <record id="action_create_invoice_for_multi_transfer"
             model="ir.actions.server">
-        <field name="name">Create Invoice/Bill</field>
+        <field name="name">Create Combined Invoice/Bill</field>
         <field name="model_id" ref="stock.model_stock_picking"/>
         <field name="binding_model_id" ref="stock.model_stock_picking"/>
         <field name="state">code</field>
@@ -45,5 +50,7 @@
             if records:
             action = records.action_create_multi_invoice_for_multi_transfer()
         </field>
+        <field name="group_ids"
+               eval="[Command.set([ref('account.group_account_invoice'), ref('account.group_account_manager')])]"/>
     </record>
 </odoo>

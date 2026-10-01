@@ -36,10 +36,10 @@ class PickingInvoice(models.TransientModel):
             lambda x: x.state == 'done' and x.invoice_count == 0)
         for picking in picking_id:
             if picking.picking_type_id.code == 'incoming' and not picking.is_return:
-                picking.create_bill()
+                picking.action_create_bill()
             if picking.picking_type_id.code == 'outgoing' and not picking.is_return:
-                picking.create_invoice()
+                picking.action_create_invoice()
             if picking.picking_type_id.code == 'incoming' and picking.is_return:
-                picking.create_vendor_credit()
+                picking.action_create_vendor_credit()
             if picking.picking_type_id.code == 'outgoing' and picking.is_return:
-                picking.create_customer_credit()
+                picking.action_create_customer_credit()
