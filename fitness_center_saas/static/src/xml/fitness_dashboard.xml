@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  Fitness Center Management SaaS Module
+  File: fitness_dashboard.xml
+  Description: OWL template view defining dashboard markup, KPI cards, filter layouts, charts canvases, and grids.
+-->
+
+<templates xml:space="preserve">
+
+  <t t-name="fitness_center_saas.FitnessDashboard">
+    <div class="fc_dashboard">
+
+      <!-- ═══════════════════════════════════════════════
+           HEADER
+      ═══════════════════════════════════════════════ -->
+      <div class="fc_header">
+        <div class="fc_header_left">
+          <div class="fc_header_icon">
+            <i class="fa fa-heartbeat"/>
+          </div>
+          <div class="fc_header_text">
+            <h1 class="fc_title">Fitness Center</h1>
+            <p class="fc_subtitle">Management Overview</p>
+          </div>
+        </div>
+        <div class="fc_header_right">
+          <div class="fc_date_badge">
+            <i class="fa fa-calendar me-2"/>
+            <span t-out="this.state.today"/>
+          </div>
+          <button class="fc_refresh_btn" t-on-click="() => this.loadDashboardData()" t-att-class="this.state.loading ? 'fc_refresh_btn fc_spin' : 'fc_refresh_btn'">
+            <i class="fa fa-refresh"/>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading Overlay -->
+      <div t-if="this.state.loading" class="fc_loading_overlay">
+        <div class="fc_spinner">
+          <i class="fa fa-heartbeat fc_pulse_icon"/>
+          <p>Loading Dashboard...</p>
+        </div>
+      </div>
+
+      <div t-if="!this.state.loading" class="fc_content">
+
+        <!-- ═══════════════════════════════════════════════
+             SECTION 1 — KPI TILES & FILTERS
+        ═══════════════════════════════════════════════ -->
+        <div class="fc_section">
+          <div class="fc_kpi_filter_wrapper">
+            
+            <!-- Left Side: Cards Container (2 lines) -->
+            <div class="fc_kpi_lines_container">
+              
+              <!-- First Line (5 cards) -->
+              <div class="fc_kpi_line_1">
+                <!-- 1. Active Members -->
+                <div class="fc_kpi_card fc_kpi_purple_glow" t-on-click="() => this.onTileClick('x_enrollment', this.activeMembersDomain, 'Active Members')">
+                  <div class="fc_kpi_content">
+                    <div class="fc_kpi_data">
+                      <span class="fc_kpi_label">Active Members</span>
+                      <span class="fc_kpi_value" t-out="this.state.kpi.activeMembers"/>
+                      <span class="fc_kpi_caption">Total Active Members</span>
+                    </div>
+                    <div class="fc_kpi_icon_wrap fc_icon_purple">
+                      <i class="fa fa-users"/>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. Monthly Recurring Revenue (MRR) -->
+                <div class="fc_kpi_card fc_kpi_green_glow" t-on-click="() => this.onTileClick('x_enrollment', this.mrrDomain, 'Active Enrollments')">
+                  <div class="fc_kpi_content">
+                    <div class="fc_kpi_data">
+                      <span class="fc_kpi_label">MRR</span>
+                      <span class="fc_kpi_value" t-out="this.state.kpi.mrr"/>
+                      <span class="fc_kpi_caption">Monthly Recurring Revenue</span>
+                    </div>
+                    <div class="fc_kpi_icon_wrap fc_icon_green">
+                      <i class="fa fa-money"/>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Active Fitness Classes -->
+                <div class="fc_kpi_card fc_kpi_orange_glow" t-on-click="() => this.onTileClick('x_fitness_classes', this.activeClassesDomain, 'Active Classes')">
+                  <div class="fc_kpi_content">
+                    <div class="fc_kpi_data">
+                      <span class="fc_kpi_label">Active Classes</span>
+                      <span class="fc_kpi_value" t-out="this.state.kpi.activeClasses"/>
+                      <span class="fc_kpi_caption">Currently Active</span>
+                    </div>
+                    <div class="fc_kpi_icon_wrap fc_icon_orange">
+                      <i class="fa fa-heartbeat"/>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 4. Available Equipment -->
+                <div class="fc_kpi_card fc_kpi_cyan_glow" t-on-click="() => this.onTileClick('maintenance.equipment', this.availableEquipmentDomain, 'Available Equipment')">
+                  <div class="fc_kpi_content">
+                    <div class="fc_kpi_data">
+                      <span class="fc_kpi_label">Available Equipment</span>
+                      <span class="fc_kpi_value" t-out="this.state.kpi.availableEquipment"/>
+                      <span class="fc_kpi_caption">Ready to Use</span>
+                    </div>
+                    <div class="fc_kpi_icon_wrap fc_icon_cyan">
+                      <i class="fa fa-cogs"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Second Line (3 cards) -->
+              <div class="fc_kpi_line_2">
+                <!-- 1. Sessions Today -->
+                <div class="fc_kpi_card fc_kpi_pink_glow" t-on-click="() => this.onTileClick('x_training_sessions', this.sessionsTodayDomain, 'Today\'s Trainer Sessions')">
+                  <div class="fc_kpi_content">
+                    <div class="fc_kpi_data">
+                      <span class="fc_kpi_label">Sessions Today</span>
+                      <span class="fc_kpi_value" t-out="this.state.kpi.sessionsToday"/>
+                      <span class="fc_kpi_caption">Total Sessions</span>
+                    </div>
+                    <div class="fc_kpi_icon_wrap fc_icon_pink">
+                      <i class="fa fa-calendar-check-o"/>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. Memberships Expiring Within 7 Days -->
+                <div class="fc_kpi_card fc_kpi_yellow_glow" t-on-click="() => this.onTileClick('x_enrollment', this.expiringSoonDomain, 'Expiring Memberships')">
+                  <div class="fc_kpi_content">
+                    <div class="fc_kpi_data">
+                      <span class="fc_kpi_label">Expiring (7d)</span>
+                      <span class="fc_kpi_value" t-out="this.state.kpi.expiringSoon"/>
+                      <span class="fc_kpi_caption">Memberships Expiring</span>
+                    </div>
+                    <div class="fc_kpi_icon_wrap fc_icon_yellow">
+                      <i class="fa fa-exclamation-triangle"/>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Attendance Rate (Gauge Style) -->
+                <div class="fc_attendance_gauge_card" t-on-click="() => this.onTileClick('x_training_sessions', this.attendanceDomain, 'Today\'s Trainer Sessions')">
+                  <!-- Left Side: Header & Info -->
+                  <div class="fc_gauge_left_content">
+                    <div class="fc_gauge_header">
+                      <span class="fc_gauge_card_title">Attendance</span>
+                      <span class="fc_gauge_card_subtitle">Based on sessions today</span>
+                    </div>
+                    <div class="fc_gauge_footer_box_left">
+                      <div class="fc_gauge_bounds_row">
+                        <span class="fc_gauge_bound">0%</span>
+                        <span class="fc_gauge_bound">100%</span>
+                      </div>
+                      <span class="fc_gauge_caption">Today's Rate</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Right Side: Gauge Circular Body -->
+                  <div class="fc_gauge_right_content">
+                    <svg viewBox="10 10 80 80" class="fc_gauge_svg_large">
+                      <defs>
+                        <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stop-color="#0075ff"/>
+                          <stop offset="100%" stop-color="#00b5d8"/>
+                        </linearGradient>
+                      </defs>
+                      <path d="M 15 50 A 35 35 0 0 1 85 50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="6" stroke-linecap="round"/>
+                      <path d="M 15 50 A 35 35 0 0 1 85 50" fill="none" stroke="url(#gaugeGradient)" stroke-width="6" stroke-linecap="round" t-att-stroke-dasharray="this.state.attendanceDashArray" stroke-dashoffset="0"/>
+                    </svg>
+                    <div class="fc_gauge_center_text_wrap">
+                      <span class="fc_gauge_center_value" t-out="this.state.kpi.attendanceRate"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right Side: Filter Card (Spans vertical height of both rows) -->
+            <div class="fc_filter_bar_card">
+              <div class="fc_filter_header">
+                <h3 class="fc_filter_title">
+                  <i class="fa fa-sliders me-2"/>Filter Controls
+                </h3>
+              </div>
+              <div class="fc_filter_body_vertical">
+                <div class="fc_filter_item_vertical">
+                  <label>Start Date</label>
+                  <input type="date" t-att-value="this.state.filters.dateStart" t-on-change="(ev) => this.onFilterChange('dateStart', ev)"/>
+                </div>
+                <div class="fc_filter_item_vertical">
+                  <label>End Date</label>
+                  <input type="date" t-att-value="this.state.filters.dateEnd" t-on-change="(ev) => this.onFilterChange('dateEnd', ev)"/>
+                </div>
+              </div>
+              <div class="fc_filter_actions_vertical">
+                <button class="fc_clear_filters_btn_large" t-on-click="() => this.clearFilters()">
+                  <i class="fa fa-filter me-1"/>Clear Filters
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             SECTION 2 — CHARTS ROW 1 (Monthly Revenue & Class Capacity)
+        ═══════════════════════════════════════════════ -->
+        <div class="fc_charts_row_middle">
+          <!-- Left: Upcoming Membership Expiries Table -->
+          <div class="fc_card fc_panel_card fc_flex_4">
+            <div class="fc_card_header">
+              <div class="fc_card_title_wrap">
+                <div class="fc_card_icon_dot fc_dot_red"/>
+                <h3 class="fc_card_title">Upcoming Membership Expiries</h3>
+              </div>
+              <div class="fc_card_header_right">
+                <button class="fc_view_all_btn" t-on-click="() => this.onTileClick('x_enrollment', this.activeMembersDomain, 'Upcoming Expiries')">
+                  <i class="fa fa-external-link me-1"/>View All
+                </button>
+                <button class="fc_export_btn" t-on-click="() => this.exportTableCSV('expiries')" title="Export CSV">
+                  <i class="fa fa-download"/>
+                </button>
+              </div>
+            </div>
+            <div class="fc_card_body fc_table_body">
+              <table class="fc_table">
+                <thead>
+                  <tr>
+                    <th>Member</th>
+                    <th>Plan</th>
+                    <th>Expiry Date</th>
+                    <th>Days Left</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <t t-if="this.state.upcomingExpiries.length === 0">
+                    <tr>
+                      <td colspan="4" class="fc_table_empty">No memberships expiring soon</td>
+                    </tr>
+                  </t>
+                  <t t-foreach="this.state.upcomingExpiries" t-as="enr" t-key="enr.id">
+                    <tr class="fc_table_row">
+                      <td>
+                        <div class="fc_member_cell">
+                          <div class="fc_avatar" t-out="enr.memberInitial"/>
+                          <span class="fw-bold" t-out="enr.member"/>
+                        </div>
+                      </td>
+                      <td><span class="fc_plan_tag" t-out="enr.plan"/></td>
+                      <td class="fc_date_cell" t-out="enr.expiryDate"/>
+                      <td>
+                        <span t-attf-class="fc_days_badge #{enr.remainingDays &lt;= 7 ? 'fc_badge_danger' : 'fc_badge_warning'}" t-out="enr.remainingDays + ' days'"/>
+                      </td>
+                    </tr>
+                  </t>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- Right: Monthly Revenue Trend -->
+          <div class="fc_card fc_chart_card fc_flex_6">
+            <div class="fc_card_header">
+              <div class="fc_card_title_wrap">
+                <h3 class="fc_card_title">Monthly Revenue Trend</h3>
+              </div>
+            </div>
+            <div class="fc_card_body fc_chart_container">
+              <canvas id="monthlyRevenueTrendChart"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             SECTION 3 — CHARTS ROW 2 (Trainer, Equipment & Plan Popularity)
+        ═══════════════════════════════════════════════ -->
+        <div class="fc_charts_row_bottom">
+          <!-- Left: Trainer Performance -->
+          <div class="fc_card fc_chart_card">
+            <div class="fc_card_header">
+              <div class="fc_card_title_wrap">
+                <h3 class="fc_card_title">Trainer Performance (Today)</h3>
+              </div>
+            </div>
+            <div class="fc_card_body fc_chart_container">
+              <canvas id="trainerPerformanceRadarChart"/>
+            </div>
+          </div>
+          <!-- Middle: Equipment Availability -->
+          <div class="fc_card fc_chart_card">
+            <div class="fc_card_header">
+              <div class="fc_card_title_wrap">
+                <h3 class="fc_card_title">Equipment Availability</h3>
+              </div>
+            </div>
+            <div class="fc_card_body fc_chart_container">
+              <canvas id="equipmentStatusPolarChart"/>
+            </div>
+          </div>
+          <!-- Right: Plan Popularity -->
+          <div class="fc_card fc_chart_card">
+            <div class="fc_card_header">
+              <div class="fc_card_title_wrap">
+                <h3 class="fc_card_title">Plan Popularity</h3>
+              </div>
+            </div>
+            <div class="fc_card_body fc_chart_container">
+              <canvas id="planPopularityChart"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             SECTION 4 — OPERATIONAL TABLES
+        ═══════════════════════════════════════════════ -->
+        <div class="fc_section mt-4">
+          <div class="fc_row_tables_grid">
+            
+            <!-- Left: Class Capacity Utilization Chart & Today's Schedule -->
+            <div class="fc_table_left_col">
+              <div class="fc_card fc_chart_card">
+                <div class="fc_card_header">
+                  <div class="fc_card_title_wrap">
+                    <h3 class="fc_card_title">Class Capacity Utilization</h3>
+                  </div>
+                </div>
+                <div class="fc_card_body fc_chart_container">
+                  <canvas id="classCapacityUtilizationChart"/>
+                </div>
+              </div>
+
+              <!-- Today's Training Schedule -->
+              <div class="fc_card fc_panel_card">
+                <div class="fc_card_header">
+                  <div class="fc_card_title_wrap">
+                    <div class="fc_card_icon_dot fc_dot_orange"/>
+                    <h3 class="fc_card_title">Today's Schedule</h3>
+                  </div>
+                  <div class="fc_card_header_right">
+                    <button class="fc_view_all_btn" t-on-click="() => this.onTileClick('x_training_sessions', this.sessionsTodayDomain, 'Today\'s Schedule')">
+                      <i class="fa fa-external-link me-1"/>View All
+                    </button>
+                  </div>
+                </div>
+                <div class="fc_card_body fc_table_body">
+                  <table class="fc_table">
+                    <thead>
+                      <tr>
+                        <th>Member</th>
+                        <th>Trainer</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <t t-if="this.state.todaySchedule.length === 0">
+                        <tr>
+                          <td colspan="4" class="fc_table_empty">No training sessions today</td>
+                        </tr>
+                      </t>
+                      <t t-foreach="this.state.todaySchedule" t-as="sess" t-key="sess.id">
+                        <tr class="fc_table_row" t-on-click="() => this.onClickSession(sess)">
+                          <td>
+                            <span class="fw-bold" t-out="sess.member"/>
+                          </td>
+                          <td class="text-muted" t-out="sess.trainer"/>
+                          <td>
+                            <span class="fc_plan_tag" t-out="sess.type"/>
+                          </td>
+                          <td>
+                            <span t-attf-class="fc_days_badge fc_badge_#{sess.statusClass}" t-out="sess.status"/>
+                          </td>
+                        </tr>
+                      </t>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Workload, Alerts (30%) -->
+            <div class="fc_table_right_col">
+              
+              <!-- 2. Trainer Workload & Availability -->
+              <div class="fc_card fc_panel_card mb-4">
+                <div class="fc_card_header">
+                  <div class="fc_card_title_wrap">
+                    <div class="fc_card_icon_dot fc_dot_purple"/>
+                    <h3 class="fc_card_title">Trainer Workload</h3>
+                  </div>
+                </div>
+                <div class="fc_card_body fc_panel_body_scroll">
+                  <t t-if="this.state.trainerAvailability.length === 0">
+                    <p class="text-muted text-center py-3">No trainers loaded</p>
+                  </t>
+                  <t t-foreach="this.state.trainerAvailability" t-as="trainer" t-key="trainer.id">
+                    <div class="fc_trainer_row" t-on-click="() => this.onClickTrainerSessions(trainer)">
+                      <div class="fc_trainer_info">
+                        <span class="fc_trainer_name fw-bold" t-out="trainer.name"/>
+                        <span class="fc_trainer_title text-muted" t-out="trainer.jobTitle"/>
+                      </div>
+                      <div class="fc_trainer_load">
+                        <span class="fc_load_count" t-out="trainer.sessionsCount + ' sessions'"/>
+                        <span t-attf-class="fc_load_badge fc_load_#{trainer.statusClass}" t-out="trainer.status"/>
+                      </div>
+                    </div>
+                  </t>
+                </div>
+              </div>
+
+              <!-- 3. Equipment Maintenance Alerts -->
+              <div class="fc_card fc_panel_card">
+                <div class="fc_card_header">
+                  <div class="fc_card_title_wrap">
+                    <div class="fc_card_icon_dot fc_dot_red"/>
+                    <h3 class="fc_card_title">Equipment Alerts</h3>
+                  </div>
+                </div>
+                <div class="fc_card_body fc_panel_body_scroll">
+                  <t t-if="this.state.equipmentAlerts.length === 0">
+                    <p class="text-muted text-center py-3">All equipment in optimal condition</p>
+                  </t>
+                  <t t-foreach="this.state.equipmentAlerts" t-as="equip" t-key="equip.id">
+                    <div class="fc_alert_row" t-on-click="() => this.onClickEquipment(equip)">
+                      <div class="fc_alert_icon">
+                        <i t-attf-class="fa #{equip.severity === 'danger' ? 'fa-ban text-danger' : equip.severity === 'warning' ? 'fa-warning text-warning' : 'fa-check-circle text-success'}"/>
+                      </div>
+                      <div class="fc_alert_info">
+                        <span class="fc_alert_name fw-bold" t-out="equip.name"/>
+                        <span class="fc_alert_msg" t-out="equip.message"/>
+                      </div>
+                    </div>
+                  </t>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="fc_footer">
+          <span>
+            <i class="fa fa-heartbeat me-1"/>
+            Fitness Center Dashboard · Last refreshed: <span t-out="this.state.lastRefreshed"/>
+          </span>
+        </div>
+
+      </div><!-- /fc_content -->
+    </div><!-- /fc_dashboard -->
+  </t>
+
+</templates>

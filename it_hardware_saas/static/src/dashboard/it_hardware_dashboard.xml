@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="it_hardware_saas.ITHardwareDashboard">
+        <div class="o_it_hardware_dashboard_container">
+            <!-- Header Section -->
+            <div class="it_dash_header">
+                <div class="it_dash_brand">
+                    <div class="it_dash_brand_icon">
+                        <i class="fa fa-server"></i>
+                    </div>
+                    <div class="it_dash_brand_text">
+                        <h1>IT Hardware Management Overview</h1>
+                        <span class="sub_title">SYSTEM OVERVIEW &amp; ANALYTICS</span>
+                    </div>
+                </div>
+                <div class="it_dash_header_actions">
+                    <!-- Standout Theme Toggle Button (Dark / Light Mode) -->
+                    <button class="theme_toggle_btn" t-on-click="() => this.toggleThemeMode()" t-att-title="this.state.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+                        <i t-att-class="this.state.isDarkMode ? 'fa fa-sun-o text-warning' : 'fa fa-moon-o text-primary'"/>
+                        <span t-out="this.state.isDarkMode ? 'Light Mode' : 'Dark Mode'"/>
+                    </button>
+
+                    <!-- Inline Header Filter Controls -->
+                    <div class="it_header_filters">
+                        <div class="header_filter_group">
+                            <span class="header_filter_label">Start:</span>
+                            <input type="date" class="header_filter_input" t-att-value="this.state.filters.dateStart" t-on-change="(ev) => this.onFilterChange('dateStart', ev)"/>
+                        </div>
+                        <div class="header_filter_group">
+                            <span class="header_filter_label">End:</span>
+                            <input type="date" class="header_filter_input" t-att-value="this.state.filters.dateEnd" t-on-change="(ev) => this.onFilterChange('dateEnd', ev)"/>
+                        </div>
+                        <button class="header_filter_clear_btn" t-on-click="() => this.clearFilters()" title="Clear Filters">
+                            <i class="fa fa-filter me-1"></i> Clear
+                        </button>
+                    </div>
+
+                    <div class="it_dash_date_badge">
+                        <i class="fa fa-calendar-o me-2"></i>
+                        <span t-out="this.state.today"/>
+                    </div>
+                    <button class="it_dash_refresh_btn" t-on-click="() => this.loadDashboardData()" t-att-class="this.state.loading ? 'it_dash_refresh_btn fa-spin' : 'it_dash_refresh_btn'" title="Refresh Data">
+                        <i class="fa fa-refresh"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Skeleton Loading State (First Page Load) -->
+            <t t-if="this.state.loading &amp;&amp; !this.state.lastRefreshed">
+                <div class="it_skeleton_body">
+                    <!-- Top Grid Skeleton: 8 KPI Cards -->
+                    <div class="it_dash_grid_top mt-3">
+                        <div class="it_dash_kpi_area">
+                            <t t-foreach="[1,2,3,4,5,6,7,8]" t-as="i" t-key="i">
+                                <div class="it_kpi_card skeleton_card">
+                                    <div class="kpi_header">
+                                        <div class="skeleton_line w_50"></div>
+                                        <div class="skeleton_circle"></div>
+                                    </div>
+                                    <div class="skeleton_line w_75 h_large mt-3"></div>
+                                    <div class="skeleton_line w_40 mt-2"></div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Middle Grid Skeleton: Table & Chart -->
+                    <div class="it_dash_grid_mid mt-4">
+                        <div class="it_panel_card skeleton_panel">
+                            <div class="panel_header">
+                                <div class="skeleton_line w_40 h_medium"></div>
+                                <div class="skeleton_line w_20"></div>
+                            </div>
+                            <div class="panel_body mt-3">
+                                <div class="skeleton_line w_100 mb-3 h_medium"></div>
+                                <div class="skeleton_line w_100 mb-2"></div>
+                                <div class="skeleton_line w_100 mb-2"></div>
+                                <div class="skeleton_line w_100 mb-2"></div>
+                                <div class="skeleton_line w_100 mb-2"></div>
+                                <div class="skeleton_line w_100"></div>
+                            </div>
+                        </div>
+                        <div class="it_panel_card skeleton_panel">
+                            <div class="panel_header">
+                                <div class="skeleton_line w_40 h_medium"></div>
+                                <div class="skeleton_line w_20"></div>
+                            </div>
+                            <div class="panel_body mt-3 d-flex align-items-end justify-content-around h-100 pb-2">
+                                <div class="skeleton_bar h_40"></div>
+                                <div class="skeleton_bar h_65"></div>
+                                <div class="skeleton_bar h_85"></div>
+                                <div class="skeleton_bar h_50"></div>
+                                <div class="skeleton_bar h_75"></div>
+                                <div class="skeleton_bar h_90"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Grid Skeleton: 3 Panels -->
+                    <div class="it_dash_grid_bottom mt-4">
+                        <t t-foreach="[1,2,3]" t-as="j" t-key="j">
+                            <div class="it_panel_card skeleton_panel">
+                                <div class="panel_header">
+                                    <div class="skeleton_line w_50 h_medium"></div>
+                                </div>
+                                <div class="panel_body mt-3">
+                                    <div class="skeleton_line w_100 mb-2"></div>
+                                    <div class="skeleton_line w_100 mb-2"></div>
+                                    <div class="skeleton_line w_100 mb-2"></div>
+                                    <div class="skeleton_line w_100"></div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+
+            <div t-if="!this.state.loading || this.state.lastRefreshed" class="it_dash_body" t-att-class="this.state.loading ? 'it_dash_body is_refreshing' : 'it_dash_body'">
+                <!-- Top Grid: KPI Cards -->
+                <div class="it_dash_grid_top mt-3">
+                    <div class="it_dash_kpi_area">
+                        <!-- KPI 1: Active Customers -->
+                        <div class="it_kpi_card bg_card_1" t-on-click="() => this.onTileClick('res.partner', [], 'Active Customers')">
+                            <div class="kpi_header">
+                                <span class="kpi_label">Active Customers</span>
+                                <div class="kpi_icon"><i class="fa fa-users"></i></div>
+                            </div>
+                            <div class="kpi_value"><t t-out="this.state.kpi.activeCustomers"/></div>
+                            <div class="kpi_sub">Total Active Clients</div>
+                        </div>
+
+                        <!-- KPI 3: Total Sales Revenue -->
+                        <div class="it_kpi_card bg_card_sales" t-on-click="() => this.onTileClick('sale.order', [['state', 'in', ['sale', 'done']]], 'Confirmed Sales Orders')">
+                            <div class="kpi_header">
+                                <span class="kpi_label">Total Sales Revenue</span>
+                                <div class="kpi_icon"><i class="fa fa-line-chart"></i></div>
+                            </div>
+                            <div class="kpi_value"><t t-out="this.state.kpi.totalSales"/></div>
+                            <div class="kpi_sub">Confirmed Orders Revenue</div>
+                        </div>
+
+                        <!-- KPI: CRM Pipeline Revenue -->
+                        <div class="it_kpi_card bg_card_1" t-on-click="() => this.onTileClick('crm.lead', [['type', '=', 'opportunity']], 'CRM Opportunities')">
+                            <div class="kpi_header">
+                                <span class="kpi_label">CRM Pipeline</span>
+                                <div class="kpi_icon"><i class="fa fa-handshake-o"></i></div>
+                            </div>
+                            <div class="kpi_value"><t t-out="this.state.kpi.crmPipeline"/></div>
+                            <div class="kpi_sub">Expected Deal Value</div>
+                        </div>
+
+                        <!-- KPI 4: Pending Quotations -->
+                        <div class="it_kpi_card bg_card_quotes" t-on-click="() => this.onTileClick('sale.order', [['state', 'in', ['draft', 'sent']]], 'Pending Quotations')">
+                            <div class="kpi_header">
+                                <span class="kpi_label">Pending Quotes</span>
+                                <div class="kpi_icon"><i class="fa fa-file-text-o"></i></div>
+                            </div>
+                            <div class="kpi_value"><t t-out="this.state.kpi.pendingQuotes"/></div>
+                            <div class="kpi_sub">Awaiting Confirmation</div>
+                        </div>
+
+                        <!-- KPI 3: Active Requests -->
+                        <div class="it_kpi_card bg_card_3" t-on-click="() => this.onTileClick('helpdesk.ticket', [], 'Service Tickets')">
+                            <div class="kpi_header">
+                                <span class="kpi_label">Active Requests</span>
+                                <div class="kpi_icon"><i class="fa fa-ticket"></i></div>
+                            </div>
+                            <div class="kpi_value"><t t-out="this.state.kpi.activeTickets"/></div>
+                            <div class="kpi_sub">Currently Active</div>
+                        </div>
+
+
+
+                        <!-- KPI 5: Service Visits Today -->
+                        <div class="it_kpi_card bg_card_5" t-on-click="() => this.onTileClick('project.task', [], 'Field Service Tasks')">
+                            <div class="kpi_header">
+                                <span class="kpi_label">Service Visits Today</span>
+                                <div class="kpi_icon"><i class="fa fa-calendar-check-o"></i></div>
+                            </div>
+                            <div class="kpi_value"><t t-out="this.state.kpi.sessionsToday"/></div>
+                            <div class="kpi_sub">Scheduled Field Visits</div>
+                        </div>
+
+                        <!-- KPI 7: Average Order Value -->
+                        <div class="it_kpi_card bg_card_aov" t-on-click="() => this.onTileClick('sale.order', [['state', 'in', ['sale', 'done']]], 'Sales Orders')">
+                            <div class="kpi_header">
+                                <span class="kpi_label">Avg Order Value</span>
+                                <div class="kpi_icon"><i class="fa fa-calculator"></i></div>
+                            </div>
+                            <div class="kpi_value"><t t-out="this.state.kpi.avgOrderValue"/></div>
+                            <div class="kpi_sub">Avg Revenue per Order</div>
+                        </div>
+
+                        <!-- KPI 10: Under Repair Assets -->
+                        <div class="it_kpi_card bg_card_repair" t-on-click="() => this.onTileClick('repair.order', [], 'Hardware Repairs')">
+                            <div class="kpi_header">
+                                <span class="kpi_label">Under Repair</span>
+                                <div class="kpi_icon"><i class="fa fa-wrench"></i></div>
+                            </div>
+                            <div class="kpi_value"><t t-out="this.state.kpi.underRepair"/></div>
+                            <div class="kpi_sub">Assets in Repair</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle Row: Active IT Assets Table & Revenue Trend Chart -->
+                <div class="it_dash_grid_mid mt-4">
+                    <!-- Recent Sales Orders Table -->
+                    <div class="it_panel_card table_panel">
+                        <div class="panel_header">
+                            <h2 t-on-click="() => this.onTileClick('sale.order', [], 'Sales Orders')" style="cursor: pointer;"><span class="status_dot"></span> Recent Sales Orders</h2>
+                            <div class="panel_actions">
+                                <button class="btn_export_csv me-2" t-on-click="() => this.exportTableCSV('sales')">
+                                    <i class="fa fa-download me-1"></i> CSV
+                                </button>
+                                <a class="view_all_link" t-on-click="() => this.onTileClick('sale.order', [], 'Sales Orders')">
+                                    VIEW ALL <i class="fa fa-external-link ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="panel_body">
+                            <table class="it_data_table">
+                                <thead>
+                                    <tr>
+                                        <th>ORDER REF</th>
+                                        <th>CUSTOMER</th>
+                                        <th>TOTAL AMOUNT</th>
+                                        <th>STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-if="this.state.recentOrders &amp;&amp; this.state.recentOrders.length">
+                                        <t t-foreach="this.state.recentOrders" t-as="item" t-key="item.id">
+                                            <tr class="clickable_row" t-on-click="() => this.onTileClick('sale.order', [['id', '=', item.id]], item.name)" style="cursor: pointer;">
+                                                <td class="fw-bold text-primary"><t t-out="item.name"/></td>
+                                                <td><t t-out="item.partner"/></td>
+                                                <td><t t-out="item.amount"/></td>
+                                                <td>
+                                                    <span class="badge_days_left">
+                                                        <t t-out="item.status"/>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">No recent sales orders found</td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Revenue Trend Chart -->
+                    <div class="it_panel_card chart_panel">
+                        <div class="panel_header">
+                            <h2 t-on-click="() => this.onTileClick('sale.order', [], 'Monthly Sales &amp; Revenue')" style="cursor: pointer;">Monthly Revenue &amp; Service Trend</h2>
+                            <button class="btn_export_csv" t-on-click="() => this.exportChartPNG('itMonthlyRevenueChart', 'Revenue_Trend')">
+                                <i class="fa fa-image me-1"></i> PNG
+                            </button>
+                        </div>
+                        <div class="panel_body chart_container">
+                            <canvas id="itMonthlyRevenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Section Row 1: 3 Cards -->
+                <div class="it_dash_grid_bottom mt-4">
+                    <!-- 1. Technician Ticket Workload -->
+                    <div class="it_panel_card bottom_panel">
+                        <div class="panel_header">
+                            <h2 t-on-click="() => this.onTileClick('project.task', [], 'Technician Workload Tasks')" style="cursor: pointer;">Technician Ticket Workload</h2>
+                            <button class="btn_export_csv" t-on-click="() => this.exportChartPNG('itTechnicianWorkloadChart', 'Technician_Workload')">
+                                <i class="fa fa-image me-1"></i> PNG
+                            </button>
+                        </div>
+                        <div class="panel_body chart_container">
+                            <canvas id="itTechnicianWorkloadChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 2. Service Type vs Ticket Volume -->
+                    <div class="it_panel_card bottom_panel">
+                        <div class="panel_header">
+                            <h2 t-on-click="() => this.onTileClick('helpdesk.ticket', [], 'Service Tickets')" style="cursor: pointer;">Service Type Volume</h2>
+                            <button class="btn_export_csv" t-on-click="() => this.exportChartPNG('itServiceTypeChart', 'Service_Type_Volume')">
+                                <i class="fa fa-image me-1"></i> PNG
+                            </button>
+                        </div>
+                        <div class="panel_body chart_container">
+                            <canvas id="itServiceTypeChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 3. Customer SLA Distribution -->
+                    <div class="it_panel_card bottom_panel">
+                        <div class="panel_header">
+                            <h2 t-on-click="() => this.onTileClick('res.partner', [], 'Customer SLA Distribution')" style="cursor: pointer;">Customer SLA Tier Distribution</h2>
+                            <button class="btn_export_csv" t-on-click="() => this.exportChartPNG('itCustomerServiceSLAChart', 'Customer_SLA_Distribution')">
+                                <i class="fa fa-image me-1"></i> PNG
+                            </button>
+                        </div>
+                        <div class="panel_body chart_container">
+                            <canvas id="itCustomerServiceSLAChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Section Row 2: 2 Cards -->
+                <div class="it_dash_grid_mid mt-4">
+                    <!-- 4. Repair Cost Breakdown -->
+                    <div class="it_panel_card chart_panel">
+                        <div class="panel_header">
+                            <h2 t-on-click="() => this.onTileClick('repair.order', [], 'Hardware Repair Orders')" style="cursor: pointer;">Repair Order Cost Analysis ($)</h2>
+                            <button class="btn_export_csv" t-on-click="() => this.exportChartPNG('itRepairCostChart', 'Repair_Cost_Analysis')">
+                                <i class="fa fa-image me-1"></i> PNG
+                            </button>
+                        </div>
+                        <div class="panel_body chart_container">
+                            <canvas id="itRepairCostChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 5. Hardware Category Breakdown -->
+                    <div class="it_panel_card table_panel">
+                        <div class="panel_header">
+                            <h2 t-on-click="() => this.onTileClick('product.template', [], 'Hardware Products by Category')" style="cursor: pointer;">Hardware Category Breakdown</h2>
+                        </div>
+                        <div class="panel_body d-flex justify-content-center flex-column gap-3">
+                            <t t-if="this.state.chartsData.categoryPopularity &amp;&amp; this.state.chartsData.categoryPopularity.length &gt; 0">
+                                <t t-foreach="this.state.chartsData.categoryPopularity" t-as="item" t-key="item_index">
+                                    <div class="bar_stat_row w-100" t-on-click="() => this.onTileClick('product.template', [], item.name || 'Products')" style="cursor: pointer;">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="category_title" t-esc="item.name"/>
+                                            <span class="category_count_badge"><t t-esc="item.count"/> Units</span>
+                                        </div>
+                                        <div class="progress_bar_bg">
+                                            <div class="progress_bar_fill fill_1" t-attf-style="width: {{ item.count &gt; 0 ? Math.min(100, item.count * 10) : 0 }}%;"/>
+                                        </div>
+                                    </div>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <div class="text-center text-muted py-4">No categories found</div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

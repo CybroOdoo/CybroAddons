@@ -1,0 +1,359 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+  <!-- sale.order tree view customization -->
+  <record id="view_quotation_tree_show_status" model="ir.ui.view">
+    <field name="name">sale.order.quotation.tree.show.status</field>
+    <field name="model">sale.order</field>
+    <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='state']" position="attributes">
+        <attribute name="optional">show</attribute>
+      </xpath>
+    </field>
+  </record>
+
+  <record id="view_order_tree_show_status" model="ir.ui.view">
+    <field name="name">sale.order.tree.show.status</field>
+    <field name="model">sale.order</field>
+    <field name="inherit_id" ref="sale.view_order_tree"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='state']" position="attributes">
+        <attribute name="optional">show</attribute>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- 1. CUSTOMER (res.partner) view extension -->
+  <record id="view_partner_form_inherit_it" model="ir.ui.view">
+    <field name="name">res.partner.form.inherit.it</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_partner_form"/>
+    <field name="arch" type="xml">
+
+      <xpath expr="//notebook" position="inside">
+        <page string="IT Service Profile" name="it_service_profile">
+          <group>
+            <group string="Service Classification">
+              <field name="x_customer_type"/>
+              <field name="x_service_priority"/>
+              <field name="x_service_level"/>
+              <field name="x_preferred_technician_id"/>
+            </group>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- 2. SALES & AMC (sale.order) view extension -->
+  <record id="view_sale_order_form_inherit_it" model="ir.ui.view">
+    <field name="name">sale.order.form.inherit.it</field>
+    <field name="model">sale.order</field>
+    <field name="inherit_id" ref="sale.view_order_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='order_line']/list//field[@name='product_template_id']" position="attributes">
+        <attribute name="optional">show</attribute>
+      </xpath>
+      <xpath expr="//notebook" position="inside">
+        <page string="AMC / Service Contract Details" name="amc_service_contract">
+          <group>
+            <group string="Service Level Agreement (SLA)">
+              <field name="x_service_level"/>
+              <field name="x_response_time"/>
+              <field name="x_resolution_time"/>
+              <field name="x_included_visits"/>
+            </group>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+
+
+
+  <!-- 4. SERIAL NUMBER / LOT (stock.lot) view extension -->
+  <record id="view_production_lot_form_inherit_it" model="ir.ui.view">
+    <field name="name">stock.lot.form.inherit.it</field>
+    <field name="model">stock.lot</field>
+    <field name="inherit_id" ref="stock.view_production_lot_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//group[@name='main_group']" position="inside">
+        <group string="Customer Ownership &amp; Asset Traceability">
+          <field name="x_partner_id"/>
+          <field name="x_sale_order_id"/>
+          <field name="x_picking_id"/>
+          <field name="x_installation_date"/>
+        </group>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- 6. HELPDESK (helpdesk.ticket) view extension -->
+  <record id="view_helpdesk_ticket_form_inherit_it" model="ir.ui.view">
+    <field name="name">helpdesk.ticket.form.inherit.it</field>
+    <field name="model">helpdesk.ticket</field>
+    <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//header" position="inside">
+        <button name="%(action_repair_order)d" string="Create Repair" type="action" class="btn-primary" context="{'default_x_ticket_id': id, 'default_partner_id': partner_id, 'default_product_id': x_product_id, 'default_lot_id': x_lot_id}"/>
+      </xpath>
+      <xpath expr="//div[@name='button_box']" position="inside">
+        <button class="oe_stat_button" icon="fa-wrench" type="action" name="%(action_repair_order)d" context="{'search_default_x_ticket_id': id, 'default_x_ticket_id': id, 'default_partner_id': partner_id, 'default_product_id': x_product_id}">
+          <field string="Repair Order" name="x_repair_id" widget="statinfo"/>
+        </button>
+      </xpath>
+      <xpath expr="//field[@name='user_id']" position="after">
+        <field name="x_technician_id"/>
+      </xpath>
+      <xpath expr="//notebook" position="inside">
+        <page string="IT Service &amp; Hardware Details" name="it_service_hardware">
+          <group>
+            <group string="Product Details">
+              <field name="x_product_id"/>
+              <field name="x_lot_id"/>
+              <field name="x_repair_id"/>
+              <field name="x_task_id"/>
+              <field name="x_service_type"/>
+              <field name="x_problem_category"/>
+            </group>
+            <group string="Approval &amp; SLA">
+              <field name="x_customer_approval"/>
+              <field name="x_sla_deadline"/>
+            </group>
+          </group>
+          <group string="Diagnosis Notes">
+            <field name="x_diagnosis" placeholder="Technical diagnosis details..."/>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+
+  <record id="view_helpdesk_ticket_search_inherit_it" model="ir.ui.view">
+    <field name="name">helpdesk.ticket.search.inherit.it</field>
+    <field name="model">helpdesk.ticket</field>
+    <field name="inherit_id" ref="helpdesk.helpdesk_tickets_view_search"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='partner_id']" position="after">
+        <field name="x_technician_id"/>
+      </xpath>
+      <xpath expr="//group" position="inside">
+        <filter string="Service Type" name="group_by_x_service_type" domain="[]" context="{'group_by': 'x_service_type'}"/>
+        <filter string="Field Technician" name="group_by_x_technician_id" domain="[]" context="{'group_by': 'x_technician_id'}"/>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- 7. REPAIR (repair.order) view extension -->
+  <record id="view_repair_order_form_inherit_it" model="ir.ui.view">
+    <field name="name">repair.order.form.inherit.it</field>
+    <field name="model">repair.order</field>
+    <field name="inherit_id" ref="repair.view_repair_order_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//div[@name='button_box']" position="inside">
+        <button class="oe_stat_button" icon="fa-ticket" type="action" name="%(service_requests_43124b9e-b1cc-4e63-8c80-e19811fec507)d" context="{'search_default_id': x_ticket_id}">
+          <field string="Helpdesk Ticket" name="x_ticket_id" widget="statinfo"/>
+        </button>
+      </xpath>
+      <xpath expr="//notebook" position="inside">
+        <page string="IT Diagnosis &amp; Asset" name="it_diagnosis_equipment">
+          <group>
+            <group string="Asset Linkage">
+              <field name="x_lot_id"/>
+              <field name="x_ticket_id"/>
+              <field name="x_task_id"/>
+              <field name="x_repair_type"/>
+              <field name="x_technician_id"/>
+              <field name="x_customer_approval"/>
+            </group>
+            <group string="Cost Breakdown">
+              <field name="x_repair_cost"/>
+              <field name="x_spare_parts_cost"/>
+              <field name="x_labour_cost"/>
+            </group>
+          </group>
+          <group>
+            <group string="Customer Complaint">
+              <field name="x_complaint" placeholder="Customer complaint description..."/>
+            </group>
+            <group string="Technician Diagnosis">
+              <field name="x_diagnosis" placeholder="Diagnosis and action plan..."/>
+            </group>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- 8. SERVICE / TASK / HISTORY (project.task) view extension -->
+  <record id="view_project_task_form_inherit_it" model="ir.ui.view">
+    <field name="name">project.task.form.inherit.it</field>
+    <field name="model">project.task</field>
+    <field name="inherit_id" ref="project.view_task_form2"/>
+    <field name="arch" type="xml">
+      <xpath expr="//notebook" position="inside">
+        <page string="IT Service &amp; Installation Details" name="it_service_installation">
+          <group>
+            <group string="Customer &amp; Asset Linkage">
+              <field name="x_partner_id"/>
+              <field name="x_lot_id"/>
+              <field name="x_product_id"/>
+              <field name="x_sale_order_id"/>
+              <field name="x_ticket_id"/>
+              <field name="x_repair_id"/>
+            </group>
+            <group string="Schedule &amp; Location">
+              <field name="x_service_type"/>
+              <field name="x_visit_date"/>
+              <field name="x_technician_id"/>
+              <field name="x_installation_address"/>
+            </group>
+          </group>
+          <group>
+            <group string="Problem &amp; Request">
+              <field name="x_problem" placeholder="Problem summary / installation request..."/>
+            </group>
+            <group string="Work &amp; Customer Feedback">
+              <field name="x_work_performed" placeholder="Detailed work performed..."/>
+              <field name="x_customer_remarks" placeholder="Customer sign-off remarks..."/>
+            </group>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- 9. PRODUCT (product.template) view extension -->
+  <record id="view_product_template_form_inherit_it" model="ir.ui.view">
+    <field name="name">product.template.form.inherit.it</field>
+    <field name="model">product.template</field>
+    <field name="inherit_id" ref="product.product_template_only_form_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//div[@name='options']" position="inside">
+        <span name="hardware_option" class="d-inline-flex">
+          <field name="x_is_hardware" widget="boolean_checkbox" class="w-auto"/>
+          <label for="x_is_hardware"/>
+        </span>
+        <span name="spare_part_option" class="d-inline-flex">
+          <field name="x_is_spare_part" widget="boolean_checkbox" class="w-auto"/>
+          <label for="x_is_spare_part"/>
+        </span>
+      </xpath>
+      <xpath expr="//notebook" position="inside">
+        <page string="Hardware &amp; Service Specs" name="hardware_service_specs">
+          <group>
+            <group string="Classification &amp; Identifiers">
+              <field name="x_it_brand"/>
+              <field name="x_it_model"/>
+              <field name="x_it_mfr_part_number"/>
+            </group>
+            <group string="Service Settings">
+              <field name="x_requires_serial_number"/>
+              <field name="x_requires_installation"/>
+              <field name="x_serviceable"/>
+              <field name="x_amc_eligible"/>
+            </group>
+          </group>
+          <group string="Technical Specifications">
+            <field name="x_it_specifications" placeholder="Detailed hardware specifications (CPU, RAM, Storage, Interfaces, Power, etc.)..."/>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- Product Search View Extension -->
+  <record id="view_product_template_search_inherit_it" model="ir.ui.view">
+    <field name="name">product.template.search.inherit.it</field>
+    <field name="model">product.template</field>
+    <field name="inherit_id" ref="product.product_template_search_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//search" position="inside">
+        <separator/>
+        <filter string="Hardware Products" name="filter_it_hardware" domain="[('x_is_hardware', '=', True)]"/>
+        <filter string="Spare Parts" name="filter_it_spare_parts" domain="[('x_is_spare_part', '=', True)]"/>
+        <filter string="AMC Eligible" name="filter_it_amc_eligible" domain="[('x_amc_eligible', '=', True)]"/>
+      </xpath>
+      <xpath expr="//search/group" position="inside">
+        <filter string="Brand" name="group_by_it_brand" context="{'group_by': 'x_it_brand'}"/>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- Product Kanban View Extension for IT Hardware -->
+  <record id="view_product_template_kanban_inherit_it" model="ir.ui.view">
+    <field name="name">product.template.kanban.inherit.it</field>
+    <field name="model">product.template</field>
+    <field name="inherit_id" ref="product.product_template_kanban_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//kanban" position="inside">
+        <field name="x_is_hardware"/>
+        <field name="x_is_spare_part"/>
+        <field name="x_it_brand"/>
+        <field name="x_it_model"/>
+        <field name="x_amc_eligible"/>
+      </xpath>
+      <xpath expr="//div[hasclass('mb-1')]" position="after">
+        <div class="d-flex flex-wrap gap-1 my-1">
+          <span t-if="record.x_is_hardware.raw_value" class="badge text-bg-primary fs-7">
+            <i class="fa fa-desktop me-1"/>Hardware
+          </span>
+          <span t-if="record.x_is_spare_part.raw_value" class="badge text-bg-warning text-dark fs-7">
+            <i class="fa fa-microchip me-1"/>Spare Part
+          </span>
+          <span t-if="record.x_it_brand.value" class="badge text-bg-light border text-secondary fs-7">
+            <field name="x_it_brand"/>
+          </span>
+          <span t-if="record.x_amc_eligible.raw_value" class="badge text-bg-success fs-7">
+            <i class="fa fa-shield me-1"/>AMC
+          </span>
+        </div>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- IT Hardware Dashboard Views -->
+  <record id="view_it_hardware_dashboard_graph" model="ir.ui.view">
+    <field name="name">helpdesk.ticket.dashboard.graph</field>
+    <field name="model">helpdesk.ticket</field>
+    <field name="arch" type="xml">
+      <graph string="IT Service Analysis" type="bar">
+        <field name="x_service_type"/>
+        <field name="stage_id"/>
+      </graph>
+    </field>
+  </record>
+
+  <record id="view_it_hardware_dashboard_pivot" model="ir.ui.view">
+    <field name="name">helpdesk.ticket.dashboard.pivot</field>
+    <field name="model">helpdesk.ticket</field>
+    <field name="arch" type="xml">
+      <pivot string="IT Service Pivot">
+        <field name="partner_id" type="row"/>
+        <field name="x_service_type" type="row"/>
+        <field name="stage_id" type="col"/>
+      </pivot>
+    </field>
+  </record>
+
+  <!-- 10. CRM LEAD / OPPORTUNITY (crm.lead) view extension -->
+  <record id="view_crm_lead_form_inherit_it" model="ir.ui.view">
+    <field name="name">crm.lead.form.inherit.it</field>
+    <field name="model">crm.lead</field>
+    <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//notebook" position="inside">
+        <page string="IT Deal Specs &amp; Hardware Requirements" name="it_deal_specs">
+          <group>
+            <group string="Hardware Deal Requirements">
+              <field name="x_product_id"/>
+              <field name="x_deal_type"/>
+              <field name="x_hardware_units"/>
+              <field name="x_service_level"/>
+            </group>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+</odoo>

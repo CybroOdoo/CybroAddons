@@ -1,0 +1,420 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- 
+  Fitness Center Management SaaS Module
+  File: ir_actions_server.xml
+  Description: Contains server actions executing python code for training session calculations, payment validation, and enrollment handling.
+-->
+
+<odoo>
+  <record id="base_automation.ir_cron_data_base_automation_check_ir_actions_server" model="ir.actions.server" context="{'studio': True}" forcecreate="1">
+    <field name="code"><![CDATA[model._cron_process_time_based_actions()]]></field>
+    <field name="model_id" ref="base_automation.model_base_automation"/>
+    <field name="state">code</field>
+    <field name="name">Automation Rules: check and execute</field>
+    <field name="usage">ir_cron</field>
+  </record>
+  <record id="execute_code_2f43a9a4-019b-4659-bbcb-5dac8140de7c" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if (
+        record.x_studio_start_date
+        and record.x_studio_membership_plan
+        and record.x_studio_membership_plan.x_studio_duration_months
+    ):
+        months = int(record.x_studio_membership_plan.x_studio_duration_months)
+
+        end_date = (
+            record.x_studio_start_date
+            + dateutil.relativedelta.relativedelta(months=months)
+            - dateutil.relativedelta.relativedelta(days=1)
+        )
+
+        record.write({
+            'x_studio_end_date': end_date
+        })]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="execute_code_12727332-a9d9-429a-9794-f9ad20944d8b" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[today = datetime.date.today()
+for record in records:
+    if record.x_studio_start_date:
+        start_month_end = (record.x_studio_start_date + dateutil.relativedelta.relativedelta(months=1, day=1)) - dateutil.relativedelta.relativedelta(days=1)
+        current_month_end = (today + dateutil.relativedelta.relativedelta(months=1, day=1)) - dateutil.relativedelta.relativedelta(days=1)
+        target_end = max(start_month_end, current_month_end)
+        limit_date = min(target_end, record.x_studio_end_date) if record.x_studio_end_date else target_end
+        
+        start_gen = record.x_studio_sessions_generated_until + dateutil.relativedelta.relativedelta(days=1) if record.x_studio_sessions_generated_until else record.x_studio_start_date
+        
+        if start_gen <= limit_date:
+            current_date = start_gen
+            while current_date <= limit_date:
+                existing = env['x_training_sessions'].search([
+                    ('x_studio_enrollment', '=', record.id),
+                    ('x_studio_date', '=', current_date)
+                ], limit=1)
+                if not existing:
+                    env['x_training_sessions'].create({
+                        'x_name': f"Session - {record.x_studio_member.name} ({current_date})",
+                        'x_studio_enrollment': record.id,
+                        'x_studio_member': record.x_studio_member.id if record.x_studio_member else False,
+                        'x_studio_trainer_1_1': record.x_studio_trainer.id if record.x_studio_trainer else False,
+                        'x_studio_fitness_class': record.x_studio_fitness_class.id if record.x_studio_fitness_class else False,
+                        'x_studio_personal_training': record.x_studio_personal_training.id if record.x_studio_personal_training else False,
+                        'x_studio_date': current_date,
+                    })
+                current_date += dateutil.relativedelta.relativedelta(days=1)
+            record.write({'x_studio_sessions_generated_until': limit_date})]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="execute_code_3a116205-9cd5-4233-ba15-a7a11ee42933" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_status == "In Progress":
+        record.write({
+            "x_studio_start_time": datetime.datetime.now(),
+        })]]></field>
+    <field name="model_id" ref="training_sessions_4cf37c98-8eaa-4f41-b36f-e0d590971dc2"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="execute_code_copy_6807b425-43da-45f0-8f0f-3f476cdde1eb" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_status == "Completed":
+        if not record.x_studio_start_time:
+            raise UserError("Cannot check out before checking in.")
+
+        record.write({
+            "x_studio_end_time": datetime.datetime.now(),
+        })]]></field>
+    <field name="model_id" ref="training_sessions_4cf37c98-8eaa-4f41-b36f-e0d590971dc2"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="execute_code_55e73ed5-e6c4-440c-88ff-efaa2f5aa077" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_status == "Cancelled":
+        record.write({
+            "x_active": False,
+        })]]></field>
+    <field name="model_id" ref="training_sessions_4cf37c98-8eaa-4f41-b36f-e0d590971dc2"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="create_invoice_2d3c108c-2fcb-48ed-95e7-ae8f23c62069" model="ir.actions.server" context="{'studio': True}">
+    <field name="binding_model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="code"><![CDATA[for record in records:
+    if not record.x_studio_member or not record.x_studio_membership_plan:
+        continue
+
+    # Check if an invoice already exists
+    existing_invoice = env['account.move'].search([
+        ('move_type', '=', 'out_invoice'),
+        ('x_studio_enrollment_id', '=', record.id),
+        ('state', '!=', 'cancel'),
+    ], limit=1)
+
+    if existing_invoice:
+        raise UserError(
+            "An invoice has already been created for this enrollment.\n\n"
+            "Invoice: %s" % existing_invoice.name
+        )
+
+    invoice_lines = []
+
+    # Membership Plan
+    invoice_lines.append((0, 0, {
+        'name': record.x_studio_membership_plan.x_name,
+        'quantity': 1,
+        'price_unit': (
+            record.x_studio_membership_plan.x_studio_value *
+            record.x_studio_membership_plan.x_studio_duration_months
+        ),
+    }))
+
+    # Fitness Class
+    if record.x_studio_fitness_class:
+        invoice_lines.append((0, 0, {
+            'name': record.x_studio_fitness_class.x_name,
+            'quantity': 1,
+            'price_unit': (
+                record.x_studio_fitness_class.x_studio_value *
+                record.x_studio_membership_plan.x_studio_duration_months
+            ),
+        }))
+
+    # Personal Training
+    if record.x_studio_personal_training:
+        invoice_lines.append((0, 0, {
+            'name': record.x_studio_personal_training.x_name,
+            'quantity': 1,
+            'price_unit': (
+                record.x_studio_personal_training.x_studio_value *
+                record.x_studio_membership_plan.x_studio_duration_months
+            ),
+        }))
+
+    # Create Invoice
+    invoice = env['account.move'].create({
+        'move_type': 'out_invoice',
+        'partner_id': record.x_studio_member.id,
+        'invoice_date': datetime.date.today(),
+        'x_studio_enrollment_id': record.id,
+        'invoice_line_ids': invoice_lines,
+    })
+
+    # Save Invoice reference in Enrollment
+    record.write({
+        'x_studio_invoice_1': invoice.id,
+    })]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Create Invoice</field>
+  </record>
+  <record id="execute_code_4639a881-6d92-41ec-8df2-5c36752b9f78" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_personal_training:
+        record.write({
+            'x_studio_trainer':
+                record.x_studio_personal_training.x_studio_trainer.id
+        })
+    else:
+        record.write({
+            'x_studio_trainer': False
+        })]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="execute_code_e2558b72-d2d5-4b2f-9172-94c733bbf890" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_status == 'Active':
+        record.write({
+            'x_active': True
+        })
+    elif record.x_studio_status == 'Cancelled':
+        record.write({
+            'x_active': False
+        })]]></field>
+    <field name="model_id" ref="membership_plans_4cc6e019-3fa2-4a0d-be2b-900d51ec6df3"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="execute_code_df5b6cf0-d5c7-4017-a557-f504c671944c" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_member:
+        member = record.x_studio_member
+        # 1. Add member to the current fitness class if set and enrollment is Active
+        if record.x_studio_fitness_class and record.x_studio_status == 'Active':
+            if member not in record.x_studio_fitness_class.x_studio_members:
+                record.x_studio_fitness_class.write({
+                    'x_studio_members': [(4, member.id)]
+                })
+        
+        # 2. Clean up any fitness classes where this member is registered but has no Active enrollments
+        all_classes = env['x_fitness_classes'].search([('x_studio_members', 'in', member.id)])
+        for fitness_class in all_classes:
+            active_enrollment_count = env['x_enrollment'].search_count([
+                ('x_studio_member', '=', member.id),
+                ('x_studio_fitness_class', '=', fitness_class.id),
+                ('x_studio_status', '=', 'Active')
+            ])
+            if active_enrollment_count == 0:
+                fitness_class.write({
+                    'x_studio_members': [(3, member.id)]
+                })]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="execute_code_8433386f-4089-47eb-8bef-3d7d0e150b18" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_status in ['Cancelled', 'Expired', 'Renewed']:
+        continue
+    if not record.x_studio_fitness_class:
+        continue
+
+    fitness_class = record.x_studio_fitness_class
+    member = record.x_studio_member
+
+    # Check if the member is already enrolled in the class
+    is_member_enrolled = member and (member.id in fitness_class.x_studio_members.ids)
+
+    current_count = len(fitness_class.x_studio_members)
+    projected_count = current_count if is_member_enrolled else (current_count + 1)
+
+    if projected_count > fitness_class.x_studio_maximum_capacity:
+        raise UserError(
+            "The fitness class '%s' has reached its maximum capacity of %s members."
+            % (fitness_class.x_name, fitness_class.x_studio_maximum_capacity)
+        )]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="execute_code_33f8586f-4004-44e6-95d1-7ebca5a09281" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_selection_1 == 'Active':
+        record.write({
+            'x_active': True
+        })
+    elif record.x_studio_selection_1 == 'Cancelled':
+        record.write({
+            'x_active': False
+        })]]></field>
+    <field name="model_id" ref="fitness_classes_964ee9b6-fa33-42c8-ae3f-bca81f448362"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="execute_code_31b15ece-f064-42ba-9421-f6eeb086537b" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_status == 'Active':
+        record.write({
+            'x_active': True
+        })
+    elif record.x_studio_status == 'Cancelled':
+        record.write({
+            'x_active': False
+        })]]></field>
+    <field name="model_id" ref="personal_training_f67f2b24-b9a9-48f4-a2cf-9c41ab8a0eb9"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="execute_code_7fe99113-093c-4f44-a2d8-77585830884f" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.payment_state == 'paid' and record.x_studio_enrollment_id:
+        record.x_studio_enrollment_id.write({
+            'x_studio_status': 'Active',
+        })]]></field>
+    <field name="model_id" ref="account.model_account_move"/>
+    <field name="state">code</field>
+    <field name="name">Execute Code</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="cancel_enrollment_04b639bf-17e1-4150-bd6c-dc9723ab5144" model="ir.actions.server" context="{'studio': True}">
+    <field name="binding_model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="code"><![CDATA[for record in records:
+    record.write({
+        'x_studio_status': 'Cancelled',
+        'x_active': False,
+    })]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Cancel Enrollment</field>
+  </record>
+  <record id="renew_enrollment_4d267cab-0fd5-4058-ac66-34e650fbf28f" model="ir.actions.server" context="{'studio': True}">
+    <field name="binding_model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="code"><![CDATA[for record in records:
+
+    new_enrollment = env['x_enrollment'].create({
+        'x_name': 'New',  # Replace with your enrollment number logic
+        'x_studio_member': record.x_studio_member.id,
+        'x_studio_membership_plan': record.x_studio_membership_plan.id,
+        'x_studio_trainer': record.x_studio_trainer.id if record.x_studio_trainer else False,
+        'x_studio_fitness_class': record.x_studio_fitness_class.id if record.x_studio_fitness_class else False,
+        'x_studio_personal_training': record.x_studio_personal_training.id if record.x_studio_personal_training else False,
+        'x_studio_start_date': datetime.date.today(),
+    })
+
+    # Archive current enrollment
+    record.write({
+        'x_active': False,
+        'x_studio_status': 'Renewed',
+
+    })
+
+    action = {
+        'type': 'ir.actions.act_window',
+        'res_model': 'x_enrollment',
+        'view_mode': 'form',
+        'res_id': new_enrollment.id,
+        'target': 'current',
+    }]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Renew Enrollment</field>
+  </record>
+  <record id="action_generate_enrollment_sequence" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_name == 'New' or not record.x_name:
+        seq = env['ir.sequence'].next_by_code('x_enrollment') or 'New'
+        while seq != 'New' and env['x_enrollment'].search_count([('x_name', '=', seq)]) > 0:
+            seq = env['ir.sequence'].next_by_code('x_enrollment') or 'New'
+        record.write({
+            'x_name': seq
+        })]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Generate Enrollment Sequence</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="action_check_enrollment_uniqueness" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_name and record.x_name != 'New':
+        if env['x_enrollment'].search_count([('x_name', '=', record.x_name), ('id', '!=', record.id)]) > 0:
+            raise UserError("The Enrollment Number '%s' must be unique!" % record.x_name)]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Check Enrollment Uniqueness</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="action_send_activation_emails" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    # 1. Send email to Member using template
+    if record.x_studio_member and record.x_studio_member.email:
+        template = env.ref('fitness_center_saas.email_template_enrollment_activation_member', raise_if_not_found=False)
+        if template:
+            template.send_mail(record.id, force_send=True)
+
+    # 2. Send email to Trainer using template
+    if record.x_studio_trainer and record.x_studio_trainer.work_email:
+        template = env.ref('fitness_center_saas.email_template_enrollment_activation_trainer', raise_if_not_found=False)
+        if template:
+            template.send_mail(record.id, force_send=True)]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Send Activation Emails</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="action_membership_personal_training_trainer" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_personal_training:
+        record.write({
+            'x_studio_trainer_1': True,
+        })]]></field>
+    <field name="model_id" ref="membership_plans_4cc6e019-3fa2-4a0d-be2b-900d51ec6df3"/>
+    <field name="state">code</field>
+    <field name="name">Set Trainer True on Personal Training</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="action_check_membership_plan_duration" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_duration_months is False or record.x_studio_duration_months <= 0:
+        raise UserError("Duration must be greater than 0.")]]></field>
+    <field name="model_id" ref="membership_plans_4cc6e019-3fa2-4a0d-be2b-900d51ec6df3"/>
+    <field name="state">code</field>
+    <field name="name">Check Membership Plan Duration</field>
+    <field name="usage">base_automation</field>
+  </record>
+  <record id="action_check_enrollment_readonly_after_invoice" model="ir.actions.server" context="{'studio': True}">
+    <field name="code"><![CDATA[for record in records:
+    if record.x_studio_invoice_1:
+        raise UserError("This enrollment cannot be modified because an invoice has already been created.")]]></field>
+    <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+    <field name="state">code</field>
+    <field name="name">Check Enrollment Readonly After Invoice</field>
+    <field name="usage">base_automation</field>
+  </record>
+</odoo>

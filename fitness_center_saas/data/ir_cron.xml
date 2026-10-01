@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  Fitness Center Management SaaS Module
+  File: ir_cron.xml
+  Description: Configures Odoo scheduled actions (cron job) for daily auto-extension of member training sessions.
+-->
+
+<odoo>
+    <record id="ir_cron_expire_enrollments" model="ir.cron">
+        <field name="name">Expire Enrollments</field>
+        <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+today = datetime.date.today()
+expired_records = model.search([
+    ('x_studio_end_date', '<', today),
+    ('x_studio_status', '=', 'Active'),
+])
+for record in expired_records:
+    record.write({
+        'x_studio_status': 'Expired',
+    })
+        ]]></field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    <record id="ir_cron_generate_training_sessions" model="ir.cron">
+        <field name="name">Generate Next Month Training Sessions</field>
+        <field name="model_id" ref="enrollment_cb27ce50-8ceb-4ad5-b5fe-a9c9536f0399"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+today = datetime.date.today()
+active_enrollments = model.search([
+    ('x_studio_status', '=', 'Active'),
+    ('x_studio_start_date', '!=', False)
+])
+
+for record in active_enrollments:
+    generated_until = record.x_studio_sessions_generated_until
+    
+    if not generated_until:
+        start_month_end = (record.x_studio_start_date + dateutil.relativedelta.relativedelta(months=1, day=1)) - dateutil.relativedelta.relativedelta(days=1)
+        current_month_end = (today + dateutil.relativedelta.relativedelta(months=1, day=1)) - dateutil.relativedelta.relativedelta(days=1)
+        target_end = max(start_month_end, current_month_end)
+        limit_date = min(target_end, record.x_studio_end_date) if record.x_studio_end_date else target_end
+        
+        current_date = record.x_studio_start_date
+        while current_date <= limit_date:
+            existing = env['x_training_sessions'].search([
+                ('x_studio_enrollment', '=', record.id),
+                ('x_studio_date', '=', current_date)
+            ], limit=1)
+            if not existing:
+                env['x_training_sessions'].create({
+                    'x_name': f"Session - {record.x_studio_member.name} ({current_date})",
+                    'x_studio_enrollment': record.id,
+                    'x_studio_member': record.x_studio_member.id if record.x_studio_member else False,
+                    'x_studio_trainer_1_1': record.x_studio_trainer.id if record.x_studio_trainer else False,
+                    'x_studio_fitness_class': record.x_studio_fitness_class.id if record.x_studio_fitness_class else False,
+                    'x_studio_personal_training': record.x_studio_personal_training.id if record.x_studio_personal_training else False,
+                    'x_studio_date': current_date,
+                })
+            current_date += dateutil.relativedelta.relativedelta(days=1)
+        record.write({'x_studio_sessions_generated_until': limit_date})
+        continue
+
+    if generated_until <= today + dateutil.relativedelta.relativedelta(days=5):
+        next_month_start = generated_until + dateutil.relativedelta.relativedelta(days=1)
+        next_month_end = (next_month_start + dateutil.relativedelta.relativedelta(months=1, day=1)) - dateutil.relativedelta.relativedelta(days=1)
+        limit_date = min(next_month_end, record.x_studio_end_date) if record.x_studio_end_date else next_month_end
+        
+        if next_month_start <= limit_date:
+            current_date = next_month_start
+            while current_date <= limit_date:
+                existing = env['x_training_sessions'].search([
+                    ('x_studio_enrollment', '=', record.id),
+                    ('x_studio_date', '=', current_date)
+                ], limit=1)
+                if not existing:
+                    env['x_training_sessions'].create({
+                        'x_name': f"Session - {record.x_studio_member.name} ({current_date})",
+                        'x_studio_enrollment': record.id,
+                        'x_studio_member': record.x_studio_member.id if record.x_studio_member else False,
+                        'x_studio_trainer_1_1': record.x_studio_trainer.id if record.x_studio_trainer else False,
+                        'x_studio_fitness_class': record.x_studio_fitness_class.id if record.x_studio_fitness_class else False,
+                        'x_studio_personal_training': record.x_studio_personal_training.id if record.x_studio_personal_training else False,
+                        'x_studio_date': current_date,
+                    })
+                current_date += dateutil.relativedelta.relativedelta(days=1)
+            record.write({'x_studio_sessions_generated_until': limit_date})
+        ]]></field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>
