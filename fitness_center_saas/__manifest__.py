@@ -20,7 +20,7 @@
 ################################################################################
 {
     'name': 'Fitness Center for Odoo Online',
-    'version': 'saas~19.4.1.0',
+    'version': '1.4',
     'category': 'Services',
     'summary': 'Manage fitness center operations, membership plans, schedules, and analytics.',
     'description': """
