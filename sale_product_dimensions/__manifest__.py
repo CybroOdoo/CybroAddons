@@ -27,7 +27,6 @@
     "description": "Adds length_mm, width_mm, area_m2 and price_per_m2 fields"
     " on sale.order.line and propagates to PO, stock moves, manufacturing and "
     "invoices. Includes simple customer price matrix model.",
-    "author": "Generated",
     'category': 'Sales',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
@@ -44,6 +43,7 @@
         "views/account_move_views.xml",
         "views/report_invoice_document.xml",
     ],
+    'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
     'application': False,
