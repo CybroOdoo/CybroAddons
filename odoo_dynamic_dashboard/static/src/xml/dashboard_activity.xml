@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="odoo_dynamic_dashboard.DashboardActivityCard" owl="1">
+        <div class="grid-stack-item o_dynamic_dashboard_grid_item"
+             t-att-gs-x="props.card.gs_x"
+             t-att-gs-y="props.card.gs_y"
+             t-att-gs-w="props.card.gs_w || 3"
+             t-att-gs-h="props.card.gs_h || 2"
+             t-att-id="props.card.id">
+
+            <DashboardCardButtons
+                t-if="props.dashboard"
+                card="props.card"
+                dashboards="props.dashboards"
+                colorGroups="props.colorGroups"/>
+
+            <div class="card h-100 o_dashboard_native_view_card o_dashboard_activity_card grid-stack-item-content">
+                <div class="card-body p-2 overflow-hidden position-relative d-flex flex-column">
+
+                    <div class="table-header-section px-3 pt-3">
+                        <div class="header-text">
+                            <h2 class="table-main-heading" t-if="props.card.name">
+<!--                                <i class="fa fa-history me-2"/>-->
+                                <t t-esc="props.card.name"/>
+                            </h2>
+                            <p class="table-sub-heading" t-if="props.card.description">
+                                <t t-esc="props.card.description"/>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex-grow-1 overflow-auto" style="min-height: 0;">
+                        <t t-if="hasData()">
+                        <!-- ==========================================
+                             TIMELINE VIEW
+                             ========================================== -->
+                        <t t-if="props.card.activity_type === 'timeline'">
+                            <t t-if="state.timelineActivities">
+                                <div class="activity-timeline-container">
+                                    <div class="activity-timeline">
+                                        <!-- Overdue Activities -->
+                                        <t t-if="state.timelineActivities.overdue.length > 0">
+                                            <div class="timeline-date-separator">
+                                                <span class="timeline-date-label"><i class="fa fa-exclamation-triangle me-1"/> Overdue</span>
+                                            </div>
+                                            <t t-foreach="state.timelineActivities.overdue" t-as="activity" t-key="activity.id">
+                                                <div class="timeline-item overdue" t-on-click="() => this.onActivityClick(activity)">
+                                                    <div class="activity-header">
+                                                        <div class="activity-header-left">
+                                                            <div class="activity-title" t-esc="activity.summary || activity.res_name || 'Activity'"/>
+                                                            <span class="activity-type" t-att-class="getActivityTypeClass(activity.activity_type_id)">
+                                                                <t t-esc="getActivityTypeLabel(activity.activity_type_id)"/>
+                                                            </span>
+                                                        </div>
+                                                        <span class="status-badge overdue">
+                                                            <t t-esc="getOverdueDays(activity.date_deadline)"/> days overdue
+                                                        </span>
+                                                    </div>
+                                                    <div class="activity-meta">
+                                                        <div class="meta-item">
+                                                            <i class="fa fa-calendar"/>
+                                                            <span t-esc="formatDate(activity.date_deadline)"/>
+                                                        </div>
+                                                        <div class="meta-item" t-if="activity.user_id">
+                                                            <i class="fa fa-user"/>
+                                                            <span t-esc="activity.user_id[1]"/>
+                                                        </div>
+                                                        <div class="meta-item" t-if="activity.res_name">
+                                                            <i class="fa fa-briefcase"/>
+                                                            <span t-esc="activity.res_name"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="activity-summary" t-if="activity.note" t-out="getMarkup(activity.note)"/>
+                                                </div>
+                                            </t>
+                                        </t>
+
+                                        <!-- Today Activities -->
+                                        <t t-if="state.timelineActivities.today.length > 0">
+                                            <div class="timeline-date-separator">
+                                                <span class="timeline-date-label"><i class="fa fa-map-marker me-1"/> Today</span>
+                                            </div>
+                                            <t t-foreach="state.timelineActivities.today" t-as="activity" t-key="activity.id">
+                                                <div class="timeline-item" t-att-class="activity.completed ? 'completed' : ''" t-on-click="() => this.onActivityClick(activity)">
+                                                    <div class="activity-header">
+                                                        <div class="activity-header-left">
+                                                            <div class="activity-title" t-esc="activity.summary || activity.res_name || 'Activity'"/>
+                                                            <span class="activity-type" t-att-class="getActivityTypeClass(activity.activity_type_id)">
+                                                                <t t-esc="getActivityTypeLabel(activity.activity_type_id)"/>
+                                                            </span>
+                                                        </div>
+                                                        <span class="status-badge" t-att-class="activity.completed ? 'completed' : 'today'">
+                                                            <t t-if="activity.completed"><i class="fa fa-check me-1"/> Completed</t>
+                                                            <t t-else="">Today</t>
+                                                        </span>
+                                                    </div>
+                                                    <div class="activity-meta">
+                                                        <div class="meta-item">
+                                                            <i class="fa fa-clock-o"/>
+                                                            <span t-esc="formatTime(activity.date_deadline)"/>
+                                                        </div>
+                                                        <div class="meta-item" t-if="activity.user_id">
+                                                            <i class="fa fa-user"/>
+                                                            <span t-esc="activity.user_id[1]"/>
+                                                        </div>
+                                                        <div class="meta-item" t-if="activity.res_name">
+                                                            <i class="fa fa-briefcase"/>
+                                                            <span t-esc="activity.res_name"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="activity-summary" t-if="activity.note" t-out="getMarkup(activity.note)"/>
+                                                </div>
+                                            </t>
+                                        </t>
+
+                                        <!-- Tomorrow Activities -->
+                                        <t t-if="state.timelineActivities.tomorrow.length > 0">
+                                            <div class="timeline-date-separator">
+                                                <span class="timeline-date-label"><i class="fa fa-calendar-plus-o me-1"/> Tomorrow</span>
+                                            </div>
+                                            <t t-foreach="state.timelineActivities.tomorrow" t-as="activity" t-key="activity.id">
+                                                <div class="timeline-item" t-att-class="activity.completed ? 'completed' : ''" t-on-click="() => this.onActivityClick(activity)">
+                                                    <div class="activity-header">
+                                                        <div class="activity-header-left">
+                                                            <div class="activity-title" t-esc="activity.summary || activity.res_name || 'Activity'"/>
+                                                            <span class="activity-type" t-att-class="getActivityTypeClass(activity.activity_type_id)">
+                                                                <t t-esc="getActivityTypeLabel(activity.activity_type_id)"/>
+                                                            </span>
+                                                        </div>
+                                                        <span class="status-badge" t-att-class="activity.completed ? 'completed' : 'upcoming'">
+                                                            <t t-if="activity.completed"><i class="fa fa-check me-1"/> Completed</t>
+                                                            <t t-else="">Tomorrow</t>
+                                                        </span>
+                                                    </div>
+                                                    <div class="activity-meta">
+                                                        <div class="meta-item">
+                                                            <i class="fa fa-clock-o"/>
+                                                            <span t-esc="formatTime(activity.date_deadline)"/>
+                                                        </div>
+                                                        <div class="meta-item" t-if="activity.user_id">
+                                                            <i class="fa fa-user"/>
+                                                            <span t-esc="activity.user_id[1]"/>
+                                                        </div>
+                                                        <div class="meta-item" t-if="activity.res_name">
+                                                            <i class="fa fa-briefcase"/>
+                                                            <span t-esc="activity.res_name"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="activity-summary" t-if="activity.note" t-out="getMarkup(activity.note)"/>
+                                                </div>
+                                            </t>
+                                        </t>
+
+                                        <!-- Next Week Activities -->
+                                        <t t-if="state.timelineActivities.nextWeek.length > 0">
+                                            <div class="timeline-date-separator">
+                                                <span class="timeline-date-label"><i class="fa fa-calendar me-1"/> Next Week</span>
+                                            </div>
+                                            <t t-foreach="state.timelineActivities.nextWeek" t-as="activity" t-key="activity.id">
+                                                <div class="timeline-item" t-att-class="activity.completed ? 'completed' : ''" t-on-click="() => this.onActivityClick(activity)">
+                                                    <div class="activity-header">
+                                                        <div class="activity-header-left">
+                                                            <div class="activity-title" t-esc="activity.summary || activity.res_name || 'Activity'"/>
+                                                            <span class="activity-type" t-att-class="getActivityTypeClass(activity.activity_type_id)">
+                                                                <t t-esc="getActivityTypeLabel(activity.activity_type_id)"/>
+                                                            </span>
+                                                        </div>
+                                                        <span class="status-badge" t-att-class="activity.completed ? 'completed' : 'upcoming'">
+                                                            <t t-if="activity.completed"><i class="fa fa-check me-1"/> Completed</t>
+                                                            <t t-else="" t-esc="formatDate(activity.date_deadline).split(',')[0]"/>
+                                                        </span>
+                                                    </div>
+                                                    <div class="activity-meta">
+                                                        <div class="meta-item">
+                                                            <i class="fa fa-clock-o"/>
+                                                            <span t-esc="formatTime(activity.date_deadline)"/>
+                                                        </div>
+                                                        <div class="meta-item" t-if="activity.user_id">
+                                                            <i class="fa fa-user"/>
+                                                            <span t-esc="activity.user_id[1]"/>
+                                                        </div>
+                                                        <div class="meta-item" t-if="activity.res_name">
+                                                            <i class="fa fa-briefcase"/>
+                                                            <span t-esc="activity.res_name"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="activity-summary" t-if="activity.note" t-out="getMarkup(activity.note)"/>
+                                                </div>
+                                            </t>
+                                        </t>
+
+                                        <!-- Later Activities -->
+                                        <t t-if="state.timelineActivities.later.length > 0">
+                                            <div class="timeline-date-separator">
+                                                <span class="timeline-date-label"><i class="fa fa-calendar-o me-1"/> Later</span>
+                                            </div>
+                                            <t t-foreach="state.timelineActivities.later" t-as="activity" t-key="activity.id">
+                                                <div class="timeline-item" t-att-class="activity.completed ? 'completed' : ''" t-on-click="() => this.onActivityClick(activity)">
+                                                    <div class="activity-header">
+                                                        <div class="activity-header-left">
+                                                            <div class="activity-title" t-esc="activity.summary || activity.res_name || 'Activity'"/>
+                                                            <span class="activity-type" t-att-class="getActivityTypeClass(activity.activity_type_id)">
+                                                                <t t-esc="getActivityTypeLabel(activity.activity_type_id)"/>
+                                                            </span>
+                                                        </div>
+                                                        <span class="status-badge" t-att-class="activity.completed ? 'completed' : 'upcoming'">
+                                                            <t t-if="activity.completed"><i class="fa fa-check me-1"/> Completed</t>
+                                                            <t t-else="" t-esc="formatDate(activity.date_deadline)"/>
+                                                        </span>
+                                                    </div>
+                                                    <div class="activity-meta">
+                                                        <div class="meta-item">
+                                                            <i class="fa fa-calendar"/>
+                                                            <span t-esc="formatDate(activity.date_deadline)"/>
+                                                        </div>
+                                                        <div class="meta-item" t-if="activity.user_id">
+                                                            <i class="fa fa-user"/>
+                                                            <span t-esc="activity.user_id[1]"/>
+                                                        </div>
+                                                        <div class="meta-item" t-if="activity.res_name">
+                                                            <i class="fa fa-briefcase"/>
+                                                            <span t-esc="activity.res_name"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="activity-summary" t-if="activity.note" t-out="getMarkup(activity.note)"/>
+                                                </div>
+                                            </t>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+
+                       <!-- ==========================================
+     FEED VIEW - Masonry Gradient Overlay (Variant A)
+     ========================================== -->
+<t t-elif="props.card.activity_type === 'feed'">
+    <t t-if="state.feedActivities">
+        <div class="activity-feed-container">
+            <div class="masonry-gradient">
+                <t t-foreach="state.feedActivities" t-as="activity" t-key="activity.id">
+                    <div class="masonry-card" t-att-style="'--color: ' + getActivityTypeColor(activity.activity_type_id)" t-on-click="() => this.onActivityClick(activity)">
+                        <div class="masonry-card-image">
+                            <div class="masonry-card-emoji"><i t-att-class="getActivityIconClass(activity.activity_type_id)"/></div>
+                            <span class="masonry-card-badge" t-esc="getActivityTypeLabel(activity.activity_type_id)"/>
+                        </div>
+                        <div class="masonry-card-content">
+                            <h3 class="masonry-card-title" t-esc="activity.summary || activity.res_name || 'Activity'"/>
+                            <p class="masonry-card-description" t-if="activity.note" t-out="getMarkup(activity.note)"/>
+                            <div class="masonry-card-footer">
+                                <div class="masonry-card-user">
+                                    <div class="masonry-user-avatar" t-esc="activity.user_id ? activity.user_id[1].substring(0, 2).toUpperCase() : 'UN'"/>
+                                    <div class="masonry-user-info">
+                                        <div class="masonry-user-name" t-esc="activity.user_id ? activity.user_id[1] : 'Unassigned'"/>
+                                        <div class="masonry-user-time" t-esc="getRelativeTime(activity.create_date)"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</t>
+                        <!-- ==========================================
+                             SUMMARY VIEW
+                             ========================================== -->
+                        <t t-elif="props.card.activity_type === 'summary'">
+                            <t t-if="state.summaryData">
+                                <div class="activity-summary-container">
+                                    <div class="activity-summary-stats">
+
+                                        <!-- Stats Grid -->
+                                        <div class="summary-stats-grid">
+                                            <div class="summary-stat-card stat-total">
+                                                <div class="summary-stat-icon"><i class="fa fa-list-alt"/></div>
+                                                <div class="summary-stat-number" t-esc="state.summaryData.stats.total"/>
+                                                <div class="summary-stat-label">Total Activities</div>
+                                            </div>
+
+                                            <div class="summary-stat-card stat-today">
+                                                <div class="summary-stat-icon"><i class="fa fa-calendar-o"/></div>
+                                                <div class="summary-stat-number" t-esc="state.summaryData.stats.dueToday"/>
+                                                <div class="summary-stat-label">Due Today</div>
+                                            </div>
+
+                                            <div class="summary-stat-card stat-completed">
+                                                <div class="summary-stat-icon"><i class="fa fa-check-circle"/></div>
+                                                <div class="summary-stat-number" t-esc="state.summaryData.stats.completed"/>
+                                                <div class="summary-stat-label">Completed</div>
+                                            </div>
+
+                                            <div class="summary-stat-card stat-overdue">
+                                                <div class="summary-stat-icon"><i class="fa fa-exclamation-triangle"/></div>
+                                                <div class="summary-stat-number" t-esc="state.summaryData.stats.overdue"/>
+                                                <div class="summary-stat-label">Overdue</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Recent Activities -->
+                                        <div class="summary-recent-section">
+                                            <div class="summary-recent-title">Recent Activities</div>
+                                            <div class="summary-recent-list">
+                                                <t t-foreach="state.summaryData.recentActivities" t-as="activity" t-key="activity.id">
+                                                    <div class="summary-recent-item" t-on-click="() => this.onActivityClick(activity)">
+                                                        <div class="summary-recent-icon" t-att-style="'background: ' + getActivityTypeColor(activity.activity_type_id) + '15; color: ' + getActivityTypeColor(activity.activity_type_id)">
+                                                            <i t-att-class="getActivityIconClass(activity.activity_type_id)"/>
+                                                        </div>
+                                                        <div class="summary-recent-content">
+                                                            <div class="summary-recent-name" t-esc="activity.summary || activity.res_name || 'Activity'"/>
+                                                            <div class="summary-recent-time" t-esc="getRelativeTime(activity.create_date)"/>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+
+                        <!-- ==========================================
+                             CALENDAR VIEW - Colorful Bubble Style
+                             ========================================== -->
+                        <t t-elif="props.card.activity_type === 'calendar'">
+                            <t t-if="state.calendarData">
+                                <div class="activity-calendar-container">
+                                    <div class="calendar-bubble">
+                                        <!-- Calendar Header -->
+                                        <div class="cal-header">
+                                            <span class="cal-month" t-esc="state.calendarData.monthName"/>
+                                            <div class="cal-nav">
+                                                <button class="cal-nav-btn" t-on-click="() => this.previousWeek()" title="Previous Week">
+                                                    <i class="fa fa-chevron-left"/>
+                                                </button>
+                                                <button class="cal-nav-btn" t-on-click="() => this.nextWeek()" title="Next Week">
+                                                    <i class="fa fa-chevron-right"/>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Weekly Date Strip -->
+                                        <div class="cal-week-strip">
+                                            <t t-foreach="state.calendarData.weekDays" t-as="dayInfo" t-key="dayInfo_index">
+                                                <div class="cal-day-wrapper" t-on-click="() => this.selectDate(dayInfo.date)">
+                                                    <span class="cal-day-label" t-att-class="dayInfo.isSelected ? 'selected-label' : ''" t-esc="dayInfo.dayLabel"/>
+                                                    <div class="cal-day-bubble"
+                                                         t-att-class="dayInfo.isSelected ? 'selected' : (dayInfo.isToday ? 'today' : (dayInfo.activities.length > 0 ? 'has-activity' : ''))"
+                                                         t-att-style="(dayInfo.activities.length > 0 and !dayInfo.isToday and !dayInfo.isSelected) ? 'background: ' + getActivityTypeColor(dayInfo.activities[0].activity_type_id) + '10; border-color: ' + getActivityTypeColor(dayInfo.activities[0].activity_type_id) + '30' : ''">
+                                                         <span class="day-num" t-esc="dayInfo.day"/>
+                                                         <t t-if="dayInfo.activities.length > 0 and !dayInfo.isToday and !dayInfo.isSelected">
+                                                             <span class="day-act-label" t-att-style="'color: ' + getActivityTypeColor(dayInfo.activities[0].activity_type_id)"><i t-att-class="getActivityIconClass(dayInfo.activities[0].activity_type_id)"/></span>
+                                                         </t>
+                                                     </div>
+                                                 </div>
+                                             </t>
+                                         </div>
+
+                                        <!-- Selected Date Schedule -->
+                                        <t t-if="state.calendarData.selectedActivities.length > 0">
+                                            <div class="cal-schedule-title">
+                                                <span><i class="fa fa-map-marker me-1"/> Schedule for <t t-esc="state.calendarData.selectedDateLabel"/></span>
+                                            </div>
+                                            <div class="cal-schedule-list">
+                                                <t t-foreach="state.calendarData.selectedActivities" t-as="activity" t-key="activity.id">
+                                                    <div class="cal-schedule-card"
+                                                         t-att-style="'background: ' + getActivityTypeColor(activity.activity_type_id) + '08; border-color: ' + getActivityTypeColor(activity.activity_type_id) + '25'"
+                                                         t-on-click="() => this.onActivityClick(activity)">
+                                                         <div class="cal-card-icon" t-att-style="'color: ' + getActivityTypeColor(activity.activity_type_id)">
+                                                             <i t-att-class="getActivityIconClass(activity.activity_type_id)"/>
+                                                         </div>
+                                                         <div class="cal-card-content">
+                                                             <div class="cal-card-name" t-esc="activity.summary || activity.res_name || 'Activity'"/>
+                                                             <div class="cal-card-sub">
+                                                                 <span t-esc="getActivityTypeLabel(activity.activity_type_id)"/>
+                                                                 <t t-if="activity.user_id"> • <t t-esc="activity.user_id[1]"/></t>
+                                                             </div>
+                                                         </div>
+                                                     </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="cal-no-schedule">
+                                                <div class="cal-no-schedule-icon"><i class="fa fa-calendar-o"/></div>
+                                                <div class="cal-no-schedule-text">No activities scheduled for <t t-esc="state.calendarData.selectedDateLabel"/></div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+                    </t>
+                    <t t-else="">
+                         <div class="table-empty-state o_dashboard_empty_state">
+                            <div class="empty-icon">
+                                <i class="fa fa-inbox fa-4x text-muted"/>
+                            </div>
+                            <h4 class="empty-title">No Records Found</h4>
+                            <p class="empty-message">
+                                There are no records matching the current filters.
+                            </p>
+                        </div>
+                    </t>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

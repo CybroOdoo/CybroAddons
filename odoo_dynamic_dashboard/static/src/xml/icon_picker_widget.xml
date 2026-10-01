@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="odoo_dynamic_dashboard.IconPickerWidget">
+        <div class="dm-icon-picker" t-ref="root">
+            <div class="dm-icon-picker-trigger"
+                 t-att-class="{ 'dm-icon-picker-open': state.open }"
+                 t-on-click="toggleOpen">
+                <i t-attf-class="fas {{ value }} dm-picker-preview"/>
+                <span class="dm-picker-label text-muted" t-esc="value"/>
+                <i class="fa fa-chevron-down dm-picker-chevron"/>
+            </div>
+            <div t-if="state.open" class="dm-icon-picker-dropdown">
+                <input type="text"
+                       class="dm-icon-search"
+                       placeholder="Search icons..."
+                       t-model="state.search"
+                       t-on-click="onSearchClick"/>
+                <div t-if="filteredIcons.length" class="dm-icon-grid">
+                    <t t-foreach="filteredIcons" t-as="cls" t-key="cls">
+                        <button type="button"
+                                class="dm-icon-item"
+                                t-att-class="{ 'dm-icon-selected': cls === value }"
+                                t-att-title="cls.replace('fa-solid ', '').replace('fa-', '').split('-').join(' ')"
+                                t-on-click="(ev) => selectIcon(ev, cls)">
+                            <i t-attf-class="fas {{ cls }}"/>
+                        </button>
+                    </t>
+                </div>
+                <div t-else="" class="dm-icon-no-results text-muted small">
+                    No icons found
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

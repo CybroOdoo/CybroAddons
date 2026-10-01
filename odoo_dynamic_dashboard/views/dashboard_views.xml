@@ -1,14 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!--    The client action record to view the Dashboard-->
-    <record id="dashboard_view_action" model="ir.actions.client">
-        <field name="name">Dashboard</field>
-        <field name="tag">OdooDynamicDashboard</field>
+    <!-- Kanban view for dashboard.menu (user-facing list screen) -->
+    <record id="dashboard_menu_view_kanban" model="ir.ui.view">
+        <field name="name">dashboard.menu.kanban</field>
+        <field name="model">dashboard.menu</field>
+        <field name="arch" type="xml">
+            <kanban quick_create="False" action="action_open_dashboard" type="object">
+                <field name="dashboard_name"/>
+                <field name="description"/>
+                <field name="icon_class"/>
+                <field name="color_1"/>
+                <field name="color_2"/>
+                <field name="gradient_degree"/>
+                <field name="menu_id"/>
+                <templates>
+                    <t t-name="menu">
+                        <a role="menuitem" type="object" name="action_edit_record" class="dropdown-item">Edit</a>
+                        <a role="menuitem" type="delete" class="dropdown-item">Delete</a>
+                    </t>
+                    <t t-name="card">
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <div class="dm-kanban-icon flex-shrink-0"
+                                 t-attf-style="background:linear-gradient({{record.gradient_degree.value}}deg,{{record.color_1.value}} 0%,{{record.color_2.value}} 100%)">
+                                <i t-attf-class="fas {{record.icon_class.value}}"/>
+                            </div>
+                            <div class="overflow-hidden">
+                                <div class="fw-bold text-truncate">
+                                    <field name="dashboard_name"/>
+                                </div>
+                                <div class="text-muted small text-truncate">
+                                    <field name="menu_id"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-muted small">
+                            <field name="description"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
     </record>
-    <menuitem name="Dashboards" id="menu_dashboard" sequence="-1"
+
+    <!-- Main entry-point action -->
+    <record id="dashboard_menu_kanban_action" model="ir.actions.act_window">
+        <field name="name">My Dashboards</field>
+        <field name="res_model">dashboard.menu</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No dashboards yet!
+            </p>
+            <p>Click <strong>New</strong> to create your first dashboard.</p>
+        </field>
+    </record>
+
+    <!-- Top-level menu item -->
+    <menuitem name="Dashboard" id="odoo_dynamic_dashboard_menu_root" sequence="-100"
               web_icon="odoo_dynamic_dashboard,static/description/icon.png"/>
-    <menuitem name="Dashboard" action="dashboard_view_action"
-              id="dashboard_root_menu"
-              parent="odoo_dynamic_dashboard.menu_dashboard"
-              sequence="0"/>
+
+    <!-- Sub-menu item for the dashboard -->
+    <menuitem name="Dashboard" id="odoo_dynamic_dashboard_menu"
+              parent="odoo_dynamic_dashboard_menu_root"
+              action="dashboard_menu_kanban_action" sequence="10"/>
 </odoo>

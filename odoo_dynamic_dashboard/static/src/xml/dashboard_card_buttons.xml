@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="DashboardCardButtons" owl="1">
+        <div class="position-absolute top-0 end-0 m-3 d-none hover-actions"
+             style="z-index: 10;">
+            <div class="d-flex gap-1">
+                <button type="button" class="ad-card-action-btn" title="Card Info"
+                        t-on-click="onClickInfo">
+                    <i class="fas fa-info"/>
+                </button>
+
+                <div class="dropdown" t-if="this.props.card.type == 'chart' and !['line', 'area', 'radar'].includes(this.props.card.chart_type)">
+                    <button type="button"
+
+                            class="ad-card-action-btn"
+                            title="Color Palette"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="fas fa-paint-brush"/>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end p-0">
+                        <h6 class="dropdown-header px-3 py-2 mb-0"
+                            style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+                            <i class="fas fa-palette me-2"/>Color Theme
+                        </h6>
+                        <div t-foreach="props.colorGroups"
+                             t-as="color"
+                             t-key="color.id">
+                            <div class="dropdown-item d-flex align-items-center py-2 position-relative"
+                                 style="cursor: pointer;" data-bs-dismiss="dropdown"
+                                 t-att-style="props.card.color_group_id[0] === color.id ? 'background-color: var(--200, #e9ecef);' : ''"
+                                 t-on-click.stop="" t-on-click="() => this.onSelectColor(color.id)">
+                                <span t-if="props.card.color_group_id[0] === color.id"
+                                      class="position-absolute start-0 top-0 bottom-0"
+                                      style="width: 4px; background-color: var(--primary, #71639e);"/>
+                                <span class="ms-2" t-esc="color.name"
+                                      t-att-style="props.card.color_group_id[0] === color.id ? 'color: var(--primary, #71639e); font-weight: 500;' : ''"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="ad-card-action-btn" title="Edit"
+                        t-on-click="onClickEdit">
+                    <i class="fas fa-edit"/>
+                </button>
+                <button type="button" class="ad-card-action-btn" title="Delete">
+                    <i class="fas fa-trash" t-on-click="onClickDelete"/>
+                </button>
+                <div class="dropdown">
+                    <button type="button"
+                            class="ad-card-action-btn"
+                            title="Duplicate"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="fas fa-copy"/>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 320px;">
+                        <h6 class="dropdown-header px-0 mb-3">
+                            <i class="fas fa-copy me-2"/>Duplicate Dashboard
+                        </h6>
+                        <div class="mb-3">
+                            <label for="dashboardSelect" class="form-label">Select Dashboard</label>
+                            <select class="form-select"
+                                    id="dashboardSelect"
+                                    t-model="state.selectedDashboardId">
+                                <option value="">-- Choose a dashboard --</option>
+                                <option t-foreach="props.dashboards"
+                                        t-as="dashboard"
+                                        t-key="dashboard.id"
+                                        t-att-value="dashboard.id"
+                                        t-esc="dashboard.dashboard_name"/>
+                            </select>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button"
+                                    class="btn btn-sm btn-secondary"
+                                    data-bs-dismiss="dropdown">
+                                <i class="fas fa-times me-1"/>Cancel
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary" data-type="copy"
+                                    t-on-click.stop=""
+                                    t-on-click="onClickDuplicate">
+                                <i class="fas fa-copy me-1"/>Copy
+                            </button>
+                            <button type="button" data-type="move" class="btn btn-sm btn-primary"
+                                    t-on-click.stop=""
+                                    t-on-click="(ev) => this.onClickDuplicate(ev)">
+                                <i class="fas fa-arrows-alt me-1"/>Move
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown" t-if="this.props.card.type == 'chart' and ['line', 'area', 'radar'].includes(this.props.card.chart_type)">
+                    <button type="button"
+                            class="ad-card-action-btn"
+                            title="Choose Color"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="fas fa-palette"/>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 250px;"
+                         t-on-click.stop="">
+                        <h6 class="dropdown-header px-0 mb-3">
+                            <i class="fas fa-palette me-2"/>Choose Color
+                        </h6>
+                        <div class="mb-3">
+                            <label for="colorPicker" class="form-label small">Select Color</label>
+                            <input type="color"
+                                   id="colorPicker"
+                                   class="form-control form-control-color w-100"
+                                   t-model="state.selectedColor"
+                                   style="height: 50px;"/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="colorInput" class="form-label small">Hex Code</label>
+                            <input type="text"
+                                   id="colorInput"
+                                   class="form-control form-control-sm"
+                                   t-model="state.selectedColor"
+                                   placeholder="#71639e"/>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button"
+                                    class="btn btn-sm btn-secondary"
+                                    t-on-click="(ev) => this.onClickCancelColor(ev)"
+                                    data-bs-dismiss="dropdown">
+                                Cancel
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-primary"
+                                    t-on-click="(ev) => this.onApplyColor(ev)"
+                                    data-bs-dismiss="dropdown">
+                                Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown">
+    <button type="button"
+            class="ad-card-action-btn dropdown-toggle no-caret"
+            title="Export"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+        <i class="fas fa-download"/>
+    </button>
+    <div class="dropdown-menu dropdown-menu-end p-0" style="min-width: 220px; overflow: hidden;">
+        <h6 class="dropdown-header px-3 py-2 mb-0"
+            style="background-color: var(--100, #f8f9fa); border-bottom: 1px solid var(--border-color, #dee2e6); font-weight: 600;">
+            <i class="fas fa-file-export me-2"/>Export Options
+        </h6>
+
+        <div class="py-1">
+            <t t-if="!['activity', 'to-do'].includes(this.props.card.type)">
+                <a class="dropdown-item d-flex align-items-center py-2 px-3" href="#" t-on-click="onExportToExcel">
+                    <i class="fas fa-file-excel me-3 text-success" style="width: 16px;"/>
+                    <span>Export to Excel</span>
+                </a>
+                <a class="dropdown-item d-flex align-items-center py-2 px-3" href="#" t-on-click="onExportToCSV">
+                    <i class="fas fa-file-csv me-3 text-info" style="width: 16px;"/>
+                    <span>Export to CSV</span>
+                </a>
+            </t>
+            <a class="dropdown-item d-flex align-items-center py-2 px-3" href="#" t-on-click="onSaveAsPDF">
+                <i class="fas fa-file-pdf me-3 text-danger" style="width: 16px;"/>
+                <span>Save as PDF</span>
+            </a>
+            <a class="dropdown-item d-flex align-items-center py-2 px-3" href="#" t-on-click="onSaveAsImage">
+                <i class="fas fa-file-image me-3 text-primary" style="width: 16px;"/>
+                <span>Save as Image</span>
+            </a>
+
+            <div class="dropdown-divider my-1"/>
+
+            <a class="dropdown-item d-flex align-items-center py-2 px-3" href="#" t-on-click="onExportItem">
+                <i class="fas fa-share-square me-3 text-muted" style="width: 16px;"/>
+                <span class="fw-bold">Export Item </span>
+            </a>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </t>
+</templates>

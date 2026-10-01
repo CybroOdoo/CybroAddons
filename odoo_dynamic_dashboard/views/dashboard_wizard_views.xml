@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Menu Wizard Form View -->
+        <record id="dashboard_menu_view_form_wizard" model="ir.ui.view">
+            <field name="name">dashboard.menu.form.wizard</field>
+            <field name="model">dashboard.menu</field>
+            <field name="inherit_id" ref="dashboard_menu_view_form"/>
+            <field name="mode">primary</field>
+            <field name="arch" type="xml">
+                <form position="replace">
+                    <form js_class="advanced_dashboard_wizard">
+                        <sheet>
+                            <group col="1">
+                                <label for="dashboard_name" string="Dashboard Name"/>
+                                <field name="dashboard_name" placeholder="Enter Dashboard Name"
+                                       required="1" nolabel="1"/>
+
+                                <label for="name" string="Menu Name"/>
+                                <field name="name" placeholder="Enter Menu Name" nolabel="1"
+                                       required="1"/>
+
+                                <label for="parent_id" string="Parent Menu"/>
+                                <field name="parent_id" placeholder="My Dashboard/My Dashboards"
+                                       nolabel="1" required="1"/>
+                                <label for="sequence" string="Sequence"/>
+                                <field name="sequence" placeholder="10" nolabel="1" required="1"/>
+
+                                <label for="description" string="Description"/>
+                                <field name="description" nolabel="1" required="1"/>
+                            </group>
+                        </sheet>
+                    </form>
+                </form>
+            </field>
+        </record>
+
+        <!-- Card Wizard Form View -->
+        <record id="dashboard_card_view_form_wizard" model="ir.ui.view">
+            <field name="name">dashboard.card.form.wizard</field>
+            <field name="model">dashboard.card</field>
+            <field name="inherit_id" ref="dashboard_card_view_form"/>
+            <field name="mode">primary</field>
+            <field name="arch" type="xml">
+                <form position="replace">
+                    <form js_class="dynamic_dashboard_wizard">
+                        <sheet>
+                            <group col="2" class="dashboard-card-form">
+                                <!-- Left Side: Preview (Takes 60% space) -->
+                                <group string="Dashboard Preview" colspan="1"
+                                       class="preview-group d-block">
+                                    <div class="card-preview-container">
+                                        <widget name="card_preview"/>
+                                    </div>
+                                </group>
+
+                                <!-- Right Side: Card Configuration (Takes 40% space) -->
+                                <group string="Card Configuration" colspan="1">
+                                    <!--                <label for="type" string="Card Type"/>-->
+                                    <field name="type" widget="card_type_selection" nolabel="1"
+                                           required="1"/>
+
+                                    <!--                <label for="chart_type" string="Chart Type" invisible="type != 'chart'"/>-->
+                                    <field name="chart_type" widget="card_type_selection"
+                                           invisible="type != 'chart'" nolabel="1"/>
+                                    <field name="table_type" widget="card_type_selection"
+                                           invisible="type != 'table'" nolabel="1"/>
+
+                                    <field name="todo_type" widget="card_type_selection"
+                                           invisible="type != 'to-do'" nolabel="1"/>
+                                    <field name="view_type" widget="card_type_selection"
+                                           invisible="type != 'views'" nolabel="1"/>
+
+                                    <field name="activity_type" widget="card_type_selection"
+                                           invisible="type != 'activity'" nolabel="1"/>
+
+                                </group>
+                            </group>
+                            <notebook>
+
+                                <!-- Basic Data -->
+                                <page string="Card Configuration" name="basic_data">
+                                    <group>
+                                        <group string="Basic Information" col="1">
+                                            <label for="name" string="Card Name"/>
+                                            <field name="name"
+                                                   placeholder="Enter Card Name..."
+                                                   nolabel="1"
+                                                   required="1"/>
+
+                                            <label for="description" string="Description"/>
+                                            <field name="description"
+                                                   placeholder="Card description..."
+                                                   nolabel="1"/>
+                                        </group>
+
+                                        <group string="Icon Settings" invisible="type != 'block'" col="1">
+                                            <label for="icon_class" string="Icon Class"/>
+                                            <field name="icon_class" placeholder="e.g. fa-line-chart" nolabel="1"/>
+
+                                            <label for="icon_layout" string="Icon Layout" invisible="not icon_class"/>
+                                            <field name="icon_layout" nolabel="1" invisible="not icon_class"/>
+
+                                            <label for="icon_color" string="Icon Color" invisible="not icon_class"/>
+                                            <field name="icon_color" widget="color" nolabel="1" invisible="not icon_class"/>
+
+                                            <label for="icon_size" string="Icon Size" invisible="not icon_class"/>
+                                            <field name="icon_size" nolabel="1" invisible="not icon_class"/>
+                                        </group>
+
+
+                                        <group string="Data Source" >
+                                            <label for="model_id" string="Model" invisible="type == 'to-do'"/>
+                                            <field name="model_id" invisible="type == 'to-do'"
+                                                   options="{'no_create_edit': 1}"
+                                                   nolabel="1"/>
+
+                                            <field name="model_name" invisible="1"/>
+
+                                            <label for="domain" string="Domain" invisible="type == 'to-do'"/>
+                                            <field name="domain" widget="domain"
+                                                   options="{'model': 'model_name'}" nolabel="1" invisible="type == 'to-do'"/>
+
+                                            <label for="record_limit" invisible="type == 'to-do'"
+                                                   string="Limit of the Records"/>
+                                            <field name="record_limit" nolabel="1" invisible="type == 'to-do'"/>
+
+
+                                            <field name="todo_ids" invisible="type != 'to-do'">
+                                        <list>
+                                            <field name="is_done"/>
+                                            <field name="name"/>
+                                            <field name="status"/>
+                                            <field name="card_id" invisible="1"/>
+
+                                        </list>
+                                </field>
+
+
+
+
+                                            <label for="enable_click"
+                                                   string="Enable Click For Open Record" invisible="type != 'views'"/>
+                                            <field name="enable_click" nolabel="1" invisible="type != 'views'"/>
+
+                                            <label for="aggregation_method"
+                                                   string="Aggregation Method"
+                                                   invisible="type != 'chart'"/>
+                                            <field name="aggregation_method"
+                                                   invisible="type != 'chart'"
+                                                   nolabel="1"/>
+
+                                            <label for="block_aggregation_method"
+                                                   string="Aggregation Method"
+                                                   invisible="type != 'block'"/>
+                                            <field name="block_aggregation_method"
+                                                   invisible="type != 'block'"
+                                                   nolabel="1"/>
+
+                                            <label for="measure_field_id"
+                                                   string="Measure Field"
+                                                   invisible="type != 'chart' and type != 'block'"/>
+                                            <field name="measure_field_id"
+                                                   invisible="type != 'chart' and type != 'block'"
+                                                   nolabel="1"
+                                                   domain="[('model_id', '=', model_id), ('ttype', 'in', ['integer', 'float', 'monetary'])]"/>
+
+                                            <label for="group_by_field_id"
+                                                   string="Group By"
+                                                   invisible="type != 'chart'"/>
+                                            <field name="group_by_field_id"
+                                                   invisible="type != 'chart'"
+                                                   nolabel="1"
+                                                   domain="[('model_id', '=', model_id)]"/>
+                                        </group>
+                                    </group>
+                                </page>
+
+                                <!-- Chart Configuration -->
+                                <page string="Data Configuration" invisible="type not in ('table', 'chart')"
+                                      name="chart_colors">
+                                    <group invisible="type != 'table'">
+                                        <group string="Table Settings">
+                                            <label for="table_limit"
+                                                   string="Limit for the table display in table"/>
+                                            <field name="table_limit"
+                                                   placeholder="Table Limit..."
+                                                   nolabel="1"/>
+                                            <field name="table_field_line_ids">
+                                                <list editable="bottom">
+                                                    <field name="sequence" widget="handle"/>
+                                                    <field name="field_id"/>
+                                                </list>
+                                            </field>
+                                            <label for="table_order" string="Sorting of records"/>
+                                            <field name="table_order"
+                                                   nolabel="1"/>
+
+                                            <label for="show_record_count"
+                                                   string="Display Records Count"/>
+                                            <field name="show_record_count"
+                                                   nolabel="1"/>
+
+                                            <label for="enable_click"
+                                                   string="Enable Click For Open Record"/>
+                                            <field name="enable_click"
+                                                   nolabel="1"/>
+
+                                            <field name="table_headers" invisible="1"/>
+                                            <field name="table_rows" invisible="1"/>
+                                        </group>
+                                    </group>
+                                    <group invisible="type != 'chart'">
+
+                                        <group string="Chart Data">
+                                            <label for="chart_x_axis_data" string="X Axis Label"/>
+                                            <field name="chart_x_axis_data"
+                                                   placeholder="X-axis label..."
+                                                   nolabel="1"/>
+
+                                            <label for="chart_y_axis_data" string="Y Axis Label"/>
+                                            <field name="chart_y_axis_data"
+                                                   placeholder="Y-axis label..."
+                                                   nolabel="1"/>
+
+                                            <label for="index_axis"
+                                                   string="Index Axis"
+                                                   invisible="chart_type != 'bar'"/>
+                                            <field name="index_axis"
+                                                   invisible="chart_type != 'bar'"
+                                                   nolabel="1"/>
+
+                                            <label for="semi_circular"
+                                                   string="Semi Circular"
+                                                   invisible="chart_type not in ('pie', 'doughnut')"/>
+                                            <field name="semi_circular"
+                                                   invisible="chart_type not in ('pie', 'doughnut')"
+                                                   nolabel="1"/>
+                                        </group>
+
+                                        <group string="Chart Colors">
+                                            <label for="color_group_id"
+                                                   string="Color Group"
+                                                   invisible="chart_type in ('line', 'area', 'radar')"/>
+                                            <field name="color_group_id"
+                                                   options="{'no_create_edit': 1, 'no_quick_create': 1}"
+                                                   invisible="chart_type in ('line', 'area', 'radar')"
+                                                   nolabel="1"/>
+
+                                            <label for="chart_color"
+                                                   string="Chart Color"
+                                                   invisible="chart_type not in ('line', 'area', 'radar')"/>
+                                            <field name="chart_color"
+                                                   widget="color"
+                                                   invisible="chart_type not in ('line', 'area', 'radar')"
+                                                   nolabel="1"/>
+                                        </group>
+
+                                        <group string="Legend Configuration">
+                                            <label for="legend" string="Show Legend"/>
+                                            <field name="legend" nolabel="1"/>
+
+                                            <label for="legend_position"
+                                                   string="Legend Position"
+                                                   invisible="not legend"/>
+                                            <field name="legend_position"
+                                                   invisible="not legend"
+                                                   nolabel="1"/>
+
+                                            <label for="legend_alignment"
+                                                   string="Legend Alignment"
+                                                   invisible="not legend"/>
+                                            <field name="legend_alignment"
+                                                   invisible="not legend"
+                                                   nolabel="1"/>
+
+                                            <label for="legend_label_pointstyle"
+                                                   string="Point Style"
+                                                   invisible="not legend"/>
+                                            <field name="legend_label_pointstyle"
+                                                   invisible="not legend"
+                                                   nolabel="1"/>
+                                        </group>
+
+                                    </group>
+                                </page>
+
+                            </notebook>
+                        </sheet>
+                    </form>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

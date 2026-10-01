@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+    <!-- AiConfigModal: step-1 modal for model + card count config -->
+    <t t-name="ai_loading_dashboard.AiConfigModal">
+        <div t-attf-class="ail-modal-overlay {{ props.visible ? 'ail-visible' : '' }}">
+            <div class="ail-config-card">
+
+                <!-- Coloured header band -->
+                <div class="ail-config-header">
+                    <div class="ail-config-icon">
+                        <i class="fa fa-robot"/>
+                    </div>
+                    <div>
+                        <div class="ail-config-title">Configure Generation</div>
+                        <div class="ail-config-subtitle">Select a model and set card limit</div>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="ail-config-body">
+
+                    <!-- Select Odoo Model -->
+                    <div class="ail-field-group">
+                        <label class="ail-field-label" for="ail_model_select">
+                            Odoo Model
+                        </label>
+                        <select
+                                id="ail_model_select"
+                                class="ail-select"
+                                t-on-change="onModelChange"
+                        >
+                            <option value="">— Select a model —</option>
+                            <t t-foreach="props.models" t-as="m" t-key="m.id">
+                                <option
+                                        t-att-value="m.model"
+                                        t-esc="m.name.length > 50 ? m.name.substring(0, 50) + '...' : m.name"
+                                />
+                            </t>
+                        </select>
+                    </div>
+
+                    <!-- Max Cards -->
+                    <div class="ail-field-group">
+                        <label class="ail-field-label" for="ail_max_cards">
+                            Max Number of Cards
+                        </label>
+                        <input
+                                id="ail_max_cards"
+                                type="number"
+                                class="ail-input"
+                                t-att-value="state.maxCards"
+                                t-on-input="onMaxCardsChange"
+                                min="1"
+                                max="100"
+                                placeholder="e.g. 10"
+                        />
+                    </div>
+
+                    <!-- Validation error -->
+                    <t t-if="state.error">
+                        <div class="ail-config-error">
+                            <i class="fa fa-exclamation-circle me-1"/>
+                            <t t-esc="state.error"/>
+                        </div>
+                    </t>
+
+                    <!-- Actions -->
+                    <div class="ail-config-actions">
+                        <button class="ail-btn-cancel" t-on-click="onCancel">
+                            Cancel
+                        </button>
+                        <button class="ail-btn-confirm" t-on-click="onConfirm">
+                            Confirm &amp; Generate
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

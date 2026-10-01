@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="DashboardTodoTemplate" owl="1">
+        <div class="grid-stack-item o_dynamic_dashboard_grid_item"
+             t-att-gs-x="props.card.gs_x"
+             t-att-gs-y="props.card.gs_y"
+             t-att-gs-w="props.card.gs_w || 3" t-att-gs-h="props.card.gs_h || 2"
+             t-att-id="props.card.id">
+
+            <DashboardCardButtons
+                t-if="props.dashboard"
+                card="props.card"
+                dashboards="props.dashboards"
+                colorGroups="props.colorGroups"/>
+
+            <div class="card h-100 grid-stack-item-content">
+                <div class="card-body todo-card d-flex flex-column overflow-hidden h-100" t-att-class="state.card.todo_type">
+
+
+<!-- CLASSIC -->
+<t t-if="state.card.todo_type === 'classic'">
+    <div class="table-header-section">
+        <div class="header-text">
+            <h2 class="table-main-heading" t-if="state.card.name">
+<!--                <i class="fa fa-check-square-o"/>-->
+                <t t-esc="state.card.name"/>
+            </h2>
+            <p class="table-sub-heading" t-if="state.card.description">
+                <t t-esc="state.card.description"/>
+            </p>
+        </div>
+    </div>
+    <div class="flex-grow-1 overflow-auto" style="min-height: 0;">
+        <t t-if="state.todos.length > 0">
+            <t t-foreach="state.todos" t-as="todo" t-key="todo.id">
+                <div class="task"
+                     t-att-class="todo.is_done ? 'completed' : ''"
+                     t-on-click="() => toggleTodo(todo)">
+                    <input type="checkbox" t-att-checked="todo.is_done"/>
+                    <span t-esc="todo.name"/>
+                </div>
+            </t>
+        </t>
+        <t t-else="">
+            <div class="todo-empty-state o_dashboard_empty_state">
+                <div class="empty-icon">
+                    <i class="fa fa-check-square-o fa-4x text-muted"/>
+                </div>
+                <h4 class="empty-title">No Tasks Found</h4>
+                <p class="empty-message">You have no tasks in this list.</p>
+            </div>
+        </t>
+    </div>
+</t>
+
+<!-- PRIORITY -->
+<t t-if="state.card.todo_type === 'priority'">
+    <div class="table-header-section">
+        <div class="header-text">
+            <h2 class="table-main-heading" t-if="state.card.name">
+<!--                <i class="fa fa-exclamation-circle"/>-->
+                <t t-esc="state.card.name"/>
+            </h2>
+            <p class="table-sub-heading" t-if="state.card.description">
+                <t t-esc="state.card.description"/>
+            </p>
+        </div>
+    </div>
+
+    <div class="flex-grow-1 overflow-auto" style="min-height: 0;">
+        <t t-if="state.todos.length > 0">
+            <t t-foreach="sortedTodos" t-as="todo" t-key="todo.id">
+                <div class="task"
+                     t-att-class="todo.status + (todo.status === 'complete' ? ' completed' : '')"
+                     t-on-click="() => toggleTodo(todo)">
+
+                    <span class="badge">
+                        <t t-esc="todo.status.toUpperCase()"/>
+                    </span>
+
+                    <span t-esc="todo.name"/>
+                </div>
+            </t>
+        </t>
+
+         <!-- Empty State -->
+        <t t-else="">
+            <div class="table-empty-state o_dashboard_empty_state">
+                <div class="empty-icon">
+                    <i class="fa fa-bolt fa-4x text-muted"/>
+                </div>
+                <h4 class="empty-title">No Tasks Found</h4>
+                <p class="empty-message">
+                    You have no tasks in this list.
+                </p>
+            </div>
+        </t>
+    </div>
+</t>
+
+
+
+<!-- PROGRESS -->
+<t t-if="state.card.todo_type === 'progress'">
+    <div class="table-header-section">
+        <div class="header-text">
+            <h2 class="table-main-heading" t-if="state.card.name">
+<!--                <i class="fa fa-line-chart"/>-->
+                <t t-esc="state.card.name"/>
+            </h2>
+            <p class="table-sub-heading" t-if="state.card.description">
+                <t t-esc="state.card.description"/>
+            </p>
+        </div>
+    </div>
+    <div class="flex-grow-1 overflow-auto" style="min-height: 0;">
+        <t t-if="state.todos.length > 0">
+            <div class="progress-bar-container">
+                <div class="progress-bar"
+                     t-att-style="'width:' + progress + '%'">
+                    <t t-esc="progress"/>%
+                </div>
+            </div>
+
+            <t t-foreach="state.todos" t-as="todo" t-key="todo.id">
+                <div class="task"
+                     t-att-class="todo.status === 'complete' ? 'completed' : ''"
+                     t-on-click="() => toggleTodo(todo)">
+                    <span t-esc="todo.name"/>
+                </div>
+            </t>
+        </t>
+        <t t-else="">
+            <div class="todo-empty-state o_dashboard_empty_state">
+                <div class="empty-icon">
+                    <i class="fa fa-tasks fa-4x text-muted"/>
+                </div>
+                <h4 class="empty-title">No Tasks Found</h4>
+                <p class="empty-message">You have no tasks in this list.</p>
+            </div>
+        </t>
+    </div>
+</t>
+
+<!-- KANBAN -->
+<t t-if="state.card.todo_type === 'kanban'">
+    <div class="table-header-section">
+        <div class="header-text">
+            <h2 class="table-main-heading" t-if="state.card.name">
+<!--                <i class="fa fa-columns"/>-->
+                <t t-esc="state.card.name"/>
+            </h2>
+            <p class="table-sub-heading" t-if="state.card.description">
+                <t t-esc="state.card.description"/>
+            </p>
+        </div>
+    </div>
+    <div class="flex-grow-1 overflow-auto" style="min-height: 0;">
+        <t t-if="state.todos.length > 0">
+            <div class="kanban-columns">
+
+                <!-- TODO -->
+                <div class="kanban-column"
+                     t-on-dragover="allowDrop"
+                     t-on-drop="() => onDrop('todo')">
+                    <h6>TODO</h6>
+                    <t t-foreach="todosByStatus.todo" t-as="todo" t-key="todo.id">
+                        <div class="task"
+                             draggable="true"
+                             t-on-dragstart="() => onDragStart(todo)">
+                            <span t-esc="todo.name"/>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- ONGOING -->
+                <div class="kanban-column ongoing"
+                     t-on-dragover="allowDrop"
+                     t-on-drop="() => onDrop('ongoing')">
+                    <h6>ONGOING</h6>
+                    <t t-foreach="todosByStatus.ongoing" t-as="todo" t-key="todo.id">
+                        <div class="task ongoing"
+                             draggable="true"
+                             t-on-dragstart="() => onDragStart(todo)">
+                            <span t-esc="todo.name"/>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- COMPLETED -->
+                <div class="kanban-column complete"
+                     t-on-dragover="allowDrop"
+                     t-on-drop="() => onDrop('complete')">
+                    <h6>COMPLETED</h6>
+                    <t t-foreach="todosByStatus.complete" t-as="todo" t-key="todo.id">
+                        <div class="task completed"
+                             draggable="true"
+                             t-on-dragstart="() => onDragStart(todo)">
+                            <span t-esc="todo.name"/>
+                        </div>
+                    </t>
+                </div>
+
+            </div>
+        </t>
+        <t t-else="">
+            <div class="todo-empty-state o_dashboard_empty_state">
+                <div class="empty-icon">
+                    <i class="fa fa-columns fa-4x text-muted"/>
+                </div>
+                <h4 class="empty-title">No Tasks Found</h4>
+                <p class="empty-message">You have no tasks in this list.</p>
+            </div>
+        </t>
+    </div>
+</t>
+
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

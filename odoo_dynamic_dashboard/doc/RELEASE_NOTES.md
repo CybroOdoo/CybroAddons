@@ -1,21 +1,14 @@
 ## Module <odoo_dynamic_dashboard>
 
-#### 07.03.2026
+#### 29.05.2026
 #### Version 19.0.1.0.0
-##### ADD
-- Initial commit for Odoo Dynamic Dashboard
+#### ADD
 
-#### 07.07.2026
-#### Version 19.0.1.0.1
-##### BUG_FIX
-- Fixed the dashboard query issue caused by Odoo's updated SQL handling.
+- Initial commit for Dynamic Dashboard
 
-#### 07.07.2026
-#### Version 19.0.1.0.1
-##### BUG_FIX
-- Fixed the dashboard query issue caused by Odoo's updated SQL handling.
 
-#### 12.08.2026
-#### Version 19.0.1.0.2
-##### UPDT
-- Added cybrosys_support_client as a dependency module
+#### 29.06.2026
+#### Version 19.0.2.1.1
+#### IMP
+
+- Updated as AI Dynamic Dashboard Pro
