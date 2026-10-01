@@ -20,7 +20,7 @@
 ################################################################################
 {
     'name': 'IT Hardware Sales & Services',
-    'version': 'saas~19.4.1.0',
+    'version': '1.4',
     'category': 'Services',
     'summary': 'A comprehensive solution for managing IT Hardware Sales and Services in Odoo.',
     'description': """The IT Hardware Sales & Services module is designed to streamline operations 
