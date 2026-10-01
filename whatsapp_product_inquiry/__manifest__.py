@@ -4,7 +4,7 @@
 #    Cybrosys Technologies Pvt. Ltd.
 #
 #    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
-#    Author: ISMAIL C A(odoo@cybrosys.com)
+#    Author: Cybrosys Techno Solutions (odoo@cybrosys.info)
 #
 #    You can modify it under the terms of the GNU AFFERO
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
@@ -26,7 +26,7 @@
     'description': """By installing this module, there will be an Inquire
      button in product page of website sale. On clicking that button, customer 
      can inquire product details through Whatsapp""",
-    'author': 'ISMAIL C A',
+    'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
