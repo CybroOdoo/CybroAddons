@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
@@ -66,5 +66,5 @@
     'license': 'OPL-1',
     'application': True,
     'installable': True,
-    'auto_install,': False
+    'auto_install': False
 }
