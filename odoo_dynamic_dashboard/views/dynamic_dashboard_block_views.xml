@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Blocks are built in the dashboard builder; this form is the technical fallback. -->
+    <record id="dynamic_dashboard_block_view_form" model="ir.ui.view">
+        <field name="name">dynamic.dashboard.block.view.form</field>
+        <field name="model">dynamic.dashboard.block</field>
+        <field name="arch" type="xml">
+            <form string="Dashboard Block">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Revenue per Salesperson"/></h1>
+                    </div>
+                    <group>
+                        <group string="Data">
+                            <field name="dashboard_id" invisible="context.get('default_dashboard_id')"/>
+                            <field name="block_type"/>
+                            <field name="model_id" required="block_type != 'text'" invisible="block_type == 'text'"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="model_name" invisible="1"/>
+                            <field name="aggregate" invisible="block_type in ('text', 'record_list', 'view')"/>
+                            <field name="measure_field_id"
+                                   invisible="aggregate == 'count' or block_type in ('text', 'record_list', 'view')"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="target_value" invisible="block_type not in ('progress', 'gauge')"/>
+                            <field name="group_by_field_id"
+                                   invisible="block_type in ('tile', 'progress', 'gauge', 'record_list', 'view', 'text')"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="sub_group_by_field_id"
+                                   invisible="block_type not in ('bar', 'hbar', 'stacked_bar', 'line', 'area', 'radar', 'pivot')"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="group_by_field_type" invisible="1"/>
+                            <field name="date_granularity"
+                                   invisible="block_type in ('tile', 'progress', 'gauge', 'record_list', 'view', 'text')"/>
+                            <field name="list_field_ids" widget="many2many_tags" invisible="block_type != 'record_list'"
+                                   options="{'no_create': True}"/>
+                            <field name="order_field_id" invisible="block_type != 'record_list'"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="order_desc" invisible="block_type != 'record_list'"/>
+                            <field name="view_mode" invisible="block_type != 'view'"/>
+                            <field name="group_limit" invisible="block_type in ('tile', 'progress', 'gauge', 'view', 'text')"/>
+                        </group>
+                        <group string="Display">
+                            <field name="width"/>
+                            <field name="color" widget="color"/>
+                            <field name="icon" invisible="block_type != 'tile'"/>
+                        </group>
+                    </group>
+                    <group string="Text" invisible="block_type != 'text'">
+                        <field name="text_content" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Filter" invisible="not model_name or block_type == 'text'">
+                        <field name="domain" widget="domain" nolabel="1" colspan="2"
+                               options="{'model': 'model_name', 'foldable': True}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="dynamic_dashboard_block_view_list" model="ir.ui.view">
+        <field name="name">dynamic.dashboard.block.view.list</field>
+        <field name="model">dynamic.dashboard.block</field>
+        <field name="arch" type="xml">
+            <list string="Dashboard Blocks">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="block_type"/>
+                <field name="model_id"/>
+                <field name="aggregate"/>
+                <field name="width"/>
+            </list>
+        </field>
+    </record>
+
+</odoo>

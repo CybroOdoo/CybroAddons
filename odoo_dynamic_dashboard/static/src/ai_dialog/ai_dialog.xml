@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="odoo_dynamic_dashboard.DashboardAiDialog">
+        <Dialog size="'lg'" title="this.title">
+            <div class="o_dynamic_dashboard_ai_dialog d-flex flex-column gap-3">
+                <p class="mb-0 text-muted">
+                    Describe what you want to follow. The AI picks the right data and designs
+                    key figures, charts and tables for it. You can review and adjust every block before saving.
+                </p>
+                <textarea class="form-control o_dynamic_dashboard_ai_description" rows="4" autofocus="autofocus"
+                          t-att-placeholder="this.placeholder"
+                          t-att-value="this.state.description" t-att-disabled="this.state.isGenerating"
+                          t-on-input="(ev) => this.onDescriptionInput(ev)"
+                          t-on-keydown="(ev) => this.onDescriptionKeydown(ev)"/>
+                <div>
+                    <div class="small fw-bold text-muted mb-1">Need inspiration?</div>
+                    <div class="d-flex flex-wrap gap-1">
+                        <button t-foreach="this.examples" t-as="example" t-key="example_index"
+                                class="btn btn-sm btn-light border rounded-pill text-start o_dynamic_dashboard_ai_example"
+                                t-att-disabled="this.state.isGenerating"
+                                t-on-click="() => this.useExample(example)" t-out="example"/>
+                    </div>
+                </div>
+                <div>
+                    <div class="small fw-bold text-muted mb-1">Number of blocks</div>
+                    <div class="d-flex flex-wrap align-items-center gap-1 o_dynamic_dashboard_ai_block_count">
+                        <button t-attf-class="btn btn-sm rounded-pill {{!this.state.blockCount ? 'btn-primary' : 'btn-light border'}}"
+                                data-block-count="auto" t-att-disabled="this.state.isGenerating"
+                                title="The AI chooses how many blocks fit your request"
+                                t-on-click="() => this.setBlockCount(false)">Auto</button>
+                        <button t-foreach="this.blockCountChoices" t-as="count" t-key="count"
+                                t-attf-class="btn btn-sm rounded-pill {{this.state.blockCount === count ? 'btn-primary' : 'btn-light border'}}"
+                                t-att-data-block-count="count" t-att-disabled="this.state.isGenerating"
+                                t-on-click="() => this.setBlockCount(count)" t-out="count"/>
+                        <input type="number" min="1" t-att-max="this.maxBlockCount"
+                               class="form-control form-control-sm o_dynamic_dashboard_ai_block_count_input"
+                               t-att-class="{ 'border-primary': this.isCustomBlockCount() }"
+                               placeholder="Other" title="Any number of blocks, up to 20"
+                               t-att-value="this.isCustomBlockCount() ? this.state.blockCount : ''"
+                               t-att-disabled="this.state.isGenerating"
+                               t-on-change="(ev) => this.onCustomBlockCountInput(ev)"/>
+                    </div>
+                </div>
+                <div t-if="this.props.hasBlocks" class="d-flex gap-3">
+                    <label class="form-check">
+                        <input type="radio" class="form-check-input" name="o_dd_ai_mode"
+                               t-att-checked="!this.state.replace" t-on-change="() => this.setReplace(false)"/>
+                        <span class="form-check-label">Add to the current blocks</span>
+                    </label>
+                    <label class="form-check">
+                        <input type="radio" class="form-check-input" name="o_dd_ai_mode"
+                               t-att-checked="this.state.replace" t-on-change="() => this.setReplace(true)"/>
+                        <span class="form-check-label">Replace the current blocks</span>
+                    </label>
+                </div>
+                <div t-if="this.state.error" class="alert alert-warning mb-0 o_dynamic_dashboard_ai_error" role="alert">
+                    <t t-out="this.state.error"/>
+                </div>
+                <div t-if="this.state.isGenerating" class="d-flex align-items-center gap-2 text-muted">
+                    <i class="oi oi-spin" data-icon="progress_activity"/>
+                    Designing your dashboard, this can take a few seconds...
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_dynamic_dashboard_ai_generate"
+                        t-att-disabled="!this.state.description.trim() or this.state.isGenerating"
+                        t-on-click="() => this.generate()">
+                    <i class="oi me-1" data-icon="wand_stars"/>Generate
+                </button>
+                <button class="btn btn-secondary" t-att-disabled="this.state.isGenerating" t-on-click="() => this.props.close()">
+                    Cancel
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

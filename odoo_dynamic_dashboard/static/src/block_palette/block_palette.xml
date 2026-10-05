@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="odoo_dynamic_dashboard.BlockPalette">
+        <aside class="o_dynamic_dashboard_palette d-flex flex-column border-end bg-view">
+            <div class="p-3 pb-2 border-bottom">
+                <h5 class="mb-1">Building Blocks</h5>
+                <p class="text-muted small mb-2">Drag a block onto the dashboard, or click it to add it.</p>
+                <input type="search" class="form-control form-control-sm" placeholder="Search blocks..."
+                       t-att-value="this.state.search" t-on-input="(ev) => this.onSearchInput(ev)"/>
+            </div>
+            <div class="o_dynamic_dashboard_palette_list flex-grow-1 p-3 pt-2">
+                <t t-foreach="this.getCategories()" t-as="category" t-key="category.id">
+                    <div class="o_dynamic_dashboard_palette_category text-uppercase text-muted small fw-bold mt-2 mb-1"
+                         t-out="category.label"/>
+                    <div class="o_dynamic_dashboard_palette_grid">
+                        <div t-foreach="category.blockTypes" t-as="info" t-key="info.type"
+                             class="o_dynamic_dashboard_palette_item d-flex flex-column align-items-center text-center gap-1 p-2 border rounded"
+                             t-att-data-block-type="info.type" t-att-title="info.help"
+                             draggable="true" role="button" tabindex="0"
+                             t-on-dragstart="(ev) => this.onDragStart(ev, info)"
+                             t-on-dragend="() => this.props.onDragEnd()"
+                             t-on-click="() => this.props.onAdd(info.type)"
+                             t-on-keydown="(ev) => this.onKeydown(ev, info)">
+                            <span class="o_dynamic_dashboard_palette_icon rounded">
+                                <i class="oi oi-fw oi-lg" t-att-data-icon="info.icon"/>
+                            </span>
+                            <span class="small fw-bold lh-sm" t-out="info.label"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </aside>
+    </t>
+
+</templates>

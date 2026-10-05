@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="odoo_dynamic_dashboard.DashboardMenuDialog">
+        <Dialog size="'md'" title="this.getTitle()">
+            <div class="o_dynamic_dashboard_menu_dialog d-flex flex-column gap-3">
+                <p t-if="!this.props.isUpdate" class="mb-0">
+                    <i class="oi text-success me-1" data-icon="check_circle"/>Your dashboard is saved.
+                    Choose where it should appear in the menus, so that you and your colleagues can open it in one click.
+                </p>
+                <div>
+                    <label class="form-label fw-bold" for="o_dd_menu_name">Menu item</label>
+                    <input id="o_dd_menu_name" class="form-control" t-att-value="this.state.menuName"
+                           placeholder="e.g. Sales Overview" t-on-input="(ev) => this.onNameInput(ev)"/>
+                </div>
+                <div>
+                    <label class="form-label fw-bold" for="o_dd_menu_parent">Parent menu</label>
+                    <select id="o_dd_menu_parent" class="form-select" t-on-change="(ev) => this.onParentChange(ev)">
+                        <option value="" t-att-selected="!this.state.parentMenuId">New app on the home screen</option>
+                        <option t-foreach="this.parentMenuOptions" t-as="option" t-key="option.id"
+                                t-att-value="option.id" t-att-selected="option.id === this.state.parentMenuId"
+                                t-out="option.label"/>
+                    </select>
+                    <div class="form-text">The dashboard is added under this menu, e.g. "Sales / Reporting".</div>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_dynamic_dashboard_menu_confirm"
+                        t-att-disabled="!this.state.menuName.trim() or this.state.isSaving"
+                        t-on-click="() => this.confirm()">
+                    <t t-if="this.props.isUpdate">Save</t>
+                    <t t-else="">Add to Menu</t>
+                </button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">
+                    <t t-if="this.props.isUpdate">Discard</t>
+                    <t t-else="">Not Now</t>
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

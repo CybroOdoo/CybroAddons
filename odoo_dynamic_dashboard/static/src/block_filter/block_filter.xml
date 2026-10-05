@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="odoo_dynamic_dashboard.BlockFilterPanel">
+        <t t-set="filter" t-value="this.getFilter()"/>
+        <t t-set="dateFields" t-value="this.getDateFields()"/>
+        <aside class="o_dynamic_dashboard_configurator o_dynamic_dashboard_filter_panel d-flex flex-column border-start bg-view">
+            <div class="d-flex align-items-center gap-2 p-3 border-bottom">
+                <i class="oi oi-fw oi-lg text-primary" data-icon="filter_alt"/>
+                <div class="flex-grow-1 text-truncate">
+                    <h5 class="mb-0">Filter</h5>
+                    <div class="small text-muted text-truncate" t-out="this.props.block.name"/>
+                </div>
+                <button class="btn btn-link btn-sm text-muted p-0" title="Close" t-on-click="() => this.props.onClose()">
+                    <i class="oi" data-icon="close"/>
+                </button>
+            </div>
+            <div class="o_dynamic_dashboard_configurator_body flex-grow-1 p-3 d-flex flex-column gap-3">
+
+                <!-- Period -->
+                <section t-if="dateFields.length" class="d-flex flex-column gap-2">
+                    <div class="o_dynamic_dashboard_configurator_section text-uppercase small fw-bold text-muted">Period</div>
+                    <select t-if="dateFields.length > 1" class="form-select form-select-sm o_dd_filter_date_field"
+                            t-on-change="(ev) => this.onDateFieldChange(ev)">
+                        <option t-foreach="dateFields" t-as="field" t-key="field.name" t-att-value="field.name"
+                                t-att-selected="field.name === filter.dateField" t-out="field.string"/>
+                    </select>
+                    <div class="o_dynamic_dashboard_filter_periods d-flex flex-wrap gap-1">
+                        <button t-foreach="this.periods" t-as="period" t-key="period.value"
+                                t-attf-class="btn btn-sm rounded-pill {{period.value === filter.period ? 'btn-primary' : 'btn-light border'}}"
+                                t-att-data-period="period.value"
+                                t-on-click="() => this.onPeriodChange(period.value)" t-out="period.label"/>
+                    </div>
+                    <div t-if="filter.period === 'custom'" class="d-flex gap-1 align-items-center">
+                        <input type="date" class="form-control form-control-sm" t-att-value="filter.from" title="From"
+                               t-on-change="(ev) => this.onCustomDateChange('from', ev)"/>
+                        <span class="text-muted">→</span>
+                        <input type="date" class="form-control form-control-sm" t-att-value="filter.to" title="To"
+                               t-on-change="(ev) => this.onCustomDateChange('to', ev)"/>
+                    </div>
+                </section>
+
+                <!-- Values of the grouping -->
+                <section t-if="this.getValueOptions().length" class="d-flex flex-column gap-1">
+                    <div class="o_dynamic_dashboard_configurator_section text-uppercase small fw-bold text-muted">Show only</div>
+                    <label t-foreach="this.getValueOptions()" t-as="option" t-key="option_index"
+                           class="form-check mb-0 o_dd_filter_value">
+                        <input type="checkbox" class="form-check-input" t-att-checked="this.isValueSelected(option)"
+                               t-on-change="() => this.toggleValue(option)"/>
+                        <span class="form-check-label" t-out="option.label"/>
+                    </label>
+                </section>
+
+                <!-- Conditions on other fields -->
+                <section class="d-flex flex-column gap-2">
+                    <div class="o_dynamic_dashboard_configurator_section text-uppercase small fw-bold text-muted">Conditions</div>
+                    <div t-foreach="filter.conditions" t-as="condition" t-key="condition.field"
+                         class="o_dynamic_dashboard_filter_condition border rounded p-2 d-flex flex-column gap-1">
+                        <t t-set="field" t-value="this.getField(condition.field)"/>
+                        <div class="d-flex align-items-center">
+                            <span class="small fw-bold flex-grow-1" t-out="condition.label"/>
+                            <button class="btn btn-link btn-sm p-0 text-muted" title="Remove"
+                                    t-on-click="() => this.removeCondition(condition)">
+                                <i class="oi" data-icon="close_small"/>
+                            </button>
+                        </div>
+                        <t t-if="field">
+                            <t t-if="condition.type === 'selection'">
+                                <label t-foreach="field.selection" t-as="option" t-key="option[0]" class="form-check mb-0 small">
+                                    <input type="checkbox" class="form-check-input" t-att-checked="condition.values.includes(option[0])"
+                                           t-on-change="() => this.toggleSelectionValue(condition, option[0])"/>
+                                    <span class="form-check-label" t-out="option[1]"/>
+                                </label>
+                            </t>
+                            <select t-elif="condition.type === 'boolean'" class="form-select form-select-sm"
+                                    t-on-change="(ev) => this.onBooleanChange(condition, ev)">
+                                <option value="" t-att-selected="!condition.values.length">Any</option>
+                                <option value="1" t-att-selected="condition.values[0] === true">Yes</option>
+                                <option value="0" t-att-selected="condition.values[0] === false">No</option>
+                            </select>
+                            <MultiRecordSelector t-elif="condition.type === 'many2one'"
+                                                 resModel="field.relation" resIds="condition.values"
+                                                 fieldString="condition.label"
+                                                 update="(resIds) => this.onRecordsUpdate(condition, resIds)"/>
+                            <input t-else="" class="form-control form-control-sm" placeholder="Contains..."
+                                   t-att-value="condition.values[0] || ''" t-on-change="(ev) => this.onCharInput(condition, ev)"/>
+                        </t>
+                    </div>
+                    <select class="form-select form-select-sm o_dd_filter_add_condition" t-on-change="(ev) => this.addCondition(ev)">
+                        <option value="">Add a condition...</option>
+                        <option t-foreach="this.getConditionFields()" t-as="field" t-key="field.name"
+                                t-att-value="field.name" t-out="field.string"/>
+                    </select>
+                </section>
+            </div>
+            <div class="d-flex gap-2 p-3 border-top">
+                <button class="btn btn-secondary btn-sm flex-grow-1 o_dd_filter_clear" t-on-click="() => this.clear()">
+                    <i class="oi me-1" data-icon="close"/>Clear filters
+                </button>
+                <button class="btn btn-primary btn-sm flex-grow-1" t-on-click="() => this.props.onClose()">Done</button>
+            </div>
+        </aside>
+    </t>
+
+</templates>

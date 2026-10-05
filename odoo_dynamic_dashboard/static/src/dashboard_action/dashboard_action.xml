@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="odoo_dynamic_dashboard.DashboardAction">
+        <div class="o_action o_dynamic_dashboard d-flex flex-column h-100"
+             t-att-class="{ 'o_dynamic_dashboard_builder': this.state.editMode }">
+            <ControlPanel>
+                <t t-set-slot="control-panel-buttons">
+                    <t t-if="this.state.editMode" t-call="odoo_dynamic_dashboard.BuilderButtons"/>
+                    <t t-else="" t-call="odoo_dynamic_dashboard.ViewerButtons"/>
+                </t>
+                <t t-set-slot="control-panel-additional-actions">
+                    <button t-if="this.state.dashboard and !this.state.editMode" class="btn btn-link text-muted" title="Refresh"
+                            t-on-click="() => this.reload()">
+                        <i class="oi" data-icon="refresh" t-att-class="{ 'oi-spin': this.state.isLoading }"/>
+                    </button>
+                </t>
+            </ControlPanel>
+            <div class="o_content o_dynamic_dashboard_workspace d-flex flex-grow-1 position-relative overflow-hidden">
+                <BlockPalette t-if="this.state.editMode"
+                              onAdd="(blockType) => this.addBlock(blockType)"
+                              onDragEnd="() => this.onPaletteDragEnd()"/>
+                <div class="o_dynamic_dashboard_canvas flex-grow-1 overflow-auto"
+                     t-on-dragover="(ev) => this.onCanvasDragOver(ev)"
+                     t-on-dragleave="(ev) => this.onCanvasDragLeave(ev)"
+                     t-on-drop="(ev) => this.onCanvasDrop(ev)"
+                     t-on-click="() => this.onCanvasClick()">
+                    <t t-if="!this.state.dashboard" t-call="odoo_dynamic_dashboard.NoDashboard"/>
+                    <t t-if="this.state.dashboard and !this.state.dashboard.blocks.length">
+                        <div t-if="this.state.editMode"
+                             class="o_dynamic_dashboard_empty_drop m-3 p-5 d-flex flex-column align-items-center justify-content-center text-center rounded"
+                             t-att-class="{ 'o_dynamic_dashboard_empty_drop_active': this.state.dropIndex !== null }">
+                            <i class="oi oi-3x text-muted mb-3" data-icon="pan_tool_alt"/>
+                            <h4>Drag your first block here</h4>
+                            <p class="text-muted">
+                                Pick a key figure, a chart or a table from the building blocks on the left,
+                                then choose its data in the panel that opens on the right.
+                            </p>
+                            <div class="text-muted small text-uppercase fw-bold my-2">or</div>
+                            <button class="btn btn-primary o_dynamic_dashboard_empty_generate_ai"
+                                    t-on-click.stop="() => this.openAiDialog()">
+                                <i class="oi me-1" data-icon="wand_stars"/>Generate it with AI
+                            </button>
+                            <p class="text-muted small mt-2 mb-0">Describe what you want to follow, the AI designs the blocks for you.</p>
+                        </div>
+                        <div t-else="" class="o_view_nocontent">
+                            <div class="o_nocontent_help">
+                                <p class="o_view_nocontent_empty_folder">This dashboard is empty</p>
+                                <p t-if="this.state.dashboard.can_edit">Click Edit to add blocks to it.</p>
+                            </div>
+                        </div>
+                    </t>
+                    <div t-if="this.state.dashboard and !this.state.editMode" class="o_dynamic_dashboard_print_header d-none">
+                        <h1 class="mb-0" t-out="this.state.dashboard.name"/>
+                        <div class="text-muted">
+                            <t t-out="this.getCompanyName()"/>
+                            <t t-if="this.state.printDate"> · <t t-out="this.state.printDate"/></t>
+                        </div>
+                    </div>
+                    <div t-if="this.state.dashboard?.blocks.length" class="o_dynamic_dashboard_grid p-3" t-ref="this.gridRef">
+                        <t t-foreach="this.state.dashboard.blocks" t-as="block" t-key="block.uid">
+                            <t t-if="this.state.dropIndex === block_index" t-call="odoo_dynamic_dashboard.DropPlaceholder"/>
+                            <div class="o_dynamic_dashboard_cell"
+                                 t-attf-style="--o-dynamic-dashboard-cell-span: {{block.width}};"
+                                 t-att-data-index="block_index"
+                                 t-att-data-width="block.width">
+                                <DashboardBlock block="block"
+                                                editMode="this.state.editMode"
+                                                selected="block.uid === (this.state.editMode ? this.state.selectedUid : this.state.filterUid)"
+                                                filterCount="this.getFilterCount(block)"
+                                                filterSummary="this.getFilterSummary(block)"
+                                                onFilter="() => this.openFilter(block)"
+                                                onAnalyze="() => this.analyzeBlock(block)"
+                                                onSelect="() => this.selectBlock(block)"
+                                                onDuplicate="() => this.duplicateBlock(block)"
+                                                onDelete="() => this.removeBlock(block)"
+                                                onDrillDown="(group) => this.drillDown(block, group)"
+                                                onOpenRecord="(model, resId) => this.openRecord(model, resId)"/>
+                            </div>
+                        </t>
+                        <t t-if="this.state.dropIndex === this.state.dashboard.blocks.length" t-call="odoo_dynamic_dashboard.DropPlaceholder"/>
+                    </div>
+                </div>
+                <t t-if="!this.state.editMode">
+                    <t t-set="filteredBlock" t-value="this.getFilteredBlock()"/>
+                    <BlockFilterPanel t-if="filteredBlock" t-key="filteredBlock.uid"
+                                      block="filteredBlock" filter="filteredBlock.filter"
+                                      onChange="(changes) => this.onFilterChange(filteredBlock, changes)"
+                                      onClose="() => this.closeFilter()"/>
+                </t>
+                <t t-if="this.state.editMode">
+                    <t t-set="selectedBlock" t-value="this.getSelectedBlock()"/>
+                    <BlockConfigurator t-if="selectedBlock" t-key="selectedBlock.uid"
+                                       block="selectedBlock"
+                                       onUpdate="(changes) => this.updateBlock(selectedBlock, changes)"
+                                       onDuplicate="() => this.duplicateBlock(selectedBlock)"
+                                       onDelete="() => this.removeBlock(selectedBlock)"
+                                       onClose="() => this.selectBlock(null)"/>
+                </t>
+            </div>
+            <DashboardPresentation t-if="this.state.isPresenting"
+                                   dashboard="this.state.dashboard"
+                                   onClose="() => this.stopPresentation()"/>
+        </div>
+    </t>
+
+    <t t-name="odoo_dynamic_dashboard.ViewerButtons">
+        <div class="d-flex gap-1">
+            <Dropdown t-if="!this.isDedicated">
+                <button class="btn btn-secondary o_dynamic_dashboard_switcher">
+                    <i class="oi me-1" data-icon="grid_view"/>
+                    <t t-if="this.state.dashboard" t-out="this.state.dashboard.name"/>
+                    <t t-else="">Dashboards</t>
+                </button>
+                <t t-set-slot="content">
+                    <DropdownItem t-foreach="this.state.dashboards" t-as="dashboard" t-key="dashboard.id"
+                                  onSelected="() => this.loadDashboard(dashboard.id)">
+                        <i t-if="dashboard.is_shared" class="oi me-1 text-muted" data-icon="group" title="Shared"/>
+                        <t t-out="dashboard.name"/>
+                        <i t-if="dashboard.id === this.state.dashboard?.id" class="oi ms-2 text-success" data-icon="check"/>
+                    </DropdownItem>
+                    <div t-if="this.state.dashboards.length" class="dropdown-divider"/>
+                    <DropdownItem onSelected="() => this.createDashboard()">
+                        <i class="oi me-1" data-icon="add"/>Create Dashboard
+                    </DropdownItem>
+                    <DropdownItem onSelected="() => this.generateDashboardWithAi()">
+                        <i class="oi me-1" data-icon="wand_stars"/>Generate with AI
+                    </DropdownItem>
+                </t>
+            </Dropdown>
+            <button t-if="this.state.dashboard?.can_edit" class="btn btn-primary o_dynamic_dashboard_edit"
+                    t-on-click="() => this.enterEditMode()">
+                <i class="oi me-1" data-icon="edit"/>Edit
+            </button>
+            <t t-if="this.state.dashboard?.blocks.length">
+                <button class="btn btn-secondary o_dynamic_dashboard_present" title="Present the dashboard as slides"
+                        t-on-click="() => this.startPresentation()">
+                    <i class="oi me-1" data-icon="slideshow"/>Present
+                </button>
+                <button class="btn btn-secondary o_dynamic_dashboard_export_pdf" title="Export the dashboard as PDF"
+                        t-on-click="() => this.exportPdf()">
+                    <i class="oi me-1" data-icon="picture_as_pdf"/>Export PDF
+                </button>
+            </t>
+            <button t-if="this.state.dashboard?.can_edit and this.state.canManageMenu" class="btn btn-secondary"
+                    t-on-click="() => this.openMenuDialog()">
+                <i class="oi me-1" data-icon="menu"/>
+                <t t-if="this.state.dashboard.menu_id">Menu</t>
+                <t t-else="">Add to Menu</t>
+            </button>
+        </div>
+    </t>
+
+    <t t-name="odoo_dynamic_dashboard.BuilderButtons">
+        <div class="d-flex flex-wrap gap-1 align-items-center">
+            <input class="form-control o_dynamic_dashboard_name_input" placeholder="Dashboard name"
+                   t-att-value="this.state.dashboard.name" t-on-input="(ev) => this.onNameInput(ev)"
+                   t-att-autofocus="!this.state.dashboard.id"/>
+            <button class="btn btn-primary o_dynamic_dashboard_save" t-att-disabled="this.state.isSaving"
+                    t-on-click="() => this.save()">
+                <i class="oi me-1" data-icon="check"/>Save
+            </button>
+            <button class="btn btn-secondary o_dynamic_dashboard_discard" t-on-click="() => this.discard()">
+                Discard
+            </button>
+            <button class="btn btn-secondary o_dynamic_dashboard_generate_ai" title="Describe your dashboard, the AI builds it"
+                    t-on-click="() => this.openAiDialog()">
+                <i class="oi me-1" data-icon="wand_stars"/>Generate with AI
+            </button>
+            <button class="btn btn-secondary o_dynamic_dashboard_auto_arrange" title="Order and size the blocks in tidy rows"
+                    t-att-disabled="!this.state.dashboard.blocks.length"
+                    t-on-click="() => this.autoArrange()">
+                <i class="oi me-1" data-icon="view_module"/>Auto Arrange
+            </button>
+            <Dropdown t-if="this.state.dashboard.id">
+                <button class="btn btn-secondary" title="More">
+                    <i class="oi" data-icon="settings"/>
+                </button>
+                <t t-set-slot="content">
+                    <DropdownItem onSelected="() => this.deleteDashboard()">
+                        <i class="oi me-1" data-icon="delete"/>Delete Dashboard
+                    </DropdownItem>
+                </t>
+            </Dropdown>
+        </div>
+    </t>
+
+    <t t-name="odoo_dynamic_dashboard.NoDashboard">
+        <div class="o_view_nocontent">
+            <div class="o_nocontent_help">
+                <p class="o_view_nocontent_smiling_face">Create your first dashboard</p>
+                <p>Drag key figures, charts and tables onto it, computed live on any of your data.</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-primary" t-on-click="() => this.createDashboard()">
+                        Create Dashboard
+                    </button>
+                    <button class="btn btn-secondary" t-on-click="() => this.generateDashboardWithAi()">
+                        <i class="oi me-1" data-icon="wand_stars"/>Generate with AI
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="odoo_dynamic_dashboard.DropPlaceholder">
+        <div class="o_dynamic_dashboard_drop_placeholder rounded d-flex align-items-center justify-content-center">
+            <i class="oi oi-2x" data-icon="add"/>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="odoo_dynamic_dashboard.DashboardPresentation">
+        <t t-set="slide" t-value="this.getSlide()"/>
+        <div class="o_dynamic_dashboard_presentation d-flex flex-column" t-ref="this.rootRef" tabindex="-1">
+            <header class="o_dynamic_dashboard_presentation_header d-flex align-items-center gap-2 px-4 py-2">
+                <span class="fw-bold text-truncate flex-grow-1" t-out="this.props.dashboard.name"/>
+                <span class="text-muted small o_dynamic_dashboard_slide_counter">
+                    <t t-out="this.state.index + 1"/> / <t t-out="this.slides.length"/>
+                </span>
+                <button class="btn btn-link text-reset p-1" title="Previous (←)"
+                        t-att-disabled="this.state.index === 0" t-on-click="() => this.previous()">
+                    <i class="oi oi-lg" data-icon="chevron_left"/>
+                </button>
+                <button class="btn btn-link text-reset p-1 o_dynamic_dashboard_slide_next" title="Next (→)"
+                        t-att-disabled="this.state.index === this.slides.length - 1 and !this.state.autoplay"
+                        t-on-click="() => this.next()">
+                    <i class="oi oi-lg" data-icon="chevron_right"/>
+                </button>
+                <button class="btn btn-link text-reset p-1" t-att-title="this.getAutoplayTitle()"
+                        t-on-click="() => this.toggleAutoplay()">
+                    <i class="oi oi-lg" t-att-data-icon="this.state.autoplay ? 'pause' : 'play_arrow'"/>
+                </button>
+                <button class="btn btn-link text-reset p-1" title="Full screen (F)" t-on-click="() => this.toggleFullscreen()">
+                    <i class="oi oi-lg" data-icon="fullscreen"/>
+                </button>
+                <button class="btn btn-link text-reset p-1 o_dynamic_dashboard_presentation_close" title="Close (Esc)"
+                        t-on-click="() => this.close()">
+                    <i class="oi oi-lg" data-icon="close"/>
+                </button>
+            </header>
+
+            <main class="o_dynamic_dashboard_slide flex-grow-1 d-flex flex-column justify-content-center px-5 py-4"
+                  t-attf-class="o_dynamic_dashboard_slide_{{slide.type}}" t-key="this.state.index">
+                <t t-if="slide.type === 'title'">
+                    <div class="text-center">
+                        <h1 class="o_dynamic_dashboard_slide_title display-4 fw-bold" t-out="this.props.dashboard.name"/>
+                        <p class="fs-4 text-muted" t-out="this.today"/>
+                        <p class="text-muted small mt-5">Use the arrow keys or click to move between slides.</p>
+                    </div>
+                </t>
+                <t t-elif="slide.type === 'section'">
+                    <div class="text-center">
+                        <h1 class="o_dynamic_dashboard_slide_title display-5 fw-bold" t-out="slide.block.name"/>
+                        <p t-if="slide.block.text_content" class="fs-4 text-muted text-prewrap" t-out="slide.block.text_content"/>
+                    </div>
+                </t>
+                <div t-elif="slide.type === 'kpis'" class="o_dynamic_dashboard_slide_kpis"
+                     t-attf-style="--o-dynamic-dashboard-slide-columns: {{this.getKpiColumns(slide)}};">
+                    <div t-foreach="slide.blocks" t-as="block" t-key="block.uid">
+                        <DashboardBlock block="block" editMode="false" selected="false"
+                                        onSelect="() => {}" onDuplicate="() => {}" onDelete="() => {}"
+                                        onDrillDown="() => {}" onOpenRecord="() => {}"/>
+                    </div>
+                </div>
+                <div t-else="" class="o_dynamic_dashboard_slide_block">
+                    <DashboardBlock block="slide.block" editMode="false" selected="false"
+                                    onSelect="() => {}" onDuplicate="() => {}" onDelete="() => {}"
+                                    onDrillDown="() => {}" onOpenRecord="() => {}"/>
+                </div>
+            </main>
+
+            <div class="o_dynamic_dashboard_presentation_progress">
+                <div class="o_dynamic_dashboard_presentation_progress_bar" t-attf-style="width: {{this.getProgress()}}%;"/>
+            </div>
+        </div>
+    </t>
+
+</templates>

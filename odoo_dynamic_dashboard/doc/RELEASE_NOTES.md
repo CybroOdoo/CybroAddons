@@ -1,6 +1,6 @@
-## Module <odoo_dynamic_dashboard>
+## Module <module_name>
 
-#### 28.09.2026
+#### 05.10.2026
 #### Version 20.0.1.0.0
-##### ADD
-- Initial commit for Odoo Dynamic Dashboard
+#### ADD
+- Initial commit for Odoo AI Dynamic Dashboard

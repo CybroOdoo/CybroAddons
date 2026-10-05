@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="dynamic_dashboard_view_list" model="ir.ui.view">
+        <field name="name">dynamic.dashboard.view.list</field>
+        <field name="model">dynamic.dashboard</field>
+        <field name="arch" type="xml">
+            <list string="Dashboards" create="0">
+                <header>
+                    <button name="action_create_dashboard" type="object" string="Create Dashboard"
+                            class="btn-primary" display="always"/>
+                </header>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="is_shared"/>
+                <field name="block_count"/>
+                <field name="menu_id" optional="show"/>
+                <button name="action_open_dashboard" type="object" string="Open" icon="open_in_new"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dynamic_dashboard_view_form" model="ir.ui.view">
+        <field name="name">dynamic.dashboard.view.form</field>
+        <field name="model">dynamic.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Dashboard">
+                <header>
+                    <button name="action_open_dashboard" type="object" string="Open Dashboard" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Sales Overview"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="is_shared"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Menu" name="menu" groups="odoo_dynamic_dashboard.odoo_dynamic_dashboard_group_manager">
+                            <field name="show_in_menu" widget="boolean_toggle"/>
+                            <field name="menu_name" invisible="not show_in_menu" placeholder="Dashboard name"/>
+                            <field name="menu_parent_id" invisible="not show_in_menu"
+                                   placeholder="New app on the home screen"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="menu_sequence" invisible="not show_in_menu"/>
+                            <field name="menu_group_ids" widget="many2many_tags" invisible="not show_in_menu"
+                                   placeholder="Dashboard users" options="{'no_create': True}"/>
+                            <field name="menu_id" invisible="not menu_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Blocks" name="blocks" invisible="not id">
+                            <field name="block_ids" context="{'default_dashboard_id': id}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="dynamic_dashboard_view_search" model="ir.ui.view">
+        <field name="name">dynamic.dashboard.view.search</field>
+        <field name="model">dynamic.dashboard</field>
+        <field name="arch" type="xml">
+            <search string="Dashboards">
+                <field name="name"/>
+                <field name="user_id"/>
+                <filter string="My Dashboards" name="my_dashboards" domain="[('user_id', '=', uid)]"/>
+                <filter string="Shared" name="shared" domain="[('is_shared', '=', True)]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <filter string="Owner" name="group_by_user_id" context="{'group_by': 'user_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="dynamic_dashboard_action" model="ir.actions.act_window">
+        <field name="name">Dashboards</field>
+        <field name="res_model">dynamic.dashboard</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first dashboard
+            </p>
+            <p>
+                Combine KPI tiles, charts and tables computed live on any model.
+            </p>
+        </field>
+    </record>
+
+    <record id="dynamic_dashboard_action_client" model="ir.actions.client">
+        <field name="name">Dynamic Dashboard</field>
+        <field name="tag">odoo_dynamic_dashboard.dashboard</field>
+    </record>
+
+    <record id="dynamic_dashboard_action_builder" model="ir.actions.client">
+        <field name="name">New Dashboard</field>
+        <field name="tag">odoo_dynamic_dashboard.dashboard</field>
+        <field name="params" eval="{'new_dashboard': True}"/>
+    </record>
+
+</odoo>

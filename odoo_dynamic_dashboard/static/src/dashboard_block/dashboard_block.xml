@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="odoo_dynamic_dashboard.DashboardChart">
+        <div class="o_dynamic_dashboard_chart">
+            <canvas t-ref="this.chart.ref"/>
+        </div>
+    </t>
+
+    <t t-name="odoo_dynamic_dashboard.DashboardGauge">
+        <div class="o_dynamic_dashboard_gauge position-relative">
+            <canvas t-ref="this.chart.ref"/>
+            <div class="o_dynamic_dashboard_gauge_label position-absolute start-0 end-0 bottom-0 text-center">
+                <div class="fs-2 fw-bold lh-1" t-out="this.formatValue(this.props.block.value)"/>
+                <div class="text-muted small">
+                    <t t-out="this.getProgress()"/>% of <t t-out="this.formatValue(this.props.block.target_value)"/>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="odoo_dynamic_dashboard.DashboardView">
+        <div class="o_dynamic_dashboard_view">
+            <div t-if="this.state.error" class="alert alert-warning mb-0" role="alert">
+                This view cannot be displayed: <t t-out="this.state.error"/>
+            </div>
+            <View t-else="" t-props="this.viewProps"/>
+        </div>
+    </t>
+
+    <t t-name="odoo_dynamic_dashboard.DashboardBlock">
+        <t t-set="block" t-value="this.props.block"/>
+        <t t-set="info" t-value="this.getInfo()"/>
+        <t t-set="issue" t-value="this.getIssue()"/>
+        <div class="o_dynamic_dashboard_block card h-100"
+             t-attf-class="o_dynamic_dashboard_block_{{block.block_type}} {{this.props.editMode ? 'o_dynamic_dashboard_block_editing' : ''}} {{this.props.selected ? 'o_dynamic_dashboard_block_selected' : ''}} {{info.kind === 'static' ? 'o_dynamic_dashboard_block_static' : ''}}"
+             t-attf-style="--o-dynamic-dashboard-block-color: {{block.color}};"
+             t-on-click="(ev) => this.onClick(ev)">
+            <div t-if="this.props.editMode or info.kind !== 'static'"
+                 class="o_dynamic_dashboard_block_header card-header d-flex align-items-center gap-2 bg-view"
+                 t-att-class="{ 'o_dynamic_dashboard_block_handle': this.props.editMode }">
+                <i t-if="this.props.editMode" class="oi text-muted" data-icon="drag_indicator" title="Drag to move"/>
+                <span class="fw-bold text-truncate flex-grow-1">
+                    <t t-if="info.kind === 'static' and this.props.editMode" t-out="info.label"/>
+                    <t t-else="" t-out="block.name"/>
+                </span>
+                <button t-if="!this.props.editMode and this.props.onAnalyze and info.kind !== 'static' and block.id and !issue and !block.error"
+                        class="btn btn-link btn-sm p-0 text-muted o_dynamic_dashboard_block_analyze d-print-none"
+                        title="Analyze with AI" t-on-click.stop="() => this.props.onAnalyze()">
+                    <i class="oi" data-icon="wand_stars"/>
+                </button>
+                <button t-if="!this.props.editMode and this.props.onFilter and info.kind !== 'static' and block.id"
+                        class="btn btn-link btn-sm p-0 o_dynamic_dashboard_block_filter d-print-none"
+                        t-att-class="this.props.filterCount ? 'text-primary' : 'text-muted'"
+                        title="Filter this block" t-on-click.stop="() => this.props.onFilter()">
+                    <i class="oi" data-icon="filter_alt"/>
+                    <span t-if="this.props.filterCount" class="badge rounded-pill text-bg-primary ms-1"
+                          t-out="this.props.filterCount"/>
+                </button>
+                <span t-if="this.props.editMode and issue" class="badge text-bg-warning" title="Needs configuration">
+                    <i class="oi" data-icon="priority_high"/>
+                </span>
+                <t t-if="this.props.editMode">
+                    <button class="btn btn-link btn-sm p-0 text-muted" title="Duplicate"
+                            t-on-click.stop="() => this.props.onDuplicate()">
+                        <i class="oi" data-icon="content_copy"/>
+                    </button>
+                    <button class="btn btn-link btn-sm p-0 text-muted" title="Remove"
+                            t-on-click.stop="() => this.props.onDelete()">
+                        <i class="oi" data-icon="delete"/>
+                    </button>
+                </t>
+            </div>
+            <div t-if="this.props.filterSummary and !this.props.editMode"
+                 class="o_dynamic_dashboard_filter_summary small text-muted px-3 pt-2 text-truncate"
+                 t-att-title="this.props.filterSummary">
+                <i class="oi me-1" data-icon="filter_alt"/><t t-out="this.props.filterSummary"/>
+            </div>
+            <div class="card-body o_dynamic_dashboard_block_body"
+                 t-att-class="{ 'd-flex flex-column justify-content-center': info.kind === 'value' }">
+                <div t-if="issue" class="o_dynamic_dashboard_block_setup d-flex flex-column align-items-center justify-content-center text-center text-muted gap-2">
+                    <i class="oi oi-3x" t-att-data-icon="info.icon"/>
+                    <span t-out="issue"/>
+                    <span t-if="this.props.editMode" class="small">Configure it in the panel on the right.</span>
+                </div>
+                <div t-elif="block.error" class="alert alert-warning mb-0" role="alert" t-out="block.error"/>
+                <div t-elif="this.isLoading()" class="o_dynamic_dashboard_block_loading d-flex align-items-center justify-content-center text-muted">
+                    <i class="oi oi-spin oi-2x" data-icon="progress_activity"/>
+                </div>
+
+                <!-- Text -->
+                <t t-elif="info.kind === 'static'">
+                    <h3 class="o_dynamic_dashboard_text_title mb-1" t-out="block.name"/>
+                    <p t-foreach="this.getTextParagraphs()" t-as="paragraph" t-key="paragraph_index"
+                       class="mb-1 text-muted" t-out="paragraph"/>
+                </t>
+
+                <!-- Key figures -->
+                <div t-elif="block.block_type === 'tile'"
+                     class="o_dynamic_dashboard_tile d-flex align-items-center gap-3"
+                     role="button" t-on-click="() => this.drillDownAll()">
+                    <span class="o_dynamic_dashboard_tile_icon rounded-circle">
+                        <i class="oi oi-2x" t-att-data-icon="block.icon"/>
+                    </span>
+                    <div class="d-flex flex-column">
+                        <span class="o_dynamic_dashboard_tile_value fs-1 fw-bold" t-out="this.formatValue(block.value)"/>
+                        <span class="text-muted" t-out="block.measure_label"/>
+                    </div>
+                </div>
+                <div t-elif="block.block_type === 'progress'" class="o_dynamic_dashboard_progress"
+                     role="button" t-on-click="() => this.drillDownAll()">
+                    <div class="d-flex align-items-baseline justify-content-between mb-2">
+                        <span class="fs-2 fw-bold" t-out="this.formatValue(block.value)"/>
+                        <span class="text-muted">
+                            Target <t t-out="this.formatValue(block.target_value)"/>
+                        </span>
+                    </div>
+                    <div class="progress" role="progressbar" t-att-aria-valuenow="this.getProgress()"
+                         aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar o_dynamic_dashboard_progress_bar"
+                             t-attf-style="width: {{this.getProgressWidth()}}%;"/>
+                    </div>
+                    <div class="text-muted small mt-1"><t t-out="this.getProgress()"/>% reached</div>
+                </div>
+                <div t-elif="block.block_type === 'gauge'" role="button" t-on-click="() => this.drillDownAll()">
+                    <DashboardGauge block="block" t-key="block.version"/>
+                </div>
+
+                <div t-elif="info.kind === 'view'" class="o_dynamic_dashboard_view_container">
+                    <DashboardView block="block" t-key="block.version"
+                                   onOpenRecord="(model, resId) => this.props.onOpenRecord(model, resId)"/>
+                </div>
+
+                <div t-elif="this.hasNoData()" class="text-muted text-center py-4">
+                    No data to display
+                </div>
+
+                <!-- Charts -->
+                <DashboardChart t-elif="this.isChart()" t-key="block.version"
+                                block="block"
+                                interactive="!this.props.editMode"
+                                onDrillDown="(group) => this.drillDown(group)"/>
+
+                <!-- Tables -->
+                <table t-elif="block.block_type === 'table'" class="table table-sm table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th/>
+                            <th class="text-end" t-out="block.measure_label"/>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="block.labels" t-as="label" t-key="label_index"
+                            role="button" t-on-click="() => this.drillDown({ label, domain: block.series[0].domains[label_index] })">
+                            <td class="text-truncate">
+                                <span class="o_dynamic_dashboard_rank me-2" t-out="label_index + 1"/>
+                                <t t-out="label"/>
+                            </td>
+                            <td class="text-end" t-out="this.formatValue(block.series[0].values[label_index])"/>
+                        </tr>
+                    </tbody>
+                </table>
+                <div t-elif="block.block_type === 'pivot'" class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover mb-0 o_dynamic_dashboard_pivot">
+                        <thead>
+                            <tr>
+                                <th/>
+                                <th t-foreach="block.series" t-as="serie" t-key="serie_index" class="text-end" t-out="serie.label"/>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="block.labels" t-as="label" t-key="label_index">
+                                <th class="text-truncate" t-out="label"/>
+                                <td t-foreach="block.series" t-as="serie" t-key="serie_index" class="text-end"
+                                    role="button"
+                                    t-on-click="() => this.drillDown({ label: label + ' / ' + serie.label, domain: serie.domains[label_index] })"
+                                    t-out="this.formatValue(serie.values[label_index])"/>
+                                <td class="text-end fw-bold" t-out="this.formatValue(this.getPivotTotal(label_index))"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div t-elif="block.block_type === 'record_list'" class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th t-foreach="block.columns" t-as="column" t-key="column.name"
+                                    t-att-class="{ 'text-end': column.numeric }" t-out="column.label"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="block.rows" t-as="row" t-key="row.id" role="button"
+                                t-on-click="() => this.openRecord(row.id)">
+                                <td t-foreach="row.values" t-as="value" t-key="value_index"
+                                    t-att-class="{ 'text-end': block.columns[value_index].numeric }"
+                                    class="text-truncate" t-out="value"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

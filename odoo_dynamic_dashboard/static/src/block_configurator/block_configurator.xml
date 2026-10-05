@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="odoo_dynamic_dashboard.BlockConfigurator">
+        <t t-set="block" t-value="this.props.block"/>
+        <t t-set="info" t-value="this.getInfo()"/>
+        <aside class="o_dynamic_dashboard_configurator d-flex flex-column border-start bg-view">
+            <div class="d-flex align-items-center gap-2 p-3 border-bottom">
+                <i class="oi oi-fw oi-lg text-primary" t-att-data-icon="info.icon"/>
+                <h5 class="mb-0 flex-grow-1 text-truncate" t-out="info.label"/>
+                <button class="btn btn-link btn-sm text-muted p-0" title="Close" t-on-click="() => this.props.onClose()">
+                    <i class="oi" data-icon="close"/>
+                </button>
+            </div>
+            <div class="o_dynamic_dashboard_configurator_body flex-grow-1 p-3 d-flex flex-column gap-3">
+
+                <!-- Block type -->
+                <div>
+                    <label class="form-label small fw-bold" for="o_dd_block_type">Block type</label>
+                    <select id="o_dd_block_type" class="form-select form-select-sm" t-on-change="(ev) => this.onBlockTypeChange(ev)">
+                        <optgroup t-foreach="this.getBlockTypeGroups()" t-as="group" t-key="group.id" t-att-label="group.label">
+                            <option t-foreach="group.blockTypes" t-as="typeInfo" t-key="typeInfo.type"
+                                    t-att-value="typeInfo.type" t-att-selected="typeInfo.type === block.block_type"
+                                    t-out="typeInfo.label"/>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <t t-if="info.kind === 'static'">
+                    <div>
+                        <label class="form-label small fw-bold" for="o_dd_name">Title</label>
+                        <input id="o_dd_name" class="form-control form-control-sm" t-att-value="block.name"
+                               t-on-input="(ev) => this.onNameInput(ev)"/>
+                    </div>
+                    <div>
+                        <label class="form-label small fw-bold" for="o_dd_text">Text</label>
+                        <textarea id="o_dd_text" class="form-control form-control-sm" rows="5"
+                                  t-att-value="block.text_content" t-on-input="(ev) => this.onTextInput(ev)"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <!-- Data -->
+                    <section class="d-flex flex-column gap-2">
+                        <div class="o_dynamic_dashboard_configurator_section text-uppercase small fw-bold text-muted">1. Data</div>
+                        <div class="o_dynamic_dashboard_model_selector">
+                            <label class="form-label small fw-bold">What do you want to show?</label>
+                            <ModelSelector value="block.model_label || ''"
+                                           placeholder="this.modelPlaceholder"
+                                           onModelSelected="(model) => this.onModelSelected(model)"/>
+                        </div>
+                        <div t-if="block.model" class="d-flex align-items-center gap-2">
+                            <i class="oi text-muted" data-icon="filter_alt"/>
+                            <span class="small flex-grow-1">
+                                <t t-if="this.hasFilter()">Filtered records</t>
+                                <t t-else="">All records</t>
+                            </span>
+                            <button class="btn btn-link btn-sm p-0" t-on-click="() => this.editFilter()">
+                                <t t-if="this.hasFilter()">Edit filter</t>
+                                <t t-else="">Add a filter</t>
+                            </button>
+                            <button t-if="this.hasFilter()" class="btn btn-link btn-sm p-0 text-danger" title="Remove the filter"
+                                    t-on-click="() => this.clearFilter()">
+                                <i class="oi" data-icon="close_small"/>
+                            </button>
+                        </div>
+                    </section>
+
+                    <t t-if="block.model">
+                        <!-- Measure -->
+                        <section t-if="info.kind === 'value' or info.kind === 'grouped'" class="d-flex flex-column gap-2">
+                            <div class="o_dynamic_dashboard_configurator_section text-uppercase small fw-bold text-muted">2. Measure</div>
+                            <select class="form-select form-select-sm o_dd_aggregate" t-on-change="(ev) => this.onAggregateChange(ev)">
+                                <option t-foreach="this.aggregates" t-as="aggregate" t-key="aggregate.value"
+                                        t-att-value="aggregate.value" t-att-selected="aggregate.value === block.aggregate"
+                                        t-out="aggregate.label"/>
+                            </select>
+                            <select t-if="block.aggregate !== 'count'" class="form-select form-select-sm o_dd_measure"
+                                    t-on-change="(ev) => this.onSelectChange('measure', ev)">
+                                <option value="" t-att-selected="!block.measure">Choose a field...</option>
+                                <option t-foreach="this.getMeasureFields()" t-as="field" t-key="field.name"
+                                        t-att-value="field.name" t-att-selected="field.name === block.measure"
+                                        t-out="field.string"/>
+                            </select>
+                            <div t-if="info.target">
+                                <label class="form-label small fw-bold" for="o_dd_target">Target</label>
+                                <input id="o_dd_target" type="number" min="0" class="form-control form-control-sm"
+                                       t-att-value="block.target_value" t-on-change="(ev) => this.onNumberChange('target_value', ev)"/>
+                            </div>
+                        </section>
+
+                        <!-- Group by -->
+                        <section t-if="info.kind === 'grouped'" class="d-flex flex-column gap-2">
+                            <div class="o_dynamic_dashboard_configurator_section text-uppercase small fw-bold text-muted">3. Group by</div>
+                            <select class="form-select form-select-sm o_dd_group_by" t-on-change="(ev) => this.onSelectChange('group_by', ev)">
+                                <option value="" t-att-selected="!block.group_by">Choose a field...</option>
+                                <option t-foreach="this.getGroupByFields()" t-as="field" t-key="field.name"
+                                        t-att-value="field.name" t-att-selected="field.name === block.group_by"
+                                        t-out="field.string"/>
+                            </select>
+                            <t t-if="info.subGroupBy">
+                                <label class="form-label small fw-bold mb-0">
+                                    <t t-if="info.subGroupBy === 'required'">Then split by</t>
+                                    <t t-else="">Then split by (optional)</t>
+                                </label>
+                                <select class="form-select form-select-sm o_dd_sub_group_by" t-on-change="(ev) => this.onSelectChange('sub_group_by', ev)">
+                                    <option value="" t-att-selected="!block.sub_group_by">
+                                        <t t-if="info.subGroupBy === 'required'">Choose a field...</t>
+                                        <t t-else="">No split</t>
+                                    </option>
+                                    <option t-foreach="this.getGroupByFields()" t-as="field" t-key="field.name"
+                                            t-att-value="field.name" t-att-selected="field.name === block.sub_group_by"
+                                            t-out="field.string"/>
+                                </select>
+                            </t>
+                            <div t-if="this.isTemporal(block.group_by) or this.isTemporal(block.sub_group_by)">
+                                <label class="form-label small fw-bold" for="o_dd_granularity">Dates by</label>
+                                <select id="o_dd_granularity" class="form-select form-select-sm" t-on-change="(ev) => this.onSelectChange('date_granularity', ev)">
+                                    <option t-foreach="this.dateGranularities" t-as="granularity" t-key="granularity.value"
+                                            t-att-value="granularity.value" t-att-selected="granularity.value === block.date_granularity"
+                                            t-out="granularity.label"/>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label small fw-bold" for="o_dd_limit">Show at most</label>
+                                <input id="o_dd_limit" type="number" min="0" class="form-control form-control-sm"
+                                       t-att-value="block.group_limit" t-on-change="(ev) => this.onNumberChange('group_limit', ev)"/>
+                            </div>
+                        </section>
+
+                        <!-- Records -->
+                        <section t-if="info.kind === 'records'" class="d-flex flex-column gap-2">
+                            <div class="o_dynamic_dashboard_configurator_section text-uppercase small fw-bold text-muted">2. Columns</div>
+                            <div class="d-flex flex-wrap gap-1">
+                                <span t-foreach="block.list_fields" t-as="fieldName" t-key="fieldName"
+                                      class="badge rounded-pill text-bg-light border d-inline-flex align-items-center gap-1">
+                                    <t t-out="this.getFieldLabel(fieldName)"/>
+                                    <i class="oi" data-icon="close_small" role="button" title="Remove" t-on-click="() => this.removeListField(fieldName)"/>
+                                </span>
+                                <span t-if="!block.list_fields.length" class="text-muted small">Record name only</span>
+                            </div>
+                            <select class="form-select form-select-sm o_dd_add_column" t-on-change="(ev) => this.addListField(ev)">
+                                <option value="">Add a column...</option>
+                                <option t-foreach="this.getListableFields()" t-as="field" t-key="field.name"
+                                        t-att-value="field.name" t-out="field.string"/>
+                            </select>
+                            <label class="form-label small fw-bold mb-0">Sort by</label>
+                            <div class="d-flex gap-1">
+                                <select class="form-select form-select-sm" t-on-change="(ev) => this.onSelectChange('order_by', ev)">
+                                    <option value="" t-att-selected="!block.order_by">Default order</option>
+                                    <option t-foreach="this.getOrderFields()" t-as="field" t-key="field.name"
+                                            t-att-value="field.name" t-att-selected="field.name === block.order_by"
+                                            t-out="field.string"/>
+                                </select>
+                                <button class="btn btn-sm btn-secondary" t-att-title="this.getOrderTitle()"
+                                        t-on-click="() => this.update({ order_desc: !block.order_desc })">
+                                    <i class="oi" t-att-data-icon="block.order_desc ? 'arrow_downward' : 'arrow_upward'"/>
+                                </button>
+                            </div>
+                            <div>
+                                <label class="form-label small fw-bold" for="o_dd_record_limit">Number of records</label>
+                                <input id="o_dd_record_limit" type="number" min="0" class="form-control form-control-sm"
+                                       t-att-value="block.group_limit" t-on-change="(ev) => this.onNumberChange('group_limit', ev)"/>
+                            </div>
+                        </section>
+
+                        <!-- View -->
+                        <section t-if="info.kind === 'view'" class="d-flex flex-column gap-2">
+                            <div class="o_dynamic_dashboard_configurator_section text-uppercase small fw-bold text-muted">2. View</div>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button t-foreach="this.viewModes" t-as="viewMode" t-key="viewMode.value"
+                                        t-attf-class="btn {{viewMode.value === block.view_mode ? 'btn-primary' : 'btn-secondary'}}"
+                                        t-on-click="() => this.update({ view_mode: viewMode.value })"
+                                        t-out="viewMode.label"/>
+                            </div>
+                        </section>
+                    </t>
+
+                    <!-- Appearance -->
+                    <section class="d-flex flex-column gap-2">
+                        <div class="o_dynamic_dashboard_configurator_section text-uppercase small fw-bold text-muted">Appearance</div>
+                        <div>
+                            <label class="form-label small fw-bold" for="o_dd_name">Title</label>
+                            <input id="o_dd_name" class="form-control form-control-sm" t-att-value="block.name"
+                                   placeholder="Suggested automatically" t-on-input="(ev) => this.onNameInput(ev)"/>
+                        </div>
+                        <div t-if="info.kind !== 'view'">
+                            <label class="form-label small fw-bold">Color</label>
+                            <div class="d-flex flex-wrap gap-1 align-items-center">
+                                <button t-foreach="this.blockColors" t-as="color" t-key="color"
+                                        class="o_dynamic_dashboard_color_swatch btn p-0 rounded-circle"
+                                        t-att-class="{ 'o_dynamic_dashboard_color_swatch_active': color === block.color }"
+                                        t-attf-style="background-color: {{color}};" t-att-title="color"
+                                        t-on-click="() => this.update({ color })"/>
+                                <input type="color" class="o_dynamic_dashboard_color_input" title="Custom color"
+                                       t-att-value="block.color" t-on-change="(ev) => this.update({ color: ev.target.value })"/>
+                            </div>
+                        </div>
+                        <div t-if="block.block_type === 'tile'">
+                            <label class="form-label small fw-bold">Icon</label>
+                            <div class="o_dynamic_dashboard_icon_grid">
+                                <button t-foreach="this.blockIcons" t-as="icon" t-key="icon"
+                                        t-attf-class="btn btn-sm {{icon === block.icon ? 'btn-primary' : 'btn-light'}}"
+                                        t-att-title="icon" t-on-click="() => this.update({ icon })">
+                                    <i class="oi oi-fw" t-att-data-icon="icon"/>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                </t>
+
+                <div>
+                    <label class="form-label small fw-bold">Width</label>
+                    <div class="btn-group btn-group-sm w-100" role="group">
+                        <button t-foreach="this.blockWidths" t-as="width" t-key="width.value"
+                                t-attf-class="btn {{width.value === block.width ? 'btn-primary' : 'btn-secondary'}}"
+                                t-on-click="() => this.update({ width: width.value })"
+                                t-out="width.label"/>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 p-3 border-top">
+                <button class="btn btn-secondary btn-sm flex-grow-1" t-on-click="() => this.props.onDuplicate()">
+                    <i class="oi me-1" data-icon="content_copy"/>Duplicate
+                </button>
+                <button class="btn btn-outline-danger btn-sm flex-grow-1" t-on-click="() => this.props.onDelete()">
+                    <i class="oi me-1" data-icon="delete"/>Remove
+                </button>
+            </div>
+        </aside>
+    </t>
+
+</templates>
