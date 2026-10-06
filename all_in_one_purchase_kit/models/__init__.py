@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+###############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author:  Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+
+###############################################################################
+from . import account_move
+from . import dynamic_purchase_report
+from . import employee_purchase_requisition
+from . import hr_department
+from . import hr_employee
+from . import product_brand
+from . import product_product
+from . import product_supplierinfo
+from . import product_template
+from . import purchase_order
+from . import purchase_order_line
+from . import purchase_report
+from . import requisition_order
+from . import res_config_settings
+from . import res_partner
+from . import stock_picking

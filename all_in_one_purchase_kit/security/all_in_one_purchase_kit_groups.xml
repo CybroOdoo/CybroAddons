@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Privilege for Employee Purchase Requisition in Odoo 19 -->
+    <record model="res.groups.privilege" id="res_groups_privilege_employee_requisition">
+        <field name="name">Employee Purchase Requisition</field>
+        <field name="sequence">200</field>
+        <field name="category_id" ref="base.module_category_human_resources"/>
+    </record>
+
+    <!-- User groups -->
+    <!-- User requisition -->
+    <record id="group_employee_requisition_user" model="res.groups">
+        <field name="name">Requisition Users</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_employee_requisition"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Requisition rights for head -->
+    <record id="group_employee_requisition_head" model="res.groups">
+        <field name="name">Department Head</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_employee_requisition"/>
+        <field name="implied_ids"
+               eval="[(4, ref('all_in_one_purchase_kit.group_employee_requisition_user'))]"/>
+    </record>
+
+    <!-- Requisition rights for manager -->
+    <record id="group_employee_requisition_manager" model="res.groups">
+        <field name="name">Requisition Manager</field>
+        <field name="sequence">30</field>
+        <field name="privilege_id" ref="res_groups_privilege_employee_requisition"/>
+        <field name="implied_ids"
+               eval="[(4, ref('all_in_one_purchase_kit.group_employee_requisition_head'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>
