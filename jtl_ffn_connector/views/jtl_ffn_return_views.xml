@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Views and actions for JTL FFN customer returns management. -->
+<odoo>
+
+    <record id="jtl_ffn_return_list_view" model="ir.ui.view">
+        <field name="name">jtl.ffn.return.list.view</field>
+        <field name="model">jtl.ffn.return</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-success="state == 'restocked'">
+                <header>
+                    <button name="action_sync_all" string="Pull Returns" type="object" class="btn-primary" display="always"/>
+                </header>
+                <field name="name"/>
+                <field name="ffn_return_id"/>
+                <field name="sale_order_id"/>
+                <field name="config_id"/>
+                <field name="return_date"/>
+                <field name="return_reason"/>
+                <field name="odoo_return_picking_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'restocked'"
+                       decoration-warning="state == 'pending'"
+                       decoration-info="state == 'new'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="jtl_ffn_return_form_view" model="ir.ui.view">
+        <field name="name">jtl.ffn.return.form.view</field>
+        <field name="model">jtl.ffn.return</field>
+        <field name="arch" type="xml">
+            <form string="FFN Return" create="0">
+                <header>
+                    <button name="action_view_picking"
+                            string="View Return Picking"
+                            type="object"
+                            invisible="not odoo_return_picking_id"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="new,pending,restocked"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="FFN Reference">
+                            <field name="ffn_return_id"/>
+                            <field name="ffn_order_id"/>
+                            <field name="config_id"/>
+                            <field name="return_date"/>
+                            <field name="return_reason"/>
+                        </group>
+                        <group string="Odoo Links">
+                            <field name="sale_order_id"/>
+                            <field name="odoo_return_picking_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Return Lines">
+                            <field name="line_ids">
+                                <list>
+                                    <field name="sku"/>
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="condition"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="jtl_ffn_return_action" model="ir.actions.act_window">
+        <field name="name">Returns from FFN</field>
+        <field name="res_model">jtl.ffn.return</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>
