@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Theme Medicate: Blog Views Template -->
+    
+    <template id="theme_blog_posts" name="Blog Posts Template" inherit_id="website_blog.blog_post_short">
+        <xpath expr="//div[@id='o_wblog_blog_top']" position="replace">
+            <div id="o_wblog_blog_top" class="d-none"> </div>
+        </xpath>
+        <xpath expr="//section[@id='o_wblog_index_content']" position="replace">
+            <div class="oe_structure oe_empty">
+                    <section class="o_colored_level s_blog_banner sub-page-banner w-100 clearfix" data-snippet="s_blog_banner" data-name="Blog Banner">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="abouts-banner-content">
+                            <h3 class="text-white">Blog</h3>
+                            <p class="text-white">
+                                <a href="/" class="text-white">Home</a>
+                                > Blog
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+         </div>
+        
+    
+            <div class="oe_structure oe_empty">
+            <section id="o_wblog_index_content" class="container py-4">
+                <div class="row">
+                    
+                    <div class="col-lg-9 col-md-8">
+                        <t t-if="not posts">
+                            <div class="alert alert-info text-center">
+                                <p>No blog posts available at the moment.</p>
+                            </div>
+                        </t>
+                        <t t-if="posts">
+                            <t t-foreach="posts" t-as="post">
+                                <div class="card mb-4">
+                                    
+                                    <t t-set="cover_props"
+                                       t-value="json.loads(post.cover_properties or '{}')"/>
+                                    <t t-set="cover_image"
+                                       t-value="cover_props.get('background-image')"/>
+                                    <t t-set="clean_image"
+                                       t-value="cover_image[5:-2] if cover_image else ''"/> 
+
+                                    <t t-if="post_index in [4, 5]">
+                                        <div class="blog-month-date blog-month-date-top pt-2 pb-2 pl-3 pr-3 text-white d-inline-block" style="width: fit-content; max-width: max-content;">
+                                            &#160;&#160;
+                                            <t t-esc="post.post_date.strftime('%B %d, %Y') if post.post_date else 'No Date'"/>&#160;&#160;
+                                        </div>
+                                    </t>
+
+                                    <img t-att-src="clean_image"
+                                         class="card-img-top img-fluid"
+                                         t-att-alt="post.name"/>
+                                    <div class="card-body">
+                                        
+                                        <t t-if="post_index not in [4, 5]">
+                                            <div class="blog-month-date pt-2 pb-2 pl-3 pr-3 text-white">
+                                                &#160;&#160;
+                                                <t t-esc="post.post_date.strftime('%B %d, %Y') if post.post_date else 'No Date'"/>&#160;&#160;
+                                            </div>
+                                        </t>
+
+                                        <div class="w-100 float-left pt-2 pb-2 icons-container text-uppercase">
+                                            <div class="author-info">
+                                                <i class="fa fa-user mr-2"/>
+                                                <img class="mr-2"
+                                                     src="/theme_medicate/static/src/img/icon-bloger-name.jpg"/>
+                                                <t t-esc="post.author_id.name or 'Anonymous'"/>
+                                            </div>
+                                            <div class="comments-info">
+                                                <img class="mr-2 ml-4"
+                                                     src="/theme_medicate/static/src/img/icon-comments.jpg"/>
+                                                <i class="fa fa-comment mr-2"/>
+                                                <t t-esc="len(post.message_ids)"/>
+                                                Comments
+                                            </div>
+                                        </div>
+                                        <h4 class="pt-2 float-left w-100 font-weight-bold">
+                                            <t t-esc="post.name"/>
+                                        </h4>
+
+                                        <p class="card-text">
+                                            <t t-esc="post.teaser or post.subtitle or post.name"/>
+                                        </p>
+
+                                        <a t-att-href="post.website_url"
+                                           class="a-time-table text-uppercase float-left mt-2 mb-2 btn-timetable text-white pt-2 pb-2 pl-3 pr-3 text-decoration-none">
+                                            &#160;&#160; Read more &#160;&#160; +&#160;&#160;
+                                        </a>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+
+                        <div class="d-flex justify-content-center">
+                            <t t-call="website.pager"/>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-4">
+                        
+                        <div class="blog-search-container p-4 mt-5 w-100 float-left">
+                            <form id="blog_search_form" method="GET"
+                                  t-att-action="'/blog/%s' % blog.id if blog else '/blog'">
+
+                                <div class="input-group">
+                                    <input type="text" name="search"
+                                           class="form-control"
+                                           placeholder="Search"/>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary"
+                                                type="submit">
+                                            <i class="fa fa-search"/>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="right-side-menus w-100 float-left mt-5 p-4">
+                            <h3>Recent Posts</h3>
+                            <ul class="pl-0 mt-4">
+                                <t t-set="recent_posts"
+                                   t-value="env['blog.post'].search([], limit=5, order='post_date desc')"/>
+                                <t t-foreach="recent_posts" t-as="recent_post">
+                                    <li class="list-group-item">
+                                        <a t-att-href="recent_post.website_url">
+                                            > &#160;&#160;<t
+                                                t-esc="recent_post.name"/>
+                                        </a>
+                                    </li>
+                                </t>
+                            </ul>
+                        </div>
+                        <div class="right-side-menus w-100 float-left mt-5 p-4">
+
+                            <h3>Recent Comments</h3>
+                            <ul class="pl-0 mt-4">
+                                <li class="list-group-item">
+                                    <a t-att-href="recent_post.website_url">
+                                        > &#160;&#160;<t
+                                            t-esc="recent_post.name"/>
+                                    </a>
+                                    <ul>
+                                        <t t-foreach="recent_post.message_ids"
+                                           t-as="comment">
+                                            <li>
+                                                <strong>
+                                                    <t
+                                                            t-esc="comment.author_id.name or 'Anonymous'"/>
+                                                    :
+                                                </strong>
+                                                <t t-esc="comment.body[:100]"/>
+                                                ...
+                                            </li>
+                                        </t>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+             </div>
+        </xpath>
+        <xpath expr="//t[@t-call='website_blog.blogs_nav']" position="replace">
+        </xpath>
+    </template>
+    <template id="theme_blog_post_detail" name="Blog Post Detail"
+              inherit_id="website_blog.blog_post_complete">
+        <xpath expr="//section[@id='o_wblog_post_main']" position="replace">
+            <div class="oe_structure oe_empty">
+            <section id="o_wblog_post_main" class="container py-5">
+                <div class="row">
+                    <div class="col-lg-9 col-md-8">
+                        <article class="blog-post">
+                            
+                            <h1 class="mb-4">
+                                <t t-esc="blog_post.name"/>
+                            </h1>
+
+                            <div class="blog-meta d-flex justify-content-between text-muted mb-4">
+                                <div>
+                                    <i class="fa fa-user mr-2"/>
+                                    <t t-esc="blog_post.author_id.name or 'Anonymous'"/>
+                                    <i class="fa fa-calendar ml-3 mr-2"/>
+                                    <t t-esc="blog_post.post_date.strftime('%B %d, %Y') if blog_post.post_date else 'No Date'"/>
+                                </div>
+                                <div>
+                                    <i class="fa fa-comment mr-2"/>
+                                    <t t-esc="len(blog_post.message_ids)"/>
+                                    Comments
+                                </div>
+                            </div>
+
+                            <t t-set="cover_props"
+                               t-value="json.loads(blog_post.cover_properties or '{}')"/>
+                            <t t-set="cover_image_raw"
+                               t-value="cover_props.get('background-image')"/>
+                            <t t-set="clean_image"
+                               t-value="cover_image_raw[5:-2] if cover_image_raw else '/web/image/website.s_banner_default_image'"/>
+                            <img t-att-src="clean_image"
+                                 class="img-fluid mb-4 rounded"
+                                 t-att-alt="blog_post.name"/>
+
+                            <div class="blog-content">
+                                <t t-raw="blog_post.content"/>
+                            </div>
+
+                            <div t-if="blog_post.tag_ids" class="mt-4">
+                                <h5>Tags:</h5>
+                                <t t-foreach="blog_post.tag_ids" t-as="tag">
+                                    <a t-attf-href="/blog/#{blog_post.blog_id.id}/tag/#{tag.id}"
+                                       class="badge badge-secondary mr-2">
+                                        <t t-esc="tag.name"/>
+                                    </a>
+                                </t>
+                            </div>
+                        </article>
+
+                        <div class="mt-5">
+                            <h3>Comments</h3>
+                            <t t-call="portal.message_thread">
+                                <t t-set="object" t-value="blog_post"/>
+                            </t>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-4">
+                        
+                        <div class="card">
+                            <div class="card-header">Recent Posts</div>
+                            <ul class="list-group list-group-flush">
+                                <t t-set="recent_posts"
+                                   t-value="env['blog.post'].search([], limit=5, order='post_date desc')"/>
+                                <t t-foreach="recent_posts" t-as="recent_post">
+                                    <li class="list-group-item">
+                                        <a t-att-href="recent_post.website_url">
+                                            <t t-esc="recent_post.name"/>
+                                        </a>
+                                    </li>
+                                </t>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            </div>
+            <div class="oe_structure oe_empty"/>
+        </xpath>
+    </template>
+</odoo>
