@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <template id="boec_pricelist_button" name="Boec Pricelist Button"
+              inherit_id="website_sale.products">
+        <xpath expr="//div[@id='o_wsale_container']" position="before">
+            <div class="products_pager d-flex form-inline flex-md-nowrap justify-content-between justify-content-md-center"
+                 style="margin-left:20%;margin-right:20%;">
+                <t t-if="is_view_active('website_sale.search')" t-call="website_sale.search">
+                    <t t-set="search" t-value="original_search or search"/>
+                    <t t-set="_form_classes" t-valuef="d-lg-inline {{'d-inline' if not category else 'd-none'}}"/>
+                </t>
+                <t t-if="is_view_active('website_sale.sort')" t-call="website_sale.sort">
+                    <t t-set="_classes" t-valuef="me-auto d-lg-inline-block"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+
+    <template id="boec_filter_pills_attributes" inherit_id="website_sale.product_attribute_filters_form">
+        <xpath expr="//form" position="attributes">
+            <attribute name="t-att-action">keep(**reset_attribute_value_params, tags=0, brand=0)</attribute>
+        </xpath>
+        <xpath expr="//form" position="inside">
+            <t t-set="brands" t-value="website.get_brands()"/>
+            <div t-if="brands" t-attf-class="accordion-item {{'border-top-0 order-2' if isMobile else 'nav-item mb-1 rounded-0'}}">
+                <h2 t-if="isMobile" class="accordion-header mb-0" id="brand-heading">
+                    <button class="o_wsale_offcanvas_title accordion-button px-4 bg-transparent shadow-none"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#brand-collapse"
+                            aria-expanded="true" aria-controls="brand-collapse">
+                        <b>Brands</b>
+                    </button>
+                </h2>
+                <div t-else="" class="mb-3"><b>Brands</b></div>
+                <div id="brand-collapse"
+                     t-attf-class="{{'accordion-collapse collapse show' if isMobile else 'flex-column mb-3'}}"
+                     aria-labelledby="brand-heading">
+                    <div t-attf-class="{{'accordion-body pt-0' if isMobile else ''}}">
+                    <t t-foreach="brands" t-as="brand">
+                        <div class="form-check mb-1">
+                            <input type="checkbox"
+                                   name="brand"
+                                   class="form-check-input"
+                                   t-attf-id="brand_#{brand.id}"
+                                   t-att-value="brand.id"
+                                   t-att-checked="'checked' if brand.id in brand_ids else None"/>
+                            <label class="form-check-label fw-normal" t-attf-for="brand_#{brand.id}"
+                                   t-field="brand.brand_name"/>
+                        </div>
+                    </t>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="boec_brand_filter" inherit_id="website_sale.products" active="True">
+        <xpath expr="//t[@t-set='hasLeftColumn']" position="after">
+            <t t-set="hasLeftColumn" t-value="hasLeftColumn or brand_ids"/>
+        </xpath>
+    </template>
+</odoo>

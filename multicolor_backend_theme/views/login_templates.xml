@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Login page view-->
+    <template id="login_templated_ext" inherit_id="web.login"
+              name="Login Ext">
+        <xpath expr="//form" position="before">
+            <t t-set="login_theme"
+               t-value="request.env['theme.config'].sudo().search([('is_theme_active', '=', True)], limit=1)"/>
+        </xpath>
+        <!-- Portal button colors use !important in Odoo 20. Keep the active
+             backend theme authoritative for these login buttons. -->
+        <xpath expr="//button[@type='submit'][1]" position="replace">
+            <button type="submit" class="btn btn-primary btn-block cybro-login-btn"
+                    t-att-style="'background-color: %s !important; color: %s !important;' % (login_theme.theme_main_color or '', login_theme.theme_font_color or '') if login_theme else None">
+                Log in
+            </button>
+        </xpath>
+        <xpath expr="//t[@t-if='debug']/button" position="replace">
+            <button type="submit" name="redirect" value="/web/become"
+                    class="btn btn-link btn-sm btn-block cybro-super-btn"
+                    t-att-style="'color: %s !important;' % (login_theme.view_font_color or '') if login_theme else None">
+                Log in as superuser
+            </button>
+        </xpath>
+    </template>
+</odoo>
