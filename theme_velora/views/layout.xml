@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="theme_velora_layout" inherit_id="website.layout" name="Velora Layout Override">
+        <!-- Add fonts and icons to head -->
+        <xpath expr="//head" position="inside">
+            <!-- Fonts -->
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+            <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+            <!-- Icons -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+        </xpath>
+        
+        <!-- Replace navbar -->
+        <xpath expr="//header" position="replace">
+            <header class="site-header" id="siteHeader">
+                <nav class="navbar" aria-label="Primary navigation">
+                    <div class="nav-container">
+                        <a href="/" class="logo" aria-label="Velora Home">
+                            <img src="/theme_velora/static/src/img/logo.png" alt="Velora" class="logo-img"/>
+                        </a>
+                        <ul class="nav-links" id="navLinks">
+                            <!-- Odoo dynamic menu loop -->
+                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                <li>
+                                    <a t-att-href="submenu.url" t-attf-class="nav-link #{'active' if submenu.url == request.httprequest.path else ''}">
+                                        <t t-out="submenu.name"/>
+                                    </a>
+                                </li>
+                            </t>
+                        </ul>
+                        <div class="nav-actions">
+                            <!-- Phone Number (Hidden on small screens) -->
+<!--                            <div class="d-none d-lg-flex align-items-center me-3 text-muted" style="font-size: 0.9rem; font-family: var(&#45;&#45;font-sans);">-->
+<!--                                <i class="fa-solid fa-phone me-2"></i> +1 (800) 555-0199-->
+<!--                            </div>-->
+                            
+                            <!-- Contact Us Button (Hidden on small screens) -->
+<!--                            <a href="/contactus" class="btn btn-outline-primary btn-sm d-none d-md-inline-block me-2 rounded-pill px-3" style="font-family: var(&#45;&#45;font-sans); text-transform: uppercase; font-size: 0.8rem;">-->
+<!--                                Contact Us-->
+<!--                            </a>-->
+
+                            <!-- Search -->
+                            <button class="icon-btn" id="searchToggle" aria-label="Open search" aria-expanded="false">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
+
+                            <!-- Wishlist -->
+                            <t t-set="wishcount" t-value="len(request.env['product.wishlist'].current()) if 'product.wishlist' in request.env else 0"/>
+                            <a href="/shop/wishlist" class="icon-btn o_wsale_my_wish text-decoration-none" aria-label="Wishlist" title="Wishlist" style="text-decoration: none;">
+                                <i class="fa-regular fa-heart"/>
+                                <span t-attf-class="badge my_wish_quantity #{'d-none' if (wishcount == 0) else ''}" id="wishlistCount"><t t-out="wishcount or '0'"/></span>
+                            </a>
+
+                            <!-- Cart -->
+                            <t t-set="website_sale_cart_quantity" t-value="request.session.get('website_sale_cart_quantity', request.cart.cart_quantity if request.cart else 0) or '0'"/>
+                            <button class="icon-btn" id="cartToggle" aria-label="Open shopping bag" aria-expanded="false" type="button">
+                                <i class="fa-solid fa-bag-shopping"/>
+                                <span class="badge js-cart-count" id="cartCount"><t t-out="website_sale_cart_quantity"/></span>
+                            </button>
+
+                            <!-- User Account / Sign In -->
+                            <t t-if="request.env.user._is_public()">
+                                <a href="/web/login" class="icon-btn text-decoration-none" aria-label="Sign In" title="Sign In" style="text-decoration: none;">
+                                    <i class="fa-regular fa-user"></i>
+                                </a>
+                            </t>
+                            <t t-else="">
+                                <div class="dropdown">
+                                    <a href="#" class="icon-btn dropdown-toggle" data-bs-toggle="dropdown" aria-label="My Account" style="text-decoration: none;">
+                                        <i class="fa-solid fa-user"></i>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end" style="font-family: var(--font-sans);">
+                                        <li><a class="dropdown-item" href="/my/home">My Account</a></li>
+                                        <li><hr class="dropdown-divider"/></li>
+                                        <li><a class="dropdown-item" href="/web/session/logout?redirect=/">Logout</a></li>
+                                    </ul>
+                                </div>
+                            </t>
+
+                            <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+                                <span></span><span></span><span></span>
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+
+            <!-- Search Overlay Modal -->
+            <div class="search-overlay" id="searchOverlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Search">
+                <div class="search-modal-container">
+                    <form method="get" action="/shop" class="search-box">
+                        <button type="submit" class="search-submit-btn" aria-label="Search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                        <input type="search" name="search" id="searchInput" class="search-query"
+                               placeholder="Search fragrances, collections..." autocomplete="off"/>
+                        <button type="button" class="icon-btn" id="searchClose" aria-label="Close search">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </form>
+                    <div id="searchResults" class="search-results-dropdown d-none"></div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Side Panel -->
+            <aside class="mobile-menu" id="mobileMenu" aria-hidden="true" aria-label="Mobile navigation">
+                <div class="mobile-menu-header">
+                    <span class="mobile-menu-title">Menu</span>
+                    <button class="icon-btn" id="mobileMenuClose" aria-label="Close menu">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <ul>
+                    <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                        <li>
+                            <a t-att-href="submenu.url" t-attf-class="#{'active' if submenu.url == request.httprequest.path else ''}">
+                                <t t-out="submenu.name"/>
+                            </a>
+                        </li>
+                    </t>
+                </ul>
+                
+                <div class="mobile-action-boxes">
+                    <button type="button" class="mobile-action-box" id="mobileSearchBtn" aria-label="Search">
+                        <div class="action-icon">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <span>Search</span>
+                    </button>
+
+                    <t t-set="wishcount" t-value="len(request.env['product.wishlist'].current()) if 'product.wishlist' in request.env else 0"/>
+                    <a href="/shop/wishlist" class="mobile-action-box o_wsale_my_wish">
+                        <div class="action-icon">
+                            <i class="fa-regular fa-heart"></i>
+                            <span t-attf-class="badge action-badge my_wish_quantity #{'d-none' if (wishcount == 0) else ''}"><t t-out="wishcount or '0'"/></span>
+                        </div>
+                        <span>Wishlist</span>
+                    </a>
+                    
+                    <t t-set="website_sale_cart_quantity" t-value="request.session.get('website_sale_cart_quantity', request.cart.cart_quantity if request.cart else 0) or '0'"/>
+                    <a href="/shop/cart" class="mobile-action-box" id="mobileCartBtn">
+                        <div class="action-icon">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                            <span class="badge action-badge js-cart-count"><t t-out="website_sale_cart_quantity"/></span>
+                        </div>
+                        <span>Cart</span>
+                    </a>
+                </div>
+
+                <div class="mobile-menu-footer">
+                    <ul class="mobile-menu-extras">
+                        <t t-if="request.env.user._is_public()">
+                            <li><a href="/web/login" class="nav-link"><i class="fa-regular fa-user"></i> Sign In</a></li>
+                        </t>
+                        <t t-else="">
+                            <li><a href="/my/home" class="nav-link"><i class="fa-regular fa-user"></i> My Account</a></li>
+                            <li><a href="/web/session/logout?redirect=/" class="nav-link"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a></li>
+                        </t>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Cart Drawer Side Panel -->
+            <div class="drawer-backdrop" id="drawerBackdrop"></div>
+            <aside class="drawer" id="cartDrawer" aria-hidden="true" aria-label="Shopping bag">
+                <div class="drawer-header">
+                    <h2>Your Bag</h2>
+                    <button class="icon-btn" id="cartClose" aria-label="Close bag">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="drawer-body" id="cartItems">
+                    <p class="empty-state">Your bag is empty.</p>
+                </div>
+                <div class="drawer-footer">
+                    <div class="drawer-total">
+                        <span>Subtotal</span>
+                        <span id="cartTotal">$0.00</span>
+                    </div>
+                    <a href="/shop/checkout" class="btn btn-primary" style="width:100%;">Proceed to Checkout</a>
+                </div>
+            </aside>
+        </xpath>
+
+        <!-- Replace footer -->
+        <xpath expr="//div[@id='footer']" position="replace">
+            <footer class="site-footer">
+              <div class="container footer-grid">
+                <div class="footer-col footer-brand">
+                  <a href="/" class="logo">
+                    <img src="/theme_velora/static/src/img/logo.png" alt="Velora" class="logo-img footer-logo-img"/>
+                  </a>
+                  <p>Maison de Parfum — crafting timeless fragrances since 1998. Every bottle, a signature.</p>
+                  <div class="social-links">
+                    <a href="#" aria-label="Velora on Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" aria-label="Velora on Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Velora on Pinterest"><i class="fa-brands fa-pinterest-p"></i></a>
+                    <a href="#" aria-label="Velora on X"><i class="fa-brands fa-x-twitter"></i></a>
+                  </div>
+                </div>
+
+                <nav class="footer-col" aria-label="Collections">
+                  <h3>Collections</h3>
+                  <ul>
+                    <li><a t-attf-href="/shop/category/#{request.env.ref('theme_velora.theme_velora_category_mens').id}">Men's Fragrances</a></li>
+                    <li><a t-attf-href="/shop/category/#{request.env.ref('theme_velora.theme_velora_category_womens').id}">Women's Fragrances</a></li>
+                    <li><a t-attf-href="/shop/category/#{request.env.ref('theme_velora.theme_velora_category_unisex').id}">Unisex</a></li>
+                    <li><a t-attf-href="/shop/category/#{request.env.ref('theme_velora.theme_velora_category_gift_sets').id}">Gift Sets</a></li>
+                    <li><a t-attf-href="/shop/category/#{request.env.ref('theme_velora.theme_velora_category_limited_editions').id}">Limited Editions</a></li>
+                  </ul>
+                </nav>
+
+                <nav class="footer-col" aria-label="Customer support">
+                  <h3>Customer Support</h3>
+                  <ul>
+                    <li><a href="#">FAQs</a></li>
+                    <li><a href="/shop">Shipping &amp; Returns</a></li>
+                    <li><a href="/shop">Track My Order</a></li>
+                    <li><a href="/shop">Fragrance Guide</a></li>
+                    <li><a href="/shop">Gift Cards</a></li>
+                  </ul>
+                </nav>
+
+                <div class="footer-col">
+                  <h3><a href="/contactus">Contact</a></h3>
+                  <ul class="contact-list">
+                    <li><i class="fa-solid fa-location-dot"></i> 12 Rue de la Paix, Paris</li>
+                    <li><i class="fa-solid fa-phone"></i> +1 (800) 555-0199</li>
+                    <li><i class="fa-solid fa-envelope"></i> hello@velora.com</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="footer-bottom">
+                <p>© 2026 Velora Parfums. All rights reserved.</p>
+                <ul>
+                  <li><a href="#">Privacy Policy</a></li>
+                  <li><a href="#">Terms of Service</a></li>
+                </ul>
+              </div>
+            </footer>
+        </xpath>
+    </template>
+</odoo>

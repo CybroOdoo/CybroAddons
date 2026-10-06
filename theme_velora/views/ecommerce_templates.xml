@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Override Shop Layout -->
+    <template id="theme_velora_products" inherit_id="website_sale.products"
+              name="Theme Velora Products">
+        <!-- Add Page Banner above the main container -->
+        <xpath expr="//div[@id='o_wsale_container']" position="before">
+            <div class="oe_structure oe_empty oe_editable">
+                <section class="page-banner">
+                    <div class="page-banner-bg"></div>
+                    <div class="page-banner-content container">
+                        <p class="hero-eyebrow reveal">
+                            <span class="hero-eyebrow-line"></span>
+                            <t t-if="search">Search Results</t>
+                            <t t-else="">Luxury Fragrances</t>
+                            <span class="hero-eyebrow-line"></span>
+                        </p>
+                        <h1 class="page-banner-title hero-title reveal">
+                            <t t-if="search">
+                                Search <em>Results</em>
+                            </t>
+                            <t t-elif="category">
+                                <t t-out="category.name"/>
+                            </t>
+                            <t t-else="">
+                                Shop <em>Fragrances</em>
+                            </t>
+                        </h1>
+                        <nav class="breadcrumb reveal">
+                            <a href="/">Home</a>
+                            <span>/</span>
+                            <t t-if="search">
+                                <a href="/shop">Shop</a>
+                                <span>/</span>
+                                <span t-out="'Search: %s' % search"/>
+                            </t>
+                            <t t-elif="category">
+                                <a href="/shop">Shop</a>
+                                <span>/</span>
+                                <span t-out="category.name"/>
+                            </t>
+                            <t t-else="">
+                                <span>Shop</span>
+                            </t>
+                        </nav>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+
+        <!-- Remove redundant search modal button in shop header -->
+        <xpath expr="//a[@data-bs-target='#o_wsale_search_modal']" position="replace"/>
+    </template>
+
+    <!-- Override Product Item (Card) -->
+    <template id="theme_velora_products_item"
+              inherit_id="website_sale.products_item"
+              name="Theme Velora Product Item">
+        <!-- Replace the entire content of the product form with our product-card -->
+        <xpath expr="//form" position="replace">
+            <t t-set="variant"
+               t-value="product_variant or product._get_first_possible_variant_id()"/>
+            <form action="/shop/cart/update" method="post"
+                  class="product-card reveal oe_product_cart"
+                  t-att-data-publish="product.website_published and 'on' or 'off'">
+                <input type="hidden" name="csrf_token"
+                       t-att-value="request.csrf_token()"/>
+                <input type="hidden" name="product_id"
+                       t-att-value="product.product_variant_id.id or product._get_first_possible_variant_id()"/>
+                <input type="hidden" name="product_template_id"
+                       t-att-value="product.id"/>
+                <input type="hidden" name="product_type"
+                       t-att-value="product.type"/>
+
+                <!-- Product Media -->
+                <div class="product-media">
+                    <t t-set="ribbon" t-value="product._get_ribbon()"/>
+                    <span class="discount-badge" t-if="ribbon"
+                          t-out="ribbon.name"/>
+                    <span t-if="not product.website_published"
+                          class="discount-badge"
+                          style="background-color: #dc3545;">Unpublished
+                    </span>
+
+                    <t t-if="extra_actions">
+                        <button type="button"
+                                class="wishlist-btn o_wish_rm"
+                                t-att-data-wish-id="wish.id if wish else ''"
+                                title="Remove from wishlist"
+                                aria-label="Remove from wishlist">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </t>
+                    <t t-else="">
+                        <button type="button" class="wishlist-btn o_add_wishlist"
+                                t-att-data-product-product-id="product.product_variant_id.id or product._get_first_possible_variant_id()"
+                                t-att-data-product-template-id="product.id"
+                                data-action="o_wishlist"
+                                aria-label="Add to wishlist">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </t>
+                    <a t-att-href="product_href">
+                        <img t-att-src="'/web/image/product.template/%s/image_1024' % product.id"
+                             t-att-alt="product.name" loading="lazy"/>
+                    </a>
+                </div>
+
+                <!-- Product Info -->
+                <div class="product-info">
+                    <span class="product-brand">Velora Maison</span>
+                    <h3 class="product-name">
+                        <a t-att-href="product_href" t-field="product.name"/>
+                    </h3>
+                    <p class="product-desc" t-if="product.description_sale"
+                       t-field="product.description_sale"/>
+
+                    <div class="product-price-row">
+                        <div class="price-group">
+                            <span class="price-current"
+                                  t-field="product.list_price"
+                                  t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </div>
+                        <button type="button"
+                                t-attf-class="add-cart-btn btn-full-text #{'o_wish_add' if extra_actions else 'a-submit'}"
+                                t-att-data-product-id="product.product_variant_id.id or product._get_first_possible_variant_id()"
+                                t-att-data-product-product-id="product.product_variant_id.id or product._get_first_possible_variant_id()"
+                                t-att-data-template-id="product.id"
+                                t-att-data-product-template-id="product.id"
+                                t-att-data-product-type="product.type"
+                                t-attf-aria-label="Add #{product.name} to cart">
+                            ADD TO CART
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </xpath>
+    </template>
+
+    <!-- Override Order Confirmation Page -->
+    <template id="theme_velora_confirmation"
+              inherit_id="website_sale.confirmation"
+              name="Theme Velora Confirmation">
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']"
+               position="replace">
+            <t t-call="website.layout">
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="oe_structure oe_empty oe_editable">
+                        <section class="page-banner"
+                                 style="min-height: 100vh; padding-top: 0;">
+                            <div class="page-banner-bg"></div>
+                            <div class="page-banner-content container"
+                                 style="max-width: 600px; padding-top: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
+                                <div style="font-size: 5rem; color: var(--color-gold); margin-bottom: 1.5rem;">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                                <h1 class="page-banner-title hero-title reveal"
+                                    style="font-size: 3rem; margin-bottom: 1rem;">
+                                    Order
+                                    <em>Confirmed</em>
+                                </h1>
+                                <p style="font-size: 1.1rem; color: rgba(255,255,255,0.8); margin-bottom: 2.5rem; line-height: 1.8; text-align: center;">
+                                    Thank you for your purchase! Your bill has
+                                    been paid and your order is now being
+                                    processed. We will send you an email
+                                    confirmation shortly.
+                                </p>
+                                <a href="/shop" class="btn btn-gold">
+                                    <span>Continue Shopping</span>
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Override Wishlist Layout -->
+    <template id="theme_velora_wishlist" inherit_id="website_sale_wishlist.product_wishlist"
+              name="Theme Velora Wishlist">
+        <xpath expr="//div[@id='wrap']/div[hasclass('oe_website_sale')]" position="before">
+            <div class="oe_structure oe_empty oe_editable">
+                <section class="page-banner">
+                    <div class="page-banner-bg"></div>
+                    <div class="page-banner-content container">
+                        <p class="hero-eyebrow reveal">
+                            <span class="hero-eyebrow-line"></span>
+                            Your Curated Favorites
+                            <span class="hero-eyebrow-line"></span>
+                        </p>
+                        <h1 class="page-banner-title hero-title reveal">
+                            My <em>Wishlist</em>
+                        </h1>
+                        <nav class="breadcrumb reveal" aria-label="Breadcrumb">
+                            <a href="/">Home</a>
+                            <span aria-hidden="true">/</span>
+                            <span aria-current="page">Wishlist</span>
+                        </nav>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wishlist_products_header')]" position="attributes">
+            <attribute name="class" add="d-none" separator=" "/>
+        </xpath>
+    </template>
+</odoo>

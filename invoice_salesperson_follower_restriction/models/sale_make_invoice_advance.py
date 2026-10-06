@@ -1,0 +1,57 @@
+# -*- coding: utf-8 -*-
+###############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions (odoo@cybrosys.com)
+#
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+###############################################################################
+from odoo import models
+
+
+class SaleAdvancePaymentInv(models.TransientModel):
+    """Inherit sale.advance.payment.inv to restrict salesperson from invoice
+    followers when creating down payment invoices."""
+    _inherit = 'sale.advance.payment.inv'
+
+    def _create_invoices(self, sale_orders):
+        """Override to remove salesperson from down payment invoice followers if
+        different from the sales order creator when restriction setting is enabled."""
+        invoices = super()._create_invoices(sale_orders)
+
+        enable_restriction = self.env['ir.config_parameter'].sudo().get_param(
+            'invoice_salesperson_follower_restriction.enable_restriction',
+            'False',
+        )
+        if str(enable_restriction).lower() not in ('true', '1'):
+            return invoices
+
+        for order in sale_orders:
+            if (
+                order.user_id
+                and order.create_uid
+                and order.user_id != order.create_uid
+            ):
+                partner = order.user_id.partner_id
+                order_invoices = invoices.filtered(
+                    lambda inv, o=order: o in inv.line_ids.sale_line_ids.order_id
+                    or (inv.invoice_origin and o.name in inv.invoice_origin)
+                )
+
+                for invoice in order_invoices:
+                    invoice.sudo().message_unsubscribe(partner_ids=partner.ids)
+
+        return invoices
