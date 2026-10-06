@@ -1,0 +1,1846 @@
+// Vibe Coding Assistant — full layout + message styles
+// Spec §15.4
+
+// ── Client-action wrapper — ensure chat fills available height ─────────────
+// Odoo's client-action mounts inside several nested divs whose default
+// layout is "auto height" (grow to content). We need each ancestor of the
+// chat page to be a flex column with min-height:0 so the chat page itself
+// can have a constrained height (and therefore a scrollable child).
+//
+// IMPORTANT: we use :has() to scope these rules to only apply when our
+// chat page is the descendant — we DO NOT want to globally change Odoo's
+// layout behaviour for other client actions.
+
+.o_action_manager:has(.o_vibe_chat_page) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.o_action_manager > .o_action:has(.o_vibe_chat_page),
+.o_action:has(> .o_vibe_chat_page),
+.o_action:has(.o_vibe_chat_page),
+.o_content:has(.o_vibe_chat_page) {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+// ── Page grid ──────────────────────────────────────────────────────────────
+
+.o_vibe_chat_page {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr) 560px;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--o-view-background-color, #f7f7f7);
+
+    // Mid screens — slimmer panel but still a real preview
+    @media (max-width: 1400px) {
+        grid-template-columns: 260px minmax(0, 1fr) 480px;
+    }
+    @media (max-width: 1200px) {
+        grid-template-columns: 240px minmax(0, 1fr) 400px;
+    }
+    @media (max-width: 1000px) {
+        grid-template-columns: 220px minmax(0, 1fr);
+
+        .o_vibe_preview_panel { display: none; }
+    }
+}
+
+// ── Left: conversation list ─────────────────────────────────────────────────
+
+.o_vibe_conversation_list {
+    border-right: 1px solid var(--o-border-color);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    background: var(--o-view-background-color, #fff);
+}
+
+// Header — title + New button
+.o_vibe_conv_header {
+    flex-shrink: 0;
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid var(--o-border-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(
+        180deg,
+        var(--o-primary-color-light, #f6f1fb) 0%,
+        var(--o-view-background-color, #fff) 100%
+    );
+
+    .o_vibe_conv_title {
+        flex: 1;
+        font-weight: 700;
+        font-size: 0.92rem;
+        color: var(--o-main-text-color);
+        display: flex;
+        align-items: center;
+    }
+
+    .o_vibe_conv_title_icon {
+        color: var(--o-brand-primary, #875a7b);
+        font-size: 0.95em;
+    }
+
+    .o_vibe_new_btn {
+        font-size: 0.82rem;
+        padding: 5px 11px;
+        border-radius: 8px;
+        font-weight: 500;
+        box-shadow: 0 1px 3px rgba(135, 90, 123, 0.25);
+    }
+}
+
+// Search box
+.o_vibe_conv_search {
+    flex-shrink: 0;
+    position: relative;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--o-border-color, #eef0f2);
+    background: var(--o-view-background-color, #fff);
+
+    .o_vibe_conv_search_icon {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--o-subtle-text, #adb5bd);
+        font-size: 0.78rem;
+        pointer-events: none;
+    }
+
+    .o_vibe_conv_search_input {
+        width: 100%;
+        padding: 6px 28px 6px 28px;
+        border: 1px solid var(--o-border-color, #dee2e6);
+        border-radius: 8px;
+        font-size: 0.82rem;
+        background: #fafbfc;
+        outline: none;
+        transition: border-color 0.15s, background 0.15s;
+
+        &:focus {
+            border-color: var(--o-brand-primary, #875a7b);
+            background: #fff;
+        }
+    }
+
+    .o_vibe_conv_search_clear {
+        position: absolute;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: var(--o-subtle-text, #adb5bd);
+        padding: 0;
+        font-size: 0.85rem;
+        cursor: pointer;
+        line-height: 1;
+
+        &:hover { color: var(--o-main-text-color); }
+    }
+}
+
+// Scrollable list body
+.o_vibe_conv_body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 6px 8px 12px;
+}
+
+// Empty / no-results state
+.o_vibe_conv_empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--o-subtle-text, #adb5bd);
+
+    .o_vibe_conv_empty_icon {
+        font-size: 2.2rem;
+        margin-bottom: 8px;
+        opacity: 0.85;
+    }
+
+    .o_vibe_conv_empty_title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--o-main-text-color, #495057);
+        margin-bottom: 4px;
+    }
+
+    .o_vibe_conv_empty_hint {
+        font-size: 0.82rem;
+        line-height: 1.5;
+    }
+}
+
+// Conversation item (card-style)
+.o_vibe_conv_item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    margin: 2px 0;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.12s, transform 0.08s;
+    position: relative;
+
+    &:hover {
+        background: var(--o-gray-100, #f3f4f6);
+    }
+
+    &.o_vibe_conv_active {
+        background: var(--o-primary-color-light, #f0e8f6);
+        box-shadow: inset 3px 0 0 var(--o-brand-primary, #875a7b);
+
+        .o_vibe_conv_avatar {
+            background: var(--o-brand-primary, #875a7b);
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(135, 90, 123, 0.35);
+        }
+
+        .o_vibe_conv_name {
+            color: var(--o-brand-primary, #875a7b);
+            font-weight: 600;
+        }
+    }
+}
+
+.o_vibe_conv_avatar {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #e9d8f4 0%, #d4b8e8 100%);
+    color: var(--o-brand-primary, #875a7b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.92rem;
+    transition: background 0.12s, box-shadow 0.12s;
+}
+
+.o_vibe_conv_meta {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.o_vibe_conv_name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--o-main-text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.o_vibe_conv_time {
+    font-size: 0.72rem;
+    color: var(--o-subtle-text, #adb5bd);
+    line-height: 1.3;
+}
+
+.o_vibe_conv_actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.o_vibe_conv_action_btn {
+    background: transparent;
+    border: none;
+    padding: 4px 6px;
+    border-radius: 6px;
+    color: var(--o-subtle-text, #adb5bd);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+    line-height: 1;
+    text-decoration: none;
+
+    &:hover {
+        background: rgba(135, 90, 123, 0.1);
+        color: var(--o-brand-primary, #875a7b);
+    }
+}
+
+.o_vibe_conv_archive_btn:hover {
+    background: rgba(220, 53, 69, 0.1) !important;
+    color: #dc3545 !important;
+}
+
+.o_vibe_conv_item:hover .o_vibe_conv_actions {
+    opacity: 1;
+}
+
+// Skeleton loader items
+.o_vibe_conv_skel_item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    margin: 2px 0;
+}
+
+.o_vibe_skel_avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    flex-shrink: 0;
+}
+
+.o_vibe_skel_lines {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.o_vibe_skel_line {
+    height: 10px;
+}
+
+// ── Centre: thread ──────────────────────────────────────────────────────────
+
+.o_vibe_thread {
+    // Use CSS grid instead of flex column. Grid handles the "fill remaining
+    // space" case more reliably than flex when the parent's height isn't
+    // perfectly propagated — grid items default to their content size only
+    // if the row track is explicitly `auto`, whereas `1fr` forces them to
+    // fit within the available track height regardless of content.
+    //
+    // Layout: messages row fills available space, composer/footer rows
+    // auto-size to their content.
+    display: grid;
+    grid-template-rows: 1fr auto;
+    grid-template-columns: 1fr;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    background: var(--o-view-background-color, #f7f7f7);
+    position: relative;
+}
+
+.o_vibe_messages {
+    // Inside a grid `1fr` row, the child fills the row height exactly.
+    // Combined with overflow-y: scroll, it scrolls when content exceeds
+    // the row height. min-height: 0 is still required for grid children
+    // to allow shrinking below content size.
+    min-height: 0;
+    height: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-behavior: smooth;
+
+    // CRITICAL: prevent flex from shrinking message children to fit.
+    // Without this, message bubbles/cards get squashed to fit the
+    // container's height and scrollHeight ends up equal to clientHeight,
+    // so the browser thinks there's nothing to scroll. With flex-shrink: 0,
+    // children keep their natural height and the container overflows
+    // (which triggers actual scrolling).
+    > * {
+        flex-shrink: 0;
+    }
+
+    // Firefox
+    scrollbar-width: thin;
+    scrollbar-color: rgba(135, 90, 123, 0.55) rgba(0, 0, 0, 0.06);
+}
+
+// WebKit scrollbar styling — moved out of the parent block and given
+// higher specificity so it beats Bootstrap / Odoo defaults that may use
+// the `*::-webkit-scrollbar` selector.
+.o_vibe_chat_page .o_vibe_messages::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+    -webkit-appearance: none;
+}
+.o_vibe_chat_page .o_vibe_messages::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 7px;
+    margin: 4px 0;
+}
+.o_vibe_chat_page .o_vibe_messages::-webkit-scrollbar-thumb {
+    background: rgba(135, 90, 123, 0.55);
+    border-radius: 7px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    min-height: 40px;
+}
+.o_vibe_chat_page .o_vibe_messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(135, 90, 123, 0.85);
+    background-clip: padding-box;
+}
+.o_vibe_chat_page .o_vibe_messages::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+// Empty state inside thread — wraps the hero + template grid
+.o_vibe_empty_state {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    color: var(--o-main-text-color, #495057);
+    padding: 40px 32px 24px;
+    text-align: center;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+// ── Hero header ───────────────────────────────────────────────────────────
+
+.o_vibe_hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 560px;
+    margin-bottom: 36px;
+}
+
+.o_vibe_hero_icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--o-brand-primary, #875a7b) 0%, #b8729e 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    box-shadow: 0 6px 20px rgba(135, 90, 123, 0.25), 0 2px 6px rgba(135, 90, 123, 0.15);
+    margin-bottom: 18px;
+    transform: rotate(-6deg);
+    transition: transform 0.3s ease;
+
+    &:hover { transform: rotate(0deg) scale(1.05); }
+}
+
+.o_vibe_hero_title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--o-brand-primary, #875a7b) 0%, #a05fa1 60%, #d68aaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.01em;
+}
+
+.o_vibe_hero_subtitle {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--o-subtle-text, #6c757d);
+    margin: 0;
+    max-width: 460px;
+}
+
+.o_vibe_hero_label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--o-subtle-text, #adb5bd);
+    margin-bottom: 14px;
+}
+
+.o_vibe_hero_footer {
+    margin-top: 28px;
+    font-size: 0.82rem;
+    color: var(--o-subtle-text, #adb5bd);
+    font-style: italic;
+}
+
+// ── Template grid (replaces the old groups stack) ─────────────────────────
+
+.o_vibe_tpl_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-width: 880px;
+    text-align: left;
+}
+
+.o_vibe_tpl_card {
+    background: #fff;
+    border: 1px solid var(--o-border-color, #e9ecef);
+    border-radius: 14px;
+    padding: 14px 14px 10px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s;
+    position: relative;
+    overflow: hidden;
+
+    // Subtle gradient accent strip at the top of every card
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--card-accent, var(--o-brand-primary, #875a7b));
+        opacity: 0.6;
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+        border-color: var(--card-accent, var(--o-brand-primary, #875a7b));
+    }
+}
+
+// Per-category accent colors — applied via CSS custom property
+.o_vibe_cat_crud        { --card-accent: #875a7b; --card-tint: rgba(135, 90, 123, 0.08); }
+.o_vibe_cat_inherit     { --card-accent: #0d6efd; --card-tint: rgba(13, 110, 253, 0.08); }
+.o_vibe_cat_report      { --card-accent: #198754; --card-tint: rgba(25, 135, 84, 0.08); }
+.o_vibe_cat_wizard      { --card-accent: #fd7e14; --card-tint: rgba(253, 126, 20, 0.08); }
+.o_vibe_cat_integration { --card-accent: #6610f2; --card-tint: rgba(102, 16, 242, 0.08); }
+.o_vibe_cat_other       { --card-accent: #6c757d; --card-tint: rgba(108, 117, 125, 0.08); }
+
+.o_vibe_tpl_card_header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.o_vibe_tpl_card_icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--card-tint, rgba(0, 0, 0, 0.05));
+    color: var(--card-accent, var(--o-brand-primary, #875a7b));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.o_vibe_tpl_card_label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--card-accent, var(--o-main-text-color));
+}
+
+.o_vibe_tpl_chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.o_vibe_tpl_chip {
+    background: transparent;
+    border: 1px solid var(--o-border-color, #dee2e6);
+    color: var(--o-main-text-color, #495057);
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.08s;
+    white-space: nowrap;
+
+    &:hover {
+        background: var(--card-tint, var(--o-primary-color-light, #f0e8f6));
+        border-color: var(--card-accent, var(--o-brand-primary, #875a7b));
+        color: var(--card-accent, var(--o-brand-primary, #875a7b));
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+// ── Message bubbles ─────────────────────────────────────────────────────────
+
+.o_vibe_msg {
+    display: flex;
+
+    &.o_vibe_msg_user {
+        justify-content: flex-end;
+
+        .o_vibe_msg_bubble {
+            background: var(--o-brand-primary, #875a7b);
+            color: #fff;
+            border-radius: 18px 18px 4px 18px;
+        }
+    }
+
+    &.o_vibe_msg_assistant {
+        justify-content: flex-start;
+
+        .o_vibe_msg_bubble {
+            background: #fff;
+            color: var(--o-main-text-color, #212529);
+            border: 1px solid var(--o-border-color, #dee2e6);
+            border-radius: 18px 18px 18px 4px;
+        }
+    }
+}
+
+.o_vibe_msg_bubble {
+    max-width: 72%;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+// Module card inside assistant bubble (Phase 4+)
+.o_vibe_module_card {
+    margin-top: 8px;
+    padding: 10px 14px;
+    background: var(--o-gray-100, #f5f5f5);
+    border: 1px solid var(--o-border-color);
+    border-radius: 8px;
+    font-size: 0.85rem;
+
+    .o_vibe_module_name { font-weight: 600; }
+}
+
+// ── Typing indicator ────────────────────────────────────────────────────────
+
+.o_vibe_typing {
+    display: flex;
+    gap: 5px;
+    padding: 12px 16px;
+    align-items: center;
+}
+
+.o_vibe_dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--o-subtle-text, #adb5bd);
+    animation: vibe-bounce 1.2s infinite ease-in-out;
+
+    &:nth-child(1) { animation-delay: -0.32s; }
+    &:nth-child(2) { animation-delay: -0.16s; }
+    &:nth-child(3) { animation-delay: 0s; }
+}
+
+@keyframes vibe-bounce {
+    0%, 80%, 100% { transform: scale(0.5); opacity: 0.5; }
+    40%           { transform: scale(1.0); opacity: 1.0; }
+}
+
+// ── Composer base styles live in the Phase 6 block below ───────────────────
+
+// ── Right: preview panel ────────────────────────────────────────────────────
+
+.o_vibe_preview_panel {
+    border-left: 1px solid var(--o-border-color);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    background: var(--o-view-background-color, #fff);
+}
+
+.o_vibe_preview_placeholder {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--o-subtle-text, #adb5bd);
+}
+
+.o_vibe_file_tree {
+    flex: 0 0 auto;
+    max-height: 45%;
+    overflow-y: auto;
+    border-bottom: 1px solid var(--o-border-color);
+    padding: 8px;
+    font-size: 0.82rem;
+}
+
+// (Code viewer styles consolidated under the Phase 5 block below)
+
+// ══════════════════════════════════════════════════════════════════════════
+// Phase 5 additions — file tree + code viewer detail styles
+// ══════════════════════════════════════════════════════════════════════════
+
+// ── File tree header ───────────────────────────────────────────────────────
+
+.o_vibe_tree_header {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--o-border-color);
+    background: var(--o-view-background-color, #fff);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    gap: 6px;
+    min-width: 0;
+
+    .o_vibe_tree_module_name {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--o-main-text-color);
+    }
+}
+
+// ── Validation banner ──────────────────────────────────────────────────────
+
+.o_vibe_validation_banner {
+    background: #fff8e1;
+    border-bottom: 1px solid #ffe082;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+
+    .o_vibe_validation_title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #856404;
+    }
+
+    .o_vibe_validation_item {
+        color: #495057;
+        margin-top: 2px;
+        word-break: break-all;
+        line-height: 1.4;
+    }
+}
+
+// ── Tree items ─────────────────────────────────────────────────────────────
+
+.o_vibe_tree_dir {
+    padding: 4px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--o-main-text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-bottom: 1px solid transparent;
+}
+
+.o_vibe_tree_file {
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    color: var(--o-main-text-color);
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background 0.1s;
+
+    &:hover {
+        background: var(--o-gray-100, #f5f5f5);
+    }
+
+    &.o_vibe_tree_file_active {
+        background: var(--o-primary-color-light, #ede8f4);
+        color: var(--o-brand-primary, #875a7b);
+        font-weight: 500;
+    }
+}
+
+// ── Code viewer ────────────────────────────────────────────────────────────
+
+.o_vibe_code_viewer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #fafafa;
+    min-height: 0;
+}
+
+.o_vibe_code_header {
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    background: var(--o-gray-100, #f0f0f0);
+    border-bottom: 1px solid var(--o-border-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+}
+
+.o_vibe_code_scroll {
+    flex: 1;
+    overflow: auto;
+}
+
+.o_vibe_code_table {
+    border-collapse: collapse;
+    // Don't constrain to 100% — let long lines extend so horizontal scroll
+    // is the natural behavior. This is how every real code editor handles it.
+    width: max-content;
+    min-width: 100%;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    white-space: pre;
+}
+
+.o_vibe_code_line {
+    &:hover {
+        background: rgba(0, 0, 0, 0.025);
+    }
+}
+
+.o_vibe_line_num {
+    text-align: right;
+    padding: 0 10px 0 6px;
+    color: #aaa;
+    user-select: none;
+    min-width: 3em;
+    border-right: 1px solid var(--o-border-color, #e0e0e0);
+    vertical-align: top;
+    white-space: nowrap;
+}
+
+.o_vibe_line_content {
+    padding: 0 4px 0 10px;
+    white-space: pre;
+    word-break: normal;
+    vertical-align: top;
+}
+
+.o_vibe_code_empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--o-subtle-text, #adb5bd);
+    font-size: 0.85rem;
+    padding: 24px;
+    text-align: center;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Phase 6 — provider badge, no-provider state, skeleton, archive button
+// ══════════════════════════════════════════════════════════════════════════
+
+// ── No-provider warning card ───────────────────────────────────────────────
+
+.o_vibe_no_provider_card {
+    background: #fff;
+    border: 1px solid var(--o-border-color);
+    border-radius: 12px;
+    padding: 32px 40px;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+
+    .o_vibe_no_provider_icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+    }
+
+    h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    p { font-size: 0.9rem; line-height: 1.6; }
+}
+
+// ── Composer (full-width footer of the thread column) ─────────────────────
+
+.o_vibe_composer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex-shrink: 0;
+    gap: 6px;
+    padding: 12px 24px 10px;
+    border-top: 1px solid var(--o-border-color);
+    background: var(--o-view-background-color, #fff);
+
+    .o_vibe_composer_row {
+        display: flex;
+        width: 100%;
+        gap: 10px;
+        align-items: flex-end;
+    }
+
+    .o_vibe_composer_input {
+        flex: 1 1 auto;
+        min-width: 0;
+        resize: none;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        min-height: 44px;
+        max-height: 160px;
+        padding: 10px 14px;
+        line-height: 1.4;
+    }
+
+    .o_vibe_send_btn {
+        flex: 0 0 auto;
+        min-width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .o_vibe_composer_footer {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        color: var(--o-subtle-text, #adb5bd);
+    }
+
+    .o_vibe_provider_dot {
+        font-size: 0.55em;
+        color: #28a745;
+    }
+
+    .o_vibe_provider_label {
+        font-weight: 600;
+        color: var(--o-main-text-color);
+    }
+
+    .o_vibe_provider_model {
+        color: var(--o-subtle-text, #adb5bd);
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 0.95em;
+    }
+
+    .o_vibe_provider_tip {
+        color: var(--o-subtle-text, #adb5bd);
+    }
+}
+
+// ── Loading skeleton (shared shimmer) ─────────────────────────────────────
+
+.o_vibe_skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--o-gray-100, #f0f0f0) 25%,
+        var(--o-gray-200, #e0e0e0) 50%,
+        var(--o-gray-100, #f0f0f0) 75%
+    );
+    background-size: 200% 100%;
+    animation: o-vibe-shimmer 1.4s infinite ease-in-out;
+    border-radius: 4px;
+}
+
+@keyframes o-vibe-shimmer {
+    0%   { background-position:  200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+// (Conversation item styles consolidated under the main block above.)
+
+// ── Utility: monospace text area (used in AI config form view) ─────────────
+.o_vibe_monospace_hint {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.88em;
+    white-space: pre;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Rich module card (replaces the old in-bubble pill)
+// Free-standing block centred in the thread, comfortable reading width.
+// ══════════════════════════════════════════════════════════════════════════
+
+.o_vibe_module_card_v2 {
+    align-self: center;
+    width: 100%;
+    max-width: 640px;
+    background: #fff;
+    border: 1px solid var(--o-border-color, #dee2e6);
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    margin: 4px 0;
+}
+
+// ── Header strip ──────────────────────────────────────────────────────────
+
+.o_vibe_mc_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    background: linear-gradient(
+        135deg,
+        var(--o-primary-color-light, #ede8f4) 0%,
+        #fff 100%
+    );
+    border-bottom: 1px solid var(--o-border-color, #dee2e6);
+
+    .o_vibe_mc_header_left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .o_vibe_mc_header_right {
+        flex-shrink: 0;
+    }
+}
+
+.o_vibe_mc_icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+    background: var(--o-brand-primary, #875a7b);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.o_vibe_mc_title {
+    min-width: 0;
+    flex: 1;
+}
+
+.o_vibe_mc_name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--o-main-text-color, #212529);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.o_vibe_mc_technical {
+    font-size: 0.78rem;
+    color: var(--o-subtle-text, #6c757d);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+
+    code {
+        background: rgba(135, 90, 123, 0.08);
+        color: var(--o-brand-primary, #875a7b);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 0.85em;
+    }
+}
+
+.o_vibe_mc_sep {
+    opacity: 0.4;
+}
+
+.o_vibe_mc_badge {
+    font-size: 0.75rem;
+    padding: 5px 9px;
+    border-radius: 6px;
+}
+
+// ── Summary line ──────────────────────────────────────────────────────────
+
+.o_vibe_mc_summary {
+    padding: 12px 20px;
+    font-size: 0.88rem;
+    color: var(--o-main-text-color, #495057);
+    line-height: 1.45;
+    border-bottom: 1px solid var(--o-border-color, #f0f0f0);
+    font-style: italic;
+    background: #fafafa;
+}
+
+// ── Metadata grid ─────────────────────────────────────────────────────────
+
+.o_vibe_mc_meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 1px;
+    background: var(--o-border-color, #e9ecef);
+    padding: 1px;
+    border-bottom: 1px solid var(--o-border-color, #e9ecef);
+
+    @media (max-width: 600px) {
+        grid-template-columns: 1fr 1fr;
+
+        .o_vibe_mc_meta_item:last-child {
+            grid-column: 1 / -1;
+        }
+    }
+}
+
+.o_vibe_mc_meta_item {
+    background: #fff;
+    padding: 12px 16px;
+    min-width: 0;
+}
+
+.o_vibe_mc_meta_label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--o-subtle-text, #6c757d);
+    margin-bottom: 4px;
+}
+
+.o_vibe_mc_meta_value {
+    font-size: 0.88rem;
+    color: var(--o-main-text-color, #212529);
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.o_vibe_mc_deps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.o_vibe_mc_dep_chip {
+    display: inline-block;
+    background: rgba(135, 90, 123, 0.08);
+    color: var(--o-brand-primary, #875a7b);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+// ── Action buttons ────────────────────────────────────────────────────────
+
+.o_vibe_mc_actions {
+    display: flex;
+    gap: 10px;
+    padding: 14px 20px;
+    background: #fff;
+}
+
+.o_vibe_mc_btn {
+    flex: 1;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 0.88rem;
+    transition: transform 0.08s, box-shadow 0.12s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.o_vibe_mc_btn_primary {
+    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.25);
+
+    &:hover {
+        box-shadow: 0 4px 10px rgba(40, 167, 69, 0.32);
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Token usage display
+// ══════════════════════════════════════════════════════════════════════════
+
+// ── Conversation header strip (running totals) ────────────────────────────
+
+.o_vibe_tokens_strip {
+    // Sticky to the top of the scrolling .o_vibe_messages container so
+    // the total stays visible no matter how far down you scroll.
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    align-self: center;
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 8px;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--o-border-color, #dee2e6);
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    font-size: 0.82rem;
+    color: var(--o-main-text-color, #495057);
+
+    .o_vibe_tokens_strip_item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .o_vibe_tokens_strip_label {
+        color: var(--o-subtle-text, #adb5bd);
+        margin-left: 4px;
+    }
+
+    .o_vibe_tokens_strip_split {
+        display: flex;
+        gap: 6px;
+    }
+}
+
+.o_vibe_tokens_chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-weight: 500;
+}
+
+.o_vibe_tokens_chip_in {
+    background: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+}
+
+.o_vibe_tokens_chip_out {
+    background: rgba(40, 167, 69, 0.1);
+    color: #198754;
+}
+
+// ── Per-message token footer (inside the module card) ────────────────────
+
+.o_vibe_mc_tokens {
+    padding: 8px 20px 12px;
+    font-size: 0.76rem;
+    color: var(--o-subtle-text, #6c757d);
+    border-top: 1px solid var(--o-border-color, #f0f0f0);
+    background: #fafafa;
+
+    i { color: var(--o-warning-color, #ffc107); }
+
+    .o_vibe_mc_tokens_split {
+        margin-left: 6px;
+        opacity: 0.85;
+    }
+}
+
+// ── Inline token counter for plain assistant bubbles ─────────────────────
+
+.o_vibe_msg_tokens {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(0, 0, 0, 0.08);
+    font-size: 0.7rem;
+    color: var(--o-subtle-text, #adb5bd);
+
+    i { color: var(--o-warning-color, #ffc107); }
+}
+
+// ── Big-number style for config form total ───────────────────────────────
+
+.o_vibe_tokens_total {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--o-brand-primary, #875a7b);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Shared scrollbar polish — applied to every scrolling region in the chat.
+// Always-visible style for visual consistency and to make scrollable regions
+// obvious at a glance.
+// ══════════════════════════════════════════════════════════════════════════
+
+.o_vibe_conv_body,
+.o_vibe_file_tree,
+.o_vibe_code_scroll {
+    &::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    &::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: rgba(135, 90, 123, 0.35);
+        border-radius: 5px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: rgba(135, 90, 123, 0.6);
+        background-clip: padding-box;
+    }
+    scrollbar-width: thin;
+    scrollbar-color: rgba(135, 90, 123, 0.35) rgba(0, 0, 0, 0.03);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// (Prompt template chip styles consolidated under the empty-state block above)
+// ══════════════════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════════════════
+// Progress bubble — replaces the bare typing dots with phase + elapsed time
+// ══════════════════════════════════════════════════════════════════════════
+
+.o_vibe_progress_bubble {
+    // Wider than a normal bubble — needs room for phase label + meta
+    min-width: 280px;
+    padding: 10px 14px;
+}
+
+.o_vibe_progress_row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.85rem;
+}
+
+.o_vibe_progress_phase {
+    color: var(--o-main-text-color, #495057);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+
+    i {
+        color: var(--o-brand-primary, #875a7b);
+    }
+}
+
+.o_vibe_progress_meta {
+    color: var(--o-subtle-text, #adb5bd);
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.o_vibe_progress_time {
+    font-weight: 600;
+    color: var(--o-main-text-color, #6c757d);
+}
+
+.o_vibe_progress_dot {
+    margin: 0 4px;
+    opacity: 0.5;
+}
+
+.o_vibe_progress_tokens {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.95em;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Code viewer edit mode (Edit/Save/Cancel buttons + textarea)
+// ══════════════════════════════════════════════════════════════════════════
+
+// Header was previously a one-line label — now needs left/right split for buttons
+.o_vibe_code_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--o-border-color, #dee2e6);
+    background: #fafafa;
+    font-size: 0.82rem;
+}
+
+.o_vibe_code_header_left {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_vibe_code_header_right {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.o_vibe_code_btn {
+    font-size: 0.78rem;
+    padding: 3px 10px;
+    border-radius: 6px;
+    line-height: 1.4;
+
+    kbd {
+        font-size: 0.85em;
+    }
+}
+
+.o_vibe_code_modified_badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(253, 126, 20, 0.12);
+    color: #fd7e14;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+// ── Editor textarea ───────────────────────────────────────────────────────
+
+.o_vibe_code_editor_wrap {
+    flex: 1 1 0;
+    height: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.o_vibe_code_editor {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    resize: none;
+    border: none;
+    outline: none;
+    padding: 12px;
+    background: #fafafa;
+    color: var(--o-main-text-color, #212529);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    tab-size: 4;
+    -moz-tab-size: 4;
+    white-space: pre;
+    overflow: auto;
+    // Use the same scrollbar style as the viewer
+    scrollbar-width: thin;
+    scrollbar-color: rgba(135, 90, 123, 0.35) rgba(0, 0, 0, 0.03);
+
+    &::-webkit-scrollbar { width: 10px; height: 10px; }
+    &::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: rgba(135, 90, 123, 0.35);
+        border-radius: 5px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: rgba(135, 90, 123, 0.6);
+        background-clip: padding-box;
+    }
+
+    &:focus {
+        background: #fff;
+        box-shadow: inset 0 0 0 1px rgba(135, 90, 123, 0.2);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.o_vibe_code_editor_hint {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    background: #f0e8f6;
+    color: var(--o-brand-primary, #875a7b);
+    font-size: 0.74rem;
+    border-top: 1px solid var(--o-border-color, #dee2e6);
+
+    kbd {
+        background: #fff;
+        border: 1px solid #d0c3df;
+        border-radius: 3px;
+        padding: 1px 4px;
+        font-size: 0.85em;
+        color: var(--o-brand-primary, #875a7b);
+    }
+}
+
+// ── File-tree "modified" dot ──────────────────────────────────────────────
+
+.o_vibe_tree_modified_dot {
+    color: #fd7e14;
+    font-size: 1.4em;
+    line-height: 1;
+    margin-left: 6px;
+    user-select: none;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Validation error UI — clickable error items in tree banner,
+// per-file error badges, error-line highlights in code viewer
+// ══════════════════════════════════════════════════════════════════════════
+
+// ── Clickable error items in the file-tree banner ─────────────────────────
+
+.o_vibe_validation_hint {
+    margin-left: 8px;
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--o-subtle-text, #adb5bd);
+    font-style: italic;
+}
+
+.o_vibe_validation_item {
+    // Reset button defaults — we want it to look like a row, not a button
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 8px;
+    margin-top: 2px;
+    text-align: left;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--o-main-text-color, #495057);
+    cursor: pointer;
+    transition: background 0.12s;
+    gap: 4px;
+
+    &:hover {
+        background: rgba(220, 53, 69, 0.08);
+    }
+
+    i.fa-arrow-circle-right {
+        color: #dc3545;
+        opacity: 0.55;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    code {
+        font-size: 0.78rem;
+        background: transparent;
+        padding: 0;
+    }
+}
+
+.o_vibe_validation_line {
+    color: var(--o-subtle-text, #6c757d);
+    margin-right: 4px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.74rem;
+}
+
+.o_vibe_validation_msg {
+    color: var(--o-main-text-color, #495057);
+    margin-left: 6px;
+}
+
+// ── Per-file error badge in the tree ──────────────────────────────────────
+
+.o_vibe_tree_file_name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_vibe_tree_error_badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(220, 53, 69, 0.12);
+    color: #dc3545;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 10px;
+    margin-left: 6px;
+    flex-shrink: 0;
+
+    i { font-size: 0.85em; }
+}
+
+.o_vibe_tree_file_has_errors {
+    // Faint pink tint on rows with errors, gets stronger on hover
+    background: rgba(220, 53, 69, 0.03);
+
+    .o_vibe_tree_file_name { color: #c0312f; }
+
+    &:hover {
+        background: rgba(220, 53, 69, 0.08);
+    }
+}
+
+// ── File-level error banner inside code viewer ────────────────────────────
+
+.o_vibe_code_file_errors {
+    background: linear-gradient(to right, rgba(220, 53, 69, 0.06), rgba(220, 53, 69, 0.02));
+    border-left: 3px solid #dc3545;
+    padding: 10px 14px;
+    margin: 0;
+    font-size: 0.82rem;
+}
+
+.o_vibe_code_file_errors_title {
+    font-weight: 600;
+    color: #c0312f;
+    margin-bottom: 6px;
+
+    i { color: #dc3545; }
+}
+
+.o_vibe_code_file_error_item {
+    padding: 3px 0 3px 18px;
+    color: var(--o-main-text-color, #495057);
+    line-height: 1.45;
+}
+
+.o_vibe_code_file_error_line {
+    display: inline-block;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.74rem;
+    background: rgba(220, 53, 69, 0.15);
+    color: #c0312f;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 8px;
+    font-weight: 600;
+}
+
+// ── Error-line highlights in the code table ──────────────────────────────
+
+.o_vibe_code_line_error {
+    background: rgba(220, 53, 69, 0.08);
+
+    .o_vibe_line_num {
+        background: rgba(220, 53, 69, 0.15);
+        color: #c0312f;
+        font-weight: 600;
+        position: relative;
+    }
+
+    .o_vibe_line_content {
+        color: var(--o-main-text-color, #212529);
+    }
+
+    &:hover {
+        background: rgba(220, 53, 69, 0.14);
+    }
+}
+
+// Flash highlight when a user jumps from the error banner — pulses briefly
+// to draw the eye to the right line.
+@keyframes vibe-code-flash {
+    0%   { background: rgba(255, 235, 59, 0.65); }
+    50%  { background: rgba(255, 235, 59, 0.35); }
+    100% { background: rgba(255, 235, 59, 0); }
+}
+
+.o_vibe_code_line_flash {
+    animation: vibe-code-flash 1.8s ease-out;
+}
+
+// ── Missing-file panel in the code viewer ────────────────────────────────
+// Shown when the validation banner refers to a file the AI didn't generate
+// (e.g. missing security/ir.model.access.csv). Replaces the infinite
+// loading spinner that was previously stuck on.
+
+.o_vibe_code_missing {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    text-align: center;
+    overflow-y: auto;
+}
+
+.o_vibe_code_missing_icon {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: var(--o-subtle-text, #adb5bd);
+
+    .o_vibe_code_missing_overlay {
+        position: absolute;
+        bottom: -2px;
+        right: -4px;
+        font-size: 1.4rem;
+        color: #dc3545;
+        background: var(--o-view-background-color, #f7f7f7);
+        border-radius: 50%;
+        line-height: 1;
+    }
+}
+
+.o_vibe_code_missing_title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--o-main-text-color, #495057);
+    margin-bottom: 6px;
+}
+
+.o_vibe_code_missing_path {
+    margin-bottom: 18px;
+
+    code {
+        font-size: 0.9rem;
+        background: rgba(0, 0, 0, 0.04);
+        padding: 3px 10px;
+        border-radius: 5px;
+        color: #c0312f;
+    }
+}
+
+.o_vibe_code_missing_help {
+    max-width: 460px;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--o-subtle-text, #6c757d);
+    margin-bottom: 22px;
+}
+
+.o_vibe_code_missing_errors {
+    width: 100%;
+    max-width: 520px;
+    background: linear-gradient(to right, rgba(220, 53, 69, 0.06), rgba(220, 53, 69, 0.02));
+    border-left: 3px solid #dc3545;
+    border-radius: 4px;
+    padding: 14px 18px;
+    text-align: left;
+}
+
+.o_vibe_code_missing_errors_title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #c0312f;
+    margin-bottom: 8px;
+
+    i { color: #dc3545; }
+}
+
+.o_vibe_code_missing_error_item {
+    padding: 4px 0 4px 4px;
+    font-size: 0.86rem;
+    color: var(--o-main-text-color, #495057);
+    line-height: 1.5;
+
+    i.fa-circle {
+        font-size: 0.4rem;
+        vertical-align: middle;
+        color: #dc3545;
+        opacity: 0.7;
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Iterative refinement — Refine button, hint banner, revision badge
+// ══════════════════════════════════════════════════════════════════════════
+
+.o_vibe_refine_btn {
+    align-self: stretch;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-right: 6px;
+    flex-shrink: 0;
+
+    .o_vibe_refine_label {
+        font-size: 0.85rem;
+    }
+
+    i.fa-refresh {
+        font-size: 0.95em;
+    }
+}
+
+.o_vibe_composer_refine_hint {
+    margin-top: 6px;
+    font-size: 0.76rem;
+    color: var(--o-subtle-text, #6c757d);
+    padding: 6px 10px;
+    background: rgba(13, 110, 253, 0.05);
+    border-left: 2px solid rgba(13, 110, 253, 0.3);
+    border-radius: 4px;
+
+    i { color: #ffc107; }
+
+    code {
+        background: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+        padding: 0 5px;
+        border-radius: 3px;
+        font-size: 0.85em;
+    }
+}
+
+.o_vibe_mc_revision_badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(13, 110, 253, 0.12);
+    color: #0d6efd;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+
+    i { font-size: 0.85em; }
+}
