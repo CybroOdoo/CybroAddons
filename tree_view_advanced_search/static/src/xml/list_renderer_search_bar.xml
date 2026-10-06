@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-name="ListRendererSearch" t-inherit="web.ListRenderer" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_list_renderer')]//table[@t-ref='table']/thead/tr" position="after">
+            <tr>
+                <th t-if="hasSelectors"/>
+                <t t-foreach="columns" t-as="column" t-key="column.id">
+                    <t t-set="field_data" t-value="this.env.model.config.fields[column.name]"/>
+                    <th t-if="column.type === 'field' and field_data?.sortable">
+                        <t t-if="column.field.supportedTypes">
+                            <t t-if="column.widget !== 'badge' and !column.field.supportedTypes.includes('date') and !column.field.supportedTypes.includes('datetime')">
+                                <div class="search-bar-container search-input" t-att-id="column.name + 'Container'">
+                                    <div>
+                                        <input type="text"
+                                               t-att-id="column.name + 'Input'"
+                                               class="input_data"
+                                               t-on-keydown="(ev) => this._onKeydown(ev, column.name)"
+                                               t-on-keydown.stop=""
+                                               t-on-keyup.stop=""
+                                               t-on-copy.stop=""
+                                               t-on-paste.stop=""
+                                               t-on-click.stop=""
+                                               t-on-pointerdown.stop=""
+                                               t-on-mousedown.stop=""
+                                               t-att-placeholder="column.label"/>
+                                        <i class="fa fa-search" t-on-click="(ev) => this._onClickSearch(ev, column.name)"/>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-if="column.field.supportedTypes.includes('date') || column.field.supportedTypes.includes('datetime')">
+                                <div class="search-bar-container date-input">
+                                    <DateRange value="columnDates[column.name]" onFromToChanged="(value) => this.changeDate(column.name, value)"/>
+                                </div>
+                            </t>
+                        </t>
+                        <t t-if="column.widget === 'badge' and field_data.type == 'selection'">
+                            <div class="search-bar-container dp-class">
+                                <Dropdown togglerClass="'status-dropdown-toggle'" showCaret="true">
+                                    <button class="dropdown-toggle">
+                                        <span class="fa fa-filter"/>
+                                        <t t-out="column.label"/>
+                                    </button>
+                                    <t t-set-slot="content">
+                                        <t t-if="field_data.selection" t-foreach="field_data.selection" t-as="selection" t-key="selection_index">
+                                            <DropdownItem parentClosingMode="'none'"
+                                                          onSelected="() => this.changeStateSelection(column.name, selection[0])">
+                                                <span t-esc="selection[1]"/>
+                                                <i class="fa fa-check" t-if="selection[0] === getSelectedItem(column.name)" style="margin-left: 7px; color: black;"/>
+                                            </DropdownItem>
+                                        </t>
+                                    </t>
+                                </Dropdown>
+                            </div>
+                        </t>
+                    </th>
+                    <th t-else="">
+                        <div/>
+                    </th>
+                </t>
+                <th t-if="hasOpenFormViewColumn"/>
+                <th t-if="hasActionsColumn"/>
+            </tr>
+        </xpath>
+    </t>
+    <t t-inherit="purchase.PurchaseListView" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_list_renderer')]//table[@t-ref='table']/thead/tr" position="after">
+            <tr>
+                <th t-if="hasSelectors"/>
+                <t t-foreach="columns" t-as="column" t-key="column.id">
+                    <t t-set="field_data" t-value="this.env.model.config.fields[column.name]"/>
+                    <th t-if="column.type === 'field' and field_data?.sortable">
+                        <t t-if="column.field.supportedTypes">
+                            <t t-if="column.widget !== 'badge' and !column.field.supportedTypes.includes('date') and !column.field.supportedTypes.includes('datetime')">
+                                <div class="search-bar-container search-input" t-att-id="column.name + 'Container'">
+                                    <div>
+                                        <input type="text"
+                                               t-att-id="column.name + 'Input'"
+                                               class="input_data"
+                                               t-on-keydown="(ev) => this._onKeydown(ev, column.name)"
+                                               t-on-keydown.stop=""
+                                               t-on-keyup.stop=""
+                                               t-on-copy.stop=""
+                                               t-on-paste.stop=""
+                                               t-on-click.stop=""
+                                               t-on-pointerdown.stop=""
+                                               t-on-mousedown.stop=""
+                                               t-att-placeholder="column.label"/>
+                                        <i class="fa fa-search" t-on-click="(ev) => this._onClickSearch(ev, column.name)"/>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-if="column.field.supportedTypes.includes('date') || column.field.supportedTypes.includes('datetime')">
+                                <div class="search-bar-container date-input">
+                                    <DateRange value="columnDates[column.name]" onFromToChanged="(value) => this.changeDate(column.name, value)"/>
+                                </div>
+                            </t>
+                        </t>
+                        <t t-if="column.widget === 'badge' and field_data.type == 'selection'">
+                            <div class="search-bar-container dp-class">
+                                <Dropdown togglerClass="'status-dropdown-toggle'" showCaret="true">
+                                    <button class="dropdown-toggle">
+                                        <span class="fa fa-filter"/>
+                                        <t t-out="column.label"/>
+                                    </button>
+                                    <t t-set-slot="content">
+                                        <t t-if="field_data.selection" t-foreach="field_data.selection" t-as="selection" t-key="selection_index">
+                                            <DropdownItem parentClosingMode="'none'"
+                                                          onSelected="() => this.changeStateSelection(column.name, selection[0])">
+                                                <span t-esc="selection[1]"/>
+                                                <i class="fa fa-check" t-if="selection[0] === getSelectedItem(column.name)" style="margin-left: 7px; color: black;"/>
+                                            </DropdownItem>
+                                        </t>
+                                    </t>
+                                </Dropdown>
+                            </div>
+                        </t>
+                    </th>
+                    <th t-else="">
+                        <div/>
+                    </th>
+                </t>
+                <th t-if="hasOpenFormViewColumn"/>
+                <th t-if="hasActionsColumn"/>
+            </tr>
+        </xpath>
+    </t>
+    <t t-inherit="account.sectionAndNoteListRenderer" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_list_renderer')]//table[@t-ref='table']/thead/tr" position="after">
+            <tr>
+                <th t-if="hasSelectors"/>
+                <t t-foreach="columns" t-as="column" t-key="column.id">
+                    <t t-set="field_data" t-value="this.env.model.config.fields[column.name]"/>
+                    <th t-if="column.type === 'field' and field_data?.sortable">
+                        <t t-if="column.field.supportedTypes">
+                            <t t-if="column.widget !== 'badge' and !column.field.supportedTypes.includes('date') and !column.field.supportedTypes.includes('datetime')">
+                                <div class="search-bar-container search-input" t-att-id="column.name + 'Container'">
+                                    <div>
+                                        <input type="text"
+                                               t-att-id="column.name + 'Input'"
+                                               class="input_data"
+                                               t-on-keydown="(ev) => this._onKeydown(ev, column.name)"
+                                               t-on-keydown.stop=""
+                                               t-on-keyup.stop=""
+                                               t-on-copy.stop=""
+                                               t-on-paste.stop=""
+                                               t-on-click.stop=""
+                                               t-on-pointerdown.stop=""
+                                               t-on-mousedown.stop=""
+                                               t-att-placeholder="column.label"/>
+                                        <i class="fa fa-search" t-on-click="(ev) => this._onClickSearch(ev, column.name)"/>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-if="column.field.supportedTypes.includes('date') || column.field.supportedTypes.includes('datetime')">
+                                <div class="search-bar-container date-input">
+                                    <DateRange value="columnDates[column.name]" onFromToChanged="(value) => this.changeDate(column.name, value)"/>
+                                </div>
+                            </t>
+                        </t>
+                        <t t-if="column.widget === 'badge' and field_data.type == 'selection'">
+                            <div class="search-bar-container dp-class">
+                                <Dropdown togglerClass="'status-dropdown-toggle'" showCaret="true">
+                                    <button class="dropdown-toggle">
+                                        <span class="fa fa-filter"/>
+                                        <t t-out="column.label"/>
+                                    </button>
+                                    <t t-set-slot="content">
+                                        <t t-if="field_data.selection" t-foreach="field_data.selection" t-as="selection" t-key="selection_index">
+                                            <DropdownItem parentClosingMode="'none'"
+                                                          onSelected="() => this.changeStateSelection(column.name, selection[0])">
+                                                <span t-esc="selection[1]"/>
+                                                <i class="fa fa-check" t-if="selection[0] === getSelectedItem(column.name)" style="margin-left: 7px; color: black;"/>
+                                            </DropdownItem>
+                                        </t>
+                                    </t>
+                                </Dropdown>
+                            </div>
+                        </t>
+                    </th>
+                    <th t-else="">
+                        <div/>
+                    </th>
+                </t>
+                <th t-if="hasOpenFormViewColumn"/>
+                <th t-if="hasActionsColumn"/>
+            </tr>
+        </xpath>
+    </t>
+    <t t-inherit="sale.SaleListRenderer" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_list_renderer')]//table[@t-ref='table']/thead/tr" position="after">
+            <tr>
+                <th t-if="hasSelectors"/>
+                <t t-foreach="columns" t-as="column" t-key="column.id">
+                    <t t-set="field_data" t-value="this.env.model.config.fields[column.name]"/>
+                    <th t-if="column.type === 'field' and field_data?.sortable">
+                        <t t-if="column.field.supportedTypes">
+                            <t t-if="column.widget !== 'badge' and !column.field.supportedTypes.includes('date') and !column.field.supportedTypes.includes('datetime')">
+                                <div class="search-bar-container search-input" t-att-id="column.name + 'Container'">
+                                    <div>
+                                        <input type="text"
+                                               t-att-id="column.name + 'Input'"
+                                               class="input_data"
+                                               t-on-keydown="(ev) => this._onKeydown(ev, column.name)"
+                                               t-on-keydown.stop=""
+                                               t-on-keyup.stop=""
+                                               t-on-copy.stop=""
+                                               t-on-paste.stop=""
+                                               t-on-click.stop=""
+                                               t-on-pointerdown.stop=""
+                                               t-on-mousedown.stop=""
+                                               t-att-placeholder="column.label"/>
+                                        <i class="fa fa-search" t-on-click="(ev) => this._onClickSearch(ev, column.name)"/>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-if="column.field.supportedTypes.includes('date') || column.field.supportedTypes.includes('datetime')">
+                                <div class="search-bar-container date-input">
+                                    <DateRange value="columnDates[column.name]" onFromToChanged="(value) => this.changeDate(column.name, value)"/>
+                                </div>
+                            </t>
+                        </t>
+                        <t t-if="column.widget === 'badge' and field_data.type == 'selection'">
+                            <div class="search-bar-container dp-class">
+                                <Dropdown togglerClass="'status-dropdown-toggle'" showCaret="true">
+                                    <button class="dropdown-toggle">
+                                        <span class="fa fa-filter"/>
+                                        <t t-out="column.label"/>
+                                    </button>
+                                    <t t-set-slot="content">
+                                        <t t-if="field_data.selection" t-foreach="field_data.selection" t-as="selection" t-key="selection_index">
+                                            <DropdownItem parentClosingMode="'none'"
+                                                          onSelected="() => this.changeStateSelection(column.name, selection[0])">
+                                                <span t-esc="selection[1]"/>
+                                                <i class="fa fa-check" t-if="selection[0] === getSelectedItem(column.name)" style="margin-left: 7px; color: black;"/>
+                                            </DropdownItem>
+                                        </t>
+                                    </t>
+                                </Dropdown>
+                            </div>
+                        </t>
+                    </th>
+                    <th t-else="">
+                        <div/>
+                    </th>
+                </t>
+                <th t-if="hasOpenFormViewColumn"/>
+                <th t-if="hasActionsColumn"/>
+            </tr>
+        </xpath>
+    </t>
+</templates>
+
+
+
