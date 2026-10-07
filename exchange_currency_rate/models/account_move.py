@@ -46,9 +46,10 @@ class AccountMove(models.Model):
     @api.constrains('company_currency_id', 'currency_id')
     def _onchange_different_currency(self):
         """ When the Currency is changed back to company currency, the boolean field is disabled """
-        if self.company_currency_id == self.currency_id:
-            if self.is_exchange:
-                self.is_exchange = False
+        for move in self:
+            if move.company_currency_id == move.currency_id:
+                if move.is_exchange:
+                    move.is_exchange = False                           
 
     @api.depends('line_ids.sale_line_ids.order_id')
     def _compute_sale_order(self):
