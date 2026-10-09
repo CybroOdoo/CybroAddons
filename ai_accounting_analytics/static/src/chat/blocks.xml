@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ai_accounting_analytics.TableBlock">
+        <div class="o_ai_accounting_card my-3">
+            <div class="o_ai_accounting_card_header d-flex align-items-center gap-2">
+                <span class="o_ai_accounting_card_icon">
+                    <i class="oi" data-icon="table_chart" role="img" aria-label="Table" title="Table"/>
+                </span>
+                <div class="fw-semibold flex-grow-1 text-truncate" t-out="this.props.block.title"/>
+                <div class="d-flex gap-1">
+                    <t t-if="this.props.block.export">
+                        <button class="btn btn-sm o_ai_accounting_chip" title="Download the PDF report"
+                                t-on-click="() => this.props.onExport('pdf')">
+                            <i class="oi me-1" data-icon="picture_as_pdf" role="img" aria-label="PDF"/>PDF
+                        </button>
+                        <button class="btn btn-sm o_ai_accounting_chip" title="Download the Excel report"
+                                t-on-click="() => this.props.onExport('xlsx')">
+                            <i class="oi me-1" data-icon="table" role="img" aria-label="Excel"/>XLSX
+                        </button>
+                    </t>
+                    <button class="btn btn-sm o_ai_accounting_chip" title="Download this table as CSV"
+                            t-on-click="this.exportCsv">
+                        <i class="oi me-1" data-icon="download" role="img" aria-label="CSV"/>CSV
+                    </button>
+                </div>
+            </div>
+            <div class="table-responsive o_ai_accounting_table_wrap">
+                <table class="table table-sm table-borderless mb-0 o_ai_accounting_table">
+                    <thead>
+                        <tr>
+                            <t t-foreach="this.props.block.columns" t-as="column" t-key="column_index">
+                                <th t-att-class="this.isNumeric(column) ? 'text-end' : ''" t-out="column.label"/>
+                            </t>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="this.props.block.rows" t-as="row" t-key="row_index">
+                            <tr t-att-class="this.rowClass(row)" t-on-click="() => this.onRowClick(row)">
+                                <t t-foreach="this.props.block.columns" t-as="column" t-key="column_index">
+                                    <td t-att-class="this.isNumeric(column) ? 'text-end text-nowrap' : ''"
+                                        t-att-style="this.indent(row, column_index)"
+                                        t-out="this.cell(row.cells[column_index], column)"/>
+                                </t>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="ai_accounting_analytics.ChartBlock">
+        <div class="o_ai_accounting_card my-3">
+            <div class="o_ai_accounting_card_header d-flex align-items-center gap-2">
+                <span class="o_ai_accounting_card_icon">
+                    <i class="oi" t-att-data-icon="this.props.block.chart_type === 'pie' ? 'pie_chart' : 'bar_chart'"
+                       role="img" aria-label="Chart" title="Chart"/>
+                </span>
+                <div class="fw-semibold text-truncate" t-out="this.props.block.title"/>
+            </div>
+            <div class="o_ai_accounting_chart position-relative">
+                <canvas t-ref="this.chart.ref"/>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="ai_accounting_analytics.KpiBlock">
+        <div class="my-3">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="o_ai_accounting_card_icon">
+                    <i class="oi" data-icon="speed" role="img" aria-label="Key figures" title="Key figures"/>
+                </span>
+                <a t-if="this.props.block.res_id" href="#" class="fw-semibold" t-on-click.prevent="this.openRecord" t-out="this.props.block.title"/>
+                <span t-else="" class="fw-semibold" t-out="this.props.block.title"/>
+            </div>
+            <div class="o_ai_accounting_kpis">
+                <t t-foreach="this.props.block.items" t-as="item" t-key="item_index">
+                    <div class="o_ai_accounting_kpi">
+                        <div class="o_ai_accounting_kpi_label text-truncate" t-out="item.label" t-att-title="item.label"/>
+                        <div class="o_ai_accounting_kpi_value text-nowrap" t-out="this.value(item)"/>
+                        <span t-if="this.delta(item)"
+                              t-att-class="'o_ai_accounting_delta ' + (item.delta >= 0 ? 'o_ai_accounting_delta_up' : 'o_ai_accounting_delta_down')">
+                            <i class="oi" t-att-data-icon="item.delta >= 0 ? 'north_east' : 'south_east'" role="img" aria-label="Trend"/>
+                            <t t-out="this.delta(item)"/>
+                        </span>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>

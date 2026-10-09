@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="ai_accounting_provider_view_list" model="ir.ui.view">
+        <field name="name">ai.accounting.provider.view.list</field>
+        <field name="model">ai.accounting.provider</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="provider_type"/>
+                <field name="model_count" string="Models"/>
+                <field name="has_api_key" widget="boolean"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ai_accounting_provider_view_form" model="ir.ui.view">
+        <field name="name">ai.accounting.provider.view.form</field>
+        <field name="model">ai.accounting.provider</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_fetch_models" type="object" string="Fetch Models"
+                            class="btn-secondary" invisible="not has_api_key"
+                            help="Import the models available with your API key."/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_models" type="object" class="oe_stat_button" icon="deployed_code">
+                            <field name="model_count" widget="statinfo" string="Models"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Google Gemini"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="provider_type"/>
+                            <field name="base_url" placeholder="Official endpoint"/>
+                        </group>
+                        <group>
+                            <field name="has_api_key"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Models" name="models">
+                            <field name="model_ids" context="{'active_test': False}">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="technical_name"/>
+                                    <field name="price_input"/>
+                                    <field name="price_cached" optional="show"/>
+                                    <field name="price_output"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="ai_accounting_provider_action" model="ir.actions.act_window">
+        <field name="name">AI Providers</field>
+        <field name="res_model">ai.accounting.provider</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add an AI provider</p>
+            <p>Gemini, OpenAI, Claude and OpenRouter are available out of the box.</p>
+        </field>
+    </record>
+</odoo>

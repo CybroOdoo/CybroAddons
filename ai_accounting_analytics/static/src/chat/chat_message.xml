@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ai_accounting_analytics.ChatMessage">
+        <!-- User question -->
+        <div t-if="this.props.message.role === 'user'" class="o_ai_accounting_message d-flex justify-content-end align-items-end gap-2 my-4">
+            <div class="o_ai_accounting_bubble" t-out="this.props.message.content"/>
+            <img t-att-src="this.props.userAvatar" class="o_ai_accounting_avatar" alt="You"/>
+        </div>
+
+        <!-- Assistant answer -->
+        <div t-else="" class="o_ai_accounting_message d-flex align-items-start gap-3 my-4">
+            <div t-att-class="'o_ai_accounting_avatar o_ai_accounting_bot ' + (this.props.streaming ? 'o_ai_accounting_bot_live' : '')">
+                <i class="oi" data-icon="memory" role="img" aria-label="AI" title="AI"/>
+            </div>
+            <div class="flex-grow-1 min-w-0">
+                <button class="o_ai_accounting_status btn btn-sm"
+                        t-att-class="{ 'o_ai_accounting_status_error': !this.props.streaming and this.hasError() }"
+                        t-on-click="() => this.state.showSteps = !this.state.showSteps">
+                    <i t-att-class="'oi ' + (this.props.streaming ? 'oi-spin' : '')" t-att-data-icon="this.statusIcon()"
+                       role="img" aria-label="Status" title="Status"/>
+                    <span t-out="this.workedFor()"/>
+                    <i t-if="this.props.message.steps.length" class="oi" t-att-data-icon="this.state.showSteps ? 'expand_less' : 'expand_more'"
+                       role="img" aria-label="Toggle steps" title="Steps"/>
+                </button>
+                <ol t-if="this.state.showSteps and this.props.message.steps.length" class="o_ai_accounting_steps list-unstyled">
+                    <t t-foreach="this.props.message.steps" t-as="step" t-key="step_index">
+                        <li t-att-class="step.running ? 'o_ai_accounting_step_running' : (step.ok === false ? 'o_ai_accounting_step_failed' : '')">
+                            <span class="o_ai_accounting_step_dot"/>
+                            <span t-out="step.label"/>
+                            <span t-if="step.ms" class="o_ai_accounting_muted ms-1"><t t-out="step.ms"/> ms</span>
+                            <div t-if="step.note" class="o_ai_accounting_step_note" t-out="step.note"/>
+                            <div t-if="step.error" class="o_ai_accounting_step_note o_ai_accounting_step_error" t-out="step.error"/>
+                        </li>
+                    </t>
+                </ol>
+
+                <div t-if="this.props.streaming and this.props.message.notice" class="o_ai_accounting_notice my-2">
+                    <i class="oi oi-spin" data-icon="autorenew" role="img" aria-label="Retrying" title="Retrying"/>
+                    <t t-out="this.props.message.notice"/>
+                </div>
+
+                <t t-foreach="this.props.message.parts or []" t-as="part" t-key="part_index">
+                    <div t-if="part.type === 'text'" class="o_ai_accounting_text" t-out="this.html(part.text)"/>
+                    <AiTableBlock t-elif="part.type === 'table'" block="part"
+                                  onExport="(format) => this.exportBlock(part_index, format)"
+                                  onOpenRecord="this.props.onOpenRecord"/>
+                    <AiChartBlock t-elif="part.type === 'chart'" block="part"/>
+                    <AiKpiBlock t-elif="part.type === 'kpis'" block="part" onOpenRecord="this.props.onOpenRecord"/>
+                    <div t-elif="part.type === 'error'" class="o_ai_accounting_error d-flex gap-2 my-2">
+                        <i class="oi" data-icon="error" role="img" aria-label="Error" title="Error"/>
+                        <div class="flex-grow-1" t-out="part.text"/>
+                    </div>
+                </t>
+                <div t-if="this.props.streaming and !(this.props.message.parts or []).length and !this.props.message.notice" class="o_ai_accounting_typing">
+                    <span/><span/><span/>
+                </div>
+
+                <div t-if="!this.props.streaming and (this.props.message.content or this.hasError())"
+                     class="o_ai_accounting_actions d-flex align-items-center flex-wrap gap-1 mt-2">
+                    <button t-if="this.props.message.content" class="btn btn-sm o_ai_accounting_icon_btn" t-on-click="this.copy" title="Copy answer">
+                        <i class="oi" t-att-data-icon="this.state.copied ? 'check' : 'content_copy'" role="img" aria-label="Copy"/>
+                    </button>
+                    <button t-if="this.hasError() and this.props.isLast" class="btn btn-sm o_ai_accounting_chip" t-on-click="this.retry">
+                        <i class="oi me-1" data-icon="refresh" role="img" aria-label="Retry"/>Try again
+                    </button>
+                    <span t-if="this.props.message.input_tokens or this.props.message.output_tokens" class="o_ai_accounting_meta">
+                        <span t-out="this.props.message.model"/>
+                        <span class="o_ai_accounting_meta_sep"/>
+                        <span><t t-out="this.tokens()"/> tokens</span>
+                        <span class="o_ai_accounting_meta_sep"/>
+                        <span t-out="this.cost()"/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

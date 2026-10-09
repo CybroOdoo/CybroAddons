@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="ai_accounting_usage_view_list" model="ir.ui.view">
+        <field name="name">ai.accounting.usage.view.list</field>
+        <field name="model">ai.accounting.usage</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false">
+                <field name="create_date" string="Date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="provider_id" optional="show"/>
+                <field name="model_id"/>
+                <field name="chat_id" optional="hide"/>
+                <field name="step" optional="hide"/>
+                <field name="input_tokens" sum="Total"/>
+                <field name="cached_tokens" sum="Total" optional="show"/>
+                <field name="cache_write_tokens" sum="Total" optional="hide"/>
+                <field name="output_tokens" sum="Total"/>
+                <field name="total_tokens" sum="Total"/>
+                <field name="cost" sum="Total"/>
+                <field name="duration_ms" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ai_accounting_usage_view_pivot" model="ir.ui.view">
+        <field name="name">ai.accounting.usage.view.pivot</field>
+        <field name="model">ai.accounting.usage</field>
+        <field name="arch" type="xml">
+            <pivot string="AI Usage">
+                <field name="user_id" type="row"/>
+                <field name="create_date" interval="month" type="col"/>
+                <field name="total_tokens" type="measure"/>
+                <field name="cost" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="ai_accounting_usage_view_graph" model="ir.ui.view">
+        <field name="name">ai.accounting.usage.view.graph</field>
+        <field name="model">ai.accounting.usage</field>
+        <field name="arch" type="xml">
+            <graph string="AI Usage" type="bar" stacked="1">
+                <field name="create_date" interval="day"/>
+                <field name="model_id"/>
+                <field name="cost" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="ai_accounting_usage_view_search" model="ir.ui.view">
+        <field name="name">ai.accounting.usage.view.search</field>
+        <field name="model">ai.accounting.usage</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="user_id"/>
+                <field name="model_id"/>
+                <field name="provider_id"/>
+                <filter name="my_usage" string="My Usage" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_create_date" date="create_date" string="Date"/>
+                <group>
+                    <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_model" string="Model" context="{'group_by': 'model_id'}"/>
+                    <filter name="group_provider" string="Provider" context="{'group_by': 'provider_id'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="ai_accounting_usage_action" model="ir.actions.act_window">
+        <field name="name">AI Usage &amp; Cost</field>
+        <field name="res_model">ai.accounting.usage</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No AI usage yet</p>
+            <p>Every call to an AI provider is logged here with its tokens and cost (USD).</p>
+        </field>
+    </record>
+
+    <!-- Dashboard (menu entry); the views above are its "Details". -->
+    <record id="ai_accounting_usage_dashboard_action" model="ir.actions.client">
+        <field name="name">AI Usage &amp; Cost</field>
+        <field name="tag">ai_accounting_analytics.usage_dashboard</field>
+    </record>
+</odoo>

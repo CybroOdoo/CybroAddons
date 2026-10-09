@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ai_accounting_analytics.Chat">
+        <div class="o_action o_ai_accounting d-flex flex-row h-100 overflow-hidden">
+            <!-- Sidebar -->
+            <aside class="o_ai_accounting_sidebar d-flex flex-column">
+                <div class="o_ai_accounting_brand d-flex align-items-center gap-2 px-3 pt-3 pb-2">
+                    <span class="o_ai_accounting_brand_icon">
+                        <i class="oi" data-icon="troubleshoot" role="img" aria-label="AI" title="AI"/>
+                    </span>
+                    <div class="lh-sm">
+                        <div class="fw-bold">AI Analytics</div>
+                        <div class="o_ai_accounting_muted small">Your accounting copilot</div>
+                    </div>
+                </div>
+                <div class="px-3 pb-2">
+                    <button class="btn o_ai_accounting_new w-100" t-on-click="this.newChat"
+                            t-att-disabled="this.state.streaming">
+                        <i class="oi me-1" data-icon="add" role="img" aria-label="New" title="New"/> New Chat
+                    </button>
+                </div>
+                <div class="px-3 pb-2">
+                    <div class="o_ai_accounting_search d-flex align-items-center">
+                        <i class="oi" data-icon="search" role="img" aria-label="Search" title="Search"/>
+                        <input class="border-0 bg-transparent flex-grow-1" placeholder="Search chats"
+                               t-att-value="this.state.search" t-on-input="this.onSearchInput"/>
+                    </div>
+                </div>
+                <div class="flex-grow-1 overflow-auto px-2 pb-2">
+                    <t t-foreach="this.chatGroups()" t-as="group" t-key="group.key">
+                        <div class="o_ai_accounting_group_label px-2 pt-3 pb-1" t-out="group.label"/>
+                        <t t-foreach="group.chats" t-as="chat" t-key="chat.id">
+                            <div t-att-class="'o_ai_accounting_chat_item d-flex align-items-center ' + (chat.id === this.state.chatId ? 'o_ai_accounting_chat_active' : '')"
+                                 t-on-click="() => this.openChat(chat.id)">
+                                <i class="oi o_ai_accounting_chat_icon" data-icon="chat_bubble" role="img" aria-label="Chat" title="Chat"/>
+                                <input t-if="this.state.renamingId === chat.id" class="form-control form-control-sm"
+                                       t-att-value="this.state.renameValue"
+                                       t-on-input="this.onRenameInput"
+                                       t-on-keydown="(ev) => this.onRenameKeydown(ev, chat)"
+                                       t-on-blur="() => this.confirmRename(chat)"/>
+                                <span t-else="" class="flex-grow-1 text-truncate" t-att-title="chat.name" t-out="chat.name"/>
+                                <div class="o_ai_accounting_chat_tools d-flex">
+                                    <button class="btn btn-link btn-sm p-0 px-1" title="Rename"
+                                            t-on-click.stop="() => this.startRename(chat)">
+                                        <i class="oi" data-icon="edit" role="img" aria-label="Rename"/>
+                                    </button>
+                                    <button class="btn btn-link btn-sm p-0 px-1" title="Delete"
+                                            t-on-click.stop="() => this.deleteChat(chat)">
+                                        <i class="oi" data-icon="delete" role="img" aria-label="Delete"/>
+                                    </button>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                    <div t-if="this.state.loaded and !this.state.chats.length" class="o_ai_accounting_muted small text-center mt-4 px-3">
+                        Your conversations will appear here.
+                    </div>
+                </div>
+                <button class="o_ai_accounting_usage btn text-start m-2" t-on-click="this.openUsage"
+                        title="Your AI usage this month">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="oi" data-icon="speed" role="img" aria-label="Usage"/>
+                        <div class="lh-sm">
+                            <div class="small fw-semibold">This month</div>
+                            <div class="o_ai_accounting_muted small" t-out="this.usageLabel()"/>
+                        </div>
+                    </div>
+                </button>
+            </aside>
+
+            <!-- Main panel -->
+            <main class="o_ai_accounting_main d-flex flex-column flex-grow-1 overflow-hidden">
+                <header t-if="this.state.messages.length" class="o_ai_accounting_header d-flex align-items-center px-4">
+                    <div class="fw-semibold text-truncate flex-grow-1"
+                         t-out="this.chatTitle()"/>
+                    <span t-if="this.currentModel()" class="o_ai_accounting_pill">
+                        <span class="o_ai_accounting_dot"/>
+                        <t t-out="this.currentModel().name"/>
+                    </span>
+                </header>
+
+                <div class="flex-grow-1 overflow-auto" t-ref="this.scrollRef">
+                    <div class="o_ai_accounting_column mx-auto px-4 py-4">
+                        <!-- One-time data sharing notice -->
+                        <div t-if="this.state.loaded and !this.state.consent" class="o_ai_accounting_consent mt-5 p-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <span class="o_ai_accounting_hero_icon o_ai_accounting_hero_icon_sm">
+                                    <i class="oi" data-icon="lock" role="img" aria-label="Privacy" title="Privacy"/>
+                                </span>
+                                <h4 class="mb-0">Before you start</h4>
+                            </div>
+                            <p>
+                                AI Analytics answers your questions by sending them, together with the
+                                data needed to answer (amounts and the names or details of partners,
+                                products, invoices and any other business records you can read), to the
+                                AI provider you select: Google, OpenAI, Anthropic or OpenRouter. Calls use
+                                your personal API key and are subject to that provider's terms and data
+                                retention policy.
+                            </p>
+                            <p class="o_ai_accounting_muted small mb-4">
+                                The AI only reads data through read-only queries run with your access
+                                rights; technical and security data (users, settings, passwords, tokens)
+                                is never reachable. It never writes records, never sees your API key in
+                                the browser, and every call is logged with its tokens and cost.
+                            </p>
+                            <button class="btn o_ai_accounting_new px-4" t-on-click="this.acceptConsent">I understand, continue</button>
+                        </div>
+
+                        <!-- Welcome -->
+                        <div t-elif="this.state.loaded and !this.state.messages.length" class="o_ai_accounting_welcome text-center">
+                            <span class="o_ai_accounting_hero_icon mb-3">
+                                <i class="oi" data-icon="troubleshoot" role="img" aria-label="AI Analytics" title="AI Analytics"/>
+                            </span>
+                            <h2 class="o_ai_accounting_gradient_text fw-bold mb-1" t-out="this.greeting()"/>
+                            <p class="o_ai_accounting_muted fs-5 mb-4">What would you like to know about your books?</p>
+                            <div class="o_ai_accounting_suggestions text-start">
+                                <t t-foreach="this.suggestions" t-as="suggestion" t-key="suggestion_index">
+                                    <button class="o_ai_accounting_suggestion" t-on-click="() => this.useSuggestion(suggestion)">
+                                        <span class="o_ai_accounting_suggestion_icon">
+                                            <i class="oi" t-att-data-icon="suggestion.icon" role="img" t-att-aria-label="suggestion.title"/>
+                                        </span>
+                                        <span class="d-block fw-semibold mt-2" t-out="suggestion.title"/>
+                                        <span class="d-block o_ai_accounting_muted small" t-out="suggestion.prompt"/>
+                                    </button>
+                                </t>
+                            </div>
+                        </div>
+
+                        <t t-foreach="this.state.messages" t-as="message" t-key="message.id">
+                            <AiChatMessage message="message"
+                                           streaming="this.state.streaming and !!message.pending"
+                                           isLast="this.isLastAssistant(message)"
+                                           userAvatar="this.userAvatar"
+                                           onExport.bind="this.exportBlock"
+                                           onOpenRecord.bind="this.openRecord"
+                                           onRetry.bind="this.retry"/>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Composer -->
+                <div class="o_ai_accounting_column mx-auto w-100 px-4 pb-3">
+                    <div t-if="this.state.consent and this.currentModel() and !this.currentModel().has_key"
+                         class="o_ai_accounting_callout d-flex align-items-center gap-2 mb-2">
+                        <i class="oi" data-icon="info" role="img" aria-label="Info" title="Info"/>
+                        <span class="flex-grow-1 small">
+                            Add your API key for <strong t-out="this.currentModel().provider"/> to use this model.
+                        </span>
+                        <button class="btn btn-sm o_ai_accounting_chip" t-on-click="this.openApiKeys">My API Keys</button>
+                    </div>
+                    <div class="o_ai_accounting_composer">
+                        <textarea t-ref="this.inputRef" rows="1"
+                                  class="form-control border-0 shadow-none bg-transparent o_ai_accounting_input"
+                                  placeholder="Ask anything about your accounting…"
+                                  t-att-value="this.state.input"
+                                  t-att-disabled="!this.state.consent"
+                                  t-on-input="this.onInput"
+                                  t-on-keydown="this.onKeydown"/>
+                        <div class="d-flex align-items-center gap-2 pt-2">
+                            <div class="o_ai_accounting_model_select">
+                                <span class="o_ai_accounting_dot"/>
+                                <select class="form-select form-select-sm border-0 shadow-none bg-transparent"
+                                        t-on-change="this.onModelChange" t-att-disabled="this.state.streaming"
+                                        title="AI model">
+                                    <t t-foreach="this.state.models" t-as="model" t-key="model.id">
+                                        <option t-att-value="model.id" t-att-selected="model.id === this.state.modelId">
+                                            <t t-out="model.name"/> · <t t-out="model.provider"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                            <span class="o_ai_accounting_muted small ms-auto d-none d-md-inline">Enter to send · Shift+Enter for a new line</span>
+                            <button t-if="this.state.streaming" class="btn o_ai_accounting_send o_ai_accounting_stop"
+                                    t-on-click="this.stop" title="Stop">
+                                <i class="oi" data-icon="stop" role="img" aria-label="Stop"/>
+                            </button>
+                            <button t-else="" class="btn o_ai_accounting_send"
+                                    t-on-click="this.send" title="Send"
+                                    t-att-disabled="!this.state.input.trim() or !this.state.consent">
+                                <i class="oi" data-icon="arrow_upward" role="img" aria-label="Send"/>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-center o_ai_accounting_muted small mt-2">
+                        Company figures come from your books; explanations and general answers come from the AI and can contain mistakes.
+                    </div>
+                </div>
+            </main>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="ai_accounting_api_key_view_list" model="ir.ui.view">
+        <field name="name">ai.accounting.api.key.view.list</field>
+        <field name="model">ai.accounting.api.key</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="provider_id"/>
+                <field name="model_id"/>
+                <field name="api_key_hint"/>
+                <button name="action_test_connection" type="object" string="Test" icon="power"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ai_accounting_api_key_view_form" model="ir.ui.view">
+        <field name="name">ai.accounting.api.key.view.form</field>
+        <field name="model">ai.accounting.api.key</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_test_connection" type="object" string="Test Connection"
+                            class="btn-secondary" invisible="not api_key_hint"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="provider_id" readonly="id" options="{'no_create': True}"/>
+                        <field name="model_id" options="{'no_create': True}"
+                               placeholder="Default model of the provider"/>
+                        <field name="api_key_hint" invisible="not api_key_hint"/>
+                        <field name="new_api_key" password="True" required="not api_key_hint"
+                               placeholder="Paste your API key"/>
+                        <field name="user_id" invisible="1"/>
+                    </group>
+                    <div class="text-muted">
+                        Your key is stored for your user only, is never displayed again and is
+                        sent only to this provider. Testing the connection lists the provider's
+                        models, checks that the selected model is available to your key and
+                        consumes no tokens.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="ai_accounting_api_key_action" model="ir.actions.act_window">
+        <field name="name">My API Keys</field>
+        <field name="res_model">ai.accounting.api.key</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('user_id', '=', uid)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add your API key</p>
+            <p>Each user uses their own key: Gemini (Google AI Studio), OpenAI, Anthropic or OpenRouter.</p>
+        </field>
+    </record>
+</odoo>

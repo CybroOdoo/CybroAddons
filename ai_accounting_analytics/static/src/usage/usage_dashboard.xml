@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ai_accounting_analytics.UsageDashboard">
+        <div class="o_action o_ai_accounting o_ai_accounting_usage_dashboard h-100 overflow-auto">
+            <div class="o_ai_accounting_usage_page mx-auto px-3 px-md-4 py-4">
+                <!-- Header -->
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+                    <span class="o_ai_accounting_brand_icon">
+                        <i class="oi" data-icon="show_chart" role="img" aria-label="Usage" title="Usage"/>
+                    </span>
+                    <div class="flex-grow-1 lh-sm">
+                        <h2 class="mb-1 fw-bold">Usage &amp; Cost</h2>
+                        <div class="o_ai_accounting_muted">Tokens and cost of every AI call, in US dollars</div>
+                    </div>
+                    <div class="o_ai_accounting_segmented" role="group" aria-label="Period">
+                        <t t-foreach="this.periods" t-as="period" t-key="period.key">
+                            <button t-att-class="'btn btn-sm ' + (period.key === this.state.period ? 'o_ai_accounting_segment_active' : '')"
+                                    t-on-click="() => this.setPeriod(period.key)" t-out="period.label"/>
+                        </t>
+                    </div>
+                    <button class="btn btn-sm o_ai_accounting_chip" t-on-click="this.openDetails"
+                            title="Pivot, graph and list of every AI call">
+                        <i class="oi me-1" data-icon="table_chart" role="img" aria-label="Details"/>Details
+                    </button>
+                </div>
+
+                <t t-if="this.state.data and !this.state.data.has_data">
+                    <div class="o_ai_accounting_card o_ai_accounting_usage_empty text-center p-5">
+                        <span class="o_ai_accounting_hero_icon mb-3">
+                            <i class="oi" data-icon="show_chart" role="img" aria-label="No usage" title="No usage"/>
+                        </span>
+                        <h4 class="fw-bold">No AI usage yet</h4>
+                        <p class="o_ai_accounting_muted mb-4">
+                            Every question asked in AI Analytics is logged here with its tokens and cost.
+                        </p>
+                        <button class="btn o_ai_accounting_new px-4" t-on-click="() => this.openChat()">
+                            <i class="oi me-1" data-icon="chat_bubble" role="img" aria-label="Chat"/>Ask a first question
+                        </button>
+                    </div>
+                </t>
+
+                <div t-elif="this.state.data" t-att-class="'o_ai_accounting_usage_body ' + (this.state.loading ? 'o_ai_accounting_usage_loading' : '')">
+                    <!-- Key figures -->
+                    <div class="o_ai_accounting_usage_kpis">
+                        <t t-foreach="this.kpis()" t-as="kpi" t-key="kpi.key">
+                            <div t-att-class="'o_ai_accounting_usage_kpi ' + (kpi_first ? 'o_ai_accounting_usage_kpi_main' : '')">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="o_ai_accounting_usage_kpi_label" t-out="kpi.label"/>
+                                    <span class="o_ai_accounting_usage_kpi_icon">
+                                        <i class="oi" t-att-data-icon="kpi.icon" role="img" t-att-aria-label="kpi.label"/>
+                                    </span>
+                                </div>
+                                <div class="o_ai_accounting_usage_kpi_value" t-out="kpi.value"/>
+                                <div class="o_ai_accounting_usage_kpi_foot">
+                                    <t t-if="kpi.delta !== null">
+                                        <span class="o_ai_accounting_usage_delta">
+                                            <i class="oi" t-att-data-icon="kpi.delta >= 0 ? 'north_east' : 'south_east'"
+                                               role="img" aria-label="Trend"/>
+                                            <t t-out="this.deltaLabel(kpi.delta)"/>
+                                        </span>
+                                        <span>vs previous period</span>
+                                    </t>
+                                    <span t-else="">No previous period to compare</span>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <div class="o_ai_accounting_usage_insights">
+                        <t t-foreach="this.insights()" t-as="insight" t-key="insight_index">
+                            <div class="o_ai_accounting_usage_insight">
+                                <i class="oi" t-att-data-icon="insight.icon" role="img" t-att-aria-label="insight.label"/>
+                                <div class="lh-sm min-w-0">
+                                    <div class="fw-bold" t-out="insight.value"/>
+                                    <div class="o_ai_accounting_muted small text-truncate" t-out="insight.label"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="o_ai_accounting_usage_grid">
+                        <div class="o_ai_accounting_usage_wide">
+                            <AiChartBlock block="this.costChart()" t-key="'cost-' + this.state.period"/>
+                        </div>
+                        <div class="o_ai_accounting_usage_narrow">
+                            <AiChartBlock t-if="this.state.data.by_model.length" block="this.modelChart()"
+                                          t-key="'models-' + this.state.period"/>
+                        </div>
+                        <div class="o_ai_accounting_usage_wide">
+                            <AiChartBlock block="this.tokenChart()" t-key="'tokens-' + this.state.period"/>
+                        </div>
+                        <div class="o_ai_accounting_usage_narrow">
+                            <AiChartBlock t-if="this.hasTokens()" block="this.mixChart()" t-key="'mix-' + this.state.period"/>
+                        </div>
+                    </div>
+
+                    <!-- Models and users -->
+                    <div class="o_ai_accounting_usage_grid">
+                        <div t-att-class="this.state.data.by_user.length > 1 ? 'o_ai_accounting_usage_wide' : 'o_ai_accounting_usage_full'">
+                            <div class="o_ai_accounting_card my-3">
+                                <div class="o_ai_accounting_card_header d-flex align-items-center gap-2">
+                                    <span class="o_ai_accounting_card_icon">
+                                        <i class="oi" data-icon="memory" role="img" aria-label="Models" title="Models"/>
+                                    </span>
+                                    <div class="fw-semibold">Models</div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-borderless mb-0 o_ai_accounting_table">
+                                        <thead>
+                                            <tr>
+                                                <th>Model</th>
+                                                <th class="text-end d-none d-md-table-cell">Answers</th>
+                                                <th class="text-end">Tokens</th>
+                                                <th class="text-end">Cost</th>
+                                                <th class="o_ai_accounting_usage_share_col d-none d-md-table-cell">Share</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-if="!this.state.data.by_model.length">
+                                                <td colspan="5" class="o_ai_accounting_muted text-center py-3">No AI calls in this period.</td>
+                                            </tr>
+                                            <t t-foreach="this.state.data.by_model" t-as="model" t-key="model.id">
+                                                <tr>
+                                                    <td>
+                                                        <div class="fw-semibold" t-out="model.name"/>
+                                                        <div class="o_ai_accounting_muted small" t-out="model.provider"/>
+                                                    </td>
+                                                    <td class="text-end d-none d-md-table-cell" t-out="model.answers"/>
+                                                    <td class="text-end text-nowrap" t-out="this.tokens(model.tokens)"/>
+                                                    <td class="text-end text-nowrap fw-semibold" t-out="this.usd(model.cost)"/>
+                                                    <td class="d-none d-md-table-cell">
+                                                        <div class="o_ai_accounting_usage_bar" t-att-title="this.percent(model.share)">
+                                                            <span t-att-style="'width: ' + model.share + '%'"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div t-if="this.state.data.by_user.length > 1" class="o_ai_accounting_usage_narrow">
+                            <div class="o_ai_accounting_card my-3">
+                                <div class="o_ai_accounting_card_header d-flex align-items-center gap-2">
+                                    <span class="o_ai_accounting_card_icon">
+                                        <i class="oi" data-icon="group" role="img" aria-label="Users" title="Users"/>
+                                    </span>
+                                    <div class="fw-semibold">Users</div>
+                                </div>
+                                <div class="p-3 d-flex flex-column gap-3">
+                                    <t t-foreach="this.state.data.by_user" t-as="person" t-key="person.id">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <img t-att-src="'/web/image/res.users/' + person.id + '/avatar_128'"
+                                                 class="o_ai_accounting_avatar" alt="User"/>
+                                            <div class="flex-grow-1 min-w-0">
+                                                <div class="d-flex justify-content-between gap-2">
+                                                    <span class="text-truncate fw-semibold" t-out="person.name"/>
+                                                    <span class="text-nowrap" t-out="this.usd(person.cost)"/>
+                                                </div>
+                                                <div class="o_ai_accounting_usage_bar mt-1">
+                                                    <span t-att-style="'width: ' + person.share + '%'"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent answers -->
+                    <div class="o_ai_accounting_card my-3">
+                        <div class="o_ai_accounting_card_header d-flex align-items-center gap-2">
+                            <span class="o_ai_accounting_card_icon">
+                                <i class="oi" data-icon="history" role="img" aria-label="Recent" title="Recent"/>
+                            </span>
+                            <div class="fw-semibold flex-grow-1">Your recent answers</div>
+                            <button class="btn btn-sm o_ai_accounting_chip" t-on-click="() => this.openChat()">
+                                <i class="oi me-1" data-icon="chat_bubble" role="img" aria-label="Chat"/>Open AI Analytics
+                            </button>
+                        </div>
+                        <div t-if="!this.state.data.recent.length" class="o_ai_accounting_muted text-center py-4">
+                            No answers in this period.
+                        </div>
+                        <t t-foreach="this.state.data.recent" t-as="item" t-key="item_index">
+                            <div class="o_ai_accounting_usage_recent d-flex align-items-center gap-3"
+                                 t-on-click="() => this.openChat(item.chat_id)" title="Open the conversation">
+                                <span t-att-class="'o_ai_accounting_usage_recent_icon ' + (item.error ? 'o_ai_accounting_usage_recent_error' : '')">
+                                    <i class="oi" t-att-data-icon="item.error ? 'error' : 'check_circle'" role="img"
+                                       t-att-aria-label="item.error ? 'Failed' : 'Answered'"/>
+                                </span>
+                                <div class="flex-grow-1 min-w-0">
+                                    <div class="text-truncate fw-semibold" t-out="item.question"/>
+                                    <div class="o_ai_accounting_muted small">
+                                        <t t-out="this.date(item.date)"/> · <t t-out="item.model"/>
+                                        <t t-if="item.steps"> · <t t-out="this.stepsLabel(item.steps)"/></t>
+                                    </div>
+                                </div>
+                                <div class="text-end text-nowrap">
+                                    <div class="fw-semibold" t-out="this.usd(item.cost)"/>
+                                    <div class="o_ai_accounting_muted small"><t t-out="this.tokens(item.tokens)"/> tokens</div>
+                                </div>
+                                <i class="oi o_ai_accounting_muted" data-icon="chevron_right" role="img" aria-label="Open"/>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

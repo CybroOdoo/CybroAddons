@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Seed providers and models. Prices are USD per million tokens as published
+     at release time: check them in each provider's pricing page, or use
+     "Fetch Models" (OpenRouter returns live prices). -->
+<odoo noupdate="1">
+    <!-- Google Gemini (default) -->
+    <record id="provider_gemini" model="ai.accounting.provider">
+        <field name="name">Google Gemini</field>
+        <field name="provider_type">gemini</field>
+        <field name="sequence">1</field>
+    </record>
+    <!-- Gemini 2.x models are closed to new API users since September 2026. -->
+    <record id="model_gemini_flash_lite" model="ai.accounting.model">
+        <field name="name">Gemini 3.5 Flash-Lite</field>
+        <field name="technical_name">gemini-3.5-flash-lite</field>
+        <field name="provider_id" ref="provider_gemini"/>
+        <field name="sequence">1</field>
+        <field name="price_input">0.30</field>
+        <field name="price_cached">0.03</field>
+        <field name="price_output">2.50</field>
+        <!-- Default thinking level is "minimal": no thinking tokens for tool selection. -->
+    </record>
+    <record id="model_gemini_flash" model="ai.accounting.model">
+        <field name="name">Gemini 3.8 Flash</field>
+        <field name="technical_name">gemini-3.8-flash</field>
+        <field name="provider_id" ref="provider_gemini"/>
+        <field name="sequence">2</field>
+        <field name="price_input">0.75</field>
+        <field name="price_cached">0.075</field>
+        <field name="price_output">3.75</field>
+        <!-- "minimal" is not accepted by this model; "low" is the cheapest level. -->
+        <field name="extra_params">{"generationConfig": {"thinkingConfig": {"thinkingLevel": "low"}}}</field>
+    </record>
+    <record id="model_gemini_pro" model="ai.accounting.model">
+        <field name="name">Gemini 3.1 Pro (preview)</field>
+        <field name="technical_name">gemini-3.1-pro-preview</field>
+        <field name="provider_id" ref="provider_gemini"/>
+        <field name="sequence">3</field>
+        <field name="price_input">2.00</field>
+        <field name="price_cached">0.20</field>
+        <field name="price_output">12.00</field>
+        <field name="extra_params">{"generationConfig": {"thinkingConfig": {"thinkingLevel": "low"}}}</field>
+    </record>
+
+    <!-- OpenAI -->
+    <record id="provider_openai" model="ai.accounting.provider">
+        <field name="name">OpenAI (ChatGPT)</field>
+        <field name="provider_type">openai</field>
+        <field name="sequence">2</field>
+    </record>
+    <record id="model_openai_gpt41_mini" model="ai.accounting.model">
+        <field name="name">GPT-4.1 mini</field>
+        <field name="technical_name">gpt-4.1-mini</field>
+        <field name="provider_id" ref="provider_openai"/>
+        <field name="sequence">1</field>
+        <field name="price_input">0.40</field>
+        <field name="price_cached">0.10</field>
+        <field name="price_output">1.60</field>
+    </record>
+    <record id="model_openai_gpt4o_mini" model="ai.accounting.model">
+        <field name="name">GPT-4o mini</field>
+        <field name="technical_name">gpt-4o-mini</field>
+        <field name="provider_id" ref="provider_openai"/>
+        <field name="sequence">2</field>
+        <field name="price_input">0.15</field>
+        <field name="price_cached">0.075</field>
+        <field name="price_output">0.60</field>
+    </record>
+    <record id="model_openai_gpt41" model="ai.accounting.model">
+        <field name="name">GPT-4.1</field>
+        <field name="technical_name">gpt-4.1</field>
+        <field name="provider_id" ref="provider_openai"/>
+        <field name="sequence">3</field>
+        <field name="price_input">2.00</field>
+        <field name="price_cached">0.50</field>
+        <field name="price_output">8.00</field>
+    </record>
+
+    <!-- Anthropic -->
+    <record id="provider_anthropic" model="ai.accounting.provider">
+        <field name="name">Anthropic (Claude)</field>
+        <field name="provider_type">anthropic</field>
+        <field name="sequence">3</field>
+    </record>
+    <record id="model_claude_sonnet" model="ai.accounting.model">
+        <field name="name">Claude Sonnet 5.5</field>
+        <field name="technical_name">claude-sonnet-5-5</field>
+        <field name="provider_id" ref="provider_anthropic"/>
+        <field name="sequence">1</field>
+        <field name="price_input">2.00</field>
+        <field name="price_cached">0.20</field>
+        <field name="price_cache_write">2.50</field>
+        <field name="price_output">10.00</field>
+        <!-- Low effort: short analytical answers, fewer thinking tokens. -->
+        <field name="extra_params">{"output_config": {"effort": "low"}}</field>
+    </record>
+    <record id="model_claude_haiku" model="ai.accounting.model">
+        <field name="name">Claude Haiku 4.5</field>
+        <field name="technical_name">claude-haiku-4-5</field>
+        <field name="provider_id" ref="provider_anthropic"/>
+        <field name="sequence">2</field>
+        <field name="price_input">1.00</field>
+        <field name="price_cached">0.10</field>
+        <field name="price_cache_write">1.25</field>
+        <field name="price_output">5.00</field>
+    </record>
+    <record id="model_claude_opus" model="ai.accounting.model">
+        <field name="name">Claude Opus 5.5</field>
+        <field name="technical_name">claude-opus-5-5</field>
+        <field name="provider_id" ref="provider_anthropic"/>
+        <field name="sequence">3</field>
+        <field name="price_input">4.00</field>
+        <field name="price_cached">0.20</field>
+        <field name="price_cache_write">5.00</field>
+        <field name="price_output">20.00</field>
+        <field name="extra_params">{"output_config": {"effort": "low"}}</field>
+    </record>
+
+    <!-- OpenRouter (cost is reported by the provider on every call) -->
+    <record id="provider_openrouter" model="ai.accounting.provider">
+        <field name="name">OpenRouter</field>
+        <field name="provider_type">openrouter</field>
+        <field name="sequence">4</field>
+    </record>
+    <record id="model_openrouter_gemini_flash" model="ai.accounting.model">
+        <field name="name">Gemini 3.8 Flash</field>
+        <field name="technical_name">google/gemini-3.8-flash</field>
+        <field name="provider_id" ref="provider_openrouter"/>
+        <field name="sequence">1</field>
+        <field name="price_input">0.75</field>
+        <field name="price_cached">0.075</field>
+        <field name="price_output">3.75</field>
+    </record>
+    <record id="model_openrouter_gpt41_mini" model="ai.accounting.model">
+        <field name="name">GPT-4.1 mini</field>
+        <field name="technical_name">openai/gpt-4.1-mini</field>
+        <field name="provider_id" ref="provider_openrouter"/>
+        <field name="sequence">2</field>
+        <field name="price_input">0.40</field>
+        <field name="price_cached">0.10</field>
+        <field name="price_output">1.60</field>
+    </record>
+    <record id="model_openrouter_claude_haiku" model="ai.accounting.model">
+        <field name="name">Claude Haiku 4.5</field>
+        <field name="technical_name">anthropic/claude-haiku-4.5</field>
+        <field name="provider_id" ref="provider_openrouter"/>
+        <field name="sequence">3</field>
+        <field name="price_input">1.00</field>
+        <field name="price_cached">0.10</field>
+        <field name="price_output">5.00</field>
+    </record>
+
+    <function model="ir.config_parameter" name="set_int"
+              eval="('ai_accounting_analytics.default_model_id', ref('model_gemini_flash_lite'))"/>
+</odoo>
