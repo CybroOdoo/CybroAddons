@@ -65,3 +65,4 @@ HTML Description: `<static/description/index.html>`__
 Important note
 ==============
 Please note that this theme implements a custom shop page, making it incompatible with the default odoo’s shop page.
+

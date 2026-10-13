@@ -24,13 +24,13 @@
     'category': 'Theme/Corporate',
     'summary': 'Design Theme with Theme_livelo',
     'description': 'Theme Livelo is a modern and versatile website theme'
-                   ' designed for businesses looking to establish a professional presence'
-                   ' and feature',
+               ' designed for businesses looking to establish a professional presence'
+               ' and feature',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['website', 'mail', 'web_editor', 'website_blog', 'product', 'website_sale', 'crm'],
+    'depends': ['website', 'mail', 'web_editor', 'website_blog','product','website_sale', 'crm'],
     'data': [
         'security/ir.model.access.csv',
         'data/amenity_data.xml',
@@ -57,6 +57,9 @@
         'views/snippets/property_list_snippet.xml',
         'views/snippets/latest_blog_snippet.xml',
         'views/home.xml',
+
+
+
     ],
     'assets': {
         'web.assets_frontend': [
@@ -73,14 +76,16 @@
             "theme_livelo/static/src/xml/property_list_content.xml",
             "theme_livelo/static/src/js/property_category.js",
         ],
+
         'web.assets_backend': [
             "theme_livelo/static/src/js/welcome_message.js",
         ],
     },
-    'images': [
+'images': [
         'static/description/banner.jpg',
         'static/description/theme_screenshot.jpg'
     ],
+
     "license": "LGPL-3",
     'installable': True,
     'auto_install': False,
