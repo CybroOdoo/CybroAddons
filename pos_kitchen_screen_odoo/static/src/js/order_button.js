@@ -5,6 +5,7 @@ import { useService } from "@web/core/utils/hooks";
 import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { _t } from "@web/core/l10n/translation";
 import { TicketScreen } from "@point_of_sale/app/screens/ticket_screen/ticket_screen";
+import { changesToOrder } from "@point_of_sale/app/models/utils/order_change";
 
 /**
  * @props partner
@@ -52,14 +53,83 @@ patch(ActionpadWidget.prototype, {
                     }
                 });
                 if (self.kitchen_order_status){
-                    await this.pos.sendOrderInPreparationUpdateLastChange(this.currentOrder);
+                    // Capture, BEFORE sending, both the new quantities and the
+                    // cancellations relative to the previous kitchen send. The
+                    // send resets the native tracker, so this is the only moment
+                    // the diff is available.
+                    const order = this.currentOrder;
+                    const orderUuid = order.uuid;
+                    const configId = order.config_id.id;
+                    const orderRef = order.pos_reference || order.name || "";
+                    const tableName = order.table_id ? order.table_id.name : "";
+                    const { newQtyByUuid, cancelled, currentQtyByUuid } = this._collectKitchenChanges(order);
+                    await this.pos.sendOrderInPreparationUpdateLastChange(order);
                     await this.processOrderForKitchen();
+                    if (orderUuid && (Object.keys(newQtyByUuid).length || Object.keys(currentQtyByUuid).length)) {
+                        await self.orm.call("pos.order", "apply_kitchen_new_quantities", [orderUuid, newQtyByUuid, currentQtyByUuid]);
+                    }
+                    if (cancelled.length) {
+                        await self.orm.call("kitchen.order.cancellation", "record_cancellations", [configId, orderRef, tableName, cancelled]);
+                    }
                     this.env.bus.trigger('pos-kitchen-screen-update');
                 }
             } finally {
                 this.uiState.clicked = false;
             }
         }
+    },
+
+    _collectKitchenChanges(order) {
+        // Single call to Odoo's native preparation-change computation (the one
+        // that feeds the kitchen printer): it returns both the newly added
+        // quantities and the cancelled/reduced ones since the previous send.
+        const newQtyByUuid = {};
+        const cancelled = [];
+        const changedUuids = new Set();
+        try {
+            const change = changesToOrder(order, false, new Set(), false);
+            for (const line of change.new || []) {
+                if (line.uuid && line.quantity > 0) {
+                    newQtyByUuid[line.uuid] = (newQtyByUuid[line.uuid] || 0) + line.quantity;
+                    changedUuids.add(line.uuid);
+                }
+            }
+            const cancelledByProduct = {};
+            for (const line of change.cancelled || []) {
+                if (line.quantity > 0) {
+                    // Group by product so several cancelled lines of the same
+                    // product show a single "N x Product" alert instead of one
+                    // alert per line.
+                    const key = line.product_id || line.name || line.basic_name || line.display_name;
+                    if (!cancelledByProduct[key]) {
+                        cancelledByProduct[key] = {
+                            product_id: line.product_id,
+                            name: line.name || line.basic_name || line.display_name,
+                            quantity: 0,
+                        };
+                    }
+                    cancelledByProduct[key].quantity += line.quantity;
+                    if (line.uuid) {
+                        changedUuids.add(line.uuid);
+                    }
+                }
+            }
+            cancelled.push(...Object.values(cancelledByProduct));
+        } catch (e) {
+            console.info("Could not compute kitchen changes", e);
+        }
+        // Authoritative current quantity per changed line (0 if removed), so the
+        // kitchen screen reflects reductions/cancellations regardless of how the
+        // POS persists already-sent order lines.
+        const presentQty = {};
+        for (const l of order.get_orderlines()) {
+            presentQty[l.uuid] = l.get_quantity();
+        }
+        const currentQtyByUuid = {};
+        for (const uuid of changedUuids) {
+            currentQtyByUuid[uuid] = presentQty[uuid] || 0;
+        }
+        return { newQtyByUuid, cancelled, currentQtyByUuid };
     },
 
     async processOrderForKitchen() {
@@ -70,7 +140,7 @@ patch(ActionpadWidget.prototype, {
             'table_id': this.pos.get_order().table_id.id,
             'session_id': this.pos.get_order().session_id.id
         };
-        this.pos.syncAllOrders()
+        await this.pos.syncAllOrders();
         await self.orm.call("pos.order", "process_order_for_kitchen", [orderData]);
     },
 

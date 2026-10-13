@@ -23,6 +23,7 @@ class KitchenScreenDashboard extends Component {
         this.done_order = this.done_order.bind(this);
         this.cancel_order = this.cancel_order.bind(this);
         this.accept_order_line = this.accept_order_line.bind(this);
+        this.dismiss_cancellation = this.dismiss_cancellation.bind(this);
         this.forceRefresh = this.forceRefresh.bind(this);
 
         // Stage change methods
@@ -32,6 +33,7 @@ class KitchenScreenDashboard extends Component {
 
         // Initialization
         this.currentShopId = this.getCurrentShopId();
+        this.currentKitchenScreenId = this.getKitchenScreenId();
         this.channel = `pos_order_created_${this.currentShopId}`;
         this.countdownIntervals = {};
 
@@ -46,6 +48,7 @@ class KitchenScreenDashboard extends Component {
             lines: [],
             prepare_times: [],
             countdowns: {},
+            cancellations: [],
             isLoading: false
         });
 
@@ -84,15 +87,67 @@ class KitchenScreenDashboard extends Component {
         return parseInt(session_shop_id, 10) || 0;
     }
 
+    getKitchenScreenId() {
+        let kitchen_screen_id;
+        if (this.props.action?.context?.default_kitchen_screen_id) {
+            sessionStorage.setItem('kitchen_screen_id', this.props.action.context.default_kitchen_screen_id);
+            kitchen_screen_id = this.props.action.context.default_kitchen_screen_id;
+        } else {
+            kitchen_screen_id = sessionStorage.getItem('kitchen_screen_id');
+        }
+        return parseInt(kitchen_screen_id, 10) || null;
+    }
+
     async loadOrders() {
         if (this.state.isLoading) return;
 
         try {
             this.state.isLoading = true;
-            const result = await this.orm.call("pos.order", "get_details", [this.currentShopId]);
+            const result = await this.orm.call("pos.order", "get_details", [this.currentShopId, this.currentKitchenScreenId]);
+
+            try {
+                this.state.cancellations = await this.orm.call(
+                    "kitchen.order.cancellation", "get_cancellations",
+                    [this.currentShopId, this.currentKitchenScreenId]) || [];
+            } catch (error) {
+                console.info("Could not load kitchen cancellations", error);
+            }
 
             this.state.order_details = result.orders || [];
             this.state.lines = result.order_lines || [];
+
+            // Per-screen status: get_details already returns only the lines
+            // belonging to THIS screen, so each screen derives its own progress
+            // (draft / waiting / ready) from them. This is what lets the bar,
+            // hot and cold screens complete their part independently without
+            // affecting one another. The template keeps reading order_status.
+            const linesByOrder = {};
+            for (const line of this.state.lines) {
+                const oid = Array.isArray(line.order_id) ? line.order_id[0] : line.order_id;
+                if (oid === undefined || oid === null) continue;
+                (linesByOrder[oid] = linesByOrder[oid] || []).push(line);
+            }
+            const screenStatus = (lines) => {
+                const active = lines.filter(l => l.order_status !== 'cancel');
+                if (!active.length) return 'cancel';
+                if (active.every(l => l.order_status === 'ready')) return 'ready';
+                if (active.some(l => l.order_status === 'draft')) return 'draft';
+                return 'waiting';
+            };
+            this.state.order_details.forEach(order => {
+                const lines = linesByOrder[order.id];
+                if (lines && lines.length) {
+                    order.order_status = screenStatus(lines);
+                    // A line is a "new addition" when it is still to cook
+                    // (draft) while other lines of the same order are already
+                    // completed: this is the coffee/dessert added after the
+                    // first round, which the kitchen needs to spot at a glance.
+                    const hasReady = lines.some(l => l.order_status === 'ready');
+                    lines.forEach(l => {
+                        l.is_new_addition = hasReady && l.order_status === 'draft';
+                    });
+                }
+            });
 
             const activeOrders = this.state.order_details.filter(order => {
                 const configMatch = Array.isArray(order.config_id) ?
@@ -211,12 +266,27 @@ class KitchenScreenDashboard extends Component {
             relevantMessages.includes(message.message)) {
             this.loadOrders();
         }
+        if (message.res_model === "kitchen.order.cancellation" &&
+            message.message === "kitchen_order_cancelled") {
+            this.loadOrders();
+        }
+    }
+
+    async dismiss_cancellation(cancellationId) {
+        try {
+            await this.orm.call("kitchen.order.cancellation",
+                "acknowledge_cancellations", [[cancellationId]]);
+            this.state.cancellations = this.state.cancellations.filter(
+                c => c.id !== cancellationId);
+        } catch (error) {
+            console.error("Error dismissing cancellation:", error);
+        }
     }
 
     async accept_order(e) {
         const orderId = Number(e.target.value);
         try {
-            await this.orm.call("pos.order", "order_progress_draft", [orderId]);
+            await this.orm.call("pos.order", "order_progress_draft", [orderId, this.currentKitchenScreenId]);
 
             const order = this.state.order_details.find(o => o.id === orderId);
             if (order) {
@@ -235,7 +305,7 @@ class KitchenScreenDashboard extends Component {
     async done_order(e) {
         const orderId = Number(e.target.value);
         try {
-            await this.orm.call("pos.order", "order_progress_change", [orderId]);
+            await this.orm.call("pos.order", "order_progress_change", [orderId, this.currentKitchenScreenId]);
 
             const order = this.state.order_details.find(o => o.id === orderId);
             if (order) {

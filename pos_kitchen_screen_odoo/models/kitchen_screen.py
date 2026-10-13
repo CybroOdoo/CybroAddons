@@ -28,20 +28,10 @@ class KitchenScreen(models.Model):
     _description = 'Pos Kitchen Screen'
     _rec_name = 'sequence'
 
-    def _pos_shop_id(self):
-        """Domain for the Pos Shop"""
-        kitchen = self.search([])
-        if kitchen:
-            return [('module_pos_restaurant', '=', True),
-                    (
-                    'id', 'not in', [rec.id for rec in kitchen.pos_config_id])]
-        else:
-            return [('module_pos_restaurant', '=', True)]
-
     sequence = fields.Char(readonly=True, default='New',
                            copy=False, tracking=True, help="Sequence of items")
     pos_config_id = fields.Many2one('pos.config', string='Allowed POS',
-                                    domain=_pos_shop_id,
+                                    domain=[('module_pos_restaurant', '=', True)],
                                     help="Allowed POS for kitchen")
     pos_categ_ids = fields.Many2many('pos.category',
                                      string='Allowed POS Category',
@@ -61,7 +51,7 @@ class KitchenScreen(models.Model):
         return {
             'type': 'ir.actions.act_url',
             'target': 'new',
-            'url': '/pos/kitchen?pos_config_id= %s' % self.pos_config_id.id,
+            'url': '/pos/kitchen?pos_config_id=%s' % self.pos_config_id.id,
         }
 
     @api.model_create_multi
