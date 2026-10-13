@@ -28,6 +28,7 @@ from . import groupby_registry
 from . import ir_ui_menu
 from . import ir_ui_view
 from . import ir_rule
+from . import registry_rebuild_mixin
 from . import res_users
 from . import res_groups
 from . import role_management

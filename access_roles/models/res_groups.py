@@ -25,7 +25,6 @@ from lxml.builder import E
 from odoo import api, models
 from odoo.addons.base.models.ir_model import MODULE_UNINSTALL_FLAG
 
-
 class ResGroups(models.Model):
     """Extends res.groups to dynamically generate role-based group views."""
     _inherit = 'res.groups'
@@ -53,13 +52,6 @@ class ResGroups(models.Model):
     def get_selection_groups(name):
         """Extract group IDs from a selection group field name."""
         return [int(v) for v in name[11:].split('_')]
-
-    @api.model
-    def _register_hook(self):
-        """Hook to update role-based group view after module installation."""
-        super()._register_hook()
-        self._update_role_groups_view()
-        return True
 
     @api.model
     def get_groups_by_application(self):
