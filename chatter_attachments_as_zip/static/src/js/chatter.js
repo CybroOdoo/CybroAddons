@@ -16,7 +16,7 @@ patch(Chatter.prototype, {
      */
     async onClickDownloadAttachment(ev) {
         // Build the URL with parameters in the query string
-        const url = `/chatter/attachments/download/zip?res_id=${this.props.threadId}`;
+        const url = `/chatter/attachments/download/zip?res_model=${this.props.threadModel}&res_id=${this.props.threadId}`;
         // Send an HTTP GET request to download attachments as a zip file
         fetch(url)
             .then(response => {

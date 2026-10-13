@@ -39,8 +39,11 @@ class DownloadAllAttachments(http.Controller):
                 werkzeug.wrappers.Response: HTTP response with the zip file.
             """
         chatter_id = request.params.get('res_id')
+        chatter_model = request.params.get('res_model')
         attachments = request.env['ir.attachment'].search(
-            [('res_id', '=', chatter_id), ('res_model', '!=', 'account.move')])
+            [('res_id', '=', chatter_id),
+             ('res_model', '=', chatter_model),
+             ('res_model', '!=', 'account.move')])
         if attachments:
             # Define the name of the zip file
             zip_filename = f'attachments_{chatter_id}.zip'
