@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Product Barcode Generator',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.1.0',
     'category': 'Warehouse',
     'summary': 'Generates EAN13 Standard Barcode for Product.',
     'description': 'Generates EAN13 Standard Barcode' 
