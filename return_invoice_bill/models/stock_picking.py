@@ -28,57 +28,60 @@ class StockPicking(models.Model):
     to the picking, and generating actions for viewing them."""
     _inherit = 'stock.picking'
 
-    picking_type_name = fields.Char(string='Picking Type Name',
+    picking_type_name = fields.Char(related='picking_type_id.name',
+                                    string='Picking Type Name',
+                                    readonly=True,
                                     help='Name of picking type')
-    return_invoice_count = fields.Char(string="Counts",
-                                       compute='_compute_return_invoice_count',
-                                       help="counts of return invoices")
+    return_invoice_count = fields.Integer(string="Counts",
+                                          compute='_compute_return_invoice_count',
+                                          help="Counts of return invoices")
     is_paid = fields.Boolean(string='Is Paid',
                              help='Value will be True when order has paid '
                                   'otherwise False.')
 
-    @api.model_create_multi
-    def create(self, vals):
-        """This method overrides the default create method to set the
-        'picking_type_name' field based on the 'picking_type_id' field
-        before creating the record."""
-
-        self.picking_type_name = self.picking_type_id.name
-        return super(StockPicking, self).create(vals)
+    def _compute_return_invoice_count(self):
+        for record in self:
+            if record.picking_type_code == 'outgoing' and record.sale_id:
+                record.return_invoice_count = len(
+                    record.sale_id.invoice_ids.filtered(lambda x: x.move_type == 'out_refund')
+                )
+            elif record.picking_type_code == 'incoming' and record.purchase_id:
+                record.return_invoice_count = len(
+                    record.purchase_id.invoice_ids.filtered(lambda x: x.move_type == 'in_refund')
+                )
+            else:
+                record.return_invoice_count = 0
 
     def action_get_credit_note(self):
-        """Generates an action to view reversal credit notes
-         based on the context."""
+        """Generates an action to view reversal credit notes."""
         self.ensure_one()
         credit_notes = self.sale_id.invoice_ids.filtered(
             lambda x: x.move_type == 'out_refund')
-        return {
+        action = {
             'type': 'ir.actions.act_window',
-            'name': _(
-                'Reversal of Credit Note: %s') % self.sale_id.invoice_ids.filtered(
-                lambda x: x.move_type == 'out_invoice').name,
+            'name': _('Credit Notes'),
             'res_model': 'account.move',
             'view_mode': 'list,form',
             'domain': [('id', 'in', credit_notes.ids)],
         }
+        if len(credit_notes) == 1:
+            action['view_mode'] = 'form'
+            action['res_id'] = credit_notes.id
+        return action
 
     def action_get_debit_note(self):
-        """Generates an action to view reversal  debit notes
-                based on the context."""
+        """Generates an action to view reversal debit notes."""
+        self.ensure_one()
         debit_notes = self.purchase_id.invoice_ids.filtered(
             lambda x: x.move_type == 'in_refund')
-        self.ensure_one()
-        return {
+        action = {
             'type': 'ir.actions.act_window',
-            'name': _(
-                'Reversal of Debit Note: %s') % self.purchase_id.invoice_ids.filtered(
-                lambda x: x.move_type == 'in_invoice').name,
+            'name': _('Debit Notes'),
             'res_model': 'account.move',
             'view_mode': 'list,form',
-            'domain': [('id', 'in', debit_notes.ids)]
+            'domain': [('id', 'in', debit_notes.ids)],
         }
-
-    @api.depends('return_invoice_count')
-    def _compute_return_invoice_count(self):
-        for record in self:
-            record.return_invoice_count = record.return_count
+        if len(debit_notes) == 1:
+            action['view_mode'] = 'form'
+            action['res_id'] = debit_notes.id
+        return action

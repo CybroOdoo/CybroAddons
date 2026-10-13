@@ -30,59 +30,25 @@ class StockReturnPicking(models.TransientModel):
                                     help='Name of the picking type')
 
     @api.model
-    def default_get(self, fields):
-        """Override of default_get method to set default values for fields
-         in the wizard."""
-        result = super(StockReturnPicking, self).default_get(fields)
-        active_model = self.env.context['active_model']
-        active_id = self.env.context['active_id']
-        if active_model == 'stock.picking' and active_id:
-            stock_picking = self.env[active_model].browse(active_id)
-            picking_type = stock_picking.picking_type_id
-            result['picking_type_name'] = self.env['ir.model.data'].search([
-                ('model', '=', 'stock.picking.type'),
-                ('res_id', '=', picking_type.id)
-            ]).complete_name
-        return result
-
-    def _update_stock_picking(self):
-        """Update the 'is_paid' field of the active stock picking to indicate
-        payment. This function is typically called when processing returns with
-        credit or debit notes."""
+    def default_get(self, fields_list):
+        """Override of default_get method to set default values for fields in the wizard."""
+        result = super(StockReturnPicking, self).default_get(fields_list)
         active_model = self.env.context.get('active_model')
         active_id = self.env.context.get('active_id')
-
         if active_model == 'stock.picking' and active_id:
             stock_picking = self.env[active_model].browse(active_id)
-            stock_picking.is_paid = True
+            if stock_picking.exists() and stock_picking.picking_type_id:
+                result['picking_type_name'] = stock_picking.picking_type_id.name
+        return result
 
     def _get_return_action(self):
-        """
-        Retrieve the action for returning a move, specifically for credit notes.
-        Returns:
-            ir.actions.actions: Action object for returning moves with credit
-            notes.
-        """
+        """Retrieve the action for returning a move wizard."""
         return self.env["ir.actions.actions"]._for_xml_id("return_invoice_bill.return_move_action")
 
     def action_returns_with_credit_note(self):
-        """
-        Perform the action of returning moves with credit notes and update the
-        stock picking accordingly.
-        Returns:
-            ir.actions.actions: Action object for returning moves with credit
-            notes.
-        """
-        self._update_stock_picking()
+        """Open the wizard to enter return reason and create credit note."""
         return self._get_return_action()
 
     def action_returns_with_debit_note(self):
-        """
-        Perform the action of returning moves with debit notes and update the
-        stock picking accordingly.
-        Returns:
-            ir.actions.actions: Action object for returning moves with debit
-            notes.
-        """
-        self._update_stock_picking()
+        """Open the wizard to enter return reason and create debit note."""
         return self._get_return_action()

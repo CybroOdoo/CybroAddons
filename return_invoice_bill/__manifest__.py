@@ -21,16 +21,16 @@
 ##############################################################################
 {
     "name": "Automated Credit/Debit Note Generation from Return Picking",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Sales",
     "summary": "For creating credit note and debit note while picking.",
-    "description": "We can create credit note or debit note while return the"
-    " picking by using this module in Odoo 17. ",
+    "description": "We can create credit note or debit note while returning the"
+    " picking by using this module in Odoo 19.",
     "author": "Cybrosys Techno Solutions",
     "company": "Cybrosys Techno Solutions",
     "maintainer": "Cybrosys Techno Solutions",
     "website": "https://www.cybrosys.com",
-    "depends": ["sale_management", "stock", "purchase"],
+    "depends": ["sale_management", "stock", "purchase", "account"],
     "data": [
         "security/ir.model.access.csv",
         "views/stock_picking_views.xml",
