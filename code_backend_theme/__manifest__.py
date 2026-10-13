@@ -21,7 +21,7 @@
 #############################################################################
 {
     "name": "Code Backend Theme",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Themes/Backend",
     "summary": "Code Backend Theme is an attractive theme for backend",
     "description": """Minimalist and elegant theme for Odoo backend""",
@@ -44,8 +44,7 @@
             "code_backend_theme/static/src/scss/theme.scss",
             "code_backend_theme/static/src/scss/sidebar.scss",
             "code_backend_theme/static/src/js/fields/colors.js",
-            'code_backend_theme/static/src/js/web_navbar_appmenu'
-            '/webNavbarAppMenu.js',
+            'code_backend_theme/static/src/js/web_navbar_appmenu/webNavbarAppMenu.js',
         ],
         "web.assets_frontend": [
             "code_backend_theme/static/src/scss/login.scss",
