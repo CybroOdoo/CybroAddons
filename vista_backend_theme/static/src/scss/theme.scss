@@ -1,0 +1,196 @@
+// Vista backend theme: the colors come from the palette variables
+// ($vista-*, see palette_*.scss) so this file is the same for every theme.
+
+$vista-sidebar-width: 88px;
+
+// = Top bar
+$vista-slant: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+$vista-slant-both: polygon(14% 0, 100% 0, 86% 100%, 0 100%);
+
+.o_main_navbar {
+    // let the coloured block use the full height of the bar
+    padding-block: 0;
+    align-items: center;
+    box-shadow: 0 .25rem 1rem rgba(18, 38, 63, .08);
+    border-bottom: 1px solid rgba($vista-text, .06);
+
+    // Dots button + app name form the coloured block
+    .o_navbar_apps_menu {
+        display: flex;
+        height: 100%;
+    }
+
+    .o_vista_sidebar_toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 60px;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: $vista-primary;
+        color: $vista-brand-text;
+        transition: background-color .2s linear;
+
+        &:hover {
+            background: $vista-primary-dark;
+        }
+
+        // sidebar opened: white button, primary dots
+        &.o_vista_sidebar_toggle_active {
+            background: transparent;
+            color: $vista-primary;
+        }
+    }
+
+    .o_vista_dots {
+        width: 18px;
+        height: 18px;
+        background-color: currentColor;
+        mask: url('/vista_backend_theme/static/src/img/icons/dots-menu.png') center / contain no-repeat;
+        -webkit-mask: url('/vista_backend_theme/static/src/img/icons/dots-menu.png') center / contain no-repeat;
+    }
+
+    .o_menu_brand {
+        align-self: stretch;
+        height: 100%;
+        margin: 0;
+        padding: 0 2.25rem 0 .5rem;
+        background: $vista-primary;
+        color: $vista-brand-text;
+        font-size: 1.5rem;
+        font-weight: bold;
+        border-radius: 0;
+        clip-path: $vista-slant;
+
+        &:hover {
+            background: $vista-primary;
+            color: $vista-brand-text;
+        }
+    }
+
+    // sidebar opened: the block starts after the button, slanted on both sides
+    .o_navbar_apps_menu:has(.o_vista_sidebar_toggle_active) + .o_menu_brand {
+        padding-inline-start: 2.25rem;
+        clip-path: $vista-slant-both;
+    }
+
+    .o_vista_theme_switcher {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 0 .5rem;
+        border: 0;
+        background: transparent;
+        color: $vista-navbar-text;
+
+        &:hover {
+            color: $vista-primary;
+            background: $vista-primary-light;
+        }
+    }
+}
+
+.o_vista_theme_dot {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    margin-inline-end: .5rem;
+    border-radius: 50%;
+    vertical-align: middle;
+    border: 1px solid rgba(0, 0, 0, .15);
+}
+
+// = App sidebar
+.o_vista_sidebar {
+    display: none;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    inset-inline-start: 0;
+    z-index: $zindex-fixed;
+    width: $vista-sidebar-width;
+    overflow-y: auto;
+    padding-bottom: 1.25rem;
+    background-color: $vista-sidebar-bg;
+    color: $vista-sidebar-text;
+    border-inline-end: 1px solid $vista-sidebar-border;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.o_vista_sidebar_title {
+    margin: 1.25rem auto 1rem;
+    font-size: .8rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: $vista-sidebar-text;
+}
+
+.o_vista_sidebar_menu {
+    margin: 0;
+    padding: 0;
+}
+
+.o_vista_sidebar_item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .25rem;
+    padding: .5rem .25rem;
+    border-inline-start: 4px solid transparent;
+    color: $vista-sidebar-text;
+    font-size: 11px;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color .2s linear;
+
+    &:hover {
+        background-color: $vista-sidebar-hover;
+        color: $vista-sidebar-text;
+    }
+
+    &.active {
+        background-color: $vista-sidebar-hover;
+        border-inline-start-color: $vista-sidebar-text;
+    }
+
+    .o_vista_sidebar_img {
+        width: 40px;
+        height: 40px;
+        margin: .35rem 0;
+        object-fit: contain;
+    }
+
+    i.o_vista_sidebar_img {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: .5rem;
+        font-size: 1.5rem;
+    }
+
+    // the name is shown as a tooltip (title), like in version 19
+    .o_vista_sidebar_name {
+        display: none;
+    }
+}
+
+// The sidebar is a desktop feature: small screens keep Odoo's burger menu.
+@include media-breakpoint-up(lg) {
+    body.o_vista_sidebar_open {
+        .o_vista_sidebar {
+            display: flex;
+        }
+
+        // the body is the .o_web_client element
+        padding-inline-start: $vista-sidebar-width;
+    }
+}

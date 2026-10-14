@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- On large screens the apps dropdown is replaced by a button toggling the sidebar
+         (small screens keep the burger menu of Odoo) -->
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_navbar_apps_menu')]/Dropdown" position="replace">
+            <button class="o_vista_sidebar_toggle" title="Toggle apps sidebar" data-hotkey="h"
+                    t-att-class="{'o_vista_sidebar_toggle_active': this.vistaSidebarOpen()}"
+                    t-on-click="() => this.toggleVistaSidebar()">
+                <span class="o_vista_dots"/>
+            </button>
+        </xpath>
+    </t>
+
+    <t t-name="vista_backend_theme.Sidebar">
+        <aside class="o_vista_sidebar" aria-label="Applications">
+            <h6 class="o_vista_sidebar_title">MENU</h6>
+            <ul class="o_vista_sidebar_menu list-unstyled">
+                <li t-foreach="this.apps" t-as="app" t-key="app.id">
+                    <t t-set="icon" t-value="this.getIcon(app)"/>
+                    <a role="menuitem" class="o_vista_sidebar_item"
+                       t-att-class="{'active': app.id === this.currentAppId}"
+                       t-att-href="this.getHref(app)"
+                       t-att-title="app.name"
+                       t-att-data-menu-xmlid="app.xmlid"
+                       t-on-click.prevent="() => this.onAppClick(app)">
+                        <img t-if="icon.src" class="o_vista_sidebar_img" t-att-src="icon.src" alt=""/>
+                        <i t-else="" class="oi oi-2x o_vista_sidebar_img" t-att-data-icon="icon.icon" t-att-style="icon.style"/>
+                        <span class="o_vista_sidebar_name" t-out="app.name"/>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+    </t>
+</templates>
