@@ -1,0 +1,2022 @@
+// AI Chat Pro, in the neutral colors of Discuss: a white sidebar and header on
+// the light gray background of the web client, answers set in a serif like a
+// written note, and Odoo's primary color kept for what matters (the brand mark,
+// the send button, new chats). Every color comes from the variables below, so the
+// look changes in one place.
+
+// Fallbacks for when the minimal theme is not installed (used by a few results)
+$o-minimal-page-bg: $o-gray-100 !default;
+$o-minimal-active-bg: mix($o-action, $o-white, 14%) !default;
+$o-minimal-active-color: darken($o-action, 7%) !default;
+$o-minimal-card-shadow: 0 1px 2px rgba(20, 20, 20, 0.04), 0 8px 24px rgba(20, 20, 20, 0.05) !default;
+
+// the accent: the primary color of Odoo (#71639e in Community)
+$o-ai-chat-accent: $o-brand-primary;
+$o-ai-chat-text: $o-main-text-color;
+$o-ai-chat-ink: $o-ai-chat-text;
+
+.o_ai_chat_panel {
+    --ai-chat-accent: #{$o-ai-chat-accent};
+    --ai-chat-accent-strong: #{darken($o-ai-chat-accent, 8%)};
+    --ai-chat-accent-soft: #{rgba($o-ai-chat-accent, 0.1)};
+    --ai-chat-on-accent: #{$o-white};
+    --ai-chat-ink: #{$o-ai-chat-ink};
+    --ai-chat-text: #{$o-ai-chat-text};
+    // as Discuss: white sidebar and header, the web client's gray behind the thread
+    --ai-chat-surface: #{$o-view-background-color};
+    --ai-chat-page: #{$o-webclient-background-color};
+    --ai-chat-sidebar: #{$o-view-background-color};
+    --ai-chat-panel: #{$o-gray-200};
+    --ai-chat-hover: #{mix($o-gray-100, $o-gray-200)};
+    --ai-chat-active: #{mix($o-view-background-color, $o-action, 90%)};
+    --ai-chat-active-outline: #{mix($o-view-background-color, $o-action, 50%)};
+    --ai-chat-line: #{$border-color};
+    --ai-chat-text-muted: #{$o-gray-600};
+    --ai-chat-radius-sm: 8px;
+    --ai-chat-radius-md: 12px;
+    --ai-chat-radius-lg: 20px;
+    --ai-chat-serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, Cambria,
+        "Times New Roman", serif;
+    --ai-chat-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+    background-color: var(--ai-chat-page);
+    color: var(--ai-chat-text);
+    font-variant-numeric: tabular-nums;
+
+    ::selection {
+        background-color: rgba($o-ai-chat-accent, 0.2);
+    }
+
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #{rgba($o-ai-chat-text, 0.18)} transparent;
+    }
+
+    .btn:focus-visible,
+    .o_ai_chat_row_openable:focus-visible,
+    input:focus-visible {
+        outline: 2px solid var(--ai-chat-accent);
+        outline-offset: 2px;
+        box-shadow: none;
+    }
+
+    // the main buttons of the results: dark and quiet, the accent stays for sending
+    .btn-primary {
+        --btn-bg: var(--ai-chat-ink);
+        --btn-border-color: var(--ai-chat-ink);
+        --btn-color: #{$o-white};
+        --btn-hover-bg: #{lighten($o-ai-chat-ink, 14%)};
+        --btn-hover-border-color: #{lighten($o-ai-chat-ink, 14%)};
+        --btn-hover-color: #{$o-white};
+        --btn-active-bg: #{lighten($o-ai-chat-ink, 20%)};
+        --btn-active-border-color: #{lighten($o-ai-chat-ink, 20%)};
+        --btn-disabled-bg: var(--ai-chat-ink);
+        --btn-disabled-border-color: var(--ai-chat-ink);
+        border-radius: var(--ai-chat-radius-sm);
+    }
+
+    .btn-secondary {
+        border-radius: var(--ai-chat-radius-sm);
+    }
+
+    // Shared ------------------------------------------------------------------
+
+    .o_ai_chat_logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: var(--ai-chat-radius-sm);
+        color: var(--ai-chat-on-accent);
+        background-color: var(--ai-chat-accent);
+        font-size: 1.15rem;
+
+        .o_ai_chat_app_icon {
+            width: 1.15em;
+            height: 1.15em;
+        }
+
+        // the brand mark alone, in the accent: beside each answer
+        &.o_ai_chat_logo_sm {
+            width: 1.75rem;
+            height: 1.75rem;
+            font-size: 1.15rem;
+            background-color: transparent;
+            color: var(--ai-chat-accent);
+        }
+
+        &.o_ai_chat_logo_lg {
+            width: 3.25rem;
+            height: 3.25rem;
+            border-radius: var(--ai-chat-radius-md);
+            font-size: 1.6rem;
+        }
+    }
+
+    .o_ai_chat_icon_btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border: 0;
+        border-radius: var(--ai-chat-radius-sm);
+        color: var(--ai-chat-text-muted);
+
+        &:hover:not(:disabled) {
+            background-color: var(--ai-chat-hover);
+            color: var(--ai-chat-text);
+        }
+    }
+
+    // same as the theme's sidebar section labels
+    .o_ai_chat_group_label {
+        font-size: 0.75rem;
+        font-weight: $o-font-weight-medium;
+        color: var(--ai-chat-text-muted);
+    }
+
+    .o_ai_chat_chip,
+    .o_ai_chat_tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.1rem 0.6rem;
+        border-radius: 999px;
+        background-color: var(--ai-chat-panel);
+        color: $o-gray-700;
+        white-space: nowrap;
+    }
+
+    // tinted with the theme's accent, like its active entries
+    .o_ai_chat_tag {
+        font-size: 0.78rem;
+        font-weight: $o-font-weight-medium;
+        background-color: var(--ai-chat-accent-soft);
+        color: var(--ai-chat-accent-strong);
+    }
+
+    // Sidebar: a quiet beige rail, text only -------------------------------------
+
+    .o_ai_chat_sidebar {
+        width: 268px;
+        flex: 0 0 268px;
+        padding: 10px 8px 8px;
+        background-color: var(--ai-chat-sidebar);
+        border-right: 1px solid var(--ai-chat-line);
+    }
+
+    .o_ai_chat_sidebar_top {
+        padding: 0 0 8px 8px;
+    }
+
+    .o_ai_chat_brand {
+        font-family: var(--ai-chat-serif);
+        font-size: 1.15rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .o_ai_chat_brand_icon {
+        display: inline-flex;
+        font-size: 1.2rem;
+        color: var(--ai-chat-accent);
+
+        .o_ai_chat_app_icon {
+            width: 1em;
+            height: 1em;
+        }
+    }
+
+    .o_ai_chat_sidebar_actions {
+        gap: 2px;
+    }
+
+    // the one primary action of the sidebar, in Odoo's primary color
+    .btn-primary.o_ai_chat_new {
+        --btn-bg: var(--ai-chat-accent);
+        --btn-border-color: var(--ai-chat-accent);
+        --btn-hover-bg: var(--ai-chat-accent-strong);
+        --btn-hover-border-color: var(--ai-chat-accent-strong);
+        --btn-active-bg: var(--ai-chat-accent-strong);
+        --btn-active-border-color: var(--ai-chat-accent-strong);
+        margin-bottom: 4px;
+        padding: 0.45rem 0.75rem;
+        font-size: 0.9rem;
+        font-weight: $o-font-weight-medium;
+    }
+
+    // Large screens: the sidebar folds away to the left, its content sliding out
+    // at its own width rather than squeezed
+    @include media-breakpoint-up(lg) {
+        .o_ai_chat_sidebar {
+            overflow: hidden;
+            transition: flex-basis 0.25s var(--ai-chat-ease), width 0.25s var(--ai-chat-ease),
+                padding 0.25s var(--ai-chat-ease), opacity 0.2s var(--ai-chat-ease);
+
+            > * {
+                min-width: 252px;
+            }
+        }
+
+        &.o_ai_chat_sidebar_collapsed {
+            .o_ai_chat_sidebar {
+                width: 0;
+                flex-basis: 0;
+                padding-left: 0;
+                padding-right: 0;
+                border-right-width: 0;
+                opacity: 0;
+                visibility: hidden;
+                transition: flex-basis 0.25s var(--ai-chat-ease), width 0.25s var(--ai-chat-ease),
+                    padding 0.25s var(--ai-chat-ease), opacity 0.2s var(--ai-chat-ease), visibility 0s linear 0.25s;
+            }
+
+            .o_ai_chat_header .o_ai_chat_sidebar_action.o_ai_chat_toggle_visible {
+                display: inline-flex;
+            }
+        }
+    }
+
+    .o_ai_chat_search {
+        .fa {
+            top: 50%;
+            left: 0.7rem;
+            transform: translateY(-50%);
+            pointer-events: none;
+            font-size: 0.8rem;
+            color: var(--ai-chat-text-muted);
+        }
+
+        input {
+            padding: 0.4rem 0.7rem 0.4rem 2rem;
+            border: 1px solid transparent;
+            border-radius: var(--ai-chat-radius-sm);
+            background-color: transparent;
+            font-size: 0.88rem;
+            color: var(--ai-chat-text);
+
+            &::placeholder {
+                color: var(--ai-chat-text-muted);
+            }
+
+            &:hover {
+                background-color: var(--ai-chat-hover);
+            }
+
+            &:focus {
+                border-color: var(--ai-chat-line);
+                background-color: var(--ai-chat-surface);
+                box-shadow: none;
+            }
+        }
+    }
+
+    .o_ai_chat_conversations {
+        padding-bottom: 8px;
+
+        .o_ai_chat_group_label {
+            margin: 0;
+            padding: 1rem 8px 0.35rem;
+        }
+
+        > p {
+            padding: 1rem 8px;
+        }
+    }
+
+    .o_ai_chat_conversation {
+        margin: 1px 0;
+        border-radius: var(--ai-chat-radius-sm);
+
+        .o_ai_chat_conversation_open {
+            padding: 6px 8px;
+            border: 0;
+            border-radius: var(--ai-chat-radius-sm);
+            font-size: 0.875rem;
+            font-weight: 400;
+            color: var(--ai-chat-text);
+        }
+
+        .o_ai_chat_delete {
+            width: 1.75rem;
+            height: 1.75rem;
+            opacity: 0;
+        }
+
+        &:hover,
+        &:focus-within {
+            background-color: var(--ai-chat-hover);
+
+            .o_ai_chat_delete {
+                opacity: 1;
+            }
+        }
+
+        &.active {
+            background-color: var(--ai-chat-active);
+            outline: 1px solid var(--ai-chat-active-outline);
+            outline-offset: -1px;
+
+            .o_ai_chat_conversation_open {
+                font-weight: $o-font-weight-medium;
+            }
+        }
+
+        .o_ai_chat_delete:hover {
+            color: $danger;
+        }
+    }
+
+    // the user at the foot of the sidebar: a click opens the usage and cost above
+    .o_ai_chat_usage_card {
+        margin-top: 4px;
+        padding-top: 6px;
+        border-top: 1px solid var(--ai-chat-line);
+        font-size: 0.85rem;
+    }
+
+    .o_ai_chat_usage + .o_ai_chat_usage {
+        border-top: 1px solid var(--ai-chat-line);
+    }
+
+    .o_ai_chat_usage_toggle {
+        padding: 6px 8px;
+        border: 0;
+        border-radius: var(--ai-chat-radius-sm);
+        color: var(--ai-chat-text);
+
+        &:hover {
+            background-color: var(--ai-chat-hover);
+        }
+
+        .o_ai_chat_profile_avatar {
+            width: 2rem;
+            height: 2rem;
+            flex-shrink: 0;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .o_ai_chat_profile_name {
+            font-size: 0.88rem;
+            font-weight: $o-font-weight-medium;
+        }
+
+        .o_ai_chat_usage_toggle_summary {
+            font-size: 0.78rem;
+            color: var(--ai-chat-text-muted);
+        }
+
+        .o_ai_chat_usage_chevron {
+            font-size: 0.75rem;
+            color: var(--ai-chat-text-muted);
+            transition: transform 0.25s var(--ai-chat-ease);
+        }
+    }
+
+    .o_ai_chat_usage_body {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.25s var(--ai-chat-ease);
+
+        .o_ai_chat_usage_body_inner {
+            min-height: 0;
+            overflow: hidden;
+            margin-bottom: 6px;
+            border: 1px solid var(--ai-chat-line);
+            border-radius: var(--ai-chat-radius-md);
+            background-color: var(--ai-chat-surface);
+        }
+    }
+
+    .o_ai_chat_usage_collapsed {
+        .o_ai_chat_usage_body {
+            grid-template-rows: 0fr;
+        }
+
+        .o_ai_chat_usage_body_inner {
+            margin-bottom: 0;
+            border-width: 0;
+            visibility: hidden;
+            transition: visibility 0s linear 0.25s;
+        }
+
+        .o_ai_chat_usage_chevron {
+            transform: rotate(180deg);
+        }
+    }
+
+    .o_ai_chat_usage_list {
+        > div {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.2rem 0;
+        }
+
+        dt {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 400;
+            color: var(--ai-chat-text-muted);
+        }
+
+        dd {
+            margin: 0;
+            font-weight: $o-font-weight-medium;
+        }
+    }
+
+    .o_ai_chat_balance {
+        .o_ai_chat_balance_icon {
+            font-size: 1.25rem;
+            color: var(--ai-chat-accent);
+        }
+    }
+
+    .o_ai_chat_balance_amount {
+        font-size: 1.15rem;
+        font-weight: $o-font-weight-medium;
+    }
+
+    .o_ai_chat_backdrop,
+    .o_ai_chat_header .o_ai_chat_sidebar_action {
+        display: none;
+    }
+
+    // Main: the page itself, the thread in a reading column -----------------------
+
+    .o_ai_chat_main {
+        background-color: var(--ai-chat-page);
+    }
+
+    // only shown when there is no navbar to host the heading
+    .o_ai_chat_heading_fallback .o_ai_chat_heading {
+        padding: 0.75rem 1rem;
+    }
+
+    .o_ai_chat_header {
+        min-height: 3.25rem;
+        background-color: var(--ai-chat-surface);
+        border-bottom: 1px solid var(--ai-chat-line);
+
+        .small {
+            font-size: 0.72rem;
+        }
+    }
+
+    .o_ai_chat_title {
+        font-size: 0.95rem;
+        font-weight: $o-font-weight-medium;
+    }
+
+    // a new chat has no title yet: the greeting says it all, the header fades into the page
+    &.o_ai_chat_empty:not(.o_ai_chat_panel_compact) .o_ai_chat_header {
+        background-color: transparent;
+        border-bottom-color: transparent;
+
+        > .flex-grow-1 {
+            visibility: hidden;
+        }
+    }
+
+    .o_ai_chat_messages {
+        min-height: 0;
+    }
+
+    .o_ai_chat_thread {
+        max-width: 48rem;
+    }
+
+    .o_ai_chat_message {
+        margin-bottom: 1.75rem;
+    }
+
+    .o_ai_chat_avatar {
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .o_ai_chat_bubble {
+        padding: 0.6rem 1rem;
+        border-radius: var(--ai-chat-radius-md);
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+
+    // the question: a soft beige note on the right
+    .o_ai_chat_message_user .o_ai_chat_bubble {
+        max-width: unquote("min(80%, 38rem)");
+        background-color: var(--ai-chat-panel);
+        color: var(--ai-chat-text);
+        white-space: pre-wrap;
+    }
+
+    // the answer: written on the page, in a serif
+    .o_ai_chat_message_assistant {
+        .o_ai_chat_logo_sm {
+            margin-top: 0.1rem;
+        }
+
+        .o_ai_chat_bubble {
+            display: block;
+            max-width: 100%;
+            padding: 0.1rem 0 0;
+            border-radius: 0;
+            background-color: transparent;
+            font-family: var(--ai-chat-serif);
+            font-size: 1.03rem;
+            line-height: 1.65;
+
+            &.o_ai_chat_error {
+                display: inline-block;
+                padding: 0.6rem 1rem;
+                border-radius: var(--ai-chat-radius-md);
+                background-color: rgba($danger, 0.07);
+                color: $danger;
+                font-family: inherit;
+                font-size: inherit;
+            }
+        }
+
+        .o_ai_chat_bubble.o_ai_chat_typing,
+        .o_ai_chat_bubble.o_ai_chat_deep_progress {
+            font-family: inherit;
+            font-size: 0.88rem;
+        }
+    }
+
+    .o_ai_chat_content {
+        white-space: pre-wrap;
+    }
+
+    .o_ai_chat_meta {
+        margin-top: 0.4rem;
+        font-size: 0.75rem;
+        color: var(--ai-chat-text-muted);
+
+        span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+    }
+
+    // Welcome: a greeting, the composer centered under it, the use cases below ---
+
+    // a new conversation sits in the middle of the page, like a blank sheet: the
+    // header stays on top, the greeting and the composer are centered below it
+    &.o_ai_chat_empty .o_ai_chat_main {
+        .o_ai_chat_messages {
+            flex: 0 0 auto !important;
+            margin-top: auto;
+            overflow: visible !important;
+        }
+
+        .o_ai_chat_composer {
+            margin-bottom: auto;
+            padding-bottom: 14vh !important;
+        }
+    }
+
+    .o_ai_chat_welcome {
+        max-width: 48rem;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .o_ai_chat_welcome_title {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem 0.75rem;
+        font-family: var(--ai-chat-serif);
+        font-size: 2.35rem;
+        font-weight: 400;
+        letter-spacing: -0.02em;
+        color: var(--ai-chat-text);
+        animation: o_ai_chat_deep_in 0.5s var(--ai-chat-ease);
+    }
+
+    .o_ai_chat_welcome_icon {
+        display: inline-flex;
+        color: var(--ai-chat-accent);
+
+        .o_ai_chat_app_icon {
+            width: 2.6rem;
+            height: 2.6rem;
+        }
+    }
+
+    // the use cases: pills under the composer, the one pointed at described below
+    .o_ai_chat_capabilities {
+        max-width: 48rem;
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    .o_ai_chat_capability_grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .o_ai_chat_capability {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.4rem 0.8rem;
+        border: 1px solid var(--ai-chat-line);
+        border-radius: var(--ai-chat-radius-sm);
+        background-color: var(--ai-chat-page);
+        font-size: 0.85rem;
+        font-weight: 400;
+        color: var(--ai-chat-text);
+        transition: background-color 0.15s var(--ai-chat-ease), border-color 0.15s var(--ai-chat-ease);
+
+        > .fa {
+            font-size: 0.9rem;
+            color: var(--ai-chat-text-muted);
+        }
+
+        .o_ai_chat_capability_command {
+            font-family: $o-font-family-monospace;
+            font-size: 0.82rem;
+        }
+
+        &:hover,
+        &:focus-visible {
+            border-color: #{rgba($o-ai-chat-text, 0.2)};
+            background-color: var(--ai-chat-surface);
+
+            > .fa {
+                color: var(--ai-chat-accent);
+            }
+        }
+    }
+
+    .o_ai_chat_capability_hint {
+        min-height: 1.3rem;
+        margin-top: 0.75rem;
+        font-size: 0.8rem;
+        color: var(--ai-chat-text-muted);
+    }
+
+    &.o_ai_chat_panel_compact {
+        .o_ai_chat_welcome_title {
+            font-size: 1.6rem;
+            gap: 0.5rem;
+        }
+
+        .o_ai_chat_welcome_icon .o_ai_chat_app_icon {
+            width: 1.8rem;
+            height: 1.8rem;
+        }
+
+        .o_ai_chat_capability_hint {
+            display: none;
+        }
+    }
+
+    // Results -----------------------------------------------------------------
+
+    .o_ai_chat_result {
+        border: 1px solid var(--ai-chat-line);
+        border-radius: var(--ai-chat-radius-md);
+        background-color: var(--ai-chat-surface);
+        overflow: hidden;
+    }
+
+    .o_ai_chat_result_header {
+        border-bottom: 1px solid var(--ai-chat-line);
+    }
+
+    // Records to create ---------------------------------------------------------
+
+    .o_ai_chat_draft_icon {
+        color: var(--ai-chat-accent);
+    }
+
+    .o_ai_chat_draft_created .o_ai_chat_draft_icon {
+        color: $success;
+    }
+
+    .o_ai_chat_draft_discarded {
+        opacity: 0.65;
+
+        .o_ai_chat_result_title {
+            text-decoration: line-through;
+        }
+    }
+
+    .o_ai_chat_draft_fields {
+        display: grid;
+        gap: 0.3rem;
+
+        dt {
+            flex: 0 0 9rem;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        dd {
+            overflow-wrap: anywhere;
+        }
+    }
+
+    .o_ai_chat_draft_warnings {
+        border-top: 1px solid var(--ai-chat-line);
+        background-color: rgba($warning, 0.08);
+        color: $o-gray-700;
+
+        li + li {
+            margin-top: 0.2rem;
+        }
+
+        .fa {
+            color: $warning;
+        }
+    }
+
+    // Plans: records to create one after the other
+    .o_ai_chat_plan_step {
+        + .o_ai_chat_plan_step {
+            border-top: 1px solid var(--ai-chat-line);
+        }
+
+        &.o_ai_chat_draft_discarded {
+            opacity: 0.6;
+        }
+    }
+
+    .o_ai_chat_plan_current {
+        background-color: var(--ai-chat-accent-soft);
+
+        .o_ai_chat_plan_number {
+            background-color: var(--ai-chat-accent);
+            color: var(--ai-chat-on-accent);
+        }
+
+        .o_ai_chat_table,
+        .o_ai_chat_draft_fields {
+            background-color: var(--ai-chat-surface);
+        }
+    }
+
+    .o_ai_chat_plan_number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        background-color: var(--ai-chat-panel);
+        color: $o-gray-700;
+        font-size: 0.8rem;
+        font-weight: $o-font-weight-medium;
+    }
+
+    .o_ai_chat_plan_step.o_ai_chat_draft_created .o_ai_chat_plan_number {
+        background-color: rgba($success, 0.15);
+        color: $success;
+    }
+
+    .o_ai_chat_plan_summary {
+        padding-left: 3.5rem !important;
+    }
+
+    .o_ai_chat_draft_notes {
+        border-top: 1px solid var(--ai-chat-line);
+
+        li + li {
+            margin-top: 0.2rem;
+        }
+    }
+
+    .o_ai_chat_draft_actions {
+        border-top: 1px solid var(--ai-chat-line);
+    }
+
+    .o_ai_chat_result_title {
+        font-size: 0.95rem;
+        font-weight: $o-font-weight-medium;
+    }
+
+    .o_ai_chat_result_toolbar {
+        border-bottom: 1px solid var(--ai-chat-line);
+        flex-wrap: wrap;
+
+        .o_ai_chat_icon_btn.active {
+            color: var(--ai-chat-accent);
+            background-color: var(--ai-chat-accent-soft);
+        }
+    }
+
+    .o_ai_chat_segmented {
+        display: inline-flex;
+        padding: 2px;
+        border-radius: 999px;
+        background-color: var(--ai-chat-panel);
+
+        .btn {
+            padding: 0.15rem 0.75rem;
+            border: 0;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            color: var(--ai-chat-text-muted);
+
+            &.active {
+                background-color: var(--ai-chat-surface);
+                color: $body-color;
+                font-weight: $o-font-weight-medium;
+                box-shadow: 0 1px 2px rgba($o-black, 0.08);
+            }
+        }
+    }
+
+    .o_ai_chat_chart {
+        height: 18rem;
+
+        &.o_ai_chat_chart_circular {
+            height: 16rem;
+        }
+    }
+
+    .o_ai_chat_value_number {
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1.2;
+
+        &.o_ai_chat_value_secondary {
+            font-size: 1.15rem;
+            font-weight: $o-font-weight-medium;
+        }
+    }
+
+    // the theme's list view: light lines, brand tinted hover, small muted headers
+    .o_ai_chat_table {
+        max-height: 26rem;
+        overflow: auto;
+
+        .table {
+            --table-border-color: var(--ai-chat-line);
+            --table-hover-bg: #{rgba($o-brand-primary, 0.07)};
+            --table-hover-color: inherit;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background-color: var(--ai-chat-surface);
+            font-size: 0.78rem;
+            font-weight: $o-font-weight-medium;
+            color: $o-gray-600;
+            white-space: nowrap;
+            box-shadow: inset 0 -1px 0 var(--ai-chat-line);
+        }
+
+        td,
+        th {
+            padding: 0.45rem 0.75rem;
+            white-space: nowrap;
+        }
+
+        td {
+            max-width: 18rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .o_ai_chat_row_openable {
+            cursor: pointer;
+        }
+    }
+
+    // Loading -----------------------------------------------------------------
+
+    .o_ai_chat_skeleton {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .o_ai_chat_skeleton_line,
+    .o_ai_chat_skeleton_block {
+        height: 2.25rem;
+        border-radius: var(--ai-chat-radius-md);
+        background-color: var(--ai-chat-panel);
+        animation: o_ai_chat_pulse 1.4s ease-in-out infinite;
+    }
+
+    .o_ai_chat_skeleton_block {
+        height: 10rem;
+    }
+
+    .o_ai_chat_typing span {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin: 0 2px;
+        border-radius: 50%;
+        background-color: var(--ai-chat-text-muted);
+        animation: o_ai_chat_typing 1.2s infinite ease-in-out;
+
+        &:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        &:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+    }
+
+    .o_ai_chat_spin {
+        animation: o_ai_chat_spin 0.8s linear infinite;
+    }
+
+    // Composer: a white sheet, the question on top and its tools below -----------
+
+    .o_ai_chat_composer_box {
+        position: relative;
+        max-width: 48rem;
+        padding: 0.75rem 0.75rem 0.6rem 1rem;
+        border: 1px solid var(--ai-chat-line);
+        border-radius: var(--ai-chat-radius-lg);
+        background-color: var(--ai-chat-surface);
+        box-shadow: 0 1px 2px #{rgba($o-ai-chat-text, 0.04)}, 0 6px 24px #{rgba($o-ai-chat-text, 0.06)};
+        transition: border-color 0.15s var(--ai-chat-ease), box-shadow 0.15s var(--ai-chat-ease);
+
+        &:focus-within {
+            border-color: #{rgba($o-ai-chat-text, 0.2)};
+            box-shadow: 0 1px 2px #{rgba($o-ai-chat-text, 0.05)}, 0 8px 30px #{rgba($o-ai-chat-text, 0.09)};
+        }
+    }
+
+    // a voice question being recorded replaces the box: one row
+    .o_ai_chat_composer_box.o_ai_chat_recording {
+        padding: 0.6rem 0.6rem 0.6rem 1rem;
+    }
+
+    .o_ai_chat_input {
+        resize: none;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        padding: 0.2rem 0 0.5rem;
+        min-height: 2.6rem;
+        max-height: 14rem;
+        field-sizing: content;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: inherit;
+
+        &::placeholder {
+            color: var(--ai-chat-text-muted);
+        }
+    }
+
+    &.o_ai_chat_empty .o_ai_chat_input {
+        min-height: 3.5rem;
+    }
+
+    .o_ai_chat_composer_tools .o_ai_chat_attach {
+        width: 2rem;
+        height: 2rem;
+        border: 1px solid var(--ai-chat-line);
+        border-radius: var(--ai-chat-radius-sm);
+    }
+
+    .o_ai_chat_send {
+        --btn-bg: var(--ai-chat-accent);
+        --btn-border-color: var(--ai-chat-accent);
+        --btn-hover-bg: var(--ai-chat-accent-strong);
+        --btn-hover-border-color: var(--ai-chat-accent-strong);
+        --btn-active-bg: var(--ai-chat-accent-strong);
+        --btn-active-border-color: var(--ai-chat-accent-strong);
+        --btn-disabled-bg: var(--ai-chat-accent);
+        --btn-disabled-border-color: var(--ai-chat-accent);
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        flex-shrink: 0;
+        border-radius: var(--ai-chat-radius-sm);
+
+        &:disabled {
+            opacity: 0.45;
+        }
+    }
+
+    .o_ai_chat_mic {
+        width: 2rem;
+        height: 2rem;
+        flex-shrink: 0;
+        border-radius: var(--ai-chat-radius-sm);
+    }
+
+    .o_ai_chat_hint {
+        font-size: 0.72rem;
+        color: var(--ai-chat-text-muted);
+    }
+
+    // Voice question being recorded
+    .o_ai_chat_recording {
+        border-color: var(--ai-chat-accent);
+        box-shadow: 0 0 0 3px var(--ai-chat-accent-soft);
+    }
+
+    .o_ai_chat_recording_dot {
+        width: 0.65rem;
+        height: 0.65rem;
+        border-radius: 50%;
+        background-color: $danger;
+        animation: o_ai_chat_pulse 1s ease-in-out infinite;
+    }
+
+    // Compact (systray window) ------------------------------------------------
+
+    &.o_ai_chat_panel_compact {
+        .o_ai_chat_thread {
+            padding: 1rem 0.75rem !important;
+        }
+
+        .o_ai_chat_welcome {
+            margin-top: 0.5rem;
+        }
+
+        .o_ai_chat_welcome_title {
+            font-size: 1.15rem;
+        }
+
+        .o_ai_chat_table {
+            max-height: 16rem;
+        }
+
+        .o_ai_chat_chart {
+            height: 14rem;
+        }
+
+        .o_ai_chat_message_user .o_ai_chat_bubble {
+            max-width: 85%;
+        }
+    }
+
+    // Small screens: the sidebar becomes a drawer -----------------------------
+
+    @include media-breakpoint-down(lg) {
+        &:not(.o_ai_chat_panel_compact) {
+            .o_ai_chat_header .o_ai_chat_sidebar_action {
+                display: inline-flex;
+            }
+
+            .o_ai_chat_sidebar {
+                position: absolute;
+                inset: 0 auto 0 0;
+                z-index: 3;
+                width: unquote("min(288px, 86vw)");
+                box-shadow: 0 8px 28px rgba($o-black, 0.18);
+                transform: translateX(-100%);
+                visibility: hidden;
+                transition: transform 0.25s var(--ai-chat-ease), visibility 0s linear 0.25s;
+            }
+
+            .o_ai_chat_backdrop {
+                position: absolute;
+                inset: 0;
+                z-index: 2;
+                display: block;
+                background-color: rgba($o-black, 0.3);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.25s var(--ai-chat-ease);
+            }
+
+            &.o_ai_chat_sidebar_open {
+                .o_ai_chat_sidebar {
+                    transform: none;
+                    visibility: visible;
+                    transition: transform 0.25s var(--ai-chat-ease);
+                }
+
+                .o_ai_chat_backdrop {
+                    opacity: 1;
+                    pointer-events: auto;
+                }
+            }
+        }
+    }
+
+    // Files sent with a question ------------------------------------------------
+
+    .o_ai_chat_attachments {
+        max-width: 56rem;
+        margin-bottom: 0.4rem;
+        padding: 0 0.5rem;
+    }
+
+    .o_ai_chat_file_chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        max-width: 18rem;
+        padding: 0.25rem 0.4rem 0.25rem 0.65rem;
+        border: 1px solid var(--ai-chat-line);
+        border-radius: var(--ai-chat-radius-md);
+        background-color: var(--ai-chat-surface);
+        font-size: 0.8rem;
+        color: $o-main-text-color;
+        text-decoration: none;
+        animation: o_ai_chat_deep_in 0.25s var(--ai-chat-ease);
+
+        .fa-file-excel-o {
+            color: #1d6f42;
+        }
+
+        .fa-file-pdf-o {
+            color: #c62828;
+        }
+
+        .fa-file-image-o {
+            color: #6a1b9a;
+        }
+
+        .o_ai_chat_file_size {
+            flex-shrink: 0;
+            color: var(--ai-chat-text-muted);
+        }
+    }
+
+    a.o_ai_chat_file_chip:hover {
+        border-color: var(--ai-chat-accent);
+    }
+
+    .o_ai_chat_file_uploading {
+        color: var(--ai-chat-text-muted);
+    }
+
+    .o_ai_chat_file_remove {
+        padding: 0 0.3rem;
+        border: 0;
+        line-height: 1;
+        color: var(--ai-chat-text-muted);
+
+        &:hover {
+            color: $danger;
+        }
+    }
+
+    .o_ai_chat_attach {
+        width: 2.25rem;
+        height: 2.25rem;
+        flex-shrink: 0;
+        border-radius: 50%;
+    }
+
+    .o_ai_chat_composer_box.o_ai_chat_dragging {
+        border-style: dashed;
+        border-color: var(--ai-chat-accent);
+        background-color: var(--ai-chat-accent-soft);
+    }
+
+    // the import of a spreadsheet
+    .o_ai_chat_import {
+        .o_ai_chat_import_label {
+            margin-bottom: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: $o-font-weight-medium;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--ai-chat-text-muted);
+        }
+
+        .o_ai_chat_import_mapping {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+            gap: 0.2rem 1.5rem;
+            font-size: 0.85rem;
+
+            li {
+                min-width: 0;
+            }
+        }
+
+        .o_ai_chat_import_column {
+            max-width: 45%;
+            color: var(--ai-chat-text-muted);
+        }
+
+        .o_ai_chat_import_ignored {
+            opacity: 0.65;
+        }
+
+        .o_ai_chat_import_preview {
+            max-height: 14rem;
+            overflow: auto;
+            font-size: 0.8rem;
+
+            th,
+            td {
+                white-space: nowrap;
+            }
+        }
+
+        .o_ai_chat_import_fixes {
+            padding: 0.6rem 0.8rem;
+            border-radius: var(--ai-chat-radius-sm);
+            background-color: var(--ai-chat-accent-soft);
+            font-size: 0.82rem;
+
+            ul {
+                max-height: 12rem;
+                overflow: auto;
+                padding-left: 1.1rem;
+            }
+
+            .o_ai_chat_fix_create {
+                color: $success;
+            }
+
+            .o_ai_chat_fix_empty,
+            .o_ai_chat_fix_missing {
+                color: darken($warning, 25%);
+            }
+        }
+
+        .o_ai_chat_import_errors {
+            padding: 0.6rem 0.8rem;
+            border-radius: var(--ai-chat-radius-sm);
+            background-color: rgba($danger, 0.08);
+            color: darken($danger, 10%);
+            font-size: 0.82rem;
+
+            ul {
+                padding-left: 1.1rem;
+            }
+        }
+    }
+
+    // records mentioned with "@": offered above the composer, shown as chips in the question
+    .o_ai_chat_mention_menu {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 0.75rem;
+        z-index: 5;
+        width: unquote("min(28rem, calc(100% - 1.5rem))");
+        max-height: 18rem;
+        overflow: auto;
+        padding: 0.3rem;
+        border: 1px solid var(--ai-chat-line);
+        border-radius: var(--ai-chat-radius-md);
+        background-color: var(--ai-chat-surface);
+        box-shadow: 0 8px 28px rgba($o-black, 0.14);
+        animation: o_ai_chat_deep_in 0.15s var(--ai-chat-ease);
+    }
+
+    .o_ai_chat_mention_hint {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.82rem;
+        color: var(--ai-chat-text-muted);
+    }
+
+    .o_ai_chat_mention_option {
+        padding: 0.4rem 0.6rem;
+        border: 0;
+        border-radius: var(--ai-chat-radius-sm);
+        font-size: 0.88rem;
+
+        .o_ai_chat_mention_icon {
+            width: 1.1rem;
+            color: var(--ai-chat-accent);
+            text-align: center;
+        }
+
+        .o_ai_chat_mention_kind {
+            flex-shrink: 0;
+            font-size: 0.75rem;
+            color: var(--ai-chat-text-muted);
+        }
+
+        &.active,
+        &:hover {
+            background-color: var(--ai-chat-accent-soft);
+        }
+    }
+
+    .o_ai_chat_mention {
+        display: inline;
+        white-space: nowrap;
+        padding: 0 0.3rem;
+        border: 0;
+        border-radius: var(--ai-chat-radius-sm);
+        background-color: var(--ai-chat-accent-soft);
+        color: var(--ai-chat-accent-strong);
+        font-weight: $o-font-weight-medium;
+
+        &:hover {
+            background-color: #{rgba($o-ai-chat-accent, 0.18)};
+            text-decoration: underline;
+        }
+    }
+
+    .o_ai_chat_record_card {
+        .o_ai_chat_record_icon {
+            width: 2rem;
+            height: 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background-color: var(--ai-chat-accent-soft);
+            color: var(--ai-chat-accent);
+        }
+
+        .o_ai_chat_record_fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+            gap: 0.35rem 1.5rem;
+            font-size: 0.85rem;
+
+            dt {
+                font-weight: 400;
+                color: var(--ai-chat-text-muted);
+            }
+
+            dd {
+                margin: 0;
+                font-weight: $o-font-weight-medium;
+                overflow-wrap: anywhere;
+            }
+        }
+    }
+
+    // commands typed after "/": offered above the composer, shown as chips in the question
+    .o_ai_chat_command_option .o_ai_chat_command_name {
+        flex-shrink: 0;
+        font-family: $o-font-family-monospace;
+        font-weight: $o-font-weight-medium;
+        color: var(--ai-chat-accent);
+    }
+
+    .o_ai_chat_command_chip {
+        padding: 0 0.3rem;
+        border-radius: var(--ai-chat-radius-sm);
+        background-color: var(--ai-chat-active);
+        font-family: $o-font-family-monospace;
+        font-weight: $o-font-weight-medium;
+    }
+
+    // a report of a record printed with /report
+    .o_ai_chat_print_card {
+        .o_ai_chat_record_icon {
+            width: 2rem;
+            height: 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background-color: var(--ai-chat-accent-soft);
+            color: var(--ai-chat-accent);
+        }
+
+        .o_ai_chat_print_others {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.35rem;
+        }
+    }
+
+    // a record explained with /explain
+    .o_ai_chat_explain_card {
+        .o_ai_chat_record_icon {
+            width: 2rem;
+            height: 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background-color: var(--ai-chat-accent-soft);
+            color: var(--ai-chat-accent);
+        }
+
+        .o_ai_chat_explain_body {
+            font-size: 0.88rem;
+        }
+
+        .o_ai_chat_explain_overview {
+            line-height: 1.55;
+        }
+
+        .o_ai_chat_explain_section {
+            padding-top: 0.6rem;
+            margin-top: 0.6rem;
+            border-top: 1px solid var(--ai-chat-line);
+
+            h4 {
+                margin-bottom: 0.35rem;
+                font-size: 0.8rem;
+                font-weight: $o-font-weight-medium;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+                color: var(--ai-chat-text-muted);
+            }
+
+            ul:not(.list-unstyled) {
+                margin-bottom: 0;
+                padding-left: 1.1rem;
+            }
+        }
+
+        .o_ai_chat_explain_attention h4 {
+            color: $warning;
+        }
+
+        .o_ai_chat_explain_activities li + li,
+        .o_ai_chat_explain_timeline li + li {
+            margin-top: 0.45rem;
+        }
+
+        .o_ai_chat_activity_state {
+            flex-shrink: 0;
+            min-width: 5.5rem;
+            font-size: 0.75rem;
+            font-weight: $o-font-weight-medium;
+        }
+
+        .o_ai_chat_activity_overdue .o_ai_chat_activity_state {
+            color: $danger;
+        }
+
+        .o_ai_chat_activity_today .o_ai_chat_activity_state {
+            color: $warning;
+        }
+
+        .o_ai_chat_activity_planned .o_ai_chat_activity_state {
+            color: $success;
+        }
+
+        .o_ai_chat_activity_done {
+            opacity: 0.7;
+
+            .o_ai_chat_activity_state {
+                color: var(--ai-chat-text-muted);
+            }
+        }
+
+        .o_ai_chat_explain_timeline li {
+            padding-left: 0.6rem;
+            border-left: 2px solid var(--ai-chat-accent-soft);
+        }
+
+        .o_ai_chat_explain_text,
+        .o_ai_chat_explain_change {
+            overflow-wrap: anywhere;
+        }
+
+        .o_ai_chat_explain_change {
+            color: var(--ai-chat-text-muted);
+        }
+    }
+
+    // questions to click, offered with an answer the assistant is unsure of
+    .o_ai_chat_thoughts {
+        font-size: 0.85rem;
+        color: var(--ai-chat-text-muted);
+
+        summary {
+            cursor: pointer;
+            width: fit-content;
+        }
+    }
+
+    .o_ai_chat_suggestions {
+        .o_ai_chat_suggestions_label {
+            margin-bottom: 0.35rem;
+            font-size: 0.78rem;
+            color: var(--ai-chat-text-muted);
+
+            .fa {
+                color: $warning;
+            }
+        }
+
+        .o_ai_chat_suggestion {
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--ai-chat-line);
+            border-radius: 999px;
+            background-color: var(--ai-chat-surface);
+            font-size: 0.85rem;
+            color: $o-main-text-color;
+            text-align: start;
+            animation: o_ai_chat_deep_rise 0.3s var(--ai-chat-ease) both;
+            transition: border-color 0.15s var(--ai-chat-ease), background-color 0.15s var(--ai-chat-ease);
+
+            .fa {
+                font-size: 0.75em;
+                color: var(--ai-chat-text-muted);
+                transition: transform 0.15s var(--ai-chat-ease);
+            }
+
+            &:hover:not(:disabled) {
+                border-color: var(--ai-chat-accent);
+                background-color: var(--ai-chat-accent-soft);
+
+                .fa {
+                    transform: translateX(2px);
+                    color: var(--ai-chat-accent);
+                }
+            }
+        }
+    }
+
+    // the AI that made an answer, after it: small tinted badges, one color per AI
+    .o_ai_chat_engine {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0 0.45rem;
+        border-radius: 999px;
+        background-color: rgba($o-black, 0.05);
+        line-height: 1.5;
+        white-space: nowrap;
+
+        .fa {
+            font-size: 0.85em;
+        }
+    }
+
+    .o_ai_chat_engine_decision {
+        background-color: var(--ai-chat-accent-soft);
+        color: var(--ai-chat-accent);
+    }
+
+    .o_ai_chat_engine_olg {
+        background-color: #{rgba($o-enterprise-color, 0.12)};
+        color: #{$o-enterprise-color};
+    }
+
+    .o_ai_chat_engine_openrouter {
+        background-color: #{rgba(#0e7490, 0.1)};
+        color: #0e7490;
+    }
+
+    .o_ai_chat_engine_deep {
+        background-color: var(--ai-chat-deep-soft);
+        color: var(--ai-chat-deep);
+    }
+
+    .o_ai_chat_engine_plus {
+        color: $o-gray-400;
+    }
+
+    // Deep analysis ------------------------------------------------------------
+    // a violet "thinking" accent, beside the theme's: the mode is told apart at a glance
+
+    --ai-chat-deep: #7c3aed;
+    --ai-chat-deep-soft: #{rgba(#7c3aed, 0.1)};
+
+    .o_ai_chat_deep_icon {
+        color: var(--ai-chat-deep);
+    }
+
+    .o_ai_chat_deep_toggle {
+        position: relative;
+        flex-shrink: 0;
+        height: 2rem;
+        padding: 0 0.7rem;
+        border: 1px solid var(--ai-chat-line);
+        border-radius: var(--ai-chat-radius-sm);
+        background-color: transparent;
+        font-size: 0.82rem;
+        font-weight: $o-font-weight-medium;
+        color: var(--ai-chat-text-muted);
+        transition: background-color 0.2s var(--ai-chat-ease), color 0.2s var(--ai-chat-ease),
+            border-color 0.2s var(--ai-chat-ease), transform 0.2s var(--ai-chat-ease);
+
+        &:hover:not(:disabled) {
+            border-color: var(--ai-chat-deep);
+            color: var(--ai-chat-deep);
+        }
+
+        &.active {
+            border-color: var(--ai-chat-deep);
+            background-color: var(--ai-chat-deep-soft);
+            color: var(--ai-chat-deep);
+        }
+    }
+
+    &.o_ai_chat_panel_compact {
+        .o_ai_chat_deep_label {
+            display: none;
+        }
+
+        .o_ai_chat_deep_toggle {
+            width: 2rem;
+            padding: 0;
+            justify-content: center;
+        }
+    }
+
+    // the steps of a running analysis
+    .o_ai_chat_deep_progress {
+        min-width: 15rem;
+        font-size: 0.85rem;
+
+        .o_ai_chat_deep_progress_title {
+            font-weight: $o-font-weight-medium;
+        }
+
+        .o_ai_chat_deep_step {
+            padding: 0.15rem 0;
+            color: $o-gray-500;
+            transition: color 0.3s var(--ai-chat-ease);
+        }
+
+        .o_ai_chat_deep_step_mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1rem;
+            height: 1rem;
+            border: 1.5px solid currentColor;
+            border-radius: 50%;
+            font-size: 0.55rem;
+        }
+
+        .o_ai_chat_deep_step_done {
+            color: var(--ai-chat-text-muted);
+
+            .o_ai_chat_deep_step_mark {
+                border-color: var(--ai-chat-deep);
+                background-color: var(--ai-chat-deep);
+                color: $o-white;
+            }
+        }
+
+        .o_ai_chat_deep_step_current {
+            color: $o-main-text-color;
+            font-weight: $o-font-weight-medium;
+
+            .o_ai_chat_deep_step_mark {
+                border-color: var(--ai-chat-deep);
+                border-right-color: transparent;
+                animation: o_ai_chat_spin 0.9s linear infinite;
+            }
+        }
+    }
+
+    // the decision card
+    .o_ai_chat_analysis {
+        border-color: rgba(#7c3aed, 0.25);
+
+        .o_ai_chat_analysis_header {
+            background: linear-gradient(90deg, var(--ai-chat-deep-soft), transparent);
+        }
+
+        .o_ai_chat_verdict {
+            padding: 0.6rem 0.85rem;
+            border-left: 3px solid var(--ai-chat-deep);
+            border-radius: 0 var(--ai-chat-radius-sm) var(--ai-chat-radius-sm) 0;
+            background-color: var(--ai-chat-deep-soft);
+            font-size: 1rem;
+            font-weight: $o-font-weight-medium;
+        }
+
+        .o_ai_chat_analysis_summary {
+            color: $o-gray-700;
+        }
+
+        .o_ai_chat_analysis_section {
+            margin-top: 0.9rem;
+        }
+
+        .o_ai_chat_analysis_label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.78rem;
+            font-weight: $o-font-weight-medium;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--ai-chat-text-muted);
+
+            .fa {
+                color: var(--ai-chat-deep);
+            }
+        }
+
+        .o_ai_chat_analysis_risks .o_ai_chat_analysis_label .fa {
+            color: $warning;
+        }
+
+        .o_ai_chat_analysis_grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+            column-gap: 1.25rem;
+        }
+
+        .o_ai_chat_analysis_list {
+            padding-left: 1.1rem;
+
+            li + li {
+                margin-top: 0.25rem;
+            }
+        }
+
+        .o_ai_chat_recommendations li + li {
+            margin-top: 0.6rem;
+        }
+
+        .o_ai_chat_recommendation_index {
+            display: inline-flex;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            background-color: var(--ai-chat-deep);
+            color: $o-white;
+            font-size: 0.75rem;
+            font-weight: $o-font-weight-medium;
+        }
+
+        .o_ai_chat_recommendation_action {
+            font-weight: $o-font-weight-medium;
+        }
+
+        .o_ai_chat_recommendation_impact {
+            color: $success;
+
+            .fa {
+                margin-right: 0.3rem;
+            }
+        }
+
+        .o_ai_chat_next_steps li + li {
+            margin-top: 0.15rem;
+        }
+
+        // each step can be planned as an activity: it is a button until then
+        .o_ai_chat_next_step {
+            padding: 0.3rem 0.5rem;
+            margin: 0 -0.5rem;
+            border: 0;
+            border-radius: var(--ai-chat-radius-sm);
+            font-size: inherit;
+            font-weight: 400;
+            color: inherit;
+
+            > .fa {
+                margin-top: 0.2rem;
+                color: var(--ai-chat-deep);
+            }
+
+            .o_ai_chat_next_step_hint {
+                opacity: 0;
+                color: var(--ai-chat-deep);
+                transition: opacity 0.15s var(--ai-chat-ease);
+            }
+        }
+
+        button.o_ai_chat_next_step:hover,
+        button.o_ai_chat_next_step:focus-visible {
+            background-color: var(--ai-chat-deep-soft);
+
+            .o_ai_chat_next_step_box::before {
+                content: "\f271"; // fa-calendar-plus-o
+            }
+
+            .o_ai_chat_next_step_hint {
+                opacity: 1;
+            }
+        }
+
+        .o_ai_chat_next_step_planned {
+            animation: o_ai_chat_deep_rise 0.35s var(--ai-chat-ease);
+
+            .o_ai_chat_next_step_activity {
+                color: var(--ai-chat-deep);
+            }
+        }
+
+        .o_ai_chat_next_step_overdue .o_ai_chat_next_step_activity {
+            color: $danger;
+        }
+
+        .o_ai_chat_next_step_done {
+            > .fa {
+                color: $success;
+            }
+
+            > div > span {
+                color: var(--ai-chat-text-muted);
+                text-decoration: line-through;
+            }
+
+            .o_ai_chat_next_step_activity {
+                color: $success;
+            }
+        }
+
+        .o_ai_chat_analysis_data {
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--ai-chat-line);
+
+            summary {
+                cursor: pointer;
+                font-size: 0.82rem;
+                color: var(--ai-chat-text-muted);
+
+                .fa {
+                    margin-right: 0.3rem;
+                }
+            }
+        }
+
+        .o_ai_chat_dataset {
+            margin-top: 0.75rem;
+        }
+
+        .o_ai_chat_dataset_title {
+            margin-bottom: 0.3rem;
+            font-size: 0.82rem;
+            font-weight: $o-font-weight-medium;
+        }
+
+        .o_ai_chat_dataset_table {
+            max-height: 16rem;
+            overflow: auto;
+            font-size: 0.8rem;
+        }
+
+        // the parts rise one after the other
+        .o_ai_chat_analysis_part {
+            animation: o_ai_chat_deep_rise 0.45s var(--ai-chat-ease) both;
+        }
+
+        @for $index from 1 through 8 {
+            .px-3 > .o_ai_chat_analysis_part:nth-child(#{$index}),
+            .o_ai_chat_analysis_grid > .o_ai_chat_analysis_part:nth-child(#{$index}) {
+                animation-delay: #{$index * 0.07s};
+            }
+        }
+    }
+
+    .o_ai_chat_confidence {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.75rem;
+        font-weight: $o-font-weight-medium;
+        white-space: nowrap;
+
+        .o_ai_chat_confidence_bars {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 2px;
+
+            i {
+                width: 4px;
+                border-radius: 1px;
+                background-color: rgba($o-black, 0.15);
+
+                &:nth-child(1) { height: 6px; }
+                &:nth-child(2) { height: 9px; }
+                &:nth-child(3) { height: 12px; }
+            }
+        }
+
+        @each $level, $color, $bars in (high, $success, 3), (medium, $warning, 2), (low, $danger, 1) {
+            &.o_ai_chat_confidence_#{$level} {
+                color: $color;
+
+                .o_ai_chat_confidence_bars i:nth-child(-n + #{$bars}) {
+                    background-color: $color;
+                }
+            }
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        .o_ai_chat_sidebar,
+        .o_ai_chat_usage_body {
+            animation: none !important;
+            transition: none !important;
+        }
+    }
+}
+
+// Odoo's panel icon has its pane on the right: mirrored, it shows the sidebar on
+// the left, the usual icon to open and close a sidebar (used in and out of the panel)
+.o_ai_chat_icon_sidebar {
+    display: inline-block;
+    transform: scaleX(-1);
+}
+
+// Heading: portaled into the navbar (out of .o_ai_chat_panel), set like the
+// theme's screen titles - see .o_navbar_breadcrumbs in ai_minimal_theme.
+.o_ai_chat_heading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    line-height: 1.15;
+
+    .o_ai_chat_title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: $o-main-text-color;
+    }
+
+    .o_ai_chat_heading_hint {
+        margin-top: 2px;
+        font-size: 0.78rem;
+        color: $o-gray-600;
+    }
+
+    .o_ai_chat_heading_btn {
+        display: none;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        color: $o-gray-600;
+
+        &:hover {
+            background-color: rgba($o-black, 0.06);
+            color: $o-main-text-color;
+        }
+    }
+
+    // the conversations become a drawer: its toggle sits before the title; on large
+    // screens it brings back the sidebar once folded away
+    .o_ai_chat_heading_btn.o_ai_chat_toggle_visible {
+        display: inline-flex;
+    }
+
+    @include media-breakpoint-down(lg) {
+        .o_ai_chat_heading_btn {
+            display: inline-flex;
+        }
+    }
+}
+
+@keyframes o_ai_chat_typing {
+    0%, 80%, 100% {
+        opacity: 0.3;
+    }
+    40% {
+        opacity: 1;
+    }
+}
+
+@keyframes o_ai_chat_pulse {
+    50% {
+        opacity: 0.55;
+    }
+}
+
+@keyframes o_ai_chat_spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes o_ai_chat_deep_in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@keyframes o_ai_chat_deep_rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}

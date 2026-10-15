@@ -1,0 +1,1035 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ai_chat_pro.ChatPanel">
+        <div t-attf-class="o_ai_chat_panel d-flex h-100 position-relative {{ this.props.compact ? 'o_ai_chat_panel_compact' : '' }} {{ this.state.isSidebarOpen ? 'o_ai_chat_sidebar_open' : '' }} {{ this.state.isSidebarCollapsed ? 'o_ai_chat_sidebar_collapsed' : '' }} {{ this.isEmptyChat ? 'o_ai_chat_empty' : '' }}"
+             t-on-keydown="(ev) => this.onPanelKeydown(ev)">
+            <t t-if="!this.props.compact">
+                <div class="o_ai_chat_backdrop" t-on-click="() => this.toggleSidebar()"/>
+                <!-- no brand block: the minimal theme's sidebar already names the app -->
+                <aside class="o_ai_chat_sidebar d-flex flex-column" aria-label="Conversations"
+                       t-att-aria-hidden="this.state.isSidebarCollapsed and !this.state.isSidebarOpen ? 'true' : null">
+                    <div class="o_ai_chat_sidebar_top d-flex align-items-center gap-2">
+                        <span class="o_ai_chat_brand d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+                            <span class="o_ai_chat_brand_icon"><t t-call="ai_chat_pro.AppIcon"/></span>
+                        </span>
+                        <button class="btn o_ai_chat_icon_btn o_ai_chat_sidebar_collapse flex-shrink-0"
+                                title="Close sidebar" aria-label="Close sidebar"
+                                t-on-click="() => this.collapseSidebar()">
+                            <i class="oi oi-panel-right o_ai_chat_icon_sidebar" aria-hidden="true"/>
+                        </button>
+                    </div>
+                    <div class="o_ai_chat_sidebar_actions d-flex flex-column">
+                        <button class="btn btn-primary o_ai_chat_new d-flex align-items-center justify-content-center gap-2"
+                                t-on-click="() => this.newConversation()">
+                            <i class="fa fa-plus" aria-hidden="true"/>New chat
+                        </button>
+                        <div class="o_ai_chat_search position-relative">
+                            <i class="fa fa-search position-absolute"/>
+                            <input type="search" class="form-control form-control-sm" placeholder="Search chats"
+                                   aria-label="Search conversations"
+                                   t-att-value="this.state.search" t-on-input="(ev) => this.onSearchInput(ev)"/>
+                        </div>
+                    </div>
+
+                    <nav class="o_ai_chat_conversations flex-grow-1 overflow-auto px-2 pb-2">
+                        <t t-foreach="this.conversationGroups" t-as="group" t-key="group.key">
+                            <h2 class="o_ai_chat_group_label" t-out="group.label"/>
+                            <ul class="list-unstyled mb-0">
+                                <li t-foreach="group.conversations" t-as="conversation" t-key="conversation.id"
+                                    t-attf-class="o_ai_chat_conversation d-flex align-items-center {{ conversation.id === this.state.conversationId ? 'active' : '' }}">
+                                    <button class="o_ai_chat_conversation_open btn flex-grow-1 min-w-0 d-flex align-items-center gap-2 text-start"
+                                            t-att-aria-current="conversation.id === this.state.conversationId ? 'true' : null"
+                                            t-att-title="conversation.name"
+                                            t-on-click="() => this.selectConversation(conversation.id)">
+                                        <span class="text-truncate" t-out="conversation.name"/>
+                                    </button>
+                                    <button class="btn o_ai_chat_icon_btn o_ai_chat_delete" title="Delete conversation"
+                                            aria-label="Delete conversation"
+                                            t-on-click="() => this.deleteConversation(conversation)">
+                                        <i class="fa fa-trash-o"/>
+                                    </button>
+                                </li>
+                            </ul>
+                        </t>
+                        <p t-if="!this.state.isLoading and !this.conversationGroups.length" class="text-muted small px-2 py-4 mb-0">
+                            <t t-if="this.state.search">No conversation matches "<t t-out="this.state.search"/>".</t>
+                            <t t-else="">Your conversations will be listed here.</t>
+                        </p>
+                    </nav>
+
+                    <!-- usage, speech to text and balance grouped in one soft card, like the theme's cards -->
+                    <div t-if="this.state.usage" t-attf-class="o_ai_chat_usage_card {{ this.state.isUsageCollapsed ? 'o_ai_chat_usage_collapsed' : '' }}">
+                        <div id="o_ai_chat_usage_body" class="o_ai_chat_usage_body">
+                            <div class="o_ai_chat_usage_body_inner">
+                                <section t-if="this.state.usage" class="o_ai_chat_usage px-3 py-3" aria-labelledby="o_ai_chat_usage_title">
+                                    <h2 id="o_ai_chat_usage_title" class="o_ai_chat_group_label mb-2">Your usage</h2>
+                                    <dl class="o_ai_chat_usage_list mb-0">
+                                        <div>
+                                            <dt><i class="fa fa-microchip"/>Tokens</dt>
+                                            <dd class="o_ai_chat_tokens" t-out="this.formatTokens(this.state.usage.user.tokens)"/>
+                                        </div>
+                                        <div>
+                                            <dt><i class="fa fa-money"/>Spent</dt>
+                                            <dd class="o_ai_chat_spent" t-out="this.formatCost(this.state.usage.user.cost)"/>
+                                        </div>
+                                        <div>
+                                            <dt><i class="fa fa-comments-o"/>Answers</dt>
+                                            <dd t-out="this.state.usage.user.questions"/>
+                                        </div>
+                                    </dl>
+                                    <p t-if="this.state.usage.is_manager" class="small text-muted mt-2 mb-0">
+                                        All users: <t t-out="this.formatTokens(this.state.usage.company.tokens)"/> tokens,
+                                        <t t-out="this.formatCost(this.state.usage.company.cost)"/> spent
+                                    </p>
+                                </section>
+
+                                <section t-if="this.showsVoiceUsage" class="o_ai_chat_usage o_ai_chat_voice_usage px-3 py-3"
+                                         aria-labelledby="o_ai_chat_voice_usage_title">
+                                    <h2 id="o_ai_chat_voice_usage_title" class="o_ai_chat_group_label mb-2">Speech to text</h2>
+                                    <dl class="o_ai_chat_usage_list mb-0">
+                                        <div>
+                                            <dt><i class="fa fa-microphone"/>Recordings</dt>
+                                            <dd class="o_ai_chat_voice_recordings" t-out="this.state.usage.voice.user.recordings"/>
+                                        </div>
+                                        <div>
+                                            <dt><i class="fa fa-clock-o"/>Duration</dt>
+                                            <dd t-out="this.formatDuration(this.state.usage.voice.user.seconds)"/>
+                                        </div>
+                                        <div>
+                                            <dt><i class="fa fa-money"/>Spent</dt>
+                                            <dd class="o_ai_chat_voice_spent" t-out="this.formatCost(this.state.usage.voice.user.cost)"/>
+                                        </div>
+                                    </dl>
+                                    <p t-if="this.state.usage.is_manager and this.state.usage.voice.company" class="small text-muted mt-2 mb-0">
+                                        All users: <t t-out="this.state.usage.voice.company.recordings"/> recordings,
+                                        <t t-out="this.formatCost(this.state.usage.voice.company.cost)"/> spent
+                                    </p>
+                                </section>
+
+                                <!-- the account pays for the answers and the speech to text: shown after both -->
+                                <section t-if="this.state.usage and this.state.usage.is_manager" class="o_ai_chat_usage px-3 py-3">
+                                    <div class="o_ai_chat_balance d-flex align-items-center gap-2">
+                                        <i class="fa fa-university o_ai_chat_balance_icon"/>
+                                        <div class="flex-grow-1 lh-sm min-w-0">
+                                            <div class="small text-muted" t-out="this.balanceLabel"/>
+                                            <div t-if="this.state.usage.balance.amount !== null" class="o_ai_chat_balance_amount"
+                                                 t-out="this.formatBalance(this.state.usage.balance.amount)"/>
+                                            <div t-else="" class="small text-muted" t-out="this.state.usage.balance.error"/>
+                                        </div>
+                                        <button class="btn o_ai_chat_icon_btn o_ai_chat_balance_refresh" title="Refresh the balance"
+                                                aria-label="Refresh the balance"
+                                                t-att-disabled="this.state.isRefreshingBalance" t-on-click="() => this.refreshBalance()">
+                                            <i t-attf-class="fa fa-refresh {{ this.state.isRefreshingBalance ? 'o_ai_chat_spin' : '' }}"/>
+                                        </button>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                        <button class="btn o_ai_chat_usage_toggle w-100 d-flex align-items-center gap-2"
+                                aria-controls="o_ai_chat_usage_body"
+                                t-att-aria-expanded="this.state.isUsageCollapsed ? 'false' : 'true'"
+                                t-att-title="this.usageToggleTitle"
+                                t-on-click="() => this.toggleUsage()">
+                            <img class="o_ai_chat_profile_avatar" t-att-src="this.userAvatar" alt=""/>
+                            <span class="flex-grow-1 min-w-0 text-start lh-sm">
+                                <span class="o_ai_chat_profile_name d-block text-truncate" t-out="this.userName"/>
+                                <span class="o_ai_chat_usage_toggle_summary d-block text-truncate">
+                                    Usage &amp; cost · <t t-out="this.formatCost(this.state.usage.user.cost)"/>
+                                </span>
+                            </span>
+                            <i class="fa fa-chevron-up o_ai_chat_usage_chevron" aria-hidden="true"/>
+                        </button>
+                    </div>
+                </aside>
+            </t>
+
+            <section class="o_ai_chat_main d-flex flex-column flex-grow-1 min-w-0">
+                <!--
+                    With the minimal theme: like every other screen of the theme, the title
+                    is the navbar heading. The ControlPanel does the same on small screens,
+                    and the fallback keeps the title in the card when there is no navbar
+                    (fullscreen actions).
+                -->
+                <t t-if="this.usesNavbarHeading">
+                    <div class="o_ai_chat_heading_fallback d-contents"/>
+                    <t t-portal="'.o_navbar_breadcrumbs, .o_ai_chat_heading_fallback'">
+                        <div class="o_ai_chat_heading">
+                            <button t-attf-class="btn o_ai_chat_heading_btn o_ai_chat_sidebar_toggle {{ this.showsSidebarToggle ? 'o_ai_chat_toggle_visible' : '' }}"
+                                    title="Open sidebar" aria-label="Open sidebar"
+                                    t-on-click="() => this.toggleSidebar()">
+                                <i class="oi oi-panel-right o_ai_chat_icon_sidebar" aria-hidden="true"/>
+                            </button>
+                            <button t-attf-class="btn o_ai_chat_heading_btn o_ai_chat_header_new {{ this.showsSidebarToggle ? 'o_ai_chat_toggle_visible' : '' }}"
+                                    title="New chat" aria-label="New chat"
+                                    t-on-click="() => this.newConversation()">
+                                <i class="fa fa-pencil-square-o" aria-hidden="true"/>
+                            </button>
+                            <div class="min-w-0">
+                                <h1 class="o_ai_chat_title text-truncate mb-0" t-out="this.headerTitle"/>
+                                <div class="o_ai_chat_heading_hint text-truncate">
+                                    <i class="fa fa-lock me-1"/>Answers only include records you can access
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+                <header t-else="" class="o_ai_chat_header d-flex align-items-center gap-2 px-3">
+                    <button t-if="!this.props.compact"
+                            t-attf-class="btn o_ai_chat_icon_btn o_ai_chat_sidebar_toggle o_ai_chat_sidebar_action {{ this.showsSidebarToggle ? 'o_ai_chat_toggle_visible' : '' }}"
+                            title="Open sidebar" aria-label="Open sidebar"
+                            t-on-click="() => this.toggleSidebar()">
+                        <i class="oi oi-panel-right o_ai_chat_icon_sidebar" aria-hidden="true"/>
+                    </button>
+                    <span t-else="" class="o_ai_chat_logo o_ai_chat_logo_sm"><t t-call="ai_chat_pro.AppIcon"/></span>
+                    <button t-if="!this.props.compact"
+                            t-attf-class="btn o_ai_chat_icon_btn o_ai_chat_header_new o_ai_chat_sidebar_action {{ this.showsSidebarToggle ? 'o_ai_chat_toggle_visible' : '' }}"
+                            title="New chat" aria-label="New chat"
+                            t-on-click="() => this.newConversation()">
+                        <i class="fa fa-pencil-square-o" aria-hidden="true"/>
+                    </button>
+                    <div class="flex-grow-1 min-w-0 lh-sm">
+                        <h1 class="o_ai_chat_title text-truncate mb-0" t-out="this.headerTitle"/>
+                        <div class="small text-muted text-truncate">
+                            <i class="fa fa-lock me-1"/>Answers only include records you can access
+                        </div>
+                    </div>
+                    <t t-if="this.props.compact">
+                        <span t-if="this.state.usage" class="o_ai_chat_chip small" t-att-title="this.usageTooltip"
+                              t-out="this.formatCost(this.state.usage.user.cost)"/>
+                        <button class="btn o_ai_chat_icon_btn" title="New chat" aria-label="New chat"
+                                t-on-click="() => this.newConversation()">
+                            <i class="fa fa-pencil-square-o"/>
+                        </button>
+                        <button t-if="this.props.onExpand" class="btn o_ai_chat_icon_btn o_ai_chat_expand"
+                                title="Open full screen" aria-label="Open full screen"
+                                t-on-click="() => this.props.onExpand()">
+                            <i class="fa fa-expand"/>
+                        </button>
+                        <button t-if="this.props.onClose" class="btn o_ai_chat_icon_btn" title="Close" aria-label="Close"
+                                t-on-click="() => this.props.onClose()">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </t>
+                </header>
+
+                <div class="o_ai_chat_messages flex-grow-1 overflow-auto" t-ref="messages" aria-live="polite">
+                    <div class="o_ai_chat_thread mx-auto px-3 py-4">
+                        <div t-if="this.state.isLoading" class="o_ai_chat_skeleton" aria-busy="true" aria-label="Loading the conversation">
+                            <div class="o_ai_chat_skeleton_line ms-auto w-25"/>
+                            <div class="o_ai_chat_skeleton_line w-50"/>
+                            <div class="o_ai_chat_skeleton_block"/>
+                        </div>
+                        <div t-elif="!this.state.messages.length" class="o_ai_chat_welcome">
+                            <h2 class="o_ai_chat_welcome_title mb-0">
+                                <span class="o_ai_chat_welcome_icon" aria-hidden="true"><t t-call="ai_chat_pro.AppIcon"/></span>
+                                <span t-out="this.greeting"/>
+                            </h2>
+                        </div>
+                        <t t-else="">
+                            <t t-foreach="this.state.messages" t-as="message" t-key="message.id">
+                                <div t-if="message.role === 'user'" class="o_ai_chat_message o_ai_chat_message_user d-flex justify-content-end gap-2">
+                                    <div class="d-flex flex-column align-items-end gap-1 min-w-0">
+                                        <div t-if="message.attachments and message.attachments.length" class="o_ai_chat_message_files d-flex flex-wrap justify-content-end gap-1">
+                                            <a t-foreach="message.attachments" t-as="file" t-key="file.id"
+                                               class="o_ai_chat_file_chip" t-att-href="this.getAttachmentUrl(file)" t-att-title="file.name">
+                                                <i t-attf-class="fa {{ this.getFileIcon(file) }}" aria-hidden="true"/>
+                                                <span class="text-truncate" t-out="file.name"/>
+                                                <span class="o_ai_chat_file_size" t-out="this.formatFileSize(file.size)"/>
+                                            </a>
+                                        </div>
+                                        <div class="o_ai_chat_bubble">
+                                            <t t-foreach="this.getMessageParts(message)" t-as="part" t-key="part_index">
+                                                <button t-if="part.mention" class="o_ai_chat_mention" t-att-title="part.mention.label"
+                                                        t-on-click="() => this.openRecord(part.mention)">@<t t-out="part.mention.name"/></button>
+                                                <span t-elif="part.command" class="o_ai_chat_command_chip" t-out="part.command"/>
+                                                <t t-else="" t-out="part.text"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div t-else="" class="o_ai_chat_message o_ai_chat_message_assistant d-flex gap-2">
+                                    <span class="o_ai_chat_logo o_ai_chat_logo_sm flex-shrink-0" aria-hidden="true"><t t-call="ai_chat_pro.AppIcon"/></span>
+                                    <div class="min-w-0 flex-grow-1">
+                                        <div t-if="this.showsText(message)" t-attf-class="o_ai_chat_bubble {{ message.is_error ? 'o_ai_chat_error' : '' }}"
+                                             t-att-role="message.is_error ? 'alert' : null">
+                                            <i t-if="message.is_error" class="fa fa-exclamation-triangle me-1"/>
+                                            <span class="o_ai_chat_content" t-out="message.content"/>
+                                        </div>
+                                        <div t-if="this.isDraft(message)" t-attf-class="o_ai_chat_result o_ai_chat_draft o_ai_chat_draft_{{ message.result.state }} mt-2">
+                                            <div class="o_ai_chat_result_header d-flex align-items-center gap-2 px-3 py-2">
+                                                <i t-attf-class="fa o_ai_chat_draft_icon {{ message.result.state === 'created' ? 'fa-check-circle' : 'fa-plus-circle' }}"/>
+                                                <h3 class="o_ai_chat_result_title text-truncate flex-grow-1 mb-0"
+                                                    t-out="message.result.state === 'created' ? message.result.record_name : message.result.title"/>
+                                                <t t-call="ai_chat_pro.DraftState"><t t-set="draft" t-value="message.result"/></t>
+                                            </div>
+                                            <t t-call="ai_chat_pro.DraftDetails"><t t-set="draft" t-value="message.result"/></t>
+                                            <t t-if="message.result.state === 'draft'" t-call="ai_chat_pro.DraftActions">
+                                                    <t t-set="draft" t-value="message.result"/>
+                                                    <t t-set="isLast" t-value="true"/>
+                                                </t>
+                                            <div t-elif="message.result.state === 'created'" class="o_ai_chat_draft_actions px-3 py-2">
+                                                <button class="btn btn-link btn-sm p-0 o_ai_chat_draft_open" t-on-click="() => this.openCreatedRecord(message.result)">
+                                                    Open <t t-out="message.result.model_label"/><i class="fa fa-external-link ms-1"/>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div t-elif="this.isPlan(message)" t-attf-class="o_ai_chat_result o_ai_chat_plan o_ai_chat_draft_{{ message.result.state }} mt-2">
+                                            <div class="o_ai_chat_result_header d-flex align-items-center gap-2 px-3 py-2">
+                                                <i t-attf-class="fa o_ai_chat_draft_icon {{ message.result.state === 'created' ? 'fa-check-circle' : 'fa-list-ol' }}"/>
+                                                <h3 class="o_ai_chat_result_title text-truncate flex-grow-1 mb-0"
+                                                    t-out="message.result.state === 'created' ? message.result.record_name : message.result.title"/>
+                                                <span class="o_ai_chat_tag" t-out="this.getPlanProgress(message.result)"/>
+                                            </div>
+                                            <ol class="o_ai_chat_plan_steps list-unstyled mb-0">
+                                                <li t-foreach="message.result.steps" t-as="step" t-key="step_index"
+                                                    t-attf-class="o_ai_chat_plan_step o_ai_chat_draft_{{ step.state }} {{ this.isCurrentStep(message.result, step_index) ? 'o_ai_chat_plan_current' : '' }}"
+                                                    t-att-aria-current="this.isCurrentStep(message.result, step_index) ? 'step' : null">
+                                                    <div class="d-flex align-items-center gap-2 px-3 py-2">
+                                                        <span class="o_ai_chat_plan_number flex-shrink-0" aria-hidden="true">
+                                                            <i t-if="step.state === 'created'" class="fa fa-check"/>
+                                                            <t t-else="" t-out="step_index + 1"/>
+                                                        </span>
+                                                        <span class="visually-hidden">Step <t t-out="step_index + 1"/>:</span>
+                                                        <span class="fw-medium text-truncate flex-grow-1"
+                                                              t-out="step.state === 'created' ? step.record_name : step.title"/>
+                                                        <button t-if="step.state === 'created'" class="btn btn-link btn-sm p-0 o_ai_chat_draft_open"
+                                                                title="Open the record" aria-label="Open the record"
+                                                                t-on-click="() => this.openCreatedRecord(step)">
+                                                            <i class="fa fa-external-link"/>
+                                                        </button>
+                                                        <t t-else="" t-call="ai_chat_pro.DraftState"><t t-set="draft" t-value="step"/></t>
+                                                    </div>
+                                                    <t t-if="this.isCurrentStep(message.result, step_index)">
+                                                        <t t-call="ai_chat_pro.DraftDetails"><t t-set="draft" t-value="step"/></t>
+                                                        <t t-call="ai_chat_pro.DraftActions">
+                                                            <t t-set="draft" t-value="step"/>
+                                                            <t t-set="isLast" t-value="step_index === message.result.steps.length - 1"/>
+                                                        </t>
+                                                    </t>
+                                                    <p t-elif="step.state === 'draft' and step.fields.length" class="o_ai_chat_plan_summary small text-muted text-truncate mb-0 px-3 pb-2"
+                                                       t-out="this.getDraftSummary(step)"/>
+                                                </li>
+                                            </ol>
+                                        </div>
+                                        <div t-elif="this.isRecordCard(message)" class="o_ai_chat_result o_ai_chat_record_card mt-2">
+                                            <div class="o_ai_chat_result_header d-flex align-items-center gap-2 px-3 py-2">
+                                                <i t-attf-class="fa {{ this.getMentionIcon(message.result) }} o_ai_chat_record_icon" aria-hidden="true"/>
+                                                <div class="flex-grow-1 min-w-0">
+                                                    <h3 class="o_ai_chat_result_title text-truncate mb-0" t-out="message.result.title"/>
+                                                    <div class="small text-muted" t-out="message.result.model_label"/>
+                                                </div>
+                                                <button class="btn btn-secondary btn-sm o_ai_chat_record_open"
+                                                        t-on-click="() => this.openRecord(message.result)">
+                                                    <i class="fa fa-external-link me-1" aria-hidden="true"/>Open
+                                                </button>
+                                            </div>
+                                            <dl t-if="message.result.fields.length" class="o_ai_chat_record_fields px-3 py-2 mb-0">
+                                                <div t-foreach="message.result.fields" t-as="field" t-key="field_index">
+                                                    <dt t-out="field.label"/>
+                                                    <dd t-out="field.value"/>
+                                                </div>
+                                            </dl>
+                                        </div>
+                                        <t t-elif="this.isPrint(message)">
+                                            <t t-call="ai_chat_pro.PrintedReport">
+                                                <t t-set="printed" t-value="message.result"/>
+                                            </t>
+                                        </t>
+                                        <t t-elif="this.isExplanation(message)">
+                                            <t t-call="ai_chat_pro.Explanation">
+                                                <t t-set="explanation" t-value="message.result"/>
+                                            </t>
+                                        </t>
+                                        <t t-elif="this.isImport(message)">
+                                            <t t-call="ai_chat_pro.Import">
+                                                <t t-set="importDraft" t-value="message.result"/>
+                                            </t>
+                                        </t>
+                                        <t t-elif="this.isAnalysis(message)">
+                                            <t t-call="ai_chat_pro.Analysis">
+                                                <t t-set="analysis" t-value="message.result"/>
+                                            </t>
+                                        </t>
+                                        <div t-elif="message.result" t-attf-class="o_ai_chat_result {{ this.showsText(message) ? 'mt-2' : '' }}">
+                                            <div class="o_ai_chat_result_header d-flex align-items-start gap-3 px-3 py-2">
+                                                <div class="flex-grow-1 min-w-0">
+                                                    <div class="d-flex align-items-baseline gap-2">
+                                                        <h3 class="o_ai_chat_result_title text-truncate mb-0" t-out="message.result.heading or message.result.title"/>
+                                                        <span t-if="this.getResultSummary(message.result)" class="small text-muted text-nowrap"
+                                                              t-out="this.getResultSummary(message.result)"/>
+                                                    </div>
+                                                    <div t-if="message.result.tags and message.result.tags.length" class="d-flex flex-wrap gap-1 mt-1">
+                                                        <span t-foreach="message.result.tags" t-as="tag" t-key="tag_index"
+                                                              class="o_ai_chat_tag" t-out="tag"/>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                                    <t t-if="this.canDownload(message)">
+                                                        <button t-if="this.getResultView(message) === 'chart'"
+                                                                class="btn o_ai_chat_icon_btn o_ai_chat_download_image"
+                                                                title="Download the chart as an image" aria-label="Download the chart as an image"
+                                                                t-on-click="() => this.downloadChart(message)">
+                                                            <i class="fa fa-picture-o"/>
+                                                        </button>
+                                                        <button class="btn o_ai_chat_icon_btn o_ai_chat_download_xlsx"
+                                                                title="Download as Excel (.xlsx)" aria-label="Download as Excel (.xlsx)"
+                                                                t-on-click="() => this.downloadXlsx(message)">
+                                                            <i class="fa fa-download"/>
+                                                        </button>
+                                                        <button t-if="this.canPrintReport(message)" class="btn o_ai_chat_icon_btn o_ai_chat_download_pdf"
+                                                                t-att-title="this.reportButtonLabel" t-att-aria-label="this.reportButtonLabel"
+                                                                t-att-disabled="this.state.printingReportId"
+                                                                t-on-click="() => this.downloadReport(message)">
+                                                            <i t-attf-class="fa {{ this.state.printingReportId === message.id ? 'fa-circle-o-notch o_ai_chat_spin' : 'fa-file-pdf-o' }}"/>
+                                                        </button>
+                                                    </t>
+                                                    <button t-if="message.result.model" class="btn btn-link btn-sm p-0 ms-1 o_ai_chat_open_list text-nowrap"
+                                                            t-on-click="() => this.openList(message.result)">
+                                                        Open list<i class="fa fa-external-link ms-1"/>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div t-if="message.result.chart" class="o_ai_chat_result_toolbar d-flex align-items-center gap-2 px-3 py-1">
+                                                <div class="o_ai_chat_segmented" role="group" aria-label="Show as">
+                                                    <button t-attf-class="btn {{ this.getResultView(message) === 'chart' ? 'active' : '' }}"
+                                                            t-att-aria-pressed="this.getResultView(message) === 'chart' ? 'true' : 'false'"
+                                                            t-on-click="() => this.setResultView(message, 'chart')">
+                                                        <i class="fa fa-bar-chart me-1"/>Chart
+                                                    </button>
+                                                    <button t-attf-class="btn {{ this.getResultView(message) === 'table' ? 'active' : '' }}"
+                                                            t-att-aria-pressed="this.getResultView(message) === 'table' ? 'true' : 'false'"
+                                                            t-on-click="() => this.setResultView(message, 'table')">
+                                                        <i class="fa fa-table me-1"/>Table
+                                                    </button>
+                                                </div>
+                                                <div t-if="this.getResultView(message) === 'chart'" class="d-flex gap-1 ms-auto" role="group" aria-label="Chart type">
+                                                    <button t-foreach="this.chartTypes" t-as="chartType" t-key="chartType.type"
+                                                            t-attf-class="btn o_ai_chat_icon_btn {{ this.getChartType(message) === chartType.type ? 'active' : '' }}"
+                                                            t-att-title="chartType.label" t-att-aria-label="chartType.label"
+                                                            t-att-aria-pressed="this.getChartType(message) === chartType.type ? 'true' : 'false'"
+                                                            t-on-click="() => this.setChartType(message, chartType.type)">
+                                                        <i t-attf-class="fa {{ chartType.icon }}"/>
+                                                    </button>
+                                                </div>
+                                                <span t-if="message.result.chart.source === 'odoo_ai' and this.getResultView(message) === 'chart'"
+                                                      class="small text-muted order-first order-sm-0">Chart by Odoo AI</span>
+                                            </div>
+                                            <div t-if="message.result.type === 'value'" class="o_ai_chat_value d-flex flex-wrap gap-4 px-3 py-3">
+                                                <div t-foreach="this.getValueItems(message.result)" t-as="item" t-key="item_index">
+                                                    <div class="small text-muted" t-out="item.label"/>
+                                                    <div t-attf-class="o_ai_chat_value_number {{ item_index ? 'o_ai_chat_value_secondary' : '' }}"
+                                                         t-out="item.value"/>
+                                                </div>
+                                            </div>
+                                            <div t-elif="this.getResultView(message) === 'chart'" class="px-3 py-3">
+                                                <AiChatChart result="message.result" type="this.getChartType(message)"
+                                                             onOpenRow="(row) => this.openRecord(message.result, row)"
+                                                             registerExport="(exportImage) => this.registerChartExport(message, exportImage)"/>
+                                            </div>
+                                            <div t-elif="message.result.rows.length" class="o_ai_chat_table">
+                                                <table class="table table-sm table-hover mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th t-foreach="message.result.columns" t-as="column" t-key="column_index" scope="col"
+                                                                t-att-class="{ 'text-end': column.numeric }" t-out="column.label"/>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="message.result.rows" t-as="row" t-key="row_index">
+                                                            <tr t-if="message.result.openable and row.id" class="o_ai_chat_row_openable" tabindex="0"
+                                                                t-on-click="() => this.openRecord(message.result, row)"
+                                                                t-on-keydown="(ev) => this.onRowKeydown(ev, message.result, row)">
+                                                                <td t-foreach="row.cells" t-as="cell" t-key="cell_index"
+                                                                    t-att-class="{ 'text-end': message.result.columns[cell_index].numeric }"
+                                                                    t-att-title="cell" t-out="cell"/>
+                                                            </tr>
+                                                            <tr t-else="">
+                                                                <td t-foreach="row.cells" t-as="cell" t-key="cell_index"
+                                                                    t-att-class="{ 'text-end': message.result.columns[cell_index].numeric }"
+                                                                    t-att-title="cell" t-out="cell"/>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <p t-else="" class="text-muted small px-3 py-3 mb-0">No record matches this question.</p>
+                                        </div>
+                                        <details t-if="message.thoughts and message.thoughts.length" class="o_ai_chat_thoughts mt-2">
+                                            <summary><i class="fa fa-cogs me-1" aria-hidden="true"/>How I worked it out</summary>
+                                            <ol class="mb-0 mt-1 ps-3">
+                                                <li t-foreach="message.thoughts" t-as="thought" t-key="thought_index" t-out="thought"/>
+                                            </ol>
+                                        </details>
+                                        <div t-if="message.suggestions and message.suggestions.length" class="o_ai_chat_suggestions mt-2"
+                                             role="group" aria-label="Did you mean">
+                                            <div class="o_ai_chat_suggestions_label"><i class="fa fa-lightbulb-o me-1" aria-hidden="true"/>Did you mean</div>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <button t-foreach="message.suggestions" t-as="suggestion" t-key="suggestion_index"
+                                                        class="btn o_ai_chat_suggestion" t-att-disabled="this.state.isAsking"
+                                                        t-on-click="() => this.askSuggestion(suggestion)">
+                                                    <t t-out="suggestion"/><i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div t-if="message.source" class="o_ai_chat_meta d-flex flex-wrap gap-3 mt-1">
+                                            <span class="o_ai_chat_engines d-inline-flex flex-wrap align-items-center gap-1"
+                                                  t-att-aria-label="this.getSourceLabel(message)">
+                                                <t t-foreach="this.getEngines(message)" t-as="engine" t-key="engine_index">
+                                                    <span t-if="engine_index" class="o_ai_chat_engine_plus" aria-hidden="true">+</span>
+                                                    <span t-attf-class="o_ai_chat_engine o_ai_chat_engine_{{ engine.kind }}" t-att-title="engine.title">
+                                                        <i t-attf-class="fa {{ engine.icon }}" aria-hidden="true"/><t t-out="engine.label"/>
+                                                    </span>
+                                                </t>
+                                            </span>
+                                            <span t-if="message.tokens"><i class="fa fa-microchip"/><t t-out="this.formatTokens(message.tokens)"/> tokens</span>
+                                            <span t-if="message.cost"><i class="fa fa-money"/><t t-out="this.formatCost(message.cost)"/></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                            <div t-if="this.state.isAsking" class="o_ai_chat_message o_ai_chat_message_assistant d-flex gap-2">
+                                <span class="o_ai_chat_logo o_ai_chat_logo_sm flex-shrink-0" aria-hidden="true"><t t-call="ai_chat_pro.AppIcon"/></span>
+                                <div t-if="this.state.isAskingDeep" class="o_ai_chat_bubble o_ai_chat_deep_progress" role="status"
+                                     aria-label="The analysis is running">
+                                    <div class="o_ai_chat_deep_progress_title d-flex align-items-center gap-2 mb-2">
+                                        <i class="fa fa-lightbulb-o o_ai_chat_deep_icon" aria-hidden="true"/>Deep analysis
+                                    </div>
+                                    <ol class="list-unstyled mb-0">
+                                        <li t-foreach="this.deepSteps" t-as="step" t-key="step_index"
+                                            t-attf-class="o_ai_chat_deep_step d-flex align-items-center gap-2 {{ step_index &lt; this.state.deepStep ? 'o_ai_chat_deep_step_done' : step_index === this.state.deepStep ? 'o_ai_chat_deep_step_current' : '' }}">
+                                            <span class="o_ai_chat_deep_step_mark" aria-hidden="true">
+                                                <i t-if="step_index &lt; this.state.deepStep" class="fa fa-check"/>
+                                            </span>
+                                            <span t-out="step"/>
+                                        </li>
+                                    </ol>
+                                </div>
+                                <div t-else="" class="o_ai_chat_bubble o_ai_chat_typing" role="status" aria-label="The assistant is answering">
+                                    <span/><span/><span/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <footer class="o_ai_chat_composer px-3 pb-3 pt-2">
+                    <div t-if="this.state.isRecording" class="o_ai_chat_composer_box o_ai_chat_recording mx-auto d-flex align-items-center gap-2"
+                         role="status" aria-label="Recording your question">
+                        <span class="o_ai_chat_recording_dot flex-shrink-0" aria-hidden="true"/>
+                        <span class="flex-grow-1 text-muted">Listening... <t t-out="this.recordingTime"/></span>
+                        <button class="btn o_ai_chat_icon_btn o_ai_chat_recording_cancel" title="Cancel" aria-label="Cancel"
+                                t-on-click="() => this.cancelRecording()">
+                            <i class="fa fa-times"/>
+                        </button>
+                        <button class="btn btn-primary o_ai_chat_send o_ai_chat_recording_send" title="Send" aria-label="Send"
+                                t-on-click="() => this.stopRecording()">
+                            <i class="fa fa-arrow-up"/>
+                        </button>
+                    </div>
+                    <div t-if="!this.state.isRecording and (this.state.attachments.length or this.state.uploadingFiles.length)"
+                         class="o_ai_chat_attachments mx-auto d-flex flex-wrap gap-2" aria-label="Files sent with the question">
+                        <span t-foreach="this.state.attachments" t-as="file" t-key="file.id" class="o_ai_chat_file_chip o_ai_chat_file_ready">
+                            <i t-attf-class="fa {{ this.getFileIcon(file) }}" aria-hidden="true"/>
+                            <span class="text-truncate" t-out="file.name"/>
+                            <span class="o_ai_chat_file_size" t-out="this.formatFileSize(file.size)"/>
+                            <button class="btn o_ai_chat_file_remove" title="Remove the file" aria-label="Remove the file"
+                                    t-on-click="() => this.removeAttachment(file)">
+                                <i class="fa fa-times" aria-hidden="true"/>
+                            </button>
+                        </span>
+                        <span t-foreach="this.state.uploadingFiles" t-as="file" t-key="file.key" class="o_ai_chat_file_chip o_ai_chat_file_uploading">
+                            <i class="fa fa-circle-o-notch fa-spin" aria-hidden="true"/>
+                            <span class="text-truncate" t-out="file.name"/>
+                        </span>
+                    </div>
+                    <div t-if="!this.state.isRecording"
+                         t-attf-class="o_ai_chat_composer_box mx-auto d-flex flex-column {{ this.isDeepOn ? 'o_ai_chat_deep_on' : '' }} {{ this.state.isDragging ? 'o_ai_chat_dragging' : '' }}"
+                         t-on-dragover="(ev) => this.onDragOver(ev)" t-on-dragleave="() => this.onDragLeave()"
+                         t-on-drop="(ev) => this.onDrop(ev)">
+                        <div t-if="this.state.command.open" class="o_ai_chat_mention_menu o_ai_chat_command_menu" role="listbox" aria-label="Commands">
+                            <div t-if="!this.state.command.results.length" class="o_ai_chat_mention_hint">
+                                No command starts with "/<t t-out="this.state.command.term"/>"
+                            </div>
+                            <button t-foreach="this.state.command.results" t-as="command" t-key="command.name"
+                                    t-attf-class="o_ai_chat_mention_option o_ai_chat_command_option btn d-flex align-items-center gap-2 w-100 text-start {{ command_index === this.state.command.index ? 'active' : '' }}"
+                                    role="option" t-att-aria-selected="command_index === this.state.command.index ? 'true' : 'false'"
+                                    t-on-mousedown.prevent="() => this.selectCommand(command)">
+                                <span class="o_ai_chat_command_name">/<t t-out="command.name"/></span>
+                                <span class="flex-grow-1 small text-muted" t-out="command.description"/>
+                                <span class="o_ai_chat_mention_kind" t-out="command.example"/>
+                            </button>
+                        </div>
+                        <div t-elif="this.state.mention.open" class="o_ai_chat_mention_menu" role="listbox" aria-label="Records to mention">
+                            <div t-if="!this.state.mention.term.trim()" class="o_ai_chat_mention_hint">
+                                <i class="fa fa-at me-1" aria-hidden="true"/>Type a name to mention a customer, product, order...
+                            </div>
+                            <div t-elif="this.state.mention.loading and !this.state.mention.results.length" class="o_ai_chat_mention_hint">
+                                <i class="fa fa-circle-o-notch fa-spin me-1" aria-hidden="true"/>Searching...
+                            </div>
+                            <div t-elif="!this.state.mention.results.length" class="o_ai_chat_mention_hint">
+                                No record matches "<t t-out="this.state.mention.term"/>"
+                            </div>
+                            <button t-foreach="this.state.mention.results" t-as="record" t-key="record.model + '_' + record.id"
+                                    t-attf-class="o_ai_chat_mention_option btn d-flex align-items-center gap-2 w-100 text-start {{ record_index === this.state.mention.index ? 'active' : '' }}"
+                                    role="option" t-att-aria-selected="record_index === this.state.mention.index ? 'true' : 'false'"
+                                    t-on-mousedown.prevent="() => this.selectMention(record)">
+                                <i t-attf-class="fa {{ this.getMentionIcon(record) }} o_ai_chat_mention_icon" aria-hidden="true"/>
+                                <span class="flex-grow-1 text-truncate" t-out="record.name"/>
+                                <span class="o_ai_chat_mention_kind" t-out="record.label"/>
+                            </button>
+                        </div>
+                        <input type="file" class="d-none" t-ref="fileInput" t-att-accept="this.attachmentAccept" multiple="multiple"
+                               t-on-change="(ev) => this.onFileInputChange(ev)"/>
+                        <textarea class="o_ai_chat_input flex-grow-1" rows="1" t-ref="input"
+                                  aria-label="Your question"
+                                  t-att-placeholder="this.inputPlaceholder"
+                                  t-att-value="this.state.question" t-att-disabled="this.state.isAsking or this.state.isTranscribing"
+                                  t-on-input="(ev) => this.onInput(ev)"
+                                  t-on-click="(ev) => this.updateMention(ev.target)"
+                                  t-on-blur="() => this.closeMention()"
+                                  t-on-keydown="(ev) => this.onKeydown(ev)"/>
+                        <div class="o_ai_chat_composer_tools d-flex align-items-center gap-1">
+                            <button class="btn o_ai_chat_icon_btn o_ai_chat_attach"
+                                    title="Attach a spreadsheet to import, or a PDF or picture to create a record from" aria-label="Attach a file"
+                                    t-att-disabled="this.state.isAsking"
+                                    t-on-click="() => this.openFilePicker()">
+                                <i class="fa fa-plus" aria-hidden="true"/>
+                            </button>
+                            <button t-if="this.state.deepAvailable"
+                                    t-attf-class="btn o_ai_chat_deep_toggle d-flex align-items-center gap-1 {{ this.isDeepOn ? 'active' : '' }}"
+                                    t-att-title="this.deepToggleTitle" aria-label="Deep analysis"
+                                    t-att-aria-pressed="this.isDeepOn ? 'true' : 'false'"
+                                    t-att-disabled="this.state.isAsking"
+                                    t-on-click="() => this.toggleDeep()">
+                                <i class="fa fa-lightbulb-o o_ai_chat_deep_icon" aria-hidden="true"/>
+                                <span class="o_ai_chat_deep_label">Deep</span>
+                            </button>
+                            <span class="flex-grow-1"/>
+                            <button t-if="this.showsMicrophone" class="btn o_ai_chat_icon_btn o_ai_chat_mic"
+                                    title="Ask by voice" aria-label="Ask by voice"
+                                    t-att-disabled="this.state.isAsking or this.state.isTranscribing"
+                                    t-on-click="() => this.startRecording()">
+                                <i t-attf-class="fa {{ this.state.isTranscribing ? 'fa-circle-o-notch o_ai_chat_spin' : 'fa-microphone' }}"/>
+                            </button>
+                            <button class="btn btn-primary o_ai_chat_send" title="Send" aria-label="Send"
+                                    t-att-disabled="this.state.isAsking or this.state.isTranscribing or this.state.uploadingFiles.length or !this.state.question.trim()"
+                                    t-on-click="() => this.ask()">
+                                <i class="fa fa-arrow-up"/>
+                            </button>
+                        </div>
+                    </div>
+                    <section t-if="this.isEmptyChat and !this.state.isRecording" class="o_ai_chat_capabilities mx-auto"
+                             aria-label="What the assistant can do">
+                        <div class="o_ai_chat_capability_grid">
+                            <button t-foreach="this.capabilities" t-as="capability" t-key="capability.key"
+                                    t-attf-class="o_ai_chat_capability btn o_ai_chat_capability_{{ capability.key }}"
+                                    t-att-title="capability.description"
+                                    t-on-mouseenter="() => this.state.capabilityHint = capability.key"
+                                    t-on-mouseleave="() => this.state.capabilityHint = false"
+                                    t-on-focus="() => this.state.capabilityHint = capability.key"
+                                    t-on-blur="() => this.state.capabilityHint = false"
+                                    t-on-click="() => this.useCapability(capability)">
+                                <i t-attf-class="fa {{ capability.icon }}" aria-hidden="true"/>
+                                <span t-attf-class="o_ai_chat_capability_name {{ capability.title.startsWith('/') ? 'o_ai_chat_capability_command' : '' }}" t-out="capability.title"/>
+                            </button>
+                        </div>
+                        <p class="o_ai_chat_capability_hint mb-0" t-out="this.capabilityHintText"/>
+                    </section>
+                    <p t-if="!this.props.compact and !this.isEmptyChat" class="o_ai_chat_hint text-center mt-2 mb-0">
+                        AI can make mistakes: check important figures. Enter sends, Shift + Enter adds a line.
+                    </p>
+                </footer>
+            </section>
+        </div>
+    </t>
+
+    <!-- the import of the rows of a spreadsheet, to confirm -->
+    <t t-name="ai_chat_pro.Import">
+        <div t-attf-class="o_ai_chat_result o_ai_chat_import o_ai_chat_draft_{{ importDraft.state }} mt-2">
+            <div class="o_ai_chat_result_header d-flex align-items-center gap-2 px-3 py-2">
+                <i t-attf-class="fa o_ai_chat_draft_icon {{ importDraft.state === 'created' ? 'fa-check-circle' : 'fa-upload' }}" aria-hidden="true"/>
+                <h3 class="o_ai_chat_result_title text-truncate flex-grow-1 mb-0" t-out="importDraft.title"/>
+                <t t-call="ai_chat_pro.DraftState"><t t-set="draft" t-value="importDraft"/></t>
+            </div>
+            <div class="px-3 pb-2 small text-muted d-flex align-items-center gap-2">
+                <i class="fa fa-file-excel-o" aria-hidden="true"/>
+                <span class="text-truncate" t-out="importDraft.file_name"/>
+                <span>· <t t-out="importDraft.count"/> rows</span>
+            </div>
+            <t t-if="importDraft.state === 'draft'">
+                <div class="o_ai_chat_import_section px-3 pb-2">
+                    <h4 class="o_ai_chat_import_label">Columns</h4>
+                    <ul class="o_ai_chat_import_mapping list-unstyled mb-0">
+                        <li t-foreach="importDraft.mapping" t-as="column" t-key="column_index"
+                            t-attf-class="d-flex align-items-center gap-2 {{ column.field ? '' : 'o_ai_chat_import_ignored' }}">
+                            <span class="o_ai_chat_import_column text-truncate" t-out="column.column"/>
+                            <i class="fa fa-long-arrow-right text-muted" aria-hidden="true"/>
+                            <span t-if="column.field" class="text-truncate fw-medium" t-out="column.field"/>
+                            <span t-else="" class="text-muted fst-italic">ignored</span>
+                            <span t-if="column.by === 'ai'" class="o_ai_chat_engine o_ai_chat_engine_olg" title="Matched by AI: check it">
+                                <i class="fa fa-magic" aria-hidden="true"/>AI
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+                <div t-if="importDraft.rows.length" class="o_ai_chat_import_section px-3 pb-2">
+                    <h4 class="o_ai_chat_import_label">First rows</h4>
+                    <div class="o_ai_chat_import_preview">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th t-foreach="importDraft.columns" t-as="column" t-key="column_index" t-out="column"/></tr></thead>
+                            <tbody>
+                                <tr t-foreach="importDraft.rows" t-as="row" t-key="row_index">
+                                    <td t-foreach="row" t-as="cell" t-key="cell_index" t-out="cell"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div t-if="importDraft.error_count" class="o_ai_chat_import_errors mx-3 mb-2" role="alert">
+                    <div class="fw-medium mb-1">
+                        <i class="fa fa-exclamation-triangle me-1" aria-hidden="true"/>
+                        A test import found <t t-out="importDraft.error_count"/> problems: nothing can be imported until they are fixed.
+                    </div>
+                    <ul class="mb-0">
+                        <li t-foreach="importDraft.errors" t-as="error" t-key="error_index" t-out="error"/>
+                    </ul>
+                </div>
+                <div t-if="importDraft.fix_count" class="o_ai_chat_import_fixes mx-3 mb-2">
+                    <div class="fw-medium mb-1">
+                        <i class="fa fa-magic me-1" aria-hidden="true"/>
+                        <t t-out="importDraft.fix_count"/> repairs, so that the import is not blocked
+                    </div>
+                    <ul class="mb-0">
+                        <li t-foreach="importDraft.fixes" t-as="fix" t-key="fix_index" t-attf-class="o_ai_chat_fix_{{ fix.kind }}" t-out="fix.text"/>
+                    </ul>
+                    <div t-if="importDraft.fix_count > importDraft.fixes.length" class="small text-muted mt-1">
+                        and <t t-out="importDraft.fix_count - importDraft.fixes.length"/> more
+                    </div>
+                </div>
+                <div t-if="importDraft.skipped_count" class="o_ai_chat_import_errors mx-3 mb-2">
+                    <div class="fw-medium mb-1">
+                        <i class="fa fa-ban me-1" aria-hidden="true"/>
+                        <t t-out="importDraft.skipped_count"/> rows still fail and will be left out
+                    </div>
+                    <ul class="mb-0">
+                        <li t-foreach="importDraft.skipped" t-as="skip" t-key="skip_index">Row <t t-out="skip.row"/>: <t t-out="skip.reason"/></li>
+                    </ul>
+                    <div t-if="importDraft.skipped_count > importDraft.skipped.length" class="small mt-1">
+                        and <t t-out="importDraft.skipped_count - importDraft.skipped.length"/> more rows
+                    </div>
+                </div>
+                <div class="o_ai_chat_draft_actions d-flex flex-wrap align-items-center gap-2 px-3 py-2">
+                    <button class="btn btn-primary btn-sm o_ai_chat_import_confirm"
+                            t-att-disabled="this.state.pendingDraftId or importDraft.error_count or !importDraft.count"
+                            t-on-click="() => this.createDraft(message)">
+                        <i t-attf-class="fa {{ this.state.pendingDraftId === message.id ? 'fa-circle-o-notch fa-spin' : 'fa-upload' }} me-1" aria-hidden="true"/>
+                        Import <t t-out="importDraft.count"/> records
+                    </button>
+                    <button class="btn btn-link btn-sm text-muted ms-auto o_ai_chat_draft_discard"
+                            t-att-disabled="this.state.pendingDraftId"
+                            t-on-click="() => this.discardDraft(message)">Discard</button>
+                </div>
+            </t>
+            <div t-elif="importDraft.state === 'created'" class="o_ai_chat_draft_actions d-flex align-items-center gap-2 px-3 py-2">
+                <span class="small">
+                    <t t-out="importDraft.created"/> <t t-out="importDraft.model_label"/> records created<t t-if="importDraft.skipped_count">, <t t-out="importDraft.skipped_count"/> rows left out</t>
+                </span>
+                <button class="btn btn-secondary btn-sm ms-auto o_ai_chat_import_open" t-on-click="() => this.openImportedRecords(message)">
+                    <i class="fa fa-external-link me-1" aria-hidden="true"/>Open them
+                </button>
+            </div>
+        </div>
+    </t>
+
+    <!-- the decision of a deep analysis -->
+    <t t-name="ai_chat_pro.Analysis">
+        <div class="o_ai_chat_result o_ai_chat_analysis mt-2">
+            <div class="o_ai_chat_analysis_header d-flex align-items-center gap-2 px-3 py-2">
+                <i class="fa fa-lightbulb-o o_ai_chat_deep_icon" aria-hidden="true"/>
+                <h3 class="o_ai_chat_result_title flex-grow-1 mb-0">Deep analysis</h3>
+                <span t-if="analysis.confidence" t-attf-class="o_ai_chat_confidence o_ai_chat_confidence_{{ analysis.confidence }}">
+                    <span class="o_ai_chat_confidence_bars" aria-hidden="true"><i/><i/><i/></span>
+                    <t t-out="this.getConfidenceLabel(analysis.confidence)"/>
+                </span>
+            </div>
+            <div class="px-3 pb-3">
+                <p t-if="analysis.verdict" class="o_ai_chat_verdict o_ai_chat_analysis_part mb-2" t-out="analysis.verdict"/>
+                <p t-if="analysis.summary" class="o_ai_chat_analysis_summary o_ai_chat_analysis_part mb-3" t-out="analysis.summary"/>
+
+                <section t-if="analysis.recommendations.length" class="o_ai_chat_analysis_section o_ai_chat_analysis_part">
+                    <h4 class="o_ai_chat_analysis_label"><i class="fa fa-check-circle" aria-hidden="true"/>Recommendations</h4>
+                    <ol class="o_ai_chat_recommendations list-unstyled mb-0">
+                        <li t-foreach="analysis.recommendations" t-as="recommendation" t-key="recommendation_index" class="d-flex gap-2">
+                            <span class="o_ai_chat_recommendation_index" t-out="recommendation_index + 1"/>
+                            <div class="min-w-0">
+                                <div class="o_ai_chat_recommendation_action" t-out="recommendation.action"/>
+                                <div t-if="recommendation.reason" class="small text-muted" t-out="recommendation.reason"/>
+                                <div t-if="recommendation.impact" class="o_ai_chat_recommendation_impact small">
+                                    <i class="fa fa-arrow-up" aria-hidden="true"/><t t-out="recommendation.impact"/>
+                                </div>
+                            </div>
+                        </li>
+                    </ol>
+                </section>
+
+                <div class="o_ai_chat_analysis_grid">
+                    <section t-if="analysis.findings.length" class="o_ai_chat_analysis_section o_ai_chat_analysis_part">
+                        <h4 class="o_ai_chat_analysis_label"><i class="fa fa-search" aria-hidden="true"/>Key findings</h4>
+                        <ul class="o_ai_chat_analysis_list mb-0">
+                            <li t-foreach="analysis.findings" t-as="finding" t-key="finding_index" t-out="finding"/>
+                        </ul>
+                    </section>
+                    <section t-if="analysis.risks.length" class="o_ai_chat_analysis_section o_ai_chat_analysis_risks o_ai_chat_analysis_part">
+                        <h4 class="o_ai_chat_analysis_label"><i class="fa fa-exclamation-triangle" aria-hidden="true"/>Risks and limits</h4>
+                        <ul class="o_ai_chat_analysis_list mb-0">
+                            <li t-foreach="analysis.risks" t-as="risk" t-key="risk_index" t-out="risk"/>
+                        </ul>
+                    </section>
+                </div>
+
+                <section t-if="analysis.next_steps.length" class="o_ai_chat_analysis_section o_ai_chat_analysis_part">
+                    <h4 class="o_ai_chat_analysis_label"><i class="fa fa-flag-checkered" aria-hidden="true"/>Next steps</h4>
+                    <ul class="o_ai_chat_next_steps list-unstyled mb-0">
+                        <li t-foreach="analysis.next_steps" t-as="step" t-key="step_index">
+                            <t t-set="stepActivity" t-value="this.getStepActivity(message, step_index)"/>
+                            <div t-if="stepActivity" t-attf-class="o_ai_chat_next_step o_ai_chat_next_step_planned o_ai_chat_next_step_{{ stepActivity.state }} d-flex gap-2">
+                                <i t-attf-class="fa {{ stepActivity.state === 'done' ? 'fa-check-square' : 'fa-calendar-check-o' }}" aria-hidden="true"/>
+                                <div class="min-w-0">
+                                    <span t-out="step"/>
+                                    <div class="o_ai_chat_next_step_activity small">
+                                        <i t-attf-class="fa {{ stepActivity.icon }} me-1" aria-hidden="true"/>
+                                        <t t-out="stepActivity.type"/> · <t t-out="this.getStepActivityLabel(stepActivity)"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <button t-else="" class="o_ai_chat_next_step btn d-flex gap-2 w-100 text-start"
+                                    title="Plan this step as an activity" t-on-click="() => this.planNextStep(message, step_index)">
+                                <i class="fa fa-square-o o_ai_chat_next_step_box" aria-hidden="true"/>
+                                <span class="flex-grow-1" t-out="step"/>
+                                <span class="o_ai_chat_next_step_hint small text-nowrap">
+                                    <i class="fa fa-calendar-plus-o me-1" aria-hidden="true"/>Plan activity
+                                </span>
+                            </button>
+                        </li>
+                    </ul>
+                </section>
+
+                <details t-if="analysis.datasets and analysis.datasets.length" class="o_ai_chat_analysis_data o_ai_chat_analysis_part">
+                    <summary>
+                        <i class="fa fa-database" aria-hidden="true"/>
+                        <t t-if="analysis.datasets.length === 1">Based on 1 set of your data</t>
+                        <t t-else="">Based on <t t-out="analysis.datasets.length"/> sets of your data</t>
+                    </summary>
+                    <div t-foreach="analysis.datasets" t-as="dataset" t-key="dataset_index" class="o_ai_chat_dataset">
+                        <div class="o_ai_chat_dataset_title">
+                            <t t-out="dataset.heading"/>
+                            <span t-foreach="dataset.tags" t-as="tag" t-key="tag_index" class="o_ai_chat_tag ms-1" t-out="tag"/>
+                        </div>
+                        <div class="o_ai_chat_dataset_table">
+                            <table class="table table-sm mb-0">
+                                <thead><tr><th t-foreach="dataset.columns" t-as="column" t-key="column_index" t-out="column"/></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="dataset.rows" t-as="row" t-key="row_index">
+                                        <td t-foreach="row" t-as="cell" t-key="cell_index" t-out="cell"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div t-if="dataset.total > dataset.rows.length" class="small text-muted mt-1">
+                            First <t t-out="dataset.rows.length"/> of <t t-out="dataset.total"/> rows
+                        </div>
+                    </div>
+                </details>
+                <p class="o_ai_chat_analysis_note small text-muted mt-3 mb-0">
+                    <i class="fa fa-info-circle" aria-hidden="true"/>
+                    Written by AI from the data you can access: check it before acting on it.
+                </p>
+            </div>
+        </div>
+    </t>
+
+    <!-- the state of the draft of a record -->
+    <t t-name="ai_chat_pro.DraftState">
+        <span t-if="draft.state === 'created'" class="o_ai_chat_tag">Created</span>
+        <span t-elif="draft.state === 'discarded'" class="o_ai_chat_tag">Discarded</span>
+        <span t-else="" class="o_ai_chat_tag">Draft</span>
+    </t>
+
+    <!-- the values of the draft of a record, and what to check before creating it -->
+    <t t-name="ai_chat_pro.DraftDetails">
+        <dl t-if="draft.fields.length" class="o_ai_chat_draft_fields mb-0 px-3 py-2">
+            <div t-foreach="draft.fields" t-as="field" t-key="field_index" class="d-flex gap-3">
+                <dt class="text-muted fw-normal" t-out="field.label"/>
+                <dd class="mb-0 min-w-0" t-out="field.value"/>
+            </div>
+        </dl>
+        <div t-foreach="draft.lines" t-as="table" t-key="table_index" class="o_ai_chat_table">
+            <div class="small fw-medium px-3 pt-2" t-out="table.label"/>
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr><th t-foreach="table.columns" t-as="column" t-key="column_index" scope="col" t-out="column"/></tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="table.rows" t-as="row" t-key="row_index">
+                        <td t-foreach="row" t-as="cell" t-key="cell_index" t-out="cell"/>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <t t-if="draft.state === 'draft'">
+            <ul t-if="draft.notes and draft.notes.length"
+                class="o_ai_chat_draft_notes list-unstyled small text-muted mb-0 px-3 py-2">
+                <li t-foreach="draft.notes" t-as="note" t-key="note_index">
+                    <i class="fa fa-info-circle me-1"/><t t-out="note"/>
+                </li>
+            </ul>
+            <ul t-if="draft.warnings.length or draft.missing.length"
+                class="o_ai_chat_draft_warnings list-unstyled small mb-0 px-3 py-2">
+                <li t-foreach="draft.warnings" t-as="warning" t-key="warning_index">
+                    <i class="fa fa-exclamation-triangle me-1"/><t t-out="warning"/>
+                </li>
+                <li t-if="draft.missing.length">
+                    <i class="fa fa-exclamation-triangle me-1"/>To fill in the form: <t t-out="draft.missing.join(', ')"/>
+                </li>
+            </ul>
+        </t>
+    </t>
+
+    <!-- the actions on the draft of a record, or on the current step of a plan -->
+    <t t-name="ai_chat_pro.DraftActions">
+        <div class="o_ai_chat_draft_actions d-flex flex-wrap align-items-center gap-2 px-3 py-2">
+            <button t-if="this.canCreateDraft(draft)" class="btn btn-primary btn-sm o_ai_chat_draft_create"
+                    t-att-disabled="this.state.pendingDraftId"
+                    t-on-click="() => this.createDraft(message)">
+                <i class="fa fa-check me-1"/><t t-if="isLast">Create</t><t t-else="">Create and continue</t>
+            </button>
+            <button t-attf-class="btn btn-sm o_ai_chat_draft_edit {{ this.canCreateDraft(draft) ? 'btn-secondary' : 'btn-primary' }}"
+                    t-att-disabled="this.state.pendingDraftId"
+                    t-on-click="() => this.editDraft(message)">
+                <i class="fa fa-pencil me-1"/>Open in form
+            </button>
+            <button class="btn btn-link btn-sm text-muted ms-auto o_ai_chat_draft_discard"
+                    t-att-disabled="this.state.pendingDraftId"
+                    t-on-click="() => this.discardDraft(message)">
+                <t t-if="this.isPlan(message)">Discard the rest</t><t t-else="">Discard</t>
+            </button>
+        </div>
+    </t>
+
+
+    <!-- a record explained with /explain: the AI summary, then its activities and history as Odoo holds them -->
+    <t t-name="ai_chat_pro.Explanation">
+        <div class="o_ai_chat_result o_ai_chat_explain_card mt-2">
+            <div class="o_ai_chat_result_header d-flex align-items-center gap-2 px-3 py-2">
+                <i t-attf-class="fa {{ this.getMentionIcon(explanation) }} o_ai_chat_record_icon" aria-hidden="true"/>
+                <div class="flex-grow-1 min-w-0">
+                    <h3 class="o_ai_chat_result_title text-truncate mb-0" t-out="explanation.title"/>
+                    <div class="small text-muted"><t t-out="explanation.model_label"/> · explained</div>
+                </div>
+                <button class="btn btn-secondary btn-sm o_ai_chat_record_open" t-on-click="() => this.openRecord(explanation)">
+                    <i class="fa fa-external-link me-1" aria-hidden="true"/>Open
+                </button>
+            </div>
+            <div class="o_ai_chat_explain_body px-3 py-2">
+                <p t-if="explanation.overview" class="o_ai_chat_explain_overview mb-2" t-out="explanation.overview"/>
+                <p t-if="explanation.note" class="small text-muted mb-2"><i class="fa fa-info-circle me-1" aria-hidden="true"/><t t-out="explanation.note"/></p>
+                <section t-if="explanation.key_points and explanation.key_points.length" class="o_ai_chat_explain_section">
+                    <h4><i class="fa fa-list-ul me-1" aria-hidden="true"/>Key points</h4>
+                    <ul><li t-foreach="explanation.key_points" t-as="point" t-key="point_index" t-out="point"/></ul>
+                </section>
+                <section t-if="explanation.attention and explanation.attention.length" class="o_ai_chat_explain_section o_ai_chat_explain_attention">
+                    <h4><i class="fa fa-exclamation-triangle me-1" aria-hidden="true"/>Needs attention</h4>
+                    <ul><li t-foreach="explanation.attention" t-as="point" t-key="point_index" t-out="point"/></ul>
+                </section>
+                <section t-if="explanation.history_summary and explanation.history_summary.length" class="o_ai_chat_explain_section">
+                    <h4><i class="fa fa-history me-1" aria-hidden="true"/>What happened</h4>
+                    <ul><li t-foreach="explanation.history_summary" t-as="point" t-key="point_index" t-out="point"/></ul>
+                </section>
+                <section class="o_ai_chat_explain_section">
+                    <h4><i class="fa fa-clock-o me-1" aria-hidden="true"/>Activities</h4>
+                    <p t-if="!explanation.activities.length" class="small text-muted mb-0">No activity on this record.</p>
+                    <ul t-else="" class="o_ai_chat_explain_activities list-unstyled mb-0">
+                        <li t-foreach="explanation.activities" t-as="activity" t-key="activity_index"
+                            t-attf-class="d-flex align-items-start gap-2 o_ai_chat_activity_{{ activity.state }}">
+                            <span class="o_ai_chat_activity_state">
+                                <i t-attf-class="fa {{ this.getActivityState(activity).icon }} me-1" aria-hidden="true"/><t t-out="this.getActivityState(activity).label"/>
+                            </span>
+                            <div class="min-w-0">
+                                <div><i t-attf-class="fa {{ activity.icon }} me-1 text-muted" aria-hidden="true"/><strong t-out="activity.type"/><t t-if="activity.summary"> · <t t-out="activity.summary"/></t></div>
+                                <div class="small text-muted"><t t-out="activity.date"/><t t-if="activity.user"> · <t t-out="activity.user"/></t></div>
+                            </div>
+                        </li>
+                    </ul>
+                </section>
+                <section t-if="explanation.history and explanation.history.length" class="o_ai_chat_explain_section">
+                    <h4><i class="fa fa-comments-o me-1" aria-hidden="true"/>Recent chatter</h4>
+                    <ol class="o_ai_chat_explain_timeline list-unstyled mb-0">
+                        <li t-foreach="explanation.history" t-as="entry" t-key="entry_index">
+                            <div class="small text-muted">
+                                <t t-out="this.formatHistoryDate(entry.date)"/><t t-if="entry.author"> · <t t-out="entry.author"/></t>
+                                <span t-if="entry.kind === 'note'" class="badge text-bg-light ms-1">Note</span>
+                            </div>
+                            <div t-if="entry.text" class="o_ai_chat_explain_text" t-out="entry.text"/>
+                            <div t-foreach="entry.changes" t-as="change" t-key="change_index" class="small o_ai_chat_explain_change" t-out="change"/>
+                        </li>
+                    </ol>
+                </section>
+            </div>
+        </div>
+    </t>
+
+    <!-- a report of a record printed with /report: the PDF, or the page to print from the browser -->
+    <t t-name="ai_chat_pro.PrintedReport">
+        <div class="o_ai_chat_result o_ai_chat_print_card mt-2">
+            <div class="o_ai_chat_result_header d-flex align-items-center gap-2 px-3 py-2">
+                <i class="fa fa-print o_ai_chat_record_icon" aria-hidden="true"/>
+                <div class="flex-grow-1 min-w-0">
+                    <h3 class="o_ai_chat_result_title text-truncate mb-0" t-out="printed.report.name"/>
+                    <div class="small text-muted text-truncate"><t t-out="printed.model_label"/> · <t t-out="printed.title"/></div>
+                </div>
+                <button class="btn btn-secondary btn-sm o_ai_chat_record_open" t-on-click="() => this.openRecord(printed)">
+                    <i class="fa fa-external-link me-1" aria-hidden="true"/>Open record
+                </button>
+            </div>
+            <div class="px-3 py-2">
+                <div t-if="printed.attachment_id" class="d-flex flex-wrap align-items-center gap-2">
+                    <a class="o_ai_chat_file_chip o_ai_chat_print_file" t-att-href="this.getPrintedFileUrl(printed)" target="_blank"
+                       t-att-title="printed.file_name">
+                        <i class="fa fa-file-pdf-o" aria-hidden="true"/>
+                        <span class="text-truncate" t-out="printed.file_name"/>
+                        <span class="o_ai_chat_file_size" t-out="this.formatFileSize(printed.file_size)"/>
+                    </a>
+                    <a class="btn btn-primary btn-sm o_ai_chat_print_download" t-att-href="this.getPrintedFileUrl(printed, true)">
+                        <i class="fa fa-download me-1" aria-hidden="true"/>Download PDF
+                    </a>
+                </div>
+                <div t-else="" class="d-flex flex-wrap align-items-center gap-2">
+                    <button class="btn btn-primary btn-sm o_ai_chat_print_open" t-on-click="() => this.openRecordReport(printed, printed.report.id)">
+                        <i class="fa fa-print me-1" aria-hidden="true"/>Print / Save as PDF
+                    </button>
+                    <span class="small text-muted">The server prints no PDF: the report opens in a tab, save it as a PDF from the print window.</span>
+                </div>
+                <div t-if="printed.others and printed.others.length" class="o_ai_chat_print_others mt-2">
+                    <span class="small text-muted me-1">Other reports:</span>
+                    <button t-foreach="printed.others" t-as="other" t-key="other.id"
+                            class="btn btn-sm btn-outline-secondary o_ai_chat_print_other"
+                            t-on-click="() => this.openRecordReport(printed, other.id)">
+                        <i class="fa fa-file-text-o me-1" aria-hidden="true"/><t t-out="other.name"/>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- the icon of the app (static/src/img/ai_chat_icon.svg), in the color of the text around it -->
+    <t t-name="ai_chat_pro.AppIcon">
+        <svg class="o_ai_chat_app_icon" viewBox="0 0 512 512" fill="none" stroke="currentColor"
+             stroke-width="36" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M318 40C176 32 42 112 40 250c-1 46 12 82 22 112l-26 78c-4 12 6 22 18 18l84-26c38 20 84 30 132 30 128 0 220-84 220-200 0-18-2-34-6-50"/>
+            <path d="M390 40Q407 117 484 134Q407 151 390 228Q373 151 296 134Q373 117 390 40z"/>
+            <circle cx="140" cy="250" r="30" fill="currentColor" stroke="none"/>
+            <circle cx="256" cy="250" r="30" fill="currentColor" stroke="none"/>
+        </svg>
+    </t>
+</templates>

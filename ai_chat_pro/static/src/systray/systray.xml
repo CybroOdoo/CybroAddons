@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ai_chat_pro.Systray">
+        <div t-if="this.state.isAllowed" class="o_ai_chat_systray">
+            <button t-attf-class="o_nav_entry o_ai_chat_systray_toggle btn {{ this.isActive ? 'active' : '' }}"
+                    title="Ask the AI assistant" aria-label="Ask the AI assistant"
+                    t-att-aria-pressed="this.isActive ? 'true' : 'false'"
+                    t-on-click="() => this.onClick()">
+                <!-- the icon of the app (static/src/img/ai_chat_icon.svg), in the color of the navbar -->
+                <svg class="o_ai_chat_systray_icon" viewBox="0 0 512 512" fill="none" stroke="currentColor"
+                     stroke-width="36" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M318 40C176 32 42 112 40 250c-1 46 12 82 22 112l-26 78c-4 12 6 22 18 18l84-26c38 20 84 30 132 30 128 0 220-84 220-200 0-18-2-34-6-50"/>
+                    <path d="M390 40Q407 117 484 134Q407 151 390 228Q373 151 296 134Q373 117 390 40z"/>
+                    <circle cx="140" cy="250" r="30" fill="currentColor" stroke="none"/>
+                    <circle cx="256" cy="250" r="30" fill="currentColor" stroke="none"/>
+                </svg>
+            </button>
+            <t t-if="this.isActive">
+                <!-- the edges of the screen glow with the voice -->
+                <div class="o_ai_voice_glow" aria-hidden="true" t-attf-style="--ai-voice-level: {{ this.state.level }}"/>
+                <div t-attf-class="o_ai_voice_panel o_ai_voice_{{ this.state.phase }}" role="dialog"
+                     aria-label="Voice assistant" t-attf-style="--ai-voice-level: {{ this.state.level }}">
+                    <button class="o_ai_voice_orb" t-on-click="() => this.onClick()"
+                            t-att-title="this.state.phase === 'listening' ? 'Done' : null"
+                            t-att-aria-label="this.state.phase === 'listening' ? 'Done' : 'Voice assistant'">
+                        <span class="o_ai_voice_orb_core" aria-hidden="true"/>
+                    </button>
+                    <div class="o_ai_voice_text min-w-0 flex-grow-1" aria-live="polite">
+                        <div t-attf-class="o_ai_voice_status {{ this.state.phase === 'heard' ? 'o_ai_voice_heard_text' : '' }}"
+                             t-out="this.statusText"/>
+                        <div t-if="this.state.phase === 'listening'" class="o_ai_voice_hint">
+                            Ask about your data, or to create a record.<span class="o_ai_voice_hint_keys"> Press Enter when done.</span>
+                        </div>
+                    </div>
+                    <!-- the silence ending a question may never come in a noisy room -->
+                    <button t-if="this.state.phase === 'listening'" class="o_ai_voice_done btn"
+                            title="Send the question now (Enter)" t-on-click="() => this.finish()">
+                        <i class="fa fa-check"/>Done
+                    </button>
+                    <button class="o_ai_voice_close btn" title="Cancel" aria-label="Cancel" t-on-click="() => this.cancel()">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>
