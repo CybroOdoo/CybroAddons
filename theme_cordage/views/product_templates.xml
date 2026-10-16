@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Description: This file defines the product_templates views/templates for the theme_cordage module. -->
+<odoo>
+<!--    Cordage Product-->
+    <template id="product_page" key="theme_cordage.product_page_page" name="Cordage Product">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'product'"/>
+            <div id="wrap" class="oe_structure">
+                <section data-snippet="s_product_page_content" data-name="Product Page">
+                        <!-- REAL PRODUCT QWEB CODE -->
+                        <!-- BREADCRUMB BAND -->
+                        <div class="bni-page-offset" style="background:var(--b-surface);border-bottom:1px solid var(--b-border);padding:16px clamp(1rem,4vw,3rem)">
+                            <nav id="breadcrumb" style="display:flex;align-items:center;gap:.4rem;font-size:12px;color:var(--b-muted-fg);font-family:var(--b-font-body)">
+                                <a href="/" style="color:var(--b-muted-fg);text-decoration:none">Home</a><span>›</span>
+                                <a href="/cordage-shop" style="color:var(--b-muted-fg);text-decoration:none">Shop</a><span>›</span>
+                                <t t-if="product.public_categ_ids">
+                                    <a t-attf-href="/cordage-shop?category=#{product.public_categ_ids[0].id}" style="color:var(--b-muted-fg);text-decoration:none"><t t-esc="product.public_categ_ids[0].name"/></a><span>›</span>
+                                </t>
+                                <span style="color:var(--b-fg)"><t t-esc="product.name"/></span>
+                            </nav>
+                        </div>
+                        <div class="pdp-wrap">
+                            <div class="pdp-gallery">
+                                <div class="pdp-main-img rt-manila" style="position:relative; width:100%; aspect-ratio:1/1; overflow:hidden; border-radius:4px; margin-bottom:10px; background:#f8f9fa;">
+                                    <t t-if="product.image_1920">
+                                        <img id="mainProductImage" t-attf-src="/web/image/product.template/#{product.id}/image_1920" t-att-alt="product.name" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"/>
+                                    </t>
+                                </div>
+                                <t t-if="product.product_template_image_ids">
+                                    <div class="pdp-thumbnails" style="display:flex; gap:10px; overflow-x:auto;">
+                                        <!-- Main image thumbnail -->
+                                        <div class="pdp-thumb active" style="width:80px; height:80px; flex-shrink:0; cursor:pointer; border:2px solid #e65c00; border-radius:4px; overflow:hidden;" onclick="document.getElementById('mainProductImage').src = this.querySelector('img').src; document.querySelectorAll('.pdp-thumb').forEach(t=>t.style.borderColor='transparent'); this.style.borderColor='#e65c00';">
+                                            <img t-attf-src="/web/image/product.template/#{product.id}/image_128" style="width:100%; height:100%; object-fit:cover;"/>
+                                        </div>
+                                        <!-- Extra images thumbnails -->
+                                        <t t-foreach="product.product_template_image_ids" t-as="p_img">
+                                            <div class="pdp-thumb" style="width:80px; height:80px; flex-shrink:0; cursor:pointer; border:2px solid transparent; border-radius:4px; overflow:hidden;" onclick="document.getElementById('mainProductImage').src = this.querySelector('img').src.replace('image_128', 'image_1920'); document.querySelectorAll('.pdp-thumb').forEach(t=>t.style.borderColor='transparent'); this.style.borderColor='#e65c00';">
+                                                <img t-attf-src="/web/image/product.image/#{p_img.id}/image_128" style="width:100%; height:100%; object-fit:cover;"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                            <div id="prodInfo" class="pdp-info">
+                                <div class="pdp-cat-label"><t t-esc="product.public_categ_ids and product.public_categ_ids[0].name or 'General'"/></div>
+                                <h1><t t-esc="product.name"/></h1>
+                                <div class="pdp-rating">
+                                    <span class="stars">★★★★★</span>
+                                    <strong style="color:var(--b-fg)">5.0</strong>
+                                    <span>(12 reviews)</span>
+                                </div>
+                                <div class="pdp-price"><t t-esc="product.list_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/></div>
+                                <div class="pdp-per"> / <t t-esc="product.uom_id.name"/></div>
+                                <p class="pdp-short"><t t-esc="product.description_sale or ''"/></p>
+                                <form action="/shop/cart/update" method="POST" id="addCartForm">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="product_id" t-att-value="product._get_first_possible_variant_id()"/>
+                                    <input type="hidden" name="add_qty" id="final_add_qty" value="10"/>
+                                    <div style="margin-bottom: 1.5rem;">
+                                        <!-- Length Input -->
+                                        <label for="rope_length" style="font-weight: 600; font-size: 13px; color: var(--b-fg); margin-bottom: 0.5rem; display: block;">Length needed (metres)</label>
+                                        <input type="number" id="rope_length" value="10" min="1" style="width: 100%; max-width: 250px; border: 1px solid var(--b-border); background: transparent; color: var(--b-fg); border-radius: 4px; padding: 10px; margin-bottom: 1rem;" onchange="updateFinalQty()"/>
+                                        <!-- Qty Selector -->
+                                        <div style="display:flex; align-items:center; gap: 1rem; color:var(--b-fg); font-size:14px;">
+                                            <span style="font-weight:600; font-size:12px;">Qty</span>
+                                            <div style="display:flex; align-items:center; gap: 15px; border: 1px solid var(--b-border); border-radius: 4px; padding: 5px 15px;">
+                                                <a href="#" aria-label="Remove one" title="Remove one" style="text-decoration:none; color:var(--b-fg); font-weight:bold; font-size: 16px;" onclick="event.preventDefault(); let q=document.getElementById('rope_qty'); q.value=Math.max(1, parseInt(q.value)-1); updateFinalQty();">−</a>
+                                                <input type="text" id="rope_qty" value="1" style="width: 40px; text-align: center; border: none; background: transparent; padding: 0; font-weight:bold; color:var(--b-fg);" onchange="updateFinalQty()"/>
+                                                <a href="#" aria-label="Add one" title="Add one" style="text-decoration:none; color:var(--b-fg); font-weight:bold; font-size: 16px;" onclick="event.preventDefault(); let q=document.getElementById('rope_qty'); q.value=parseInt(q.value)+1; updateFinalQty();">+</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <script>
+                                        function updateFinalQty() {
+                                            const length = parseInt(document.getElementById('rope_length').value) || 1;
+                                            const qty = parseInt(document.getElementById('rope_qty').value) || 1;
+                                            document.getElementById('final_add_qty').value = length * qty;
+                                        }
+                                    </script>
+                                    <div class="pdp-actions" style="display:flex; gap:1rem; margin-top:1.5rem;">
+                                        <button type="submit" class="pdp-add-btn cordage-add-cart" style="flex:1; border:none; cursor:pointer; padding:14px; border-radius:4px; background:#e65c00; color:white; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                                            Add to Cart
+                                        </button>
+                                        <button class="pcard-wish" title="Add to wishlist" style="display:flex; align-items:center; justify-content:center; padding: 0 24px; background:white; border:1px solid var(--b-border); border-radius:4px; cursor:pointer; color:var(--b-muted-fg); font-size:14px; font-weight:500;">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Save
+                                        </button>
+                                    </div>
+                                </form>
+                                <ul style="list-style: none; padding: 0; margin-top: 2rem; font-size: 13px; color: var(--b-muted-fg); line-height: 2;">
+                                    <li><span style="color:#d35400; margin-right:8px;">✓</span> Cut to your exact length</li>
+                                    <li><span style="color:#d35400; margin-right:8px;">✓</span> Dispatched within 48 hours</li>
+                                    <li><span style="color:#d35400; margin-right:8px;">✓</span> Free shipping over $150</li>
+                                    <li><span style="color:#d35400; margin-right:8px;">✓</span> 30-day no-fuss returns</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- RELATED PRODUCTS SECTION -->
+                        <t t-set="related_products" t-value="request.env['product.template'].sudo().search([('public_categ_ids', 'in', product.public_categ_ids.ids), ('id', '!=', product.id), ('website_published', '=', True)], limit=4) if product.public_categ_ids else request.env['product.template'].sudo().search([('id', '!=', product.id), ('website_published', '=', True)], limit=4)"/>
+                        <t t-if="related_products">
+                            <section style="background: #15181e; padding: 4rem clamp(1rem,4vw,3rem); margin-top: 4rem; border-top: 1px solid var(--b-border);">
+                                <h2 style="font-family: var(--b-font-head); font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 2rem;">You might also like</h2>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+                                    <t t-foreach="related_products" t-as="p">
+                                        <article class="bni-pcard">
+                                            <a t-attf-href="/cordage-product?id=#{p.id}" style="display:block;text-decoration:none">
+                                                <div class="bni-pcard__media" style="background:#f8f9fa;">
+                                                    <img class="bni-pcard__photo" t-attf-src="/web/image/product.template/#{p.id}/image_1920" t-att-alt="p.name" loading="lazy" style="width:100%; height:100%; object-fit:cover;"/>
+                                                </div>
+                                            </a>
+                                            <div class="bni-pcard__body">
+                                                <div class="bni-pcard__cat" style="color:var(--b-muted-fg);"><t t-esc="p.public_categ_ids and p.public_categ_ids[0].name or 'General'"/></div>
+                                                <a t-attf-href="/cordage-product?id=#{p.id}" class="bni-pcard__name" style="color:white;"><t t-esc="p.name"/></a>
+                                                <div class="bni-pcard__foot" style="margin-top:.6rem">
+                                                    <span class="bni-pcard__price" style="color:white;"><t t-esc="p.list_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/> <span class="bni-pcard__unit">/ <t t-esc="p.uom_id.name"/></span></span>
+                                                    <a t-att-href="'/shop/cart/update?product_id=%d&amp;add_qty=1' % p._get_first_possible_variant_id()" t-att-data-product-id="p._get_first_possible_variant_id()" class="bni-pcard__add cordage-add-cart" style="text-decoration:none; text-align:center">Add</a>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    </t>
+                                </div>
+                            </section>
+                        </t>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Description: This file defines the shop_templates views/templates for the theme_cordage module. -->
+<odoo>
+    <!--  Cordage Shop-->
+    <template id="shop_page" key="theme_cordage.shop_page" name="Cordage Shop">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'shop'"/>
+            <div id="wrap" class="oe_structure">
+                <section data-snippet="s_shop_page_content" data-name="Shop Page">
+                    <!-- PAGE HERO BAND -->
+                    <div class="bni-page-offset"
+                         style="background:var(--b-surface);border-bottom:1px solid var(--b-border);padding:32px 3rem">
+                        <div style="display:flex;align-items:center;gap:.4rem;font-size:12px;color:var(--b-muted-fg);margin-bottom:.6rem;font-family:var(--b-font-body)">
+                            <a href="/" style="color:var(--b-muted-fg);text-decoration:none">Home</a>
+                            <span>›</span>
+                            <span style="color:var(--b-fg)">Shop</span>
+                        </div>
+                        <h1 style="font-family:var(--b-font-head);font-size:clamp(1.5rem,3vw,2rem);font-weight:700;color:var(--b-fg);letter-spacing:-.025em;margin-bottom:.3rem">
+                            All Ropes &amp; Rigging
+                        </h1>
+                        <p style="color:var(--b-muted-fg);font-size:14px;font-family:var(--b-font-body)">Industrial,
+                            marine, fabric &amp; climbing — cut to your exact length, dispatched in 48 hours.
+                        </p>
+                    </div>
+                    <!-- SHOP LAYOUT -->
+                    <div class="shop-wrap">
+                        <!-- Mobile filter toggle -->
+                        <button class="mob-filter-toggle" id="mobFilterToggle" style="grid-column:1/-1">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round">
+                                <line x1="4" y1="6" x2="20" y2="6"/>
+                                <line x1="8" y1="12" x2="20" y2="12"/>
+                                <line x1="12" y1="18" x2="20" y2="18"/>
+                            </svg>
+                            Filters
+                        </button>
+                        <t t-if="demo_mode">
+                            <div id="demoShopData" style="display:none"/>
+                            <!-- SIDEBAR (JS Built) -->
+                            <aside class="dark-sb" id="shopSidebar">
+                                <div class="dark-sb-sec">
+                                    <h4>Category</h4>
+                                    <ul style="list-style:none;margin:0;padding:0" id="catFilterList"/>
+                                </div>
+                                <div class="dark-sb-sec">
+                                    <h4>Price range</h4>
+                                    <div class="sb-price-row">
+                                        <input type="number" id="priceMin" placeholder="Min" min="0"/>
+                                        <span class="sb-price-sep">–</span>
+                                        <input type="number" id="priceMax" placeholder="Max" min="0"/>
+                                    </div>
+                                </div>
+                                <div class="dark-sb-sec">
+                                    <h4>Material</h4>
+                                    <ul style="list-style:none;margin:0;padding:0" id="matList"/>
+                                </div>
+                                <div class="dark-sb-sec">
+                                    <h4>Diameter</h4>
+                                    <ul style="list-style:none;margin:0;padding:0" id="diaList"/>
+                                </div>
+                                <button type="button" class="sb-apply" id="applyFilters">Apply filters</button>
+                                <button type="button" class="sb-clear" id="clearFilters">Clear all</button>
+                            </aside>
+                            <!-- MAIN (JS Built) -->
+                            <div>
+                                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.7rem;margin-bottom:1.2rem">
+                                    <div class="bni-tabs" id="chips" style="margin-bottom:0"/>
+                                    <div style="display:flex;align-items:center;gap:.6rem">
+                                        <span class="results-count" id="resultCount"/>
+                                        <select id="sortSelect" class="sort-dark">
+                                            <option value="featured">Featured</option>
+                                            <option value="price-asc">Price: Low–High</option>
+                                            <option value="price-desc">Price: High–Low</option>
+                                            <option value="name">Name A–Z</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="bni-prod-grid" id="productGrid" style="grid-template-columns:repeat(3,1fr)"/>
+                                <p id="emptyState" hidden="hidden" style="text-align:center;color:var(--b-muted-fg);padding:3rem 0;font-family:var(--b-font-body)">
+                                    No ropes match your filters. Try clearing some.
+                                </p>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <!-- FORM WRAPPER FOR BACKEND FILTERS -->
+                            <form id="shopFiltersForm" method="GET" action="/cordage-shop" style="display:contents">
+                                <!-- Hidden input for search term preservation -->
+                                <input type="hidden" name="search" t-att-value="search"/>
+                                <input type="hidden" name="sort" id="hiddenSort" t-att-value="sort"/>
+                                <!-- SIDEBAR -->
+                                <aside class="dark-sb" id="shopSidebar">
+                                    <!-- Category -->
+                                    <div class="dark-sb-sec">
+                                        <h4>Category</h4>
+                                        <ul style="list-style:none;margin:0;padding:0">
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="category" value="all"
+                                                           t-att-checked="active_category == 'all' and 'checked' or None"
+                                                           onchange="document.getElementById('shopFiltersForm').submit()"/>
+                                                    All Ropes
+                                                </label>
+                                            </li>
+                                            <t t-foreach="categories" t-as="cat">
+                                                <li>
+                                                    <label>
+                                                        <input type="radio" name="category" t-att-value="cat.id"
+                                                               t-att-checked="active_category == cat.id and 'checked' or None"
+                                                               onchange="document.getElementById('shopFiltersForm').submit()"/>
+                                                        <t t-esc="cat.name"/>
+                                                    </label>
+                                                </li>
+                                            </t>
+                                        </ul>
+                                    </div>
+                                    <!-- Price -->
+                                    <div class="dark-sb-sec">
+                                        <h4>Price range</h4>
+                                        <div class="sb-price-row">
+                                            <input type="number" name="min_price" placeholder="Min" min="0"
+                                                   t-att-value="min_price or ''"/>
+                                            <span class="sb-price-sep">–</span>
+                                            <input type="number" name="max_price" placeholder="Max" min="0"
+                                                   t-att-value="max_price or ''"/>
+                                        </div>
+                                    </div>
+                                    <!-- Attributes -->
+                                    <t t-foreach="attributes" t-as="attr">
+                                        <!-- Only show attribute if it has values -->
+                                        <t t-if="attr.value_ids">
+                                            <div class="dark-sb-sec">
+                                                <h4>
+                                                    <t t-esc="attr.name"/>
+                                                </h4>
+                                                <ul style="list-style:none;margin:0;padding:0">
+                                                    <t t-foreach="attr.value_ids" t-as="val">
+                                                        <li>
+                                                            <label>
+                                                                <input type="checkbox" class="mat-cb"
+                                                                       t-att-name="'attr_%s' % attr.id" t-att-value="val.id"
+                                                                       t-att-checked="val.id in active_attrs and 'checked' or None"
+                                                                       onchange="document.getElementById('shopFiltersForm').submit()"/>
+                                                                <t t-esc="val.name"/>
+                                                            </label>
+                                                        </li>
+                                                    </t>
+                                                </ul>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <button type="submit" class="sb-apply" id="applyFilters">Apply filters</button>
+                                    <a href="/cordage-shop" class="sb-clear" id="clearFilters"
+                                       style="text-align:center; display:block; text-decoration:none">Clear all
+                                    </a>
+                                </aside>
+                                <!-- MAIN -->
+                                <div>
+                                    <!-- Filter chips + sort -->
+                                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.7rem;margin-bottom:1.2rem">
+                                        <div class="bni-tabs" id="chips" style="margin-bottom:0">
+                                            <a href="/cordage-shop"
+                                               t-attf-class="bni-tab #{'active' if active_category == 'all' else ''}"
+                                               style="text-decoration:none">All
+                                            </a>
+                                            <t t-foreach="parent_categories" t-as="c">
+                                                <a t-attf-href="/cordage-shop?category=#{c.id}"
+                                                   t-attf-class="bni-tab #{'active' if active_category == c.id else ''}"
+                                                   style="text-decoration:none">
+                                                    <t t-esc="c.name"/>
+                                                </a>
+                                            </t>
+                                        </div>
+                                        <div style="display:flex;align-items:center;gap:.6rem">
+                                            <span class="results-count" id="resultCount">
+                                                <t t-esc="len(products)"/>
+                                                products
+                                            </span>
+                                            <select id="sortSelect" class="sort-dark" name="sort"
+                                                    onchange="document.getElementById('hiddenSort').value=this.value; document.getElementById('shopFiltersForm').submit();">
+                                                <option value="featured"
+                                                        t-att-selected="sort == 'featured' and 'selected' or None">Featured
+                                                </option>
+                                                <option value="price-asc"
+                                                        t-att-selected="sort == 'price-asc' and 'selected' or None">Price:
+                                                    Low–High
+                                                </option>
+                                                <option value="price-desc"
+                                                        t-att-selected="sort == 'price-desc' and 'selected' or None">Price:
+                                                    High–Low
+                                                </option>
+                                                <option value="name" t-att-selected="sort == 'name' and 'selected' or None">
+                                                    Name A–Z
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- Product grid -->
+                                    <div class="bni-prod-grid" id="productGridBackend" style="grid-template-columns:repeat(3,1fr)">
+                                        <t t-foreach="products" t-as="p">
+                                            <article class="bni-pcard">
+                                                <a t-attf-href="/cordage-product?id=#{p.id}"
+                                                   style="display:block;text-decoration:none">
+                                                    <div t-attf-class="bni-pcard__media rt-manila">
+                                                        <t t-if="p.image_1920">
+                                                            <img class="bni-pcard__photo"
+                                                                 t-attf-src="/web/image/product.template/#{p.id}/image_1920"
+                                                                 t-att-alt="p.name" loading="lazy"
+                                                                 onerror="this.style.display='none'"/>
+                                                        </t>
+                                                    </div>
+                                                </a>
+                                                <div class="bni-pcard__body">
+                                                    <div class="bni-pcard__cat">
+                                                        <t t-esc="p.public_categ_ids and p.public_categ_ids[0].name or 'General'"/>
+                                                    </div>
+                                                    <a t-attf-href="/cordage-product?id=#{p.id}" class="bni-pcard__name">
+                                                        <t t-esc="p.name"/>
+                                                    </a>
+                                                    <div class="bni-pcard__foot" style="margin-top:.6rem">
+                                                        <span class="bni-pcard__price">
+                                                            <t t-esc="p.list_price"
+                                                               t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                        </span>
+                                                        <a t-att-href="'/shop/cart/update?product_id=%d&amp;add_qty=1' % p._get_first_possible_variant_id()"
+                                                           t-att-data-product-id="p._get_first_possible_variant_id()"
+                                                           class="bni-pcard__add cordage-add-cart"
+                                                           style="text-decoration:none; text-align:center">Add to Cart
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        </t>
+                                    </div>
+                                    <t t-if="not products">
+                                        <p id="emptyStateBackend"
+                                           style="text-align:center;color:var(--b-muted-fg);padding:3rem 0;font-family:var(--b-font-body)">
+                                            No ropes match your filters. Try clearing some.
+                                        </p>
+                                    </t>
+                                </div>
+                            </form>
+                        </t>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

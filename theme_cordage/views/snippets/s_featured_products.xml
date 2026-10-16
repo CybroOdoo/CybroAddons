@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Description: This file defines the s_featured_products views/templates for the theme_cordage module. -->
+<odoo>
+    <!-- ═══ FEATURED PRODUCTS SNIPPET ═══
+         Renders Odoo backend products (is_cordage_product=True)
+         when passed via context, else renders demo static cards.
+    ═══ -->
+    <template id="s_featured_products" name="Cordage Featured Products">
+        <section class="s_featured_products bni-section o_colored_level" id="cordage-shop"
+                 data-snippet="theme_cordage.s_featured_products"
+                 data-name="Featured Products">
+            <div style="max-width:1180px;margin:0 auto;padding:0 22px">
+                <!-- Section header -->
+                <div class="bni-section__head"
+                     style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.4rem">
+                    <div>
+                        <div class="bni-section__eyebrow">
+                            <div class="bni-eyebrow-line"/>
+                            <span class="bni-eyebrow-text o_editable">Product Catalogue</span>
+                        </div>
+                        <h2 class="o_editable" style="margin-bottom:0">
+                            Featured Ropes &amp; Rigging
+                        </h2>
+                    </div>
+                </div>
+                <!-- Filter tabs -->
+                <div class="bni-tabs" id="cordageProdTabs">
+                    <button class="bni-tab active" data-cat="all">All Products</button>
+                    <t t-if="cordage_products and len(cordage_products) > 0">
+                        <t t-foreach="cordage_categories" t-as="cat">
+                            <button class="bni-tab" t-att-data-cat="cat.name.lower()"><t t-esc="cat.name"/></button>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <button class="bni-tab" data-cat="industrial">Industrial</button>
+                        <button class="bni-tab" data-cat="marine">Marine</button>
+                        <button class="bni-tab" data-cat="fabric">Fabric</button>
+                        <button class="bni-tab" data-cat="climbing">Climbing</button>
+                    </t>
+                </div>
+                <!-- ── ODOO BACKEND PRODUCTS ── -->
+                <t t-if="cordage_products and len(cordage_products) > 0">
+                    <div class="bni-prod-grid" id="productGrid">
+                        <t t-foreach="cordage_products" t-as="product">
+                            <t t-set="cat_classes" t-value="','.join([c.name.lower() for c in product.public_categ_ids]) if product.public_categ_ids else 'all'"/>
+                            <article class="bni-pcard"
+                                     t-att-data-cat="cat_classes">
+                                <a t-att-href="'/shop/product/' + slug(product)"
+                                   style="display:block;text-decoration:none">
+                                    <div class="bni-pcard__media rt-manila">
+                                        <t t-if="product.image_1920">
+                                            <img class="bni-pcard__photo"
+                                                 t-att-src="'/web/image/product.template/%d/image_1920' % product.id"
+                                                 t-att-alt="product.name"
+                                                 loading="lazy"/>
+                                        </t>
+                                        <t t-if="product.website_ribbon_id">
+                                            <span class="bni-pcard__badge">
+                                                <t t-esc="product.website_ribbon_id.html"/>
+                                            </span>
+                                        </t>
+                                    </div>
+                                </a>
+                                <div class="bni-pcard__body">
+                                    <div class="bni-pcard__cat">
+                                        <t t-esc="product.public_categ_ids and product.public_categ_ids[0].name or 'General'"/>
+                                    </div>
+                                    <a t-att-href="'/shop/product/' + slug(product)"
+                                       class="bni-pcard__name">
+                                        <t t-esc="product.name"/>
+                                    </a>
+                                    <div class="bni-pcard__specs">
+                                        <t t-foreach="(product.description_sale or '').split(',')[:3]"
+                                           t-as="tag">
+                                            <span class="bni-pcard__spec-pill">
+                                                <t t-esc="tag.strip()"/>
+                                            </span>
+                                        </t>
+                                    </div>
+                                    <div class="bni-pcard__rating">
+                                        <span>★★★★★</span>
+                                        <t t-esc="'%.1f' % 5.0"/>
+                                    </div>
+                                    <div class="bni-pcard__foot">
+                                        <span class="bni-pcard__price">
+                                            <t t-esc="'$%.2f' % product.list_price"/>
+                                            <span class="bni-pcard__unit">/unit</span>
+                                        </span>
+                                        <a t-att-href="'/shop/cart/update?product_id=%d&amp;add_qty=1' % product.id"
+                                           class="bni-pcard__add cordage-add-cart"
+                                           t-att-data-product-id="product.id">
+                                            Add to Cart
+                                        </a>
+                                    </div>
+                                </div>
+                            </article>
+                        </t>
+                    </div>
+                </t>
+                <!-- ── DEMO PRODUCTS (fallback) ── -->
+                <t t-else="">
+                    <div class="bni-prod-grid" id="productGrid"/>
+                    <p id="emptyState" hidden="hidden"
+                       style="text-align:center;color:var(--b-muted-fg);padding:3rem 0">
+                        No products found.
+                    </p>
+                    <script type="text/javascript">
+//<![CDATA[
+document.addEventListener('DOMContentLoaded', function() {
+    const CATEGORIES = [
+        { id:'industrial', name:'Industrial' },
+        { id:'marine',     name:'Marine' },
+        { id:'fabric',     name:'Fabric' },
+        { id:'climbing',   name:'Climbing' },
+    ];
+    const PRODUCTS = [
+        { id:'p1', name:'Industrial Manila Rope', cat:'industrial', price:24.90, unit:'/ 10m', rating:4.8, badge:'Bestseller', ropeClass:'rt-manila', tags:['12mm','Natural fibre','High grip'] },
+        { id:'p2', name:'Polypropylene Utility Rope', cat:'industrial', price:14.50, unit:'/ 15m', rating:4.6, badge:'', ropeClass:'rt-poly', tags:['10mm','Waterproof','Lightweight'] },
+        { id:'p3', name:'Steel-Core Hoist Rope', cat:'industrial', price:58.00, unit:'/ 10m', rating:4.9, badge:'Pro', ropeClass:'rt-steel', tags:['16mm','Steel core','2.5T WLL'] },
+        { id:'p4', name:'Marine Double-Braid Rope', cat:'marine', price:39.90, unit:'/ 10m', rating:4.9, badge:'New', ropeClass:'rt-marine', tags:['12mm','UV stable','Low stretch'] },
+        { id:'p5', name:'Anchor Nylon Rope', cat:'marine', price:32.00, unit:'/ 20m', rating:4.7, badge:'', ropeClass:'rt-nylon', tags:['14mm','Shock absorbing','Saltproof'] },
+        { id:'p6', name:'Floating Dock Line', cat:'marine', price:21.50, unit:'/ 10m', rating:4.5, badge:'', ropeClass:'rt-float', tags:['10mm','Floats','Hi-vis'] },
+        { id:'p7', name:'Soft Cotton Braided Rope', cat:'fabric', price:12.90, unit:'/ 10m', rating:4.8, badge:'Bestseller', ropeClass:'rt-cotton', tags:['8mm','100% cotton','Soft touch'] },
+        { id:'p8', name:'Macramé Cord Bundle', cat:'fabric', price:9.50, unit:'/ 25m', rating:4.9, badge:'Top rated', ropeClass:'rt-macrame', tags:['4mm','Crafts','Natural'] },
+        { id:'p9', name:'Coloured Fabric Rope', cat:'fabric', price:15.90, unit:'/ 10m', rating:4.6, badge:'', ropeClass:'rt-color', tags:['6mm','12 colours','Washable'] },
+        { id:'p10', name:'Dynamic Climbing Rope', cat:'climbing', price:129.00, unit:'/ 50m', rating:5.0, badge:'Certified', ropeClass:'rt-dynamic', tags:['9.8mm','UIAA','Dynamic'] },
+        { id:'p11', name:'Static Rigging Rope', cat:'climbing', price:89.00, unit:'/ 50m', rating:4.8, badge:'', ropeClass:'rt-static', tags:['11mm','Static','Rescue'] },
+        { id:'p12', name:'Accessory Cord', cat:'climbing', price:11.00, unit:'/ 10m', rating:4.7, badge:'', ropeClass:'rt-cord', tags:['6mm','Multi-use','Strong'] },
+    ];
+    function catName(id){ return (CATEGORIES.find(c=>c.id===id)||{}).name||id; }
+    const PROD_IMGS = {
+        p1: '/theme_cordage/static/src/images/img3.jpg',
+        p2: '/theme_cordage/static/src/images/img6.webp',
+        p3: '/theme_cordage/static/src/images/img1.jpg',
+        p4: '/theme_cordage/static/src/images/img4.jpg',
+        p5: '/theme_cordage/static/src/images/img5.webp',
+        p6: '/theme_cordage/static/src/images/img2.jpg',
+        p7: '/theme_cordage/static/src/images/img7.webp',
+        p8: '/theme_cordage/static/src/images/img8.webp',
+        p9: '/theme_cordage/static/src/images/img9.webp',
+        p10: '/theme_cordage/static/src/images/img1.jpg',
+        p11: '/theme_cordage/static/src/images/img4.jpg',
+        p12: '/theme_cordage/static/src/images/img7.webp',
+    };
+
+    let activeCat = 'all';
+    const ROW_LIMIT = 8;
+    const grid = document.getElementById('productGrid');
+    const empty = document.getElementById('emptyState');
+    const btn = document.getElementById('showMoreBtn');
+
+    function renderDemoProducts() {
+        if (!grid) return;
+        const list = PRODUCTS.filter(p => activeCat === 'all' || p.cat === activeCat);
+        if (empty) empty.hidden = list.length > 0;
+        
+        grid.innerHTML = list.slice(0, ROW_LIMIT).map((p, i) => `
+            <article class="bni-pcard${i >= ROW_LIMIT ? ' pcard-extra' : ''}">
+                <a href="/cordage-product?id=${p.id}" style="display:block;text-decoration:none">
+                    <div class="bni-pcard__media ${p.ropeClass || ''}">
+                        <img class="bni-pcard__photo" src="${PROD_IMGS[p.id] || ''}" alt="${p.name}" loading="lazy" onerror="this.style.display='none'"/>
+                        ${p.badge ? '<span class="bni-pcard__badge">' + p.badge + '</span>' : ''}
+                    </div>
+                </a>
+                <div class="bni-pcard__body">
+                    <div class="bni-pcard__cat">${catName(p.cat)}</div>
+                    <a href="/cordage-product?id=${p.id}" class="bni-pcard__name">${p.name}</a>
+                    <div class="bni-pcard__specs">
+                        ${(p.tags || []).map(t => '<span class="bni-pcard__spec-pill">' + t + '</span>').join('')}
+                    </div>
+                    <div class="bni-pcard__rating">
+                        <span>${'★'.repeat(Math.round(p.rating))}</span> ${p.rating.toFixed(1)}
+                    </div>
+                    <div class="bni-pcard__foot">
+                        <span class="bni-pcard__price">$${p.price.toFixed(2)}<span class="bni-pcard__unit">${p.unit}</span></span>
+                        <a href="/shop" class="bni-pcard__add cordage-add-cart">Add to Cart</a>
+                    </div>
+                </div>
+            </article>`).join('');
+
+        if (btn) {
+            btn.style.display = list.length > ROW_LIMIT ? 'inline-block' : 'none';
+        }
+    }
+
+    renderDemoProducts();
+});
+//]]>
+                    </script>
+                </t>
+                <!-- View all button -->
+                <div class="text-center mt-5">
+                    <a href="/cordage-shop" id="showMoreBtn"
+                       class="bni-btn-secondary"
+                       style="display: inline-block; padding: 0.5rem 1.5rem; text-decoration: none;">
+                        <span>View all products</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </template>
+<!--    Snippet: Featured Products-->
+        <template id="snippet_s_featured_products" inherit_id="website.snippets" name="Snippet: Featured Products">
+        <xpath expr="//snippets[@id='snippet_structure']/*[last()]" position="after">
+            <t t-snippet="theme_cordage.s_featured_products"
+               string="Featured Products"
+               t-thumbnail="/theme_cordage/static/src/images/logo.png"
+               group="cordage_section"/>
+        </xpath>
+    </template>
+</odoo>

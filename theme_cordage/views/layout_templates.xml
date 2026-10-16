@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Description: This file defines the layout_templates views/templates for the theme_cordage module. -->
+<odoo>
+    <!-- ═══════════════════════════════════════════════
+         INJECT ZAIN FONT + THEME INIT SCRIPT
+         ═══════════════════════════════════════════════ -->
+    <template id="cordage_head_assets" inherit_id="website.layout"
+              name="Cordage Head Assets">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link href="https://fonts.googleapis.com/css2?family=Zain:wght@200;300;400;700;800;900&amp;display=swap"
+                  rel="stylesheet"/>
+            <!-- Iconify for icons -->
+            <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"/>
+            <!-- FOUC prevention: set theme class before first paint -->
+            <script>
+                (function(){
+                    var match = document.cookie.match(new RegExp('(^| )color_scheme=([^;]+)'));
+                    var t = match ? match[2] : localStorage.getItem('cordage-theme');
+                    if(t === 'light') {
+                        document.documentElement.classList.add('cordage-light');
+                        document.documentElement.setAttribute('data-bs-theme', 'light');
+                    } else if (t === 'dark') {
+                        document.documentElement.setAttribute('data-bs-theme', 'dark');
+                    }
+                })();
+            </script>
+        </xpath>
+    </template>
+    <!-- ═══════════════════════════════════════════════
+         CUSTOM HEADER
+         ═══════════════════════════════════════════════ -->
+    <template id="cordage_header" inherit_id="website.layout"
+              name="Cordage Header">
+        <xpath expr="//header" position="replace">
+            <header id="top" data-anchor="true" class="o_header_standard o_no_autohide_menu">
+                <nav class="bni-nav" id="bniNav" data-name="Navbar">
+                    <div class="bni-nav__main">
+                        <!-- Logo -->
+                        <a href="/" class="bni-logo" aria-label="CORDAGE home">
+                            <img src="/theme_cordage/static/src/images/logo.png"
+                                 alt="CORDAGE" style="height:42px;width:auto;object-fit:contain;display:block;filter:brightness(0) invert(1)"/>
+                        </a>
+                        <!-- Desktop nav links — driven by website menu editor -->
+                        <ul class="bni-nav__links top_menu" id="mainNavLinks"
+                            style="list-style:none;margin:0;padding:0">
+                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                <t t-call="website.submenu">
+                                    <t t-set="item_class" t-value="''"/>
+                                    <t t-set="link_class" t-value="''"/>
+                                </t>
+                            </t>
+                        </ul>
+                        <!-- Right actions -->
+                        <div class="bni-nav__actions">
+                            <!-- Search button -->
+                            <button class="bni-search" id="bniSearchBtn" aria-label="Search">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                                     stroke-linecap="round" style="width:14px;height:14px;flex-shrink:0">
+                                    <path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>
+                                </svg>
+                                Search products…
+                            </button>
+                            <!-- Dark/Light toggle -->
+                            <button class="bni-icon-btn" id="cordageThemeToggle"
+                                    title="Toggle theme" aria-label="Toggle theme">
+                                <svg class="cordage-theme-icon" width="18" height="18"
+                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2.2" stroke-linecap="round">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                                </svg>
+                            </button>
+                            <!-- User (Odoo native) -->
+                            <div class="bni-icon-btn o_user_nav_links">
+                                <t t-call="portal.placeholder_user_sign_in">
+                                    <t t-set="_link_class" t-valuef="bni-icon-btn"/>
+                                </t>
+                                <t t-call="portal.user_dropdown">
+                                    <t t-set="_user_name" t-value="False"/>
+                                    <t t-set="_item_class" t-value="''"/>
+                                    <t t-set="_link_class" t-value="'bni-icon-btn'"/>
+                                </t>
+                            </div>
+                            <!-- Cart (Odoo native styled) -->
+                            <a href="/shop/cart" class="bni-icon-btn cordage-cart-icon"
+                               id="cordageCartBtn" aria-label="Cart">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                    <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
+                                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+                                </svg>
+                                <span class="bni-cart-badge" id="cordageCartCount"
+                                      style="display:none">0</span>
+                            </a>
+                            <!-- Mobile hamburger -->
+                            <button class="bni-nav-toggle" id="navToggle"
+                                    aria-label="Toggle menu">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                                    <path d="M3 6h18M3 12h18M3 18h18"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+        </xpath>
+    </template>
+    <!-- ═══════════════════════════════════════════════
+         CUSTOM FOOTER
+         ═══════════════════════════════════════════════ -->
+    <template id="cordage_footer" inherit_id="website.layout"
+              name="Cordage Footer">
+        <xpath expr="//div[@id='footer']" position="replace">
+            <div id="footer" class="oe_structure oe_structure_solo" t-ignore="true" t-if="not no_footer" data-name="Footer">
+                <footer class="bni-footer">
+                    <div class="bni-footer__grid">
+                        <div>
+                            <a href="/" class="bni-footer__brand">
+                                <img src="/theme_cordage/static/src/images/logo.png"
+                                     alt="CORDAGE"
+                                     style="height:36px;width:auto;object-fit:contain;filter:brightness(0) invert(1)"/>
+                            </a>
+                            <p class="bni-footer__blurb o_editable">
+                                ISO 9001 certified supplier of industrial, marine,
+                                fabric, and climbing ropes. Cut to your exact length
+                                — dispatched in 48 hours.
+                            </p>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                            <h5 class="text-uppercase mb-3">Products</h5>
+                            <a href="/cordage-shop">Industrial Ropes</a>
+                            <a href="/cordage-shop">Marine Ropes</a>
+                            <a href="/cordage-shop">Fabric Ropes</a>
+                            <a href="/cordage-shop">Climbing Ropes</a>
+                            <a href="/cordage-shop">Lifting Slings</a>
+                            <a href="/cordage-shop">Rigging Hardware</a>
+                        </div>
+                        <div>
+                            <h4>Company</h4>
+                            <a href="/about">About Us</a>
+                            <a href="/about">Certifications</a>
+                            <a href="/about">Careers</a>
+                            <a href="/cordage-contact">Contact</a>
+                            <a href="/cordage-contact">Trade Accounts</a>
+                            <a href="/cordage-contact">Wholesale</a>
+                        </div>
+                        <div>
+                            <h4>Support</h4>
+                            <a href="/cordage-contact">FAQ</a>
+                            <a href="/cordage-contact">Shipping Info</a>
+                            <a href="/cordage-contact">Returns</a>
+                            <a href="/cordage-contact">Load Spec Guide</a>
+                            <a href="/cordage-contact">Technical Support</a>
+                        </div>
+                    </div>
+                    <div class="bni-footer__bottom">
+                        <span>©
+                            <t t-esc="datetime.datetime.now().year"/>
+                            CORDAGE Ltd. All rights reserved.
+                        </span>
+                        <span>
+                            <a href="/cordage-contact">Privacy</a> ·
+                            <a href="/cordage-contact">Terms</a> ·
+                            ISO 9001:2015 Certified
+                        </span>
+                    </div>
+                </footer>
+            </div>
+        </xpath>
+    </template>
+    <!-- Hide Odoo brand promotion bar -->
+    <template id="cordage_no_branding" inherit_id="website.layout"
+              name="Cordage No Branding">
+        <xpath expr="//t[@t-call='web.brand_promotion']" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+    </template>
+    <!-- Search overlay HTML injected into layout -->
+    <template id="cordage_search_overlay" inherit_id="website.layout"
+              name="Cordage Search Overlay">
+        <xpath expr="//body" position="inside">
+            <div class="search-overlay" id="searchOverlay">
+                <div class="search-modal">
+                    <div class="search-bar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.2" stroke-linecap="round"
+                             style="width:20px;height:20px;flex-shrink:0">
+                            <path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>
+                        </svg>
+                        <input type="search" id="searchInput"
+                               placeholder="Search ropes, materials, diameters…"
+                               autocomplete="off"/>
+                        <button id="searchClose">Esc</button>
+                    </div>
+                    <div id="searchResults"/>
+                </div>
+            </div>
+            <div class="toast" id="cordageToast"/>
+        </xpath>
+    </template>
+</odoo>
