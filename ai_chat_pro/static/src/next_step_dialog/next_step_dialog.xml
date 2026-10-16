@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ai_chat_pro.NextStepActivityDialog">
+        <Dialog size="'md'" title.translate="Plan this step as an activity?" contentClass="'o_ai_chat_next_step_dialog'">
+            <p class="text-muted mb-3">
+                An activity is created for you in Odoo, with a link back to this analysis. You find it in your
+                activities, at the top of the screen.
+            </p>
+            <div class="mb-3">
+                <label class="form-label fw-medium" for="o_ai_chat_activity_summary">Summary</label>
+                <textarea id="o_ai_chat_activity_summary" class="form-control o_ai_chat_activity_summary" rows="2"
+                          t-att-value="this.state.summary" t-on-input="(ev) => this.state.summary = ev.target.value"/>
+            </div>
+            <div class="row g-3 mb-2">
+                <div class="col-sm-6">
+                    <label class="form-label fw-medium" for="o_ai_chat_activity_type">Activity type</label>
+                    <select id="o_ai_chat_activity_type" class="form-select o_ai_chat_activity_type"
+                            t-on-change="(ev) => this.onTypeChange(ev)">
+                        <option t-foreach="this.props.defaults.activity_types" t-as="type" t-key="type.id"
+                                t-att-value="type.id" t-att-selected="type.id === this.state.activityTypeId"
+                                t-out="type.name"/>
+                    </select>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label fw-medium" for="o_ai_chat_activity_date">Due date</label>
+                    <input id="o_ai_chat_activity_date" type="date" class="form-control o_ai_chat_activity_date"
+                           t-att-value="this.state.dateDeadline" t-on-change="(ev) => this.onDateChange(ev)"/>
+                </div>
+            </div>
+            <div class="small text-muted">
+                <i class="oi me-1" data-icon="person" aria-hidden="true"/>Assigned to you (<t t-out="this.props.defaults.user_name"/>)
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_ai_chat_activity_confirm" t-att-disabled="!this.canConfirm"
+                        t-on-click="() => this.confirm()">
+                    <i t-if="this.state.isSaving" class="oi oi-spin me-1" data-icon="progress_activity" aria-hidden="true"/>
+                    Create activity
+                </button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

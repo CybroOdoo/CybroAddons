@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_groups_privilege_ai_chat_pro" model="res.groups.privilege">
+        <field name="name">AI Chat Pro</field>
+        <field name="sequence">40</field>
+        <field name="category_id" ref="base.module_category_productivity"/>
+    </record>
+
+    <record id="group_ai_chat_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="comment">User: Can chat with the AI assistant about the data they can access.</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_ai_chat_pro"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_ai_chat_manager" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="comment">Administrator: Can review every conversation and set up the assistant.</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_ai_chat_pro"/>
+        <field name="implied_ids" eval="[(4, ref('group_ai_chat_user'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+    <!-- the configuration of the assistant is for the administrators of Odoo, who manage it -->
+    <record id="base.group_system" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_ai_chat_manager'))]"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,215 @@
+// Voice assistant of the systray -------------------------------------------------
+
+$o-ai-voice-colors: #8b5cf6, #ec4899, #f97316, #06b6d4;
+
+// the edges of the screen glow, brighter as the user speaks
+.o_ai_voice_glow {
+    --ai-voice-level: 0;
+    position: fixed;
+    inset: 0;
+    z-index: $zindex-modal;
+    pointer-events: none;
+    box-shadow:
+        inset 0 0 calc(18px + var(--ai-voice-level) * 70px) calc(2px + var(--ai-voice-level) * 8px) rgba(nth($o-ai-voice-colors, 1), 0.55),
+        inset 0 0 calc(40px + var(--ai-voice-level) * 110px) rgba(nth($o-ai-voice-colors, 2), 0.35),
+        inset 0 0 calc(80px + var(--ai-voice-level) * 140px) rgba(nth($o-ai-voice-colors, 4), 0.25);
+    animation: o_ai_voice_hue 6s linear infinite, o_ai_voice_fade_in 0.35s ease-out;
+    transition: box-shadow 0.08s linear;
+}
+
+.o_ai_voice_panel {
+    --ai-voice-level: 0;
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    z-index: $zindex-modal + 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 440px;
+    max-width: calc(100vw - 32px);
+    padding: 12px 12px 12px 14px;
+    border-radius: 28px;
+    color: #fff;
+    background-color: rgba(18, 18, 24, 0.82);
+    backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    transform: translateX(-50%);
+    animation: o_ai_voice_rise 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+// the orb: swirls of color, swelling with the voice
+.o_ai_voice_orb {
+    position: relative;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 3px;
+    }
+}
+
+.o_ai_voice_orb_core {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        nth($o-ai-voice-colors, 1),
+        nth($o-ai-voice-colors, 2),
+        nth($o-ai-voice-colors, 3),
+        nth($o-ai-voice-colors, 4),
+        nth($o-ai-voice-colors, 1)
+    );
+    filter: blur(0.5px) saturate(1.3);
+    box-shadow: 0 0 calc(12px + var(--ai-voice-level) * 30px) rgba(nth($o-ai-voice-colors, 2), 0.7);
+    transform: scale(calc(0.86 + var(--ai-voice-level) * 0.34));
+    transition: transform 0.08s linear, box-shadow 0.08s linear;
+    animation: o_ai_voice_spin 3.2s linear infinite;
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 22%;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.15) 60%, transparent 70%);
+    }
+}
+
+.o_ai_voice_thinking .o_ai_voice_orb_core {
+    animation-duration: 0.9s;
+    transform: scale(0.8);
+}
+
+.o_ai_voice_error .o_ai_voice_orb_core {
+    filter: grayscale(0.7);
+    animation-play-state: paused;
+}
+
+.o_ai_voice_status {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.o_ai_voice_heard_text {
+    font-weight: 500;
+    quotes: "“" "”";
+
+    &::before {
+        content: open-quote;
+    }
+
+    &::after {
+        content: close-quote;
+    }
+}
+
+.o_ai_voice_hint {
+    margin-top: 2px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+// no keyboard on touch screens: the Done button is the way
+@media (pointer: coarse) {
+    .o_ai_voice_hint_keys {
+        display: none;
+    }
+}
+
+// finishes the question without waiting for the silence: the main action of the panel
+.o_ai_voice_done {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px 0 12px;
+    border-radius: 999px;
+    font-weight: $o-font-weight-medium;
+    color: #121218;
+    background-color: #fff;
+
+    &:hover,
+    &:focus-visible {
+        color: #121218;
+        background-color: rgba(255, 255, 255, 0.85);
+    }
+
+    &:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 2px;
+    }
+}
+
+.o_ai_voice_close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.75);
+
+    &:hover,
+    &:focus-visible {
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.12);
+    }
+}
+
+@keyframes o_ai_voice_spin {
+    to {
+        rotate: 360deg;
+    }
+}
+
+@keyframes o_ai_voice_hue {
+    to {
+        filter: hue-rotate(360deg);
+    }
+}
+
+@keyframes o_ai_voice_rise {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 16px) scale(0.96);
+    }
+}
+
+@keyframes o_ai_voice_fade_in {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_ai_voice_glow,
+    .o_ai_voice_panel,
+    .o_ai_voice_orb_core {
+        animation: none;
+        transition: none;
+    }
+}
+
+// the icon of the app, drawn in the color of the navbar
+.o_ai_chat_systray_icon {
+    width: 1.3em;
+    height: 1.3em;
+    vertical-align: middle;
+}

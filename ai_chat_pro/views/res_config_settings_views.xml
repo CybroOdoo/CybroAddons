@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.ai.chat.pro</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="90"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="AI Chat Pro" string="AI Chat Pro" name="ai_chat_pro">
+                    <block title="AI Model" name="ai_chat_pro_model_container">
+                        <setting id="ai_chat_pro_openrouter" string="OpenRouter"
+                                 help="The decision model choosing, for each question, the data, filters, period, sorting and totals. It never receives your records, only the labels of filters and fields.">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="ai_chat_pro_openrouter_key" string="API Key" class="col-lg-3 o_light_label"/>
+                                    <field name="ai_chat_pro_openrouter_key" password="True" placeholder="sk-or-v1-..."/>
+                                </div>
+                                <div class="row">
+                                    <label for="ai_chat_pro_model" string="Model" class="col-lg-3 o_light_label"/>
+                                    <field name="ai_chat_pro_model" placeholder="~typesafe/jev-latest"/>
+                                </div>
+                                <div class="mt8 d-flex flex-wrap align-items-center gap-3">
+                                    <button name="action_ai_chat_pro_test_connection" type="object" string="Test Connection"
+                                            class="btn-link" icon="oi-arrow-right"/>
+                                    <!-- for users without an OpenRouter account: a key is provided by Cybrosys -->
+                                    <a href="https://assista.cybrosys.com/billing" target="_blank" rel="noopener noreferrer"
+                                       class="btn btn-link o_ai_chat_pro_get_key" title="No OpenRouter account? Get an API key from Cybrosys">
+                                        <i class="oi me-1" data-icon="key" aria-hidden="true"/>Get an API Key
+                                    </a>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="ai_chat_pro_use_olg"
+                                 help="Questions asking for an analysis, an explanation or advice are answered by Odoo's AI service, from the records the user can access.">
+                            <field name="ai_chat_pro_use_olg"/>
+                        </setting>
+                        <setting id="ai_chat_pro_agent_thinking"
+                                 help="The agent thinks when a request needs it: requests needing several steps (&quot;the products of my biggest order&quot;) are answered one data question after the other, and an answer that found nothing is reflected on and asked again once in a better way. Simple questions cost nothing more.">
+                            <field name="ai_chat_pro_agent_thinking"/>
+                        </setting>
+                        <setting id="ai_chat_pro_deep_analysis"
+                                 help="Questions asking for a decision, e.g. &quot;how can I increase the sales of this product?&quot; or &quot;which products should I forecast for next month?&quot;, are answered from several sets of data the user can access, with findings, recommendations, risks and next steps. The agent switches to it on its own when the decision model is confident enough; users can also turn it on next to the send button.">
+                            <field name="ai_chat_pro_deep_analysis"/>
+                            <div class="text-muted small mt4" invisible="not ai_chat_pro_deep_analysis">
+                                An analysis asks a few questions on the data, then writes the decision with Odoo AI, or the
+                                OpenRouter model chosen below: it costs more than a question.
+                            </div>
+                            <div class="content-group mt8" invisible="not ai_chat_pro_deep_analysis">
+                                <label for="ai_chat_pro_deep_confidence" class="o_light_label"/>
+                                <field name="ai_chat_pro_deep_confidence" class="oe_inline ms-2"/>
+                            </div>
+                        </setting>
+                        <setting id="ai_chat_pro_reasoning_openrouter"
+                                 help="Odoo's AI service is replaced by a model of OpenRouter, with the key above: for the analyses, the values of records to create, the charts and the report summaries.">
+                            <field name="ai_chat_pro_reasoning_openrouter"/>
+                            <div class="content-group" invisible="not ai_chat_pro_reasoning_openrouter">
+                                <div class="row mt16">
+                                    <label for="ai_chat_pro_reasoning_model" string="Model" class="col-lg-3 o_light_label"/>
+                                    <field name="ai_chat_pro_reasoning_model" placeholder="Odoo's AI service"/>
+                                </div>
+                                <div class="text-muted small mt4">
+                                    The models of OpenRouter reading and writing text, cheapest first. Without a model,
+                                    Odoo's AI service is used. The tokens and cost of the model are counted with each
+                                    question.
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Actions" name="ai_chat_pro_actions_container">
+                        <setting id="ai_chat_pro_allow_create"
+                                 help="Users ask the assistant to create records, e.g. &quot;create a sales order for Azure Interior with 3 chairs&quot; or &quot;new lead for 10 desks from Gemini Furniture&quot;. Each record is shown as a draft the user confirms, and is created with their own access rights.">
+                            <field name="ai_chat_pro_allow_create"/>
+                            <div class="text-muted small mt4" invisible="not ai_chat_pro_allow_create">
+                                Odoo's AI service reads the values of the record from the request. It is only given
+                                the fields of the record, never your data.
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Voice" name="ai_chat_pro_voice_container">
+                        <setting id="ai_chat_pro_voice"
+                                 help="Users ask their questions out loud. The recording is turned into text by a model of OpenRouter, with the key above, then asked like a typed question.">
+                            <field name="ai_chat_pro_voice"/>
+                            <div class="content-group" invisible="not ai_chat_pro_voice">
+                                <div class="row mt16">
+                                    <label for="ai_chat_pro_voice_model" string="Model" class="col-lg-3 o_light_label"/>
+                                    <field name="ai_chat_pro_voice_model" required="ai_chat_pro_voice"/>
+                                </div>
+                                <div class="text-muted small mt4">
+                                    The models of OpenRouter reading audio, cheapest first. A minute of speech is about
+                                    2,000 audio tokens.
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Answers" name="ai_chat_pro_answers_container">
+                        <setting id="ai_chat_pro_chart_olg"
+                                 help="Answers are drawn as charts. When a question asks for a given chart, Odoo's AI service chooses it, from the names of the columns only.">
+                            <field name="ai_chat_pro_chart_olg"/>
+                        </setting>
+                        <setting id="ai_chat_pro_max_rows" string="Maximum Rows" help="Records or groups shown in an answer, at most.">
+                            <field name="ai_chat_pro_max_rows" class="o_light_label"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_ai_chat_pro_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="res_config_settings_view_form"/>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'ai_chat_pro'}</field>
+    </record>
+
+</odoo>
