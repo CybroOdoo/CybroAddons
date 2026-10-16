@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="project_detail_template" name="Project Detail">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty theme_buildcraft_wrap font-body bg-background text-foreground">
+
+                <!-- ═══ HERO BANNER ═══ -->
+                <section class="project-detail-hero relative overflow-hidden" style="min-height: 520px;">
+                    <!-- Background image -->
+                    <div class="absolute inset-0">
+                        <img t-if="project.image"
+                             t-attf-src="/web/image/buildcraft.project/#{project.id}/image"
+                             class="w-full h-full object-cover"
+                             t-att-alt="project.name"
+                             style="min-height: 520px;"/>
+                        <div t-else="" class="w-full h-full bg-dark" style="min-height: 520px;"/>
+                    </div>
+                    <!-- Overlay gradient -->
+                    <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(17,24,39,0.95) 0%, rgba(17,24,39,0.6) 40%, rgba(17,24,39,0.3) 100%);"/>
+
+                    <!-- Content -->
+                    <div class="absolute inset-0 flex flex-col justify-end px-24 pb-16" style="padding-top: 140px;">
+                        <div class="max-w-4xl relative z-10">
+                            <!-- Breadcrumb -->
+                            <div class="flex items-center gap-2 mb-6 hero-fade-1">
+                                <a href="/" class="text-white/60 text-sm font-medium" style="color: rgba(255,255,255,0.6);">Home</a>
+                                <span class="text-white/30 text-sm">/</span>
+                                <a href="/projects" class="text-white/60 text-sm font-medium" style="color: rgba(255,255,255,0.6);">Projects</a>
+                                <span class="text-white/30 text-sm">/</span>
+                                <span class="text-primary text-sm font-medium" t-esc="project.name"/>
+                            </div>
+
+                            <!-- Category badge -->
+                            <div class="badge mb-5 hero-fade-1">
+                                <span class="dot"/>
+                                <t t-esc="dict(project._fields['category'].selection).get(project.category, '').title()"/>
+                            </div>
+
+                            <!-- Title -->
+                            <h1 class="font-headings font-bold text-5xl text-white leading-tight mb-5 hero-fade-2" t-esc="project.name"/>
+
+                            <!-- Quick meta -->
+                            <div class="flex items-center gap-8 hero-fade-3">
+                                <div class="flex items-center gap-2" t-if="project.location">
+                                    <i class="fa fa-map-marker text-primary"/>
+                                    <span class="text-white/70 text-sm font-medium" t-esc="project.location"/>
+                                </div>
+                                <div class="flex items-center gap-2" t-if="project.year">
+                                    <i class="fa fa-calendar text-primary"/>
+                                    <span class="text-white/70 text-sm font-medium" t-esc="project.year"/>
+                                </div>
+                                <div class="flex items-center gap-2" t-if="project.value">
+                                    <i class="fa fa-money text-primary"/>
+                                    <span class="text-white/70 text-sm font-medium" t-esc="project.value"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ═══ PROJECT DETAILS SECTION ═══ -->
+                <section class="px-24 py-24 bg-background">
+                    <div class="flex gap-16">
+                        <!-- Left: Main Content -->
+                        <div class="flex-1">
+                            <!-- Section Label -->
+                            <div class="inline-flex items-center gap-2 bg-primary/10 text-secondary font-medium text-sm px-4 py-1.5 rounded-xl mb-6">
+                                <div class="w-1.5 h-1.5 rounded-full bg-primary"/>
+                                <span>Project Overview</span>
+                            </div>
+
+                            <h2 class="font-headings font-bold text-3xl text-foreground mb-6">About This Project</h2>
+
+                            <!-- Description -->
+                            <div class="text-muted-foreground leading-relaxed text-base mb-10" t-if="project.description">
+                                <t t-out="project.description"/>
+                            </div>
+                            <p class="text-muted-foreground leading-relaxed text-base mb-10" t-if="not project.description">
+                                This project showcases our commitment to excellence in construction. Leveraging cutting-edge engineering methods and premium materials, our team delivered a landmark structure that exceeds industry standards for quality, safety, and sustainability.
+                            </p>
+
+                            <!-- Project Image Gallery -->
+                            <div class="rounded-xl overflow-hidden border border-border mb-10" t-if="project.image">
+                                <img t-attf-src="/web/image/buildcraft.project/#{project.id}/image"
+                                     class="w-full object-cover"
+                                     t-att-alt="project.name"
+                                     style="max-height: 500px;"/>
+                            </div>
+                        </div>
+
+                        <!-- Right: Info Sidebar -->
+                        <div style="width: 380px; flex-shrink: 0;">
+                            <!-- Project Info Card -->
+                            <div class="rounded-xl border border-border bg-card p-8 mb-8" style="position: sticky; top: 120px;">
+                                <h3 class="font-headings font-bold text-lg text-foreground mb-6 pb-4 border-b border-border">Project Information</h3>
+
+                                <div class="flex flex-col gap-5">
+                                    <!-- Category -->
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                            <i class="fa fa-th-large text-secondary"/>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Category</p>
+                                            <p class="text-sm font-semibold text-foreground" t-esc="dict(project._fields['category'].selection).get(project.category, '').title()"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Location -->
+                                    <div class="flex items-start gap-4" t-if="project.location">
+                                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                            <i class="fa fa-map-marker text-secondary"/>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Location</p>
+                                            <p class="text-sm font-semibold text-foreground" t-esc="project.location"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Year -->
+                                    <div class="flex items-start gap-4" t-if="project.year">
+                                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                            <i class="fa fa-calendar text-secondary"/>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Completion Year</p>
+                                            <p class="text-sm font-semibold text-foreground" t-esc="project.year"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Value -->
+                                    <div class="flex items-start gap-4" t-if="project.value">
+                                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                            <i class="fa fa-money text-secondary"/>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Project Value</p>
+                                            <p class="text-sm font-semibold text-foreground" t-esc="project.value"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Client -->
+                                    <div class="flex items-start gap-4" t-if="project.client">
+                                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                            <i class="fa fa-user text-secondary"/>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Client</p>
+                                            <p class="text-sm font-semibold text-foreground" t-esc="project.client"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Built-Up Area -->
+                                    <div class="flex items-start gap-4" t-if="project.area">
+                                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                            <i class="fa fa-expand text-secondary"/>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Built-Up Area</p>
+                                            <p class="text-sm font-semibold text-foreground" t-esc="project.area"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Duration -->
+                                    <div class="flex items-start gap-4" t-if="project.duration">
+                                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                            <i class="fa fa-clock-o text-secondary"/>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Duration</p>
+                                            <p class="text-sm font-semibold text-foreground" t-esc="project.duration"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- CTA -->
+                                <div class="mt-8 pt-6 border-t border-border">
+                                    <a href="/contactus" class="bg-primary text-primary-foreground px-6 py-3 rounded-full font-semibold text-sm w-full text-center d-block">
+                                        Start a Similar Project
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ═══ RELATED PROJECTS ═══ -->
+                <section class="px-24 py-24 bg-light" t-if="related_projects">
+                    <div class="flex flex-col gap-4 items-center text-center mb-12">
+                        <div class="inline-flex items-center gap-2 bg-primary/10 text-secondary font-medium text-sm px-4 py-1.5 rounded-xl">
+                            <div class="w-1.5 h-1.5 rounded-full bg-primary"/>
+                            <span>More Projects</span>
+                        </div>
+                        <h2 class="font-headings font-bold text-4xl text-foreground">Related Projects</h2>
+                        <p class="text-muted-foreground max-w-xl">Explore more of our work in the same category.</p>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-8">
+                        <t t-foreach="related_projects" t-as="rp">
+                            <div class="card-hover card-accent-top rounded-xl overflow-hidden border border-border bg-card">
+                                <div class="img-zoom relative" style="height: 220px;">
+                                    <img t-if="rp.image"
+                                         t-attf-src="/web/image/buildcraft.project/#{rp.id}/image"
+                                         class="w-full h-full object-cover"
+                                         t-att-alt="rp.name"/>
+                                    <div t-else="" class="w-full h-full" style="background: #e5e7eb;"/>
+                                    <div class="absolute inset-0 bg-dark/60 opacity-0 hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5" style="transition: opacity 0.3s ease;">
+                                        <span class="text-xs text-primary font-semibold uppercase tracking-wider mb-1" t-esc="dict(rp._fields['category'].selection).get(rp.category, '').title()"/>
+                                        <h3 class="font-headings font-bold text-white text-base" t-esc="rp.name"/>
+                                        <span class="text-white/70 text-xs mt-1">
+                                            <t t-esc="rp.location"/> · <t t-esc="rp.value"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="p-5 flex items-center justify-between">
+                                    <div>
+                                        <p class="font-semibold text-sm text-foreground" t-esc="rp.name"/>
+                                        <p class="text-xs text-muted-foreground mt-0.5">
+                                            <t t-esc="rp.location"/> · <t t-esc="rp.year"/>
+                                        </p>
+                                    </div>
+                                    <a t-attf-href="/project/#{rp.id}" class="arrow-link text-xs text-secondary font-semibold">
+                                        View <span class="icon icon-12">→</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </section>
+
+                <!-- ═══ CTA SECTION ═══ -->
+                <section class="bg-subtle px-24 py-24">
+                    <div class="max-w-3xl mx-auto text-center">
+                        <h2 class="font-headings font-bold text-4xl text-foreground mb-5">Ready to Build Something <span class="text-secondary">Remarkable?</span></h2>
+                        <p class="text-muted-foreground leading-relaxed mb-10 max-w-xl mx-auto">
+                            Let's discuss your vision and turn it into a landmark. Our team is ready to bring your next project to life.
+                        </p>
+                        <div class="flex items-center justify-center gap-4">
+                            <a href="/contactus" class="bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm">Request Consultation</a>
+                            <a href="/projects" class="border border-secondary text-secondary px-8 py-3.5 rounded-full font-semibold text-sm">View All Projects</a>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </t>
+    </template>
+</odoo>

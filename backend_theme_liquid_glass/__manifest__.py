@@ -1,0 +1,62 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
+{
+    'name': 'Liquid Glass Backend Theme',
+    'version': '18.0.1.0.0',
+    'category': 'Themes/Backend',
+    'summary': 'Modern glassmorphism backend theme for Odoo',
+    'description': """
+        Liquid Glass Backend Theme
+        A modern, elegant glassmorphism design for Odoo backend
+    """,
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': 'https://www.cybrosys.com',
+    'license': 'LGPL-3',
+    'depends': ['web', 'base'],
+    'assets': {
+        'web.assets_backend': [
+            'backend_theme_liquid_glass/static/src/scss/variables.scss',
+            'backend_theme_liquid_glass/static/src/scss/buttons.scss',
+            'backend_theme_liquid_glass/static/src/scss/forms.scss',
+            'backend_theme_liquid_glass/static/src/scss/lists.scss',
+            'backend_theme_liquid_glass/static/src/scss/kanban.scss',
+            'backend_theme_liquid_glass/static/src/scss/modals.scss',
+            'backend_theme_liquid_glass/static/src/scss/navbar.scss',
+            'backend_theme_liquid_glass/static/src/scss/sidebar.scss',
+            'backend_theme_liquid_glass/static/src/scss/glass_theme.scss',
+            'backend_theme_liquid_glass/static/src/xml/navbar.xml',
+            'backend_theme_liquid_glass/static/src/js/navbar.js',
+        ],
+        'web.assets_backend_lazy': [
+            'backend_theme_liquid_glass/static/src/js/canvas_text.js',
+        ],
+    },
+    'images': [
+        'static/description/banner.jpg',
+        'static/description/theme_screenshot.jpg',
+    ],
+    'installable': True,
+    'auto_install': False,
+    'application': False,
+}
