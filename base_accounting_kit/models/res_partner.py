@@ -123,13 +123,11 @@ class ResPartner(models.Model):
         """Get the minimum invoice due date from the partner's invoice list."""
         today = date.today()
         for this in self:
-            if this.invoice_list:
-                min_list = this.invoice_list.mapped('invoice_date_due')
-                while False in min_list:
-                    min_list.remove(False)
-                return min(min_list)
-            else:
-                return today
+            # Draft invoices may have no due date
+            due_dates = [due_date for due_date in
+                         this.invoice_list.mapped('invoice_date_due')
+                         if due_date]
+            return min(due_dates) if due_dates else today
 
     def get_delay(self):
         """Retrieve the delay information for follow-up lines associated with the company."""
