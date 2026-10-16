@@ -24,6 +24,7 @@
     'name': 'Odoo AI Chat Pro',
     'version': '20.0.1.0.0',
     'category': 'Productivity',
+    'live_test_url': 'https://www.youtube.com/embed/oZj-6IlYyRQ?autoplay=1&mute=1&loop=1&playlist=oZj-6IlYyRQ&controls=1&rel=0&modestbranding=1',
     'summary': 'Ask questions about your business data in plain language, at a minimal AI cost',
     'description': """
 Odoo AI Chat Pro
