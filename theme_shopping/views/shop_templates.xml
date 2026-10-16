@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+     Customize the breadcrumb navigation in the website_sale.products_breadcrumb template
+    <template id="theme_shopping_products_breadcrumb"
+              name="Theme Products Breadcrumb"
+              inherit_id="website_sale.products_breadcrumb">
+        <xpath expr="//ol[contains(@t-attf-class, 'breadcrumb')]"
+               position="replace">
+            <nav aria-label="breadcrumb" class="st-breadcrumbs"
+                 style="margin-left: -16px;">
+                <ol t-if="category" class="breadcrumb mb-0">
+                    <li class="breadcrumb-item st-breadcrumb__list">
+                        <a href="/shop">Products</a>
+                    </li>
+                    <t t-foreach="category.parents_and_self" t-as="cat">
+                        <li t-if="cat == category"
+                            class="breadcrumb-item st-breadcrumb__list">
+                            <span class="d-inline-block" t-field="cat.name"/>
+                        </li>
+                        <li t-else=""
+                            class="breadcrumb-item st-breadcrumb__list">
+                            <a t-att-href="keep('/shop/category/%s' % slug(cat), category=0)"
+                               t-field="cat.name"/>
+                        </li>
+                    </t>
+                </ol>
+            </nav>
+        </xpath>
+    </template>
+    <!-- Customize the search box in the website.website_search_box template -->
+    <template id="theme_shopping_website_search_box" name="Theme Shop Searchbox"
+              inherit_id="website.website_search_box">
+        <xpath expr="//div[@role='search']" position="attributes">
+            <attribute name="t-attf-class" add="st-search_container" separator=" "/>
+        </xpath>
+        <xpath expr="//input[@name='search']" position="attributes">
+            <attribute name="t-attf-class" add="st-search_input st-productlist_searchbar" separator=" "/>
+        </xpath>
+    </template>
+    <!-- Customize the pricelist dropdown in the website_sale.pricelist_list template -->
+    <template id="theme_shopping_pricelist_list" name="Theme Shop Pricelists"
+              inherit_id="website_sale.pricelist_selector">
+        <xpath expr="//button[@data-bs-toggle='dropdown']" position="attributes">
+            <attribute name="t-attf-class" add="st-productlist_searchbar" separator=" "/>
+        </xpath>
+    </template>
+    <!-- Customize the sort-by dropdown in the website_sale.sort template -->
+    <template id="theme_shopping_sort" name="Theme Shop Sort-by"
+              inherit_id="website_sale.sort">
+        <xpath expr="//div[contains(@t-attf-class, 'o_sortby_dropdown')]"
+               position="replace">
+            <div t-attf-class="o_sortby_dropdown dropdown dropdown_sorty_by {{_classes}}">
+                <a role="button" href="#"
+                   class="form-control st-productlist_searchbar"
+                   data-bs-toggle="dropdown">
+                    <span class="d-none d-lg-inline">
+                        <t t-if="isSortingBy" t-out="isSortingBy[0][1]"/>
+                        <span t-else="1" t-field="website.shop_default_sort"/>
+                    </span>
+                    <i class="oi  d-lg-none" data-icon="sort"/>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end" role="menu">
+                    <t t-foreach="website_sale_sortable" t-as="sortby">
+                        <a role="menuitem" rel="noindex,nofollow"
+                           t-att-href="keep('/shop', order=sortby[0])"
+                           class="dropdown-item">
+                            <span t-out="sortby[1]"/>
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Inherit the website_sale.products template to customize the shopping page -->
+    <template id="theme_shopping_page" name="Theme Shop"
+              inherit_id="website_sale.products">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <section class="container">
+                <t t-call="website_sale.products_breadcrumb"/>
+            </section>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wsale_products_grid_before_rail')]"
+               position="before">
+            <div class="st-product_filter-head">
+                <span class="st-product_filter--heading">
+                    Filter
+                </span>
+                <a t-attf-href="/shop">
+                <button class="st-product_clear-btn">Clear all</button>
+                </a>
+            </div>
+        </xpath>
+
+    </template>
+
+    <!-- Inherit the website_sale.products_add_to_cart template to customize the shopping cart button -->
+    <template id="shopping_cart_button"
+              inherit_id="website_sale.shop_product_buttons"
+              name="Shopping Cart Button">
+        <xpath expr="//button[@name='add_to_cart']" position="attributes">
+            <attribute name="class" add="st-cart_btn--sm" separator=" "/>
+        </xpath>
+    </template>
+
+</odoo>
