@@ -1,0 +1,2146 @@
+// ── Theme Cordage: Core Stylesheet ───────────────────────────────────────────
+// Variables injected globally via web._assets_primary_variables.
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 0. CSS CUSTOM PROPERTIES — scoped to #wrapwrap (website frontend only)
+//    Using #wrapwrap instead of :root prevents these variables from leaking
+//    into the Odoo backend UI when frontend assets are loaded in the website
+//    editor context.
+// ═══════════════════════════════════════════════════════════════════════════
+#wrapwrap {
+    // Brand palette (mirrors cordage_example design tokens)
+    --navy          : #{$cordage-navy};
+    --navy-2        : #{$cordage-navy-light};
+    --rope          : #{$cordage-primary};
+    --rope-dark     : #{$cordage-primary-dk};
+    --cream         : #{$cordage-cream};
+    --paper         : #{$cordage-paper};
+    --ink           : #{$cordage-ink};
+    --muted         : #{$cordage-muted};
+    --line          : #{$cordage-line};
+    --green         : #{$cordage-green};
+    --shadow        : 0 10px 30px rgba(22,32,46,.10);
+    --shadow-lg     : 0 24px 60px rgba(22,32,46,.18);
+    --radius        : #{$cordage-radius};
+    --radius-sm     : #{$cordage-radius-sm};
+    --header-h      : 68px;
+
+    // Backwards-compatible aliases used by earlier Odoo theme rules.
+    --c-primary      : #{$cordage-primary};      // #e8641a  rope tan
+    --c-primary-dk   : #{$cordage-primary-dk};   // #cc5816  hover
+    --c-navy         : #{$cordage-navy};          // #16202e  deep navy
+    --c-navy-light   : #{$cordage-navy-light};    // #1f2c3e
+    --c-cream        : #{$cordage-cream};         // #f7f2ea  alt bg
+    --c-paper        : #{$cordage-paper};         // #fffdf9  body bg
+    --c-ink          : #{$cordage-ink};           // #1b232e  text
+    --c-muted        : #{$cordage-muted};         // #6b7785  secondary text
+    --c-line         : #{$cordage-line};          // #e7e0d4  borders
+    --c-green        : #{$cordage-green};         // #2f7d5b  success
+    --c-surface      : #fff;
+    // Shadows
+    --c-shadow       : 0 10px 30px rgba(22,32,46,.10);
+    --c-shadow-lg    : 0 24px 60px rgba(22,32,46,.18);
+
+    // ── bni / Banani RIGFORCE component tokens ───────────────────────────────
+    // These map the cordage_example --b-* design tokens to the cordage brand
+    // palette so all bni components (auth modal, checkout, shop sections, etc.)
+    // use the same rope-tan highlight as the rest of the theme instead of the
+    // standalone-prototype orange (#e8641a).
+    --b-primary      : #{$cordage-primary};      // #e8641a  rope tan (was #e8641a)
+    --b-primary-fg   : #ffffff;
+    --b-highlight    : #{$cordage-primary-dk};   // #cc5816  rope dark (was #f5a623)
+
+    // ── Bootstrap 5 CSS variable overrides ──────────────────────────────────
+    // Bootstrap 5 uses --bs-primary / --bs-warning / their -rgb counterparts
+    // for utility classes (bg-primary, text-warning, btn-warning, etc.).
+    // Without these, Bootstrap's default amber/orange (#ffc107) and blue (#0d6efd)
+    // leak through even when our SCSS class overrides use !important,
+    // because some Bootstrap internals reference the CSS vars directly.
+    --bs-primary         : #{$cordage-primary};      // #e8641a rope tan
+    --bs-primary-rgb     : 232, 100, 26;
+    --bs-primary-text-emphasis : #{$cordage-primary-dk};
+    --bs-primary-bg-subtle     : rgba(232, 100, 26, 0.10);
+    --bs-primary-border-subtle : rgba(232, 100, 26, 0.25);
+
+    --bs-warning         : #{$cordage-primary};      // rope tan instead of Bootstrap amber
+    --bs-warning-rgb     : 232, 100, 26;
+    --bs-warning-text-emphasis : #{$cordage-primary-dk};
+    --bs-warning-bg-subtle     : rgba(232, 100, 26, 0.10);
+    --bs-warning-border-subtle : rgba(232, 100, 26, 0.25);
+
+    // Button token overrides (Bootstrap 5.3+ button CSS vars)
+    --bs-btn-bg          : #{$cordage-primary};
+    --bs-btn-border-color: #{$cordage-primary};
+    --bs-btn-hover-bg    : #{$cordage-primary-dk};
+    --bs-btn-hover-border-color: #{$cordage-primary-dk};
+    --bs-btn-active-bg   : #{$cordage-primary-dk};
+    --bs-btn-active-border-color: #{$cordage-primary-dk};
+
+    // Link color override
+    --bs-link-color      : #{$cordage-primary};
+    --bs-link-hover-color: #{$cordage-primary-dk};
+    --bs-link-color-rgb  : 232, 100, 26;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 1. GLOBAL BASE — scoped to #wrapwrap (website frontend only)
+//    Previously used bare html/body/h1-h6/a selectors which leaked into
+//    the backend, changing fonts and text colors.
+// ═══════════════════════════════════════════════════════════════════════════
+#wrapwrap {
+    font-family : 'Zain', system-ui, -apple-system, sans-serif;
+    background-color: $cordage-paper;
+    color        : $cordage-ink;
+    line-height  : 1.55;
+    -webkit-font-smoothing: antialiased;
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family     : 'Zain', sans-serif;
+        color           : $cordage-ink;
+        letter-spacing  : -0.02em;
+        line-height     : 1.1;
+    }
+
+    a {
+        color            : $cordage-primary;
+        text-decoration  : none;
+        transition       : color 0.15s ease;
+        &:hover          { color: $cordage-primary-dk; }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2–14. COMPONENT OVERRIDES — scoped to #wrapwrap (website frontend only)
+//       Wrapping these under #wrapwrap prevents class-based overrides
+//       (e.g. .btn, .navbar, .form-control, .table, .card, .badge,
+//       .bg-*, .text-*) from leaking into the Odoo backend UI.
+// ═══════════════════════════════════════════════════════════════════════════
+#wrapwrap {
+
+    // ── 2. NAVBAR — sticky with warm paper backdrop ──
+    .navbar {
+        background-color : rgba(255, 253, 249, 0.92) !important;
+        backdrop-filter  : blur(12px);
+        border-bottom    : 1px solid $cordage-line;
+        font-family      : 'Zain', sans-serif;
+
+        ul, ol {
+            list-style : none;
+            padding    : 0;
+            margin     : 0;
+        }
+
+        .nav-link {
+            font-family  : 'Zain', sans-serif;
+            font-weight  : 700 !important;
+            font-size    : 1.05rem !important;
+            color        : $cordage-navy !important;
+            position     : relative;
+            transition   : color 0.18s;
+
+            &:hover, &.active {
+                color : $cordage-primary !important;
+            }
+
+            // Animated underline — mirrors cordage_example nav
+            &::after {
+                content     : '';
+                position    : absolute;
+                left        : 0;
+                bottom      : -4px;
+                height      : 2px;
+                width       : 0;
+                background  : $cordage-primary;
+                transition  : width 0.2s ease;
+            }
+            &:hover::after, &.active::after { width: 100%; }
+        }
+
+        .navbar-brand {
+            color       : $cordage-navy !important;
+            font-weight : 900 !important;
+            font-family : 'Zain', sans-serif;
+            font-size   : 1.4rem;
+            &:hover { color: $cordage-primary !important; }
+        }
+
+        // Cart / wishlist badge
+        .badge {
+            background-color : $cordage-primary !important;
+            color            : #fff !important;
+            font-family      : 'Zain', sans-serif;
+        }
+    }
+
+    // ── 3. BUTTONS — all Odoo-generated btn- classes ──
+    .btn {
+        font-family     : 'Zain', sans-serif;
+        font-weight     : 800;
+        border-radius   : 999px;
+        transition      : transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-primary {
+        background-color : $cordage-primary !important;
+        border-color     : $cordage-primary !important;
+        color            : #fff !important;
+        box-shadow       : 0 6px 18px rgba(232, 100, 26, 0.30);
+        // Bootstrap 5 button CSS variable overrides
+        --bs-btn-bg               : #{$cordage-primary};
+        --bs-btn-border-color     : #{$cordage-primary};
+        --bs-btn-color            : #ffffff;
+        --bs-btn-hover-bg         : #{$cordage-primary-dk};
+        --bs-btn-hover-border-color: #{$cordage-primary-dk};
+        --bs-btn-hover-color      : #ffffff;
+        --bs-btn-active-bg        : #{$cordage-primary-dk};
+        --bs-btn-active-border-color: #{$cordage-primary-dk};
+        --bs-btn-active-color     : #ffffff;
+        --bs-btn-focus-shadow-rgb : 232, 100, 26;
+        &:hover, &:focus {
+            background-color : $cordage-primary-dk !important;
+            border-color     : $cordage-primary-dk !important;
+            transform        : translateY(-2px);
+        }
+    }
+
+    .btn-secondary {
+        background-color : $cordage-navy !important;
+        border-color     : $cordage-navy !important;
+        color            : #fff !important;
+        &:hover, &:focus {
+            background-color : $cordage-primary !important;
+            border-color     : $cordage-primary !important;
+            transform        : translateY(-2px);
+        }
+    }
+
+    .btn-outline-primary {
+        border-color : $cordage-primary !important;
+        color        : $cordage-primary !important;
+        &:hover {
+            background-color : $cordage-primary !important;
+            color            : #fff !important;
+        }
+    }
+
+    .btn-warning {
+        // Class-level property overrides
+        background-color : $cordage-primary !important;
+        border-color     : $cordage-primary !important;
+        color            : #fff !important;
+        // Bootstrap 5 button CSS variable overrides (used internally by BS5 btn mixins)
+        --bs-btn-bg               : #{$cordage-primary};
+        --bs-btn-border-color     : #{$cordage-primary};
+        --bs-btn-color            : #ffffff;
+        --bs-btn-hover-bg         : #{$cordage-primary-dk};
+        --bs-btn-hover-border-color: #{$cordage-primary-dk};
+        --bs-btn-hover-color      : #ffffff;
+        --bs-btn-active-bg        : #{$cordage-primary-dk};
+        --bs-btn-active-border-color: #{$cordage-primary-dk};
+        --bs-btn-active-color     : #ffffff;
+        --bs-btn-focus-shadow-rgb : 232, 100, 26;
+        &:hover {
+            background-color : $cordage-primary-dk !important;
+            border-color     : $cordage-primary-dk !important;
+            color            : #fff !important;
+        }
+    }
+
+    // ── 4. SECTIONS — alternate backgrounds ──
+    &, .o_homepage_cover_snippet_editor {
+        background-color : $cordage-paper;
+    }
+
+    // Alternate section shading
+    section.s_cover, section.o_colored_level {
+        background-color : $cordage-paper;
+    }
+
+    // Built-in Odoo "call to action" sections
+    .s_color_blocks_2,
+    .s_three_columns,
+    .s_text_image {
+        background-color : $cordage-cream;
+    }
+
+    // ── 5. BREADCRUMBS ──
+    .breadcrumb {
+        background-color : transparent;
+        font-family      : 'Zain', sans-serif;
+
+        .breadcrumb-item {
+            color : $cordage-muted;
+            a {
+                color : $cordage-muted;
+                &:hover { color: $cordage-primary; }
+            }
+            &.active { color: $cordage-ink; font-weight: 700; }
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            color : $cordage-line;
+        }
+    }
+
+    // ── 6. FORMS & INPUTS ──
+    .form-control, .form-select, input, select, textarea {
+        font-family    : 'Zain', sans-serif !important;
+        border-color   : $cordage-line !important;
+        border-radius  : $cordage-radius-sm !important;
+        color          : $cordage-ink;
+        background-color: #fff;
+        transition     : border-color 0.18s;
+
+        &:focus {
+            border-color : $cordage-primary !important;
+            box-shadow   : 0 0 0 3px rgba(232, 100, 26, 0.15) !important;
+        }
+    }
+
+    label {
+        font-family : 'Zain', sans-serif;
+        font-weight : 700;
+        color       : $cordage-navy;
+        font-size   : 0.9rem;
+    }
+
+    // ── 7. PAGINATION ──
+    .pagination {
+        font-family : 'Zain', sans-serif;
+
+        .page-item {
+            .page-link {
+                color        : $cordage-navy;
+                border-color : $cordage-line;
+                border-radius: $cordage-radius-sm;
+                font-weight  : 700;
+                &:hover {
+                    background-color : $cordage-cream;
+                    color            : $cordage-primary;
+                }
+            }
+            &.active .page-link {
+                background-color : $cordage-primary;
+                border-color     : $cordage-primary;
+                color            : #fff;
+            }
+        }
+    }
+
+    // ── 8. BADGES / PILLS ──
+    .badge {
+        font-family  : 'Zain', sans-serif;
+        font-weight  : 700;
+        border-radius: 999px;
+        letter-spacing: 0.04em;
+    }
+    .bg-primary   { background-color: $cordage-primary  !important; }
+    .bg-secondary { background-color: $cordage-navy     !important; }
+    .bg-warning   { background-color: $cordage-primary  !important; }
+    .bg-success   { background-color: $cordage-green    !important; }
+    .text-primary { color: $cordage-primary !important; }
+    .text-warning { color: $cordage-primary !important; }
+    .text-secondary { color: $cordage-navy !important; }
+    .text-success { color: $cordage-green  !important; }
+    .text-muted   { color: $cordage-muted  !important; }
+
+    // ── 9. ALERTS ──
+    .alert-primary {
+        background-color : rgba(232, 100, 26, 0.10);
+        border-color     : rgba(232, 100, 26, 0.25);
+        color            : $cordage-primary-dk;
+    }
+    .alert-success {
+        background-color : rgba(47, 125, 91, 0.10);
+        border-color     : rgba(47, 125, 91, 0.25);
+        color            : $cordage-green;
+    }
+    .alert-warning {
+        @extend .alert-primary;
+    }
+
+    // ── 10. PROGRESS BARS ──
+    .progress {
+        background-color : $cordage-line;
+        border-radius    : 999px;
+        .progress-bar {
+            background-color : $cordage-primary;
+        }
+    }
+
+    // ── 11. TABLES ──
+    .table {
+        font-family : 'Zain', sans-serif;
+        color       : $cordage-ink;
+
+        th {
+            color       : $cordage-muted;
+            font-weight : 800;
+            font-size   : 0.85rem;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            border-bottom: 2px solid $cordage-line !important;
+        }
+        td { border-color: $cordage-line; }
+        tbody tr:hover td { background-color: rgba(232, 100, 26, 0.04); }
+    }
+
+    // ── 12. CARDS (Odoo native + Bootstrap cards) ──
+    .card {
+        border-color  : $cordage-line;
+        border-radius : $cordage-radius;
+        background-color: #fff;
+        font-family   : 'Zain', sans-serif;
+        box-shadow    : 0 10px 30px rgba(22, 32, 46, 0.05);
+        transition    : transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+            transform  : translateY(-4px);
+            box-shadow : var(--c-shadow-lg);
+        }
+
+        .card-title {
+            font-family  : 'Zain', sans-serif;
+            font-weight  : 800;
+            color        : $cordage-ink;
+        }
+
+        .card-text  { color: $cordage-muted; }
+    }
+
+    // ── 13. PORTAL / MY ACCOUNT pages ──
+    #o_portal_navbar {
+        background-color : $cordage-navy !important;
+        .nav-link { color: rgba(255,255,255,0.8) !important; &:hover { color: $cordage-primary !important; } }
+    }
+
+    .o_portal_wrap {
+        background-color : $cordage-paper;
+        font-family      : 'Zain', sans-serif;
+
+        h1, h2, h3 { color: $cordage-ink; }
+        .badge { font-family: 'Zain', sans-serif; }
+
+        .o_portal_sidebar .list-group-item {
+            border-color : $cordage-line;
+            color        : $cordage-ink;
+            font-family  : 'Zain', sans-serif;
+            &:hover, &.active {
+                background-color : $cordage-cream;
+                color            : $cordage-primary;
+            }
+        }
+    }
+
+    // ── 14. ODOO WEBSITE BUILDER & SNIPPET EDITOR hints ──
+    .o_editable:focus { outline-color: $cordage-primary !important; }
+
+// } // kept open for scoping everything under #wrapwrap
+
+
+
+// ── Theme Custom Style tokens and custom classes ──
+
+.accent {
+    color: $cordage-primary !important;
+}
+
+// Custom badges and subtitles
+.section-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    
+    .eyebrow-line {
+        width: 24px;
+        height: 1.5px;
+        background-color: $cordage-primary;
+    }
+    
+    .eyebrow-text {
+        text-transform: uppercase;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        font-size: 0.85rem;
+        color: $cordage-primary;
+    }
+}
+
+// ── Custom buttons ──
+.btn-primary-custom {
+    background-color: $cordage-primary !important;
+    color: #fff !important;
+    border-radius: 999px !important;
+    font-weight: 800 !important;
+    font-size: 1.1rem !important;
+    padding: 0.75rem 2rem !important;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(232, 100, 26, 0.35) !important;
+    transition: transform 0.15s ease, background-color 0.2s ease !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+
+    &:hover {
+        background-color: darken($cordage-primary, 8%) !important;
+        transform: translateY(-2px);
+    }
+}
+
+.btn-outline-custom {
+    background-color: transparent !important;
+    color: #fff !important;
+    border-radius: 999px !important;
+    font-weight: 800 !important;
+    font-size: 1.1rem !important;
+    padding: 0.75rem 2rem !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.55) !important;
+    transition: background-color 0.2s ease !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.12) !important;
+    }
+}
+
+.btn-dark-custom {
+    background-color: $cordage-navy !important;
+    color: #fff !important;
+    border-radius: 999px !important;
+    font-weight: 800 !important;
+    font-size: 1.1rem !important;
+    padding: 0.75rem 2rem !important;
+    border: none !important;
+    transition: transform 0.15s ease, background-color 0.2s ease !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    &:hover {
+        background-color: $cordage-primary !important;
+        transform: translateY(-2px);
+    }
+}
+
+// ── Hero Banner ──
+.hero-section {
+    position: relative;
+    color: #fff;
+    overflow: hidden;
+    background-color: $cordage-navy;
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    padding: 80px 0;
+
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.45;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(115deg, rgba(15, 22, 32, 0.92) 0%, rgba(15, 22, 32, 0.62) 55%, rgba(15, 22, 32, 0.3) 100%);
+        }
+    }
+
+    .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    h1 {
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        margin-bottom: 1.5rem;
+    }
+
+    p {
+        font-size: 1.25rem;
+        color: #dfe6ee;
+        max-width: 550px;
+        margin-bottom: 2rem;
+        font-weight: 300;
+    }
+    
+    .hero-stats {
+        display: flex;
+        gap: 2.2rem;
+        margin-top: 3rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        padding-top: 2rem;
+        flex-wrap: wrap;
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+
+            strong {
+                font-size: 1.8rem;
+                font-weight: 800;
+                color: $cordage-primary;
+            }
+
+            span {
+                font-size: 0.85rem;
+                color: #b9c4d0;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+            }
+        }
+    }
+}
+
+// ── Features strip ──
+.features-section {
+    background-color: $cordage-navy-light;
+    color: #eef3f8;
+    padding: 30px 0;
+
+    .feature-item {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+
+        .feature-icon {
+            font-size: 2.2rem;
+            color: $cordage-primary;
+        }
+
+        strong {
+            display: block;
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        small {
+            color: #aab8c6;
+            font-size: 0.85rem;
+        }
+    }
+}
+
+// ── About Section ──
+.about-section {
+    padding: 80px 0;
+    background-color: #fff;
+
+    .about-img {
+        border-radius: $cordage-radius;
+        box-shadow: 0 24px 60px rgba(22, 32, 46, 0.15);
+    }
+}
+
+// ── Categories box styling ──
+.cat-card-custom {
+    position: relative;
+    border-radius: $cordage-radius;
+    overflow: hidden;
+    min-height: 220px;
+    display: flex;
+    align-items: flex-end;
+    padding: 1.5rem;
+    color: #fff !important;
+    text-decoration: none;
+    box-shadow: 0 10px 30px rgba(22, 32, 46, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-size: cover;
+    background-position: center;
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(15, 22, 32, 0.85), rgba(15, 22, 32, 0.05));
+        z-index: 1;
+    }
+
+    .cat-label {
+        position: relative;
+        z-index: 2;
+
+        strong {
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: block;
+            line-height: 1.2;
+        }
+
+        span {
+            font-size: 0.9rem;
+            color: #dbe2ea;
+        }
+    }
+
+    .cat-icon {
+        position: absolute;
+        top: 1rem;
+        right: 1.1rem;
+        font-size: 2.2rem;
+        opacity: 0.7;
+        z-index: 2;
+    }
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 24px 60px rgba(22, 32, 46, 0.18);
+    }
+}
+
+// ── Testimonial section ──
+.testimonial-card {
+    background: #fff;
+    border: 1px solid $cordage-line;
+    border-radius: $cordage-radius;
+    padding: 2.2rem;
+    box-shadow: 0 10px 30px rgba(22, 32, 46, 0.05);
+
+    .stars {
+        color: $cordage-primary;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    p {
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: $cordage-navy-light;
+        font-style: italic;
+    }
+
+    .author {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1.5rem;
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        strong {
+            display: block;
+            font-weight: 800;
+            font-size: 1rem;
+            color: $cordage-navy;
+        }
+
+        span {
+            font-size: 0.85rem;
+            color: $cordage-muted;
+        }
+    }
+}
+
+// ── Quote / Newsletter request band ──
+.quote-band {
+    background: $cordage-navy;
+    color: #fff;
+    padding: 60px 0;
+    
+    .quote-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 0.8rem;
+        color: #fff !important;
+    }
+
+    p {
+        color: #b9c4d0 !important;
+        font-size: 1.1rem;
+    }
+}
+
+// ── Kill nav bullet points explicitly ──
+#top_menu,
+#top_menu *,
+.navbar,
+.navbar *,
+nav,
+nav *,
+header,
+header *,
+#o_main_nav,
+#o_main_nav *,
+.nav-icons,
+.nav-icons *,
+.o_switch_company_menu,
+.o_switch_company_menu *,
+.dropdown-menu,
+.dropdown-menu * {
+    list-style      : none !important;
+    list-style-type : none !important;
+}
+
+#top_menu ul,
+#top_menu ol,
+.navbar ul,
+.navbar ol,
+nav ul,
+nav ol,
+header ul,
+header ol,
+#o_main_nav ul,
+#o_main_nav ol,
+.nav-icons ul,
+.nav-icons ol,
+.o_switch_company_menu ul,
+.dropdown-menu ul,
+.dropdown-menu ol {
+    padding-left    : 0 !important;
+    margin          : 0 !important;
+}
+
+// ── Custom Navbar and Header ──
+.navbar {
+    background: rgba(255, 253, 249, 0.86) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid $cordage-line;
+
+    ul, ol {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .nav-link {
+        font-weight: 800 !important;
+        font-size: 1.15rem !important;
+        color: $cordage-navy-light !important;
+        transition: color 0.2s;
+
+        &:hover, &.active {
+            color: $cordage-primary !important;
+        }
+    }
+}
+
+// ── Custom Footer ──
+.footer-main {
+    background-color: $cordage-navy;
+    color: #cdd6e0;
+    padding: 80px 0 30px;
+
+    .footer-logo {
+        font-size: 2rem;
+        font-weight: 900;
+        color: #fff;
+        
+        span {
+            color: $cordage-primary;
+        }
+    }
+
+    .footer-text {
+        font-size: 1rem;
+        color: #9aa7b5;
+        margin-top: 1rem;
+    }
+
+    .social-icons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+
+        a {
+            color: #9aa7b5;
+            font-size: 1.3rem;
+            transition: color 0.2s;
+
+            &:hover {
+                color: $cordage-primary;
+            }
+        }
+    }
+
+    h5 {
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            margin-bottom: 0.75rem;
+
+            a {
+                color: #9aa7b5;
+                font-size: 1.05rem;
+                text-decoration: none;
+                transition: color 0.2s;
+
+                &:hover {
+                    color: $cordage-primary;
+                }
+            }
+        }
+    }
+
+    .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: #8593a2;
+        flex-wrap: wrap;
+        gap: 1rem;
+
+        a {
+            color: #8593a2;
+            text-decoration: none;
+            
+            &:hover {
+                color: $cordage-primary;
+            }
+        }
+    }
+}
+
+// ── Toast notification ──
+// Mirrors cordage_example toast — uses cordage brand colors.
+.toast {
+    position       : fixed;
+    top            : 88px;
+    right          : 24px;
+    transform      : translateX(calc(100% + 32px));
+    background     : var(--navy);
+    color          : #fff;
+    padding        : .85rem 1.1rem .85rem 1rem;
+    border-radius  : 4px;
+    border-left    : 3px solid var(--rope);
+    font-weight    : 600;
+    font-size      : .9rem;
+    font-family    : 'Zain', sans-serif;
+    z-index        : 200;
+    min-width      : 220px;
+    max-width      : 320px;
+    box-shadow     : 0 8px 28px rgba(0, 0, 0, .22);
+    transition     : transform .3s cubic-bezier(.4, 0, .2, 1);
+    display        : flex;
+    align-items    : center;
+    gap            : .6rem;
+
+    &::before {
+        content        : "✓";
+        display        : inline-flex;
+        align-items    : center;
+        justify-content: center;
+        width          : 20px;
+        height         : 20px;
+        border-radius  : 50%;
+        background     : var(--rope);
+        color          : #fff;
+        font-size      : .72rem;
+        font-weight    : 800;
+        flex-shrink    : 0;
+    }
+
+    &.show { transform: translateX(0); }
+}
+
+// ── Custom Rope Textures (OnError Fallbacks in CSS) ──
+[class^="rt-"], [class*=" rt-"] {
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.45) 100%);
+        pointer-events: none;
+    }
+}
+
+.rt-manila {
+    background: repeating-linear-gradient(-58deg, #3e2008 0, #3e2008 4px, #7a4f1a 4px, #7a4f1a 8px, #c4862c 8px, #c4862c 13px, #9b6820 13px, #9b6820 18px, #b07828 18px, #b07828 22px, #6a3e14 22px, #6a3e14 26px);
+    background-color: #8b5e1a;
+}
+.rt-poly {
+    background: repeating-linear-gradient(-58deg, #0d2640 0, #0d2640 4px, #1a4a80 4px, #1a4a80 9px, #3a80c0 9px, #3a80c0 13px, #2260a0 13px, #2260a0 18px, #1c3f6a 18px, #1c3f6a 22px, #4898d0 22px, #4898d0 26px);
+    background-color: #1e4a7a;
+}
+.rt-steel {
+    background: repeating-linear-gradient(-58deg, #2a2a2a 0, #2a2a2a 3px, #6a6a6a 3px, #6a6a6a 6px, #9e9e9e 6px, #9e9e9e 9px, #787878 9px, #787878 12px, #464646 12px, #464646 15px, #b0b0b0 15px, #b0b0b0 18px);
+    background-color: #666;
+}
+.rt-marine {
+    background: repeating-linear-gradient(-58deg, #0d2030 0, #0d2030 5px, #1e4a7a 5px, #1e4a7a 10px, #f0f4f8 10px, #f0f4f8 14px, #1e4a7a 14px, #1e4a7a 20px, #0d2030 20px, #0d2030 24px, #c8d8e8 24px, #c8d8e8 28px);
+    background-color: #1a3a60;
+}
+
+// ── Industries served custom layout styles ──
+// Hero stats strip
+.in-hstats {
+    display: flex;
+    gap: 2.4rem;
+    flex-wrap: wrap;
+}
+
+.in-hstat {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+
+    strong {
+        font-family: 'Zain', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: $cordage-ink;
+    }
+
+    span {
+        font-size: 12px;
+        color: $cordage-muted;
+    }
+}
+
+// Breadcrumb
+.in-bc {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 12px;
+    color: $cordage-muted;
+    margin-bottom: 1rem;
+
+    a {
+        color: $cordage-muted;
+        text-decoration: none;
+        &:hover { color: $cordage-primary; }
+    }
+}
+
+// Hero padding (layout)
+.in-hero {
+    background-color: $cordage-paper;
+    border-bottom: 1px solid $cordage-line;
+    padding: 48px 4rem 40px;
+
+    h1 {
+        font-family: 'Zain', sans-serif;
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+        font-weight: 700;
+        color: $cordage-ink;
+        letter-spacing: -0.025em;
+        margin-bottom: 0.6rem;
+    }
+
+    p {
+        font-size: 15px;
+        color: $cordage-muted;
+        max-width: 620px;
+        line-height: 1.7;
+        margin-bottom: 1.6rem;
+    }
+}
+
+// Section layout
+.in-sec {
+    padding: 64px 4rem;
+    background-color: $cordage-paper;
+}
+
+.in-sec--alt {
+    background-color: $cordage-cream;
+}
+
+.in-sec-h {
+    text-align: center;
+    max-width: 560px;
+    margin: 0 auto 2.4rem;
+
+    h2 {
+        font-family: 'Zain', sans-serif;
+        font-size: clamp(1.5rem, 3vw, 2.1rem);
+        font-weight: 700;
+        color: $cordage-ink;
+        letter-spacing: -0.025em;
+        margin-bottom: 0.4rem;
+    }
+
+    p {
+        font-size: 14px;
+        color: $cordage-muted;
+        line-height: 1.65;
+    }
+}
+
+// 3-column industry card grid
+.in-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+}
+
+.in-card {
+    background-color: #fff;
+    border: 1px solid $cordage-line;
+    border-radius: 12px;
+    padding: 1.8rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+
+    &:hover {
+        border-color: $cordage-primary;
+        box-shadow: 0 8px 28px rgba(232, 100, 26, 0.12);
+        transform: translateY(-3px);
+    }
+
+    h3 {
+        font-family: 'Zain', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: $cordage-ink;
+        margin-bottom: 0.15rem;
+    }
+
+    p {
+        font-size: 13px;
+        color: $cordage-muted;
+        line-height: 1.65;
+        flex: 1;
+    }
+
+    // "Shop X →" link at the card bottom
+    a {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+        font-weight: 700;
+        color: $cordage-primary;
+        text-decoration: none;
+        margin-top: auto;
+        padding-top: 0.8rem;
+        border-top: 1px solid $cordage-line;
+        transition: gap 0.15s;
+
+        &:hover { gap: 9px; color: $cordage-primary-dk; }
+    }
+}
+
+.in-card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    background-color: rgba(232, 100, 26, 0.1);
+    border: 1px solid rgba(232, 100, 26, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $cordage-primary;
+}
+
+// Fallback for bi-anchor (Bootstrap Icons does not include an anchor icon)
+.bi-anchor,
+i.bi.bi-anchor {
+    font-family: 'FontAwesome' !important;
+    font-style: normal;
+
+    &::before {
+        content: "\f13d" !important;
+        font-family: 'FontAwesome' !important;
+    }
+}
+
+// Product tag pills inside cards
+.in-tags {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.2rem;
+}
+
+.in-tag {
+    font-size: 11px;
+    font-weight: 600;
+    background-color: rgba(232, 100, 26, 0.08);
+    color: $cordage-primary;
+    border: 1px solid rgba(232, 100, 26, 0.15);
+    padding: 3px 9px;
+    border-radius: 999px;
+}
+
+// Reference table
+.in-tbl-wrap {
+    overflow-x: auto;
+}
+
+.in-tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Zain', sans-serif;
+    font-size: 13px;
+
+    th {
+        text-align: left;
+        padding: 10px 14px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: $cordage-muted;
+        font-weight: 600;
+        border-bottom: 2px solid $cordage-line;
+        background-color: #fff;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 11px 14px;
+        border-bottom: 1px solid $cordage-line;
+        color: $cordage-muted;
+        vertical-align: middle;
+        text-align: center;
+
+        &:first-child {
+            font-weight: 700;
+            color: $cordage-ink;
+            white-space: nowrap;
+            text-align: left;
+        }
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    tr:hover td { background-color: rgba(232, 100, 26, 0.03); }
+}
+
+// Check / dash icons inside reference table
+.ic-y {
+    color: $cordage-primary;
+    display: flex;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.ic-n {
+    color: $cordage-line;
+    display: flex;
+    justify-content: center;
+}
+
+// 5-column certifications grid
+.in-certs {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+}
+
+.in-cert {
+    background-color: $cordage-paper;
+    border: 1px solid $cordage-line;
+    border-radius: 10px;
+    padding: 1.3rem 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(22, 32, 46, 0.05);
+    }
+}
+
+.in-cert-n {
+    font-family: 'Zain', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: $cordage-ink;
+}
+
+.in-cert-d {
+    font-size: 11px;
+    color: $cordage-muted;
+    line-height: 1.4;
+}
+
+// CTA band
+.in-cta {
+    background-color: $cordage-primary;
+    padding: 60px 4rem;
+    text-align: center;
+
+    h2 {
+        font-family: 'Zain', sans-serif;
+        font-size: clamp(1.5rem, 3.5vw, 2.1rem);
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 0.6rem;
+    }
+
+    p {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 15px;
+        max-width: 500px;
+        margin: 0 auto 1.8rem;
+        line-height: 1.65;
+    }
+}
+
+.in-cta-btns {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.in-btn-w {
+    background-color: #fff;
+    color: $cordage-primary;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.15s;
+    
+    &:hover {
+        opacity: 0.88;
+    }
+}
+
+.in-btn-o {
+    background-color: transparent;
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 11px 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    transition: border-color 0.15s;
+
+    &:hover {
+        border-color: #fff;
+        color: #fff;
+    }
+}
+
+// Responsive — Industries
+@media (max-width: 900px) {
+    .in-hero,
+    .in-sec,
+    .in-cta {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .in-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .in-certs {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .in-hstats {
+        gap: 1.4rem;
+    }
+}
+
+@media (max-width: 540px) {
+    .in-grid,
+    .in-certs {
+        grid-template-columns: 1fr;
+    }
+
+    .in-cta-btns {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .in-btn-w,
+    .in-btn-o {
+        justify-content: center;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BLOG / ARTICLES
+// ═══════════════════════════════════════════════════════════════════════════
+.website_blog {
+    font-family: 'Zain', sans-serif;
+}
+
+.o_wblog_posts_loop {
+    .o_record_cover_container { border-radius: $cordage-radius; overflow: hidden; }
+    .card {
+        border-color: $cordage-line;
+        border-radius: $cordage-radius;
+        &:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(22,32,46,.12); }
+    }
+    .card-title a { color: $cordage-ink; font-weight: 800; &:hover { color: $cordage-primary; } }
+    .badge { background-color: rgba(232,100,26,.12) !important; color: $cordage-primary !important; }
+    .text-muted { color: $cordage-muted !important; }
+}
+
+// Blog post detail
+#o_wblog_post_main {
+    font-family: 'Zain', sans-serif;
+    color: $cordage-ink;
+    font-size: 1.1rem;
+    line-height: 1.7;
+
+    h1, h2, h3 { color: $cordage-ink; font-weight: 900; }
+    a { color: $cordage-primary; &:hover { color: $cordage-primary-dk; } }
+    blockquote {
+        border-left: 4px solid $cordage-primary;
+        background-color: $cordage-cream;
+        padding: 1.25rem 1.5rem;
+        border-radius: 0 $cordage-radius-sm $cordage-radius-sm 0;
+        color: $cordage-navy;
+        font-style: italic;
+    }
+    code, pre {
+        background-color: $cordage-cream;
+        border: 1px solid $cordage-line;
+        border-radius: $cordage-radius-sm;
+        color: $cordage-navy;
+    }
+}
+
+// Blog tag badges
+.o_tag { background-color: $cordage-cream !important; color: $cordage-primary !important; border: 1px solid $cordage-line !important; border-radius: 999px !important; font-weight: 700 !important; }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONTACT / ABOUT PAGES
+// ═══════════════════════════════════════════════════════════════════════════
+.contact-hero-section {
+    background: #f8f7f5;
+    border-bottom: 1px solid #e7e0d4;
+    padding: 48px 4rem 40px;
+
+    @media (max-width: 768px) {
+        padding: 32px 1.5rem 24px;
+    }
+}
+
+.contact-form-grid {
+    padding: 56px 4rem;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 3rem;
+    align-items: start;
+    background: #fffdf9;
+
+    @media (max-width: 991px) {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 40px 1.5rem;
+    }
+}
+
+.contact-faq-section {
+    padding: 56px 4rem;
+    background: #f7f2ea;
+
+    @media (max-width: 768px) {
+        padding: 40px 1.5rem;
+    }
+}
+
+.contact-quick-links {
+    padding: 40px 4rem;
+    background: #fffdf9;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+
+    @media (max-width: 991px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        padding: 32px 1.5rem;
+    }
+}
+
+#wrapwrap .o_website_form {
+    .o_website_form_fieldset {
+        background-color: $cordage-paper;
+        border-radius: $cordage-radius;
+        padding: 2rem;
+        border: 1px solid $cordage-line;
+    }
+    .s_website_form_submit .btn {
+        background-color: $cordage-primary !important;
+        border-color: $cordage-primary !important;
+        color: #fff !important;
+        border-radius: 999px !important;
+        font-weight: 800 !important;
+        font-size: 1.1rem !important;
+        &:hover { background-color: $cordage-primary-dk !important; border-color: $cordage-primary-dk !important; }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ECOMMERCE CHECKOUT / CART
+// ═══════════════════════════════════════════════════════════════════════════
+#o_payment_form .o_payment_option_card,
+.o_checkout_payment_method {
+    border-color: $cordage-line !important;
+    border-radius: $cordage-radius !important;
+    &.selected, &:hover { border-color: $cordage-primary !important; }
+}
+
+.oe_website_sale {
+    // Cart summary table header
+    .td-product_name { font-weight: 800; color: $cordage-navy; }
+    .td-price, .td-subtotal { font-weight: 800; color: $cordage-navy; }
+
+    // Cart page totals
+    #cart_total {
+        background-color: $cordage-cream;
+        border-radius: $cordage-radius;
+        padding: 1.5rem;
+        border: 1px solid $cordage-line;
+        .oe_currency_value { color: $cordage-primary; font-weight: 900; }
+    }
+
+    // Quantity input
+    .css_quantity input { border-color: $cordage-line !important; border-radius: $cordage-radius-sm !important; }
+    .css_quantity .btn { background-color: $cordage-cream !important; border-color: $cordage-line !important; color: $cordage-navy !important; }
+
+    // Steps / Checkout progress bar
+    .o_wizard .o_wizard_step {
+        color: $cordage-muted;
+        &.active { color: $cordage-primary; font-weight: 800; }
+        &.done { color: $cordage-green; }
+    }
+}
+
+// Proceed to checkout / place order button
+#o_payment_submit_button,
+.a-submit.btn,
+#checkout_next {
+    background-color: $cordage-primary !important;
+    border-color: $cordage-primary !important;
+    color: #fff !important;
+    font-weight: 800 !important;
+    border-radius: 999px !important;
+    &:hover { background-color: $cordage-primary-dk !important; border-color: $cordage-primary-dk !important; }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ODOO LIVE CHAT BUTTON
+// ═══════════════════════════════════════════════════════════════════════════
+.o_livechat_button {
+    background-color: $cordage-primary !important;
+    &:hover { background-color: $cordage-primary-dk !important; }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCROLLBAR — subtle cordage branding
+// ═══════════════════════════════════════════════════════════════════════════
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: $cordage-cream; }
+::-webkit-scrollbar-thumb { background: rgba(232,100,26,.45); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: $cordage-primary; }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SELECTION COLOUR
+// ═══════════════════════════════════════════════════════════════════════════
+::selection { background: rgba(232,100,26,.20); color: $cordage-navy; }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CORDAGE_EXAMPLE PARITY LAYER
+// Keep the Odoo-generated website, snippets, shop, and utility classes aligned
+// with cordage_example/css/style.css.
+// ═══════════════════════════════════════════════════════════════════════════
+    // #wrapwrap { (redundant wrapper removed)
+    background: var(--paper) !important;
+    color: var(--ink);
+    // } (redundant wrapper removed)
+
+#wrapwrap main,
+#wrapwrap .oe_structure,
+#wrapwrap .oe_website_sale,
+#wrapwrap .o_website_sale_checkout {
+    background: var(--paper);
+}
+
+#wrapwrap .container {
+    max-width: 1180px;
+}
+
+#wrapwrap img {
+    max-width: 100%;
+}
+
+#wrapwrap .section,
+#wrapwrap .in-sec,
+#wrapwrap .about-section,
+#wrapwrap .s_story_facts,
+#wrapwrap .s_team_grid,
+#wrapwrap .s_values_grid,
+#wrapwrap .s_products_carousel,
+#wrapwrap .s_industries_grid,
+#wrapwrap .s_testimonial_section {
+    padding-top: 78px !important;
+    padding-bottom: 78px !important;
+}
+
+#wrapwrap .section--alt,
+#wrapwrap .in-sec--alt,
+#wrapwrap .s_team_grid,
+#wrapwrap .s_values_grid,
+#wrapwrap .s_testimonial_section,
+#wrapwrap .related-section,
+#wrapwrap .review-card,
+#wrapwrap #cart_total {
+    background: var(--cream) !important;
+}
+
+#wrapwrap .section__head,
+#wrapwrap .in-sec-h {
+    max-width: 620px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2.6rem;
+    text-align: center;
+}
+
+#wrapwrap .section-eyebrow .eyebrow-text,
+#wrapwrap .eyebrow,
+#wrapwrap .prod-cat,
+#wrapwrap .card__cat {
+    color: var(--rope) !important;
+    letter-spacing: .12em;
+}
+
+#wrapwrap .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    min-height: var(--header-h);
+    background: rgba(255, 253, 249, .86) !important;
+    border-bottom: 1px solid var(--line) !important;
+    box-shadow: none !important;
+}
+
+#wrapwrap .navbar .container {
+    min-height: var(--header-h);
+}
+
+#wrapwrap .navbar .nav-link {
+    color: var(--navy-2) !important;
+    font-size: .96rem !important;
+    font-weight: 700 !important;
+    padding-left: .15rem !important;
+    padding-right: .15rem !important;
+}
+
+#wrapwrap .navbar .nav-link:hover,
+#wrapwrap .navbar .nav-link.active,
+#wrapwrap .navbar .nav-link.show {
+    color: var(--rope-dark) !important;
+}
+
+#wrapwrap .nav-icons .form-control,
+#wrapwrap .search-input,
+#wrapwrap .sort-select {
+    border: 1.5px solid var(--line) !important;
+    background: #fff !important;
+    border-radius: 999px !important;
+    color: var(--ink) !important;
+}
+
+#wrapwrap .btn,
+#wrapwrap button,
+#wrapwrap .o_wevent_cta,
+#wrapwrap .add-btn,
+#wrapwrap .btn-filter {
+    font-family: 'Zain', sans-serif !important;
+}
+
+#wrapwrap .btn-primary,
+#wrapwrap .btn-warning,
+#wrapwrap .btn-primary-custom,
+#wrapwrap .add-btn,
+#wrapwrap .btn-filter,
+#wrapwrap #add_to_cart,
+#wrapwrap #checkout_next,
+#wrapwrap #o_payment_submit_button,
+#wrapwrap .a-submit.btn {
+    background: var(--rope) !important;
+    border-color: var(--rope) !important;
+    color: #fff !important;
+    border-radius: 999px !important;
+    box-shadow: 0 8px 20px rgba(232, 100, 26, .35) !important;
+}
+
+#wrapwrap .btn-primary:hover,
+#wrapwrap .btn-warning:hover,
+#wrapwrap .btn-primary-custom:hover,
+#wrapwrap .add-btn:hover,
+#wrapwrap .btn-filter:hover,
+#wrapwrap #add_to_cart:hover,
+#wrapwrap #checkout_next:hover,
+#wrapwrap #o_payment_submit_button:hover,
+#wrapwrap .a-submit.btn:hover {
+    background: var(--rope-dark) !important;
+    border-color: var(--rope-dark) !important;
+    transform: translateY(-2px);
+}
+
+#wrapwrap .btn-secondary,
+#wrapwrap .btn-dark-custom {
+    background: var(--navy) !important;
+    border-color: var(--navy) !important;
+    color: #fff !important;
+    border-radius: 999px !important;
+}
+
+#wrapwrap .btn-secondary:hover,
+#wrapwrap .btn-dark-custom:hover {
+    background: var(--rope) !important;
+    border-color: var(--rope) !important;
+}
+
+#wrapwrap .btn-outline-primary,
+#wrapwrap .btn-outline-custom,
+#wrapwrap .in-btn-o {
+    border-color: rgba(255, 255, 255, .55) !important;
+    color: #fff !important;
+    border-radius: 999px !important;
+}
+
+#wrapwrap .card,
+#wrapwrap .in-card,
+#wrapwrap .testimonial-card,
+#wrapwrap .o_wsale_product_grid_wrapper .oe_product,
+#wrapwrap .oe_product,
+#wrapwrap .o_payment_option_card,
+#wrapwrap .o_checkout_payment_method,
+#wrapwrap .contact-info-card,
+#wrapwrap .contact-action-card {
+    background: #fff !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: var(--shadow) !important;
+    overflow: hidden;
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+#wrapwrap .card:hover,
+#wrapwrap .in-card:hover,
+#wrapwrap .testimonial-card:hover,
+#wrapwrap .oe_product:hover,
+#wrapwrap .contact-info-card:hover,
+#wrapwrap .contact-action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg) !important;
+}
+
+#wrapwrap .cat-card-custom {
+    border-radius: var(--radius) !important;
+    min-height: 200px;
+    box-shadow: var(--shadow) !important;
+}
+
+#wrapwrap .cat-card-custom:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg) !important;
+}
+
+#wrapwrap .hero-section {
+    min-height: 640px;
+    background: var(--navy) !important;
+}
+
+#wrapwrap .hero-section .hero-bg::after,
+#wrapwrap .about-hero,
+#wrapwrap .in-hero--dark {
+    background: linear-gradient(115deg, rgba(15, 22, 32, .92) 0%, rgba(15, 22, 32, .62) 55%, rgba(15, 22, 32, .30) 100%) !important;
+}
+
+#wrapwrap .features-section,
+#wrapwrap .strip {
+    background: var(--navy-2) !important;
+    color: #eef3f8 !important;
+}
+
+#wrapwrap .quote-band,
+#wrapwrap .footer-main,
+#wrapwrap .footer {
+    background: var(--navy) !important;
+    color: #cdd6e0 !important;
+}
+
+#wrapwrap .footer-main a,
+#wrapwrap .footer a {
+    color: #9aa7b5 !important;
+}
+
+#wrapwrap .footer-main a:hover,
+#wrapwrap .footer a:hover {
+    color: var(--rope) !important;
+}
+
+#wrapwrap .badge,
+#wrapwrap .cart-count,
+#wrapwrap .o_ribbon {
+    background: var(--rope) !important;
+    color: #fff !important;
+    border-radius: 999px !important;
+}
+
+#wrapwrap .s_values_grid .values-icon {
+    width: 44px;
+    height: 44px;
+    color: var(--rope) !important;
+    background: rgba(232, 100, 26, .10) !important;
+    border: 1px solid rgba(232, 100, 26, .20) !important;
+    border-radius: var(--radius-sm);
+}
+
+#wrapwrap .s_values_grid .values-icon .bi {
+    color: var(--rope) !important;
+    line-height: 1;
+}
+
+#wrapwrap .dropdown-menu,
+#wrapwrap .dropdown-menu.show,
+#wrapwrap .o_dropdown_menu,
+#wrapwrap .ui-autocomplete,
+#wrapwrap .select2-dropdown,
+#wrapwrap .o_select_menu,
+#wrapwrap .o-dropdown--menu {
+    background: rgba(255, 253, 249, .98) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--radius-sm) !important;
+    box-shadow: var(--shadow-lg) !important;
+    color: var(--ink) !important;
+    font-family: 'Zain', sans-serif !important;
+    margin-top: .55rem !important;
+    padding: .45rem !important;
+    overflow: hidden;
+}
+
+#wrapwrap .dropdown-menu::before {
+    content: "";
+    position: absolute;
+    left: 1.1rem;
+    top: 0;
+    right: 1.1rem;
+    height: 2px;
+    background: var(--rope);
+    opacity: .9;
+}
+
+#wrapwrap .dropdown-item,
+#wrapwrap .dropdown-menu .dropdown-item,
+#wrapwrap .dropdown-menu a,
+#wrapwrap .dropdown-menu button,
+#wrapwrap .o_dropdown_menu a,
+#wrapwrap .o_dropdown_menu button,
+#wrapwrap .ui-autocomplete .ui-menu-item-wrapper,
+#wrapwrap .select2-results__option,
+#wrapwrap .o_select_menu .o_select_menu_item,
+#wrapwrap .o-dropdown--menu a,
+#wrapwrap .o-dropdown--menu button {
+    color: var(--navy-2) !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    font-family: 'Zain', sans-serif !important;
+    font-size: .95rem !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    padding: .58rem .82rem !important;
+    text-decoration: none !important;
+    transition: background-color .16s ease, color .16s ease, transform .16s ease;
+}
+
+#wrapwrap .dropdown-item:hover,
+#wrapwrap .dropdown-item:focus,
+#wrapwrap .dropdown-item.active,
+#wrapwrap .dropdown-item:active,
+#wrapwrap .dropdown-menu a:hover,
+#wrapwrap .dropdown-menu a:focus,
+#wrapwrap .dropdown-menu button:hover,
+#wrapwrap .dropdown-menu button:focus,
+#wrapwrap .o_dropdown_menu a:hover,
+#wrapwrap .o_dropdown_menu button:hover,
+#wrapwrap .ui-autocomplete .ui-state-active,
+#wrapwrap .select2-results__option--highlighted,
+#wrapwrap .select2-results__option[aria-selected="true"],
+#wrapwrap .o_select_menu .o_select_menu_item:hover,
+#wrapwrap .o_select_menu .o_select_menu_item.active,
+#wrapwrap .o-dropdown--menu a:hover,
+#wrapwrap .o-dropdown--menu button:hover {
+    background: var(--cream) !important;
+    color: var(--rope-dark) !important;
+    box-shadow: none !important;
+    transform: translateX(2px);
+}
+
+#wrapwrap .dropdown-divider {
+    border-top: 1px solid var(--line) !important;
+    margin: .4rem .35rem !important;
+    opacity: 1;
+}
+
+#wrapwrap .dropdown-toggle {
+    color: var(--navy-2) !important;
+}
+
+#wrapwrap .dropdown-toggle::after {
+    border-top-color: var(--rope) !important;
+}
+
+#wrapwrap .dropdown-toggle.show,
+#wrapwrap .dropdown-toggle:hover,
+#wrapwrap .dropdown-toggle:focus {
+    color: var(--rope-dark) !important;
+}
+
+#wrapwrap select,
+#wrapwrap .form-select {
+    background-color: #fff !important;
+    border-color: var(--line) !important;
+    color: var(--ink) !important;
+    cursor: pointer;
+}
+
+#wrapwrap select option,
+#wrapwrap .form-select option {
+    background: var(--paper);
+    color: var(--ink);
+}
+
+#wrapwrap .form-control,
+#wrapwrap .form-select,
+#wrapwrap input,
+#wrapwrap select,
+#wrapwrap textarea {
+    border: 1.5px solid var(--line) !important;
+    border-radius: var(--radius-sm) !important;
+    background: #fff !important;
+    color: var(--ink) !important;
+    outline: none !important;
+}
+
+#wrapwrap .form-control:focus,
+#wrapwrap .form-select:focus,
+#wrapwrap input:focus,
+#wrapwrap select:focus,
+#wrapwrap textarea:focus {
+    outline: none !important;
+    border-color: var(--rope) !important;
+    box-shadow: 0 0 0 3px rgba(232, 100, 26, .15) !important;
+}
+
+#wrapwrap .form-control:focus-visible,
+#wrapwrap .form-select:focus-visible,
+#wrapwrap input:focus-visible,
+#wrapwrap select:focus-visible,
+#wrapwrap textarea:focus-visible,
+#wrapwrap .btn:focus,
+#wrapwrap .btn:focus-visible,
+#wrapwrap a[role="button"]:focus,
+#wrapwrap a[role="button"]:focus-visible,
+#wrapwrap button:focus,
+#wrapwrap button:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(232, 100, 26, .18) !important;
+}
+
+#wrapwrap .s_website_form_field label,
+#wrapwrap .cordage-validated-form label {
+    display: block;
+    margin-bottom: .3rem;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: .02em;
+}
+
+#wrapwrap .s_website_form_required label::after,
+#wrapwrap .s_website_form_model_required label::after,
+#wrapwrap label.required::after {
+    content: " *";
+    color: var(--rope-dark);
+    font-weight: 800;
+}
+
+#wrapwrap .cordage-form-invalid .form-control:invalid,
+#wrapwrap .cordage-form-invalid .form-select:invalid,
+#wrapwrap .cordage-form-invalid input:invalid,
+#wrapwrap .cordage-form-invalid select:invalid,
+#wrapwrap .cordage-form-invalid textarea:invalid,
+#wrapwrap .cordage-input-invalid,
+#wrapwrap .form-control.is-invalid,
+#wrapwrap .form-select.is-invalid {
+    border-color: #9b1b1b !important;
+    box-shadow: 0 0 0 3px rgba(155, 27, 27, .12) !important;
+}
+
+#wrapwrap .cordage-form-invalid .form-control:valid,
+#wrapwrap .cordage-form-invalid .form-select:valid,
+#wrapwrap .cordage-form-invalid input:valid,
+#wrapwrap .cordage-form-invalid select:valid,
+#wrapwrap .cordage-form-invalid textarea:valid {
+    border-color: rgba(47, 125, 91, .45) !important;
+}
+
+#wrapwrap .s_website_form_submit .btn-primary-custom,
+#wrapwrap .s_website_form_submit .s_website_form_send {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    cursor: pointer;
+}
+
+#wrapwrap .oe_website_sale #products_grid .oe_product .oe_product_image,
+#wrapwrap .oe_website_sale .o_wsale_product_images .o_carousel_product_outer,
+#wrapwrap .prod-main-img,
+#wrapwrap .prod-thumb,
+#wrapwrap .card__media {
+    background-color: #ece4d6 !important;
+    border-radius: var(--radius) !important;
+}
+
+#wrapwrap .oe_website_sale #products_grid .oe_product .o_wsale_product_information,
+#wrapwrap .card__body {
+    padding: 1rem 1.1rem 1.2rem !important;
+}
+
+#wrapwrap .product_price,
+#wrapwrap .price,
+#wrapwrap .prod-price {
+    color: var(--ink) !important;
+    font-family: 'Zain', sans-serif !important;
+    font-weight: 800 !important;
+}
+
+#wrapwrap .breadcrumb,
+#wrapwrap .in-bc {
+    color: var(--muted);
+    background: transparent !important;
+}
+
+#wrapwrap .breadcrumb a,
+#wrapwrap .in-bc a {
+    color: var(--muted) !important;
+}
+
+#wrapwrap .breadcrumb a:hover,
+#wrapwrap .in-bc a:hover {
+    color: var(--rope-dark) !important;
+}
+
+#wrapwrap .table th,
+#wrapwrap .in-tbl th {
+    background: #fff !important;
+    color: var(--muted) !important;
+    border-bottom-color: var(--line) !important;
+}
+
+#wrapwrap .table td,
+#wrapwrap .in-tbl td {
+    border-color: var(--line) !important;
+}
+
+@media (max-width: 980px) {
+    #wrapwrap .in-grid,
+    #wrapwrap .product-grid,
+    #wrapwrap .related-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    #wrapwrap .footer-main .row {
+        row-gap: 1.5rem;
+    }
+}
+
+@media (max-width: 680px) {
+    #wrapwrap .section,
+    #wrapwrap .in-sec,
+    #wrapwrap .about-section,
+    #wrapwrap .s_story_facts,
+    #wrapwrap .s_team_grid,
+    #wrapwrap .s_values_grid,
+    #wrapwrap .s_products_carousel,
+    #wrapwrap .s_industries_grid,
+    #wrapwrap .s_testimonial_section {
+        padding: 54px 1.35rem !important;
+    }
+
+    #wrapwrap .hero-section {
+        min-height: auto;
+        padding: 64px 0;
+    }
+
+    #wrapwrap .hero-section .hero-stats {
+        gap: 1.4rem;
+    }
+
+    #wrapwrap .in-grid,
+    #wrapwrap .in-certs,
+    #wrapwrap .product-grid,
+    #wrapwrap .related-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    #wrapwrap .navbar .container {
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+}
+
+// Override to ensure all button links are sharp squares instead of rounded
+.btn, 
+.btn-primary-custom, 
+.btn-outline-custom, 
+.btn-dark-custom,
+.a-submit.btn,
+#wrapwrap .btn,
+.btn-primary,
+.btn-secondary,
+.btn-warning {
+    border-radius: 0 !important;
+}
+
+} // end #wrapwrap scope

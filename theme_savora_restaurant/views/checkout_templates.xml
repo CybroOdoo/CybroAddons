@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ─── Savora Checkout Layout ─── -->
+  <template id="restaurant_checkout_layout" inherit_id="website_sale.checkout_layout" name="Savora Checkout Layout" priority="99">
+    <xpath expr="//div[@id='wrap']" position="attributes">
+      <attribute name="class" add="sv-shop-wrapper" separator=" "/>
+    </xpath>
+  </template>
+<!--  Savora Tax Row Guard-->
+  <template id="restaurant_total_tax_visibility" inherit_id="website_sale.total" name="Savora Tax Row Guard" priority="99">
+    <xpath expr="//tr[@name='o_order_total_taxes']" position="attributes">
+      <attribute name="t-att-style">'display: none;' if not on_payment_step and website_sale_order._fields.get('is_tax_computed_externally') and website_sale_order.is_tax_computed_externally else ''</attribute>
+    </xpath>
+    <xpath expr="//tr[@name='o_order_total']" position="attributes">
+      <attribute name="t-att-style">'display: none;' if not on_payment_step and website_sale_order._fields.get('is_tax_computed_externally') and website_sale_order.is_tax_computed_externally else ''</attribute>
+    </xpath>
+  </template>
+<!--Savora Payment Address Edit Button-->
+  <template id="restaurant_address_edit_button" inherit_id="website_sale.address_edit_button" name="Savora Payment Address Edit Button" priority="99">
+    <xpath expr="//a[@href='/shop/checkout']" position="replace">
+      <a t-if="order.partner_invoice_id.country_id"
+         class="float-end no-decoration"
+         t-attf-href="/shop/address?partner_id={{ order.partner_invoice_id.id }}&amp;address_type=billing&amp;callback=/shop/payment">
+        <i class="fa fa-pencil me-1"/>Edit
+      </a>
+    </xpath>
+    <xpath expr="//a[@t-else='']" position="attributes">
+      <attribute name="t-attf-href">/shop/address?partner_id={{ order.partner_invoice_id.id }}&amp;address_type=billing&amp;callback=/shop/payment</attribute>
+    </xpath>
+  </template>
+  <!-- ─── Thank You / Confirmation Page ─── -->
+  <template id="restaurant_confirmation" inherit_id="website_sale.confirmation" name="Savora Confirmation" priority="99">
+    <!-- Inject a gold thank-you banner at the top of the content inside confirmation page -->
+    <xpath expr="//t[@t-set='tx_sudo']" position="before">
+      <div class="text-center py-5" style="background:var(--sv-surface-1); border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:48px;">
+        <div style="width:72px; height:72px; border-radius:50%; border:2px solid var(--sv-gold); display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:28px; color:var(--sv-gold);">
+          ✓
+        </div>
+        <h1 class="sv-section-title mb-3">Thank You for Your Order!</h1>
+        <p style="color:var(--sv-muted); font-size:16px; max-width:480px; margin:0 auto;">We've received your order and will have it ready shortly. See you at Savora.</p>
+        <div class="mt-4 d-flex gap-3 justify-content-center">
+          <a href="/shop" class="sv-btn-gold">Back to Menu</a>
+          <a href="/" class="sv-btn-outline">Go Home</a>
+        </div>
+      </div>
+    </xpath>
+  </template>
+</odoo>

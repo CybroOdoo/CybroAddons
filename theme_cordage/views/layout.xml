@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ── Inject Zain Font & styling headers into layout head ── -->
+    <template id="cordage_head_assets" inherit_id="website.layout" name="Cordage Head Assets">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link href="https://fonts.googleapis.com/css2?family=Zain:wght@200;300;400;700;800;900&amp;display=swap" rel="stylesheet"/>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"/>
+            <style>
+                #top_menu, #top_menu *,
+                nav, nav *,
+                .navbar, .navbar *,
+                header, header *,
+                #o_main_nav, #o_main_nav *,
+                .nav-icons, .nav-icons *,
+                .o_switch_company_menu, .o_switch_company_menu *,
+                .dropdown-menu, .dropdown-menu * {
+                    list-style: none !important;
+                    list-style-type: none !important;
+                }
+                #top_menu ul, #top_menu ol,
+                nav ul, nav ol,
+                .navbar ul, .navbar ol,
+                header ul, header ol,
+                #o_main_nav ul, #o_main_nav ol,
+                .nav-icons ul, .nav-icons ol,
+                .o_switch_company_menu ul,
+                .dropdown-menu ul, .dropdown-menu ol {
+                    padding-left: 0 !important;
+                    margin: 0 !important;
+                }
+            </style>
+        </xpath>
+    </template>
+    <!-- ── Custom Dual-Level Navbar/Header Extension ── -->
+    <template id="cordage_header" inherit_id="website.layout" name="Cordage Header">
+        <xpath expr="//header" position="replace">
+            <header id="top" data-anchor="true" data-name="Header" class="o_header_standard">
+                <nav class="navbar navbar-expand-lg sticky-top">
+                    <div id="o_main_nav" class="container d-flex align-items-center">
+                        <!-- Brand/Logo (Left) -->
+                        <div class="d-flex flex-grow-1 flex-lg-grow-0">
+                            <a class="navbar-brand me-lg-5 d-flex align-items-center" href="/">
+                                <img src="/theme_cordage/static/src/img/logo.png" alt="CORDAGE" style="height: 42px; width: auto; object-fit: contain; display: block;"/>
+                            </a>
+                        </div>
+                        <!-- Toggle Button for Mobile Navigation -->
+                        <button class="navbar-toggler border-0" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#top_menu_collapse">
+                            <span class="navbar-toggler-icon"/>
+                        </button>
+                        <!-- Menu Items (Center) -->
+                        <div class="collapse navbar-collapse justify-content-center flex-grow-1" id="top_menu_collapse">
+                            <t t-call="website.navbar_nav">
+                                <t t-set="_nav_class" t-valuef="gap-lg-3"/>
+                                <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                    <t t-call="website.submenu"
+                                       item_class.f="nav-item"
+                                       link_class.f="nav-link"/>
+                                </t>
+                            </t>
+                        </div>
+                        <!-- Action Icons (Right) -->
+                        <div class="nav-icons d-none d-lg-flex align-items-center justify-content-end flex-grow-1 flex-lg-grow-0 ms-lg-5">
+                            <!-- Search Icon Button -->
+                            <form method="get" action="/shop" class="me-3 o_wsale_products_searchbar_form">
+                                <div class="input-group" style="max-width: 180px;">
+                                    <input type="text" name="search" class="form-control rounded-pill border-secondary py-1" placeholder="Search..." style="font-size: 0.9rem;"/>
+                                </div>
+                            </form>
+                            <!-- Cart Link -->
+                            <t t-call="website_sale.header_cart_link">
+                                <t t-set="_icon" t-value="True"/>
+                                <t t-set="_item_class" t-valuef="nav-item"/>
+                                <t t-set="_link_class" t-valuef="nav-link text-dark position-relative"/>
+                                <t t-set="_icon_wrap_class" t-valuef="position-relative d-inline-block"/>
+                                <t t-set="_badge_class" t-valuef="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning"/>
+                            </t>
+                            <!-- Wishlist Link -->
+                            <t t-call="website_sale_wishlist.header_wishlist_link">
+                                <t t-set="_icon" t-value="True"/>
+                                <t t-set="_item_class" t-valuef="nav-item ms-3"/>
+                                <t t-set="_link_class" t-valuef="nav-link text-dark position-relative"/>
+                                <t t-set="_icon_wrap_class" t-valuef="position-relative d-inline-block"/>
+                                <t t-set="_badge_class" t-valuef="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning"/>
+                            </t>
+                            <!-- Sign In Link -->
+                            <t t-call="portal.placeholder_user_sign_in">
+                                <t t-set="_link_class" t-valuef="nav-link ms-3 font-weight-bold text-dark"/>
+                            </t>
+                            <!-- User Settings Dropdown -->
+                            <t t-call="portal.user_dropdown">
+                                <t t-set="_user_name" t-value="True"/>
+                                <t t-set="_item_class" t-value="'nav-item dropdown ms-3'"/>
+                                <t t-set="_link_class" t-value="'nav-link font-weight-bold'"/>
+                            </t>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+        </xpath>
+    </template>
+    <!-- ── Custom Footer Replacement ── -->
+    <template id="cordage_footer" inherit_id="website.layout" name="Cordage Footer">
+        <xpath expr="//div[@id='footer']" position="replace">
+            <div id="footer" class="oe_structure oe_structure_solo" data-name="Footer">
+                <!-- Newsletter Request Strip -->
+                <section class="quote-band">
+                    <div class="container text-center">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <h3 class="quote-title">Need a volume quote or custom specification?</h3>
+                                <p class="mb-4">Trade accounts, bulk orders, and bespoke cut lengths - our team will respond within one business day with a full written quotation.</p>
+                                <div class="newsletter-form d-inline-block" style="max-width: 480px; width: 100%;">
+                                    <div class="s_newsletter_subscribe_form s_newsletter_list js_subscribe"
+                                         data-vxml="001"
+                                         t-att-data-list-id="request.env.ref('theme_cordage.cordage_trade_list').id"
+                                         data-name="Newsletter Form">
+                                        <div class="js_subscribed_wrap d-none">
+                                            <p class="h5-fs text-success mt-3">
+                                                <i class="fa fa-check-circle-o" role="img"/> ✓ Request received - we'll reply within one business day.
+                                            </p>
+                                        </div>
+                                        <div class="js_subscribe_wrap">
+                                            <div class="input-group">
+                                                <input type="email" name="email"
+                                                       class="s_newsletter_subscribe_form_input js_subscribe_value form-control rounded-0 py-2 px-3 border-0"
+                                                       placeholder="Enter work email..."
+                                                       required="required"/>
+                                                <a role="button" href="#"
+                                                   class="js_subscribe_btn o_submit btn btn-warning rounded-0 px-4" style="font-weight: 800;">Send Request</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- Main Footing Content -->
+                <footer class="footer-main">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-4 pe-lg-5 mb-5 mb-lg-0">
+                                <div class="footer-logo">CORDAGE<span>.</span></div>
+                                <p class="footer-text mt-3">ISO 9001 certified supplier of industrial, marine, fabric, and climbing ropes. Cut to your exact length - dispatched in 48 hours.</p>
+                                <div class="social-icons">
+                                    <a href="#"><i class="bi bi-instagram"/></a>
+                                    <a href="#"><i class="bi bi-facebook"/></a>
+                                    <a href="#"><i class="bi bi-linkedin"/></a>
+                                    <a href="#"><i class="bi bi-twitter-x"/></a>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+                                <h5>Products</h5>
+                                <ul class="footer-links">
+                                    <li><a href="/shop">All Ropes</a></li>
+                                    <li><a href="/shop?search=industrial">Industrial Ropes</a></li>
+                                    <li><a href="/shop?search=marine">Marine Ropes</a></li>
+                                    <li><a href="/shop?search=climbing">Climbing Ropes</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+                                <h5>Company</h5>
+                                <ul class="footer-links">
+                                    <li><a href="/aboutus">About Us</a></li>
+                                    <li><a href="/aboutus">Certifications</a></li>
+                                    <li><a href="/aboutus">Careers</a></li>
+                                    <li><a href="/contactus">Trade Accounts</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-lg-4 col-md-4">
+                                <h5>Support</h5>
+                                <ul class="footer-links">
+                                    <li><a href="/contactus">FAQ &amp; Shipping Info</a></li>
+                                    <li><a href="/contactus">Returns Policy</a></li>
+                                    <li><a href="/contactus">Technical Spec Support</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="footer-bottom">
+                            <div>© <span id="footer_year">2026</span> CORDAGE Ltd. All rights reserved.</div>
+                            <div class="footer-bottom-links">
+                                <a href="#">Privacy Policy</a> ·
+                                <a href="#">Terms &amp; Conditions</a> ·
+                                <span>ISO 9001:2015 Certified</span>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </xpath>
+    </template>
+    <!-- ── Remove Standard Odoo Brand promotion links ── -->
+    <template id="cordage_no_branding" inherit_id="website.layout" name="Cordage No Branding">
+        <xpath expr="//t[@t-call='web.brand_promotion']" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+    </template>
+</odoo>

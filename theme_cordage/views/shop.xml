@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ── Product Card Override ── -->
+    <template id="cordage_shop_card_override" inherit_id="website_sale.products_item" name="Cordage Product Card Override" priority="50">
+        <xpath expr="//form" position="replace">
+            <t t-set="variant_id" t-value="product_variant.id if product_variant else product._get_first_possible_variant_id()"/>
+            <t t-set="card_tags" t-value="[tag.strip() for tag in (product.x_cordage_tags or '').split(',') if tag.strip()]"/>
+            <t t-set="primary_category" t-value="product.public_categ_ids[:1].name if product.public_categ_ids else product.categ_id.name"/>
+            <form t-attf-class="oe_product_cart js_product bni-pcard h-100 d-flex flex-column" role="article" t-att-aria-label="product.name" t-att-data-publish="product.website_published and 'on' or 'off'">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <input type="hidden" name="product_id" t-att-value="variant_id"/>
+                <input type="hidden" name="product_template_id" t-att-value="product.id"/>
+                <input type="hidden" name="product_type" t-att-value="product.type"/>
+                <div t-attf-class="bni-pcard__media #{product.x_cordage_rope_class or ''}">
+                    <a t-att-href="product_href" class="card__media-link" contenteditable="false" t-att-title="product.name">
+                        <img
+                            t-att-src="'/web/image/product.template/%s/image_512' % product.id"
+                            class="bni-pcard__photo"
+                            t-att-alt="product.name"
+                            loading="lazy"
+                            onerror="this.style.display='none'"
+                        />
+                    </a>
+                    <t t-if="product.x_cordage_badge">
+                        <span class="bni-pcard__badge" t-esc="product.x_cordage_badge"/>
+                    </t>
+                    <t t-if="extra_actions" t-out="extra_actions"/>
+                    <t t-else="">
+                        <button
+                            type="button"
+                            class="pcard-wish o_add_wishlist"
+                            data-action="o_wishlist"
+                            t-att-data-product-template-id="product.id"
+                            t-att-data-product-product-id="variant_id"
+                            title="Add to wishlist"
+                            aria-label="Add to wishlist"
+                        >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                        </button>
+                    </t>
+                    <a t-att-href="product_href" class="bni-pcard__quick">Quick View</a>
+                </div>
+                <div class="bni-pcard__body">
+                    <div class="bni-pcard__cat" t-esc="primary_category"/>
+                    <a t-att-href="product_href" class="bni-pcard__name" t-esc="product.name"/>
+                    <div class="bni-pcard__specs" t-if="card_tags">
+                        <t t-foreach="card_tags[:3]" t-as="tag">
+                            <span class="bni-pcard__spec-pill" t-esc="tag"/>
+                        </t>
+                    </div>
+                    <div class="bni-pcard__rating">
+                        <span>★</span>
+                        <b t-esc="'%.1f' % (product.x_cordage_rating or 0.0)"/>
+                        <span>·</span>
+                        <t t-esc="product.x_cordage_reviews or 0"/>
+                        <span>reviews</span>
+                    </div>
+                    <div class="bni-pcard__foot">
+                        <span class="bni-pcard__price">
+                            <t t-if="product_price" t-out="product_price"/>
+                            <t t-else="">
+                                <span t-out="product.list_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                <span class="bni-pcard__unit" t-esc="product.x_cordage_unit or ''"/>
+                            </t>
+                        </span>
+                        <div class="o_wsale_product_btn">
+                            <t t-if="product_actions" t-out="product_actions"/>
+                            <t t-else="">
+                                <button
+                                    type="button"
+                                    class="bni-pcard__add o_wsale_product_btn_primary a-submit"
+                                    title="Add to Cart"
+                                    t-att-data-product-template-id="product.id"
+                                    t-att-data-product-id="variant_id"
+                                    t-att-data-product-type="product.type"
+                                    t-att-data-show-quantity="False"
+                                >
+                                    Add to Cart
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </xpath>
+    </template>
+</odoo>
