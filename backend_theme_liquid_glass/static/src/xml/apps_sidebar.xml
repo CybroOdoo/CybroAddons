@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-inherit="web.NavBar" t-inherit-mode="extension">
+        <!-- Append the sidebar structure after the header -->
+        <xpath expr="//header" position="after">
+            <div class="o_apps_sidebar" t-att-class="{ 'o_sidebar_open': sidebarState.isOpen }">
+                <div class="o_sidebar_header mb-4 d-flex align-items-center justify-content-between">
+                    <h3 class="m-0 fw-bold text-white">Applications</h3>
+                    <button class="btn btn-link text-white p-0 o_sidebar_close" t-on-click="closeSidebar">
+                        <i class="fa fa-close fs-4"/>
+                    </button>
+                </div>
+                <div class="o_sidebar_content">
+                    <div class="row g-3">
+                        <t t-foreach="menuService.getApps()" t-as="app" t-key="app.id">
+                            <div class="col-6">
+                                <a t-att-href="getMenuItemHref(app)"
+                                   class="o_apps_sidebar_item d-flex flex-column align-items-center p-3 text-decoration-none"
+                                   t-on-click.prevent="() => this.onNavBarAppClick(app)">
+                                    <div class="o_app_icon_container mb-2">
+                                        <img t-if="app.webIconData"
+                                             t-att-src="app.webIconData"
+                                             class="o_app_icon"
+                                             style="width: 54px; height: 54px; object-fit: contain;"/>
+                                        <div t-else="" class="o_app_icon_placeholder d-flex align-items-center justify-content-center">
+                                            <i class="fa fa-th-large fs-2"/>
+                                        </div>
+                                    </div>
+                                    <span class="o_app_name text-center fw-medium text-white" t-esc="app.name" style="font-size: 13px;"/>
+                                </a>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+            <!-- Overlay -->
+            <div class="o_sidebar_overlay"
+                 t-if="sidebarState.isOpen"
+                 t-on-click="closeSidebar"
+                 style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); z-index: 1040;"/>
+        </xpath>
+    </t>
+
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension">
+        <!-- Replace the default apps menu button with a sidebar toggle -->
+        <!-- Preserving t-if="!isScopedApp" to avoid orphaning neighboring t-else -->
+        <xpath expr="//div[contains(@class, 'o_navbar_apps_menu')]" position="replace">
+            <div t-if="!isScopedApp" class="o_navbar_apps_menu">
+                 <button
+                    class="btn btn-light o_navbar_sidebar_toggle d-flex align-items-center justify-content-center"
+                    t-on-click="toggleSidebar"
+                    style="width: 40px; height: 40px; border-radius: 12px; margin-right: 10px;">
+                    <i class="fa fa-bars" style="font-size: 18px;"/>
+                </button>
+            </div>
+        </xpath>
+    </t>
+
+</templates>
