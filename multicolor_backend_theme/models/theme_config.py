@@ -23,11 +23,13 @@ class ThemeConfig(models.Model):
     _name = 'theme.config'
     _description = "Model for storing configuration related to the theme"
 
-    name = fields.Char(help="Theme name")
-    theme_main_color = fields.Char(help="main theme color")
-    view_font_color = fields.Char(help="backend font color")
-    theme_font_color = fields.Char(help="backend view font color")
-    is_theme_active = fields.Boolean(string="Active Theme")
+    name = fields.Char(string='Name', help="Theme name")
+    theme_main_color = fields.Char(string="View Font Color",help="main theme color")
+    view_font_color = fields.Char(string="View Font Color",help="backend font color")
+    theme_font_color = fields.Char(string="Theme Font Color",help="backend view font color")
+    is_theme_active = fields.Boolean(string="Active Theme",
+        help="Indicates whether the theme is currently active."
+    )
 
     @api.model
     def create_new_theme(self):

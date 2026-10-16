@@ -17,12 +17,12 @@
 #############################################################################
 {
     "name": "Chameleon Multi Color Backend Theme",
-    "version": "20.0.1.0.0",
+    "version": "20.0.1.0.1",
     "category": "Themes/Backend",
     "summary": "Configurable multi color backend theme for Odoo 20",
     "description": """
-        Configurable multi color backend theme for Odoo 20, 
-        Only Admin can have the role to create, update, and removing the themes.
+Configurable multi color backend theme for Odoo 20, 
+Only Admin can have the role to create, update, and removing the themes.
     """,
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
@@ -32,13 +32,14 @@
     "data": [
         'security/security_groups.xml',
         'security/ir.access.csv',
-        'data/theme_data.xml',
+        'data/theme_config_data.xml',
         'views/login_templates.xml',
     ],
     "assets": {
         'web.assets_backend': [
             'multicolor_backend_theme/static/src/xml/sidebar_menu_icon.xml',
             'multicolor_backend_theme/static/src/xml/systray_ext.xml',
+            'multicolor_backend_theme/static/src/xml/search_bar.xml',
             'multicolor_backend_theme/static/src/scss/theme_style_backend.scss',
             'multicolor_backend_theme/static/src/css/backend.css',
             'multicolor_backend_theme/static/src/js/sidebar_menu.js',
