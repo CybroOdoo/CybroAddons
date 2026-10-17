@@ -37,6 +37,14 @@ class ResUsers(models.Model):
         help='Select the preferred position of the chatter panel in form views.'
     )
 
+    @property
+    def SELF_READABLE_FIELDS(self):
+        return super().SELF_READABLE_FIELDS + ['chatter_position']
+
+    @property
+    def SELF_WRITEABLE_FIELDS(self):
+        return super().SELF_WRITEABLE_FIELDS + ['chatter_position']
+
 
 class IrHttp(models.AbstractModel):
     """Extend ir.http to include chatter position in session information."""
