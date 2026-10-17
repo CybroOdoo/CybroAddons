@@ -29,7 +29,7 @@ class TestChatterPosition(TransactionCase):
             'name': 'Test User Right',
             'login': 'test_user_right',
             'chatter_position': 'right',
-            'groups_id': [(6, 0, [self.env.ref('base.group_user').id])],
+            'group_ids': [(6, 0, [self.env.ref('base.group_user').id])],
         })
 
     def test_default_chatter_position(self):
@@ -79,3 +79,9 @@ class TestChatterPosition(TransactionCase):
             'bottom', 
             "session_info should update when the user changes their chatter position."
         )
+
+    def test_user_writes_own_chatter_position(self):
+        """A regular user can change their own chatter position."""
+        user = self.user_right.with_user(self.user_right)
+        user.write({'chatter_position': 'bottom'})
+        self.assertEqual(user.chatter_position, 'bottom')
