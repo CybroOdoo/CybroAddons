@@ -19,10 +19,19 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-import calendar
+import babel.dates
 from dateutil.relativedelta import relativedelta
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 from odoo.tools.safe_eval import datetime
+
+
+def _month_label(month_number, lang):
+    """Return the localized month name (e.g. 'June' / 'Junio') for the
+    given month number (1-12) and the user's language."""
+    from datetime import date as _date
+    return babel.dates.format_date(
+        _date(2000, month_number, 1), format='MMMM', locale=lang or 'en_US',
+    )
 
 
 def get_period_start_date(period):
@@ -141,7 +150,8 @@ class CRMLead(models.Model):
             if month not in month_value:
                 month_value.append(month)
             month_count.append(month)
-        month_val = [{'label': calendar.month_name[month],
+        lang = self.env.lang or 'en_US'
+        month_val = [{'label': _month_label(month, lang),
                       'value': month_count.count(month)} for month in
                      month_value]
         names = [record['label'] for record in month_val]
@@ -154,18 +164,27 @@ class CRMLead(models.Model):
         """Sales Activity Pie"""
         start_date = get_period_start_date(period)
         self._cr.execute('''
-               SELECT mail_activity_type.name, COUNT(*) 
-               FROM mail_activity 
-               INNER JOIN mail_activity_type 
+               SELECT mail_activity_type.name, COUNT(*)
+               FROM mail_activity
+               INNER JOIN mail_activity_type
                    ON mail_activity.activity_type_id = mail_activity_type.id
-               INNER JOIN crm_lead 
-                   ON mail_activity.res_id = crm_lead.id 
+               INNER JOIN crm_lead
+                   ON mail_activity.res_id = crm_lead.id
                    AND mail_activity.res_model = 'crm.lead'
                WHERE crm_lead.create_date >= %s
                GROUP BY mail_activity_type.name
            ''', (start_date,))
         data = self._cr.dictfetchall()
-        names = [record['name']['en_US'] for record in data]
+        # mail_activity_type.name is a translate=True JSONB field. The original
+        # code forced 'en_US' which ignored the user's language. Use the user's
+        # lang instead, falling back to en_US if the language isn't installed.
+        user_lang = self.env.lang or 'en_US'
+        names = [
+            (record['name'].get(user_lang)
+             or record['name'].get('en_US')
+             or next(iter(record['name'].values()), ''))
+            for record in data
+        ]
         counts = [record['count'] for record in data]
         return [counts, names]
 
@@ -217,9 +236,7 @@ class CRMLead(models.Model):
     @api.model
     def get_total_lost_crm(self, period):
         """Lost Opportunity or Lead Graph"""
-        month_dict = {}
-
-        # Format the start date to be used in the SQL query
+        # Initialize the dictionary with month names and counts (localized)
         start_date = get_period_start_date(period)
 
         if period == 'year':
@@ -229,35 +246,42 @@ class CRMLead(models.Model):
         else:
             num_months = 1
 
-            # Initialize the dictionary with month names and counts
+        lang = self.env.lang or 'en_US'
+        month_dict = {}
         for i in range(num_months):
             current_month = start_date + relativedelta(months=i)
-            month_name = current_month.strftime('%B')
-            month_dict[month_name] = 0
+            # Group by month number (locale-independent) so the SQL doesn't
+            # return month names in the cluster's default locale.
+            month_num = current_month.month
+            month_name = _month_label(month_num, lang)
+            month_dict[month_num] = {'label': month_name, 'count': 0}
 
-            # Execute the SQL query to count lost opportunities
-        self._cr.execute('''SELECT TO_CHAR(create_date, 'Month') AS month, 
-                                       COUNT(id) 
+        # Execute the SQL query: group by month NUMBER (not name) so the
+        # result is independent of the cluster locale.
+        self._cr.execute('''SELECT EXTRACT(MONTH FROM create_date)::int AS month_num,
+                                       COUNT(id) AS count
                                 FROM crm_lead
-                                WHERE probability = 0 
-                                  AND active = FALSE 
+                                WHERE probability = 0
+                                  AND active = FALSE
                                   AND create_date >= %s
-                                GROUP BY TO_CHAR(create_date, 'Month')
-                                ORDER BY TO_CHAR(create_date, 'Month')''',
+                                GROUP BY month_num
+                                ORDER BY month_num''',
                          (start_date,))
 
         data = self._cr.dictfetchall()
 
         # Update month_dict with the results from the query
         for rec in data:
-            month_name = rec[
-                'month'].strip()  # Strip the month name to remove extra spaces
-            if month_name in month_dict:
-                month_dict[month_name] = rec['count']
+            month_num = rec['month_num']
+            if month_num in month_dict:
+                month_dict[month_num]['count'] = rec['count']
 
+        # Preserve original response shape: ordered list of month labels and
+        # parallel list of counts.
+        ordered = sorted(month_dict.items(), key=lambda kv: kv[0])
         result = {
-            'month': list(month_dict.keys()),
-            'count': list(month_dict.values())
+            'month': [entry['label'] for _, entry in ordered],
+            'count': [entry['count'] for _, entry in ordered],
         }
 
         return result
@@ -325,9 +349,14 @@ class CRMLead(models.Model):
         # Calculate expected revenue without won
         exp_revenue_without_won = revenues[0] - revenues[1]
 
-        # Prepare the data for the pie chart
+        # Prepare the data for the pie chart. Labels are translated via _()
+        # so they follow the current user's language.
         revenue_pie_count = [exp_revenue_without_won, revenues[1], revenues[2]]
-        revenue_pie_title = ['Expected without Won', 'Won', 'Lost']
+        revenue_pie_title = [
+            _('Expected without Won'),
+            _('Won'),
+            _('Lost'),
+        ]
 
         return [revenue_pie_count, revenue_pie_title]
 

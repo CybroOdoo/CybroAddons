@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': 'Customize Login Page Style',
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.2',
     'category': 'Extra Tools',
     'summary': 'Customize The Login Page With Different Styles',
     'description': 'The Module helps to customize login page with different '
