@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Inherited view for the res.partner -->
+    <record id="view_partner_form_inherit_odoo_contact_approval" model="ir.ui.view">
+        <field name="name">res.partner.view.form.inherit.odoo.contact.approval</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/*[1]" position="before">
+                <header>
+                    <button name="action_approve_contact" class="oe_highlight" invisible="state != 'draft'"
+                            string="Approve" type="object" help="Approve Contact"
+                            groups="odoo_contact_approval.group_contacts_approval"/>
+                    <button name="action_cancel_contact" class="oe_highlight" invisible="state != 'draft'"
+                            string="Cancel" type="object" help="Cancel Contact"
+                            groups="odoo_contact_approval.group_contacts_approval"/>
+                    <button name="action_reset_contact" class="oe_highlight"
+                            invisible="state not in ['approve', 'cancel']" string="Reset" type="object"
+                            help="Reset Contact" groups="odoo_contact_approval.group_contacts_approval"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+            </xpath>
+            <xpath expr="//div[hasclass('o_address_format')]" position="after">
+                <field name="approver_id"/>
+            </xpath>
+        </field>
+    </record>
+    <!--  Action for the manager contacts approval   -->
+    <record id="action_contacts_manager_approval" model="ir.actions.server">
+        <field name="name">Approve</field>
+        <field name="model_id" ref="model_res_partner"/>
+        <field name="binding_model_id" ref="model_res_partner"/>
+        <field name="group_ids" eval="[(4, ref('odoo_contact_approval.group_contacts_approval'))]"/>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+                records.action_approve_contact()
+        </field>
+    </record>
+    <!--  Action for the manager contacts cancel   -->
+    <record id="action_contacts_manager_cancel" model="ir.actions.server">
+        <field name="name">Cancel</field>
+        <field name="model_id" ref="model_res_partner"/>
+        <field name="binding_model_id" ref="model_res_partner"/>
+        <field name="group_ids" eval="[(4, ref('odoo_contact_approval.group_contacts_approval'))]"/>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+                records.action_cancel_contact()
+        </field>
+    </record>
+    <!--  Search for the contacts   -->
+    <record id="view_res_partner_filter_inherit_odoo_contact_approval" model="ir.ui.view">
+        <field name="name">res.partner.view.search.inherit.odoo.contact.approval</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='group_company']" position="after">
+                <filter name="type_state" string="State"
+                        context="{'group_by': 'state'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
