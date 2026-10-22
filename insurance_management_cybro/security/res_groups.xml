@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Privilege shown in the user form-->
+    <record id="res_groups_privilege_insurance" model="res.groups.privilege">
+        <field name="name">Insurance</field>
+        <field name="category_id" ref="base.module_category_services"/>
+        <field name="sequence">30</field>
+    </record>
+    <!--    Insurance User: works on insurances and claims-->
+    <record id="group_insurance_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_insurance"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">The user can manage insurances and claims, but
+            cannot change the master data nor generate invoices or bills.</field>
+    </record>
+    <!--    Insurance Manager: master data, agents and billing-->
+    <record id="group_insurance_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_insurance"/>
+        <field name="implied_ids" eval="[
+            (4, ref('group_insurance_user')),
+            (4, ref('account.group_account_invoice'))]"/>
+        <field name="comment">The manager configures policies, handles the agents
+            and their salaries, and generates the invoices and bills (this implies
+            the Invoicing access right).</field>
+        <field name="user_ids" eval="[
+            (4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

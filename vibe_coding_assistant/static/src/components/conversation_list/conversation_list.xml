@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="vibe_coding_assistant.ConversationList">
+        <div class="o_vibe_conversation_list">
+
+            <!-- ── Header: title + New button ─────────────────────────── -->
+            <div class="o_vibe_conv_header">
+                <span class="o_vibe_conv_title">
+                    <i class="oi o_vibe_conv_title_icon me-2" data-icon="chat_bubble"/>
+                    Conversations
+                </span>
+                <button class="btn btn-primary o_vibe_new_btn"
+                        t-on-click="this.onNewChat"
+                        title="Start a new conversation">
+                    <i class="oi" data-icon="add"/>
+                    <span class="ms-1 d-none d-sm-inline">New</span>
+                </button>
+            </div>
+
+            <!-- ── Search box ──────────────────────────────────────────── -->
+            <div class="o_vibe_conv_search" t-if="!this.isEmpty">
+                <i class="oi o_vibe_conv_search_icon" data-icon="search"/>
+                <input type="text"
+                       class="o_vibe_conv_search_input"
+                       placeholder="Search chats…"
+                       t-att-value="this.state.filter"
+                       t-on-input="(ev) => { this.state.filter = ev.target.value }"/>
+                <button t-if="this.state.filter"
+                        class="o_vibe_conv_search_clear"
+                        title="Clear search"
+                        t-on-click="this.onClearFilter">
+                    <i class="oi" data-icon="cancel"/>
+                </button>
+            </div>
+
+            <!-- ── List body ───────────────────────────────────────────── -->
+            <div class="o_vibe_conv_body">
+
+                <!-- Skeleton loading -->
+                <t t-if="this.isLoading">
+                    <t t-foreach="[1, 2, 3, 4]" t-as="i" t-key="i">
+                        <div class="o_vibe_conv_skel_item">
+                            <div class="o_vibe_skeleton o_vibe_skel_avatar"/>
+                            <div class="o_vibe_skel_lines">
+                                <div class="o_vibe_skeleton o_vibe_skel_line"
+                                     style="width:80%"/>
+                                <div class="o_vibe_skeleton o_vibe_skel_line mt-1"
+                                     style="width:40%"/>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+
+                <!-- Truly empty: no chats at all -->
+                <t t-elif="this.isEmpty">
+                    <div class="o_vibe_conv_empty">
+                        <div class="o_vibe_conv_empty_icon">💬</div>
+                        <div class="o_vibe_conv_empty_title">No chats yet</div>
+                        <div class="o_vibe_conv_empty_hint">
+                            Click <strong>New</strong> above to start your first conversation.
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Search returned no results -->
+                <t t-elif="this.noResults">
+                    <div class="o_vibe_conv_empty">
+                        <div class="o_vibe_conv_empty_icon">🔍</div>
+                        <div class="o_vibe_conv_empty_title">No matches</div>
+                        <div class="o_vibe_conv_empty_hint">
+                            Try a different search term.
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Conversation items -->
+                <t t-else="">
+                    <t t-foreach="this.conversations" t-as="conv" t-key="conv.id">
+                        <div class="o_vibe_conv_item"
+                             t-att-class="{ 'o_vibe_conv_active': this.isActive(conv.id) }"
+                             t-on-click="() => this.onSelect(conv.id)">
+
+                            <!-- Avatar circle with initial -->
+                            <div class="o_vibe_conv_avatar"
+                                 t-esc="this.initial(conv)"/>
+
+                            <!-- Title + timestamp -->
+                            <div class="o_vibe_conv_meta">
+                                <div class="o_vibe_conv_name"
+                                     t-esc="conv.name"/>
+                                <div class="o_vibe_conv_time"
+                                     t-esc="this.timeLabel(conv)"/>
+                            </div>
+
+                            <!-- Hover-revealed action buttons -->
+                            <div class="o_vibe_conv_actions">
+                                <a class="o_vibe_conv_action_btn"
+                                   title="Export as JSON"
+                                   t-att-href="this.exportUrl(conv.id)"
+                                   t-on-click.stop="() => {}">
+                                    <i class="oi" data-icon="download"/>
+                                </a>
+                                <button class="o_vibe_conv_action_btn o_vibe_conv_archive_btn"
+                                        title="Archive"
+                                        t-on-click.stop="() => this.onArchive(conv.id)">
+                                    <i class="oi" data-icon="archive"/>
+                                </button>
+                            </div>
+
+                        </div>
+                    </t>
+                </t>
+
+            </div>
+
+        </div>
+    </t>
+
+</templates>

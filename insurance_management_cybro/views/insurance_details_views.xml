@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Form view for insurance details-->
+    <record id="insurance_details_view_form" model="ir.ui.view">
+        <field name="name">insurance.details.view.form</field>
+        <field name="model">insurance.details</field>
+        <field name="arch" type="xml">
+            <form string="Insurance Details Form">
+                <header>
+                    <button name="action_confirm_insurance" string="Confirm"
+                            type="object"
+                            invisible="state !='draft'" class="oe_highlight"/>
+                    <button name="action_create_invoice" string="Create Invoice"
+                            type="object" class="oe_highlight"
+                            groups="account.group_account_invoice"
+                            invisible="not can_create_invoice"/>
+                    <button name="action_close_insurance" string="Close"
+                            type="object"
+                            invisible="state !='confirmed'"
+                            class="oe_highlight"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="policy_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="policy_payment_type_ids" invisible="1"/>
+                            <field name="payment_type_id"
+                                   readonly="state != 'draft'"
+                                   domain="[('id', 'in', policy_payment_type_ids)]"
+                                   options="{'no_create': True}"/>
+                            <field name="is_fixed_payment" invisible="1"/>
+                            <field name="amount_installment"
+                                   invisible="is_fixed_payment"/>
+                            <field name="amount_remaining"
+                                   invisible="is_fixed_payment"/>
+                            <field name="policy_duration"
+                                   readonly="state != 'draft'"/>
+                            <field name="policy_number"
+                                   readonly="state != 'draft'"/>
+                            <field name="employee_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="commission_rate"
+                                   readonly="state != 'draft'"/>
+                            <field name="can_create_invoice" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="start_date"
+                                   readonly="state != 'draft'"/>
+                            <field name="close_date"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="amount"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Invoices" groups="account.group_account_invoice">
+                            <field name="invoice_ids"/>
+                        </page>
+                        <page string="Claims">
+                            <field name="claim_ids"/>
+                        </page>
+                        <page string="Extra Notes">
+                            <field name="note_field"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!--    List view for Insurance details-->
+    <record id="insurance_details_view_list" model="ir.ui.view">
+        <field name="name">insurance.details.view.list</field>
+        <field name="model">insurance.details</field>
+        <field name="arch" type="xml">
+            <list string="Insurance Details List">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="policy_id"/>
+                <field name="employee_id"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'confirmed'"
+                       decoration-muted="state == 'closed'"/>
+            </list>
+        </field>
+    </record>
+    <!--    Action for insurance details-->
+    <record id="insurance_details_action" model="ir.actions.act_window">
+        <field name="name">Insurance Management</field>
+        <field name="res_model">insurance.details</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                You haven't created any insurance yet.
+            </p>
+        </field>
+    </record>
+    <!--    Search view for insurance details-->
+    <record id="insurance_details_view_search" model="ir.ui.view">
+        <field name="name">insurance.details.view.search</field>
+        <field name="model">insurance.details</field>
+        <field eval="16" name="priority"/>
+        <field name="arch" type="xml">
+            <search string="Search insurances">
+                <field name="name" string="Insurance" filter_domain="[
+                        '|', '|', '|',
+                        ('name', 'ilike', self), ('partner_id', 'ilike', self),
+                        ('policy_id', 'ilike', self), ('state', 'ilike', self)]"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="policy_id"/>
+                <field name="state"/>
+            </search>
+        </field>
+    </record>
+</odoo>

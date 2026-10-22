@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template for cash flow report -->
+    <template id="cash_flow_pdf_report">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <t t-set="currency" t-value="res_company.currency_id or docs.env.company.currency_id"/>
+                <div class="page">
+                    <div class="row mb-3" style="font-size: 12px;">
+                        <div class="col-6">
+                            <h4>Cash Flow Statements</h4>
+                        </div>
+                        <div class="col-6 text-end">
+                            <b>Report Date: </b><span t-out="today"/><br/>
+                            <b>User: </b><span t-out="logged_users"/>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3" style="font-size: 12px;">
+                        <div class="col-6">
+                            <strong>Target Moves: </strong>
+                            <span t-if="target_move == 'posted'">All Posted Entries</span>
+                            <span t-if="target_move != 'posted'">All Entries</span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <strong>Date From: </strong><span t-out="date_from"/> | 
+                            <strong>Date To: </strong><span t-out="date_to"/>
+                        </div>
+                    </div>
+
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr style="font-size: 13px;">
+                                <th style="width: 45%;">Name</th>
+                                <th class="text-end" style="width: 18%;">Cash In</th>
+                                <th class="text-end" style="width: 18%;">Cash Out</th>
+                                <th class="text-end" style="width: 19%;">Balance</th>
+                            </tr>
+                        </thead>
+
+                        <!-- 1. SUMMARY LEVEL -->
+                        <tbody t-if="levels == 'summary'" style="font-size: 12px;">
+                            <tr t-foreach="fetched_data" t-as="fetch">
+                                <td>
+                                    <span t-out="fetch.get('month_part')"/> <span t-out="fetch.get('year_part')"/>
+                                </td>
+                                <td class="text-end">
+                                    <span t-out="fetch.get('total_debit')"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                                <td class="text-end">
+                                    <span t-out="fetch.get('total_credit')"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                                <td class="text-end">
+                                    <span t-out="fetch.get('total_balance')"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                            </tr>
+                        </tbody>
+
+                        <!-- 2. CONSOLIDATED LEVEL -->
+                        <tbody t-if="levels == 'consolidated'" style="font-size: 12px;">
+                            <tr t-foreach="fetched_data" t-as="fetch">
+                                <td>
+                                    <span t-out="fetch.get('name')"/>
+                                </td>
+                                <td class="text-end">
+                                    <span t-out="fetch.get('total_debit')"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                                <td class="text-end">
+                                    <span t-out="fetch.get('total_credit')"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                                <td class="text-end">
+                                    <span t-out="fetch.get('total_balance')"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                            </tr>
+                        </tbody>
+
+                        <!-- 3. DETAILED LEVEL -->
+                        <t t-if="levels == 'detailed'">
+                            <tbody t-foreach="fetched_data" t-as="fet" style="font-size: 12px;">
+                                <tr class="table-light fw-bold">
+                                    <td>
+                                        <span t-if="fet.get('code')" t-out="fet.get('code') + ' '"/>
+                                        <span t-out="fet.get('name')"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="fet.get('total_debit')"
+                                              t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="fet.get('total_credit')"
+                                              t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="fet.get('total_balance')"
+                                              t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                </tr>
+                                <t t-foreach="journal_res" t-as="res">
+                                    <t t-if="res.get('account_id') == fet.get('account_id') or res.get('account') == fet.get('name')">
+                                        <tr t-foreach="res.get('journal_lines')" t-as="mov">
+                                            <td style="padding-left: 30px !important;">
+                                                <span t-out="mov['name']"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-out="mov['total_debit']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-out="mov['total_credit']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-out="mov['total_debit'] - mov['total_credit']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </t>
+
+                        <!-- 4. VERY DETAILED LEVEL -->
+                        <t t-if="levels == 'very'">
+                            <tbody t-foreach="fetched" t-as="fet" style="font-size: 12px;">
+                                <tr class="table-light fw-bold">
+                                    <td>
+                                        <span t-if="fet.get('code')" t-out="fet.get('code') + ' '"/>
+                                        <span t-out="fet.get('name')"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="fet.get('total_debit')"
+                                              t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="fet.get('total_credit')"
+                                              t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="fet.get('total_balance')"
+                                              t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                </tr>
+                                <t t-foreach="account_res" t-as="res">
+                                    <t t-if="res.get('account_id') == fet.get('account_id') or res.get('account') == fet.get('name')">
+                                        <t t-foreach="res.get('journal_lines')" t-as="line">
+                                            <tr class="fst-italic">
+                                                <td style="padding-left: 20px !important;">
+                                                    <span t-out="line['name']"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <span t-out="line['total_debit']"
+                                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <span t-out="line['total_credit']"
+                                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <span t-out="line['total_debit'] - line['total_credit']"
+                                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                                </td>
+                                            </tr>
+                                            <t t-foreach="res.get('move_lines')" t-as="mov">
+                                                <tr t-if="mov.get('journal_id') == line.get('id') or mov.get('name') == line.get('name')">
+                                                    <td style="padding-left: 45px !important;">
+                                                        <span t-out="mov['move_name']"/>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <span t-out="mov['total_debit']"
+                                                              t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <span t-out="mov['total_credit']"
+                                                              t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <span t-out="mov['total_debit'] - mov['total_credit']"
+                                                              t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </t>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

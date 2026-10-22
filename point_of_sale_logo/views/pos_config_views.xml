@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherited pos config for adding image field -->
+    <record id="pos_config_view_form" model="ir.ui.view">
+        <field name="name">pos.config.view.form.inherit.point.of.sale.logo</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='configuration']/div[hasclass('o_settings_container')]" position="inside">
+                <setting string="Receipt Logo Option"
+                         help="Select which logo to display on the POS receipt: POS Logo, Company Logo, or Both.">
+                    <field name="logo_option" widget="radio" options="{'horizontal': true}"/>
+                    <div class="mt-2 mb-2">
+                        <field name="image" widget="image" invisible="logo_option == 'company'"/>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Inherited receipt header template to display logos according to logo_option -->
+    <template id="pos_order_receipt_header_inherit_logo" inherit_id="point_of_sale.pos_order_receipt_header">
+        <xpath expr="//div[@name='logo']" position="replace">
+            <div class="w-100 mb-3" name="logo">
+                <t t-if="image and image.get('logo_option') == 'both'">
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                        <tr>
+                            <td style="width: 25%; text-align: left; vertical-align: middle;">
+                                <img t-if="image.get('pos_logo')" t-att-src="image.get('pos_logo')" style="max-width: 100%; max-height: 60px; object-fit: contain;" />
+                            </td>
+                            <td style="width: 50%; text-align: center; vertical-align: middle;">
+                                <img t-if="image.get('company_logo')" t-att-src="image.get('company_logo')" style="max-width: 100%; max-height: 70px; object-fit: contain;" />
+                            </td>
+                            <td style="width: 25%;"></td>
+                        </tr>
+                    </table>
+                </t>
+                <t t-else="">
+                    <div style="width: 100%; text-align: center;">
+                        <img t-if="image and image.get('logo')" t-att-src="image.get('logo')" style="max-width: 60%; max-height: 100px; object-fit: contain;" />
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </template>
+</odoo>

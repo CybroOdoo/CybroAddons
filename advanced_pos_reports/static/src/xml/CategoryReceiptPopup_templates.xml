@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Template for category summary receipt screen-->
+<templates id="template" xml:space="preserve">
+    <t t-name="advanced_pos_reports.CategorySummaryReceiptScreen">
+        <Dialog size="'md'" title="this.props.title">
+            <div>
+                <div class="pos-receipt-container p-3 bg-white" t-ref="this.receiptRef">
+                    <div class="pos-receipt bg-white">
+                        <t t-if="this.props.data and this.props.data.company_logo">
+                            <img class="pos-receipt-logo"
+                                 t-att-src="this.props.data.company_logo"
+                                 alt="Logo"/>
+                            <br/>
+                        </t>
+                        <t t-else="">
+                            <h2 class="pos-receipt-center-align text-center">
+                                <t t-out="this.props.data?.company?.name || this.props.data?.models?.['res.company']?.getAll()?.[0]?.name || ''"/>
+                            </h2>
+                            <br/>
+                        </t>
+                        <div class="pos-receipt-contact text-center">
+                            <t t-if="this.props.data?.company?.phone">
+                                <div>Tel: <t t-out="this.props.data.company.phone"/></div>
+                            </t>
+                            <t t-if="this.props.data?.company?.email">
+                                <div><t t-out="this.props.data.company.email"/></div>
+                            </t>
+                            <t t-if="this.props.data?.company?.website">
+                                <div><t t-out="this.props.data.company.website"/></div>
+                            </t>
+                            <t t-if="this.props.data?.cashier?.name || this.props.data?.user?.name || this.props.data?.config?.current_user_id?.name">
+                                <div class="cashier mt-2">
+                                    <div>--------------------------------</div>
+                                    <div>Served by <t t-out="this.props.data?.cashier?.name || this.props.data?.user?.name || this.props.data?.config?.current_user_id?.name"/></div>
+                                </div>
+                            </t>
+                        </div>
+                        <br/>
+                        <h4 class="pos-receipt-center-align text-center">
+                            Category Summary
+                        </h4>
+                        <table class="mx-auto" style="font-size:14px !important;"
+                               t-if="this.props.start_date and this.props.end_date">
+                            <tr>
+                                <td><strong>Start Date:</strong></td>
+                                <td><t t-out="this.props.start_date"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>End Date:</strong></td>
+                                <td><t t-out="this.props.end_date"/></td>
+                            </tr>
+                        </table>
+                        <section style="overflow:auto; max-height:400px;">
+                            <table class="w-100 mt-2" style="font-size:14px !important; table-layout: fixed; word-break: break-word;">
+                                <colgroup>
+                                    <col style="width: 50%;"/>
+                                    <col style="width: 25%;"/>
+                                    <col style="width: 25%;"/>
+                                </colgroup>
+                                <thead style="border-bottom: 2px solid black;">
+                                    <tr>
+                                        <th style="text-align: left;">Category</th>
+                                        <th style="text-align: center;">Quantity</th>
+                                        <th style="text-align: right;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="mt-1">
+                                    <t t-set="sub_total" t-value="0"/>
+                                    <t t-set="qty_total" t-value="0"/>
+                                    <tr t-foreach="this.props.categories" t-as="category"
+                                        t-key="category.id">
+                                        <td style="text-align: left;">
+                                            <t t-out="category.name"/>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <t t-out="category.qty"/>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <t t-out="this.formatCurrency(category.amount)"/>
+                                        </td>
+                                        <t t-set="sub_total"
+                                           t-value="sub_total + category.amount"/>
+                                        <t t-set="qty_total"
+                                           t-value="qty_total + category.qty"/>
+                                    </tr>
+                                    <tr style="border-top: 2px solid black;">
+                                        <td style="text-align: left;"><strong>Total:</strong></td>
+                                        <td style="text-align: center;">
+                                            <strong><t t-out="qty_total"/></strong>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <strong><t t-out="this.formatCurrency(sub_total)"/></strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </section>
+                    </div>
+                </div>
+                <footer class="footer modal-footer d-flex flex-column gap-2 p-3">
+                    <button class="btn btn-primary w-100" t-on-click="this.printSummary">
+                        <i class="fa fa-print me-1"/> Print Category Summary
+                    </button>
+                    <button class="btn btn-secondary w-100" t-on-click="this.props.close">
+                        Cancel
+                    </button>
+                </footer>
+            </div>
+        </Dialog>
+    </t>
+</templates>

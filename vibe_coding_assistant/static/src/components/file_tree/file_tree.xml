@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="vibe_coding_assistant.FileTree">
+        <div class="o_vibe_file_tree">
+
+            <!-- ── Header: module name + validation badge + download ── -->
+            <div class="o_vibe_tree_header">
+                <div class="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+                    <i class="oi text-primary flex-shrink-0" data-icon="deployed_code"/>
+                    <span class="o_vibe_tree_module_name text-truncate" t-esc="this.moduleName"/>
+                </div>
+                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                    <!-- Validation badge -->
+                    <t t-if="this.validationState === 'valid'">
+                        <span class="badge bg-success"><i class="oi me-1" data-icon="check"/>Valid</span>
+                    </t>
+                    <t t-elif="this.validationState === 'invalid'">
+                        <span class="badge bg-warning text-dark">
+                            <i class="oi me-1" data-icon="warning"/>
+                            <t t-esc="this.validationErrors.length"/> error(s)
+                        </span>
+                    </t>
+                    <t t-elif="this.validationState === 'pending'">
+                        <span class="badge bg-secondary">Pending</span>
+                    </t>
+                    <!-- Download button -->
+                    <a t-if="this.downloadUrl" t-att-href="this.downloadUrl"
+                       class="btn btn-sm btn-success ms-1"
+                       title="Download module ZIP">
+                        <i class="oi" data-icon="download"/>
+                    </a>
+                </div>
+            </div>
+
+            <!-- ── Validation errors banner ── -->
+            <t t-if="this.hasErrors">
+                <div class="o_vibe_validation_banner">
+                    <div class="o_vibe_validation_title">
+                        <i class="oi me-1 text-warning" data-icon="warning"/>
+                        Validation errors — module may not install cleanly
+                        <span class="o_vibe_validation_hint">Click to jump</span>
+                    </div>
+                    <t t-foreach="this.validationErrors" t-as="err" t-key="err_index">
+                        <button class="o_vibe_validation_item"
+                                t-on-click="() => this.onErrorClick(err)"
+                                t-att-title="err.message">
+                            <i class="oi me-1" data-icon="arrow_circle_right"/>
+                            <code class="text-danger" t-esc="err.file"/>
+                            <t t-if="err.line">
+                                <span class="o_vibe_validation_line">:<t t-esc="err.line"/></span>
+                            </t>
+                            <span class="o_vibe_validation_msg" t-esc="err.message"/>
+                        </button>
+                    </t>
+                </div>
+            </t>
+
+            <!-- ── File tree items ── -->
+            <t t-if="this.treeItems.length === 0">
+                <div class="text-muted text-center p-3 small">No files loaded.</div>
+            </t>
+            <t t-foreach="this.treeItems" t-as="item" t-key="item.key">
+
+                <!-- Directory row -->
+                <t t-if="item.type === 'dir'">
+                    <div class="o_vibe_tree_dir"
+                         t-att-style="'padding-left: ' + (12 + item.depth * 16) + 'px'">
+                        <i class="oi me-1 text-warning" data-icon="folder_open"/>
+                        <span t-esc="item.name"/>
+                    </div>
+                </t>
+
+                <!-- File row -->
+                <t t-else="">
+                    <div class="o_vibe_tree_file"
+                         t-att-class="{
+                            'o_vibe_tree_file_active': this.isActive(item.path),
+                            'o_vibe_tree_file_has_errors': item.errorCount > 0,
+                         }"
+                         t-att-style="'padding-left: ' + (12 + item.depth * 16) + 'px'"
+                         t-on-click="() => this.onSelectFile(item.path)">
+                        <i class="oi me-1" t-att-data-icon="this.fileIcon(item.language)"/>
+                        <span class="o_vibe_tree_file_name" t-esc="item.name"/>
+                        <span t-if="item.modified"
+                              class="o_vibe_tree_modified_dot"
+                              title="Modified after generation">•</span>
+                        <span t-if="item.errorCount"
+                              class="o_vibe_tree_error_badge"
+                              t-att-title="item.errorCount + ' validation error(s)'">
+                            <i class="oi me-1" data-icon="error"/>
+                            <t t-esc="item.errorCount"/>
+                        </span>
+                    </div>
+                </t>
+
+            </t>
+
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="vibe_coding_assistant.Composer">
+        <div class="o_vibe_composer">
+
+            <!-- Input row -->
+            <div class="o_vibe_composer_row">
+                <textarea
+                    class="form-control o_vibe_composer_input"
+                    rows="2"
+                    placeholder="Describe the Odoo module you want… (Ctrl+Enter to send)"
+                    t-ref="this.textareaRef"
+                    t-att-value="this.state.text"
+                    t-on-input="(ev) => { this.state.text = ev.target.value }"
+                    t-on-keydown="this.onKeydown"
+                    t-att-disabled="this.isSending"
+                />
+
+                <!-- Refine button (only when conversation has a previous module) -->
+                <t t-if="this.showRefine">
+                    <button
+                        class="btn btn-outline-primary o_vibe_refine_btn"
+                        t-on-click="this.onRefine"
+                        t-att-disabled="!this.canRefine"
+                        t-att-title="'Refine ' + this.latestModuleName + ' (v' + this.latestRevision + ')'"
+                    >
+                        <t t-if="this.isSending">
+                            <i class="oi oi-spin" data-icon="autorenew"/>
+                        </t>
+                        <t t-else="">
+                            <i class="oi me-1" data-icon="refresh"/>
+                            <span class="o_vibe_refine_label">Refine</span>
+                        </t>
+                    </button>
+                </t>
+
+                <button
+                    class="btn btn-primary o_vibe_send_btn"
+                    t-on-click="this.onSend"
+                    t-att-disabled="!this.canSend"
+                    title="Send a fresh request (Ctrl+Enter)"
+                >
+                    <t t-if="this.isSending">
+                        <i class="oi oi-spin" data-icon="autorenew"/>
+                    </t>
+                    <t t-else="">
+                        <i class="oi" data-icon="send"/>
+                    </t>
+                </button>
+            </div>
+
+            <!-- Refine-mode hint, shown only when previous module exists -->
+            <t t-if="this.showRefine">
+                <div class="o_vibe_composer_refine_hint">
+                    <i class="oi me-1" data-icon="lightbulb"/>
+                    Click <strong>Refine</strong> to modify
+                    <code t-esc="this.latestModuleName"/> instead of generating a new module.
+                </div>
+            </t>
+
+            <!-- Active provider badge -->
+            <div class="o_vibe_composer_footer" t-if="this.providerInfo">
+                <i class="oi o_vibe_provider_dot" data-icon="circle"/>
+                <span class="o_vibe_provider_label">
+                    <t t-esc="this.providerInfo.provider_name"/>
+                </span>
+                <span class="o_vibe_provider_model" t-esc="this.providerInfo.model"/>
+                <span class="o_vibe_provider_tip ms-auto">Ctrl+Enter to send</span>
+            </div>
+
+        </div>
+    </t>
+
+</templates>
