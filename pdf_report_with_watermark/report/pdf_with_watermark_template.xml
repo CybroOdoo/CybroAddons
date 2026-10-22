@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Apply the watermark to the pdf report with mentioned specifications-->
+<odoo>
+    <template id="pdf_watermark_report"
+              inherit_id="web.external_layout_body">
+        <xpath expr="//div[contains(@t-attf-class, 'article')]" position="inside">
+            <t t-if="company.watermark">
+                <div class="watermark"
+                     style="position: fixed; top: 480px; left: 50%; transform: translate(-50%, -50%); -webkit-transform: translate(-50%, -50%); opacity: 0.25; z-index: -1000; text-align: center; pointer-events: none;">
+                    <t t-if="company.watermark_type == 'text'">
+                        <span t-attf-style="display: inline-block; transform: rotate(-{{company.rotating_angle or 0}}deg); -webkit-transform: rotate(-{{company.rotating_angle or 0}}deg); color: {{company.color_picker or '#000000'}}; font-size: {{company.font_size or 20}}px; font-weight: bold; white-space: nowrap; line-height: 1.2;">
+                            <t t-out="company.content_text"/>
+                        </span>
+                    </t>
+                    <t t-if="company.watermark_type == 'image'">
+                        <img t-if="company.background_image"
+                             t-att-src="image_data_uri(company.background_image)"
+                             t-attf-style="max-height: 400px; max-width: 500px; object-fit: contain; transform: rotate(-{{company.rotating_angle or 0}}deg); -webkit-transform: rotate(-{{company.rotating_angle or 0}}deg);"/>
+                    </t>
+                    <t t-if="company.watermark_type == 'logo'">
+                        <img t-if="company.logo"
+                             t-att-src="image_data_uri(company.logo)"
+                             t-attf-style="max-height: 400px; max-width: 500px; object-fit: contain; transform: rotate(-{{company.rotating_angle or 0}}deg); -webkit-transform: rotate(-{{company.rotating_angle or 0}}deg);"/>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>
