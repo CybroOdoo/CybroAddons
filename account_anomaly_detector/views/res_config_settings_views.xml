@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.account.anomaly</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="25"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Anomaly Detection" string="Anomaly Detection" name="account_anomaly_detector" groups="account_anomaly_detector.group_anomaly_manager">
+                    <block title="Scan Settings" name="anomaly_scan_settings">
+                        <setting id="anomaly_auto_scan" title="Scheduled Scans" help="Automatically run background anomaly scans based on the defined schedule.">
+                            <field name="anomaly_auto_scan_enabled"/>
+                            <div class="content-group" invisible="not anomaly_auto_scan_enabled">
+                                <div class="mt16">
+                                    <label for="anomaly_scan_frequency" class="o_light_label"/>
+                                    <field name="anomaly_scan_frequency" class="oe_inline" required="anomaly_auto_scan_enabled"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="anomaly_scan_on_post" title="Scan on Post" help="Automatically scan journal entries right when they are posted.">
+                            <field name="anomaly_scan_on_post"/>
+                        </setting>
+                    </block>
+
+                    <block title="Detection Algorithms" name="anomaly_algorithm_settings">
+                        <setting id="anomaly_benford" title="Benford's Law" help="Enable Benford's Law analysis against vendor balances.">
+                            <field name="anomaly_enable_benfords_law"/>
+                        </setting>
+                        <setting id="anomaly_zscore" title="Z-Score Threshold" help="Z-Score threshold for extreme outlier detection.">
+                            <field name="anomaly_zscore_threshold"/>
+                        </setting>
+                        <setting id="anomaly_duplicate" title="Duplicate Window" help="Number of days to check backwards for duplicate entries.">
+                            <field name="anomaly_duplicate_window_days"/>
+                        </setting>
+                        <setting id="anomaly_velocity" title="Velocity Limits" help="Days window and transaction count for rapid velocity alerts.">
+                            <div class="content-group border-start ps-3 mt-2">
+                                <div><label for="anomaly_velocity_window_days" class="o_light_label me-2"/> <field name="anomaly_velocity_window_days" class="oe_inline"/> days</div>
+                                <div><label for="anomaly_velocity_max_count" class="o_light_label me-2"/> <field name="anomaly_velocity_max_count" class="oe_inline"/> txns max</div>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <block title="Notifications" name="anomaly_notification_settings">
+                        <setting id="anomaly_notify_levels" title="Notification Levels" help="Choose which risk levels trigger notifications.">
+                            <div class="content-group mt-2">
+                                <div><field name="anomaly_notify_critical" class="oe_inline"/> <label for="anomaly_notify_critical" class="o_light_label"/></div>
+                                <div><field name="anomaly_notify_high" class="oe_inline"/> <label for="anomaly_notify_high" class="o_light_label"/></div>
+                                <div><field name="anomaly_notify_medium" class="oe_inline"/> <label for="anomaly_notify_medium" class="o_light_label"/></div>
+                                <div><field name="anomaly_notify_low" class="oe_inline"/> <label for="anomaly_notify_low" class="o_light_label"/></div>
+                            </div>
+                        </setting>
+                        <setting id="anomaly_notify_recipients" title="Recipients" help="Notify auditor group or selected users on alert creation.">
+                            <field name="anomaly_notify_auditor_group"/>
+                            <div class="mt8">
+                                <label for="anomaly_notification_user_ids" class="o_light_label"/>
+                                <field name="anomaly_notification_user_ids" widget="many2many_tags"/>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <block title="Exclusions" name="anomaly_exclusion_settings">
+                        <setting id="anomaly_exclude_accounts" title="Excluded Accounts" help="General ledger accounts to exclude from anomaly scans.">
+                            <field name="anomaly_excluded_account_ids" widget="many2many_tags" class="w-100"/>
+                        </setting>
+                        <setting id="anomaly_exclude_partners" title="Excluded Partners" help="Partners and vendors to exclude from anomaly scans.">
+                            <field name="anomaly_excluded_partner_ids" widget="many2many_tags" class="w-100"/>
+                        </setting>
+                    </block>
+
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_anomaly_config_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'account_anomaly_detector', 'bin_size': False}</field>
+    </record>
+
+</odoo>

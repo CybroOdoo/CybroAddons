@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="image_capture_upload_widget.CaptureImage">
+        <div class="capture-container d-inline-block">
+            <!-- Image Wrapper with relative positioning -->
+            <div class="capture-img-wrapper position-relative d-inline-block">
+                <t t-if="this.props.name">
+                    <img
+                        class="img img-fluid capture-preview"
+                        alt="Binary file"
+                        t-att-src="this.getUrl(this.props.previewImage or this.props.name)"
+                        t-att-name="this.props.name"
+                        t-att-style="this.sizeStyle"
+                        t-on-error.stop="this.onLoadFailed"/>
+                </t>
+
+                <!-- Floating top-right buttons overlaying image -->
+                <div class="camera-floating-buttons" t-if="!this.props.readonly">
+                    <!-- Edit / Upload image file uploader -->
+                    <FileUploader
+                        acceptedFileExtensions="this.props.acceptedFileExtensions"
+                        onUploaded.bind="this.onFileUploaded">
+                        <t t-set-slot="toggler">
+                            <button
+                                class="btn btn-light border-0 rounded-circle p-1 shadow-sm d-flex align-items-center justify-content-center"
+                                data-tooltip="Edit"
+                                aria-label="Edit">
+                                <i class="oi oi-fw oi-filled text-dark" data-icon="edit"/>
+                            </button>
+                        </t>
+                    </FileUploader>
+
+                    <!-- Camera capture button -->
+                    <button
+                        class="o_upload_image_button btn btn-light border-0 rounded-circle p-1 shadow-sm d-flex align-items-center justify-content-center"
+                        data-tooltip="Camera"
+                        aria-label="Camera"
+                        t-ref="this.camera"
+                        t-on-click="this.onClickOpenCamera">
+                        <i class="oi oi-fw text-dark" data-icon="photo_camera"/>
+                    </button>
+
+                    <!-- Clear / Delete button -->
+                    <button
+                        t-if="this.props.record.data[this.props.name] and this.state.isValid"
+                        class="o_clear_file_button btn btn-light border-0 rounded-circle p-1 shadow-sm d-flex align-items-center justify-content-center"
+                        data-tooltip="Clear"
+                        aria-label="Clear"
+                        t-on-click="this.onFileRemove">
+                        <i class="oi oi-fw text-dark" data-icon="delete"/>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Camera Modal Backdrop Overlay -->
+            <div t-if="this.state.isCameraOpen" class="capture-modal-backdrop d-flex align-items-center justify-content-center" t-on-click.self="this.stopCamera">
+                <div class="capture-modal-dialog bg-white rounded-3 shadow-lg p-3 position-relative">
+                    <div class="capture-modal-header d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                        <h5 class="modal-title m-0 fs-6 fw-bold">
+                            <i class="oi oi-fw me-1" data-icon="photo_camera"/> Capture Image
+                        </h5>
+                        <button type="button" class="btn-close" aria-label="Close" t-on-click="this.stopCamera"></button>
+                    </div>
+
+                    <div class="capture-modal-body d-flex flex-wrap flex-md-nowrap gap-3 justify-content-center align-items-center">
+                        <div class="capture-video-container text-center">
+                            <div class="small fw-semibold text-muted mb-1">Live Camera</div>
+                            <video
+                                class="capture-video-feed rounded border bg-dark"
+                                t-ref="this.player"
+                                autoplay="true"
+                                playsinline="true">
+                            </video>
+                        </div>
+
+                        <div class="capture-snapshot-container text-center" t-att-class="{ 'd-none': !this.state.hasSnapshot }">
+                            <div class="small fw-semibold text-muted mb-1">Captured Preview</div>
+                            <canvas
+                                class="capture-snapshot-canvas rounded border bg-dark"
+                                t-ref="this.snapshot">
+                            </canvas>
+                        </div>
+                    </div>
+
+                    <div class="capture-modal-footer d-flex justify-content-end gap-2 pt-3 mt-3 border-top">
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm d-flex align-items-center gap-1"
+                            t-on-click="this.onClickCaptureImage">
+                            <i class="oi oi-fw" data-icon="photo_camera"/>
+                            <t t-if="this.state.hasSnapshot">Retake</t>
+                            <t t-else="">Capture</t>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-success btn-sm d-flex align-items-center gap-1"
+                            t-if="this.state.hasSnapshot"
+                            t-on-click="this.onClickSaveImage">
+                            <i class="oi oi-fw" data-icon="check"/> Save Image
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary btn-sm"
+                            t-on-click="this.stopCamera">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
+
+
+

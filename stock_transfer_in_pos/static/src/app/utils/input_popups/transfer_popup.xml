@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This template is used for creating stock transfer popup-->
+<templates id="template" xml:space="preserve">
+    <t t-name="stock_transfer_in_pos.TransferPopup">
+        <Dialog title="this.props.title" bodyClass="'d-flex flex-column justify-content-center'" size="'md'">
+            <div class="popup popup-text popup-med stock-transfer-popup p-3 w-100">
+                <h3 class="mb-4 text-center">Stock Transfer</h3>
+                <div class="mb-3 row align-items-center">
+                    <label for="picking" class="col-sm-4 col-form-label fw-bold">Picking Type:</label>
+                    <div class="col-sm-8">
+                        <select id="picking" class="form-select"
+                                t-ref="this.picking"
+                                t-on-change="(ev) => this._clickPicking(ev)"
+                                required="required">
+                            <option value="" selected="selected">Select an option</option>
+                            <t t-foreach="this.props.data['picking_type'] || []"
+                               t-as="picking" t-key="picking.id">
+                                <option t-att-value="picking.id"
+                                        t-att-data-type="picking.code">
+                                    <t t-out="picking.display_name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3 row align-items-center" id="source_tr" t-ref="this.source_tr">
+                    <label for="source_loc" class="col-sm-4 col-form-label fw-bold">Source Location:</label>
+                    <div class="col-sm-8">
+                        <select id="source_loc" class="form-select" t-ref="this.source_loc">
+                            <t t-foreach="this.props.data['location'] || []"
+                               t-as="loc" t-key="loc.id">
+                                <option t-att-value="loc.id"
+                                        t-att-selected="loc.id == this.props.data['wh_stock']">
+                                    <t t-out="loc.display_name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3 row align-items-center" id="dest_tr" t-ref="this.dest_tr">
+                    <label for="dest_loc" class="col-sm-4 col-form-label fw-bold">Destination Location:</label>
+                    <div class="col-sm-8">
+                        <select id="dest_loc" class="form-select" t-ref="this.dest_loc">
+                            <t t-foreach="this.props.data['location'] || []"
+                               t-as="loc" t-key="loc.id">
+                                <option t-att-value="loc.id"
+                                        t-att-selected="loc.id == this.props.data['wh_stock']">
+                                    <t t-out="loc.display_name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3 row align-items-center">
+                    <label for="state" class="col-sm-4 col-form-label fw-bold">State:</label>
+                    <div class="col-sm-8">
+                        <select id="state" class="form-select" t-ref="this.stage">
+                            <option value="draft">Draft</option>
+                            <option value="assigned">Ready</option>
+                            <option value="done">Done</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <div class="d-flex flex-grow-1 justify-content-center">
+                    <button class="btn btn-primary btn-lg lh-lg o-default-button me-2" tabindex="1" t-on-click="() => this.confirm()">
+                        <t t-out="this.props.confirmButtonLabel || 'Confirm'" />
+                    </button>
+                    <button class="btn btn-secondary btn-lg lh-lg o-default-button" tabindex="1" t-on-click="() => this.cancel()">
+                        Discard
+                    </button>
+                </div>
+            </t>
+        </Dialog>
+    </t>
+</templates>

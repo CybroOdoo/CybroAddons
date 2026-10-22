@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Add a button named as Add Attachment in payment page in website-->
+    <template id="payment_add_files" name="Upload Files"
+              inherit_id="website_sale.payment">
+        <xpath expr="//div[@id='payment_method']" position="after">
+            <div class="div-class-button mt-4 mb-4">
+                <div class="card p-3 border rounded shadow-sm">
+                    <h6 class="fw-bold mb-2">Order Attachments</h6>
+                    <form id="add_sale_attachment" method="POST"
+                          action="/shop/payment"
+                          enctype="multipart/form-data"
+                          class="mb-3">
+                        <input type="hidden" name="csrf_token"
+                               t-att-value="request.csrf_token()"/>
+                        <div class="input-group">
+                            <input type="file" name="attachment"
+                                   class="form-control"
+                                   required="required"
+                                   accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.csv,.doc,.docx,.xls,.xlsx,.odt,.ods"
+                            />
+                            <button type="submit" name="Upload"
+                                    class="btn btn-primary">
+                                <i class="oi oi-fw me-1" data-icon="upload"/> Upload
+                            </button>
+                        </div>
+                    </form>
+                    <div t-if="attachment_error" class="alert alert-danger py-2"
+                         role="alert" t-out="attachment_error"/>
+                    <small class="text-muted d-block mb-2">
+                        PDF, image, text, document or spreadsheet files, up to 10 MB.
+                    </small>
+                    <t t-if="attachment">
+                        <div class="d-flex flex-column gap-2 mt-2">
+                            <t t-foreach="attachment" t-as="attach">
+                                <div class="d-flex align-items-center justify-content-between p-2 border rounded bg-white js_attachment_item" t-att-data-id="attach.id">
+                                    <span class="text-truncate me-2 fw-medium text-dark" t-out="attach.name"/>
+                                    <button type="button" class="btn btn-sm btn-link text-danger p-0 js_delete_attachment" title="Delete Attachment">
+                                        <i class="oi oi-filled text-danger" data-icon="delete"/>
+                                    </button>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
