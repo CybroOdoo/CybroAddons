@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pos_order_line_mass_edit.MassEditPopup">
+        <Dialog
+                title="this.props.title"
+                bodyClass="'d-flex flex-column'"
+                size="'lg'"
+        >
+            <main class="body">
+                <div class="section-product-info-title">
+                    <div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <b>Product</b>
+                                    </th>
+                                    <th style="padding: 0px 0px 0px 10px;">
+                                        <b>Quantity</b>
+                                    </th>
+                                    <th style="padding: 0px 0px 0px 10px;">
+                                        <b>Unit</b>
+                                    </th>
+                                    <th style="padding: 0px 0px 0px 10px;">
+                                        <b>Price without tax</b>
+                                    </th>
+                                    <th
+                                            t-if="this.pos.config.manual_discount"
+                                            style="width: 90px; padding: 0px 0px 0px 10px;"
+                                    >
+                                        <b>Discount</b>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="this.lines" t-as="line" t-key="line.id">
+                                    <tr>
+                                        <td style="padding: 10px 10px 10px 0px;">
+                                            <b>
+                                                <t t-esc="line.full_product_name"/>
+                                            </b>
+                                        </td>
+                                        <td style="padding: 10px;">
+                                            <input
+                                                    class="form-control form-control-lg mt-2"
+                                                    t-on-input="(ev) => this.updateQty(line, ev.target.value)"
+                                                    type="number"
+                                                    step="any"
+                                                    name="quantity"
+                                                    t-att-value="line.qty"
+                                            />
+                                        </td>
+                                        <td style="padding: 10px;">
+                                            <b>
+                                                <t
+                                                        t-if="line.product_id?.uom_id?.name"
+                                                        t-esc="line.product_id.uom_id.name"
+                                                />
+                                                <t
+                                                        t-else=""
+                                                        t-esc="line.uom_id?.name || 'Unit'"
+                                                />
+                                            </b>
+                                        </td>
+                                        <td style="padding: 10px;">
+                                            <input
+                                                    class="form-control form-control-lg mt-2"
+                                                    t-on-input="(ev) => this.updatePrice(line, ev.target.value)"
+                                                    type="number"
+                                                    step="any"
+                                                    name="unitPrice"
+                                                    t-att-value="line.price_unit"
+                                            />
+                                        </td>
+                                        <td
+                                                t-if="this.pos.config.manual_discount"
+                                                style="padding: 10px;"
+                                        >
+                                            <input
+                                                    class="form-control form-control-lg mt-2"
+                                                    t-on-input="(ev) => this.updateDiscount(line, ev.target.value)"
+                                                    type="number"
+                                                    step="any"
+                                                    name="discount"
+                                                    t-att-value="line.discount"
+                                            />
+                                        </td>
+                                        <td style="padding: 10px;">
+                                            <button
+                                                    class="input-button btn btn-danger btn-lg mt-2"
+                                                    t-on-click="() => this.deleteOrderLine(line.id)"
+                                                    title="Delete"
+                                                    aria-label="Delete"
+                                            >
+                                                <i class="oi oi-filled" data-icon="delete" aria-hidden="true"/>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <t t-set-slot="footer">
+                <button
+                        t-if="this.lastDeleted"
+                        class="btn btn-warning"
+                        t-on-click="() => this.undoDelete()"
+                >
+                    <i class="oi oi-fw me-1" data-icon="undo"/>
+                    Undo Delete
+                </button>
+                <button
+                        class="btn btn-secondary"
+                        t-on-click="() => this.props.close()"
+                        t-esc="this.props.closeLabel"
+                />
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

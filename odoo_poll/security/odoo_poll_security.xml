@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.module.category" id="module_category_odoo_poll">
+            <field name="name">Odoo Poll</field>
+            <field name="sequence">13</field>
+            <field name="description">Roles and permissions</field>
+        </record>
+
+        <record model="res.groups.privilege" id="res_groups_privilege_odoo_poll">
+            <field name="name">Odoo Poll</field>
+            <field name="category_id" ref="odoo_poll.module_category_odoo_poll"/>
+        </record>
+
+        <record id="group_odoo_poll_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="privilege_id" ref="res_groups_privilege_odoo_poll"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="group_odoo_poll_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="privilege_id" ref="res_groups_privilege_odoo_poll"/>
+            <field name="implied_ids" eval="[(4, ref('group_odoo_poll_user'))]"/>
+        </record>
+
+        <record id="poll_user_own_rule" model="ir.access">
+            <field name="name">User: Own Polls Only (Write/Unlink)</field>
+            <field name="model_id" ref="odoo_poll.model_discuss_poll"/>
+            <field name="group_id" ref="odoo_poll.group_odoo_poll_user"/>
+            <field name="domain">[('author_id', '=', user.partner_id.id)]</field>
+            <field name="operation">ud</field>
+        </record>
+
+        <record id="poll_option_user_own_rule" model="ir.access">
+            <field name="name">Poll Option: Own Poll Options Only (Write/Unlink)</field>
+            <field name="model_id" ref="odoo_poll.model_poll_option"/>
+            <field name="group_id" ref="odoo_poll.group_odoo_poll_user"/>
+            <field name="domain">[('poll_id.author_id', '=', user.partner_id.id)]</field>
+            <field name="operation">ud</field>
+        </record>
+
+        <record id="poll_vote_user_own_rule" model="ir.access">
+            <field name="name">Vote: Own Votes Only (Unlink)</field>
+            <field name="model_id" ref="odoo_poll.model_poll_vote"/>
+            <field name="group_id" ref="base.group_user"/>
+            <field name="domain">[('voter_id', '=', user.partner_id.id)]</field>
+            <field name="operation">d</field>
+        </record>
+
+        <record id="poll_multi_company_rule" model="ir.access">
+            <field name="name">Poll: Multi-Company Isolation</field>
+            <field name="model_id" ref="odoo_poll.model_discuss_poll"/>
+            <field name="domain">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="operation">crud</field>
+        </record>
+
+        <record id="poll_option_multi_company_rule" model="ir.access">
+            <field name="name">Poll Option: Multi-Company Isolation</field>
+            <field name="model_id" ref="odoo_poll.model_poll_option"/>
+            <field name="domain">['|', ('poll_id.company_id', '=', False), ('poll_id.company_id', 'in', company_ids)]</field>
+            <field name="operation">crud</field>
+        </record>
+
+        <record id="poll_vote_multi_company_rule" model="ir.access">
+            <field name="name">Poll Vote: Multi-Company Isolation</field>
+            <field name="model_id" ref="odoo_poll.model_poll_vote"/>
+            <field name="domain">['|', ('poll_id.company_id', '=', False), ('poll_id.company_id', 'in', company_ids)]</field>
+            <field name="operation">crud</field>
+        </record>
+    </data>
+</odoo>

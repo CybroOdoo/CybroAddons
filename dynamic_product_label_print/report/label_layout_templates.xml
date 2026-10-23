@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Template layout for printing the labels-->
+    <template id="report_dynamic">
+        <t t-call="web.basic_layout">
+            <div class="page">
+                <t t-call="dynamic_product_label_print.report_productlabel_dynamic">
+                    <t t-set="products" t-value="products"/>
+                </t>
+            </div>
+        </t>
+    </template>
+    <!--Passing dynamic fields to the template-->
+    <template id="report_dynamic_label">
+        <div class="text-center o_label_small_barcode"
+             style="border: 1px solid black; padding: 12px; display: inline-block; margin: 10px; width: 220px; text-align: center;">
+            
+            <t t-if="item_data.get('field_lines')">
+                <t t-foreach="item_data.get('field_lines')" t-as="fline">
+                    <div t-attf-style="font-size: #{fline.get('size', '14')}px !important; color: #{fline.get('color', '#000000')} !important; font-weight: normal; margin-bottom: 4px;">
+                        <t t-out="fline.get('val')"/>
+                    </div>
+                </t>
+            </t>
+            <t t-else="">
+                <!-- 1. Category -->
+                <t t-set="cat_line" t-value="item_data.get('cat_line', {}) or {}"/>
+                <t t-set="cat_size" t-value="cat_line.get('size') or '14'"/>
+                <t t-set="cat_color" t-value="cat_line.get('color') or 'red'"/>
+                <div t-attf-style="font-size: #{cat_size}px !important; color: #{cat_color} !important; font-weight: normal; margin-bottom: 4px;">
+                    <t t-out="item_data.get('categ_name') or (product.categ_id and (product.categ_id.display_name or product.categ_id.name)) or ''"/>
+                </div>
+
+                <!-- 2. Price -->
+                <t t-set="price_line" t-value="item_data.get('price_line', {}) or {}"/>
+                <t t-set="price_size" t-value="price_line.get('size') or '16'"/>
+                <t t-set="price_color" t-value="price_line.get('color') or 'green'"/>
+                <div t-attf-style="font-size: #{price_size}px !important; color: #{price_color} !important; font-weight: normal; margin-bottom: 4px;">
+                    <t t-out="item_data.get('price') or product.list_price or '0.0'"/>
+                </div>
+
+                <!-- 3. Name -->
+                <t t-set="name_line" t-value="item_data.get('name_line', {}) or {}"/>
+                <t t-set="name_size" t-value="name_line.get('size') or '14'"/>
+                <t t-set="name_color" t-value="name_line.get('color') or 'blue'"/>
+                <div t-attf-style="font-size: #{name_size}px !important; color: #{name_color} !important; font-weight: normal; margin-bottom: 6px;">
+                    <t t-out="item_data.get('product_name') or product.name or ''"/>
+                </div>
+            </t>
+
+            <!-- 4. Barcode -->
+            <div style="margin-top: 8px; text-align: center;">
+                <t t-set="bcode" t-value="item_data.get('barcode') or product.barcode or product.default_code or product.name or ''"/>
+                <t t-if="bcode">
+                    <div t-out="bcode" style="padding:0; margin: 0 auto;"
+                         t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'Code128', 'img_style': barcode_size}"/>
+                    <div class="o_label_name"
+                         style="height:1.7em; background-color: transparent; font-size:16px; margin-top:4px;">
+                        <span t-out="bcode"/>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </template>
+    <!--Calling the template report_dynamic_label-->
+    <template id="report_productlabel_dynamic">
+        <t t-call="web.html_container">
+            <t t-set="bc_w" t-value="bc_width or '20'"/>
+            <t t-set="bc_h" t-value="bc_height or '10'"/>
+            <t t-set="barcode_size"
+                t-value="'width:%smm;height:%smm' % (bc_w, bc_h)"/>
+            <t t-set="padding_page" t-value="'padding: 2mm'"/>
+            <t t-foreach="quantity.items()" t-as="barcode_and_qty_by_product">
+                <t t-set="product" t-value="barcode_and_qty_by_product[0]"/>
+                <t t-foreach="barcode_and_qty_by_product[1]" t-as="item_data">
+                    <t t-foreach="range(item_data['qty'])" t-as="qty">
+                        <t t-call="dynamic_product_label_print.report_dynamic_label">
+                            <t t-set="item_data" t-value="item_data"/>
+                            <t t-set="product" t-value="product"/>
+                        </t>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
+    <!--Defined report action-->
+    <record id="dynamic_product_label_print.product_label_layout_form_dynamic"
+            model="ir.actions.report">
+        <field name="name">Product Label (PDF)</field>
+        <field name="model">product.template</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dynamic_product_label_print.report_dynamic</field>
+        <field name="paperformat_id" ref="product.paperformat_label_sheet"/>
+        <field name="print_report_name">'Product Labels - %s' %
+            (object.name)
+        </field>
+        <field name="binding_model_id" eval="False"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
