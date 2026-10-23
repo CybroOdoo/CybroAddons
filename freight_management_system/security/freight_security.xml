@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Module category for Freight Management -->
+        <record id="module_category_freight_management" model="ir.module.category">
+            <field name="name">Freight</field>
+            <field name="sequence">0</field>
+            <field name="visible" eval="0"/>
+        </record>
+
+        <record id="res_groups_privilege_freight_management" model="res.groups.privilege">
+            <field name="name">Freight</field>
+            <field name="category_id" ref="module_category_freight_management"/>
+            <field name="sequence">7</field>
+        </record>
+
+        <!-- Freight User: operational access, read-only master data. It
+             implies the invoicing group, as freight orders create and count
+             customer invoices. -->
+        <record id="group_freight_user" model="res.groups">
+            <field name="name">Freight User</field>
+            <field name="privilege_id" ref="res_groups_privilege_freight_management"/>
+            <field name="sequence">1</field>
+            <field name="implied_ids"
+                   eval="[(4, ref('base.group_user')), (4, ref('account.group_account_invoice'))]"/>
+        </record>
+
+        <record id="group_freight" model="res.groups">
+            <field name="name">Freight Manager</field>
+            <field name="privilege_id" ref="res_groups_privilege_freight_management"/>
+            <field name="sequence">2</field>
+            <field name="implied_ids" eval="[(4, ref('group_freight_user'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+</odoo>

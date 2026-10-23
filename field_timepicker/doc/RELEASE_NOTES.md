@@ -1,0 +1,8 @@
+## Module <field_timepicker>
+
+#### 22.10.2026
+#### Version 20.0.1.0.0
+#### ADD
+
+- Initial release of Field Time Picker.
+- Time Picker Widget for Character Fields

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <!-- Sub-template for POS orderline search bar -->
+    <t t-name="pos_orderline_search.SearchBar">
+        <div t-if="this.props.mode !== 'receipt'" class="pos-orderline-search pt-1 position-relative w-100">
+            <Dropdown>
+                <div class="pos-search-bar d-flex align-items-center position-relative w-100">
+                    <input type="text"
+                           t-model.proxy="this.searchState.search"
+                           placeholder="Search for a product in the order line..."
+                           class="form-control search-product pe-4"
+                           t-on-keyup="(ev) => this._onKeyupSearch(ev)"/>
+                    <button t-if="this.searchState.search"
+                            type="button"
+                            class="btn position-absolute end-0 p-1 border-0 bg-transparent text-secondary me-1"
+                            t-on-click="() => this._onClickCancelSearch()">
+                        <i class="fa fa-times search-clear-btn"/>
+                    </button>
+                </div>
+                <t t-set-slot="content">
+                    <t t-foreach="this.searchState.lines" t-as="line" t-key="line.uuid || line.id || line_index">
+                        <DropdownItem onSelected="() => this._onSelectOrderline(line)"
+                                      class="'btn rounded-0 d-flex align-items-center px-3 py-2 w-100 text-start border-bottom'">
+                            <span class="fw-semibold text-truncate" t-out="line.full_product_name || line.product_id?.display_name || line.display_name"/>
+                        </DropdownItem>
+                    </t>
+                    <div t-if="this.searchState.noProductsAvailable" class="px-3 py-2 text-danger fst-italic">
+                        <span>No products available.</span>
+                    </div>
+                </t>
+            </Dropdown>
+        </div>
+    </t>
+
+    <!-- Extend OrderDisplay to add POS orderline search below Total and in empty cart -->
+    <t t-name="pos_orderline_search.OrderDisplay"
+       t-inherit="point_of_sale.OrderDisplay" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('order-summary')]" position="inside">
+            <t t-call="pos_orderline_search.SearchBar"/>
+        </xpath>
+        <xpath expr="//t[@t-elif]/*[1]" position="before">
+            <t t-call="pos_orderline_search.SearchBar"/>
+        </xpath>
+    </t>
+</templates>

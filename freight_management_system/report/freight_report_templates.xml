@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    For freight order report-->
+    <record id="report_freight" model="ir.actions.report">
+        <field name="name">Freight Order</field>
+        <field name="model">freight.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">freight_management_system.report_freight_order</field>
+        <field name="print_report_name">'Freight Order - %s' % object.name</field>
+        <field name="binding_model_id" ref="model_freight_order"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!--    Report Template-->
+    <template id="report_freight_order">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <center>
+                        <b>
+                            <h3>Order Details</h3>
+                        </b>
+                    </center>
+                    <b>
+                        <h3>
+                            <t t-out="doc.name"/>
+                        </h3>
+                    </b>
+                    <br/>
+                    <div name="customer">
+                        <strong>Customer:</strong>
+                    </div>
+                    <div name="customer_details">
+                        <div t-field="doc.shipper_id"
+                             t-options='{"widget": "contact", "fields": ["name", "address"], "no_marker": True}'/>
+                    </div>
+                    <br/>
+                    <table class="table o_main_table">
+                        <tbody class="order_body">
+                            <tr>
+                                <td name="loading_port">
+                                    <strong>Loading Port</strong>
+                                </td>
+                                <td name="loading">
+                                    <span t-field="doc.loading_port_id.name"/>
+                                </td>
+                                <td name="destination_port">
+                                    <strong>Destination Port</strong>
+                                </td>
+                                <td name="destination">
+                                    <span t-field="doc.discharging_port_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td name="direction">
+                                    <strong>Direction</strong>
+                                </td>
+                                <td name="direction_name">
+                                    <span t-field="doc.type"/>
+                                </td>
+                                <td name="transport">
+                                    <strong>Transport</strong>
+                                </td>
+                                <td name="transport_name">
+                                    <span t-field="doc.transport_type"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td name="date">
+                                    <strong>Date</strong>
+                                </td>
+                                <td name="date_value">
+                                    <span t-field="doc.order_date"/>
+                                </td>
+                                <td name="expected">
+                                    <strong>Expected Date</strong>
+                                </td>
+                                <td name="expected_name">
+                                    <span t-field="doc.expected_date"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div name="orders">
+                        <strong>Orders:</strong>
+                    </div>
+                    <table class="table o_main_table">
+                        <thead style="display: table-row-group">
+                            <tr>
+                                <th name="th_container" class="text-start">
+                                    Container
+                                </th>
+                                <th name="th_goods" class="text-start">Goods</th>
+                                <th name="th_billing_on" class="text-start">
+                                    Billing On
+                                </th>
+                                <th name="th_pricing" class="text-start">
+                                    Pricing
+                                </th>
+                                <th name="th_volume" class="text-start">Volume
+                                </th>
+                                <th name="th_weight" class="text-start">Weight
+                                </th>
+                                <th name="th_unit_price" class="text-start">Unit
+                                    Price
+                                </th>
+                                <th name="th_total_price" class="text-start">
+                                    Total Price
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-light fw-bold"
+                                t-foreach="doc.order_ids" t-as="order">
+                                <td t-out="order.container_id.name"/>
+                                <td t-out="order.product_id.name"/>
+                                <td>
+                                    <span t-field="order.billing_type"/>
+                                </td>
+                                <td t-out="order.pricing_id.name"/>
+                                <td t-field="order.volume"/>
+                                <td t-field="order.weight"/>
+                                <td t-field="order.price"/>
+                                <td t-field="order.total_price"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-end mb-3 fw-bold">
+                        <strong>Total Orders: </strong>
+                        <span t-field="doc.total_order_price"/>
+                    </div>
+                    <div name="route">
+                        <strong>Route:</strong>
+                    </div>
+                    <table class="table o_main_table">
+                        <thead style="display: table-row-group">
+                            <tr>
+                                <th name="th_operation" class="text-start">
+                                    Operation
+                                </th>
+                                <th name="th_source" class="text-start">Source
+                                    location
+                                </th>
+                                <th name="th_destination" class="text-start">
+                                    Destination Location
+                                </th>
+                                <th name="th_transport" class="text-start">
+                                    Transport
+                                </th>
+                                <th name="th_price" class="text-start">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-light fw-bold"
+                                t-foreach="doc.route_ids" t-as="route">
+                                <td t-out="route.routes_id.name"/>
+                                <td t-out="route.source_loc_id.name"/>
+                                <td t-out="route.destination_loc_id.name"/>
+                                <td>
+                                    <span t-field="route.transport_type"/>
+                                </td>
+                                <td t-field="route.sale"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-end mb-3 fw-bold">
+                        <strong>Total Routes: </strong>
+                        <span t-field="doc.total_route_sale"/>
+                    </div>
+                    <br/>
+                    <div name="service">
+                        <strong>Service:</strong>
+                    </div>
+                    <table class="table o_main_table">
+                        <thead style="display: table-row-group">
+                            <tr>
+                                <th name="th_vendor" class="text-start">Vendor
+                                </th>
+                                <th name="th_service" class="text-start">
+                                    Service
+                                </th>
+                                <th name="th_quantity" class="text-start">
+                                    Quantity
+                                </th>
+                                <th name="th_sale" class="text-start">Sale</th>
+                                <th name="th_sale_total" class="text-start">Total
+                                    sale
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-light fw-bold"
+                                t-foreach="doc.service_ids" t-as="service">
+                                <td t-out="service.partner_id.name"/>
+                                <td t-out="service.service_id.name"/>
+                                <td t-field="service.qty"/>
+                                <td t-field="service.sale"/>
+                                <td t-field="service.total_sale"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-end mb-3 fw-bold">
+                        <strong>Total Services: </strong>
+                        <span t-field="doc.total_service_sale"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
