@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,10 +20,9 @@
 #############################################################################
 {
     'name': 'Waste Management Base',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.2',
     'category': 'Operations/Waste Management',
     'summary': 'Base module for Waste Management',
-    'description': "Provides core models, configurations, and electronic signature utilities for Waste Management.",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Technologies Pvt. Ltd.',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -34,10 +32,11 @@
         'mail',
         'product',
         'web',
-        'portal',
     ],
     'external_dependencies': {
-        'python': ['PyPDF2', 'reportlab', 'PIL'],
+        # PDF handling goes through odoo.tools.pdf (pypdf / PyPDF2, whichever
+        # Odoo itself uses), so no direct PDF library requirement here.
+        'python': ['reportlab', 'pillow'],
     },
     'data': [
         'security/security.xml',
@@ -48,6 +47,7 @@
         'data/wm_signature_mail_template_data.xml',
         'wizards/wm_signature_request_wizard_views.xml',
         'wizards/wm_signature_sign_now_wizard_views.xml',
+        'wizards/wm_premium_feature_wizard_views.xml',
         'views/res_config_settings_views.xml',
         'views/webclient_login_templates.xml',
         'views/wm_dashboard_views.xml',
@@ -58,6 +58,8 @@
         'views/wm_waste_material_views.xml',
         'views/wm_container_type_views.xml',
         'views/wm_compliance_code_views.xml',
+        'views/wm_disposal_facility_views.xml',
+        'views/wm_category_billing_rule_views.xml',
         'views/wm_signature_role_views.xml',
         'views/wm_signature_template_views.xml',
         'views/wm_signature_request_views.xml',
@@ -72,13 +74,21 @@
         'demo/demo_signature_templates.xml',
     ],
     'assets': {
+        'web._assets_primary_variables': [
+            'wm_base/static/src/scss/primary_variables.scss',
+        ],
+        'web.assets_tests': [
+            'wm_base/static/tests/tours/wm_dashboard_tour.js',
+            'wm_base/static/tests/tours/wm_js_tour.js',
+        ],
         'web.assets_frontend': [
             'wm_base/static/src/css/signature_portal.css',
-            'wm_base/static/src/scss/portal_loading.scss',
+            'wm_base/static/src/scss/loading_indicator.scss',
         ],
         'web.assets_backend': [
-            'wm_base/static/src/scss/primary_variables.scss',
             'wm_base/static/src/scss/style.scss',
+            'wm_base/static/src/scss/loading_indicator.scss',
+            'wm_base/static/src/css/wm_premium.css',
             'wm_base/static/src/js/navbar.js',
             'wm_base/static/src/js/chatter_shadow_patch.js',
             'wm_base/static/src/xml/navbar.xml',
@@ -95,7 +105,5 @@
     },
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
     'application': True,
 }

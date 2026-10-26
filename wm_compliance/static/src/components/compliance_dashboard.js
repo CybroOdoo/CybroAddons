@@ -511,7 +511,13 @@ export class WmComplianceDashboard extends Component {
             type: "ir.actions.act_window",
             res_model: "wm.compliance.manifest",
             views: [[false, "list"], [false, "form"]],
-            domain: [["state", "in", ["submitted", "collected"]], ["custody_ids", "=", false]],
+            // Mirrors wm.compliance.dashboard._get_missing_custody_domain()
+            domain: [
+                "|", "|",
+                "&", ["state", "=", "submitted"], ["custody_ids", "not any", [["action", "=", "generated"]]],
+                "&", ["state", "=", "collected"], ["custody_ids", "not any", [["action", "=", "collected"]]],
+                "&", ["state", "=", "disposed"], ["custody_ids", "not any", [["action", "=", "disposed"]]],
+            ],
             target: "current",
         });
     }

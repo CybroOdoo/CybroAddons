@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,8 +21,7 @@
 import logging
 
 from odoo.exceptions import UserError
-from odoo.tests import tagged, TransactionCase
-
+from odoo.tests import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -38,7 +36,7 @@ class TestWasteBatchWorkflow(TransactionCase):
         Set up test class fixtures and environment.
         """
         super().setUpClass()
-        cls.category = cls.env['wm.waste.category'].create({
+        cls.category = cls.env['wm.waste.category'].search([('code', '=', 'WKFLCAT')], limit=1) or cls.env['wm.waste.category'].create({
             'name': 'Workflow Test Category',
             'code': 'WKFLCAT',
         })
@@ -47,17 +45,20 @@ class TestWasteBatchWorkflow(TransactionCase):
             'is_waste_material': True,
             'wm_waste_category_id': cls.category.id,
             'is_storable': True,
+            'company_id': False,
         })
+        warehouse = cls.env['stock.warehouse'].search([('company_id', '=', cls.env.company.id)], limit=1) or cls.env['stock.warehouse'].search([], limit=1)
+        cls.warehouse = warehouse
         cls.dest_location = cls.env['stock.location'].create({
             'name': 'Sorted Yard Stream A',
             'usage': 'internal',
+            'company_id': cls.env.company.id,
+            'location_id': warehouse.lot_stock_id.location_id.id if warehouse and warehouse.lot_stock_id else False,
         })
         cls.category_sort_config = cls.env['wm.waste.category.sort.config'].create({
             'category_id': cls.category.id,
             'dest_location_id': cls.dest_location.id,
         })
-        warehouse = cls.env['stock.warehouse'].search([('company_id', '=', cls.env.company.id)], limit=1) or cls.env['stock.warehouse'].search([], limit=1)
-        cls.warehouse = warehouse
         cls.location = warehouse.lot_stock_id if warehouse else cls.env['stock.location'].search([('usage', '=', 'internal')], limit=1)
 
     def test_category_batch_intake_and_auto_line_resolution(self):

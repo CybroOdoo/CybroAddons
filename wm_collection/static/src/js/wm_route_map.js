@@ -2,10 +2,67 @@
 
 import { registry } from "@web/core/registry";
 import { Layout } from "@web/search/layout";
-import { Component, onMounted, onWillUnmount, onWillUpdateProps, useRef, useState } from "@odoo/owl";
+import { Component, onMounted, onWillUnmount, useRef, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
+import { useRecordObserver } from "@web/model/relational_model/utils";
 import { _t } from "@web/core/l10n/translation";
+import { escape } from "@web/core/utils/strings";
+
+const DEFAULT_MAP_CONFIG = {
+    tile_url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    osrm_url: "https://router.project-osrm.org/route/v1/driving",
+};
+let _mapConfigPromise = null;
+/** Tile and routing servers configured in Settings (falls back to the public ones). */
+function getMapConfig(orm) {
+    if (!_mapConfigPromise) {
+        _mapConfigPromise = orm.call("wm.route", "get_map_config", [])
+            .then((cfg) => ({
+                tile_url: (cfg && cfg.tile_url) || DEFAULT_MAP_CONFIG.tile_url,
+                osrm_url: (cfg && cfg.osrm_url) || DEFAULT_MAP_CONFIG.osrm_url,
+            }))
+            .catch(() => DEFAULT_MAP_CONFIG);
+    }
+    return _mapConfigPromise;
+}
+
+/**
+ * Extract a user-readable message from an RPC / JS error.
+ */
+function getErrorMessage(error, fallback) {
+    return error?.data?.message || error?.message || fallback;
+}
+
+/**
+ * Bind the Add/Remove buttons of a popup content node exactly once, when the
+ * node is created (the node is reused on every popup open, so binding on
+ * "popupopen" would stack duplicate handlers).
+ */
+function bindPopupButtons(component, popupContent) {
+    const addBtn = popupContent.querySelector(".js_add_to_route");
+    if (addBtn) {
+        addBtn.addEventListener("click", async (ev) => {
+            ev.preventDefault();
+            const pointId = parseInt(addBtn.dataset.pointId);
+            if (pointId && component.map) {
+                component.map.closePopup();
+                await component.addPointToRoute(pointId);
+            }
+        });
+    }
+    const removeBtn = popupContent.querySelector(".js_remove_from_route");
+    if (removeBtn) {
+        removeBtn.addEventListener("click", async (ev) => {
+            ev.preventDefault();
+            const pointId = parseInt(removeBtn.dataset.pointId);
+            if (pointId && component.map) {
+                component.map.closePopup();
+                await component.removePointFromRoute(pointId);
+            }
+        });
+    }
+}
 
 export class WmRouteMapAction extends Component {
     static template = "wm_collection.WmRouteMap";
@@ -37,6 +94,7 @@ export class WmRouteMapAction extends Component {
         onWillUnmount(() => {
             if (this.map) {
                 this.map.remove();
+                this.map = null;
             }
         });
     }
@@ -56,49 +114,28 @@ export class WmRouteMapAction extends Component {
         this.map = L.map(this.mapContainer.el).setView([0, 0], 2);
 
         // Load street layer
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        const tileLayer = L.tileLayer(DEFAULT_MAP_CONFIG.tile_url, {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(this.map);
-
-        // Listen for popup open events to bind Add/Remove button click handlers
-        this.map.on('popupopen', (e) => {
-            const popupNode = e.popup.getElement();
-            if (!popupNode) return;
-
-            const addBtn = popupNode.querySelector('.js_add_to_route');
-            if (addBtn) {
-                addBtn.addEventListener('click', async (ev) => {
-                    ev.preventDefault();
-                    const pointId = parseInt(addBtn.dataset.pointId);
-                    if (pointId) {
-                        this.map.closePopup();
-                        await this.addPointToRoute(pointId);
-                    }
-                });
-            }
-
-            const removeBtn = popupNode.querySelector('.js_remove_from_route');
-            if (removeBtn) {
-                removeBtn.addEventListener('click', async (ev) => {
-                    ev.preventDefault();
-                    const pointId = parseInt(removeBtn.dataset.pointId);
-                    if (pointId) {
-                        this.map.closePopup();
-                        await this.removePointFromRoute(pointId);
-                    }
-                });
+        getMapConfig(this.orm).then((cfg) => {
+            if (cfg.tile_url !== DEFAULT_MAP_CONFIG.tile_url) {
+                tileLayer.setUrl(cfg.tile_url);
             }
         });
+
     }
 
     async loadRouteData() {
         const routeId = this.props.action?.params?.route_id || this.props.action?.context?.active_id;
         if (!routeId) return;
         this.routeId = routeId;
+        const loadToken = (this._loadToken = (this._loadToken || 0) + 1);
 
         try {
             const result = await this.orm.read("wm.route", [routeId], ["name", "estimated_duration", "route_map_data"]);
+            // Component unmounted or a newer load started meanwhile.
+            if (!this.map || loadToken !== this._loadToken) return;
             if (result && result.length > 0) {
                 this.state.routeName = result[0].name || "Route";
                 if (result[0].estimated_duration) {
@@ -108,6 +145,7 @@ export class WmRouteMapAction extends Component {
             }
         } catch (error) {
             console.error("Failed to load route map data", error);
+            this.notification.add(getErrorMessage(error, _t("Failed to load route map data.")), { type: "danger" });
         }
     }
 
@@ -121,6 +159,7 @@ export class WmRouteMapAction extends Component {
             await this.loadRouteData();
         } catch (error) {
             console.error("Failed to add point to route", error);
+            this.notification.add(getErrorMessage(error, _t("Failed to add the collection point to the route.")), { type: "danger" });
         }
     }
 
@@ -134,11 +173,14 @@ export class WmRouteMapAction extends Component {
             await this.loadRouteData();
         } catch (error) {
             console.error("Failed to remove point from route", error);
+            this.notification.add(getErrorMessage(error, _t("Failed to remove the collection point from the route.")), { type: "danger" });
         }
     }
 
     async updateMap(rawValue) {
         if (!this.map) return;
+        // Serialize renders: only the latest call may draw after an await.
+        const renderToken = (this._renderToken = (this._renderToken || 0) + 1);
 
         // Clear existing markers
         this.markers.forEach(marker => marker.remove());
@@ -163,6 +205,7 @@ export class WmRouteMapAction extends Component {
                 }
             } catch (e) {
                 console.error("Failed to parse route_map_data", e);
+                this.notification.add(_t("Route map data could not be read."), { type: "danger" });
             }
         }
 
@@ -196,12 +239,12 @@ export class WmRouteMapAction extends Component {
                 popupContent.innerHTML = `
                     <div class="mb-2">
                         <div class="fw-bold text-muted small"><i class="fa fa-map-marker me-1"></i>Collection Point</div>
-                        <div class="fw-bold text-dark" style="font-size: 14px;">${point.name}</div>
+                        <div class="fw-bold text-dark" style="font-size: 14px;">${escape(point.name)}</div>
                     </div>
                     ${point.address ? `
                     <div class="mb-3">
                         <div class="fw-bold text-muted small">Address</div>
-                        <div class="text-break">${point.address}</div>
+                        <div class="text-break">${escape(point.address)}</div>
                     </div>` : ""}
                     <div class="d-flex flex-column gap-2">
                         <button type="button" 
@@ -216,6 +259,8 @@ export class WmRouteMapAction extends Component {
                         </a>
                     </div>
                 `;
+
+                bindPopupButtons(this, popupContent);
 
                 const marker = L.marker(latlng, { icon })
                     .addTo(this.map)
@@ -238,7 +283,7 @@ export class WmRouteMapAction extends Component {
                     className: 'wm-route-marker-container',
                     html: `
                         <div class="wm-route-marker-pin">
-                            <div class="wm-route-marker-circle">${point.index}</div>
+                            <div class="wm-route-marker-circle">${escape(point.index)}</div>
                             <div class="wm-route-marker-arrow"></div>
                         </div>
                     `,
@@ -251,13 +296,13 @@ export class WmRouteMapAction extends Component {
                 popupContent.className = "o_map_popup";
                 popupContent.innerHTML = `
                     <div class="mb-2">
-                        <div class="fw-bold text-muted small">Stop ${point.index}</div>
-                        <div class="fw-bold text-primary" style="font-size: 14px;">${point.name}</div>
+                        <div class="fw-bold text-muted small">Stop ${escape(point.index)}</div>
+                        <div class="fw-bold text-primary" style="font-size: 14px;">${escape(point.name)}</div>
                     </div>
                     ${point.address ? `
                     <div class="mb-3">
                         <div class="fw-bold text-muted small">Address</div>
-                        <div class="text-break">${point.address}</div>
+                        <div class="text-break">${escape(point.address)}</div>
                     </div>` : ""}
                     <div class="d-flex flex-column gap-2">
                         <button type="button" 
@@ -272,6 +317,8 @@ export class WmRouteMapAction extends Component {
                         </a>
                     </div>
                 `;
+
+                bindPopupButtons(this, popupContent);
 
                 const marker = L.marker(latlng, { icon })
                     .addTo(this.map)
@@ -291,7 +338,8 @@ export class WmRouteMapAction extends Component {
                     lineJoin: 'round'
                 }).addTo(this.map);
 
-                await this.fetchRoadRoute(routePoints, routeLatLngs);
+                await this.fetchRoadRoute(routePoints, routeLatLngs, renderToken);
+                if (!this.map || renderToken !== this._renderToken) return;
             }
         }
 
@@ -301,19 +349,22 @@ export class WmRouteMapAction extends Component {
         }
     }
 
-    async fetchRoadRoute(points, latlngs) {
+    async fetchRoadRoute(points, latlngs, renderToken) {
         if (points.length < 2) return;
 
         const coordString = points
             .map(p => `${parseFloat(p.lng)},${parseFloat(p.lat)}`)
             .join(';');
 
-        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`;
+        const mapConfig = await getMapConfig(this.orm);
+        const osrmUrl = `${mapConfig.osrm_url.replace(/\/+$/, "")}/${coordString}?overview=full&geometries=geojson`;
 
         try {
             const response = await fetch(osrmUrl);
+            if (!this.map || renderToken !== this._renderToken) return;
             if (response.ok) {
                 const data = await response.json();
+                if (!this.map || renderToken !== this._renderToken) return;
                 if (data.routes && data.routes.length > 0) {
                     const route = data.routes[0];
                     const routeCoords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
@@ -332,10 +383,25 @@ export class WmRouteMapAction extends Component {
 
                     this.state.totalDistance = (route.distance / 1000).toFixed(1);
                     this.state.totalDuration = Math.round(route.duration / 60);
+                    return;
                 }
             }
+            throw new Error(response.statusText || "Empty route response");
         } catch (e) {
             console.warn("OSRM road route fetch failed, using direct line fallback", e);
+            if (!this.map || renderToken !== this._renderToken) return;
+            if (this.polyline) {
+                this.polyline.remove();
+            }
+            const fallbackCoords = points.map(p => [parseFloat(p.lat), parseFloat(p.lng)]);
+            this.polyline = L.polyline(fallbackCoords, {
+                color: '#71639e',
+                weight: 4,
+                dashArray: '6, 8',
+                opacity: 0.8,
+                lineCap: 'round',
+                lineJoin: 'round'
+            }).addTo(this.map);
         }
     }
 }
@@ -398,10 +464,15 @@ export class WmRouteMapField extends Component {
             }
         });
 
-        onWillUpdateProps((nextProps) => {
-            const nextVal = nextProps.value || nextProps.record?.data?.route_map_data;
-            if (nextVal !== this.lastRawValue) {
-                this.loadAndRenderMap(nextVal);
+        // Redraw when the field value changes. The record object passed in
+        // props stays the same when it reloads (e.g. after adding/removing a
+        // stop or editing route lines), so onWillUpdateProps never fires, and
+        // the template doesn't read the value so the component isn't
+        // re-rendered either: observe the record instead.
+        useRecordObserver((record) => {
+            const value = record.data[this.props.name];
+            if (this.map && value !== this.lastRawValue) {
+                this.loadAndRenderMap(value);
             }
         });
 
@@ -421,6 +492,7 @@ export class WmRouteMapField extends Component {
 
     async loadAndRenderMap(val) {
         let rawData = val !== undefined ? val : (this.props.value || this.props.record?.data?.route_map_data);
+        const loadToken = (this._loadToken = (this._loadToken || 0) + 1);
 
         if (!rawData && this.routeId) {
             try {
@@ -430,7 +502,10 @@ export class WmRouteMapField extends Component {
                 }
             } catch (e) {
                 console.error("Failed to read route_map_data via ORM", e);
+                this.notification.add(getErrorMessage(e, _t("Failed to load route map data.")), { type: "danger" });
             }
+            // Component unmounted or a newer load started meanwhile.
+            if (!this.map || loadToken !== this._loadToken) return;
         }
 
         this.lastRawValue = rawData;
@@ -442,39 +517,16 @@ export class WmRouteMapField extends Component {
 
         this.map = L.map(this.mapContainer.el).setView([0, 0], 2);
 
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        const tileLayer = L.tileLayer(DEFAULT_MAP_CONFIG.tile_url, {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(this.map);
-
-        this.map.on('popupopen', (e) => {
-            const popupNode = e.popup.getElement();
-            if (!popupNode) return;
-
-            const addBtn = popupNode.querySelector('.js_add_to_route');
-            if (addBtn) {
-                addBtn.addEventListener('click', async (ev) => {
-                    ev.preventDefault();
-                    const pointId = parseInt(addBtn.dataset.pointId);
-                    if (pointId) {
-                        this.map.closePopup();
-                        await this.addPointToRoute(pointId);
-                    }
-                });
-            }
-
-            const removeBtn = popupNode.querySelector('.js_remove_from_route');
-            if (removeBtn) {
-                removeBtn.addEventListener('click', async (ev) => {
-                    ev.preventDefault();
-                    const pointId = parseInt(removeBtn.dataset.pointId);
-                    if (pointId) {
-                        this.map.closePopup();
-                        await this.removePointFromRoute(pointId);
-                    }
-                });
+        getMapConfig(this.orm).then((cfg) => {
+            if (cfg.tile_url !== DEFAULT_MAP_CONFIG.tile_url) {
+                tileLayer.setUrl(cfg.tile_url);
             }
         });
+
     }
 
     get routeId() {
@@ -493,6 +545,7 @@ export class WmRouteMapField extends Component {
             }
         } catch (error) {
             console.error("Failed to add point to route", error);
+            this.notification.add(getErrorMessage(error, _t("Failed to add the collection point to the route.")), { type: "danger" });
         }
     }
 
@@ -508,11 +561,14 @@ export class WmRouteMapField extends Component {
             }
         } catch (error) {
             console.error("Failed to remove point from route", error);
+            this.notification.add(getErrorMessage(error, _t("Failed to remove the collection point from the route.")), { type: "danger" });
         }
     }
 
     async updateMap(rawValue) {
         if (!this.map) return;
+        // Serialize renders: only the latest call may draw after an await.
+        const renderToken = (this._renderToken = (this._renderToken || 0) + 1);
 
         this.markers.forEach(marker => marker.remove());
         this.markers = [];
@@ -535,6 +591,7 @@ export class WmRouteMapField extends Component {
                 }
             } catch (e) {
                 console.error("Failed to parse route_map_data", e);
+                this.notification.add(_t("Route map data could not be read."), { type: "danger" });
             }
         }
 
@@ -566,12 +623,12 @@ export class WmRouteMapField extends Component {
                 popupContent.innerHTML = `
                     <div class="mb-2">
                         <div class="fw-bold text-muted small"><i class="fa fa-map-marker me-1"></i>Collection Point</div>
-                        <div class="fw-bold text-dark" style="font-size: 14px;">${point.name}</div>
+                        <div class="fw-bold text-dark" style="font-size: 14px;">${escape(point.name)}</div>
                     </div>
                     ${point.address ? `
                     <div class="mb-3">
                         <div class="fw-bold text-muted small">Address</div>
-                        <div class="text-break">${point.address}</div>
+                        <div class="text-break">${escape(point.address)}</div>
                     </div>` : ""}
                     <div class="d-flex flex-column gap-2">
                         <button type="button" 
@@ -586,6 +643,8 @@ export class WmRouteMapField extends Component {
                         </a>
                     </div>
                 `;
+
+                bindPopupButtons(this, popupContent);
 
                 const marker = L.marker(latlng, { icon })
                     .addTo(this.map)
@@ -607,7 +666,7 @@ export class WmRouteMapField extends Component {
                     className: 'wm-route-marker-container',
                     html: `
                         <div class="wm-route-marker-pin">
-                            <div class="wm-route-marker-circle">${point.index}</div>
+                            <div class="wm-route-marker-circle">${escape(point.index)}</div>
                             <div class="wm-route-marker-arrow"></div>
                         </div>
                     `,
@@ -620,13 +679,13 @@ export class WmRouteMapField extends Component {
                 popupContent.className = "o_map_popup";
                 popupContent.innerHTML = `
                     <div class="mb-2">
-                        <div class="fw-bold text-muted small">Stop ${point.index}</div>
-                        <div class="fw-bold text-primary" style="font-size: 14px;">${point.name}</div>
+                        <div class="fw-bold text-muted small">Stop ${escape(point.index)}</div>
+                        <div class="fw-bold text-primary" style="font-size: 14px;">${escape(point.name)}</div>
                     </div>
                     ${point.address ? `
                     <div class="mb-3">
                         <div class="fw-bold text-muted small">Address</div>
-                        <div class="text-break">${point.address}</div>
+                        <div class="text-break">${escape(point.address)}</div>
                     </div>` : ""}
                     <div class="d-flex flex-column gap-2">
                         <button type="button" 
@@ -641,6 +700,8 @@ export class WmRouteMapField extends Component {
                         </a>
                     </div>
                 `;
+
+                bindPopupButtons(this, popupContent);
 
                 const marker = L.marker(latlng, { icon })
                     .addTo(this.map)
@@ -659,7 +720,8 @@ export class WmRouteMapField extends Component {
                     lineJoin: 'round'
                 }).addTo(this.map);
 
-                await this.fetchRoadRoute(routePoints, routeLatLngs);
+                await this.fetchRoadRoute(routePoints, routeLatLngs, renderToken);
+                if (!this.map || renderToken !== this._renderToken) return;
             }
         }
 
@@ -675,19 +737,22 @@ export class WmRouteMapField extends Component {
         }, 200);
     }
 
-    async fetchRoadRoute(points, latlngs) {
+    async fetchRoadRoute(points, latlngs, renderToken) {
         if (points.length < 2) return;
 
         const coordString = points
             .map(p => `${parseFloat(p.lng)},${parseFloat(p.lat)}`)
             .join(';');
 
-        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`;
+        const mapConfig = await getMapConfig(this.orm);
+        const osrmUrl = `${mapConfig.osrm_url.replace(/\/+$/, "")}/${coordString}?overview=full&geometries=geojson`;
 
         try {
             const response = await fetch(osrmUrl);
+            if (!this.map || renderToken !== this._renderToken) return;
             if (response.ok) {
                 const data = await response.json();
+                if (!this.map || renderToken !== this._renderToken) return;
                 if (data.routes && data.routes.length > 0) {
                     const route = data.routes[0];
                     const routeCoords = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
@@ -706,10 +771,25 @@ export class WmRouteMapField extends Component {
 
                     this.state.totalDistance = (route.distance / 1000).toFixed(1);
                     this.state.totalDuration = Math.round(route.duration / 60);
+                    return;
                 }
             }
+            throw new Error(response.statusText || "Empty route response");
         } catch (e) {
             console.warn("OSRM road route fetch failed, using direct line fallback", e);
+            if (!this.map || renderToken !== this._renderToken) return;
+            if (this.polyline) {
+                this.polyline.remove();
+            }
+            const fallbackCoords = points.map(p => [parseFloat(p.lat), parseFloat(p.lng)]);
+            this.polyline = L.polyline(fallbackCoords, {
+                color: '#71639e',
+                weight: 4,
+                dashArray: '6, 8',
+                opacity: 0.8,
+                lineCap: 'round',
+                lineJoin: 'round'
+            }).addTo(this.map);
         }
     }
 }

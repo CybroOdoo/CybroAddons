@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,11 +19,14 @@
 #
 #############################################################################
 from datetime import timedelta
+
 from odoo import fields
 from odoo.exceptions import UserError
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged('post_install', '-at_install')
 class TestMissedCollectionSetting(TransactionCase):
     """Unit tests verifying missed collection reason logging and rescheduling options."""
 
@@ -47,13 +49,27 @@ class TestMissedCollectionSetting(TransactionCase):
             'partner_id': cls.partner.id,
             'category_ids': [(4, cls.category.id)],
         })
-        cls.route = cls.env['wm.route'].create({'name': 'Missed Test Route'})
         brand = cls.env['fleet.vehicle.model.brand'].create({'name': 'Missed Brand'})
         model = cls.env['fleet.vehicle.model'].create({'name': 'Missed Truck Model', 'brand_id': brand.id})
         cls.vehicle = cls.env['fleet.vehicle'].create({
             'model_id': model.id,
             'driver_id': cls.partner.id,
             'license_plate': 'MISSED-01',
+        })
+        cls.route = cls.env['wm.route'].create({
+            'name': 'Missed Test Route',
+            'vehicle_id': cls.vehicle.id,
+            'driver_id': cls.partner.id,
+        })
+        cls.env['wm.route.line'].create({
+            'route_id': cls.route.id,
+            'collection_point_id': cls.collection_point.id,
+        })
+        cls.env['wm.vehicle.maintenance.checklist'].create({
+            'name': 'PRE-TRIP-MISSED',
+            'vehicle_id': cls.vehicle.id,
+            'checklist_type': 'pre_trip',
+            'state': 'checked',
         })
 
         cls.order = cls.env['wm.collection.order'].create({
@@ -97,7 +113,7 @@ class TestMissedCollectionSetting(TransactionCase):
         """
         Test missed collection blocking when feature is disabled.
         """
-        self.env['ir.config_parameter'].sudo().set_param('wm_collection.use_missed_collection', 'False')
+        self.env['ir.config_parameter'].sudo().set_param('wm_collection.use_missed_collection', False)
         self.order.action_dispatch()
         self.assertFalse(self.order.use_missed_collection)
 
@@ -138,6 +154,6 @@ class TestMissedCollectionSetting(TransactionCase):
         states_enabled = self.env['wm.collection.order']._read_group_states([], [])
         self.assertIn('missed', states_enabled)
 
-        self.env['ir.config_parameter'].sudo().set_param('wm_collection.use_missed_collection', 'False')
+        self.env['ir.config_parameter'].sudo().set_param('wm_collection.use_missed_collection', False)
         states_disabled = self.env['wm.collection.order']._read_group_states([], [])
         self.assertNotIn('missed', states_disabled)

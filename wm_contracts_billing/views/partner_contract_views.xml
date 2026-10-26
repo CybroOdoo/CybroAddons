@@ -19,6 +19,7 @@
             <list>
                 <field name="name"/>
                 <field name="partner_id"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
                 <field name="from_date"/>
                 <field name="to_date"/>
                 <field name="collection_point_ids" widget="many2many_tags"/>
@@ -39,10 +40,12 @@
             <search>
                 <field name="name"/>
                 <field name="partner_id"/>
+                <field name="user_id"/>
                 <filter string="Ongoing" name="ongoing" domain="[('state', '=', 'ongoing')]"/>
                 <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
                 <group>
                     <filter string="Customer" name="group_partner" context="{'group_by':'partner_id'}"/>
+                    <filter string="Account Manager" name="group_user" context="{'group_by':'user_id'}"/>
                     <filter string="Status" name="group_state" context="{'group_by':'state'}"/>
                     <filter string="Billing Basis" name="group_billing" context="{'group_by':'billing_basis'}"/>
                 </group>
@@ -63,12 +66,14 @@
                             class="btn-primary" invisible="state != 'signed'"
                             groups="wm_contracts_billing.group_wm_contract_manager"/>
                     <button name="action_start" type="object" string="Start"
-                            class="btn-primary" invisible="state != 'confirmed'"/>
+                            class="btn-primary" invisible="state != 'confirmed'"
+                            groups="wm_contracts_billing.group_wm_contract_manager"/>
                     <button name="action_cancel" type="object" string="Cancel"
                             invisible="state in ('cancelled', 'expired')"
                             groups="wm_contracts_billing.group_wm_contract_manager"/>
                     <button name="action_reset_to_draft" type="object" string="Reset to Draft"
-                            invisible="state != 'cancelled'"/>
+                            invisible="state != 'cancelled'"
+                            groups="wm_contracts_billing.group_wm_contract_manager"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,sent,signed,confirmed,ongoing"/>
                 </header>
@@ -96,13 +101,14 @@
                     <group>
                         <group string="Contract &amp; Billing Terms">
                             <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
                             <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
                             <field name="sla_id" readonly="state != 'draft'"/>
                             <field name="billing_basis" string="Billing Basis" readonly="state != 'draft'"/>
                             <field name="currency_id" invisible="1"/>
                             <field name="fixed_price" invisible="billing_basis not in ('per_collection', 'hybrid')" readonly="state != 'draft'"/>
                             <field name="max_weight" invisible="billing_basis != 'per_collection'" readonly="state != 'draft'"/>
-                            <field name="overweight_price" invisible="billing_basis != 'per_collection'" readonly="state != 'draft'"/>
+                            <field name="overweight_price" invisible="billing_basis not in ('per_collection', 'hybrid')" readonly="state != 'draft'"/>
                             <field name="included_weight" invisible="billing_basis != 'hybrid'" readonly="state != 'draft'"/>
                         </group>
                         <group string="Validity &amp; Schedule">

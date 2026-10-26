@@ -41,6 +41,7 @@
                             <field name="date_signed" invisible="state != 'signed'"/>
                             <field name="signed_document_filename" invisible="1"/>
                             <field name="signed_document" filename="signed_document_filename" widget="binary" invisible="state != 'signed'"/>
+                            <field name="signed_document_hash" invisible="state != 'signed'"/>
                         </group>
                     </group>
                     <notebook>
@@ -112,5 +113,51 @@
         <field name="name">Signature Requests</field>
         <field name="res_model">wm.signature.request</field>
         <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No records found</p>
+            <p>Click the New button to create the first record.</p>
+        </field>
     </record>
+
+    <!-- View: wm.signature.request - Graph -->
+    <record id="view_wm_signature_request_graph" model="ir.ui.view">
+        <field name="name">wm.signature.request.graph</field>
+        <field name="model">wm.signature.request</field>
+        <field name="arch" type="xml">
+            <graph string="Signature Requests Analysis" sample="1">
+                <field name="template_id"/>
+                <field name="state"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- View: wm.signature.request - Pivot -->
+    <record id="view_wm_signature_request_pivot" model="ir.ui.view">
+        <field name="name">wm.signature.request.pivot</field>
+        <field name="model">wm.signature.request</field>
+        <field name="arch" type="xml">
+            <pivot string="Signature Requests Analysis" sample="1">
+                <field name="template_id" type="row"/>
+                <field name="state" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action: Signature Requests Analysis -->
+    <record id="action_wm_signature_request_analysis" model="ir.actions.act_window">
+        <field name="name">Signature Analysis</field>
+        <field name="res_model">wm.signature.request</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No signature request data for analysis yet.</p>
+        </field>
+    </record>
+
+    <!-- Reporting Menu: Signature Analysis -->
+    <menuitem id="menu_wm_reporting_signature_requests"
+              name="Signature Analysis"
+              parent="wm_base.menu_wm_reporting"
+              action="action_wm_signature_request_analysis"
+              sequence="30"
+              groups="wm_base.group_signature_user,wm_base.group_signature_manager,wm_base.group_wm_admin"/>
 </odoo>

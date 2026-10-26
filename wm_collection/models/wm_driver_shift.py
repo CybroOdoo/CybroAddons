@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 
 class WMDriverShift(models.Model):
@@ -33,7 +32,33 @@ class WMDriverShift(models.Model):
     vehicle_id = fields.Many2one('fleet.vehicle', string='Vehicle', required=True, tracking=True)
     shift_start = fields.Datetime(string='Shift Start', required=True, tracking=True)
     shift_end = fields.Datetime(string='Shift End', tracking=True)
-    hours_driven = fields.Float(string='Hours Driven', compute='_compute_hours_driven', store=True)
+    hours_driven = fields.Float(string='Hours Driven', compute='_compute_hours_driven')
+    route_ids = fields.One2many('wm.route', 'shift_id', string='Collection Routes')
+    route_count = fields.Integer(string='Route Count', compute='_compute_route_count')
+
+    @api.depends('route_ids')
+    def _compute_route_count(self):
+        for record in self:
+            record.route_count = len(record.route_ids)
+
+    @api.onchange('vehicle_id')
+    def _onchange_vehicle_id(self):
+        """
+        Auto-assign the vehicle's designated driver to the shift
+        when a vehicle is selected.
+        """
+        self.driver_id = self.vehicle_id.driver_id if self.vehicle_id else False
+
+    def action_view_routes(self):
+        self.ensure_one()
+        return {
+            'name': _('Collection Routes'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'wm.route',
+            'view_mode': 'list,form',
+            'domain': [('shift_id', '=', self.id)],
+            'context': {'default_shift_id': self.id},
+        }
 
     @api.depends('driver_id', 'shift_start')
     def _compute_name(self):
@@ -53,10 +78,15 @@ class WMDriverShift(models.Model):
         """
         Calculate total driving hours from shift start and end datetimes, used
         for driver performance reporting and overtime threshold monitoring.
+        Not stored: open shifts are measured against the current time, which
+        would freeze at the first computation if the value were stored.
         """
         for record in self:
             if record.shift_start and record.shift_end:
                 delta = record.shift_end - record.shift_start
+                record.hours_driven = delta.total_seconds() / 3600.0
+            elif record.shift_start:
+                delta = fields.Datetime.now() - record.shift_start
                 record.hours_driven = delta.total_seconds() / 3600.0
             else:
                 record.hours_driven = 0.0

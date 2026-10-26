@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -28,7 +27,7 @@ class WmSignatureRequestWizard(models.TransientModel):
     _name = 'wm.signature.request.wizard'
     _description = 'Signature Request Wizard'
 
-    template_id = fields.Many2one('wm.signature.template', string='Template', required=True)
+    template_id = fields.Many2one('wm.signature.template', required=True)
     res_model = fields.Char(string='Resource Model', required=True)
     res_id = fields.Integer(string='Resource ID', required=True)
     signer_ids = fields.One2many('wm.signature.request.wizard.signer', 'wizard_id', string='Signers')
@@ -36,9 +35,8 @@ class WmSignatureRequestWizard(models.TransientModel):
     @api.onchange('template_id')
     def _onchange_template_id(self):
         """
-        Populate the signer list and document preview from the selected
-        signature template when the template field changes, reducing manual
-        configuration in the request wizard.
+        Rebuild the signer lines from the selected template's roles,
+        pre-filling the customer/driver partners for collection orders.
         """
         if not self.template_id:
             self.signer_ids = [(5, 0, 0)]
@@ -73,13 +71,13 @@ class WmSignatureRequestWizard(models.TransientModel):
         """
         self.ensure_one()
         if not self.signer_ids:
-            raise UserError(_("You must configure at least one signer."))
+            raise UserError(self.env._("You must configure at least one signer."))
 
         for line in self.signer_ids:
             if not line.partner_id:
-                raise UserError(_("Please select a partner for role: %s") % line.role_id.name)
+                raise UserError(self.env._("Please select a partner for role: %s", line.role_id.name))
             if not line.email:
-                raise UserError(_("Email is required for signer: %s") % line.partner_id.name)
+                raise UserError(self.env._("Email is required for signer: %s", line.partner_id.name))
 
         # Create the Signature Request
         request = self.env['wm.signature.request'].create({
@@ -99,8 +97,8 @@ class WmSignatureRequestWizard(models.TransientModel):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': _('Signature Request Sent'),
-                'message': _('The signature request %s has been created and sent.') % request.name,
+                'title': self.env._('Signature Request Sent'),
+                'message': self.env._('The signature request %s has been created and sent.', request.name),
                 'type': 'success',
                 'sticky': False,
                 'next': {'type': 'ir.actions.act_window_close'}
@@ -113,10 +111,10 @@ class WmSignatureRequestWizardSigner(models.TransientModel):
     _name = 'wm.signature.request.wizard.signer'
     _description = 'Signature Request Wizard Signer'
 
-    wizard_id = fields.Many2one('wm.signature.request.wizard', string='Wizard', ondelete='cascade')
-    role_id = fields.Many2one('wm.signature.role', string='Role', required=True, readonly=True)
-    partner_id = fields.Many2one('res.partner', string='Partner', required=True)
-    email = fields.Char(string='Email')
+    wizard_id = fields.Many2one('wm.signature.request.wizard', ondelete='cascade')
+    role_id = fields.Many2one('wm.signature.role', required=True)
+    partner_id = fields.Many2one('res.partner', required=True)
+    email = fields.Char()
 
     @api.onchange('partner_id')
     def _onchange_partner_id(self):

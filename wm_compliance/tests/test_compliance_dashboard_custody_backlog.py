@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,7 +19,8 @@
 #
 #############################################################################
 from datetime import date, timedelta
-from odoo.tests.common import tagged, TransactionCase
+
+from odoo.tests.common import TransactionCase, tagged
 
 
 @tagged('post_install', '-at_install', 'wm_compliance', 'wm_dashboard_custody')
@@ -59,8 +59,8 @@ class TestComplianceDashboardCustodyBacklog(TransactionCase):
         """
         Verify that:
         1. Overdue manifests (>7 days in submitted/collected state) are accurately counted.
-        2. Pending custody manifests (submitted/collected with no custody logs) are accurately counted.
-        3. Draft and disposed manifests are excluded from the backlog.
+        2. Pending custody manifests (missing the custody milestone of their state) are accurately counted.
+        3. Draft manifests and fully logged disposed manifests are excluded from the backlog.
         4. The combined urgent_manifests payload for Custody & Overdue Backlog card is correctly formed.
         """
         today = date.today()
@@ -129,8 +129,9 @@ class TestComplianceDashboardCustodyBacklog(TransactionCase):
             })],
         })
 
-        # 5. Create a DISPOSED manifest with old date (should NOT be counted)
-        self.Manifest.create({
+        # 5. Create a DISPOSED manifest with old date and its disposal
+        # custody milestone (should NOT be counted)
+        manifest_disposed = self.Manifest.create({
             'generator_id': self.generator.id,
             'transporter_id': self.transporter.id,
             'disposal_facility_id': self.facility.id,
@@ -140,6 +141,11 @@ class TestComplianceDashboardCustodyBacklog(TransactionCase):
                 'waste_category_id': self.category.id,
                 'quantity': 500.0,
             })],
+        })
+        self.Custody.create({
+            'manifest_id': manifest_disposed.id,
+            'action': 'disposed',
+            'location': 'Facility',
         })
 
         # Query dashboard
@@ -171,10 +177,10 @@ class TestComplianceDashboardCustodyBacklog(TransactionCase):
         self.assertEqual(len(both_entries), 1)
         self.assertEqual(both_entries[0]['issue'], 'overdue')  # prioritized as overdue
 
-        # Resolving pending custody by adding a custody log removes it from pending custody count
+        # Resolving pending custody by logging the expected milestone removes it from pending custody count
         self.Custody.create({
             'manifest_id': manifest_no_custody.id,
-            'action': 'in_transit',
+            'action': 'collected',
             'location': 'Hub 1',
         })
         updated_data = self.Dashboard.get_dashboard_data('month')

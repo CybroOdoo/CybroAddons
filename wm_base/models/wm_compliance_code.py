@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,15 +22,15 @@ from odoo import fields, models
 
 
 class WmComplianceCode(models.Model):
-    """Reference table mapping waste streams to their official regulatory compliance and classification codes."""
+    """Reference table of regulatory compliance codes with their manifest type and regulatory body."""
     _name = 'wm.compliance.code'
     _description = 'Compliance Code'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(string='Name', help='Provides information about name', required=True)
+    name = fields.Char(help='Provides information about name', required=True)
     manifest_type = fields.Selection([
         ('hazardous', 'Hazardous Waste Manifest'),
         ('non_hazardous', 'Non-Hazardous Waste Manifest'),
         ('medical', 'Medical Waste Manifest'),
-    ], string='Manifest Type')
-    regulatory_body = fields.Char(string='Regulatory Body', help='Provides information about regulatory body')
+    ])
+    regulatory_body = fields.Char(help='Provides information about regulatory body')

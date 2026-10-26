@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import _, fields, models
 
 
 class AccountMove(models.Model):
@@ -34,3 +33,44 @@ class AccountMove(models.Model):
         copy=False,
         help="The monthly billing run that generated this consolidated invoice.",
     )
+
+    def button_cancel(self):
+        """Cancelling an invoice releases what it had billed, so the orders and
+        events are not left marked as billed with no invoice behind them."""
+        res = super().button_cancel()
+        self._release_billing_links()
+        return res
+
+    def unlink(self):
+        """Deleting a draft invoice also releases what it had billed."""
+        self._release_billing_links(self)
+        return super().unlink()
+
+    def _release_billing_links(self, moves=None):
+        """Free the collection orders (monthly billing run or direct invoice)
+        and the ad-hoc billable events whose invoice has been cancelled or
+        deleted.
+
+        :param moves: invoices to release regardless of their state (used on
+            deletion); by default only the cancelled invoices of ``self``.
+        """
+        cancelled = moves if moves is not None else self.filtered(lambda move: move.state == 'cancel')
+        if not cancelled:
+            return
+        run_lines = self.env['wm.monthly.billing.run.line'].sudo().search([
+            ('invoice_id', 'in', cancelled.ids), ('state', '=', 'billed')])
+        if run_lines:
+            run_lines.collection_order_ids.write({'billing_run_line_id': False})
+            run_lines.write({
+                'state': 'draft',
+                'note': _("Invoice cancelled: the orders were released and can be billed again."),
+            })
+        direct_orders = self.env['wm.collection.order'].sudo().search([
+            ('direct_invoice_id', 'in', cancelled.ids)])
+        if direct_orders:
+            direct_orders.write({'direct_invoice_id': False})
+        if 'wm.billable.event' in self.env:
+            events = self.env['wm.billable.event'].sudo().search([
+                ('invoice_id', 'in', cancelled.ids), ('state', '=', 'invoiced')])
+            if events:
+                events.write({'state': 'confirmed', 'invoice_id': False, 'invoice_line_id': False})

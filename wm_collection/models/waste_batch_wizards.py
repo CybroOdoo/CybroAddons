@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,8 +18,10 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models, _
+from odoo import _, fields, models
 from odoo.exceptions import UserError
+
+from .waste_batch import wm_set_move_line_quantity
 
 
 class WasteBatchTransferWizard(models.TransientModel):
@@ -67,13 +68,15 @@ class WasteBatchTransferWizard(models.TransientModel):
         })
 
         moves = self.env['stock.move']
+        # Only what is still in the batch: sorted portions already left it.
+        # Lines created from collection orders have no uom_id set.
         for line in batch.line_ids:
-            if line.quantity <= 0:
+            if line.remaining_qty <= 0:
                 continue
             move = self.env['stock.move'].create({
                 'product_id': line.product_id.id,
-                'product_uom': line.uom_id.id,
-                'product_uom_qty': line.quantity,
+                'product_uom': (line.uom_id or line.product_id.uom_id).id,
+                'product_uom_qty': line.remaining_qty,
                 'location_id': batch.location_id.id,
                 'location_dest_id': self.dest_location_id.id,
                 'picking_id': picking.id,
@@ -87,15 +90,15 @@ class WasteBatchTransferWizard(models.TransientModel):
 
         for move in moves:
             # Find the corresponding batch line
-            line = batch.line_ids.filtered(lambda l: l.product_id.id == move.product_id.id)
+            line = batch.line_ids.filtered(lambda ln: ln.product_id.id == move.product_id.id)
             if not line:
                 continue
-            qty = line[0].quantity
+            qty = line[0].remaining_qty
             lot_id = line[0].lot_id.id
-            for ml in move.move_line_ids:
-                ml.lot_id = lot_id
-                ml.quantity = qty
-            if not move.move_line_ids:
+            if move.move_line_ids:
+                wm_set_move_line_quantity(
+                    move, qty, None, self.env["stock.lot"].browse(lot_id))
+            else:
                 self.env['stock.move.line'].create({
                     'move_id': move.id,
                     'product_id': move.product_id.id,

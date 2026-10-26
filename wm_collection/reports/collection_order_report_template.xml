@@ -40,7 +40,17 @@
                                         <t t-if="o.driver_id"> / <span t-field="o.driver_id.name"/></t>
                                     </td>
                                     <td style="padding:8px 10px; border:1px solid #e2e8f0;">
+                                        <strong>Container Type:</strong> 
+                                        <span t-esc="(o.container_id and o.container_id.name) or 'Standard / N/A'"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:8px 10px; border:1px solid #e2e8f0;">
                                         <strong>Status:</strong> <span t-field="o.state"/>
+                                    </td>
+                                    <td style="padding:8px 10px; border:1px solid #e2e8f0;">
+                                        <strong>Scope 3 Carbon Abatement:</strong> 
+                                        <span style="color:#1b5e20; font-weight:bold;" t-esc="'%.3f' % (o.co2_avoided_tons or 0.0)"/> tCO₂e
                                     </td>
                                 </tr>
                             </table>
@@ -54,6 +64,7 @@
                                         <th style="padding:8px 10px; border:1px solid #004411; text-align:left;">Waste Material</th>
                                         <th style="padding:8px 10px; border:1px solid #004411; text-align:right;">Price / kg</th>
                                         <th style="padding:8px 10px; border:1px solid #004411; text-align:right;">Confirmed Wt (kg)</th>
+                                        <th style="padding:8px 10px; border:1px solid #004411; text-align:right;">Subtotal</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -66,10 +77,13 @@
                                                 <span t-field="line.product_id.name"/>
                                             </td>
                                             <td style="padding:7px 10px; border:1px solid #e2e8f0; text-align:right;">
-                                                <span t-field="line.price"/>
+                                                <span t-field="line.price" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                                             </td>
                                             <td style="padding:7px 10px; border:1px solid #e2e8f0; text-align:right;">
                                                 <span t-field="line.weight"/> kg
+                                            </td>
+                                            <td style="padding:7px 10px; border:1px solid #e2e8f0; text-align:right; font-weight:bold;">
+                                                <span t-field="line.total_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                                             </td>
                                         </tr>
                                     </t>
@@ -79,6 +93,9 @@
                                         </td>
                                         <td colspan="2" style="padding:8px 10px; border:1px solid #cbd5e1; text-align:right; color:#1b5e20;">
                                             Total Confirmed Weight: <span t-field="o.confirmed_weight"/> kg
+                                        </td>
+                                        <td style="padding:8px 10px; border:1px solid #cbd5e1; text-align:right; color:#1b5e20; font-size:12px;">
+                                            <span t-field="o.total_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -92,30 +109,57 @@
                                 3. Hazardous or restricted items not declared prior to collection remain the responsibility of the generator.
                             </div>
 
-                            <!-- AUTHORIZATION SIGNATURES -->
+                            <!-- AUTHORIZATION SIGNATURES (DUAL SIGN-OFF) -->
                             <div style="margin-top:20px; border:1px solid #cbd5e1; border-radius:6px; padding:16px; background-color:#fafafa;">
-                                <div style="font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:12px;">Authorization Signatures</div>
-                                <div style="width:60%;">
-                                    <div style="font-size:11px; font-weight:bold; color:#334155; margin-bottom:8px;">
-                                        Driver / Field Collector Signature:
-                                    </div>
-                                    <!-- Signature Field / Image -->
-                                    <div style="min-height:48px; border:1px dashed #94a3b8; border-radius:4px; padding:6px; background-color:#ffffff; margin-bottom:8px; display:flex; align-items:center; justify-content:center;">
-                                        <t t-if="o.signature_id and o.signature_id.signature_image">
-                                            <img t-att-src="image_data_uri(o.signature_id.signature_image)" style="max-height:42px; max-width:220px;"/>
-                                        </t>
-                                        <t t-else="">
-                                            <span style="font-size:10px; color:#94a3b8; font-style:italic;">[ Signature Field ]</span>
-                                        </t>
-                                    </div>
-                                    <!-- Signature Person Name & Role -->
-                                    <div style="font-size:11px; font-weight:bold; color:#1e293b; margin-top:6px;">
-                                        Signer Name: <span t-esc="o.driver_id.name or (o.signature_id and o.signature_id.signer_id.name) or (o.env.user and o.env.user.name) or '—'"/>
-                                    </div>
-                                    <div style="font-size:10px; color:#64748b; margin-top:2px;">
-                                        Role: <span t-esc="(o.signature_id and o.signature_id.signer_role_id.name) or 'Waste Collector / Field Driver'"/>
-                                    </div>
-                                </div>
+                                <div style="font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:12px;">Dual Verification &amp; Handover Signatures</div>
+                                <table style="width:100%; border:none;">
+                                    <tr>
+                                        <!-- Left Column: Driver Signature -->
+                                        <td style="width:48%; vertical-align:top; padding-right:12px;">
+                                            <div style="font-size:11px; font-weight:bold; color:#334155; margin-bottom:8px;">
+                                                Driver / Field Collector Signature:
+                                            </div>
+                                            <div style="min-height:48px; border:1px dashed #94a3b8; border-radius:4px; padding:6px; background-color:#ffffff; margin-bottom:8px; text-align:center;">
+                                                <!-- wm.signature only stores name + signature; fall back to the
+                                                     first signer of a signed wm.signature.request for this order. -->
+                                                <t t-set="sig_signer" t-value="o.env['wm.signature.request'].sudo().search([('reference_doc', '=', 'wm.collection.order,%s' % o.id), ('state', '=', 'signed')], limit=1).signer_ids.filtered(lambda s: s.state == 'signed')[:1]"/>
+                                                <t t-if="o.signature_id and o.signature_id.signature">
+                                                    <img t-att-src="image_data_uri(o.signature_id.signature)" style="max-height:42px; max-width:200px;"/>
+                                                </t>
+                                                <t t-elif="sig_signer and sig_signer.signature_image">
+                                                    <img t-att-src="image_data_uri(sig_signer.signature_image)" style="max-height:42px; max-width:200px;"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <span style="font-size:10px; color:#94a3b8; font-style:italic;">[ Collector Signature ]</span>
+                                                </t>
+                                            </div>
+                                            <div style="font-size:11px; font-weight:bold; color:#1e293b; margin-top:6px;">
+                                                Signer: <span t-esc="o.driver_id.name or sig_signer.partner_id.name or (o.signature_id and o.signature_id.name) or '—'"/>
+                                            </div>
+                                            <div style="font-size:10px; color:#64748b; margin-top:2px;">
+                                                Role: <span t-esc="sig_signer.role_id.name or 'Waste Collector / Field Driver'"/>
+                                            </div>
+                                        </td>
+
+                                        <td style="width:4%;"></td>
+
+                                        <!-- Right Column: Customer / Site Rep Signature -->
+                                        <td style="width:48%; vertical-align:top; padding-left:12px;">
+                                            <div style="font-size:11px; font-weight:bold; color:#334155; margin-bottom:8px;">
+                                                Customer / Site Representative Sign-off:
+                                            </div>
+                                            <div style="min-height:48px; border:1px dashed #94a3b8; border-radius:4px; padding:6px; background-color:#ffffff; margin-bottom:8px; text-align:center;">
+                                                <span style="font-size:10px; color:#94a3b8; font-style:italic;">[ Customer Sign-off ]</span>
+                                            </div>
+                                            <div style="font-size:11px; font-weight:bold; color:#1e293b; margin-top:6px;">
+                                                Signer: <span t-esc="o.partner_id.name"/>
+                                            </div>
+                                            <div style="font-size:10px; color:#64748b; margin-top:2px;">
+                                                Role: Site Representative / Waste Generator
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
                             </div>
                         </div>
                     </t>

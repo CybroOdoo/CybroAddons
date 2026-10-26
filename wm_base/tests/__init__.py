@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,7 +19,22 @@
 #
 #############################################################################
 
-from . import test_recycling_setting
-from . import test_wm_waste_category
-from . import test_wm_security_roles
-from . import test_wm_audit_trail_setting
+from . import (
+    test_audit_helpers_coverage,
+    test_audit_master_coverage,
+    test_back_url_sanitizing,
+    test_base_critical_fixes,
+    test_base_low_fixes,
+    test_base_medium_fixes,
+    test_recycling_setting,
+    test_signature_coverage,
+    test_signature_integrity,
+    test_ui_dashboard,
+    test_ui_js,
+    test_ui_signature_portal,
+    test_wm_audit_trail_setting,
+    test_premium_features,
+    test_wm_security_roles,
+    test_wm_signature_security,
+    test_wm_waste_category,
+)

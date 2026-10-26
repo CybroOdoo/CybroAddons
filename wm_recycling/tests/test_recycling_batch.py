@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,9 +19,11 @@
 #
 #############################################################################
 from odoo.exceptions import UserError
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged('post_install', '-at_install')
 class TestRecyclingBatch(TransactionCase):
     """Unit tests verifying waste batch recycling workflows, yield calculation, and stock moves."""
 
@@ -31,9 +32,12 @@ class TestRecyclingBatch(TransactionCase):
         """
         Set up test class fixtures and environment.
         """
-        super(TestRecyclingBatch, cls).setUpClass()
-        cls.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_approval', 'False')
-        cls.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_inspection', 'False')
+        super().setUpClass()
+        # Pass False (not the string 'False'): Settings read boolean parameters
+        # with bool(value), so the string would turn the feature back on as soon
+        # as a settings save happens (creating a second warehouse saves them)
+        cls.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_approval', False)
+        cls.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_inspection', False)
 
         cls.uom_unit = cls.env.ref('uom.product_uom_unit', raise_if_not_found=False)
         if not cls.uom_unit:
@@ -174,9 +178,9 @@ class TestRecyclingBatch(TransactionCase):
         self.assertEqual(order.total_recovered_qty, 60.0)
 
         # Check process loss move to scrap location for 40.0 kg residue
-        scrap_loc = self.env.ref('stock.stock_location_scrapped', raise_if_not_found=False)
-        if not scrap_loc:
-            scrap_loc = self.env['stock.location'].search([('usage', '=', 'inventory')], limit=1)
+        scrap_loc = order._get_scrap_location()
+        self.assertEqual(scrap_loc.name, 'Recycling Process Loss')
+        self.assertEqual(scrap_loc.company_id, order.company_id)
 
         loss_move = self.env['stock.move'].search([
             ('origin', '=', 'Process Loss: %s' % order.name),
@@ -343,3 +347,38 @@ class TestRecyclingBatch(TransactionCase):
         order.action_reset_draft()
         self.assertEqual(order.state, 'draft')
         self.assertEqual(batch.status, 'received')
+
+    def test_consumption_is_converted_to_batch_uom(self):
+        """Recovering 0.05 t consumes 50 kg of waste, not 0.05 kg."""
+        kg = self.env.ref('uom.product_uom_kgm')
+        tonne = self.env.ref('uom.product_uom_ton')
+        waste = self.env['product.product'].create({
+            'name': 'Mixed Plastic (kg)', 'is_waste_material': True,
+            'type': 'consu', 'is_storable': True, 'uom_id': kg.id,
+        })
+        pellets = self.env['product.product'].create({
+            'name': 'Pellets (t)', 'is_waste_material': True,
+            'type': 'consu', 'is_storable': True, 'uom_id': tonne.id,
+        })
+        dest_loc = self.env['stock.location'].create({'name': 'Pellet Bin UoM', 'usage': 'internal'})
+        batch = self.env['waste.batch'].create({
+            'warehouse_id': self.warehouse.id,
+            'location_id': self.location.id,
+            'line_ids': [(0, 0, {'product_id': waste.id, 'quantity': 100.0, 'uom_id': kg.id})],
+        })
+        batch.action_receive_batch()
+        batch.action_move_to_stock()
+        order = self.env['recycling.order'].create({
+            'waste_batch_id': batch.id,
+            'line_ids': [(0, 0, {
+                'product_id': pellets.id, 'source_product_id': waste.id, 'uom_id': tonne.id,
+                'dest_location_id': dest_loc.id, 'expected_qty': 0.05, 'recovered_qty': 0.05,
+            })],
+        })
+        order.action_confirm()
+        order.action_start()
+        order.action_done()
+        move = self.env['stock.move'].search([('origin', '=', order.name), ('product_id', '=', waste.id)])
+        self.assertTrue(move)
+        self.assertEqual(move.product_uom, kg)
+        self.assertAlmostEqual(move.product_uom_qty, 50.0)

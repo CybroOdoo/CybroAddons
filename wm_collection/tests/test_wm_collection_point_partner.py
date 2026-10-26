@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,8 +20,7 @@
 #############################################################################
 import logging
 
-from odoo.tests import tagged, TransactionCase
-
+from odoo.tests import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -134,5 +132,5 @@ class TestWmCollectionPointPartner(TransactionCase):
             'collection_point_id': self.point_1.id,
             'route_id': route.id,
         })
-        matching_lines = route.line_ids.filtered(lambda l: l.collection_point_id == self.point_1)
+        matching_lines = route.line_ids.filtered(lambda ln: ln.collection_point_id == self.point_1)
         self.assertEqual(len(matching_lines), 1, "Should not duplicate collection point line in route")

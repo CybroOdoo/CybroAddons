@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,5 +19,13 @@
 #
 #############################################################################
 
-from . import test_recycling_batch
-from . import test_structured_errors
+from . import (
+    test_recycling_batch,
+    test_recycling_coverage,
+    test_recycling_critical_fixes,
+    test_recycling_decisions,
+    test_recycling_low_fixes,
+    test_recycling_medium_fixes,
+    test_state_guards,
+    test_structured_errors,
+)

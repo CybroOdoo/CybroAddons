@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -34,7 +33,7 @@ class ProductTemplate(models.Model):
         products to 'average' costing, aligning with waste stream valuation
         accounting standards.
         """
-        super(ProductTemplate, self)._compute_cost_method()
+        super()._compute_cost_method()
         for product in self:
             if product.is_waste_material:
                 product.cost_method = 'standard'

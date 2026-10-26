@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,12 +22,13 @@ import logging
 
 from odoo import fields
 from odoo.exceptions import UserError
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
-
 
 _logger = logging.getLogger(__name__)
 
 
+@tagged('post_install', '-at_install')
 class TestWmRoutePlanningFixes(TransactionCase):
     """Unit tests verifying route stop sequencing and vehicle capacity calculations."""
 
@@ -51,10 +51,23 @@ class TestWmRoutePlanningFixes(TransactionCase):
             'latitude': 37.7833,
             'longitude': -122.4167,
         })
+        brand = cls.env['fleet.vehicle.model.brand'].create({'name': 'Test Truck Brand'})
+        model = cls.env['fleet.vehicle.model'].create({'name': 'Test Heavy Hauler', 'brand_id': brand.id})
+        cls.vehicle = cls.env['fleet.vehicle'].create({
+            'license_plate': 'WM-ROUTE-TEST-99',
+            'model_id': model.id,
+        })
         cls.route = cls.env['wm.route'].create({
             'name': 'Test Collection Route',
             'date': fields.Date.today(),
+            'vehicle_id': cls.vehicle.id,
             'state': 'to_start',
+        })
+        cls.env['wm.vehicle.maintenance.checklist'].create({
+            'name': 'PRE-TRIP-ROUTE-TEST',
+            'vehicle_id': cls.vehicle.id,
+            'checklist_type': 'pre_trip',
+            'state': 'checked',
         })
 
     def test_add_collection_point_links_existing_draft_order(self):
@@ -104,9 +117,13 @@ class TestWmRoutePlanningFixes(TransactionCase):
         self.route.action_start_route()
         self.assertEqual(self.route.state, 'running')
         order.invalidate_recordset(['state'])
-        self.assertEqual(order.state, 'in_progress', "Linked order must transition to in_progress.")
+        self.assertEqual(
+            order.state, 'dispatched',
+            "Linked order must remain 'dispatched' after route start; "
+            "it moves to 'in_progress' only when the driver taps 'Started' on the stop.",
+        )
 
-        # Trying to complete route with pending in_progress order raises ValidationError
+        # Trying to complete route with a still-dispatched order raises ValidationError
         from odoo.exceptions import ValidationError
         with self.assertRaises(ValidationError):
             self.route.action_complete_route()
@@ -131,3 +148,44 @@ class TestWmRoutePlanningFixes(TransactionCase):
         with self.assertRaises(UserError):
             self.route.action_optimize_route()
         _logger.info("PASS: test_tsp_sequence_lock_on_active_route")
+
+    def test_dispatch_and_start_without_vehicle_raises_validation_error(self):
+        """
+        Verify that attempting to dispatch or start a route without an assigned vehicle
+        raises a ValidationError.
+        """
+        from odoo.exceptions import ValidationError
+        unassigned_route = self.env['wm.route'].create({
+            'name': 'Unassigned Vehicle Route',
+            'date': fields.Date.today(),
+            'vehicle_id': False,
+            'state': 'to_start',
+        })
+        self.env['wm.route.line'].create({
+            'route_id': unassigned_route.id,
+            'collection_point_id': self.point.id,
+            'sequence': 10,
+        })
+        with self.assertRaises(ValidationError):
+            unassigned_route.action_dispatch_route()
+
+        unassigned_route.state = 'dispatched'
+        with self.assertRaises(ValidationError):
+            unassigned_route.action_start_route()
+        _logger.info("PASS: test_dispatch_and_start_without_vehicle_raises_validation_error")
+
+    def test_change_vehicle_prohibited_when_inspected(self):
+        """
+        Verify that changing the vehicle on an inspected route raises UserError
+        once the route is dispatched. A to_start route only covered by the
+        vehicle's pre-trip checklist may still switch vehicles.
+        """
+        other_vehicle = self.env['fleet.vehicle'].create({
+            'license_plate': 'WM-OTHER-TRUCK-01',
+            'model_id': self.vehicle.model_id.id,
+        })
+        self.assertTrue(self.route.is_inspected, "Route should be inspected in setup.")
+        self.route.with_context(programmatic_state_change=True).write({'state': 'dispatched'})
+        with self.assertRaises(UserError):
+            self.route.write({'vehicle_id': other_vehicle.id})
+        _logger.info("PASS: test_change_vehicle_prohibited_when_inspected")

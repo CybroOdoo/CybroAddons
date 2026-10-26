@@ -8,8 +8,10 @@ import { MapRenderer } from "./map_renderer";
 
 import { MapArchParser } from "./map_arch_parser";
 
+// Registered as its own view type ("wm_map") so it coexists with the
+// Enterprise `web_map` view instead of overriding the global "map" type.
 export const mapView = {
-    type: "map",
+    type: "wm_map",
     display_name: _t("Map"),
     Controller: MapController,
     Renderer: MapRenderer,
@@ -32,15 +34,6 @@ export const mapView = {
     },
 };
 
-const viewsRegistry = registry.category("views");
-const originalAdd = viewsRegistry.add.bind(viewsRegistry);
-viewsRegistry.add = function (key, value, options = {}) {
-    if (key === "map" && viewsRegistry.contains("map")) {
-        options = { ...options, force: true };
-    }
-    return originalAdd(key, value, options);
-};
-
-viewsRegistry.add("map", mapView, { force: true });
+registry.category("views").add("wm_map", mapView);
 
 

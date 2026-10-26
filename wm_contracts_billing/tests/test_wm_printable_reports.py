@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,8 +21,7 @@
 import io
 import logging
 
-from odoo.tests import tagged, TransactionCase
-
+from odoo.tests import TransactionCase, tagged
 
 try:
     import openpyxl

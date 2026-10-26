@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models, _
+from odoo import _, fields, models
 from odoo.exceptions import UserError
 
 
@@ -41,7 +40,7 @@ class WmMonthlyBillingWizard(models.TransientModel):
     partner_ids = fields.Many2many(
         'res.partner',
         string='Target Partners',
-        help="Optional partner filter. Leave empty to process all partners.",
+        help="Optional partner filter. Leave empty to process all customers on the monthly billing run.",
     )
 
     def action_run_monthly_billing(self):

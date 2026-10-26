@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,14 +20,9 @@
 #############################################################################
 {
     'name': 'Waste Management Recycling',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Operations/Waste Management',
     'summary': 'Material recovery tracking and recycled product sales',
-    'description': """
-        Tracks the recovery of recyclable materials from waste batches.
-        Manages recycling orders, material recovery lines, recovery rates,
-        and links recovered materials to Odoo sales orders for revenue tracking.
-    """,
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Technologies Pvt. Ltd.',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -57,7 +51,4 @@
     ],
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
 }

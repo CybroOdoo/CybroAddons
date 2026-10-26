@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,8 +18,13 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
+import base64
+import io
 import logging
 import urllib.parse
+
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 from odoo import api, fields, models
 
@@ -35,9 +39,9 @@ class WmSignatureTemplate(models.Model):
 
     name = fields.Char(string='Template Name', required=True, tracking=True)
     document = fields.Binary(string='Document Template (PDF)', attachment=True, required=False)
-    document_filename = fields.Char(string='Document Filename')
-    description = fields.Text(string='Description')
-    active = fields.Boolean(string='Active', default=True, tracking=True)
+    document_filename = fields.Char()
+    description = fields.Text()
+    active = fields.Boolean(default=True, tracking=True)
     role_ids = fields.Many2many('wm.signature.role', string='Signer Roles', required=True,
                                 help='Roles required to sign documents using this template.')
     item_ids = fields.One2many('wm.signature.item', 'template_id', string='Fields')
@@ -68,7 +72,6 @@ class WmSignatureTemplate(models.Model):
                                 'wm_collection.collection_order_report', [order.id]
                             )
                             if pdf_content:
-                                import base64
                                 self.sudo().write({
                                     'document': base64.b64encode(pdf_content),
                                     'document_filename': f"Collection_Order_{order.name}.pdf"
@@ -95,15 +98,10 @@ class WmSignatureTemplate(models.Model):
 
     def _generate_default_pdf_document(self):
         """
-        Render the signature template's base QWeb report to a PDF binary,
-        creating the default blank document that signers will receive when a
-        signature request is dispatched.
+        Generate a default PDF document with standard terms and signature layout
+        for templates that do not have an uploaded PDF.
         """
-        import base64
-        import io
         try:
-            from reportlab.lib.pagesizes import letter
-            from reportlab.pdfgen import canvas
             packet = io.BytesIO()
             can = canvas.Canvas(packet, pagesize=letter)
             can.setFillColorRGB(0.12, 0.14, 0.21)
@@ -117,14 +115,14 @@ class WmSignatureTemplate(models.Model):
             y = 630
             paragraphs = [
                 f"Document Reference: {self.name or 'N/A'}",
-                "Description: " + (self.description or "Standard company authorization and signature verification document."),
+                "Description: " + (self.description or "No description provided."),
                 "",
-                "1. TERMS AND CONDITIONS:",
-                "   The signatory hereby confirms the accuracy of all details recorded within this document.",
-                "   All operations, materials, and services detailed herein have been performed according to standard procedures.",
+                "1. PLACEHOLDER DOCUMENT:",
+                "   No document has been uploaded for this signature template.",
+                "   Upload the actual document to sign before sending signature requests.",
                 "",
-                "2. AUTHORIZATION & SIGN-OFF:",
-                "   By placing an electronic signature below, the undersigned acknowledges full receipt and verification."
+                "2. SIGN-OFF:",
+                "   Signature fields placed on this page are not attached to any agreed terms."
             ]
 
             for p in paragraphs:
@@ -155,9 +153,8 @@ class WmSignatureTemplate(models.Model):
     @api.model
     def create_from_pdf(self, name, doc_base64, filename):
         """
-        Create a new signature template record by importing an existing PDF
-        binary, extracting page dimensions and storing the PDF as the base
-        document for field placement.
+        Create a signature template from an uploaded PDF binary with a default
+        signer role and return its id.
         """
         role = self.env['wm.signature.role'].search([], limit=1)
         if not role:
@@ -174,16 +171,9 @@ class WmSignatureTemplate(models.Model):
     @api.model
     def create_sample_template(self):
         """
-        Generate a pre-populated sample signature template with common waste
-        management document placeholders, helping administrators set up new
-        environments quickly.
+        Create a demo signature template from a generated generic service
+        contract PDF and return its id.
         """
-        import base64
-        import io
-
-        from reportlab.lib.pagesizes import letter
-        from reportlab.pdfgen import canvas
-
         role = self.env['wm.signature.role'].search([], limit=1)
         if not role:
             role = self.env['wm.signature.role'].sudo().create({'name': 'Signer'})

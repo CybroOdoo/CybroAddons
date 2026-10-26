@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -48,23 +47,43 @@ class ComplianceCustody(models.Model):
         default=lambda self: self.env.company
     )
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        """
+        Custody rows belong to their manifest's company, not to the
+        company currently selected by the user.
+        """
+        for vals in vals_list:
+            if not self.env.su:
+                # Custody evidence cannot be attributed to another user or
+                # back/forward-dated by the caller.
+                vals['custodian_id'] = self.env.user.id
+                vals['timestamp'] = fields.Datetime.now()
+            if vals.get('manifest_id'):
+                manifest = self.env['wm.compliance.manifest'].browse(vals['manifest_id'])
+                if not self.env.su and manifest.state == 'disposed':
+                    raise UserError(_("Chain of Custody logs cannot be added to a disposed manifest."))
+                if not vals.get('company_id'):
+                    vals['company_id'] = manifest.company_id.id
+        return super().create(vals_list)
+
     def write(self, vals):
         """
         Override write to implement business validations and side effects.
         """
-        if not self.env.context.get('bypass_compliance_lock'):
+        if not (self.env.su and self.env.context.get('bypass_compliance_lock')):
             for rec in self:
                 if rec.manifest_id.state != 'draft':
                     raise UserError(_("Chain of Custody logs on active or finalized manifests are legally immutable records and cannot be modified."))
-        return super(ComplianceCustody, self).write(vals)
+        return super().write(vals)
 
-    def unlink(self):
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_active_manifest(self):
         """
         Override unlink to handle cascading cleanup or prevent invalid
         deletions.
         """
-        if not self.env.context.get('bypass_compliance_lock'):
+        if not (self.env.su and self.env.context.get('bypass_compliance_lock')):
             for rec in self:
                 if rec.manifest_id.state != 'draft':
                     raise UserError(_("Chain of Custody logs on active or finalized manifests are legally immutable records and cannot be deleted."))
-        return super(ComplianceCustody, self).unlink()

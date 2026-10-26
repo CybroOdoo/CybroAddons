@@ -36,7 +36,7 @@
                             </div>
 
                             <!-- Contract Information Grid -->
-                            <div class="row mt-4 mb-4" id="informations">
+                            <div class="row mt-4 mb-4" id="contract_information">
                                 <div t-if="o.from_date" class="col-auto col-3 mw-100 mb-2">
                                     <strong>Start Date:</strong>
                                     <p class="m-0" t-field="o.from_date"/>
@@ -56,7 +56,7 @@
                             </div>
 
                             <!-- Pricing Details Grid -->
-                            <div class="row mb-4" id="pricing_informations" t-if="o.billing_basis in ('per_collection', 'hybrid')">
+                            <div class="row mb-4" id="pricing_information" t-if="o.billing_basis in ('per_collection', 'hybrid')">
                                 <div class="col-auto col-3 mw-100 mb-2" t-if="o.fixed_price">
                                     <strong>Fixed Price:</strong>
                                     <p class="m-0" t-field="o.fixed_price"/>
@@ -149,8 +149,38 @@
                                 </t>
                             </div>
 
-                            <!-- Signatures Section -->
+                            <!-- Covered Collection Points / Sites -->
+                            <t t-if="o.collection_point_ids">
+                                <div class="mt-4 mb-4" style="page-break-inside: avoid;">
+                                    <h3>Covered Collection Points &amp; Sites</h3>
+                                    <table class="table table-sm mt-2">
+                                        <thead>
+                                            <tr class="table-light">
+                                                <th class="text-start">Site Name</th>
+                                                <th class="text-start">Address</th>
+                                                <th class="text-start">Zone</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="o.collection_point_ids" t-as="cp">
+                                                <tr>
+                                                    <td class="text-start fw-bold"><span t-field="cp.name"/></td>
+                                                    <td class="text-start">
+                                                        <span t-field="cp.street"/><t t-if="cp.city">, <span t-field="cp.city"/></t>
+                                                    </td>
+                                                    <td class="text-start">
+                                                        <span t-esc="cp.zone_id.name if cp.zone_id else '—'"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </t>
+
+                            <!-- Signatures Section (Bilateral Contract Signatures) -->
                             <div class="row mt-5" style="page-break-inside: avoid;">
+                                <!-- Left Column: Client Signature -->
                                 <div class="col-6 text-center">
                                     <t t-set="sig_req" t-value="o.env['wm.signature.request'].sudo().search([('reference_doc', '=', 'wm.partner.contract,' + str(o.id))], limit=1) if 'wm.signature.request' in o.env else False"/>
                                     <t t-set="sig_val" t-value="sig_req.item_value_ids.filtered(lambda v: v.signature_image)[:1]" t-if="sig_req"/>
@@ -163,8 +193,17 @@
                                         <div style="height: 65px;"/>
                                     </t>
                                     <div class="border-top mx-4 pt-2">
-                                        <strong>Client Signature</strong>
+                                        <strong>Client / Authorized Representative Signature</strong>
                                         <div class="text-muted small mt-1" t-field="o.partner_id.name"/>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column: Service Provider Signature -->
+                                <div class="col-6 text-center">
+                                    <div style="height: 65px;"/>
+                                    <div class="border-top mx-4 pt-2">
+                                        <strong>Service Provider / Executive Signature</strong>
+                                        <div class="text-muted small mt-1" t-field="o.env.company.name"/>
                                     </div>
                                 </div>
                             </div>

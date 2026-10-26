@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,8 +22,7 @@ import logging
 from datetime import timedelta
 
 from odoo import fields
-from odoo.tests.common import tagged, TransactionCase
-
+from odoo.tests.common import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 

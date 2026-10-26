@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,11 +18,11 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
+import unittest
 import io
 import logging
 
-from odoo.tests import tagged, TransactionCase
-
+from odoo.tests import TransactionCase, tagged
 
 try:
     import openpyxl
@@ -43,6 +42,8 @@ class TestWmPrintableReports(TransactionCase):
         Set up test class fixtures and environment.
         """
         super().setUpClass()
+        if 'wm.pricing.rule' not in cls.env:
+            raise unittest.SkipTest("Needs the wm_contracts_billing module")
         # Fixtures for Route Sheet
         cls.point = cls.env['wm.collection.point'].create({'name': 'Print Point 1 TestColl'})
         cls.route = cls.env['wm.route'].create({

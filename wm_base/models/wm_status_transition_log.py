@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,7 +20,7 @@
 #############################################################################
 import logging
 
-from odoo import exceptions, fields, models, _
+from odoo import api, exceptions, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -32,15 +31,16 @@ class WmStatusTransitionLog(models.Model):
     _description = 'Status Transition Log'
     _order = 'transition_date desc, id desc'
 
-    model_id = fields.Many2one('ir.model', string='Model', required=True, index=True, ondelete='cascade')
+    model_id = fields.Many2one('ir.model', required=True, index=True, ondelete='cascade')
     res_id = fields.Integer(string='Record ID', required=True, index=True)
     old_state = fields.Char(string='Old Status')
     new_state = fields.Char(string='New Status')
     reason = fields.Char(string='Transition Reason')
     user_id = fields.Many2one('res.users', string='Responsible User', required=True)
     transition_date = fields.Datetime(string='Timestamp', required=True, default=fields.Datetime.now)
-    record_name = fields.Char(string='Record Name', compute='_compute_record_name')
+    record_name = fields.Char(compute='_compute_record_name')
 
+    @api.depends('model_id', 'res_id')
     def _compute_record_name(self):
         """
         Resolve the display name of the logged source document (collection
@@ -62,9 +62,10 @@ class WmStatusTransitionLog(models.Model):
                 log.record_name = "Unknown"
 
     def write(self, vals):
-        """ Override write to implement business validations and side effects. """
-        raise exceptions.UserError(_('Audit records cannot be edited by any user, including administrators.'))
+        """ Block every write: status transition records are immutable. """
+        raise exceptions.UserError(self.env._('Audit records cannot be edited by any user, including administrators.'))
 
-    def unlink(self):
-        """ Override unlink to handle cascading cleanup or prevent invalid deletions. """
-        raise exceptions.UserError(_('Audit records cannot be deleted by any user, including administrators.'))
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_audit_record(self):
+        """ Block deletion of status transition records (allowed only at module uninstall). """
+        raise exceptions.UserError(self.env._('Audit records cannot be deleted by any user, including administrators.'))

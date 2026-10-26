@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 
 
 class ComplianceTarget(models.Model):
@@ -62,6 +61,7 @@ class ComplianceTarget(models.Model):
         default=lambda self: self.env.company
     )
 
+    @api.depends('partner_id.name', 'waste_category_id.name', 'period_start', 'period_end')
     def _compute_display_name(self):
         """
         Construct the compliance target display name from the regulatory period
@@ -76,7 +76,7 @@ class ComplianceTarget(models.Model):
             period = f"{start} - {end}" if start and end else (start or end or "")
             rec.display_name = f"{partner_name} - {cat_name} ({period})" if period else f"{partner_name} - {cat_name}"
 
-    @api.depends('partner_id', 'waste_category_id', 'period_start', 'period_end', 'target_quantity')
+    @api.depends('partner_id', 'partner_role', 'waste_category_id', 'period_start', 'period_end', 'target_quantity', 'company_id')
     def _compute_achieved_quantity(self):
         """
         Aggregate approved manifest quantities for the target's waste category
@@ -94,7 +94,8 @@ class ComplianceTarget(models.Model):
             domain = [
                 ('manifest_id.state', 'in', ['submitted', 'collected', 'disposed']),
                 ('manifest_id.manifest_date', '>=', rec.period_start),
-                ('manifest_id.manifest_date', '<=', rec.period_end)
+                ('manifest_id.manifest_date', '<=', rec.period_end),
+                ('manifest_id.company_id', '=', rec.company_id.id),
             ]
             if rec.partner_role == 'generator':
                 domain.append(('manifest_id.generator_id', '=', rec.partner_id.id))
@@ -108,8 +109,11 @@ class ComplianceTarget(models.Model):
             if rec.waste_category_id:
                 domain.append(('waste_category_id', '=', rec.waste_category_id.id))
 
-            lines = self.env['wm.compliance.manifest.line'].search(domain)
-            rec.achieved_quantity = sum(lines.mapped('quantity'))
+            # Stored KPI: must not depend on the record rules of whoever
+            # triggered the recompute, so search as superuser (company-scoped
+            # explicitly above)
+            lines = self.env['wm.compliance.manifest.line'].sudo().search(domain)
+            rec.achieved_quantity = lines._get_total_quantity_kg()
 
             if rec.target_quantity > 0:
                 rec.compliance_pct = (rec.achieved_quantity / rec.target_quantity) * 100.0

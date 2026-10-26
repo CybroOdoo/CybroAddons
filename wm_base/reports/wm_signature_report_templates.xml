@@ -15,8 +15,11 @@
                                     <p style="margin: 3px 0 0 0; color: #666; font-size: 12px;">Electronic Signature Audit Record</p>
                                 </td>
                                 <td style="text-align: right; vertical-align: middle;">
-                                    <div style="display: inline-block; border: 2px solid #28a745; border-radius: 4px; padding: 6px 12px; color: #28a745; font-weight: bold; font-size: 12px; text-transform: uppercase;">
+                                    <div t-if="doc.state == 'signed'" style="display: inline-block; border: 2px solid #28a745; border-radius: 4px; padding: 6px 12px; color: #28a745; font-weight: bold; font-size: 12px; text-transform: uppercase;">
                                         Digitally Signed &amp; Verified
+                                    </div>
+                                    <div t-else="" style="display: inline-block; border: 2px solid #d9534f; border-radius: 4px; padding: 6px 12px; color: #d9534f; font-weight: bold; font-size: 12px; text-transform: uppercase;">
+                                        Not Completed · <t t-esc="dict(doc._fields['state']._description_selection(doc.env)).get(doc.state)"/>
                                     </div>
                                 </td>
                             </tr>
@@ -125,8 +128,12 @@
 
                     <!-- Verification footer -->
                     <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; font-size: 9px; color: #888; text-align: center; line-height: 1.4;">
-                        <p>This document is electronically signed and secured. The parties agree that the electronic signatures contained on this document are the legally binding equivalent to manual signatures.</p>
-                        <p style="margin-top: 4px; font-weight: bold; color: #555;">Verification Security ID: <t t-esc="doc.id"/> - Completed: <t t-esc="doc.date_signed"/></p>
+                        <t t-if="doc.state == 'signed'">
+                            <p>This document is electronically signed and secured. The parties agree that the electronic signatures contained on this document are the legally binding equivalent to manual signatures.</p>
+                            <p style="margin-top: 4px; font-weight: bold; color: #555;">Reference: <t t-esc="doc.name"/> - Completed: <t t-esc="doc.date_signed"/></p>
+                            <p t-if="doc.signed_document_hash" style="margin-top: 2px; color: #555; font-family: monospace;">Signed document SHA-256: <t t-esc="doc.signed_document_hash"/></p>
+                        </t>
+                        <p t-else="" style="font-weight: bold; color: #d9534f;">This signature request is not complete. This record is not a certificate of completion.</p>
                     </div>
 
                 </div>

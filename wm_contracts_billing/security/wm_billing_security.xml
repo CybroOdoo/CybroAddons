@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!-- Portal: customers only see their own service requests and charges.
+             The portal controllers create/cancel requests through sudo. -->
+        <record id="rule_wm_portal_service_request_portal" model="ir.rule">
+            <field name="name">Service Request: portal own records</field>
+            <field name="model_id" ref="model_wm_portal_service_request"/>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="domain_force">[('partner_id', 'child_of', user.commercial_partner_id.id)]</field>
+        </record>
+
+        <record id="rule_wm_billable_event_portal" model="ir.rule">
+            <field name="name">Billable Event: portal own records</field>
+            <field name="model_id" ref="model_wm_billable_event"/>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="domain_force">[('partner_id', 'child_of', user.commercial_partner_id.id)]</field>
+        </record>
+
         <!-- Security Rule: Consolidated Invoice Multi-Company Rule -->
         <record id="rule_wm_consolidated_invoice_company" model="ir.rule">
             <field name="name">Consolidated Invoice Multi-Company Rule</field>
@@ -23,6 +39,67 @@
             <field name="model_id" ref="model_wm_pricing_rule"/>
             <field name="global" eval="True"/>
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+        <!-- Security Rule: Billable Event Multi-Company Rule -->
+        <record id="rule_wm_billable_event_company" model="ir.rule">
+            <field name="name">Billable Event Multi-Company Rule</field>
+            <field name="model_id" ref="model_wm_billable_event"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Security Rule: Event Pricing Rule Multi-Company Rule -->
+        <record id="rule_wm_event_pricing_rule_company" model="ir.rule">
+            <field name="name">Event Pricing Rule Multi-Company Rule</field>
+            <field name="model_id" ref="model_wm_event_pricing_rule"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Security Rule: Revenue Report Multi-Company Rule -->
+        <record id="rule_wm_revenue_report_company" model="ir.rule">
+            <field name="name">Revenue Report Multi-Company Rule</field>
+            <field name="model_id" ref="model_wm_revenue_report"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Security Rule: Weight Revenue Report Multi-Company Rule -->
+        <record id="rule_wm_weight_revenue_report_company" model="ir.rule">
+            <field name="name">Weight Revenue Report Multi-Company Rule</field>
+            <field name="model_id" ref="model_wm_weight_revenue_report"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Security Rule: Operations Report Multi-Company Rule -->
+        <record id="rule_wm_operations_report_company" model="ir.rule">
+            <field name="name">Operations Report Multi-Company Rule</field>
+            <field name="model_id" ref="model_wm_operations_report"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Security Rule: Customer Profitability Report Multi-Company Rule -->
+        <record id="rule_wm_customer_profitability_report_company" model="ir.rule">
+            <field name="name">Customer Profitability Report Multi-Company Rule</field>
+            <field name="model_id" ref="model_wm_customer_profitability_report"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Multi-company isolation for child models reachable without their parent. -->
+        <record id="rule_wm_partner_contract_line_company" model="ir.rule">
+            <field name="name">Partner Contract Line Multi-Company Rule</field>
+            <field name="model_id" ref="model_wm_partner_contract_line"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('contract_id.company_id', '=', False), ('contract_id.company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_wm_monthly_billing_run_line_company" model="ir.rule">
+            <field name="name">Monthly Billing Run Line Multi-Company Rule</field>
+            <field name="model_id" ref="model_wm_monthly_billing_run_line"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('run_id.company_id', '=', False), ('run_id.company_id', 'in', company_ids)]</field>
         </record>
         <!-- User Group: wm_base.group_wm_finance implies account invoice user -->
         <record id="wm_base.group_wm_finance" model="res.groups">

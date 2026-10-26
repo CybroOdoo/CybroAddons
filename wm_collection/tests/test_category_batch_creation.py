@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,8 +20,7 @@
 #############################################################################
 import logging
 
-from odoo.tests import tagged, TransactionCase
-
+from odoo.tests import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -66,13 +64,27 @@ class TestCategoryBatchCreation(TransactionCase):
             'name': 'Test Collection Facility',
             'partner_id': cls.partner.id,
         })
-        cls.route = cls.env['wm.route'].create({'name': 'Test Collection Route'})
         brand = cls.env['fleet.vehicle.model.brand'].create({'name': 'Test Fleet Brand'})
         model = cls.env['fleet.vehicle.model'].create({'name': 'Truck Model', 'brand_id': brand.id})
         cls.vehicle = cls.env['fleet.vehicle'].create({
             'model_id': model.id,
             'driver_id': cls.partner.id,
             'license_plate': 'TEST-BATCH-01',
+        })
+        cls.route = cls.env['wm.route'].create({
+            'name': 'Test Collection Route',
+            'vehicle_id': cls.vehicle.id,
+            'driver_id': cls.partner.id,
+        })
+        cls.env['wm.route.line'].create({
+            'route_id': cls.route.id,
+            'collection_point_id': cls.point.id,
+        })
+        cls.env['wm.vehicle.maintenance.checklist'].create({
+            'name': 'PRE-TRIP-CAT',
+            'vehicle_id': cls.vehicle.id,
+            'checklist_type': 'pre_trip',
+            'state': 'checked',
         })
 
     def test_category_batch_creation(self):
@@ -84,7 +96,6 @@ class TestCategoryBatchCreation(TransactionCase):
             'name': 'ORD-CAT-TEST-001',
             'partner_id': self.partner.id,
             'collection_point_id': self.point.id,
-            'route_id': self.route.id,
             'vehicle_id': self.vehicle.id,
             'driver_id': self.partner.id,
             'company_id': self.env.company.id,

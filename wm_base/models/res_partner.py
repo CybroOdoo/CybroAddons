@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,15 +18,14 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class ResPartner(models.Model):
-    """Extends Partner with waste management classification, licences, and compliance status."""
+    """Extends Partner with waste management roles (generator, transporter, driver) and driver licence expiry."""
     _inherit = 'res.partner'
 
     is_generator = fields.Boolean(
-        string='Is Generator',
         compute='_compute_is_generator',
         store=True,
         readonly=False,
@@ -35,14 +33,14 @@ class ResPartner(models.Model):
         help='Automatically set if the partner has waste contracts or collection orders.'
     )
     is_transporter = fields.Boolean(
-        string='Is Transporter',
         default=False,
         help='Mark this partner as a waste transporter/carrier.'
     )
-    is_driver = fields.Boolean(string='Is Driver', help='Mark this contact as a waste collection driver.')
+    is_driver = fields.Boolean(help='Mark this contact as a waste collection driver.')
     licence_expiry = fields.Date(string='Licence Expiry Date', help='Driver licence expiry date.')
 
+    @api.depends('is_company')
     def _compute_is_generator(self):
-        """Compute base default generator status for partner records."""
+        """Base default: not a generator. wm_contracts_billing refines this from contracts and orders."""
         for partner in self:
             partner.is_generator = False

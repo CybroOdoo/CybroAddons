@@ -1,5 +1,3 @@
-/** @odoo-module **/
-
 import { NavBar } from "@web/webclient/navbar/navbar";
 import { patch } from "@web/core/utils/patch";
 import { onMounted, useState } from "@odoo/owl";

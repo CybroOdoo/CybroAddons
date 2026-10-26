@@ -16,9 +16,44 @@
             <field name="sequence">20</field>
         </record>
 
-        <!-- Odoo 19 requires res.groups.privilege -->
-        <record model="res.groups.privilege" id="privilege_wm_role">
-            <field name="name">Role</field>
+        <!-- Independent Privileges per Waste Management Role -->
+        <record model="res.groups.privilege" id="privilege_wm_driver">
+            <field name="name">Driver / Field Collector</field>
+            <field name="category_id" ref="module_category_waste_management"/>
+        </record>
+
+        <record model="res.groups.privilege" id="privilege_wm_dispatcher">
+            <field name="name">Dispatcher &amp; Logistics</field>
+            <field name="category_id" ref="module_category_waste_management"/>
+        </record>
+
+        <record model="res.groups.privilege" id="privilege_wm_inventory_operator">
+            <field name="name">Inventory &amp; Yard Operator</field>
+            <field name="category_id" ref="module_category_waste_management"/>
+        </record>
+
+        <record model="res.groups.privilege" id="privilege_wm_recycler">
+            <field name="name">Recycling Specialist</field>
+            <field name="category_id" ref="module_category_waste_management"/>
+        </record>
+
+        <record model="res.groups.privilege" id="privilege_wm_finance">
+            <field name="name">Billing &amp; Finance</field>
+            <field name="category_id" ref="module_category_waste_management"/>
+        </record>
+
+        <record model="res.groups.privilege" id="privilege_wm_compliance_officer">
+            <field name="name">Compliance Officer</field>
+            <field name="category_id" ref="module_category_waste_management"/>
+        </record>
+
+        <record model="res.groups.privilege" id="privilege_wm_ops_manager">
+            <field name="name">Operations Manager</field>
+            <field name="category_id" ref="module_category_waste_management"/>
+        </record>
+
+        <record model="res.groups.privilege" id="privilege_wm_admin">
+            <field name="name">Waste Management Administrator</field>
             <field name="category_id" ref="module_category_waste_management"/>
         </record>
 
@@ -43,60 +78,59 @@
             <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
 
-        <!-- Role sequence renumbered (1-8) to eliminate historical sequence gaps — pending human confirmation -->
         <!-- 1. Driver / Field Collector -->
         <record id="group_wm_driver" model="res.groups">
             <field name="name">Driver / Field Collector</field>
-            <field name="privilege_id" ref="privilege_wm_role"/>
+            <field name="privilege_id" ref="privilege_wm_driver"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('group_signature_user'))]"/>
         </record>
 
         <!-- 2. Dispatcher & Logistics -->
         <record id="group_wm_dispatcher" model="res.groups">
             <field name="name">Dispatcher &amp; Logistics</field>
-            <field name="privilege_id" ref="privilege_wm_role"/>
+            <field name="privilege_id" ref="privilege_wm_dispatcher"/>
             <field name="implied_ids" eval="[(4, ref('group_wm_driver'))]"/>
         </record>
 
         <!-- 3. Inventory & Yard Operator -->
         <record id="group_wm_inventory_operator" model="res.groups">
             <field name="name">Inventory &amp; Yard Operator</field>
-            <field name="privilege_id" ref="privilege_wm_role"/>
+            <field name="privilege_id" ref="privilege_wm_inventory_operator"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('group_signature_user'))]"/>
         </record>
 
         <!-- 4. Recycling Specialist -->
         <record id="group_wm_recycler" model="res.groups">
             <field name="name">Recycling Specialist</field>
-            <field name="privilege_id" ref="privilege_wm_role"/>
+            <field name="privilege_id" ref="privilege_wm_recycler"/>
             <field name="implied_ids" eval="[(4, ref('group_wm_inventory_operator'))]"/>
         </record>
 
         <!-- 5. Billing & Finance -->
         <record id="group_wm_finance" model="res.groups">
             <field name="name">Billing &amp; Finance</field>
-            <field name="privilege_id" ref="privilege_wm_role"/>
+            <field name="privilege_id" ref="privilege_wm_finance"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('group_signature_user'))]"/>
         </record>
 
         <!-- 6. Compliance Officer -->
         <record id="group_wm_compliance_officer" model="res.groups">
             <field name="name">Compliance Officer</field>
-            <field name="privilege_id" ref="privilege_wm_role"/>
+            <field name="privilege_id" ref="privilege_wm_compliance_officer"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('group_signature_user'))]"/>
         </record>
 
         <!-- 7. Operations Manager -->
         <record id="group_wm_ops_manager" model="res.groups">
             <field name="name">Operations Manager</field>
-            <field name="privilege_id" ref="privilege_wm_role"/>
+            <field name="privilege_id" ref="privilege_wm_ops_manager"/>
             <field name="implied_ids" eval="[(4, ref('group_wm_dispatcher')), (4, ref('group_wm_inventory_operator')), (4, ref('group_wm_recycler')), (4, ref('group_signature_user'))]"/>
         </record>
 
         <!-- 8. Administrator -->
         <record id="group_wm_admin" model="res.groups">
             <field name="name">Administrator</field>
-            <field name="privilege_id" ref="privilege_wm_role"/>
+            <field name="privilege_id" ref="privilege_wm_admin"/>
             <field name="implied_ids" eval="[(4, ref('group_wm_ops_manager')), (4, ref('group_wm_finance')), (4, ref('group_wm_compliance_officer')), (4, ref('group_signature_manager'))]"/>
             <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
@@ -126,5 +160,56 @@
             <field name="model_id" ref="model_wm_signature_request"/>
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
-    </data>
+
+        <!-- Signature users (every WM role, drivers included) only see the
+             requests they created or must sign themselves, so they cannot open
+             someone else's request and sign for its signers. Managers see all.
+             Document flows (Sign Now / Sign Next on orders, contracts and
+             inspections) are gated by access to the document and use sudo. -->
+        <record id="rule_wm_signature_request_own" model="ir.rule">
+            <field name="name">Signature Request: own requests</field>
+            <field name="model_id" ref="model_wm_signature_request"/>
+            <field name="groups" eval="[(4, ref('group_signature_user'))]"/>
+            <field name="domain_force">['|', ('create_uid', '=', user.id), ('signer_ids.partner_id', '=', user.partner_id.id)]</field>
+        </record>
+        <record id="rule_wm_signature_request_manager" model="ir.rule">
+            <field name="name">Signature Request: all requests (managers)</field>
+            <field name="model_id" ref="model_wm_signature_request"/>
+            <field name="groups" eval="[(4, ref('group_signature_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_wm_signature_request_signer_own" model="ir.rule">
+            <field name="name">Signature Signer: own requests</field>
+            <field name="model_id" ref="model_wm_signature_request_signer"/>
+            <field name="groups" eval="[(4, ref('group_signature_user'))]"/>
+            <field name="domain_force">['|', ('request_id.create_uid', '=', user.id), ('partner_id', '=', user.partner_id.id)]</field>
+        </record>
+        <record id="rule_wm_signature_request_signer_manager" model="ir.rule">
+            <field name="name">Signature Signer: all requests (managers)</field>
+            <field name="model_id" ref="model_wm_signature_request_signer"/>
+            <field name="groups" eval="[(4, ref('group_signature_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_wm_signature_request_item_value_own" model="ir.rule">
+            <field name="name">Signature Field Value: own requests</field>
+            <field name="model_id" ref="model_wm_signature_request_item_value"/>
+            <field name="groups" eval="[(4, ref('group_signature_user'))]"/>
+            <field name="domain_force">['|', ('request_id.create_uid', '=', user.id), ('signer_id.partner_id', '=', user.partner_id.id)]</field>
+        </record>
+        <record id="rule_wm_signature_request_item_value_manager" model="ir.rule">
+            <field name="name">Signature Field Value: all requests (managers)</field>
+            <field name="model_id" ref="model_wm_signature_request_item_value"/>
+            <field name="groups" eval="[(4, ref('group_signature_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+    
+        <record id="rule_wm_disposal_facility_company_base" model="ir.rule">
+            <field name="name">Disposal Facility Multi-Company (Base)</field>
+            <field name="model_id" ref="model_wm_disposal_facility"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+</data>
 </odoo>

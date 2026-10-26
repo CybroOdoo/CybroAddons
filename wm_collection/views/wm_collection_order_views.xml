@@ -65,6 +65,9 @@
                         <button name="action_view_waste_batches" type="object" class="oe_stat_button" icon="fa-cubes" invisible="waste_batch_count == 0">
                             <field name="waste_batch_count" widget="statinfo" string="Waste Batches"/>
                         </button>
+                        <button name="action_view_gate_entries" type="object" class="oe_stat_button" icon="fa-truck" invisible="gate_entry_count == 0">
+                            <field name="gate_entry_count" widget="statinfo" string="Gate Entries"/>
+                        </button>
                     </div>
 
                     <div class="oe_title">
@@ -150,6 +153,18 @@
                                     <field name="signature_template_id" readonly="state in ('completed', 'signed', 'invoiced', 'cancelled')"/>
                                 </group>
                             </group>
+                        </page>
+                        <page string="Stop Status Timeline" name="status_timeline">
+                            <field name="status_log_ids" readonly="1">
+                                <list create="0" delete="0">
+                                    <field name="timestamp"/>
+                                    <field name="status" widget="badge" decoration-info="status in ('en_route', 'arrived')" decoration-warning="status in ('started', 'lifted', 'weighed')" decoration-success="status == 'completed'" decoration-danger="status == 'flagged'"/>
+                                    <field name="driver_id"/>
+                                    <field name="latitude"/>
+                                    <field name="longitude"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
                         </page>
                         <page string="Missed Info" name="missed_info" invisible="not use_missed_collection or state != 'missed'">
                             <group>
@@ -300,11 +315,19 @@
         <field name="name">Collection Orders Analysis</field>
         <field name="res_model">wm.collection.order</field>
         <field name="view_mode">graph,pivot,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No data to display</p>
+            <p>There are no records matching the current filters yet.</p>
+        </field>
     </record>
     <!-- Action: Collection Orders -->
     <record id="action_wm_collection_order" model="ir.actions.act_window">
         <field name="name">Collection Orders</field>
         <field name="res_model">wm.collection.order</field>
         <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No records found</p>
+            <p>Click the New button to create the first record.</p>
+        </field>
     </record>
 </odoo>

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,34 +20,30 @@
 #############################################################################
 {
     'name': 'Waste Management Compliance',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.2',
     'category': 'Operations/Waste Management',
-    'summary': 'Regulatory and legal compliance management for waste streams.',
-    'description': """
-        Waste Management Compliance Module
-        ===================================
-        Handles regulatory and legal tracking for Hazardous, Bio-Medical, E-Waste, and C&D waste streams.
-        Provides custom digital signatures, state-locking (immutability), permit vaults, and PDF/XLSX reports.
-    """,
+    'summary': 'Regulatory and legal compliance management for waste streams',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Technologies Pvt. Ltd.',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'depends': [
         'wm_base',
+        'wm_collection',
         'base',
         'web',
         'mail',
-        'portal',
-        'wm_collection',
+        'fleet',
+        'uom',
     ],
     'external_dependencies': {
-        'python': ['openpyxl', 'pypdf'],
+        'python': ['openpyxl'],
     },
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
+        'data/safety_incident_sequence.xml',
         'data/ir_cron_data.xml',
         'report/report_actions.xml',
         'report/report_templates.xml',
@@ -57,13 +52,20 @@
         'views/compliance_certificate_views.xml',
         'views/compliance_target_views.xml',
         'views/compliance_document_views.xml',
+        'views/safety_incident_views.xml',
         'views/dashboard_views.xml',
+        'views/wm_compliance_rule_set_views.xml',
+        'views/compliance_custody_views.xml',
+        'views/digital_signature_views.xml',
         'views/menus.xml',
     ],
     'demo': [
         'demo/demo_compliance_data.xml',
     ],
     'assets': {
+        'web.assets_tests': [
+            'wm_compliance/static/tests/tours/compliance_dashboard_tour.js',
+        ],
         'web.assets_backend': [
             'wm_compliance/static/src/css/compliance_dashboard.css',
             'wm_compliance/static/src/components/compliance_dashboard.xml',
@@ -72,7 +74,5 @@
     },
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
     'application': True,
 }

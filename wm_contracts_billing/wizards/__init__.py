@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -25,3 +24,4 @@ from . import wm_lead_conversion_wizard
 from . import wm_consolidated_billing_wizard
 from . import wm_pricing_rule_summary_wizard
 from . import wm_monthly_billing_wizard
+from . import wm_portal_request_reject_wizard

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -28,7 +27,7 @@ class WmWasteMaterial(models.Model):
     _description = 'Waste Material'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(string='Name', required=True)
+    name = fields.Char(required=True)
     category_ids = fields.Many2many(
         'wm.waste.category',
         relation='waste_category_material_rel',
@@ -36,11 +35,11 @@ class WmWasteMaterial(models.Model):
         column2='category_id',
         string='Categories'
     )
-    is_waste_material = fields.Boolean(string='Is Waste Material', default=False)
-    compliance_code_id = fields.Many2one('wm.compliance.code', string='Compliance Code')
+    is_waste_material = fields.Boolean(default=False)
+    compliance_code_id = fields.Many2one('wm.compliance.code')
     category_id = fields.Many2one('wm.waste.category', string='Primary Category')
-    hazardous = fields.Boolean(string='Hazardous', default=False)
-    recyclable = fields.Boolean(string='Recyclable', default=True)
-    description = fields.Text(string='Description')
-    active = fields.Boolean(string='Active', default=True)
-    color = fields.Integer(string='Color', default=0)
+    hazardous = fields.Boolean(default=False)
+    recyclable = fields.Boolean(default=True)
+    description = fields.Text()
+    active = fields.Boolean(default=True)
+    color = fields.Integer(default=0)

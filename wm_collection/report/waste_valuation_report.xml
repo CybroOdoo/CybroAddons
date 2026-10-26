@@ -119,7 +119,7 @@
                             page-break-inside: avoid !important;
                             break-inside: avoid !important;
                         }
-                        .text-right { text-align: right; }
+                        .text-end { text-align: right; }
                         .text-center { text-align: center; }
                     </style>
 
@@ -130,8 +130,8 @@
 
                     <t t-foreach="docs" t-as="o">
                         <t t-foreach="o.line_ids" t-as="line">
-                            <t t-set="line_val" t-value="line.quantity * line.product_id.standard_price"/>
-                            <t t-set="total_qty" t-value="total_qty + line.quantity"/>
+                            <t t-set="line_val" t-value="line._get_valuation_qty() * line.product_id.standard_price"/>
+                            <t t-set="total_qty" t-value="total_qty + line._get_valuation_qty()"/>
                             <t t-set="total_val" t-value="total_val + line_val"/>
                             <t t-if="line.hazardous">
                                 <t t-set="haz_count" t-value="haz_count + 1"/>
@@ -186,17 +186,17 @@
                                 <th style="width: 14%;">Batch No.</th>
                                 <th style="width: 16%;">Waste Category</th>
                                 <th style="width: 22%;">Waste Material Item</th>
-                                <th class="text-right" style="width: 10%;">Quantity</th>
+                                <th class="text-end" style="width: 10%;">Quantity</th>
                                 <th class="text-center" style="width: 6%;">UoM</th>
-                                <th class="text-right" style="width: 11%;">Std Price</th>
-                                <th class="text-right" style="width: 12%;">Total Value</th>
+                                <th class="text-end" style="width: 11%;">Std Price</th>
+                                <th class="text-end" style="width: 12%;">Total Value</th>
                                 <th style="width: 9%;">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             <t t-foreach="docs" t-as="o">
                                 <t t-foreach="o.line_ids" t-as="line">
-                                    <t t-set="line_val" t-value="line.quantity * line.product_id.standard_price"/>
+                                    <t t-set="line_val" t-value="line._get_valuation_qty() * line.product_id.standard_price"/>
                                     <tr style="page-break-inside: avoid !important; break-inside: avoid !important;">
                                         <td><strong><t t-esc="o.name"/></strong></td>
                                         <td>
@@ -208,10 +208,10 @@
                                                 <span class="wm-haz-tag">HAZARDOUS</span>
                                             </t>
                                         </td>
-                                        <td class="text-right"><strong><t t-esc="'%.2f' % line.quantity"/></strong></td>
+                                        <td class="text-end"><strong><t t-esc="'%.2f' % line.quantity"/></strong></td>
                                         <td class="text-center"><t t-esc="line.uom_id.name or o.uom_id.name or 'kg'"/></td>
-                                        <td class="text-right"><t t-esc="currency_symbol"/> <t t-esc="'%.2f' % line.product_id.standard_price"/></td>
-                                        <td class="text-right" style="font-weight: 600; color: #0f172a;">
+                                        <td class="text-end"><t t-esc="currency_symbol"/> <t t-esc="'%.2f' % line.product_id.standard_price"/></td>
+                                        <td class="text-end" style="font-weight: 600; color: #0f172a;">
                                             <t t-esc="currency_symbol"/> <t t-esc="'%.2f' % line_val"/>
                                         </td>
                                         <td>
@@ -227,9 +227,9 @@
                             <!-- Grand Total Footer -->
                             <tr class="wm-grand-total" style="page-break-inside: avoid !important; break-inside: avoid !important;">
                                 <td colspan="3">TOTAL INVENTORY VALUATION</td>
-                                <td class="text-right"><t t-esc="'%.2f' % total_qty"/></td>
+                                <td class="text-end"><t t-esc="'%.2f' % total_qty"/></td>
                                 <td colspan="2"/>
-                                <td class="text-right"><t t-esc="currency_symbol"/> <t t-esc="'%.2f' % total_val"/></td>
+                                <td class="text-end"><t t-esc="currency_symbol"/> <t t-esc="'%.2f' % total_val"/></td>
                                 <td/>
                             </tr>
                         </tbody>

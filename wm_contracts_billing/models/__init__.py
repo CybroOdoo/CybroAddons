@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -24,9 +23,12 @@ from . import res_partner
 from . import account_move
 from . import wm_partner_contract
 from . import wm_partner_contract_line
+from . import wm_portal_service_request
 from . import wm_contract_sla
 from . import wm_collection_order
 from . import wm_customer_profitability_report
+from . import wm_dashboard
+from . import wm_event_pricing_rule
 from . import crm_lead
 from . import crm_lead_line
 from . import wm_monthly_billing_run
@@ -36,3 +38,4 @@ from . import wm_revenue_report
 from . import wm_weight_revenue_report
 from . import wm_operations_report
 from . import sale_order
+from . import wm_billable_event

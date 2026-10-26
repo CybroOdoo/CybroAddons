@@ -124,7 +124,7 @@
                     <button name="action_create_sale_order"
                             string="Create Sale Order"
                             type="object" class="btn-secondary"
-                            groups="wm_base.group_wm_recycler,wm_base.group_wm_ops_manager"
+                            groups="sales_team.group_sale_salesman"
                             invisible="state != 'done'"/>
                     <button name="action_cancel" string="Cancel"
                             type="object" class="btn-danger"
@@ -146,6 +146,7 @@
                         <button class="oe_stat_button" type="object"
                                 name="action_view_sales"
                                 icon="fa-shopping-cart"
+                                groups="sales_team.group_sale_salesman"
                                 invisible="sale_order_count == 0">
                             <field name="sale_order_count" widget="statinfo"
                                    string="Sale Orders"/>
@@ -177,8 +178,10 @@
                             <field name="date_start"
                                    readonly="state not in ('draft','confirmed')"/>
                             <field name="date_done" readonly="1" invisible="not date_done"/>
-                            <field name="responsible_id"/>
+                            <field name="responsible_id"
+                                   readonly="state in ('done', 'cancelled')"/>
                             <field name="facility_location_id"
+                                   readonly="state in ('done', 'cancelled')"
                                    options="{'no_create': True}"/>
                             <label for="overall_recovery_rate" string="Batch Yield" help="Overall Yield = Total Actual Output ÷ Batch Input Qty"/>
                             <div class="o_row">
@@ -233,6 +236,7 @@
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="product_id" string="Output Material" options="{'no_create': True}"/>
+                                    <field name="source_product_id" string="Source Material" optional="show" options="{'no_create': True}"/>
                                     <field name="expected_qty" string="Target Qty" help="Target output planned for this material stream"/>
                                     <field name="recovered_qty" string="Actual Qty" help="Actual quantity recovered"
                                            readonly="parent.state != 'in_progress'"
@@ -251,6 +255,7 @@
                                         <group>
                                             <group string="Output Material">
                                                 <field name="product_id" options="{'no_create': True}"/>
+                                                <field name="source_product_id" options="{'no_create': True}"/>
                                                 <field name="uom_id"/>
                                                 <field name="expected_qty" string="Target Qty"/>
                                                 <field name="recovered_qty" string="Actual Qty" readonly="parent.state != 'in_progress'"/>

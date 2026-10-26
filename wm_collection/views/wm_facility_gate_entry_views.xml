@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- List View -->
+        <record id="view_wm_facility_gate_entry_list" model="ir.ui.view">
+            <field name="name">wm.facility.gate.entry.list</field>
+            <field name="model">wm.facility.gate.entry</field>
+            <field name="arch" type="xml">
+                <list string="Facility Gate Entries" create="0" decoration-info="state == 'draft'" decoration-warning="state == 'in_progress'" decoration-success="state == 'accepted'" decoration-danger="state in ('rejected', 'partially_rejected')">
+                    <field name="name"/>
+                    <field name="facility_id"/>
+                    <field name="vehicle_id"/>
+                    <field name="driver_id"/>
+                    <field name="entry_datetime"/>
+                    <field name="confirmed_weight" sum="Total Confirmed Weight" string="Confirmed Weight (kg)"/>
+                    <field name="accepted_weight" optional="show" sum="Total Accepted"/>
+                    <field name="rejected_weight" optional="hide" sum="Total Rejected"/>
+                    <field name="reconciliation_status" widget="badge" decoration-success="reconciliation_status == 'balanced'" decoration-warning="reconciliation_status == 'overweight'" decoration-info="reconciliation_status == 'underweight'" decoration-danger="reconciliation_status == 'rejected_items'"/>
+                    <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'in_progress'" decoration-success="state == 'accepted'" decoration-danger="state in ('rejected', 'partially_rejected')"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Form View -->
+        <record id="view_wm_facility_gate_entry_form" model="ir.ui.view">
+            <field name="name">wm.facility.gate.entry.form</field>
+            <field name="model">wm.facility.gate.entry</field>
+            <field name="arch" type="xml">
+                <form string="Facility Gate Entry &amp; Weight Reconciliation" create="0">
+                    <header>
+                        <button name="action_start_weighing" string="Start Weighing" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                        <button name="action_process_reconciliation" string="Process Reconciliation &amp; Intake" type="object" class="btn-success" invisible="state not in ('draft', 'in_progress')"/>
+                        <button name="action_reset_draft" string="Reset to Draft" type="object" invisible="state in ('draft', 'accepted')"/>
+                        <button name="action_cancel" string="Cancel" type="object" invisible="state in ('accepted', 'cancelled')"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,accepted,partially_rejected,rejected"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_billable_events" type="object" class="oe_stat_button" icon="fa-money" invisible="billable_event_count == 0">
+                                <field name="billable_event_count" widget="statinfo" string="Billable Events"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Facility &amp; Transport Info">
+                                <field name="facility_id" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')"/>
+                                <field name="vehicle_id" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')"/>
+                                <field name="driver_id" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')"/>
+                                <field name="collection_order_id" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                            <group string="Gate Times &amp; Payload Weight">
+                                <field name="entry_datetime" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')"/>
+                                <field name="exit_datetime" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')"/>
+                                <field name="confirmed_weight" string="Confirmed Weight (kg)" class="fw-bold fs-4" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')"/>
+                            </group>
+                        </group>
+                        <group string="Four-Way Reconciliation Breakdown">
+                            <group>
+                                <field name="accepted_weight" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')" class="text-success fw-bold"/>
+                                <field name="rejected_weight" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')" class="text-danger fw-bold"/>
+                            </group>
+                            <group>
+                                <field name="weight_variance" class="fw-bold"/>
+                                <field name="reconciliation_status" widget="badge" decoration-success="reconciliation_status == 'balanced'" decoration-warning="reconciliation_status == 'overweight'" decoration-info="reconciliation_status == 'underweight'" decoration-danger="reconciliation_status == 'rejected_items'"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Payload Line Breakdown" name="lines">
+                                <field name="line_ids" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')">
+                                    <list editable="bottom">
+                                        <field name="waste_category_id"/>
+                                        <field name="container_id"/>
+                                        <field name="estimated_weight" sum="Total Est"/>
+                                        <field name="accepted_weight" sum="Total Accepted"/>
+                                        <field name="rejected_weight" sum="Total Rejected"/>
+                                        <field name="rejection_reason"/>
+                                        <field name="notes"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Rejection Details &amp; Notes" name="notes">
+                                <group>
+                                    <field name="rejection_reason" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')" placeholder="Enter reason if any load was rejected, contaminated, or turned away..."/>
+                                </group>
+                                <field name="rejection_line_ids" readonly="state in ('accepted', 'rejected', 'partially_rejected', 'cancelled')">
+                                    <list editable="bottom">
+                                        <field name="collection_point_id" domain="[('id', 'in', parent.allowed_collection_point_ids)]"/>
+                                        <field name="partner_id"/>
+                                        <field name="rejected_weight" sum="Total Rejected"/>
+                                        <field name="rejection_reason"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="view_wm_facility_gate_entry_search" model="ir.ui.view">
+            <field name="name">wm.facility.gate.entry.search</field>
+            <field name="model">wm.facility.gate.entry</field>
+            <field name="arch" type="xml">
+                <search string="Search Facility Gate Entries">
+                    <field name="name" string="Gate Ticket #"/>
+                    <field name="facility_id"/>
+                    <field name="vehicle_id"/>
+                    <field name="driver_id"/>
+                    <field name="collection_order_id"/>
+                    <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="In Progress / Weighing" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
+                    <filter string="Accepted" name="accepted" domain="[('state', '=', 'accepted')]"/>
+                    <filter string="Rejected / Partially Rejected" name="rejected" domain="[('state', 'in', ('rejected', 'partially_rejected'))]"/>
+                    <separator/>
+                    <filter string="Overweight Loads" name="overweight" domain="[('reconciliation_status', '=', 'overweight')]"/>
+                    <filter string="Balanced Loads" name="balanced" domain="[('reconciliation_status', '=', 'balanced')]"/>
+                    <group>
+                        <filter string="Disposal Facility" name="group_facility" context="{'group_by': 'facility_id'}"/>
+                        <filter string="Vehicle" name="group_vehicle" context="{'group_by': 'vehicle_id'}"/>
+                        <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                        <filter string="Reconciliation Status" name="group_recon_status" context="{'group_by': 'reconciliation_status'}"/>
+                        <filter string="Gate Entry Date" name="group_entry_date" context="{'group_by': 'entry_datetime:day'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Pivot View -->
+        <record id="view_wm_facility_gate_entry_pivot" model="ir.ui.view">
+            <field name="name">wm.facility.gate.entry.pivot</field>
+            <field name="model">wm.facility.gate.entry</field>
+            <field name="arch" type="xml">
+                <pivot string="Facility Weight &amp; Reconciliation Analysis">
+                    <field name="facility_id" type="row"/>
+                    <field name="entry_datetime" interval="month" type="col"/>
+                    <field name="confirmed_weight" type="measure"/>
+                    <field name="accepted_weight" type="measure"/>
+                    <field name="rejected_weight" type="measure"/>
+                    <field name="weight_variance" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <!-- Graph View -->
+        <record id="view_wm_facility_gate_entry_graph" model="ir.ui.view">
+            <field name="name">wm.facility.gate.entry.graph</field>
+            <field name="model">wm.facility.gate.entry</field>
+            <field name="arch" type="xml">
+                <graph string="Facility Intake Weights" type="bar" sample="1">
+                    <field name="facility_id"/>
+                    <field name="accepted_weight" type="measure"/>
+                    <field name="rejected_weight" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_wm_facility_gate_entry" model="ir.actions.act_window">
+            <field name="name">Facility Gate Entries</field>
+            <field name="res_model">wm.facility.gate.entry</field>
+            <field name="view_mode">list,form,pivot,graph</field>
+            <field name="search_view_id" ref="view_wm_facility_gate_entry_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No facility gate entries yet
+                </p>
+                <p>
+                    Gate entries are created automatically when a collection order is completed. Confirm the payload
+                    weight received against the order, process the intake, and handle rejections.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,10 +21,10 @@
 import logging
 
 from dateutil.relativedelta import relativedelta
-from odoo import fields
-from odoo.exceptions import ValidationError
-from odoo.tests import tagged, TransactionCase
 
+from odoo import fields
+from odoo.exceptions import UserError, ValidationError
+from odoo.tests import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -71,16 +70,27 @@ class TestWmMonthlyBilling(TransactionCase):
             'partner_id': cls.partner.id,
         })
 
-    def test_per_order_invoice_removed(self):
+    def test_per_order_manual_create_invoice(self):
         """
-        wm.collection.order must not have action_create_invoice method.
+        Test manual invoice creation from completed collection order via action_create_invoice.
         """
-        order = self.env['wm.collection.order'].new({})
-        self.assertFalse(
-            hasattr(order, 'action_create_invoice'),
-            "action_create_invoice must be removed from collection order"
-        )
-        _logger.info('PASS: test_per_order_invoice_removed')
+        order = self.env['wm.collection.order'].create({
+            'name': 'CO/TEST/MANUAL',
+            'partner_id': self.partner.id,
+            'collection_point_id': self.point.id,
+            'state': 'completed',
+            'order_line_ids': [(0, 0, {
+                'category_id': self.category_plastic.id,
+                'product_id': self.product_plastic.id,
+                'weight': 100.0,
+            })],
+        })
+        self.assertTrue(hasattr(order, 'action_create_invoice'), "action_create_invoice must be available on collection order")
+        action = order.action_create_invoice()
+        self.assertTrue(order.is_billed, "Collection order should be marked as billed after manual invoice creation")
+        self.assertTrue(order.direct_invoice_id, "Direct invoice must be linked to collection order")
+        self.assertEqual(action['res_model'], 'account.move')
+        _logger.info('PASS: test_per_order_manual_create_invoice')
 
     def test_invoiced_state_removed(self):
         """
@@ -140,7 +150,7 @@ class TestWmMonthlyBilling(TransactionCase):
         invoice = self.env['account.move'].browse(action['res_id'])
 
         # 1 section header + 2 category lines + 1 note line = 4 invoice lines
-        product_lines = invoice.invoice_line_ids.filtered(lambda l: l.display_type in ('product', False))
+        product_lines = invoice.invoice_line_ids.filtered(lambda ln: ln.display_type in ('product', False))
         self.assertEqual(len(product_lines), 2, "Consolidated invoice should contain exactly 2 aggregated category lines")
         _logger.info('PASS: test_monthly_invoice_aggregates_by_category')
 
@@ -207,7 +217,7 @@ class TestWmMonthlyBilling(TransactionCase):
         })
         action = consolidated.action_generate_invoice()
         invoice = self.env['account.move'].browse(action['res_id'])
-        line = invoice.invoice_line_ids.filtered(lambda l: l.display_type in ('product', False))[:1]
+        line = invoice.invoice_line_ids.filtered(lambda ln: ln.display_type in ('product', False))[:1]
         self.assertEqual(line.price_unit, 7.0, "Customer-specific pricing rule (7.0) should override general rule (5.0)")
         _logger.info('PASS: test_pricing_rule_priority')
 
@@ -242,7 +252,7 @@ class TestWmMonthlyBilling(TransactionCase):
         })
         action = consolidated.action_generate_invoice()
         invoice = self.env['account.move'].browse(action['res_id'])
-        line = invoice.invoice_line_ids.filtered(lambda l: l.display_type in ('product', False))[:1]
+        line = invoice.invoice_line_ids.filtered(lambda ln: ln.display_type in ('product', False))[:1]
         self.assertEqual(line.quantity, 100.0, "Quantity should equal min_weight floor (100.0)")
         _logger.info('PASS: test_min_weight_floor_applied')
 
@@ -277,7 +287,7 @@ class TestWmMonthlyBilling(TransactionCase):
         })
         action = consolidated.action_generate_invoice()
         invoice = self.env['account.move'].browse(action['res_id'])
-        self.assertEqual(invoice.amount_total, 150.0, "Invoice amount should equal min_charge (150.0)")
+        self.assertEqual(invoice.amount_untaxed, 150.0, "Invoice amount should equal min_charge (150.0) before taxes")
         _logger.info('PASS: test_min_charge_applied')
 
     def test_duplicate_monthly_invoice_blocked(self):
@@ -401,15 +411,10 @@ class TestWmMonthlyBilling(TransactionCase):
             'partner_id': self.partner.id,
             'order_ids': [(6, 0, [order.id])],
         })
-        action = consolidated.action_generate_invoice()
-        invoice = self.env['account.move'].browse(action['res_id'])
-
-        line = invoice.invoice_line_ids.filtered(lambda l: l.display_type in ('product', False))[:1]
-        self.assertEqual(line.price_unit, 0.0, "Invoice line price should be 0.0")
-
-        # Verify warning posted in chatter
-        messages = consolidated.message_ids.mapped('body')
-        self.assertTrue(any("No price resolved" in msg for msg in messages), "Chatter warning should be posted")
+        # An order is never invoiced (and marked billed) at zero: no price -> refused
+        with self.assertRaises(UserError):
+            consolidated.action_generate_invoice()
+        self.assertFalse(order.consolidated_invoice_id, "The order must stay unbilled")
         _logger.info('PASS: test_zero_price_warning_posted')
 
     def test_account_lookup_uses_company_ids(self):

@@ -38,6 +38,38 @@
             <field name="perm_unlink" eval="True"/>
         </record>
 
+        <!-- Global fallback rule for Collection Order Lines -->
+        <record id="rule_wm_collection_order_line_company_fallback" model="ir.rule">
+            <field name="name">Collection Order Line: Company Scope (Fallback)</field>
+            <field name="model_id" ref="model_wm_collection_order_line"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('order_id.company_id', '=', False), ('order_id.company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Driver Rule for Collection Order Lines: Follows order driver -->
+        <record id="rule_wm_collection_order_line_driver" model="ir.rule">
+            <field name="name">Collection Order Line: Driver Access</field>
+            <field name="model_id" ref="model_wm_collection_order_line"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_driver'))]"/>
+            <field name="domain_force">['|', '|', '|', ('order_id.driver_id', '=', user.partner_id.id), ('order_id.route_id.driver_id', '=', user.partner_id.id), ('order_id.vehicle_id.driver_id', '=', user.partner_id.id), '&amp;', ('order_id.create_uid', '=', user.id), ('order_id.driver_id', 'in', [False, user.partner_id.id])]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Dispatcher & Operations Manager Rule: Full access to all collection order lines -->
+        <record id="rule_wm_collection_order_line_all" model="ir.rule">
+            <field name="name">Collection Order Line: All Access for Dispatcher / Manager / System Admin</field>
+            <field name="model_id" ref="model_wm_collection_order_line"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_dispatcher')), (4, ref('wm_base.group_wm_ops_manager')), (4, ref('wm_base.group_wm_admin')), (4, ref('base.group_system'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
         <!-- Global fallback rule for Routes -->
         <record id="rule_wm_route_company_fallback" model="ir.rule">
             <field name="name">Route: Company Scope (Fallback)</field>
@@ -70,5 +102,187 @@
             <field name="perm_unlink" eval="True"/>
         </record>
 
+
+        <!-- Driver Rule for Route Stops: only stops of routes the driver can see -->
+        <record id="rule_wm_route_line_driver" model="ir.rule">
+            <field name="name">Route Line: Driver Access</field>
+            <field name="model_id" ref="model_wm_route_line"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_driver'))]"/>
+            <field name="domain_force">['|', '|', ('route_id.driver_id', '=', user.partner_id.id), ('route_id.vehicle_id.driver_id', '=', user.partner_id.id), ('route_id.create_uid', '=', user.id)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Dispatcher / Manager Rule for Route Stops -->
+        <record id="rule_wm_route_line_all" model="ir.rule">
+            <field name="name">Route Line: All Access for Dispatcher / Manager / System Admin</field>
+            <field name="model_id" ref="model_wm_route_line"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_dispatcher')), (4, ref('wm_base.group_wm_ops_manager')), (4, ref('wm_base.group_wm_admin')), (4, ref('base.group_system'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Multi-company isolation (global rules) for models carrying a company_id. -->
+        <record id="rule_wm_container_company" model="ir.rule">
+            <field name="name">Container: Multi-Company</field>
+            <field name="model_id" ref="model_wm_container"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_wm_facility_gate_entry_company" model="ir.rule">
+            <field name="name">Facility Gate Entry: Multi-Company</field>
+            <field name="model_id" ref="model_wm_facility_gate_entry"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_wm_collection_report_company" model="ir.rule">
+            <field name="name">Collection Analysis Report: Multi-Company</field>
+            <field name="model_id" ref="model_wm_collection_report"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_wm_route_efficiency_report_company" model="ir.rule">
+            <field name="name">Route Efficiency Report: Multi-Company</field>
+            <field name="model_id" ref="model_wm_route_efficiency_report"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_wm_batch_aging_report_company" model="ir.rule">
+            <field name="name">Batch Aging Report: Multi-Company</field>
+            <field name="model_id" ref="model_wm_batch_aging_report"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_wm_driver_performance_report_company" model="ir.rule">
+            <field name="name">Driver Performance Report: Multi-Company</field>
+            <field name="model_id" ref="model_wm_driver_performance_report"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_wm_fleet_expiry_report_company" model="ir.rule">
+            <field name="name">Fleet Expiry Report: Multi-Company</field>
+            <field name="model_id" ref="model_wm_fleet_expiry_report"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_wm_maintenance_history_report_company" model="ir.rule">
+            <field name="name">Maintenance History Report: Multi-Company</field>
+            <field name="model_id" ref="model_wm_maintenance_history_report"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- WM roles may run vehicle inspections (pre/post-trip checklists)
+             without being Survey users: limit them to checklist answers. -->
+        <record id="rule_wm_survey_user_input_driver" model="ir.rule">
+            <field name="name">Survey answers: WM vehicle checklists only</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_driver'))]"/>
+            <field name="domain_force">[('checklist_type', '!=', False), ('create_uid', '=', user.id)]</field>
+        </record>
+        <record id="rule_wm_survey_user_input_line_driver" model="ir.rule">
+            <field name="name">Survey answer lines: WM vehicle checklists only</field>
+            <field name="model_id" ref="survey.model_survey_user_input_line"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_driver'))]"/>
+            <field name="domain_force">[('user_input_id.checklist_type', '!=', False), ('user_input_id.create_uid', '=', user.id)]</field>
+        </record>
+        <!-- Drivers only reach the status logs, missed collections and signatures of their own work; dispatchers and managers keep full access. -->
+        <record id="rule_wm_status_log_driver" model="ir.rule">
+            <field name="name">Status Log: Driver Access</field>
+            <field name="model_id" ref="model_wm_collection_order_status_log"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_driver'))]"/>
+            <field name="domain_force">['|', '|', '|', ('order_id.driver_id', '=', user.partner_id.id), ('order_id.route_id.driver_id', '=', user.partner_id.id), ('order_id.vehicle_id.driver_id', '=', user.partner_id.id), '&amp;', ('order_id.create_uid', '=', user.id), ('order_id.driver_id', 'in', [False, user.partner_id.id])]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        <record id="rule_wm_status_log_all" model="ir.rule">
+            <field name="name">Status Log: All Access for Dispatcher / Manager / System Admin</field>
+            <field name="model_id" ref="model_wm_collection_order_status_log"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_dispatcher')), (4, ref('wm_base.group_wm_ops_manager')), (4, ref('wm_base.group_wm_admin')), (4, ref('base.group_system'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        <record id="rule_wm_missed_collection_driver" model="ir.rule">
+            <field name="name">Missed Collection: Driver Access</field>
+            <field name="model_id" ref="model_wm_missed_collection"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_driver'))]"/>
+            <field name="domain_force">['|', '|', ('driver_id', '=', user.partner_id.id), ('order_id.driver_id', '=', user.partner_id.id), ('create_uid', '=', user.id)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        <record id="rule_wm_missed_collection_all" model="ir.rule">
+            <field name="name">Missed Collection: All Access for Dispatcher / Manager / System Admin</field>
+            <field name="model_id" ref="model_wm_missed_collection"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_dispatcher')), (4, ref('wm_base.group_wm_ops_manager')), (4, ref('wm_base.group_wm_admin')), (4, ref('base.group_system'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        <record id="rule_wm_signature_driver" model="ir.rule">
+            <field name="name">Signature: Driver Access</field>
+            <field name="model_id" ref="model_wm_signature"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_driver'))]"/>
+            <field name="domain_force">[('create_uid', '=', user.id)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        <record id="rule_wm_signature_all" model="ir.rule">
+            <field name="name">Signature: All Access for Dispatcher / Manager / System Admin</field>
+            <field name="model_id" ref="model_wm_signature"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_dispatcher')), (4, ref('wm_base.group_wm_ops_manager')), (4, ref('wm_base.group_wm_admin')), (4, ref('base.group_system'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        <!-- Dispatchers and managers review every driver's inspection checklist. -->
+        <record id="rule_wm_survey_user_input_dispatcher" model="ir.rule">
+            <field name="name">Survey answers: WM vehicle checklists (dispatchers)</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_dispatcher'))]"/>
+            <field name="domain_force">[('checklist_type', '!=', False)]</field>
+        </record>
+        <record id="rule_wm_survey_user_input_line_dispatcher" model="ir.rule">
+            <field name="name">Survey answer lines: WM vehicle checklists (dispatchers)</field>
+            <field name="model_id" ref="survey.model_survey_user_input_line"/>
+            <field name="groups" eval="[(4, ref('wm_base.group_wm_dispatcher'))]"/>
+            <field name="domain_force">[('user_input_id.checklist_type', '!=', False)]</field>
+        </record>
+        <!-- Multi-company isolation for child models reachable without their parent. -->
+        <record id="rule_waste_batch_line_company" model="ir.rule">
+            <field name="name">Waste Batch Line: Multi-Company</field>
+            <field name="model_id" ref="model_waste_batch_line"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('batch_id.company_id', '=', False), ('batch_id.company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_wm_facility_gate_entry_line_company" model="ir.rule">
+            <field name="name">Facility Gate Entry Line: Multi-Company</field>
+            <field name="model_id" ref="model_wm_facility_gate_entry_line"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('gate_entry_id.company_id', '=', False), ('gate_entry_id.company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="rule_wm_facility_gate_entry_rejection_line_company" model="ir.rule">
+            <field name="name">Facility Gate Entry Rejection Line: Multi-Company</field>
+            <field name="model_id" ref="model_wm_facility_gate_entry_rejection_line"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('gate_entry_id.company_id', '=', False), ('gate_entry_id.company_id', 'in', company_ids)]</field>
+        </record>
     </data>
 </odoo>

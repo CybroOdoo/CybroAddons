@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -26,9 +25,9 @@ import logging
 from datetime import date
 
 from dateutil.relativedelta import relativedelta
-from odoo.exceptions import UserError
-from odoo.tests import tagged, TransactionCase
 
+from odoo.exceptions import UserError
+from odoo.tests import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -479,11 +478,12 @@ class TestWmCrmLeadConversion(TransactionCase):
         )
         self.assertTrue(pending_activity, 'A todo activity must be scheduled on lead after quotation confirmation.')
 
-        # Verify wizard default_get pre-fills fixed_price from quotation.amount_total
+        # The tax-included quotation total is not a per-collection price, so
+        # the wizard must not pre-fill fixed_price from it (L-08).
         defaults = self.env['wm.lead.conversion.wizard'].with_context(default_lead_id=lead.id).default_get([
             'lead_id', 'partner_id', 'fixed_price'
         ])
-        self.assertEqual(defaults.get('fixed_price'), quotation.amount_total)
+        self.assertEqual(defaults.get('fixed_price'), 0.0)
 
         # Execute wizard conversion
         contract = self._run_wizard(lead)
@@ -547,7 +547,7 @@ class TestWmCrmLeadConversion(TransactionCase):
         self.assertEqual(wiz_action['res_model'], 'wm.lead.conversion.wizard')
         ctx = wiz_action['context']
         self.assertEqual(ctx.get('default_order_id'), quotation.id)
-        self.assertEqual(ctx.get('default_fixed_price'), quotation.amount_total)
+        self.assertNotIn('default_fixed_price', ctx)
 
         # Create the wizard and confirm conversion
         wizard = self.env['wm.lead.conversion.wizard'].with_context(ctx).create({
@@ -559,6 +559,8 @@ class TestWmCrmLeadConversion(TransactionCase):
             'frequency': 'weekly',
             'no_of_frequency': 1,
             'billing_basis': 'per_collection',
+            # Not pre-filled from the quotation total any more (L-08)
+            'fixed_price': 50.0,
             'sla_id': self.sla.id,
             'collection_point_ids': [(6, 0, [self.site.id])],
         })
@@ -585,7 +587,7 @@ class TestWmCrmLeadConversion(TransactionCase):
             'name': 'Test Contract Manager User',
             'login': 'test_wm_contract_manager_user',
             'email': 'cm_user@test.com',
-            'groups_id': [(6, 0, [
+            'group_ids': [(6, 0, [
                 self.env.ref('base.group_user').id,
                 self.env.ref('sales_team.group_sale_salesman').id,
                 self.env.ref('wm_contracts_billing.group_wm_contract_manager').id,
@@ -627,7 +629,7 @@ class TestWmCrmLeadConversion(TransactionCase):
             'name': 'Test Contract Manager Point Creator',
             'login': 'test_wm_cm_point_creator',
             'email': 'cm_point@test.com',
-            'groups_id': [(6, 0, [
+            'group_ids': [(6, 0, [
                 self.env.ref('base.group_user').id,
                 self.env.ref('wm_contracts_billing.group_wm_contract_manager').id,
             ])],

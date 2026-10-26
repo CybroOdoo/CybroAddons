@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,13 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+import re
+
+from odoo import _, api, fields, models
+
+# Whole-word match so that e.g. "Normal" / "Not applicable" do not count as
+# a failed 'no' answer.
+_FAILED_ANSWER_RE = re.compile(r'\b(?:fail\w*|no|bad|defect\w*|damaged)\b', re.IGNORECASE)
 
 
 class SurveyUserInput(models.Model):
@@ -99,9 +104,7 @@ class SurveyUserInput(models.Model):
 
                 for line in record.user_input_line_ids:
                     is_failed = False
-                    if line.answer_score == 0.0 and line.question_id.question_type in ('simple_choice', 'multiple_choice'):
-                        is_failed = True
-                    elif line.suggested_answer_id and any(w in (line.suggested_answer_id.value or '').lower() for w in ('fail', 'no', 'bad', 'defect', 'damaged')):
+                    if (line.answer_score == 0.0 and line.question_id.question_type in ('simple_choice', 'multiple_choice')) or (line.suggested_answer_id and _FAILED_ANSWER_RE.search(line.suggested_answer_id.value or '')) or (line.value_char_box and _FAILED_ANSWER_RE.search(line.value_char_box)):
                         is_failed = True
 
                     if is_failed:
@@ -161,20 +164,19 @@ class SurveyUserInput(models.Model):
                             ('state', 'in', ('to_start', 'dispatched'))
                         ])
                         for route in pending_routes:
-                            standby_domain = [
-                                ('id', '!=', vehicle.id),
-                                ('company_id', '=', vehicle.company_id.id if vehicle.company_id else False)
-                            ]
-                            if 'state' in self.env['fleet.vehicle']._fields:
-                                standby_domain.append(('state', '=', 'available'))
-
-                            standby = self.env['fleet.vehicle'].sudo().search(standby_domain, limit=1)
+                            standby = record._find_standby_vehicle(vehicle, route)
 
                             if standby:
                                 old_name = vehicle.name
-                                route.write({'vehicle_id': standby.id})
+                                # Programmatic reassignment: must not be blocked
+                                # by the "already inspected" guard on route.write.
+                                route.with_context(programmatic_state_change=True).write({
+                                    'vehicle_id': standby.id,
+                                    'is_inspected': False,
+                                })
                                 if route.collection_order_ids:
-                                    route.collection_order_ids.write({'vehicle_id': standby.id})
+                                    route.collection_order_ids.with_context(
+                                        programmatic_state_change=True).write({'vehicle_id': standby.id})
                                 route.message_post(
                                     body=f"<strong>AUTOMATED ROUTE REASSIGNMENT:</strong> Vehicle '{old_name}' failed Pre-Trip Inspection. Route automatically reassigned to standby vehicle <strong>{standby.name}</strong>."
                                 )
@@ -208,6 +210,39 @@ class SurveyUserInput(models.Model):
                             body=f"<strong>PRE-TRIP INSPECTION PASSED:</strong> Vehicle '{vehicle.name}' passed all inspection criteria and is ready for service."
                         )
         return res
+
+    def _find_standby_vehicle(self, failed_vehicle, route):
+        """Return a vehicle that can take over *route*, or an empty recordset.
+
+        Excludes vehicles already on another open route that day, vehicles
+        with an open service log and vehicles in a maintenance/downgrade
+        fleet state.
+        """
+        Vehicle = self.env['fleet.vehicle'].sudo()
+        domain = [
+            ('id', '!=', failed_vehicle.id),
+            ('company_id', '=', failed_vehicle.company_id.id if failed_vehicle.company_id else False),
+        ]
+        if 'state' in Vehicle._fields:
+            domain.append(('state', '=', 'available'))
+        busy = self.env['wm.route'].sudo().search([
+            ('id', '!=', route.id),
+            ('date', '=', route.date),
+            ('state', '!=', 'completed'),
+            ('vehicle_id', '!=', False),
+        ]).vehicle_id
+        if 'fleet.vehicle.log.services' in self.env:
+            Services = self.env['fleet.vehicle.log.services'].sudo()
+            if 'state' in Services._fields:
+                busy |= Services.search([('state', 'in', ('new', 'running'))]).vehicle_id
+        if busy:
+            domain.append(('id', 'not in', busy.ids))
+        for candidate in Vehicle.search(domain):
+            state_name = (candidate.state_id.name or '').lower() if 'state_id' in Vehicle._fields else ''
+            if 'maintenance' in state_name or 'downgrade' in state_name:
+                continue
+            return candidate
+        return Vehicle
 
 
 class WMChecklistItem(models.Model):
@@ -248,8 +283,50 @@ class WMVehicleMaintenanceChecklist(models.Model):
     ], string='Checklist Type', required=True, tracking=True)
     line_ids = fields.One2many('wm.checklist.line', 'checklist_id', string='Checklist Lines', help='Provides information about checklist lines')
     inspector_id = fields.Many2one('res.users', string='Inspector', help='Provides information about inspector', default=lambda self: self.env.user, required=True, tracking=True)
-    date = fields.Date(string='Date', help='Provides information about date', default=fields.Date.context_today, tracking=True)
+    date = fields.Date(string='Date', help='Provides information about date', default=fields.Date.context_today, tracking=True, copy=False)
     state = fields.Selection([
         ('tocheck', 'To Check'),
         ('checked', 'Checked')
-    ], string='Status', default='tocheck', tracking=True)
+    ], string='Status', default='tocheck', tracking=True, copy=False)
+
+    def _trigger_route_inspection_recompute(self, vehicles, exclude_routes=None):
+        """Recompute the pre-trip status of open routes using *vehicles*.
+
+        ``wm.route.is_inspected`` falls back to maintenance checklists done
+        since the vehicle's previous route, which it cannot express as an
+        ``@api.depends`` path.
+        """
+        if not vehicles or 'wm.route' not in self.env:
+            return
+        Route = self.env['wm.route'].sudo()
+        domain = [
+            ('vehicle_id', 'in', vehicles.ids),
+            ('state', 'in', ('to_start', 'dispatched')),
+        ]
+        if exclude_routes:
+            domain.append(('id', 'not in', exclude_routes.ids))
+        routes = Route.search(domain)
+        if routes:
+            self.env.add_to_compute(Route._fields['is_inspected'], routes)
+            self.env.add_to_compute(Route._fields['is_ready_to_dispatch'], routes)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        self._trigger_route_inspection_recompute(
+            records.filtered(lambda c: c.checklist_type == 'pre_trip' and c.state == 'checked').vehicle_id)
+        return records
+
+    def write(self, vals):
+        old_vehicles = self.filtered(lambda c: c.checklist_type == 'pre_trip').vehicle_id
+        res = super().write(vals)
+        if {'state', 'date', 'vehicle_id', 'checklist_type'} & set(vals):
+            self._trigger_route_inspection_recompute(
+                old_vehicles | self.filtered(lambda c: c.checklist_type == 'pre_trip').vehicle_id)
+        return res
+
+    def unlink(self):
+        vehicles = self.filtered(lambda c: c.checklist_type == 'pre_trip').vehicle_id
+        res = super().unlink()
+        self._trigger_route_inspection_recompute(vehicles)
+        return res

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -25,7 +24,7 @@ import urllib.parse
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta
 
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
@@ -42,6 +41,12 @@ class RateCardRule:
     overweight_price: float = 0.0
     included_weight: float = 0.0
     id: bool = False
+    # Set for contract per_collection / hybrid fees: these are charged once
+    # per collection for the whole contract, not once per waste category.
+    contract_id: int = 0
+    # True when the price comes from a partner contract (contract currency);
+    # rate-card and pricing-rule prices are in the company currency.
+    from_contract: bool = False
 
 
 class WmCollectionOrder(models.Model):
@@ -55,51 +60,24 @@ class WmCollectionOrder(models.Model):
     company_id = fields.Many2one('res.company', string='Company', help='Provides information about company', required=True, default=lambda self: self.env.company)
     collection_point_id = fields.Many2one('wm.collection.point', string='Collection Point', help='Provides information about collection point', tracking=True)
 
-    @api.onchange('partner_id')
-    def _onchange_partner_id(self):
-        """
-        Refresh the default collection point and contract selection when the
-        partner changes, ensuring the order's route and billing configuration
-        matches the new customer.
-        """
-        if self.partner_id:
-            if self.collection_point_id and self.collection_point_id.partner_id != self.partner_id:
-                self.collection_point_id = False
-            if not self.collection_point_id:
-                points = self.env['wm.collection.point'].search([('partner_id', '=', self.partner_id.id)])
-                if len(points) == 1:
-                    self.collection_point_id = points.id
-        else:
-            self.collection_point_id = False
-
     order_line_ids = fields.One2many('wm.collection.order.line', 'order_id', string='Order Lines', help='Provides information about order lines', copy=True)
+    status_log_ids = fields.One2many(
+        'wm.collection.order.status.log', 'order_id', string='Stop Status Timeline', copy=False,
+        help='Timestamped sequence of stop-level events reported by the driver app for this order.'
+    )
     product_ids = fields.Many2many('product.product', compute='_compute_product_ids', string='Waste Material', help='Provides information about waste category')
     collection_point_category_ids = fields.Many2many(
         'wm.waste.category',
         string='Allowed Waste Categories',
         compute='_compute_collection_point_category_ids',
     )
-
-    @api.depends('collection_point_id', 'collection_point_id.category_ids')
-    def _compute_collection_point_category_ids(self):
-        """
-        Derive the set of waste categories serviced at the selected collection
-        point, filtering the order line category domain to prevent the
-        selection of unsupported waste streams.
-        """
-        for order in self:
-            order.collection_point_category_ids = order.collection_point_id.category_ids if order.collection_point_id else False
-
-    @api.depends('order_line_ids.product_id')
-    def _compute_product_ids(self):
-        """
-        Build the list of available waste material products from the assigned
-        route's collection point configurations, filtering the order line
-        product domain accordingly.
-        """
-        for order in self:
-            order.product_ids = order.order_line_ids.mapped('product_id')
-    container_id = fields.Many2one('wm.container.type', string='Container Type', help='Provides information about container type')
+    container_id = fields.Many2one(
+        'wm.container.type',
+        string='Container Type',
+        compute='_compute_container_id',
+        store=True,
+        help='Provides information about container type',
+    )
     state = fields.Selection([
         ('draft', 'Draft'),
         ('dispatched', 'Dispatched'),
@@ -108,16 +86,7 @@ class WmCollectionOrder(models.Model):
         ('signed', 'Signed'),
         ('missed', 'Missed'),
         ('cancelled', 'Cancelled'),
-    ], string='Status', default='draft', group_expand='_read_group_states', tracking=True, index=True)
-
-    @api.model
-    def _read_group_states(self, stages, domain, order=None):
-        """ Expand group stages in kanban view based on missed collection setting. """
-        use_missed = self.env['ir.config_parameter'].sudo().get_param('wm_collection.use_missed_collection', 'False') in ('True', '1')
-        all_states = [key for key, _val in self._fields['state'].selection if key != 'cancelled']
-        if not use_missed:
-            all_states = [s for s in all_states if s != 'missed']
-        return all_states
+    ], string='Status', default='draft', group_expand='_read_group_states', tracking=True, index=True, copy=False)
     estimated_weight = fields.Float(string='Estimated Weight', help='Provides information about estimated weight')
     confirmed_weight = fields.Float(string='Confirmed Weight', help='Provides information about confirmed weight', compute='_compute_confirmed_weight', store=True)
     currency_id = fields.Many2one('res.currency', string='Currency', related='company_id.currency_id', readonly=True)
@@ -135,40 +104,6 @@ class WmCollectionOrder(models.Model):
         digits=(10, 3),
         help='Scope 3 Carbon Abatement (tCO2e avoided) based on EPA WARM standards = (Confirmed Weight in kg ÷ 1000) × Category EPA WARM Factor.'
     )
-
-    @api.depends('order_line_ids.weight')
-    def _compute_confirmed_weight(self):
-        """
-        Compute the weight delta between the declared order quantity and the
-        physically weighed batch weight, flagging significant variances for
-        supervisor review.
-        """
-        for order in self:
-            order.confirmed_weight = sum(order.order_line_ids.mapped('weight'))
-
-    @api.depends('order_line_ids.total_amount', 'order_line_ids.price', 'order_line_ids.weight', 'order_line_ids.estimated_weight')
-    def _compute_total_amount(self):
-        """
-        Compute total monetary value for the order by summing the amounts
-        of all collection order lines.
-        """
-        for order in self:
-            order.total_amount = sum(
-                line.total_amount or (line.price * (line.weight or line.estimated_weight or 0.0))
-                for line in order.order_line_ids
-            )
-
-    @api.depends('confirmed_weight', 'order_line_ids.product_id.wm_waste_category_id', 'order_line_ids.product_id.wm_waste_category_id.warm_factor_co2')
-    def _compute_co2_avoided_tons(self):
-        """
-        Compute Scope 3 carbon abatement (tCO2e avoided) based on EPA WARM
-        factor.
-        """
-        for order in self:
-            cats = order.order_line_ids.mapped('product_id.wm_waste_category_id')
-            factors = cats.mapped('warm_factor_co2')
-            avg_factor = sum(factors) / len(factors) if factors else 1.50
-            order.co2_avoided_tons = (order.confirmed_weight / 1000.0) * avg_factor
     route_id = fields.Many2one(
         'wm.route',
         string='Route',
@@ -177,53 +112,22 @@ class WmCollectionOrder(models.Model):
         index=True,
     )
     valid_vehicle_ids = fields.Many2many('fleet.vehicle', compute='_compute_valid_vehicle_ids')
-    vehicle_id = fields.Many2one('fleet.vehicle', string='Vehicle', help='Provides information about vehicle')
-
-    @api.onchange('route_id')
-    def _onchange_route_id(self):
-        """
-        Pre-fill the vehicle, driver, and scheduled dates from the selected
-        route when the route assignment changes, reducing manual data entry for
-        dispatchers.
-        """
-        if self.route_id:
-            if self.route_id.vehicle_id:
-                self.vehicle_id = self.route_id.vehicle_id
-            if self.route_id.driver_id:
-                self.driver_id = self.route_id.driver_id
-
-            if self.vehicle_id and self.vehicle_id.wm_container_id:
-                self.container_id = self.vehicle_id.wm_container_id.id
-
-    @api.onchange('vehicle_id')
-    def _onchange_vehicle_id(self):
-        """
-        Update the vehicle capacity and type restrictions on the order when the
-        vehicle selection changes, warning if the assigned vehicle cannot
-        handle the expected load.
-        """
-        if self.vehicle_id:
-            self.driver_id = self.vehicle_id.driver_id
-            if self.vehicle_id.wm_container_id:
-                self.container_id = self.vehicle_id.wm_container_id.id
-        else:
-            self.driver_id = False
-
-    @api.depends('scheduled_start')
-    def _compute_valid_vehicle_ids(self):
-        """
-        Filter the available fleet vehicles to those licensed for waste
-        transport and with sufficient payload for the collection order's
-        expected waste weight.
-        """
-        for order in self:
-            try:
-                checklists = self.env['wm.vehicle.maintenance.checklist'].search([('state', '=', 'checked')])
-                order.valid_vehicle_ids = checklists.mapped('vehicle_id')
-            except Exception as e:
-                _logger.warning("Failed to compute valid vehicle IDs from maintenance checklist: %s", e)
-                order.valid_vehicle_ids = self.env['fleet.vehicle'].search([])
-    driver_id = fields.Many2one('res.partner', string='Driver', help='Provides information about driver')
+    vehicle_id = fields.Many2one(
+        'fleet.vehicle',
+        string='Vehicle',
+        compute='_compute_vehicle_id',
+        store=True,
+        readonly=False,
+        help='Provides information about vehicle',
+    )
+    driver_id = fields.Many2one(
+        'res.partner',
+        string='Driver',
+        compute='_compute_driver_id',
+        store=True,
+        readonly=False,
+        help='Provides information about driver',
+    )
     scheduled_start = fields.Datetime(
         string='Scheduled Start',
         help='Provides information about scheduled start',
@@ -232,12 +136,6 @@ class WmCollectionOrder(models.Model):
         default=fields.Datetime.now,
     )
     scheduled_end = fields.Datetime(string='Scheduled End', help='Provides information about scheduled end', tracking=True)
-
-    @api.onchange('scheduled_start')
-    def _onchange_scheduled_start(self):
-        """ Suggest scheduled_end as 1 hour after scheduled_start if not already set. """
-        if self.scheduled_start and not self.scheduled_end:
-            self.scheduled_end = self.scheduled_start + timedelta(hours=1)
     actual_start = fields.Datetime(string='Actual Start', help='Provides information about actual start', tracking=True)
     actual_end = fields.Datetime(string='Actual End', help='Provides information about actual end', tracking=True)
     completed_date = fields.Datetime(string='Completed Date', readonly=True, help='Provides information about completed date')
@@ -268,12 +166,229 @@ class WmCollectionOrder(models.Model):
     )
     waste_batch_ids = fields.One2many('waste.batch', 'collection_order_id', string='Waste Batches')
     waste_batch_count = fields.Integer(string='Waste Batch Count', compute='_compute_waste_batch_count')
+    gate_entry_ids = fields.One2many('wm.facility.gate.entry', 'collection_order_id', string='Facility Gate Entries')
+    gate_entry_count = fields.Integer(string='Gate Entry Count', compute='_compute_gate_entry_count')
     is_billed = fields.Boolean(
         string='Billed',
         compute='_compute_is_billed',
         store=True,
         help='True when this order has been included in a monthly invoice.',
     )
+    # ── Missed-collection fields ──
+    use_missed_collection = fields.Boolean(compute='_compute_use_settings')
+    is_missed = fields.Boolean(string='Missed', help='Provides information about missed', default=False, tracking=True)
+    missed_reason_id = fields.Many2one('wm.missed.reason', string='Missed Reason', help='Provides information about missed reason', tracking=True)
+    missed_notes = fields.Text(string='Missed Notes', help='Provides information about missed notes')
+    parent_order_id = fields.Many2one('wm.collection.order', string='Original Order', help='Provides information about original order', readonly=True, copy=False)
+    retry_order_id = fields.Many2one('wm.collection.order', string='Retry Order', help='Provides information about retry order', readonly=True, copy=False)
+    retry_count = fields.Integer(string='Retry Count', help='Provides information about retry count', compute='_compute_retry_count')
+    missed_collection_id = fields.Many2one('wm.missed.collection', string='Missed Collection Record', help='Provides information about missed collection record', readonly=True, copy=False)
+    signature_signer_count = fields.Integer(string='Signatures', help='Provides information about signatures', compute='_compute_signature_signer_count')
+    next_signer_id = fields.Many2one('wm.signature.request.signer', compute='_compute_next_signer', string='Next Signer', help='Provides information about next signer')
+    next_signer_role_name = fields.Char(compute='_compute_next_signer', string='Next Signer Role', help='Provides information about next signer role')
+
+    @api.onchange('partner_id')
+    def _onchange_partner_id(self):
+        """
+        Refresh the default collection point and contract selection when the
+        partner changes, ensuring the order's route and billing configuration
+        matches the new customer.
+        """
+        if self.partner_id:
+            if self.collection_point_id and self.collection_point_id.partner_id != self.partner_id:
+                self.collection_point_id = False
+            if not self.collection_point_id:
+                points = self.env['wm.collection.point'].search([('partner_id', '=', self.partner_id.id)])
+                if len(points) == 1:
+                    self.collection_point_id = points.id
+        else:
+            self.collection_point_id = False
+
+    @api.depends('collection_point_id', 'collection_point_id.category_ids')
+    def _compute_collection_point_category_ids(self):
+        """
+        Derive the set of waste categories serviced at the selected collection
+        point, filtering the order line category domain to prevent the
+        selection of unsupported waste streams.
+        """
+        for order in self:
+            order.collection_point_category_ids = order.collection_point_id.category_ids if order.collection_point_id else False
+
+    @api.depends('order_line_ids.product_id')
+    def _compute_product_ids(self):
+        """
+        Build the list of available waste material products from the assigned
+        route's collection point configurations, filtering the order line
+        product domain accordingly.
+        """
+        for order in self:
+            order.product_ids = order.order_line_ids.mapped('product_id')
+
+    @api.model
+    def _read_group_states(self, _stages, domain, order=None):
+        """ Expand group stages in kanban view based on missed collection setting. """
+        use_missed = self.env['ir.config_parameter'].sudo().get_param('wm_collection.use_missed_collection', 'False') in ('True', '1')
+        all_states = [key for key, _val in self._fields['state'].selection if key != 'cancelled']
+        if not use_missed:
+            all_states = [s for s in all_states if s != 'missed']
+        return all_states
+
+    @api.depends('order_line_ids.weight')
+    def _compute_confirmed_weight(self):
+        """
+        Compute the weight delta between the declared order quantity and the
+        physically weighed batch weight, flagging significant variances for
+        supervisor review.
+        """
+        for order in self:
+            order.confirmed_weight = sum(order.order_line_ids.mapped('weight'))
+
+    @api.depends('order_line_ids.total_amount', 'order_line_ids.price', 'order_line_ids.weight',
+                 'order_line_ids.estimated_weight', 'order_line_ids.price_basis')
+    def _compute_total_amount(self):
+        """
+        Compute total monetary value for the order: the line amounts, plus
+        the contract's per-collection fee (and overweight surcharge) once
+        when the lines are priced by a per-collection or hybrid contract.
+        """
+        fee_rules = self.order_line_ids.filtered(
+            lambda ln: ln.price_basis == 'contract_fee')._get_billing_rules()
+        for order in self:
+            total = 0.0
+            for line in order.order_line_ids:
+                if line.price_basis == 'per_kg':
+                    total += line.total_amount or (line.price * (line.weight or line.estimated_weight or 0.0))
+                else:
+                    total += line.total_amount
+            fee_lines = order.order_line_ids.filtered(lambda ln: ln.price_basis == 'contract_fee')
+            if fee_lines:
+                rule = fee_rules.get(fee_lines[0])
+                if rule and getattr(rule, 'contract_id', 0):
+                    weight = sum(ln.weight or ln.estimated_weight or 0.0 for ln in fee_lines)
+                    base, surcharge, _kg, _allowed = order._compute_collection_fee(rule, weight, 1)
+                    total += base + surcharge
+            order.total_amount = total
+
+    def _get_billing_service_date(self):
+        """
+        Date the collection was performed (completion, else scheduled start),
+        in the user's timezone. Rates and contracts are resolved on this date
+        rather than on the date the invoice happens to be generated.
+        """
+        self.ensure_one()
+        service_dt = self.actual_end or self.scheduled_start
+        if not service_dt:
+            return fields.Date.context_today(self)
+        return fields.Datetime.context_timestamp(self, service_dt).date()
+
+    @api.model
+    def _compute_collection_fee(self, rule, weight, order_count=1):
+        """
+        Amount of a flat_per_collection or hybrid rule for ``order_count``
+        collections weighing ``weight`` kg in total: the base fee per
+        collection, plus an overweight surcharge (per 10 kg) above the weight
+        allowed for those collections. Shared by order totals and invoicing.
+
+        :return: (base_total, overweight_surcharge, overweight_kg, allowed_weight)
+        """
+        if getattr(rule, 'billing_basis', '') == 'hybrid':
+            allowed_per_collection = getattr(rule, 'included_weight', 0.0) or getattr(rule, 'min_weight', 0.0) or 0.0
+            overweight_price = getattr(rule, 'overweight_price', 0.0) or getattr(rule, 'min_charge', 0.0) or 0.0
+        else:
+            allowed_per_collection = getattr(rule, 'max_weight', 0.0) or 0.0
+            overweight_price = getattr(rule, 'overweight_price', 0.0) or 0.0
+        base = rule.price * order_count
+        allowed_weight = allowed_per_collection * order_count
+        overweight_kg = weight - allowed_weight if (allowed_weight and overweight_price and weight > allowed_weight) else 0.0
+        return base, (overweight_kg / 10.0) * overweight_price, overweight_kg, allowed_weight
+
+    @api.depends('confirmed_weight', 'order_line_ids.weight', 'order_line_ids.category_id.warm_factor_co2', 'order_line_ids.product_id.wm_waste_category_id', 'order_line_ids.product_id.wm_waste_category_id.warm_factor_co2')
+    def _compute_co2_avoided_tons(self):
+        """
+        Compute Scope 3 carbon abatement (tCO2e avoided) based on EPA WARM
+        factor.
+        """
+        for order in self:
+            # Weight each line by its own category factor
+            total = 0.0
+            weighted = 0.0
+            for line in order.order_line_ids:
+                cat = line.category_id or line.product_id.wm_waste_category_id
+                w = line.weight or 0.0
+                if not w:
+                    continue
+                total += w
+                weighted += w * (cat.warm_factor_co2 if cat else 1.50)
+            if total:
+                order.co2_avoided_tons = weighted / 1000.0
+            else:
+                order.co2_avoided_tons = (order.confirmed_weight / 1000.0) * 1.50
+
+    @api.depends('scheduled_start')
+    def _compute_valid_vehicle_ids(self):
+        """
+        Filter the available fleet vehicles to those licensed for waste
+        transport and with sufficient payload for the collection order's
+        expected waste weight.
+        """
+        for order in self:
+            try:
+                checklists = self.env['wm.vehicle.maintenance.checklist'].search([('state', '=', 'checked')])
+                order.valid_vehicle_ids = checklists.mapped('vehicle_id')
+            except Exception as e:
+                _logger.warning("Failed to compute valid vehicle IDs from maintenance checklist: %s", e)
+                order.valid_vehicle_ids = self.env['fleet.vehicle'].search([])
+
+    @api.depends('route_id.vehicle_id')
+    def _compute_vehicle_id(self):
+        """ Derive vehicle from the assigned route. Reset to False if route has no vehicle. """
+        for order in self:
+            if order.route_id:
+                order.vehicle_id = order.route_id.vehicle_id
+            elif not order.vehicle_id:
+                order.vehicle_id = False
+
+    @api.depends('vehicle_id.driver_id', 'route_id.driver_id')
+    def _compute_driver_id(self):
+        """ Derive driver from assigned vehicle, falling back to assigned route. """
+        for order in self:
+            if order.vehicle_id and order.vehicle_id.driver_id:
+                order.driver_id = order.vehicle_id.driver_id
+            elif order.route_id and order.route_id.driver_id:
+                order.driver_id = order.route_id.driver_id
+            elif not order.driver_id:
+                order.driver_id = False
+
+    @api.depends('vehicle_id.wm_container_id')
+    def _compute_container_id(self):
+        """ Derive container type from assigned vehicle. """
+        for order in self:
+            order.container_id = order.vehicle_id.wm_container_id if order.vehicle_id else False
+
+    @api.onchange('scheduled_start')
+    def _onchange_scheduled_start(self):
+        """ Suggest scheduled_end as 1 hour after scheduled_start if not already set. """
+        if self.scheduled_start and not self.scheduled_end:
+            self.scheduled_end = self.scheduled_start + timedelta(hours=1)
+
+    @api.depends('gate_entry_ids')
+    def _compute_gate_entry_count(self):
+        for order in self:
+            order.gate_entry_count = len(order.gate_entry_ids)
+
+    def action_view_gate_entries(self):
+        self.ensure_one()
+        enabled = self.env['ir.config_parameter'].sudo().get_param('wm_collection.use_facility_gate_entry', 'True') in ('True', '1')
+        if not enabled:
+            raise UserError(_("Facility Gate Entries feature is disabled in settings."))
+        return {
+            'name': _('Facility Gate Entries'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'wm.facility.gate.entry',
+            'view_mode': 'list,form',
+            'domain': [('collection_order_id', '=', self.id)],
+            'context': {'default_collection_order_id': self.id},
+        }
 
     def _compute_is_billed(self):
         """
@@ -284,16 +399,23 @@ class WmCollectionOrder(models.Model):
         for order in self:
             order.is_billed = bool(getattr(order, 'consolidated_invoice_id', False) or getattr(order, 'billing_run_line_id', False))
 
+    def _get_linked_waste_batches(self):
+        """
+        Waste batches holding this order's waste: created for it, or a shared
+        draft batch it was merged into (linked via collection_order_ids only).
+        """
+        self.ensure_one()
+        if not self.id:
+            return self.env['waste.batch']
+        return self.env['waste.batch'].sudo().search([
+            '|', ('collection_order_id', '=', self.id), ('collection_order_ids', 'in', self.ids),
+        ])
+
     @api.depends('waste_batch_ids', 'route_id.waste_batch_ids.collection_order_ids')
     def _compute_waste_batch_count(self):
         """ Compute the total number of Waste Batches linked to this order. """
         for order in self:
-            batches = order.sudo().waste_batch_ids
-            if order.route_id:
-                batches |= order.route_id.waste_batch_ids.filtered(
-                    lambda b: order in b.collection_order_ids or b.collection_order_id == order
-                )
-            order.waste_batch_count = len(batches)
+            order.waste_batch_count = len(order._get_linked_waste_batches())
 
     @api.depends('scheduled_start', 'scheduled_end', 'actual_start', 'actual_end')
     def _compute_schedule_status(self):
@@ -333,16 +455,6 @@ class WmCollectionOrder(models.Model):
             if order.actual_start and order.actual_end and order.actual_end <= order.actual_start:
                 raise ValidationError(_("Actual End Date must be later than Actual Start Date."))
 
-    # ── Missed-collection fields ──
-    use_missed_collection = fields.Boolean(compute='_compute_use_settings')
-    is_missed = fields.Boolean(string='Missed', help='Provides information about missed', default=False, tracking=True)
-    missed_reason_id = fields.Many2one('wm.missed.reason', string='Missed Reason', help='Provides information about missed reason', tracking=True)
-    missed_notes = fields.Text(string='Missed Notes', help='Provides information about missed notes')
-    parent_order_id = fields.Many2one('wm.collection.order', string='Original Order', help='Provides information about original order', readonly=True, copy=False)
-    retry_order_id = fields.Many2one('wm.collection.order', string='Retry Order', help='Provides information about retry order', readonly=True, copy=False)
-    retry_count = fields.Integer(string='Retry Count', help='Provides information about retry count', compute='_compute_retry_count')
-    missed_collection_id = fields.Many2one('wm.missed.collection', string='Missed Collection Record', help='Provides information about missed collection record', readonly=True, copy=False)
-
     @api.depends_context('company')
     def _compute_use_settings(self):
         """
@@ -353,16 +465,6 @@ class WmCollectionOrder(models.Model):
         use_missed = self.env['ir.config_parameter'].sudo().get_param('wm_collection.use_missed_collection', 'False') in ('True', '1')
         for order in self:
             order.use_missed_collection = use_missed
-
-    @api.depends('invoice_ids')
-    def _compute_invoice_count(self):
-        """
-        Count the number of customer invoices linked to this collection order
-        through billing run lines, driving the Invoices smart button badge on
-        the order form.
-        """
-        for order in self:
-            order.invoice_count = len(order.invoice_ids)
 
     @api.depends('parent_order_id')
     def _compute_retry_count(self):
@@ -385,12 +487,31 @@ class WmCollectionOrder(models.Model):
         dispatcher.
         """
         self.ensure_one()
+        if self.state not in ('draft', 'dispatched', 'in_progress'):
+            raise UserError(_("Only open collection orders can be marked as missed."))
         if not self.use_missed_collection:
             raise UserError(_("Missed Collection functionality is disabled in settings."))
         return {
             'type': 'ir.actions.act_window',
             'name': _('Mark as Missed'),
             'res_model': 'wm.mark.missed.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_order_id': self.id,
+            },
+        }
+
+    def action_add_status_log(self):
+        """
+        Open the wizard to log a driver stop status event (en route, arrived,
+        started, lifted, weighed, completed, flagged).
+        """
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Log Driver Status'),
+            'res_model': 'wm.add.status.log.wizard',
             'view_mode': 'form',
             'target': 'new',
             'context': {
@@ -444,7 +565,8 @@ class WmCollectionOrder(models.Model):
             self._check_auto_complete_route()
         return res
 
-    def unlink(self):
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_locked_order(self):
         """ Prevent deletion of completed, signed, or invoiced collection orders. """
         for order in self:
             if order.state in ('completed', 'signed', 'invoiced'):
@@ -453,7 +575,6 @@ class WmCollectionOrder(models.Model):
                     name=order.name,
                     state=dict(self._fields['state'].selection).get(order.state, order.state),
                 ))
-        return super().unlink()
 
     def _check_auto_complete_route(self):
         """
@@ -485,7 +606,7 @@ class WmCollectionOrder(models.Model):
 
                 if order.collection_point_id:
                     existing_line = order.route_id.line_ids.filtered(
-                        lambda l: l.collection_point_id == order.collection_point_id
+                        lambda ln: ln.collection_point_id == order.collection_point_id
                     )
                     if not existing_line:
                         max_seq = max(order.route_id.line_ids.mapped('sequence') or [0])
@@ -514,10 +635,13 @@ class WmCollectionOrder(models.Model):
         """
         self._check_collection_rights()
         self.ensure_one()
+        if self.state != 'draft':
+            raise UserError(_("Only draft collection orders can be dispatched (order '%s' is %s).") % (
+                self.name, dict(self._fields['state'].selection).get(self.state)))
         if not self.partner_id or not self.collection_point_id:
             raise ValidationError(_("Please set a Customer and Collection Point before dispatching."))
-        if not self.route_id or not self.vehicle_id or not self.driver_id:
-            raise ValidationError(_("Please provide Route, Vehicle, and Driver in the Logistics section before dispatching."))
+        if not self.vehicle_id or not self.driver_id:
+            raise ValidationError(_("Please provide Vehicle and Driver in the Logistics section before dispatching."))
 
         if not self.env.context.get('programmatic_state_change'):
             if self.route_id and self.route_id.state == 'to_start':
@@ -525,7 +649,7 @@ class WmCollectionOrder(models.Model):
             elif self.vehicle_id:
                 if self.route_id and not self.route_id.is_inspected:
                     raise ValidationError(_("Cannot dispatch order '%s': Pre-trip inspection for vehicle '%s' has not passed.") % (self.name, self.vehicle_id.name))
-                elif not self.route_id:
+                if not self.route_id:
                     maint_pre_trips = self.env['wm.vehicle.maintenance.checklist'].search([
                         ('vehicle_id', '=', self.vehicle_id.id),
                         ('checklist_type', '=', 'pre_trip'),
@@ -544,6 +668,8 @@ class WmCollectionOrder(models.Model):
         """
         self._check_collection_rights()
         self.ensure_one()
+        if self.state not in ('draft', 'dispatched'):
+            raise UserError(_("Collection order '%s' cannot be started from its current status.") % self.name)
         self.with_context(programmatic_state_change=True).write({
             'state': 'in_progress',
             'actual_start': self.actual_start or fields.Datetime.now()
@@ -556,7 +682,15 @@ class WmCollectionOrder(models.Model):
         transitioning to 'completed'.
         """
         self._check_collection_rights()
+        for order in self:
+            order._action_complete_one()
+
+    def _action_complete_one(self):
+        """Complete a single collection order (see ``action_complete``)."""
         self.ensure_one()
+        if self.state in ('completed', 'signed', 'missed', 'cancelled'):
+            raise UserError(_("Collection order '%s' is already %s and cannot be completed again.") % (
+                self.name, dict(self._fields['state'].selection).get(self.state)))
         if not self.order_line_ids:
             raise ValidationError(_("Please add at least one waste material item before completing the order."))
         if any(not line.category_id for line in self.order_line_ids):
@@ -564,7 +698,8 @@ class WmCollectionOrder(models.Model):
         if any(line.weight <= 0 for line in self.order_line_ids):
             raise ValidationError(_("Collection Order cannot be completed with zero or unrecorded weights. Please enter valid weights for all waste lines."))
 
-        if self.vehicle_id:
+        # Routed orders get their post-trip checklist once, on route completion.
+        if self.vehicle_id and not self.route_id:
             count = self.env['wm.vehicle.maintenance.checklist'].search_count([
                 ('vehicle_id', '=', self.vehicle_id.id),
                 ('checklist_type', '=', 'post_trip')
@@ -579,9 +714,10 @@ class WmCollectionOrder(models.Model):
                 'state': 'tocheck',
             })
 
-        now = fields.Datetime.now()
+        # Keep an end time already recorded (e.g. an offline driver-app
+        # 'completed' event synced later) instead of the sync time.
+        now = self.actual_end or fields.Datetime.now()
         if self.actual_start and now <= self.actual_start:
-            from datetime import timedelta
             now = self.actual_start + timedelta(seconds=1)
 
         self.with_context(programmatic_state_change=True).write({
@@ -593,22 +729,190 @@ class WmCollectionOrder(models.Model):
         if not self.route_id:
             self.action_create_category_batches()
 
-        # Automatically generate Collection Order report PDF, post to Chatter, and set as Signature Template document
-        if not self.signature_template_id:
-            default_template = self.env.ref('wm_collection.sig_template_collection_order', raise_if_not_found=False)
-            if default_template:
-                self.signature_template_id = default_template.id
+        # Automate creation and collection progression of compliance manifest
+        self._automate_compliance_manifest()
 
-        pdf_content, filename = self._generate_collection_report_pdf()
-        if pdf_content:
-            self.sudo().write({
-                'collection_report_pdf': base64.b64encode(pdf_content),
-                'collection_report_pdf_filename': filename,
+        # Automate facility gate entry creation linked to this collection order
+        self._automate_gate_entry()
+
+        # Overweight billing event, signature template and Proof of Service
+        # PDF: always produced, whether or not compliance is installed.
+        self._log_overweight_event()
+        self._generate_proof_of_service()
+
+    def _get_order_disposal_facility(self):
+        """
+        Disposal facility used by the completion automations: one of the
+        order's company (or a shared one), never another company's.
+        """
+        self.ensure_one()
+        Facility = self.env['wm.disposal.facility'].sudo()
+        domain = []
+        if 'company_id' in Facility._fields:
+            domain = [('company_id', 'in', [self.company_id.id, False])]
+        return Facility.search(domain, order='company_id, id', limit=1)
+
+    def _automate_gate_entry(self):
+        """Auto-create a linked Gate Entry record when a collection order is completed."""
+        enabled = self.env['ir.config_parameter'].sudo().get_param('wm_collection.use_facility_gate_entry', 'True') in ('True', '1')
+        if not enabled or 'wm.facility.gate.entry' not in self.env:
+            return
+        GateEntry = self.env['wm.facility.gate.entry'].sudo()
+        for order in self:
+            if not order.vehicle_id:
+                continue
+            existing_entry = GateEntry.search([
+                ('collection_order_id', '=', order.id),
+                ('state', '!=', 'cancelled'),
+            ], limit=1)
+            if not existing_entry:
+                facility = order._get_order_disposal_facility()
+                if not facility:
+                    order.message_post(body=_(
+                        "No disposal facility is configured for company %s: the facility gate entry was not created automatically.",
+                        order.company_id.name,
+                    ))
+                    continue
+                # The confirmed weight is taken from the order, and corrected at the gate
+                GateEntry.create({
+                    'facility_id': facility.id,
+                    'vehicle_id': order.vehicle_id.id,
+                    'driver_id': order.driver_id.id if order.driver_id else False,
+                    'collection_order_id': order.id,
+                    'entry_datetime': fields.Datetime.now(),
+                    'state': 'draft',
+                })
+
+    def _get_manifest_line_marker(self):
+        """Readable label shown on the manifest lines of this order (the link
+        itself is the line's ``collection_order_id``)."""
+        self.ensure_one()
+        return f"Collection Order: {self.name}"
+
+    def _automate_compliance_manifest(self):
+        """
+        Put the order's waste on a compliance manifest and advance it.
+
+        The order's lines are appended to a still-draft manifest of the same
+        company, generator, date and disposal facility, else a new manifest
+        is created for the order. An order's lines are added only once.
+        """
+        if 'wm.compliance.manifest' not in self.env:
+            return
+        Manifest = self.env['wm.compliance.manifest'].sudo()
+        ManifestLine = self.env['wm.compliance.manifest.line'].sudo()
+        today = fields.Date.today()
+        for order in self:
+            if not order.partner_id:
+                continue
+            marker = order._get_manifest_line_marker()
+            done_line = ManifestLine.search([('collection_order_id', '=', order.id)], limit=1)
+            if done_line:
+                continue
+            disposal_fac = order._get_order_disposal_facility()
+            transporter = order.driver_id or order.company_id.partner_id
+            if not disposal_fac:
+                order.message_post(body=_(
+                    "No disposal facility is configured for company %s: no compliance manifest was created automatically.",
+                    order.company_id.name,
+                ))
+                continue
+            if not transporter:
+                continue
+            line_vals = [{
+                'waste_category_id': line.category_id.id,
+                'quantity': line.weight or 1.0,
+                'collection_order_id': order.id,
+                'notes': marker,
+            } for line in order.order_line_ids if line.category_id]
+            if not line_vals:
+                continue
+            manifest = Manifest.search([
+                ('company_id', '=', order.company_id.id),
+                ('generator_id', '=', order.partner_id.id),
+                ('manifest_date', '=', today),
+                ('disposal_facility_id', '=', disposal_fac.id),
+                ('state', '=', 'draft'),
+            ], limit=1)
+            if manifest:
+                manifest.write({'line_ids': [(0, 0, vals) for vals in line_vals]})
+            else:
+                manifest = Manifest.create({
+                    'generator_id': order.partner_id.id,
+                    'transporter_id': transporter.id,
+                    'disposal_facility_id': disposal_fac.id,
+                    'manifest_date': today,
+                    'company_id': order.company_id.id,
+                    'state': 'draft',
+                    'line_ids': [(0, 0, vals) for vals in line_vals],
+                })
+            # Advance state automatically: draft -> submitted -> collected.
+            # The manifest's validations (e.g. mandatory compliance codes) are
+            # never bypassed: on failure it stays where it is for the
+            # compliance officer and the reason is logged on the order.
+            try:
+                with self.env.cr.savepoint():
+                    if manifest.state == 'draft':
+                        manifest.action_submit()
+                    if manifest.state == 'submitted':
+                        manifest.action_collect()
+            except Exception as e:
+                _logger.warning("Order %s could not advance manifest %s: %s", order.name, manifest.name, e)
+                order.message_post(body=_("Compliance manifest %(manifest)s could not be advanced automatically: %(error)s") % {
+                    'manifest': manifest.name, 'error': e,
+                })
+
+    def _log_overweight_event(self):
+        """Log an overweight billable event when the load exceeds the container capacity."""
+        if 'wm.billable.event' not in self.env:
+            return
+        Event = self.env['wm.billable.event'].sudo()
+        for order in self:
+            container_type = (order.collection_point_id.container_id if order.collection_point_id else False) or order.container_id
+            if not container_type or container_type.capacity_weight <= 0.0:
+                continue
+            if order.confirmed_weight <= container_type.capacity_weight:
+                continue
+            excess = order.confirmed_weight - container_type.capacity_weight
+            if Event.search_count([
+                ('collection_order_id', '=', order.id),
+                ('event_type', '=', 'overweight'),
+            ], limit=1):
+                continue
+            event = Event.create({
+                'partner_id': order.partner_id.id,
+                'collection_point_id': order.collection_point_id.id if order.collection_point_id else False,
+                'event_type': 'overweight',
+                'collection_order_id': order.id,
+                'event_date': fields.Date.context_today(order),
+                'quantity': excess,
+                'state': 'confirmed',
+                'notes': _("Overweight load detected: %.2f kg collected vs %.2f kg container limit (Excess: %.2f kg)") % (
+                    order.confirmed_weight, container_type.capacity_weight, excess
+                ),
             })
-            self.message_post(
-                body=_("Collection Order completed. Official Proof of Service report generated and attached."),
-                attachments=[(filename, pdf_content)]
-            )
+            order.message_post(body=_("Auto-logged Overweight Event %s for %.2f kg excess weight.") % (event.name, excess))
+
+    def _generate_proof_of_service(self):
+        """
+        Set the default signature template, generate the Proof of Service
+        PDF and post it to the chatter.
+        """
+        default_template = self.env.ref('wm_collection.sig_template_collection_order', raise_if_not_found=False)
+        for order in self:
+            if not order.signature_template_id and default_template:
+                order.signature_template_id = default_template.id
+
+            pdf_content, filename = order._generate_collection_report_pdf()
+            if pdf_content:
+                order.sudo().write({
+                    'collection_report_pdf': base64.b64encode(pdf_content),
+                    'collection_report_pdf_filename': filename,
+                })
+                order.message_post(
+                    body=_("Collection Order completed. Official Proof of Service report generated and attached."),
+                    attachments=[(filename, pdf_content)]
+                )
 
     def action_cancel(self):
         """
@@ -618,6 +922,9 @@ class WmCollectionOrder(models.Model):
         """
         self._check_collection_rights()
         self.ensure_one()
+        if self.state in ('completed', 'signed', 'cancelled'):
+            raise UserError(_("Collection order '%s' is already %s and cannot be cancelled.") % (
+                self.name, dict(self._fields['state'].selection).get(self.state)))
         self.with_context(programmatic_state_change=True).write({'state': 'cancelled'})
 
     @api.model
@@ -634,12 +941,19 @@ class WmCollectionOrder(models.Model):
 
         domain = [
             ('state', 'in', ('completed', 'signed')),
-            ('consolidated_invoice_id', '=', False),
-            ('billing_run_line_id', '=', False),
+        ]
+        if 'consolidated_invoice_id' in self._fields:
+            domain.append(('consolidated_invoice_id', '=', False))
+        if 'billing_run_line_id' in self._fields:
+            domain.append(('billing_run_line_id', '=', False))
+        if 'direct_invoice_id' in self._fields:
+            domain.append(('direct_invoice_id', '=', False))
+
+        domain.extend([
             '|',
                 '&', ('actual_end', '>=', start_dt), ('actual_end', '<=', end_dt),
                 '&', ('actual_end', '=', False), '&', ('scheduled_start', '>=', start_dt), ('scheduled_start', '<=', end_dt),
-        ]
+        ])
         if partner:
             partner_ids = partner.ids if isinstance(partner, models.BaseModel) else (partner if isinstance(partner, (list, tuple)) else [partner])
             domain.append(('partner_id', 'in', partner_ids))
@@ -647,10 +961,11 @@ class WmCollectionOrder(models.Model):
         return self.search(domain)
 
     @api.model
-    def _get_billing_rule(self, category, partner=False, date=None):
+    def _get_billing_rule(self, category, partner=False, date=None, contract=None):
         """
         Find matching rate card rule with 4-tier precedence:
-        1. Active Partner Contract (wm.partner.contract) rate line or billing terms
+        1. The given contract (when valid on ``date``), else the active
+           Partner Contract (wm.partner.contract) rate line or billing terms
         2. Partner-specific rate card rule (wm.category.billing.rule)
         3. Generic category rate card rule (wm.category.billing.rule)
         4. Customer-specific / General pricing rule (wm.pricing.rule)
@@ -661,8 +976,16 @@ class WmCollectionOrder(models.Model):
         date = date or fields.Date.today()
         partner_obj = partner if isinstance(partner, models.BaseModel) else (self.env['res.partner'].browse(partner) if partner else False)
 
-        # Tier 1: Check active contract for partner
-        if partner_obj and 'wm.partner.contract' in self.env:
+        # Tier 1: The order's own contract if it covered the service date,
+        # otherwise the partner's active contract on that date. An explicitly
+        # passed contract may since have expired: it still prices the orders
+        # performed while it was running.
+        if contract and not (
+            contract.state in ('signed', 'confirmed', 'ongoing', 'expired')
+            and contract.from_date <= date <= contract.to_date
+        ):
+            contract = False
+        if not contract and partner_obj and 'wm.partner.contract' in self.env:
             company = self.company_id if hasattr(self, 'company_id') and self.company_id else self.env.company
             domain = [
                 ('partner_id', '=', partner_obj.id),
@@ -673,30 +996,35 @@ class WmCollectionOrder(models.Model):
             if 'company_id' in self.env['wm.partner.contract']._fields:
                 domain.append(('company_id', '=', company.id))
             contract = self.env['wm.partner.contract'].search(domain, limit=1)
-            if contract:
-                if contract.billing_basis in ('category_rate', 'material') and contract.contract_line_ids:
-                    # Both category_rate and material use per-category rates from contract lines
-                    line = contract.contract_line_ids.filtered(lambda l: l.category_id == category)[:1]
-                    if line and line.price > 0:
-                        return RateCardRule(
-                            price=line.price,
-                            billing_basis='per_kg',
-                        )
-                elif contract.billing_basis == 'per_collection' and contract.fixed_price > 0:
+        if contract:
+            if contract.billing_basis in ('category_rate', 'material') and contract.contract_line_ids:
+                # Both category_rate and material use per-category rates from contract lines
+                line = contract.contract_line_ids.filtered(lambda ln: ln.category_id == category)[:1]
+                if line and line.price > 0:
                     return RateCardRule(
-                        price=contract.fixed_price,
-                        billing_basis='flat_per_collection',
-                        max_weight=contract.max_weight or 0.0,
-                        overweight_price=contract.overweight_price or 0.0,
+                        price=line.price,
+                        billing_basis='per_kg',
+                        from_contract=True,
                     )
-                elif contract.billing_basis == 'hybrid' and contract.fixed_price > 0:
-                    # hybrid = fixed base fee + per-10kg overage above included_weight
-                    return RateCardRule(
-                        price=contract.fixed_price,
-                        billing_basis='hybrid',
-                        included_weight=contract.included_weight or 0.0,
-                        overweight_price=contract.overweight_price or 0.0,
-                    )
+            elif contract.billing_basis == 'per_collection' and contract.fixed_price > 0:
+                return RateCardRule(
+                    price=contract.fixed_price,
+                    billing_basis='flat_per_collection',
+                    max_weight=contract.max_weight or 0.0,
+                    overweight_price=contract.overweight_price or 0.0,
+                    contract_id=contract.id,
+                    from_contract=True,
+                )
+            elif contract.billing_basis == 'hybrid' and contract.fixed_price > 0:
+                # hybrid = fixed base fee + per-10kg overage above included_weight
+                return RateCardRule(
+                    price=contract.fixed_price,
+                    billing_basis='hybrid',
+                    included_weight=contract.included_weight or 0.0,
+                    overweight_price=contract.overweight_price or 0.0,
+                    contract_id=contract.id,
+                    from_contract=True,
+                )
 
         # Tier 2 & 3: Check category billing rules (wm.category.billing.rule)
         if 'wm.category.billing.rule' in self.env:
@@ -759,8 +1087,11 @@ class WmCollectionOrder(models.Model):
         if not self.order_line_ids:
             raise ValidationError(_("Cannot create Waste Batches without order lines."))
 
-        if self.waste_batch_ids:
-            return self.waste_batch_ids
+        # Orders merged into a shared draft batch are only linked through
+        # collection_order_ids, so check both links before merging again.
+        existing = self._get_linked_waste_batches()
+        if existing:
+            return existing
 
         lines_by_category = {}
         for line in self.order_line_ids:
@@ -780,6 +1111,8 @@ class WmCollectionOrder(models.Model):
                 ('status', '=', 'draft'),
                 ('batch_type', '=', 'collection'),
                 ('route_id', '=', False),
+                ('company_id', '=', self.company_id.id),
+                ('location_id', '=', location.id),
             ], limit=1)
 
             if existing_batch:
@@ -851,11 +1184,7 @@ class WmCollectionOrder(models.Model):
     def action_view_waste_batches(self):
         """ View all Waste Batches linked to this Collection Order. """
         self.ensure_one()
-        batches = self.sudo().waste_batch_ids
-        if self.route_id:
-            batches |= self.route_id.waste_batch_ids.filtered(
-                lambda b: self in b.collection_order_ids or b.collection_order_id == self
-            )
+        batches = self._get_linked_waste_batches()
         action = {
             'name': _('Waste Batches'),
             'type': 'ir.actions.act_window',
@@ -869,8 +1198,6 @@ class WmCollectionOrder(models.Model):
         else:
             action['view_mode'] = 'list,form'
         return action
-
-    signature_signer_count = fields.Integer(string='Signatures', help='Provides information about signatures', compute='_compute_signature_signer_count')
 
     def _compute_signature_signer_count(self):
         """
@@ -924,9 +1251,6 @@ class WmCollectionOrder(models.Model):
             res['views'] = [(signer_view.id, 'list')]
         return res
 
-    next_signer_id = fields.Many2one('wm.signature.request.signer', compute='_compute_next_signer', string='Next Signer', help='Provides information about next signer')
-    next_signer_role_name = fields.Char(compute='_compute_next_signer', string='Next Signer Role', help='Provides information about next signer role')
-
     def _compute_next_signer(self):
         """
         Determine the next authorised signer in the multi-party signature
@@ -949,7 +1273,7 @@ class WmCollectionOrder(models.Model):
         for req in requests:
             try:
                 oid = int(str(req.reference_doc).split(',')[1])
-                requests_by_order.setdefault(oid, self.env['wm.signature.request']).concat(req)
+                requests_by_order[oid] = requests_by_order.get(oid, self.env['wm.signature.request']) | req
             except (ValueError, IndexError, AttributeError):
                 continue
 
@@ -1074,20 +1398,88 @@ class WmCollectionOrderLine(models.Model):
     estimated_weight = fields.Float(string='Estimated Weight', help='Provides information about estimated weight')
     weight = fields.Float(string='Confirmed Weight', help='Provides information about confirmed weight')
     price = fields.Float(string='Price per kg', help='Provides information about price per kg', compute='_compute_price', store=True, readonly=False)
+    price_basis = fields.Selection([
+        ('per_kg', 'Per kg'),
+        ('per_collection', 'Per Collection'),
+        ('contract_fee', 'Contract Fee'),
+    ], string='Pricing Basis', compute='_compute_price_basis', store=True,
+        help='Per kg: price x weight. Per collection: a flat price for this '
+             'category. Contract fee: covered by the contract\'s per-collection '
+             'fee, which is added once to the order total.')
     total_amount = fields.Float(string='Total Amount', help='Provides information about total amount', compute='_compute_total_amount', store=True)
 
-    @api.depends('product_id', 'category_id', 'product_id.list_price', 'category_id.price', 'order_id.partner_id', 'order_id.actual_end')
+    def _get_billing_rule(self):
+        """
+        Rate rule for this line: the order's own contract (when installed)
+        and the date the collection was performed, as invoicing uses.
+        """
+        self.ensure_one()
+        return self._get_billing_rules()[self]
+
+    def _get_billing_rule_key(self):
+        """Inputs that determine a line's rate rule (see ``_get_billing_rule``)."""
+        self.ensure_one()
+        if not self.category_id:
+            return False
+        order = self.order_id
+        if not order:
+            return (self.category_id, self.env['res.partner'], fields.Date.context_today(self), None)
+        contract = order.contract_id if 'contract_id' in order._fields else False
+        return (self.category_id, order.partner_id, order._get_billing_service_date(), contract or None)
+
+    def _get_billing_rules(self):
+        """
+        Rate rule of each line, as ``{line: rule}``, resolving the rule once
+        per distinct (category, partner, service date, contract) instead of
+        once per line. Nothing is cached beyond this call.
+        """
+        Order = self.env['wm.collection.order']
+        rules_by_key = {}
+        result = {}
+        for line in self:
+            key = line._get_billing_rule_key()
+            if not key:
+                result[line] = False
+                continue
+            if key not in rules_by_key:
+                category, partner, date, contract = key
+                rules_by_key[key] = Order._get_billing_rule(category, partner or False, date, contract=contract)
+            result[line] = rules_by_key[key]
+        return result
+
+    @api.depends('category_id', 'order_id.partner_id', 'order_id.scheduled_start')
+    def _compute_price_basis(self):
+        """
+        How the line is priced. Per-collection and hybrid contract fees are
+        not per-kg prices: they are charged once per order.
+        """
+        rules = self._get_billing_rules()
+        for line in self:
+            rule = rules[line]
+            basis = getattr(rule, 'billing_basis', 'per_kg') if rule else 'per_kg'
+            if rule and getattr(rule, 'contract_id', 0) and basis in ('flat_per_collection', 'hybrid'):
+                line.price_basis = 'contract_fee'
+            elif basis == 'flat_per_collection':
+                line.price_basis = 'per_collection'
+            else:
+                line.price_basis = 'per_kg'
+
+    # 'order_id.actual_end' is deliberately not a dependency: completing the
+    # order must not overwrite a manually entered price.
+    @api.depends('product_id', 'category_id', 'product_id.list_price', 'category_id.price', 'order_id.partner_id')
     def _compute_price(self):
         """
         Calculate the line-level unit price for each collection order line by
         applying the matching contract rate or tariff schedule to the collected
         material weight.
         """
+        rules = self._get_billing_rules()
         for line in self:
-            date = line.order_id.actual_end.date() if (line.order_id and line.order_id.actual_end) else fields.Date.today()
-            partner = line.order_id.partner_id if line.order_id else False
-            rule = self.env['wm.collection.order']._get_billing_rule(line.category_id, partner, date) if line.category_id else False
-            if rule and rule.price:
+            rule = rules[line]
+            if rule and getattr(rule, 'contract_id', 0) and rule.billing_basis in ('flat_per_collection', 'hybrid'):
+                # Covered by the contract's per-collection fee (order total)
+                line.price = 0.0
+            elif rule and rule.price:
                 line.price = rule.price
             elif line.product_id and line.product_id.list_price:
                 line.price = line.product_id.list_price
@@ -1096,15 +1488,20 @@ class WmCollectionOrderLine(models.Model):
             else:
                 line.price = 0.0
 
-    @api.depends('price', 'weight')
+    @api.depends('price', 'weight', 'price_basis')
     def _compute_total_amount(self):
         """
-        Aggregate all collection order lines to compute the total billable
-        amount, summing price × weight across all waste category lines and
-        applying any applicable surcharges.
+        Line amount: price x weight for per-kg lines, the flat price for a
+        per-collection category rule, nothing for lines covered by the
+        contract's per-collection fee (charged once on the order).
         """
         for line in self:
-            line.total_amount = line.price * line.weight
+            if line.price_basis == 'contract_fee':
+                line.total_amount = 0.0
+            elif line.price_basis == 'per_collection':
+                line.total_amount = line.price
+            else:
+                line.total_amount = line.price * line.weight
 
     @api.constrains('product_id', 'order_id')
     def _check_unique_product_per_order(self):
@@ -1157,7 +1554,8 @@ class WmCollectionOrderLine(models.Model):
                     ))
         return super().write(vals)
 
-    def unlink(self):
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_locked_order_line(self):
         """
         Prevent deleting lines from a collection order if the order is in a locked state.
         """
@@ -1169,4 +1567,3 @@ class WmCollectionOrderLine(models.Model):
                         name=line.order_id.name,
                         state=dict(line.order_id._fields['state'].selection).get(line.order_id.state, line.order_id.state),
                     ))
-        return super().unlink()

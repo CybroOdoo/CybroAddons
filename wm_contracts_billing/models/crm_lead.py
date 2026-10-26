@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -67,6 +66,20 @@ class CrmLeadWM(models.Model):
     )
 
     # ------------------------------------------------------------------
+    # Traceability: contracts originated from this lead
+    # ------------------------------------------------------------------
+    wm_contract_ids = fields.One2many(
+        'wm.partner.contract',
+        'crm_lead_id',
+        string='Waste Contracts',
+        readonly=True,
+    )
+    wm_contract_count = fields.Integer(
+        string='Contracts',
+        compute='_compute_wm_contract_count',
+    )
+
+    # ------------------------------------------------------------------
     # Dynamic Expected Revenue Computation from Quoted Lines
     # ------------------------------------------------------------------
     @api.onchange('lead_line_ids')
@@ -82,20 +95,6 @@ class CrmLeadWM(models.Model):
             lines_subtotal = sum(self.lead_line_ids.mapped('subtotal'))
             if lines_subtotal > 0:
                 self.expected_revenue = lines_subtotal
-
-    # ------------------------------------------------------------------
-    # Traceability: contracts originated from this lead
-    # ------------------------------------------------------------------
-    wm_contract_ids = fields.One2many(
-        'wm.partner.contract',
-        'crm_lead_id',
-        string='Waste Contracts',
-        readonly=True,
-    )
-    wm_contract_count = fields.Integer(
-        string='Contracts',
-        compute='_compute_wm_contract_count',
-    )
 
     # ------------------------------------------------------------------
     # Computed fields

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -46,6 +45,7 @@ class WmBatchAgingReport(models.Model):
     remaining_qty = fields.Float(string='Remaining Qty', readonly=True)
     warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse', readonly=True)
     location_id = fields.Many2one('stock.location', string='Location', readonly=True)
+    company_id = fields.Many2one('res.company', string='Company', readonly=True)
 
     def init(self):
         """ Create or replace SQL view for batch aging analysis. """
@@ -64,9 +64,11 @@ class WmBatchAgingReport(models.Model):
                     (CURRENT_DATE - CAST(COALESCE(b.create_date, NOW()) AS DATE)) AS age_days,
                     (l.quantity - COALESCE(l.sorted_qty, 0.0)) AS remaining_qty,
                     b.warehouse_id,
-                    b.location_id
+                    b.location_id,
+                    b.company_id
                 FROM waste_batch_line l
                 JOIN waste_batch b ON l.batch_id = b.id
                 WHERE (l.quantity - COALESCE(l.sorted_qty, 0.0)) > 0
+                  AND b.status NOT IN ('recycled', 'disposed', 'sold')
             )
         """)

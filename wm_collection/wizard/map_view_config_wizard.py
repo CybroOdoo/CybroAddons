@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -38,7 +37,7 @@ class MapViewConfigWizard(models.TransientModel):
                                   help='Select one or more actions to add map view to')
 
     # Map View Configuration
-    partner_field_id = fields.Many2one(comodel_name='ir.model.fields',string='Partner Field',
+    partner_field_id = fields.Many2one(comodel_name='ir.model.fields', string='Partner Field',
                                      help='Many2one field pointing to res.partner (e.g., partner_id).'
                                           'Leave empty if the model has direct latitude/longitude fields.')
     lat_field = fields.Char(string='Latitude Field', default='partner_latitude',
@@ -88,13 +87,6 @@ class MapViewConfigWizard(models.TransientModel):
             return [(field.name, field.field_description) for field in partner_fields]
         return []
 
-    def _get_partner_field_domain(self):
-        """
-        Compute the field domain used to filter partner address fields suitable
-        for geographic pin display in the collection point map view.
-        """
-        return
-
     @api.onchange('model_id')
     def _onchange_model_id(self):
         """
@@ -124,7 +116,7 @@ class MapViewConfigWizard(models.TransientModel):
         existing_view = self.env['ir.ui.view'].search([
             ('name', '=', view_name),
             ('model', '=', self.model_id.model),
-            ('type', '=', 'map')
+            ('type', '=', 'wm_map')
         ], limit=1)
 
         if existing_view:
@@ -135,7 +127,7 @@ class MapViewConfigWizard(models.TransientModel):
             self.env['ir.ui.view'].create({
                 'name': view_name,
                 'model': self.model_id.model,
-                'type': 'map',
+                'type': 'wm_map',
                 'arch': view_arch,
             })
 
@@ -159,17 +151,17 @@ class MapViewConfigWizard(models.TransientModel):
             # For models like sale.order, coordinates are read from related partner;
             # latitude/longitude fields are not declared on the main model.
             arch = f'''<?xml version="1.0"?>
-<map{attrs_str}>
+<wm_map{attrs_str}>
     <field name="{self.partner_field_id.name}" string="Partner"/>
-</map>'''
+</wm_map>'''
         else:
             # Direct coordinate mode: fields must exist on the selected model.
             arch = f'''<?xml version="1.0"?>
-<map{attrs_str}>
+<wm_map{attrs_str}>
     <field name="{self.lat_field}" string="Latitude"/>
     <field name="{self.lng_field}" string="Longitude"/>
     <field name="{self.address_field}" string="Address"/>
-</map>'''
+</wm_map>'''
 
         return arch
 
@@ -182,21 +174,21 @@ class MapViewConfigWizard(models.TransientModel):
         view_modes = [vm.strip() for vm in current_view_mode.split(',') if vm.strip()]
 
         # Remove 'map' if it already exists
-        view_modes = [vm for vm in view_modes if vm != 'map']
+        view_modes = [vm for vm in view_modes if vm != 'wm_map']
 
         # Insert 'map' at the specified position
         if self.view_position == 'after_list' and 'list' in view_modes:
             idx = view_modes.index('list') + 1
-            view_modes.insert(idx, 'map')
+            view_modes.insert(idx, 'wm_map')
         elif self.view_position == 'after_form' and 'form' in view_modes:
             idx = view_modes.index('form') + 1
-            view_modes.insert(idx, 'map')
+            view_modes.insert(idx, 'wm_map')
         elif self.view_position == 'after_kanban' and 'kanban' in view_modes:
             idx = view_modes.index('kanban') + 1
-            view_modes.insert(idx, 'map')
+            view_modes.insert(idx, 'wm_map')
         else:
             # Default: add at the end
-            view_modes.append('map')
+            view_modes.append('wm_map')
 
         # Update the action
         action.write({

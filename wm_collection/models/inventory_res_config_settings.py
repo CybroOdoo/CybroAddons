@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -88,7 +87,7 @@ class ResConfigSettings(models.TransientModel):
         configuration from ir.config_parameter to populate the Inventory >
         Settings form.
         """
-        res = super(ResConfigSettings, self).get_values()
+        res = super().get_values()
         sort_mode = self.env['ir.config_parameter'].sudo().get_param('wm_collection.wm_sort_based_on', default='material')
         res.update(
             wm_sort_based_on=sort_mode,
@@ -103,7 +102,7 @@ class ResConfigSettings(models.TransientModel):
         incoming location, lot tracking preference) to ir.config_parameter on
         form save.
         """
-        super(ResConfigSettings, self).set_values()
+        super().set_values()
         group_material = self.env.ref('wm_collection.group_sort_by_material', raise_if_not_found=False)
         group_category = self.env.ref('wm_collection.group_sort_by_category', raise_if_not_found=False)
         group_operator = self.env.ref('wm_base.group_wm_inventory_operator', raise_if_not_found=False)

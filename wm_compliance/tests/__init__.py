@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,13 +19,27 @@
 #
 #############################################################################
 
-from . import test_wm_digital_signature
-from . import test_wm_compliance_document
-from . import test_wm_disposal_facility
-from . import test_wm_compliance_manifest
-from . import test_wm_compliance_custody
-from . import test_wm_compliance_certificate
-from . import test_wm_compliance_target
-from . import test_stream_derivation
-from . import test_wm_compliance_report_builder
-from . import test_compliance_dashboard_custody_backlog
+from . import (
+    test_compliance_critical_fixes,
+    test_compliance_dashboard_custody_backlog,
+    test_compliance_internals_coverage,
+    test_compliance_decisions,
+    test_compliance_low_fixes,
+    test_compliance_medium_fixes,
+    test_compliance_rule_set,
+    test_manifest_edit_lock,
+    test_manifest_order_link,
+    test_safety_incident,
+    test_security_hardening,
+    test_stream_derivation,
+    test_ui_compliance_dashboard,
+    test_wm_compliance_certificate,
+    test_wm_compliance_custody,
+    test_wm_compliance_document,
+    test_wm_compliance_manifest,
+    test_wm_compliance_report_builder,
+    test_wm_compliance_target,
+    test_wm_digital_signature,
+    test_wm_disposal_facility,
+    test_wm_full_compliance_automation,
+)

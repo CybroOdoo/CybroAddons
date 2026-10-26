@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class WmContainerType(models.Model):
@@ -29,9 +28,9 @@ class WmContainerType(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'name'
 
-    name = fields.Char(string='Name', required=True, tracking=True)
-    code = fields.Char(string='Code', tracking=True)
-    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
+    name = fields.Char(required=True, tracking=True)
+    code = fields.Char(tracking=True)
+    company_id = fields.Many2one('res.company', default=lambda self: self.env.company)
     capacity_volume = fields.Float(
         string='Volume Capacity (L)',
         default=0.0,
@@ -76,8 +75,9 @@ class WmContainerType(models.Model):
         help='When checked, this container type will appear in the filtered dropdown for hazardous waste batches.',
     )
     active = fields.Boolean(default=True)
-    description = fields.Text(string='Description')
+    description = fields.Text()
 
+    @api.depends('category_ids')
     def _compute_compatible_category_ids(self):
         """Compute compatible category IDs by syncing from category_ids."""
         for rec in self:

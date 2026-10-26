@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,7 +22,7 @@ from odoo import fields, models
 
 
 class ResConfigSettings(models.TransientModel):
-    """Extends Settings with waste management configuration parameters and default locations."""
+    """Extends Settings with the audit trail toggle and optional waste management add-on switches."""
     _inherit = 'res.config.settings'
 
     group_wm_audit_trail = fields.Boolean(string="Enable Audit Trail", implied_group="wm_base.group_wm_audit_trail", config_parameter="wm_base.group_wm_audit_trail")
@@ -35,6 +34,14 @@ class ResConfigSettings(models.TransientModel):
         string="Compliance Management",
         help="Install and enable regulatory tracking, hazardous waste manifests, chain of custody, and compliance certificates."
     )
+    module_wm_subscription = fields.Boolean(
+        string="Subscriptions",
+        help="Install and enable customer subscription management, recurring billing, and monthly weight allowance quotas."
+    )
+    module_wm_driver_app = fields.Boolean(
+        string="Driver Mobile App",
+        help="Install and enable the offline-first driver PWA mobile app, stop status progression, GPS verification, and driver checklists."
+    )
 
     def get_values(self):
         """
@@ -42,7 +49,7 @@ class ResConfigSettings(models.TransientModel):
         ir.config_parameter and populate the settings form so users see the
         active system configuration.
         """
-        res = super(ResConfigSettings, self).get_values()
+        res = super().get_values()
         param = self.env['ir.config_parameter'].sudo().get_param('wm_base.group_wm_audit_trail', default='False')
         res.update(
             group_wm_audit_trail=str(param).lower() in ('true', '1', 'yes'),
@@ -51,11 +58,10 @@ class ResConfigSettings(models.TransientModel):
 
     def set_values(self):
         """
-        Persist all configuration values (default locations,
-        billing thresholds, weight tolerances) to ir.config_parameter when
-        settings are saved.
+        Persist the audit trail switch to ir.config_parameter and show or
+        hide the audit menus accordingly when settings are saved.
         """
-        super(ResConfigSettings, self).set_values()
+        res = super().set_values()
         self.env['ir.config_parameter'].sudo().set_param(
             'wm_base.group_wm_audit_trail',
             'True' if self.group_wm_audit_trail else 'False'
@@ -69,3 +75,4 @@ class ResConfigSettings(models.TransientModel):
         menu_transitions = self.env.ref('wm_base.menu_wm_status_transitions', raise_if_not_found=False)
         if menu_transitions:
             menu_transitions.active = bool(self.group_wm_audit_trail)
+        return res

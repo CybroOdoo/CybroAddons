@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action: Safety Incident -->
+    <record id="action_wm_safety_incident" model="ir.actions.act_window">
+        <field name="name">Safety Incidents</field>
+        <field name="res_model">wm.safety.incident</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Record your first Safety Incident</p>
+            <p>Log and track safety near-misses, injuries, vehicle accidents, chemical/waste spills, and regulatory reporting deadlines.</p>
+        </field>
+    </record>
+
+    <!-- List View: Safety Incident -->
+    <record id="view_wm_safety_incident_list" model="ir.ui.view">
+        <field name="name">wm.safety.incident.list</field>
+        <field name="model">wm.safety.incident</field>
+        <field name="arch" type="xml">
+            <list string="Safety Incidents">
+                <header>
+                    <button name="action_report" type="object" string="Report" class="btn-secondary"/>
+                    <button name="action_investigate" type="object" string="Investigate" class="btn-secondary"/>
+                    <button name="action_close" type="object" string="Close" class="btn-secondary"/>
+                </header>
+                <field name="name"/>
+                <field name="incident_datetime"/>
+                <field name="incident_type" widget="badge"
+                       decoration-info="incident_type == 'near_miss'"
+                       decoration-warning="incident_type in ('vehicle_incident', 'property_damage')"
+                       decoration-danger="incident_type in ('injury', 'spill')"/>
+                <field name="severity" widget="badge"
+                       decoration-success="severity == 'minor'"
+                       decoration-info="severity == 'moderate'"
+                       decoration-warning="severity == 'severe'"
+                       decoration-danger="severity == 'fatality'"/>
+                <field name="driver_id" widget="many2one_avatar_user"/>
+                <field name="vehicle_id"/>
+                <field name="route_id"/>
+                <field name="is_osha_recordable" widget="boolean_toggle" readonly="state == 'closed'"/>
+                <field name="regulatory_report_required" widget="boolean_toggle" readonly="state == 'closed'"/>
+                <field name="regulatory_deadline" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state in ('reported', 'investigating')"
+                       decoration-success="state == 'closed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Kanban View: Safety Incident -->
+    <record id="view_wm_safety_incident_kanban" model="ir.ui.view">
+        <field name="name">wm.safety.incident.kanban</field>
+        <field name="model">wm.safety.incident</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" sample="1">
+                <field name="name"/>
+                <field name="incident_type"/>
+                <field name="severity"/>
+                <field name="incident_datetime"/>
+                <field name="driver_id"/>
+                <field name="is_osha_recordable"/>
+                <field name="regulatory_report_required"/>
+                <field name="incident_photo"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex flex-column gap-2 p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <field name="incident_photo" widget="image" style="max-width: 40px; max-height: 40px; object-fit: cover; border-radius: 4px;"/>
+                                    <strong class="text-primary"><field name="name"/></strong>
+                                </div>
+                                <field name="severity" widget="badge"
+                                       decoration-success="severity == 'minor'"
+                                       decoration-info="severity == 'moderate'"
+                                       decoration-warning="severity == 'severe'"
+                                       decoration-danger="severity == 'fatality'"/>
+                            </div>
+                            <div class="text-muted small">
+                                <span><field name="incident_type"/></span> | <span><field name="incident_datetime"/></span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <div>
+                                    <span t-if="record.is_osha_recordable.raw_value" class="badge bg-danger me-1">OSHA</span>
+                                    <span t-if="record.regulatory_report_required.raw_value" class="badge bg-warning text-dark">Regulatory</span>
+                                </div>
+                                <field name="driver_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Search View: Safety Incident -->
+    <record id="view_wm_safety_incident_search" model="ir.ui.view">
+        <field name="name">wm.safety.incident.search</field>
+        <field name="model">wm.safety.incident</field>
+        <field name="arch" type="xml">
+            <search string="Search Safety Incidents">
+                <field name="name"/>
+                <field name="driver_id"/>
+                <field name="vehicle_id"/>
+                <field name="route_id"/>
+                <field name="collection_point_id"/>
+                <filter string="OSHA Recordable" name="osha_recordable" domain="[('is_osha_recordable', '=', True)]"/>
+                <filter string="Regulatory Report Required" name="regulatory_required" domain="[('regulatory_report_required', '=', True)]"/>
+                <filter string="High Severity (Severe/Fatality)" name="high_severity" domain="[('severity', 'in', ('severe', 'fatality'))]"/>
+                <separator/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Investigating" name="investigating" domain="[('state', '=', 'investigating')]"/>
+                <filter string="Closed" name="closed" domain="[('state', '=', 'closed')]"/>
+                <group>
+                    <filter string="Incident Type" name="group_type" context="{'group_by': 'incident_type'}"/>
+                    <filter string="Severity" name="group_severity" context="{'group_by': 'severity'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Driver" name="group_driver" context="{'group_by': 'driver_id'}"/>
+                    <filter string="Vehicle" name="group_vehicle" context="{'group_by': 'vehicle_id'}"/>
+                    <filter string="Route" name="group_route" context="{'group_by': 'route_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Form View: Safety Incident -->
+    <record id="view_wm_safety_incident_form" model="ir.ui.view">
+        <field name="name">wm.safety.incident.form</field>
+        <field name="model">wm.safety.incident</field>
+        <field name="arch" type="xml">
+            <form string="Safety Incident">
+                <header>
+                    <button name="action_report" type="object" string="Report" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_investigate" type="object" string="Investigate" class="btn-primary" invisible="state not in ('draft', 'reported')"/>
+                    <button name="action_close" type="object" string="Close Incident" class="btn-success" invisible="state not in ('reported', 'investigating')"/>
+                    <button name="action_reset_to_draft" type="object" string="Reset to Draft" invisible="state != 'closed'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,reported,investigating,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Incident Classification">
+                            <field name="incident_type" readonly="state == 'closed'"/>
+                            <field name="severity" readonly="state == 'closed'"/>
+                            <field name="incident_datetime" readonly="state == 'closed'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state == 'closed'"/>
+                        </group>
+                        <group string="Personnel &amp; Operational Context">
+                            <field name="driver_id" widget="many2one_avatar_user" readonly="state == 'closed'"/>
+                            <field name="vehicle_id" readonly="state == 'closed'"/>
+                            <field name="route_id" readonly="state == 'closed'"/>
+                            <field name="collection_point_id" readonly="state == 'closed'"/>
+                            <field name="location" placeholder="Street, intersection, or facility detail..." readonly="state == 'closed'"/>
+                        </group>
+                    </group>
+                    <group string="OSHA &amp; Regulatory Compliance">
+                        <group>
+                            <field name="is_osha_recordable" readonly="state == 'closed'"/>
+                        </group>
+                        <group>
+                            <field name="regulatory_report_required" readonly="state == 'closed'"/>
+                            <field name="regulatory_deadline" invisible="not regulatory_report_required" readonly="state == 'closed'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description &amp; Photo">
+                            <group>
+                                <group string="Incident Description">
+                                    <field name="description" placeholder="Provide detailed explanation of what happened..." readonly="state == 'closed'" nolabel="1"/>
+                                </group>
+                                <group string="Photo Evidence">
+                                    <field name="incident_photo" widget="image" options="{'zoom': true}" readonly="state == 'closed'" style="max-width: 450px; max-height: 450px;" nolabel="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Immediate Action Taken">
+                            <field name="immediate_action_taken" placeholder="Describe emergency response, medical aid, spill containment, or corrective steps taken..." readonly="state == 'closed'"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,10 +18,11 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 from dateutil.relativedelta import relativedelta
-from odoo import api, fields, models, _
+
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
 
@@ -121,19 +121,24 @@ class WmConsolidatedBillingWizard(models.TransientModel):
             ('state', 'in', ('completed', 'signed')),
             ('consolidated_invoice_id', '=', False),
             ('billing_run_line_id', '=', False),
+            ('direct_invoice_id', '=', False),
             ('company_id', '=', self.company_id.id),
         ]
+        # Datetime fields: compare against the start/end of the selected days,
+        # otherwise orders done on the last day are dropped.
         if self.date_from:
+            start_dt = datetime.combine(self.date_from, time.min)
             domain += [
                 '|',
-                ('actual_end', '>=', self.date_from),
-                '&', ('actual_end', '=', False), ('scheduled_start', '>=', self.date_from),
+                ('actual_end', '>=', start_dt),
+                '&', ('actual_end', '=', False), ('scheduled_start', '>=', start_dt),
             ]
         if self.date_to:
+            end_dt = datetime.combine(self.date_to, time.max)
             domain += [
                 '|',
-                ('actual_end', '<=', self.date_to),
-                '&', ('actual_end', '=', False), ('scheduled_start', '<=', self.date_to),
+                ('actual_end', '<=', end_dt),
+                '&', ('actual_end', '=', False), ('scheduled_start', '<=', end_dt),
             ]
         return self.env['wm.collection.order'].search(domain)
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -56,11 +55,11 @@ class WmWeightRevenueReport(models.Model):
                     o.company_id AS company_id,
                     COALESCE(SUM(l.weight), 0.0) AS weight_kg,
                     CASE
-                        WHEN o.consolidated_invoice_id IS NULL AND o.billing_run_line_id IS NULL THEN COALESCE(SUM(l.total_amount), 0.0)
+                        WHEN o.consolidated_invoice_id IS NULL AND o.billing_run_line_id IS NULL AND o.direct_invoice_id IS NULL THEN COALESCE(SUM(l.total_amount), 0.0)
                         ELSE 0.0
                     END AS uninvoiced_amount,
                     CASE
-                        WHEN o.consolidated_invoice_id IS NULL AND o.billing_run_line_id IS NULL THEN 1
+                        WHEN o.consolidated_invoice_id IS NULL AND o.billing_run_line_id IS NULL AND o.direct_invoice_id IS NULL THEN 1
                         ELSE 0
                     END AS uninvoiced_order_count
                 FROM wm_collection_order o
@@ -75,6 +74,7 @@ class WmWeightRevenueReport(models.Model):
                     CAST(COALESCE(o.scheduled_start, o.completed_date, o.create_date) AS DATE),
                     o.company_id,
                     o.consolidated_invoice_id,
-                    o.billing_run_line_id
+                    o.billing_run_line_id,
+                    o.direct_invoice_id
             )
         """)

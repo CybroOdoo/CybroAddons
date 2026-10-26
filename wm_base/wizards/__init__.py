@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,5 +19,5 @@
 #
 #############################################################################
 
-from . import wm_signature_request_wizard
-from . import wm_signature_sign_now_wizard
+from . import wm_signature_request_wizard, wm_signature_sign_now_wizard
+from . import wm_premium_feature_wizard

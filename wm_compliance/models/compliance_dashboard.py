@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,9 +18,10 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
-from odoo import api, models, _
+from odoo import _, api, fields, models
+from odoo.exceptions import AccessError
 
 
 class WmComplianceDashboard(models.AbstractModel):
@@ -30,11 +30,29 @@ class WmComplianceDashboard(models.AbstractModel):
     _description = 'Waste Compliance Dashboard'
 
     @api.model
+    def _get_missing_custody_domain(self):
+        """Domain of manifests whose chain of custody lacks the milestone
+        expected for their current state (submit, collect and dispose each
+        log one), e.g. a collected manifest without a 'collected' entry."""
+        return [
+            '|', '|',
+            '&', ('state', '=', 'submitted'), ('custody_ids', 'not any', [('action', '=', 'generated')]),
+            '&', ('state', '=', 'collected'), ('custody_ids', 'not any', [('action', '=', 'collected')]),
+            '&', ('state', '=', 'disposed'), ('custody_ids', 'not any', [('action', '=', 'disposed')]),
+        ]
+
+    @api.model
     def get_dashboard_data(self, timeframe='today'):
         """
         Return all KPI, chart, and alert data needed by the Compliance
         Dashboard OWL component.
         """
+        user = self.env.user
+        if not self.env.su and not (
+                user.has_group('wm_base.group_wm_compliance_officer')
+                or user.has_group('wm_base.group_wm_ops_manager')):
+            raise AccessError(_("Only Compliance Officers and Operations Managers can access the Compliance Dashboard."))
+
         has_manifest = 'wm.compliance.manifest' in self.env.registry
         has_document = 'wm.compliance.document' in self.env.registry
         has_target = 'wm.compliance.target' in self.env.registry
@@ -55,9 +73,10 @@ class WmComplianceDashboard(models.AbstractModel):
         company_ids = self.env.companies.ids or [self.env.company.id]
         company_domain = ['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]
 
+        # Data is read as superuser below; each section is only computed when
+        # the user may read the underlying model (flags above).
         self = self.sudo()
-        today = date.today()
-        datetime.combine(today, datetime.max.time())
+        today = fields.Date.context_today(self)
         seven_days_ago = today - timedelta(days=7)
         thirty_days_later = today + timedelta(days=30)
 
@@ -84,22 +103,23 @@ class WmComplianceDashboard(models.AbstractModel):
         manifest_draft = 0
         total_quantity_selected = 0.0
         manifest_transit_qty = 0.0
+        active_transit_qty = 0.0
         manifest_disposed_qty = 0.0
 
         overdue_manifest_count = 0
         pending_custody_count = 0
         urgent_manifests = []
 
-        if has_manifest:
+        if can_access_manifest:
             Manifest = self.env['wm.compliance.manifest']
             manifests_in_period = Manifest.search([
                 ('manifest_date', '>=', start_date),
                 ('manifest_date', '<=', today)
             ] + company_domain)
 
-            # Active in-transit manifests (state = 'collected')
+            # Active in-transit manifests (state = 'collected'), all periods
             active_in_transit_manifests = Manifest.search([('state', '=', 'collected')] + company_domain)
-            manifest_transit_qty = round(sum(active_in_transit_manifests.mapped('total_quantity')), 2)
+            active_transit_qty = round(sum(active_in_transit_manifests.mapped('total_quantity')), 2)
 
             manifests_to_count = manifests_in_period
             total_manifests = len(manifests_in_period)
@@ -119,11 +139,10 @@ class WmComplianceDashboard(models.AbstractModel):
             ] + company_domain, order='manifest_date asc')
             overdue_manifest_count = len(overdue_records)
 
-            # Alerts: Pending Custody Manifests (submitted with no custody entries)
-            pending_custody_records = Manifest.search([
-                ('state', 'in', ['submitted', 'collected']),
-                ('custody_ids', '=', False)
-            ] + company_domain, order='manifest_date asc')
+            # Alerts: manifests missing the custody milestone of their state
+            pending_custody_records = Manifest.search(
+                self._get_missing_custody_domain() + company_domain,
+                order='manifest_date asc')
             pending_custody_count = len(pending_custody_records)
 
             # Combined urgent manifests list (limit 8)
@@ -157,7 +176,7 @@ class WmComplianceDashboard(models.AbstractModel):
                         'date': m.manifest_date.strftime('%Y-%m-%d') if m.manifest_date else '',
                         'state': m.state,
                         'issue': 'pending_custody',
-                        'issue_label': _('No Custody Log')
+                        'issue_label': _('Missing Custody Step')
                     })
 
         # ── 2. PERMITS & LICENCES (VAULT) ─────────────────────────────────
@@ -167,7 +186,7 @@ class WmComplianceDashboard(models.AbstractModel):
         active_valid_docs_count = 0
         expiring_documents_list = []
 
-        if has_document:
+        if can_access_document:
             Document = self.env['wm.compliance.document']
             total_vault_docs = Document.search_count(company_domain)
 
@@ -210,7 +229,7 @@ class WmComplianceDashboard(models.AbstractModel):
         avg_target_compliance = 0.0
         active_targets_list = []
 
-        if has_target:
+        if can_access_target:
             Target = self.env['wm.compliance.target']
             targets = Target.search(company_domain)
             total_targets = len(targets)
@@ -239,7 +258,7 @@ class WmComplianceDashboard(models.AbstractModel):
         certificates_draft = 0
         certificates_verified = 0
 
-        if has_certificate:
+        if can_access_certificate:
             Certificate = self.env['wm.compliance.certificate']
             total_certificates = Certificate.search_count(company_domain)
             certificates_issued = Certificate.search_count(company_domain + [('state', '=', 'issued')])
@@ -248,7 +267,7 @@ class WmComplianceDashboard(models.AbstractModel):
             certificates_verified = sum(1 for c in certs_with_sig if c.signature_hash_verified)
 
         # ── 5. DISPOSAL FACILITIES ────────────────────────────────────────
-        facility_count = self.env['wm.disposal.facility'].search_count(company_domain) if has_facility else 0
+        facility_count = self.env['wm.disposal.facility'].search_count(company_domain) if can_access_facility else 0
 
         # ── 6. STREAM DISTRIBUTION & CHART METRICS ───────────────────────
         stream_labels = []
@@ -257,7 +276,7 @@ class WmComplianceDashboard(models.AbstractModel):
         stream_data = []
         total_stream_qty = 0.0
 
-        if has_manifest:
+        if can_access_manifest:
             ManifestLine = self.env['wm.compliance.manifest.line']
             selected_lines = ManifestLine.search([
                 ('manifest_id.manifest_date', '>=', start_date),
@@ -281,13 +300,13 @@ class WmComplianceDashboard(models.AbstractModel):
             for line in selected_lines:
                 cat = line.waste_category_id
                 if cat:
-                    selected_qty_by_cat[cat.id] = selected_qty_by_cat.get(cat.id, 0.0) + (line.quantity or 0.0)
+                    selected_qty_by_cat[cat.id] = selected_qty_by_cat.get(cat.id, 0.0) + line._get_quantity_kg()
 
             prior_qty_by_cat = {}
             for line in prior_lines:
                 cat = line.waste_category_id
                 if cat:
-                    prior_qty_by_cat[cat.id] = prior_qty_by_cat.get(cat.id, 0.0) + (line.quantity or 0.0)
+                    prior_qty_by_cat[cat.id] = prior_qty_by_cat.get(cat.id, 0.0) + line._get_quantity_kg()
 
             total_stream_qty = round(sum(selected_qty_by_cat.values()), 2)
 
@@ -331,6 +350,7 @@ class WmComplianceDashboard(models.AbstractModel):
             'manifest_draft': manifest_draft,
             'total_quantity_selected': round(total_quantity_selected, 2),
             'manifest_transit_qty': round(manifest_transit_qty, 2),
+            'active_transit_qty': round(active_transit_qty, 2),
             'manifest_disposed_qty': round(manifest_disposed_qty, 2),
 
             # Alerts

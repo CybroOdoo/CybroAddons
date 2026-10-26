@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,8 +21,7 @@
 import logging
 
 from odoo.exceptions import UserError
-from odoo.tests.common import tagged, TransactionCase
-
+from odoo.tests.common import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -36,7 +34,7 @@ class TestWmComplianceCustody(TransactionCase):
         """
         Set up test case preconditions and test data.
         """
-        super(TestWmComplianceCustody, self).setUp()
+        super().setUp()
         self.generator = self.env['res.partner'].create({
             'name': 'Generator Partner',
             'is_generator': True,
@@ -53,6 +51,11 @@ class TestWmComplianceCustody(TransactionCase):
             'generator_id': self.generator.id,
             'transporter_id': self.transporter.id,
             'disposal_facility_id': self.facility.id,
+            'line_ids': [(0, 0, {
+                'waste_category_id': self.env['wm.waste.category'].create(
+                    {'name': 'Custody Waste', 'code': 'CUSTW'}).id,
+                'quantity': 10.0,
+            })],
         })
 
     def test_custody_append_only_operations(self):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -18,10 +17,11 @@
 #    (LGPL v3) along with this program.
 #    If not, see <https://www.gnu.org/licenses/>.
 #
-#############################################################################
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged('post_install', '-at_install')
 class TestRecyclingSetting(TransactionCase):
     """Unit tests verifying recycling module configuration and feature flag toggles."""
 
@@ -36,3 +36,15 @@ class TestRecyclingSetting(TransactionCase):
         settings = self.env['res.config.settings'].create({})
         self.assertIn('module_wm_compliance', settings._fields)
         self.assertEqual(settings._fields['module_wm_compliance'].type, 'boolean')
+
+    def test_module_wm_subscription_setting_field_exists(self):
+        """ Test res.config.settings contains module_wm_subscription boolean field. """
+        settings = self.env['res.config.settings'].create({})
+        self.assertIn('module_wm_subscription', settings._fields)
+        self.assertEqual(settings._fields['module_wm_subscription'].type, 'boolean')
+
+    def test_module_wm_driver_app_setting_field_exists(self):
+        """ Test res.config.settings contains module_wm_driver_app boolean field. """
+        settings = self.env['res.config.settings'].create({})
+        self.assertIn('module_wm_driver_app', settings._fields)
+        self.assertEqual(settings._fields['module_wm_driver_app'].type, 'boolean')

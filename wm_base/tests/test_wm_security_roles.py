@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,9 +19,10 @@
 #
 #############################################################################
 import base64
+
 from odoo import fields
 from odoo.exceptions import AccessError
-from odoo.tests.common import tagged, TransactionCase
+from odoo.tests.common import TransactionCase, tagged
 
 
 @tagged('post_install', '-at_install', 'wm_security')
@@ -128,20 +128,52 @@ class TestWmSecurityRoles(TransactionCase):
             'code': 'SECCAT',
             'price': 15.0,
         })
-        cls.product = cls.env['product.product'].create({
+        product_vals = {
             'name': 'Sec Test Product',
             'is_waste_material': True,
             'wm_waste_category_id': cls.category.id,
-            'is_storable': True,
-        })
-        cls.warehouse = cls.env['stock.warehouse'].search([('company_id', '=', cls.env.company.id)], limit=1)
-        cls.location = cls.warehouse.lot_stock_id
+        }
+        if 'is_storable' in cls.env['product.product']._fields:
+            product_vals['is_storable'] = True
+        cls.product = cls.env['product.product'].create(product_vals)
+        # Warehouse data only exists when the stock-based modules are installed
+        cls.warehouse = cls.location = False
+        if 'stock.warehouse' in cls.env:
+            cls.warehouse = cls.env['stock.warehouse'].search([('company_id', '=', cls.env.company.id)], limit=1)
+            cls.location = cls.warehouse.lot_stock_id
 
         if 'wm.collection.point' in cls.env:
             cls.point = cls.env['wm.collection.point'].create({
                 'name': 'Sec Test Point',
                 'partner_id': cls.partner.id,
             })
+
+        if 'account.journal' in cls.env:
+            company = cls.env.company
+            journal = cls.env['account.journal'].search(
+                [('type', '=', 'sale'), ('company_id', '=', company.id)], limit=1)
+            if not journal:
+                journal = cls.env['account.journal'].create({
+                    'name': 'Test Sales',
+                    'code': 'TSAL',
+                    'type': 'sale',
+                    'company_id': company.id,
+                })
+            if not journal.default_account_id:
+                journal.default_account_id = cls.env['account.account'].create({
+                    'name': 'Test Security Income',
+                    'code': 'TSINC01',
+                    'account_type': 'income',
+                    'company_ids': [(6, 0, company.ids)],
+                })
+            if not cls.partner.property_account_receivable_id:
+                cls.partner.property_account_receivable_id = cls.env['account.account'].create({
+                    'name': 'Test Security Receivable',
+                    'code': 'TSREC01',
+                    'account_type': 'asset_receivable',
+                    'reconcile': True,
+                    'company_ids': [(6, 0, company.ids)],
+                })
 
     # =========================================================================
     # ROLE 1: DRIVER / FIELD COLLECTOR (group_wm_driver)
@@ -484,6 +516,11 @@ class TestWmSecurityRoles(TransactionCase):
                     'transporter_id': self.user_driver.partner_id.id,
                     'disposal_facility_id': facility.id,
                     'manifest_date': fields.Date.today(),
+                    # Empty manifests cannot be disposed (no certificate)
+                    'line_ids': [(0, 0, {
+                        'waste_category_id': self.category.id,
+                        'quantity': 25.0,
+                    })],
                 })
                 self.assertTrue(manifest.id)
                 manifest.action_submit()
@@ -736,6 +773,8 @@ class TestWmSecurityRoles(TransactionCase):
 
             signer1.write({'state': 'signed'})
             signer2.write({'state': 'signed'})
+            # Only a sent ("To Sign") request can complete
+            req.state = 'sent'
             # Complete request: transitions state to signed and renders both signatures
             req._check_request_completion()
             self.assertEqual(req.state, 'signed')
@@ -957,10 +996,10 @@ class TestWmSecurityRoles(TransactionCase):
         """
         # 1. On Dashboard: can_access_report and can_access_facility must be False for unauthorized users
         if 'wm.compliance.dashboard' in self.env:
+            # Users outside the compliance / operations groups cannot load it at all
             for unauth_user in [self.user_unauthorized, self.user_driver, self.user_finance]:
-                data = self.env['wm.compliance.dashboard'].with_user(unauth_user).get_dashboard_data('today')
-                self.assertFalse(data.get('can_access_facility'), f"can_access_facility must be False for {unauth_user.name}")
-                self.assertFalse(data.get('can_access_report'), f"can_access_report must be False for {unauth_user.name}")
+                with self.assertRaises(AccessError, msg=f"Compliance dashboard must be denied to {unauth_user.name}"):
+                    self.env['wm.compliance.dashboard'].with_user(unauth_user).get_dashboard_data('today')
 
             # But True for Compliance Officer and Admin
             data_officer = self.env['wm.compliance.dashboard'].with_user(self.user_compliance).get_dashboard_data('today')

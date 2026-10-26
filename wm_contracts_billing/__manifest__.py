@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,14 +20,9 @@
 #############################################################################
 {
     'name': 'Waste Management Contracts & Billing',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.2',
     'category': 'Sales/Billing',
     'summary': 'Customer Contracts, SLAs, Portal & Consolidated Billing for Waste Management',
-    'description': """
-        Waste Management Contracts & Billing Module.
-        Consolidates customer portal, customer contract management, service level agreements (SLAs),
-        rate cards, contract-based pricing, monthly billing runs, and consolidated invoicing.
-    """,
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Technologies Pvt. Ltd.',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -36,7 +30,7 @@
     'depends': [
         'wm_base',
         'wm_collection',
-        'contacts',
+        'fleet',
         'mail',
         'product',
         'account',
@@ -58,18 +52,21 @@
         'reports/pricing_rule_summary_template.xml',
         'data/ir_sequence_data.xml',
         'data/partner_contract_sequence.xml',
+        'data/service_request_sequence.xml',
         'data/mail_template_contract.xml',
+        'data/ir_config_parameter_data.xml',
         'data/ir_cron.xml',
-        'data/ir_cron_data.xml',
         'wizards/wm_sla_send_email_wizard_views.xml',
         'wizards/wm_lead_conversion_wizard_views.xml',
         'wizards/wm_consolidated_billing_wizard_views.xml',
         'wizards/wm_pricing_rule_summary_wizard_views.xml',
         'wizards/wm_monthly_billing_wizard_views.xml',
+        'wizards/wm_portal_request_reject_wizard_views.xml',
         'views/contract_line_views.xml',
         'views/partner_contract_views.xml',
         'views/wm_partner_contract_views.xml',
         'views/partner_contract_menu.xml',
+        'views/premium_menus.xml',
         'views/wm_sla_views.xml',
         'views/wm_customer_profitability_report_views.xml',
         'views/res_partner_views.xml',
@@ -77,6 +74,8 @@
         'views/crm_lead_views.xml',
         'views/sale_order_views.xml',
         'views/portal_templates.xml',
+        'views/portal_service_request_templates.xml',
+        'views/wm_portal_service_request_views.xml',
         'views/wm_pricing_rule_views.xml',
         'views/wm_consolidated_invoice_views.xml',
         'views/wm_monthly_billing_run_views.xml',
@@ -84,6 +83,8 @@
         'views/wm_weight_revenue_report_views.xml',
         'views/wm_operations_report_views.xml',
         'views/wm_collection_order_views.xml',
+        'views/wm_event_pricing_rule_views.xml',
+        'views/wm_billable_event_views.xml',
         'views/menu_views.xml',
     ],
     'demo': [
@@ -96,11 +97,10 @@
             'wm_contracts_billing/static/src/css/collection_dashboard.css',
             'wm_contracts_billing/static/src/css/portal_download.css',
             'wm_contracts_billing/static/src/js/portal_download.js',
+            'wm_contracts_billing/static/src/js/service_request_form.js',
         ],
     },
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
     'application': True,
 }

@@ -1,10 +1,9 @@
-/** @odoo-module **/
-
 import { Component, useState, onWillStart, onMounted, onWillDestroy, useRef } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { loadJS } from "@web/core/assets";
 import { _t } from "@web/core/l10n/translation";
+import { formatCurrency } from "@web/core/currency";
 
 export class WmDashboard extends Component {
     static template = "wm_dashboard.Dashboard";
@@ -98,7 +97,7 @@ export class WmDashboard extends Component {
         const data = this.state.data;
         const timeframe = this.state.activeTimeframe;
         let currentLabel = "Today";
-        let priorLabel = "Same Day Last Week";
+        let priorLabel = "Yesterday";
         if (timeframe === "week") {
             currentLabel = "This Week";
             priorLabel = "Prior Week";
@@ -186,7 +185,7 @@ export class WmDashboard extends Component {
             data: {
                 labels: ["On-Time", "Delayed"],
                 datasets: [{
-                    data: [data.on_time_pct, data.delayed_pct],
+                    data: [data.on_time_pct || 0, data.delayed_pct || 0],
                     backgroundColor: ["#10B981", "#EF4444"],
                     borderColor: "#131C27",
                     borderWidth: 2,
@@ -452,9 +451,12 @@ export class WmDashboard extends Component {
                 if (!data.has_collection) this.notification.add(_t("Collection module is not installed."), { type: "warning" });
                 return;
             }
-            const orderStates = data.has_account
-                ? ['completed', 'signed', 'in_progress']
-                : ['completed', 'signed', 'invoiced', 'in_progress'];
+            // Same orders as the revenue tile: orders billed by a POSTED
+            // invoice are counted through that invoice, not again as orders.
+            // The server builds this domain (the invoice link fields only
+            // exist when billing is installed).
+            const orderStates = ['completed', 'signed', 'in_progress'];
+            const orderRevenueDomain = data.order_revenue_domain || [];
             this.action.doAction({
                 name: `Collection Orders — Revenue (${timeframe})`,
                 type: "ir.actions.act_window",
@@ -465,6 +467,7 @@ export class WmDashboard extends Component {
                     "&", ["scheduled_start", ">=", startDt], ["scheduled_start", "<=", endDt],
                     "&", ["scheduled_start", "=", false], "&", ["create_date", ">=", startDt], ["create_date", "<=", endDt],
                     ["state", "in", orderStates],
+                    ...orderRevenueDomain,
                 ],
                 target: "current",
             });
@@ -504,11 +507,11 @@ export class WmDashboard extends Component {
             "&", ["scheduled_start", "=", false], "&", ["create_date", ">=", startDtStr], ["create_date", "<=", todayEndStr],
         ];
         if (state === 'pending') {
-            domain.push(['state', 'in', ['draft', 'scheduled']]);
+            domain.push(['state', '=', 'draft']);
         } else if (state === 'in_progress') {
             domain.push(['state', 'in', ['dispatched', 'in_progress']]);
         } else if (state === 'completed') {
-            domain.push(['state', 'in', ['completed', 'signed', 'invoiced']]);
+            domain.push(['state', 'in', ['completed', 'signed']]);
         }
 
         const actionTitle = state && state !== 'all' ? `Collection Orders - ${state.toUpperCase()} (${timeframe.toUpperCase()})` : `Collection Orders (${timeframe.toUpperCase()})`;
@@ -598,7 +601,7 @@ export class WmDashboard extends Component {
             type: "ir.actions.act_window",
             res_model: "wm.collection.order",
             views: [[false, "list"], [false, "form"]],
-            domain: [["state", "in", ["completed", "in_progress", "scheduled"]]],
+            domain: [["state", "=", "completed"]],
             target: "current",
         });
     }
@@ -621,6 +624,27 @@ export class WmDashboard extends Component {
             pending: `${pendingPct}%`,
             in_progress: `${inProgressPct}%`,
             completed: `${completedPct}%`,
+        };
+    }
+
+    get fleetProgressStyle() {
+        if (!this.state.data) {
+            return { available: '0%', dispatched: '0%', maintenance: '0%' };
+        }
+        const available = this.state.data.fleet_available || 0;
+        const dispatched = this.state.data.fleet_dispatched || 0;
+        const maintenance = this.state.data.fleet_maintenance || 0;
+        const total = available + dispatched + maintenance;
+        if (!total) {
+            return { available: '0%', dispatched: '0%', maintenance: '0%' };
+        }
+        const availablePct = ((available / total) * 100).toFixed(1);
+        const dispatchedPct = ((dispatched / total) * 100).toFixed(1);
+        const maintenancePct = (100.0 - parseFloat(availablePct) - parseFloat(dispatchedPct)).toFixed(1);
+        return {
+            available: `${availablePct}%`,
+            dispatched: `${dispatchedPct}%`,
+            maintenance: `${maintenancePct}%`,
         };
     }
 
@@ -658,8 +682,8 @@ export class WmDashboard extends Component {
     }
 
     formatCurrency(val) {
-        if (val === undefined || val === null || isNaN(val)) return "0.00";
-        return Number(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const amount = (val === undefined || val === null || isNaN(val)) ? 0 : Number(val);
+        return formatCurrency(amount, this.state.data && this.state.data.currency_id);
     }
 }
 

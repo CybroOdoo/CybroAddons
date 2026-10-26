@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,8 +22,7 @@ import logging
 from datetime import datetime, timedelta
 
 from odoo import fields
-from odoo.tests import tagged, TransactionCase
-
+from odoo.tests import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -107,8 +105,9 @@ class TestMonthlyBilling(TransactionCase):
         self.assertTrue(order1.billing_run_line_id, "Order 1 should be linked to billing run line")
         self.assertTrue(order2.billing_run_line_id, "Order 2 should be linked to billing run line")
 
-        # Rate card calculation: total weight = 80kg * $2.50 = $200 (higher than min_charge $100)
-        self.assertEqual(invoice.amount_total, 200.00, "Total invoice amount should be $200.00")
+        # Each collection is priced on its own: 50 kg x 2.50 = 125; 30 kg x 2.50 = 75, raised
+        # to the 100 minimum charge of that collection -> 225 (not pooled to 200)
+        self.assertEqual(invoice.amount_total, 225.00, "Each collection gets its own minimum charge")
 
     def test_monthly_billing_idempotency(self):
         """

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -25,3 +24,4 @@ from . import wm_missed_collection_report_wizard
 from . import wm_collection_order_report_wizard
 from . import wm_change_driver_wizard
 from . import map_view_config_wizard
+from . import wm_add_status_log_wizard

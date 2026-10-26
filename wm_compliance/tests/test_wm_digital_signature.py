@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -24,8 +23,7 @@ import hashlib
 import logging
 
 from odoo.exceptions import UserError
-from odoo.tests.common import tagged, TransactionCase
-
+from odoo.tests.common import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -38,7 +36,7 @@ class TestWmDigitalSignature(TransactionCase):
         """
         Set up test case preconditions and test data.
         """
-        super(TestWmDigitalSignature, self).setUp()
+        super().setUp()
 
         # We can use any dummy record to sign (e.g. res.partner)
         self.dummy_record = self.env['res.partner'].create({

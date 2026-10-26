@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -18,10 +17,11 @@
 #    (LGPL v3) along with this program.
 #    If not, see <https://www.gnu.org/licenses/>.
 #
-#############################################################################
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged('post_install', '-at_install')
 class TestWmWasteCategory(TransactionCase):
     """Unit tests verifying waste category validation rules and uniqueness constraints."""
 

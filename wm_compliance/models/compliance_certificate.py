@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -55,7 +54,9 @@ class ComplianceCertificate(models.Model):
     facility_id = fields.Many2one('wm.disposal.facility', string='Disposal Facility', required=True, tracking=True)
     quantity = fields.Float(string='Quantity', required=True, default=0.0, tracking=True)
     uom_id = fields.Many2one('uom.uom', string='UoM', tracking=True)
-    certificate_no = fields.Char(string='Certificate No.', required=True, copy=False, tracking=True)
+    certificate_no = fields.Char(
+        string='Certificate No.', required=True, copy=False, tracking=True,
+        default=lambda self: _('New'))
     issued_date = fields.Date(
         string='Issued Date',
         required=False,
@@ -81,24 +82,35 @@ class ComplianceCertificate(models.Model):
         default=lambda self: self.env.company
     )
 
-    def copy(self, default=None):
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Number certificates from the ir.sequence when no number is given."""
+        for vals in vals_list:
+            if not vals.get('certificate_no') or vals['certificate_no'] == _('New'):
+                vals['certificate_no'] = self.env['ir.sequence'].next_by_code(
+                    'wm.compliance.certificate') or _('New')
+        return super().create(vals_list)
+
+    def copy_data(self, default=None):
         """
-        Override copy to customize record duplication behavior.
+        Customize duplicated values per record (safe on multi-record copy):
+        suffix the name/number with "(Copy)" and reset the copy to draft.
         """
         default = dict(default or {})
-        if not default.get('certificate_no'):
-            default['certificate_no'] = _("%s (Copy)", self.certificate_no or '')
-        if not default.get('name'):
-            default['name'] = _("%s (Copy)", self.name or '')
-        if not default.get('state'):
-            default['state'] = 'draft'
-        return super(ComplianceCertificate, self).copy(default)
+        vals_list = super().copy_data(default=default)
+        for rec, vals in zip(self, vals_list):
+            if not default.get('certificate_no'):
+                vals['certificate_no'] = _("%s (Copy)", rec.certificate_no or '')
+            if not default.get('name'):
+                vals['name'] = _("%s (Copy)", rec.name or '')
+            if not default.get('state'):
+                vals['state'] = 'draft'
+        return vals_list
 
     def action_issue(self):
         """
         Formally issue the compliance certificate by transitioning state to
-        'issued', generating the signed PDF, and notifying the requesting
-        officer by email.
+        'issued', stamping the issue date and generating the signed PDF.
         """
         for rec in self:
             if rec.state != 'draft':
@@ -122,7 +134,7 @@ class ComplianceCertificate(models.Model):
         pdf_bytes, report_format = self.env['ir.actions.report']._render_qweb_pdf(report.id, [self.id])
         filename = f"CERTIFICATE_{self.certificate_no.replace('/', '_')}.pdf"
         sig = self.env['wm.digital.signature'].sign_document(self, pdf_bytes, filename)
-        self.with_context(bypass_compliance_lock=True).write({'signature_id': sig.id})
+        self.sudo().with_context(bypass_compliance_lock=True).write({'signature_id': sig.id})
 
         # Log the attachment in the chatter
         self.message_post(

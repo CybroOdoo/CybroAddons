@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,6 +19,7 @@
 #
 #############################################################################
 from collections import OrderedDict
+
 from odoo import models
 
 try:

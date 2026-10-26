@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_wm_portal_service_request_form" model="ir.ui.view">
+        <field name="name">wm.portal.service.request.form</field>
+        <field name="model">wm.portal.service.request</field>
+        <field name="arch" type="xml">
+            <form string="Customer Portal Service Request">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve" groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_contracts_billing.group_wm_contract_manager,wm_base.group_wm_admin" string="Approve Request" type="object" class="btn-success" invisible="state not in ('submitted', 'draft')"/>
+                    <button name="action_complete" groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_contracts_billing.group_wm_contract_manager,wm_base.group_wm_admin" string="Mark Completed" type="object" class="btn-info" invisible="state not in ('approved', 'in_progress')"/>
+                    <button name="action_open_reject_wizard" groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_contracts_billing.group_wm_contract_manager,wm_base.group_wm_admin" string="Reject" type="object" class="btn-warning" invisible="state != 'submitted'"/>
+                    <button name="action_cancel" groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_contracts_billing.group_wm_contract_manager,wm_base.group_wm_admin" string="Cancel" type="object" class="btn-secondary" invisible="state not in ('draft', 'submitted', 'approved')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,in_progress,completed,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Customer &amp; Location">
+                            <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="contract_id" readonly="state != 'draft'"/>
+                            <field name="collection_point_id" required="1" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Request Details">
+                            <field name="request_type" readonly="state != 'draft'"/>
+                            <field name="requested_date" required="1" readonly="state != 'draft'"/>
+                            <field name="category_id" invisible="request_type != 'extra_pickup'" readonly="state != 'draft'"/>
+                            <field name="container_type_id" invisible="request_type != 'container_swap'" readonly="state != 'draft'"/>
+                            <field name="hold_start_date" invisible="request_type != 'service_hold'" readonly="state != 'draft'"/>
+                            <field name="hold_end_date" invisible="request_type != 'service_hold'" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <group string="Generated Records &amp; References">
+                        <field name="collection_order_id" readonly="1" invisible="not collection_order_id"/>
+                        <field name="missed_collection_id" readonly="1" invisible="not missed_collection_id"/>
+                        <field name="rejection_reason" invisible="state != 'rejected'"/>
+                        <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes &amp; Instructions">
+                            <field name="notes" placeholder="Customer provided instructions or details..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- List / Tree View -->
+    <record id="view_wm_portal_service_request_tree" model="ir.ui.view">
+        <field name="name">wm.portal.service.request.list</field>
+        <field name="model">wm.portal.service.request</field>
+        <field name="arch" type="xml">
+            <list string="Portal Service Requests" multi_edit="1" sample="1">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="request_type"/>
+                <field name="requested_date"/>
+                <field name="collection_point_id"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('draft', 'submitted')"
+                       decoration-success="state in ('approved', 'completed')"
+                       decoration-warning="state == 'rejected'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_wm_portal_service_request_search" model="ir.ui.view">
+        <field name="name">wm.portal.service.request.search</field>
+        <field name="model">wm.portal.service.request</field>
+        <field name="arch" type="xml">
+            <search string="Search Service Requests">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="contract_id"/>
+                <filter string="Submitted" name="submitted" domain="[('state', '=', 'submitted')]"/>
+                <filter string="Approved" name="approved" domain="[('state', '=', 'approved')]"/>
+                <filter string="Extra Pickup" name="extra_pickup" domain="[('request_type', '=', 'extra_pickup')]"/>
+                <filter string="Missed Collection" name="missed_collection" domain="[('request_type', '=', 'missed_collection')]"/>
+                <group>
+                    <filter string="Customer" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Request Type" name="group_type" context="{'group_by': 'request_type'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_wm_portal_service_request" model="ir.actions.act_window">
+        <field name="name">Portal Service Requests</field>
+        <field name="res_model">wm.portal.service.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wm_portal_service_request_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No portal service requests found!
+            </p>
+            <p>
+                Service requests submitted by customers through the portal (Extra Pickups, Container Swaps, Missed Collections, Service Holds) will appear here for processing.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item under Customer Configuration -->
+    <menuitem id="menu_wm_portal_service_request"
+              name="Customer Service Requests"
+              parent="menu_wm_config_customer"
+              action="action_wm_portal_service_request"
+              sequence="20"/>
+</odoo>

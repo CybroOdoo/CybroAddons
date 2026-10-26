@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.container - wm.container.list (List) -->
+    <record id="view_wm_container_list" model="ir.ui.view">
+        <field name="name">wm.container.list</field>
+        <field name="model">wm.container</field>
+        <field name="arch" type="xml">
+            <list string="Physical Containers" decoration-info="status == 'in_yard'" decoration-success="status == 'deployed'" decoration-warning="status in ('needs_cleaning', 'awaiting_pickup')" decoration-danger="status == 'damaged'">
+                <field name="name"/>
+                <field name="container_type_id"/>
+                <field name="collection_point_id"/>
+                <field name="partner_id"/>
+                <field name="deployed_date"/>
+                <field name="lift_count" sum="Total Lifts"/>
+                <field name="status" widget="badge" decoration-info="status == 'in_yard'" decoration-success="status == 'deployed'" decoration-warning="status in ('needs_cleaning', 'awaiting_pickup')" decoration-danger="status == 'damaged'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.container - wm.container.form (Form) -->
+    <record id="view_wm_container_form" model="ir.ui.view">
+        <field name="name">wm.container.form</field>
+        <field name="model">wm.container</field>
+        <field name="arch" type="xml">
+            <form string="Physical Container Unit">
+                <header>
+                    <button name="action_create_rental_invoice" string="Create Rental Invoice" type="object" class="btn-primary" invisible="not partner_id" groups="wm_base.group_wm_finance,account.group_account_invoice"/>
+                    <field name="status" widget="statusbar" statusbar_visible="in_yard,deployed,needs_cleaning,damaged,awaiting_pickup"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="invoice_count == 0">
+                            <field name="invoice_count" widget="statinfo" string="Invoices"/>
+                        </button>
+                        <button name="action_view_batches" type="object" class="oe_stat_button" icon="fa-cubes" invisible="lift_count == 0">
+                            <field name="lift_count" widget="statinfo" string="Lift History"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" string="Barcode / Tag Serial"/>
+                        <h1><field name="name" placeholder="e.g. BIN-2026-00421"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="container_type_id"/>
+                            <field name="collection_point_id"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="deployed_date"/>
+                            <field name="last_invoiced_date"/>
+                            <label for="rental_rate" string="Rental Rate"/>
+                            <div class="o_row">
+                                <field name="rental_rate" widget="monetary"/>
+                                <span>/</span>
+                                <field name="rental_period"/>
+                            </div>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Condition &amp; Maintenance Notes" name="notes">
+                            <field name="condition_notes" placeholder="Notes on physical condition, damage details, or maintenance history..."/>
+                        </page>
+                        <page string="Lift / Service History" name="service_history">
+                            <field name="batch_ids" readonly="1">
+                                <list create="0" delete="0">
+                                    <field name="name"/>
+                                    <field name="intake_date"/>
+                                    <field name="gross_weight"/>
+                                    <field name="tare_weight"/>
+                                    <field name="net_weight"/>
+                                    <field name="status" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- View: wm.container - wm.container.search (Search) -->
+    <record id="view_wm_container_search" model="ir.ui.view">
+        <field name="name">wm.container.search</field>
+        <field name="model">wm.container</field>
+        <field name="arch" type="xml">
+            <search string="Search Containers">
+                <field name="name"/>
+                <field name="container_type_id"/>
+                <field name="collection_point_id"/>
+                <field name="partner_id"/>
+                <filter string="Deployed" name="filter_deployed" domain="[('status', '=', 'deployed')]"/>
+                <filter string="In Yard" name="filter_in_yard" domain="[('status', '=', 'in_yard')]"/>
+                <filter string="Needs Cleaning" name="filter_needs_cleaning" domain="[('status', '=', 'needs_cleaning')]"/>
+                <filter string="Damaged" name="filter_damaged" domain="[('status', '=', 'damaged')]"/>
+                <filter string="Awaiting Pickup" name="filter_awaiting_pickup" domain="[('status', '=', 'awaiting_pickup')]"/>
+                <group>
+                    <filter name="groupby_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="groupby_type" string="Container Spec" context="{'group_by': 'container_type_id'}"/>
+                    <filter name="groupby_site" string="Collection Point" context="{'group_by': 'collection_point_id'}"/>
+                    <filter name="groupby_customer" string="Customer" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Physical Containers -->
+    <record id="action_wm_container_unit" model="ir.actions.act_window">
+        <field name="name">Physical Containers / Bins</field>
+        <field name="res_model">wm.container</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wm_container_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smart_action">
+                No physical containers registered yet. Click Create to register a container unit barcode or serial tag.
+            </p>
+        </field>
+    </record>
+</odoo>

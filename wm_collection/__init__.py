@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,6 +19,5 @@
 #
 #############################################################################
 
-from . import models
-from . import wizard
+from . import models, wizard
 from .hooks import post_init_hook

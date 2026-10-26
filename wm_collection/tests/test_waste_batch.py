@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,9 +19,11 @@
 #
 #############################################################################
 from odoo.exceptions import UserError
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged('post_install', '-at_install')
 class TestWasteBatch(TransactionCase):
     """Unit tests verifying waste batch weight reconciliation and status transitions."""
 
@@ -31,10 +32,10 @@ class TestWasteBatch(TransactionCase):
         """
         Set up test class fixtures and environment.
         """
-        super(TestWasteBatch, cls).setUpClass()
+        super().setUpClass()
         # Disable inspection and approval workflows during testing to prevent validation failures
-        cls.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_approval', 'False')
-        cls.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_inspection', 'False')
+        cls.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_approval', False)
+        cls.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_inspection', False)
 
         # Create UoM if not exists
         cls.uom_unit = cls.env.ref('uom.product_uom_unit', raise_if_not_found=False)
@@ -47,14 +48,14 @@ class TestWasteBatch(TransactionCase):
             })
 
         # Create Warehouse
-        cls.warehouse = cls.env['stock.warehouse'].create({
+        cls.warehouse = cls.env['stock.warehouse'].search([('code', '=', 'TWH')], limit=1) or cls.env['stock.warehouse'].create({
             'name': 'Test Warehouse',
             'code': 'TWH',
         })
         cls.location = cls.warehouse.lot_stock_id
 
         # Create Category
-        cls.category = cls.env['wm.waste.category'].create({
+        cls.category = cls.env['wm.waste.category'].search([('code', '=', 'EW')], limit=1) or cls.env['wm.waste.category'].create({
             'name': 'E-Waste',
             'code': 'EW',
         })
@@ -80,6 +81,11 @@ class TestWasteBatch(TransactionCase):
             'hazardous': True,
             'wm_waste_category_id': cls.category.id,
         })
+
+    def setUp(self):
+        super().setUp()
+        self.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_approval', False)
+        self.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_inspection', False)
 
     def test_01_waste_batch_workflow(self):
         """
@@ -220,6 +226,10 @@ class TestWasteBatch(TransactionCase):
         self.assertTrue(inspection)
         self.assertEqual(inspection.state, 'in_progress')
 
+        # Only stock that was received is moved to the landfill; failing an
+        # unreceived batch just disposes it (see test_collection_critical_fixes)
+        batch.with_context(skip_stock_check=True).is_received = True
+
         # Fail inspection
         inspection.action_fail_inspection()
 
@@ -302,7 +312,7 @@ class TestWasteBatch(TransactionCase):
             batch_c.action_receive_batch()
 
         # (d) Setting disabled -> receive succeeds regardless of inspection state
-        self.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_inspection', 'False')
+        self.env['ir.config_parameter'].sudo().set_param('wm_collection.use_batch_inspection', False)
         batch_d = self.env['waste.batch'].create({
             'warehouse_id': self.warehouse.id,
             'location_id': self.location.id,

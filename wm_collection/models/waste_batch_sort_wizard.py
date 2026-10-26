@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -76,7 +75,7 @@ class WasteBatchSortWizard(models.TransientModel):
         category_config_model = self.env['wm.waste.category.sort.config']
 
         line_cmds = []
-        for bline in batch.line_ids.filtered(lambda l: l.remaining_qty > 0):
+        for bline in batch.line_ids.filtered(lambda ln: ln.remaining_qty > 0):
             category_config = None
             if batch.category_id:
                 category_config = category_config_model.search(
@@ -152,7 +151,7 @@ class WasteBatchSortWizard(models.TransientModel):
         if not self.line_ids:
             raise UserError(_("There is nothing to sort."))
 
-        active_lines = self.line_ids.filtered(lambda l: l.sort_qty > 0)
+        active_lines = self.line_ids.filtered(lambda ln: ln.sort_qty > 0)
         if not active_lines:
             raise UserError(_(
                 "Set a sort quantity greater than zero on at least one line."
@@ -167,11 +166,11 @@ class WasteBatchSortWizard(models.TransientModel):
 
         child_batches = self.env['waste.batch']
         lines_data = [{
-            'batch_line': l.batch_line_id,
-            'sort_qty': l.sort_qty,
-            'dest_product': l.dest_product_id or l.batch_line_id.product_id,
-            'dest_location': l.dest_location_id,
-        } for l in active_lines]
+            'batch_line': ln.batch_line_id,
+            'sort_qty': ln.sort_qty,
+            'dest_product': ln.dest_product_id or ln.batch_line_id.product_id,
+            'dest_location': ln.dest_location_id,
+        } for ln in active_lines]
 
         if self.output_batch_mode == 'consolidated':
             child_batches |= self.batch_id._create_sorted_child_batch(

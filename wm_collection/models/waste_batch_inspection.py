@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,8 +21,8 @@
 import base64
 import urllib.parse
 
-from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError, ValidationError
 
 
 class WasteBatchInspection(models.Model):
@@ -65,21 +64,22 @@ class WasteBatchInspection(models.Model):
     )
     inspection_date = fields.Datetime(
         string='Inspection Date',
-        default=fields.Datetime.now
+        default=fields.Datetime.now,
+        copy=False,
     )
     state = fields.Selection([
         ('draft', 'Draft'),
         ('in_progress', 'In Progress'),
         ('passed', 'Passed'),
         ('failed', 'Failed')
-    ], string='Status', default='draft', required=True, tracking=True)
+    ], string='Status', default='draft', required=True, tracking=True, copy=False)
 
     quality_grade = fields.Selection([
         ('grade_a', 'Grade A'),
         ('grade_b', 'Grade B'),
         ('grade_c', 'Grade C'),
         ('rejected', 'Rejected')
-    ], string='Quality Grade', help='Assessed quality grade of the waste batch.', tracking=True)
+    ], string='Quality Grade', help='Assessed quality grade of the waste batch.', tracking=True, copy=False)
     contamination_percentage = fields.Float(
         string='Contamination (%)',
         default=0.0,
@@ -96,15 +96,16 @@ class WasteBatchInspection(models.Model):
         string='Hazard Verified',
         default=False,
         help='Check if the material hazard status has been verified during inspection.',
-        tracking=True
+        tracking=True,
+        copy=False,
     )
     notes = fields.Text(
         string='Inspection Notes',
         help='Additional observations or remarks from the inspection.',
         tracking=True
     )
-    signature_template_id = fields.Many2one('wm.signature.template', string='Signature Template', ondelete='set null')
-    is_signed = fields.Boolean(string='Signed', default=False, tracking=True)
+    signature_template_id = fields.Many2one('wm.signature.template', string='Signature Template', ondelete='set null', copy=False)
+    is_signed = fields.Boolean(string='Signed', default=False, tracking=True, copy=False)
     signature_status = fields.Selection([
         ('presence_present', 'Signed'),
         ('presence_absent', 'Not Signed')
@@ -200,7 +201,8 @@ class WasteBatchInspection(models.Model):
             self._sync_batch_state()
         return res
 
-    def unlink(self):
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_closed_inspection(self):
         """ Prevent deleting passed or failed batch inspections. """
         for rec in self:
             if rec.state in ('passed', 'failed'):
@@ -209,7 +211,6 @@ class WasteBatchInspection(models.Model):
                     name=rec.name,
                     state=dict(self._fields['state'].selection).get(rec.state, rec.state),
                 ))
-        return super().unlink()
 
     def action_start_inspection(self):
         """
@@ -241,6 +242,26 @@ class WasteBatchInspection(models.Model):
         """
         self.write({'state': 'failed'})
         self._post_pdf_to_chatter()
+
+        # Auto-create contamination billable event
+        if 'wm.billable.event' in self.env:
+            for rec in self.filtered(lambda r: r.state == 'failed' and r.batch_id and not r.contamination_event_id):
+                batch = rec.batch_id
+                partner = getattr(batch, 'partner_id', False) or (batch.collection_order_id and batch.collection_order_id.partner_id)
+                collection_point = getattr(batch, 'collection_point_id', False) or (batch.collection_order_id and batch.collection_order_id.collection_point_id)
+                if partner:
+                    event = self.env['wm.billable.event'].sudo().create({
+                        'partner_id': partner.id,
+                        'collection_point_id': collection_point.id if collection_point else False,
+                        'event_type': 'contamination',
+                        'collection_order_id': batch.collection_order_id.id if batch.collection_order_id else False,
+                        'event_date': fields.Date.context_today(rec),
+                        'quantity': 1.0,
+                        'state': 'confirmed',
+                        'notes': _("Contaminated load from failed inspection %s (Batch: %s)") % (rec.name, batch.name),
+                    })
+                    rec.contamination_event_id = event.id
+                    rec.message_post(body=_("Auto-logged Contamination Event %s.") % event.name)
 
         # ── Disposal picking ─────────────────────────────────────────────────
         for rec in self.filtered(lambda r: r.state == 'failed' and r.batch_id):
@@ -275,9 +296,11 @@ class WasteBatchInspection(models.Model):
                 )
             )
 
-            lines_with_qty = batch.line_ids.filtered(lambda l: l.quantity > 0)
-            if not lines_with_qty:
-                # Nothing to move — just mark disposed and continue
+            lines_with_qty = batch.line_ids.filtered(lambda ln: ln.quantity > 0)
+            if not lines_with_qty or not batch.is_received:
+                # Nothing in stock to move (inspection normally happens before
+                # receipt): moving it anyway would create negative quants.
+                # Just mark disposed and continue
                 batch.write({'status': 'disposed'})
                 continue
 
@@ -293,10 +316,12 @@ class WasteBatchInspection(models.Model):
             })
 
             for line in lines_with_qty:
+                uom = line.uom_id or line.product_id.uom_id or batch.uom_id
                 self.env['stock.move'].create({
+                    'description_picking': line.product_id.display_name or batch.name,
                     'picking_id': picking.id,
                     'product_id': line.product_id.id,
-                    'product_uom': line.uom_id.id,
+                    'product_uom': uom.id if uom else False,
                     'product_uom_qty': line.quantity,
                     'location_id': batch.location_id.id,
                     'location_dest_id': landfill_loc.id,
@@ -324,7 +349,7 @@ class WasteBatchInspection(models.Model):
         documentation.
         """
         for rec in self:
-            pdf_content, report_type = self.env['ir.actions.report']._render_qweb_pdf(
+            pdf_content, _report_type = self.env['ir.actions.report']._render_qweb_pdf(
                 'wm_collection.action_report_batch_inspection',
                 res_ids=[rec.id]
             )
@@ -351,7 +376,7 @@ class WasteBatchInspection(models.Model):
         if self.state not in ('passed', 'failed'):
             raise ValidationError(_("You can only sign an inspection that has passed or failed."))
 
-        pdf_content, report_type = self.env['ir.actions.report']._render_qweb_pdf(
+        pdf_content, _report_type = self.env['ir.actions.report']._render_qweb_pdf(
             'wm_collection.action_report_batch_inspection',
             res_ids=[self.id]
         )

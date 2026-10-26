@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,9 +21,10 @@
 from odoo import fields, models
 
 
-class DisposalFacility(models.Model):
-    """Registered disposal or processing facility with EPA licence tracking and capacity."""
-    _name = 'wm.disposal.facility'
+class DisposalFacilityCompliance(models.Model):
+    """Extends Disposal Facility with compliance capabilities."""
+    _inherit = 'wm.disposal.facility'
+
     _description = 'Disposal / Treatment Facility'
     _order = 'name'
 
@@ -38,7 +38,7 @@ class DisposalFacility(models.Model):
         ('other', 'Other')
     ], string='Facility Type', required=True, default='treatment')
     license_no = fields.Char(string='Licence / Permit Number')
-    license_authority = fields.Char(string='Licence Authority', help="The regulator that issued this license.")
+    license_authority = fields.Char(string='Licence Authority', help="The regulator that issued this licence.")
     address = fields.Char(string='Address')
     contact_email = fields.Char(string='Contact Email')
     company_id = fields.Many2one(

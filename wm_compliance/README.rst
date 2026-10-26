@@ -8,7 +8,7 @@ Waste Management Compliance
 Enterprise regulatory compliance and legal tracking for Hazardous, Bio-Medical, E-Waste, and C&D waste streams.
 
 * Immutable electronic manifests with state locking (Draft > Submitted > Collected > Disposed).
-* Append-only Chain of Custody tracking every custody handoff with timestamps and geolocation.
+* Append-only Chain of Custody tracking every custody handoff with timestamps and locations.
 * Cryptographic digital signatures (SHA-256) and verified destruction certificates.
 * Document and Permit Vault with automated expiration monitoring and email alerts.
 * Annual/Monthly Environmental Compliance Targets tracking with automatic quota computation.
@@ -16,9 +16,9 @@ Enterprise regulatory compliance and legal tracking for Hazardous, Bio-Medical, 
 
 Configuration
 =============
-* Register Disposal Facilities and EPA/Regulatory License numbers under ``Waste Management > Compliance > Facilities``.
-* Set up Compliance Targets for specific waste streams under ``Waste Management > Compliance > Targets``.
-* Upload permits, licenses, and insurance policies in the ``Document Vault``.
+* Register Disposal Facilities and EPA/regulatory licence numbers under ``Waste Management > Compliance > Configuration > Disposal Facilities``.
+* Set up Compliance Targets for specific waste streams under ``Waste Management > Compliance > Configuration > Targets``.
+* Upload permits, licences, and insurance policies in the ``Document Vault``.
 * Configure document expiration reminder frequency in ``Technical > Scheduled Actions``.
 
 Company
@@ -27,7 +27,7 @@ Company
 
 License
 =======
-General Public License, Version 3 (LGPL v3).
+GNU Lesser General Public License, Version 3 (LGPL-3).
 (https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 
 Credits
@@ -42,7 +42,7 @@ Contacts
 
 Bug Tracker
 ===========
-Bugs are tracked on GitHub Issues. In case of trouble, please check there if your issue has already been reported.
+Bugs are tracked on GitHub Issues. In case of trouble, please check whether your issue has already been reported.
 
 Maintainer
 ==========

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,9 +18,11 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged('post_install', '-at_install')
 class TestRouteZonesSetting(TransactionCase):
     """Unit tests verifying service zone routing rules and collection point assignment."""
 
@@ -74,7 +75,7 @@ class TestRouteZonesSetting(TransactionCase):
         """
         Test route zones cron bypass when disabled.
         """
-        self.env['ir.config_parameter'].sudo().set_param('wm_collection.use_route_zones', 'False')
+        self.env['ir.config_parameter'].sudo().set_param('wm_collection.use_route_zones', False)
 
         point = self.env['wm.collection.point'].create({'name': 'Point 2', 'partner_id': self.partner.id})
         self.assertFalse(point.use_route_zones)

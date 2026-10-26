@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,11 +22,11 @@ from odoo import fields, models
 
 
 class ProductTemplate(models.Model):
-    """Extends Product Template with waste management categorization and physical properties."""
+    """Extends Product Template with waste category, compliance code and hazardous/recyclable flags."""
     _inherit = 'product.template'
 
-    is_waste_material = fields.Boolean(string='Is Waste Material', help='Provides information about is waste material', default=False)
-    hazardous = fields.Boolean(string='Hazardous', help='Provides information about hazardous status', default=False)
-    recyclable = fields.Boolean(string='Recyclable', help='Provides information about recyclable status', default=True)
+    is_waste_material = fields.Boolean(help='Provides information about is waste material', default=False)
+    hazardous = fields.Boolean(help='Provides information about hazardous status', default=False)
+    recyclable = fields.Boolean(help='Provides information about recyclable status', default=True)
     wm_waste_category_id = fields.Many2one('wm.waste.category', string='Waste Category', help='Provides information about waste category')
-    compliance_code_id = fields.Many2one('wm.compliance.code', string='Compliance Code', help='Provides information about compliance code')
+    compliance_code_id = fields.Many2one('wm.compliance.code', help='Provides information about compliance code')

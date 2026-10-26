@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Main Portal Home Card -->
+    <template id="portal_my_home_service_requests" name="Portal My Home: Service Requests" inherit_id="portal.portal_my_home" priority="35">
+        <xpath expr="//div[@id='portal_common_category']" position="inside">
+            <t t-if="has_service_request_module">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="icon" t-value="'/web/static/img/rfq.svg'"/>
+                    <t t-set="title">Service Requests</t>
+                    <t t-set="text">Submit extra pickups, container swaps, missed collections &amp; service holds</t>
+                    <t t-set="url" t-value="'/my/service-requests'"/>
+                    <t t-set="placeholder_count" t-value="'service_request_count'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Breadcrumb Template Extensions -->
+    <template id="portal_service_request_breadcrumbs" name="Portal Layout Breadcrumbs: Service Requests" inherit_id="portal.portal_breadcrumbs" priority="35">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'service_request' or page_name == 'service_request_form'" class="breadcrumb-item">
+                <a t-if="service_request or page_name == 'service_request_form'" href="/my/service-requests">Service Requests</a>
+                <t t-else="">Service Requests</t>
+            </li>
+            <li t-if="service_request" class="breadcrumb-item active">
+                <t t-out="service_request.name"/>
+            </li>
+            <li t-if="page_name == 'service_request_form'" class="breadcrumb-item active">
+                New Request
+            </li>
+        </xpath>
+    </template>
+
+    <!-- List View Template -->
+    <template id="portal_my_service_requests" name="My Service Requests">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Service Requests</t>
+            </t>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0 text-primary fw-bold">
+                    <i class="fa fa-hand-paper-o me-2"/>Service Requests
+                </h3>
+                <a href="/my/service-requests/new" class="btn btn-primary btn-sm shadow-sm rounded-pill px-3">
+                    <i class="fa fa-plus me-1"/> New Service Request
+                </a>
+            </div>
+
+            <t t-if="not service_requests">
+                <div class="alert alert-info shadow-sm rounded p-4 text-center">
+                    <i class="fa fa-info-circle fa-2x mb-2 text-info"/>
+                    <p class="mb-2 fw-bold">You currently have no service requests.</p>
+                    <p class="text-muted small mb-3">Submit extra pickup requests, container swaps, missed collection reports, or service holds directly online.</p>
+                    <a href="/my/service-requests/new" class="btn btn-outline-primary btn-sm rounded-pill">
+                        Submit a Request Now
+                    </a>
+                </div>
+            </t>
+
+            <t t-if="service_requests">
+                <div class="table-responsive bg-white shadow-sm rounded border">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-uppercase small text-muted">
+                            <tr>
+                                <th>Ref</th>
+                                <th>Type</th>
+                                <th>Requested Date</th>
+                                <th>Location</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="service_requests" t-as="req">
+                                <tr>
+                                    <td>
+                                        <a t-attf-href="/my/service-requests/#{req.id}" class="fw-bold text-decoration-none">
+                                            <t t-out="req.name"/>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            <t t-out="req.get_request_type_display()"/>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span t-field="req.requested_date" t-options='{"widget": "date"}'/>
+                                    </td>
+                                    <td>
+                                        <small t-out="req.collection_point_id.name or 'N/A'"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-if="req.state == 'draft'" class="badge bg-secondary">Draft</span>
+                                        <span t-elif="req.state == 'submitted'" class="badge bg-info text-white">Submitted</span>
+                                        <span t-elif="req.state == 'approved'" class="badge bg-primary">Approved</span>
+                                        <span t-elif="req.state == 'in_progress'" class="badge bg-warning text-dark">In Progress</span>
+                                        <span t-elif="req.state == 'completed'" class="badge bg-success">Completed</span>
+                                        <span t-elif="req.state == 'rejected'" class="badge bg-danger">Rejected</span>
+                                        <span t-elif="req.state == 'cancelled'" class="badge bg-dark">Cancelled</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a t-attf-href="/my/service-requests/#{req.id}" class="btn btn-sm btn-outline-secondary rounded-circle" title="View Details">
+                                            <i class="fa fa-eye"/>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Creation Form Template -->
+    <template id="portal_service_request_form" name="New Service Request Form">
+        <t t-call="portal.portal_layout">
+            <div class="container my-4">
+                <div class="row justify-content-center">
+                    <div class="col-lg-9">
+                        <div class="card shadow-sm border-0 rounded-3">
+                            <div class="card-header bg-primary text-white p-3">
+                                <h4 class="mb-0 fw-bold">
+                                    <i class="fa fa-paper-plane me-2"/>Submit Customer Service Request
+                                </h4>
+                                <small class="text-white-50">Request extra pickups, container swaps, report missed collections, or pause service.</small>
+                            </div>
+                            <div class="card-body p-4">
+                                <div t-if="error" class="alert alert-danger mb-4" role="alert">
+                                    <t t-if="error == 'missing_mandatory'">Please fill in the collection site and the requested date.</t>
+                                    <t t-else="">Your request could not be submitted. Please check the selected options and dates, then try again.</t>
+                                </div>
+                                <form action="/my/service-requests/submit" method="post" class="needs-validation">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                    <div class="mb-4">
+                                        <label for="request_type" class="form-label fw-bold">Request Type <span class="text-danger">*</span></label>
+                                        <select class="form-select form-control" id="request_type" name="request_type" required="required">
+                                            <option value="extra_pickup" selected="selected">Extra / Bulky Pickup Request</option>
+                                            <option value="container_swap">Container Swap / Resize Request</option>
+                                            <option value="missed_collection">Report Missed Collection</option>
+                                            <option value="service_hold">Temporary Service Hold / Pause</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label for="contract_id" class="form-label fw-bold">Service Contract</label>
+                                            <select class="form-select form-control" id="contract_id" name="contract_id">
+                                                <option value="">-- Select Contract (Optional) --</option>
+                                                <t t-foreach="contracts" t-as="c">
+                                                    <option t-att-value="c.id"><t t-out="c.name"/></option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="collection_point_id" class="form-label fw-bold">Site / Location <span class="text-danger">*</span></label>
+                                            <select class="form-select form-control" id="collection_point_id" name="collection_point_id" required="required">
+                                                <option value="">-- Select Site Location --</option>
+                                                <t t-foreach="collection_points" t-as="cp">
+                                                    <option t-att-value="cp.id"><t t-out="cp.name"/></option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Dynamic Extra Pickup Field -->
+                                    <div id="field_category" class="mb-3">
+                                        <label for="category_id" class="form-label fw-bold">Waste Material Category</label>
+                                        <select class="form-select form-control" id="category_id" name="category_id">
+                                            <option value="">-- Select Category --</option>
+                                            <t t-foreach="categories" t-as="cat">
+                                                <option t-att-value="cat.id"><t t-out="cat.name"/></option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <!-- Dynamic Container Swap Field -->
+                                    <div id="field_container_type" class="mb-3 d-none">
+                                        <label for="container_type_id" class="form-label fw-bold">Desired Container Type</label>
+                                        <select class="form-select form-control" id="container_type_id" name="container_type_id">
+                                            <option value="">-- Select Container Type --</option>
+                                            <t t-foreach="container_types" t-as="ct">
+                                                <option t-att-value="ct.id"><t t-out="ct.name"/></option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <!-- Requested Date -->
+                                    <div id="field_requested_date" class="mb-3">
+                                        <label for="requested_date" class="form-label fw-bold">Requested Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="requested_date" name="requested_date" required="required"/>
+                                    </div>
+
+                                    <!-- Dynamic Service Hold Dates -->
+                                    <div id="field_service_hold_dates" class="row g-3 mb-3 d-none">
+                                        <div class="col-md-6">
+                                            <label for="hold_start_date" class="form-label fw-bold">Hold Start Date</label>
+                                            <input type="date" class="form-control" id="hold_start_date" name="hold_start_date"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="hold_end_date" class="form-label fw-bold">Hold End Date</label>
+                                            <input type="date" class="form-control" id="hold_end_date" name="hold_end_date"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Additional Notes -->
+                                    <div class="mb-4">
+                                        <label for="notes" class="form-label fw-bold">Additional Notes / Instructions</label>
+                                        <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Provide any additional details or special access instructions..."></textarea>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="/my/service-requests" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                                        <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                                            Submit Request <i class="fa fa-arrow-right ms-1"/>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Detail View Template -->
+    <template id="portal_my_service_request_detail" name="Service Request Detail">
+        <t t-call="portal.portal_layout">
+            <div class="container my-4">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <t t-if="success == 'submitted'">
+                            <div class="alert alert-success alert-dismissible fade show shadow-sm rounded mb-4" role="alert">
+                                <i class="fa fa-check-circle me-2"/> <strong>Success!</strong> Your service request has been submitted to operations.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </t>
+                        <t t-if="success == 'cancelled'">
+                            <div class="alert alert-warning alert-dismissible fade show shadow-sm rounded mb-4" role="alert">
+                                <i class="fa fa-info-circle me-2"/> Service request cancelled.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </t>
+
+                        <div class="card shadow-sm border-0 rounded-3 mb-4">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center p-3">
+                                <h4 class="mb-0 fw-bold text-primary">
+                                    <i class="fa fa-file-text-o me-2"/><t t-out="service_request.name"/>
+                                </h4>
+                                <div>
+                                    <span t-if="service_request.state == 'draft'" class="badge bg-secondary p-2">Draft</span>
+                                    <span t-elif="service_request.state == 'submitted'" class="badge bg-info text-white p-2">Submitted</span>
+                                    <span t-elif="service_request.state == 'approved'" class="badge bg-primary p-2">Approved</span>
+                                    <span t-elif="service_request.state == 'in_progress'" class="badge bg-warning text-dark p-2">In Progress</span>
+                                    <span t-elif="service_request.state == 'completed'" class="badge bg-success p-2">Completed</span>
+                                    <span t-elif="service_request.state == 'rejected'" class="badge bg-danger p-2">Rejected</span>
+                                    <span t-elif="service_request.state == 'cancelled'" class="badge bg-dark p-2">Cancelled</span>
+                                </div>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Request Summary</h6>
+                                        <table class="table table-sm table-borderless">
+                                            <tr>
+                                                <th class="text-muted w-50">Type:</th>
+                                                <td class="fw-bold"><t t-out="service_request.get_request_type_display()"/></td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-muted">Requested Date:</th>
+                                                <td><span t-field="service_request.requested_date" t-options='{"widget": "date"}'/></td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-muted">Contract:</th>
+                                                <td><t t-out="service_request.contract_id.name or 'N/A'"/></td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-muted">Site Location:</th>
+                                                <td><t t-out="service_request.collection_point_id.name or 'N/A'"/></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Details &amp; Linked Operations</h6>
+                                        <table class="table table-sm table-borderless">
+                                            <t t-if="service_request.request_type == 'extra_pickup'">
+                                                <tr>
+                                                    <th class="text-muted w-50">Waste Category:</th>
+                                                    <td><t t-out="service_request.category_id.name or 'N/A'"/></td>
+                                                </tr>
+                                            </t>
+                                            <t t-if="service_request.request_type == 'container_swap'">
+                                                <tr>
+                                                    <th class="text-muted w-50">New Container Type:</th>
+                                                    <td><t t-out="service_request.container_type_id.name or 'N/A'"/></td>
+                                                </tr>
+                                            </t>
+                                            <t t-if="service_request.request_type == 'service_hold'">
+                                                <tr>
+                                                    <th class="text-muted w-50">Hold Start Date:</th>
+                                                    <td><span t-field="service_request.hold_start_date" t-options='{"widget": "date"}'/></td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-muted">Hold End Date:</th>
+                                                    <td><span t-field="service_request.hold_end_date" t-options='{"widget": "date"}'/></td>
+                                                </tr>
+                                            </t>
+                                            <tr t-if="service_request.collection_order_id">
+                                                <th class="text-muted">Generated Order:</th>
+                                                <td>
+                                                    <a t-attf-href="/my/collection/orders/#{service_request.collection_order_id.id}" class="badge bg-light text-primary border">
+                                                        <t t-out="service_request.collection_order_id.name"/>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="card mb-4 border-info" t-if="'active_subscription_id' in service_request._fields and service_request.active_subscription_id">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="text-primary fw-bold mb-1">
+                                                    <i class="fa fa-star text-warning me-1"/> Active Subscriber Perks Applied
+                                                </h6>
+                                                <small class="text-muted">Plan: <t t-out="service_request.active_subscription_id.plan_id.name"/></small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span t-if="service_request.subscriber_discount_pct &gt; 0" class="badge bg-success p-2">
+                                                    <t t-out="service_request.subscriber_discount_pct"/>% Discount Applied
+                                                </span>
+                                                <span t-if="service_request.is_free_swap" class="badge bg-success p-2">
+                                                    Free Container Swap Included
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <hr class="my-2"/>
+                                        <div class="row text-center mt-2">
+                                            <div class="col-4">
+                                                <small class="text-muted d-block">Standard Price</small>
+                                                <strong><span t-field="service_request.base_estimated_price" t-options='{"widget": "monetary", "display_currency": service_request.currency_id}'/></strong>
+                                            </div>
+                                            <div class="col-4">
+                                                <small class="text-muted d-block">Subscriber Savings</small>
+                                                <strong class="text-success">-<span t-field="service_request.discount_amount" t-options='{"widget": "monetary", "display_currency": service_request.currency_id}'/></strong>
+                                            </div>
+                                            <div class="col-4">
+                                                <small class="text-muted d-block">Final Estimated Price</small>
+                                                <strong class="text-primary fs-6"><span t-field="service_request.final_estimated_price" t-options='{"widget": "monetary", "display_currency": service_request.currency_id}'/></strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr class="my-4"/>
+
+                                <div class="mb-4">
+                                    <h6 class="text-uppercase text-muted small fw-bold mb-2">Customer Instructions / Notes</h6>
+                                    <div class="p-3 bg-light rounded border text-muted">
+                                        <t t-out="service_request.notes or 'No additional notes provided.'"/>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="/my/service-requests" class="btn btn-outline-secondary rounded-pill px-4">
+                                        <i class="fa fa-arrow-left me-1"/> Back to Service Requests
+                                    </a>
+                                    <t t-if="service_request.state in ('draft', 'submitted')">
+                                        <form t-attf-action="/my/service-requests/#{service_request.id}/cancel" method="post" class="d-inline">
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            <button type="submit" class="btn btn-outline-danger rounded-pill px-4 js_confirm_cancel" data-confirm-message="Are you sure you want to cancel this service request?">
+                                                <i class="fa fa-times me-1"/> Cancel Request
+                                            </button>
+                                        </form>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

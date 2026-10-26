@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,13 +18,13 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
+import unittest
 import logging
 from datetime import date, timedelta
 
 from odoo import fields
 from odoo.exceptions import ValidationError
-from odoo.tests import tagged, TransactionCase
-
+from odoo.tests import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -40,6 +39,8 @@ class TestFullRouteWorkflow(TransactionCase):
         Set up test class fixtures and environment.
         """
         super().setUpClass()
+        if 'wm.sla' not in cls.env:
+            raise unittest.SkipTest("Needs the wm_contracts_billing module")
         cls.category_paper = cls.env['wm.waste.category'].create({
             'name': 'Recyclable Paper Stream',
             'code': 'RPAPER',
@@ -56,16 +57,19 @@ class TestFullRouteWorkflow(TransactionCase):
 
         # 1. Create Partner Contract
         today = date.today()
+        sla = cls.env['wm.sla'].search([], limit=1) or cls.env['wm.sla'].create({'name': 'Standard SLA'})
         cls.contract = cls.env['wm.partner.contract'].create({
             'name': 'CNT-WORKFLOW-001',
             'partner_id': cls.partner.id,
+            'sla_id': sla.id,
+            'frequency': 'monthly',
+            'no_of_frequency': 1,
             'from_date': today - timedelta(days=30),
             'to_date': today + timedelta(days=335),
-            'billing_mode': 'monthly_run',
+            'billing_basis': 'category_rate',
             'contract_line_ids': [(0, 0, {
-                'waste_category_id': cls.category_paper.id,
-                'weight': 100.0,
-                'price_per_kg': 0.75,
+                'category_id': cls.category_paper.id,
+                'price': 0.75,
             })],
         })
 
@@ -94,7 +98,6 @@ class TestFullRouteWorkflow(TransactionCase):
         cls.env['wm.vehicle.maintenance.checklist'].create({
             'name': 'PRE-TRIP-WF-TEST',
             'vehicle_id': cls.vehicle.id,
-            'route_id': cls.route.id,
             'checklist_type': 'pre_trip',
             'state': 'checked',
         })
@@ -188,9 +191,9 @@ class TestFullRouteWorkflow(TransactionCase):
             'period_end': today + timedelta(days=5),
         })
         billing_run.action_run_billing()
-        self.assertEqual(billing_run.state, 'completed')
+        self.assertEqual(billing_run.state, 'done')
 
         # Verify generated Invoice
         invoice = self.env['account.move'].search([('partner_id', '=', self.partner.id)])
         self.assertTrue(invoice, "Invoice must be generated for completed collection order in billing run")
-        self.assertEqual(order.billing_run_line_id.billing_run_id.id, billing_run.id)
+        self.assertEqual(order.billing_run_line_id.run_id.id, billing_run.id)

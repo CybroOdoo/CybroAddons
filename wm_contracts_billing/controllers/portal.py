@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,29 +22,31 @@ import base64
 from datetime import date, datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
-from odoo import http, _
-from odoo.addons.portal.controllers.portal import CustomerPortal
+
+from odoo import _, http
 from odoo.http import request
+
+from odoo.addons.portal.controllers.portal import CustomerPortal
 
 
 class WmPortalController(CustomerPortal):
-    """Extends Customer Portal with waste management contracts and service subscription views."""
+    """Extends Customer Portal with waste management contracts and collection order views."""
 
     def _prepare_portal_layout_values(self):
         """
         Prepare values for the main portal layout page, including counts of
-        contracts, collection orders, and subscriptions.
+        contracts, collection orders, and service requests.
         """
         values = super()._prepare_portal_layout_values()
         partner = request.env.user.partner_id
 
         has_collection = 'wm.collection.order' in request.env
         has_customer = 'wm.partner.contract' in request.env
-        has_subscription = 'wm.subscription' in request.env
+        has_service_request = 'wm.portal.service.request' in request.env
 
         values['has_collection_module'] = has_collection
         values['has_customer_module'] = has_customer
-        values['has_subscription_module'] = has_subscription
+        values['has_service_request_module'] = has_service_request
 
         if has_collection:
             values['collection_order_count'] = request.env['wm.collection.order'].sudo().search_count([
@@ -53,13 +54,33 @@ class WmPortalController(CustomerPortal):
             ])
         if has_customer:
             values['contract_count'] = request.env['wm.partner.contract'].sudo().search_count([
-                ('partner_id', '=', partner.id)
+                ('partner_id', '=', partner.id),
+                ('state', '!=', 'draft'),
             ])
-        if has_subscription:
-            values['subscription_count'] = request.env['wm.subscription'].sudo().search_count([
+        if has_service_request:
+            values['service_request_count'] = request.env['wm.portal.service.request'].sudo().search_count([
                 ('partner_id', '=', partner.id)
             ])
 
+        return values
+
+    def _prepare_home_portal_values(self, counters):
+        """Record counts shown as badges on the /my portal home cards."""
+        values = super()._prepare_home_portal_values(counters)
+        partner = request.env.user.partner_id
+        if 'collection_order_count' in counters and 'wm.collection.order' in request.env:
+            values['collection_order_count'] = request.env['wm.collection.order'].sudo().search_count([
+                ('partner_id', '=', partner.id)
+            ])
+        if 'contract_count' in counters and 'wm.partner.contract' in request.env:
+            values['contract_count'] = request.env['wm.partner.contract'].sudo().search_count([
+                ('partner_id', '=', partner.id),
+                ('state', '!=', 'draft'),
+            ])
+        if 'service_request_count' in counters and 'wm.portal.service.request' in request.env:
+            values['service_request_count'] = request.env['wm.portal.service.request'].sudo().search_count([
+                ('partner_id', '=', partner.id)
+            ])
         return values
 
     @http.route(['/my/collection/orders', '/my/collection/orders/page/<int:page>'], type='http', auth="user", website=True)
@@ -144,7 +165,8 @@ class WmPortalController(CustomerPortal):
             return request.not_found()
         partner = request.env.user.partner_id
         Contract = request.env['wm.partner.contract'].sudo()
-        domain = [('partner_id', '=', partner.id)]
+        # Draft contracts are internal until they are sent to the customer
+        domain = [('partner_id', '=', partner.id), ('state', '!=', 'draft')]
 
         contracts_count = Contract.search_count(domain)
         pager = request.website.pager(
@@ -172,11 +194,11 @@ class WmPortalController(CustomerPortal):
             return request.not_found()
         partner = request.env.user.partner_id
         contract = request.env['wm.partner.contract'].sudo().browse(contract_id).exists()
-        if not contract or contract.partner_id != partner:
+        if not contract or contract.partner_id != partner or contract.state == 'draft':
             return request.not_found()
 
         sign_url = False
-        if contract.state in ('draft', 'sent') and hasattr(contract, 'get_portal_signature_url'):
+        if contract.state == 'sent' and hasattr(contract, 'get_portal_signature_url'):
             sign_url = contract.get_portal_signature_url()
 
         return request.render('wm_contracts_billing.portal_my_contract_detail', {
@@ -195,7 +217,7 @@ class WmPortalController(CustomerPortal):
             return request.not_found()
         partner = request.env.user.partner_id
         contract = request.env['wm.partner.contract'].sudo().browse(contract_id).exists()
-        if not contract or contract.partner_id != partner:
+        if not contract or contract.partner_id != partner or contract.state == 'draft':
             return request.not_found()
 
         pdf = False
@@ -231,10 +253,14 @@ class WmPortalController(CustomerPortal):
             return request.not_found()
         partner = request.env.user.partner_id
         contract = request.env['wm.partner.contract'].sudo().browse(contract_id).exists()
-        if not contract or contract.partner_id != partner:
+        if not contract or contract.partner_id != partner or contract.state == 'draft':
             return request.not_found()
 
-        if contract.state in ('draft', 'sent', 'signed', 'confirmed', 'ongoing'):
+        # A running contract has live collections, invoices and subscriptions:
+        # the customer cannot terminate it unilaterally from the portal.
+        if contract.state == 'ongoing':
+            return request.redirect('/my/contracts/%s?error=cancel_not_allowed' % contract.id)
+        if contract.state in ('sent', 'signed', 'confirmed'):
             reason_msg = cancel_reason or _('Cancelled by customer via Website Portal')
             contract.action_cancel()
             contract.message_post(body=_("Contract cancelled by customer via portal. Reason: %s") % reason_msg)
@@ -258,191 +284,183 @@ class WmPortalController(CustomerPortal):
             order.message_post(body=_("Collection order cancelled by customer via portal. Reason: %s") % reason_msg)
         return request.redirect('/my/collection/orders/%s?success=cancelled' % order.id)
 
-    @http.route(['/my/subscriptions', '/my/subscriptions/page/<int:page>'], type='http', auth="user", website=True)
-    def portal_my_subscriptions(self, page=1, **kw):
+    @http.route(['/my/service-requests', '/my/service-requests/page/<int:page>'], type='http', auth="user", website=True)
+    def portal_my_service_requests(self, page=1, **kw):
         """
-        Render the customer subscriptions list page with active subscriptions
-        prioritized on top.
+        Render customer service requests list page with pagination.
         """
-        if 'wm.subscription' not in request.env:
+        if 'wm.portal.service.request' not in request.env:
             return request.not_found()
         partner = request.env.user.partner_id
-        Subscription = request.env['wm.subscription'].sudo()
+        ReqModel = request.env['wm.portal.service.request'].sudo()
         domain = [('partner_id', '=', partner.id)]
 
-        all_subscriptions = Subscription.search(domain)
-        sorted_subscriptions = all_subscriptions.sorted(
-            key=lambda s: (0 if s.state == 'active' else 1, -(s.id or 0))
-        )
-
-        subscriptions_count = len(sorted_subscriptions)
+        count = ReqModel.search_count(domain)
         pager = request.website.pager(
-            url="/my/subscriptions",
-            total=subscriptions_count,
+            url="/my/service-requests",
+            total=count,
             page=page,
             step=10
         )
+        reqs = ReqModel.search(domain, order='create_date desc', limit=10, offset=pager['offset'])
 
-        offset = pager['offset']
-        subscriptions = sorted_subscriptions[offset:offset + 10]
-
-        return request.render('wm_contracts_billing.portal_my_subscriptions', {
-            'subscriptions': subscriptions,
-            'page_name': 'subscription',
+        return request.render('wm_contracts_billing.portal_my_service_requests', {
+            'service_requests': reqs,
+            'page_name': 'service_request',
             'pager': pager,
-            'default_url': '/my/subscriptions',
+            'default_url': '/my/service-requests',
         })
 
-    @http.route(['/my/subscriptions/<int:subscription_id>'], type='http', auth="user", website=True)
-    def portal_my_subscription_detail(self, subscription_id, **kw):
+    @http.route(['/my/service-requests/new'], type='http', auth="user", website=True)
+    def portal_new_service_request_form(self, **kw):
         """
-        Render the detail view page for a specific subscription.
+        Render service request creation form for portal customer.
         """
-        if 'wm.subscription' not in request.env:
-            return request.not_found()
         partner = request.env.user.partner_id
-        subscription = request.env['wm.subscription'].sudo().browse(subscription_id).exists()
-        if not subscription or subscription.partner_id != partner:
-            return request.not_found()
-
-        return request.render('wm_contracts_billing.portal_my_subscription_detail', {
-            'subscription': subscription,
-            'page_name': 'subscription',
-        })
-
-    @http.route(['/my/subscriptions/<int:subscription_id>/pdf'], type='http', auth="user", website=True)
-    def portal_my_subscription_pdf(self, subscription_id, **kw):
-        """
-        Download the PDF report of a specific subscription.
-        """
-        if 'wm.subscription' not in request.env:
-            return request.not_found()
-        partner = request.env.user.partner_id
-        subscription = request.env['wm.subscription'].sudo().browse(subscription_id).exists()
-        if not subscription or subscription.partner_id != partner:
-            return request.not_found()
-
-        pdf, _unused = request.env['ir.actions.report'].sudo()._render_qweb_pdf(
-            'wm_subscription.report_subscription_document', [subscription.id]
-        )
-        pdfhttpheaders = [
-            ('Content-Type', 'application/pdf'),
-            ('Content-Length', len(pdf)),
-            ('Content-Disposition', 'attachment; filename="%s.pdf"' % subscription.name)
-        ]
-        response = request.make_response(pdf, headers=pdfhttpheaders)
-        download_token = kw.get('downloadToken')
-        if download_token:
-            response.set_cookie('fileDownloadToken', download_token, max_age=30)
-        return response
-
-    @http.route(['/my/subscriptions/<int:subscription_id>/cancel'], type='http', auth="user", methods=['POST'], website=True, csrf=True)
-    def portal_cancel_subscription(self, subscription_id, cancel_reason=None, **kw):
-        """
-        Customer self-service subscription cancellation from portal.
-        """
-        if 'wm.subscription' not in request.env:
-            return request.not_found()
-        partner = request.env.user.partner_id
-        subscription = request.env['wm.subscription'].sudo().browse(subscription_id).exists()
-        if not subscription or subscription.partner_id != partner:
-            return request.not_found()
-
-        if subscription.state in ['active', 'draft', 'paused']:
-            subscription.action_cancel(reason=cancel_reason or 'Cancelled by customer via Website Portal')
-        return request.redirect('/my/subscriptions/%s?success=cancelled' % subscription.id)
-
-    @http.route(['/my/subscriptions/new'], type='http', auth="user", website=True)
-    def portal_create_subscription(self, **kw):
-        """
-        Handle the portal contract subscription form submission, validate the
-        incoming parameters, and create a new contract or service request
-        record on behalf of the portal user.
-        """
-        if 'wm.subscription' not in request.env:
-            return request.not_found()
-        partner = request.env.user.partner_id
-        plans = request.env['wm.subscription.plan'].sudo().search([('active', '=', True)])
-
-        collection_points = []
-        if 'wm.collection.point' in request.env:
-            active_subs = request.env['wm.subscription'].sudo().search([
-                ('partner_id', '=', partner.id),
-                ('state', '=', 'active'),
-            ])
-            active_point_ids = active_subs.mapped('collection_point_id').ids
-            collection_points = request.env['wm.collection.point'].sudo().search([
-                ('partner_id', '=', partner.id),
-                ('id', 'not in', active_point_ids)
-            ])
-
-        today_date = date.today().strftime('%Y-%m-%d')
-
-        return request.render('wm_contracts_billing.portal_create_subscription_template', {
-            'partner': partner,
-            'plans': plans,
-            'collection_points': collection_points,
-            'today_date': today_date,
-            'error': kw.get('error'),
-            'is_sub_request_page': True,
-            'page_name': 'subscription',
-        })
-
-    @http.route(['/my/subscriptions/submit'], type='http', auth="user", methods=['POST'], website=True, csrf=True)
-    def portal_submit_subscription(self, plan_id=None, collection_point_id=None, start_date=None, end_date=None, auto_renew=None, **post):
-        """
-        Process subscription creation submission from portal.
-        """
-        if 'wm.subscription' not in request.env:
-            return request.not_found()
-        partner = request.env.user.partner_id
-
-        if not plan_id or not collection_point_id or not start_date or not end_date:
-            return request.redirect('/my/subscriptions/new?error=missing_fields')
-
-        try:
-            start_d = datetime.strptime(start_date, '%Y-%m-%d').date()
-            end_d = datetime.strptime(end_date, '%Y-%m-%d').date()
-        except ValueError:
-            return request.redirect('/my/subscriptions/new?error=missing_fields')
-
-        if end_d <= start_d:
-            return request.redirect('/my/subscriptions/new?error=invalid_dates')
-
-        try:
-            plan_id_int = int(plan_id)
-            point_id_int = int(collection_point_id)
-        except (ValueError, TypeError):
-            return request.redirect('/my/subscriptions/new?error=missing_fields')
-
-        plan = request.env['wm.subscription.plan'].sudo().browse(plan_id_int).exists()
-        if not plan or not plan.active:
-            return request.redirect('/my/subscriptions/new?error=invalid_plan')
-
-        point = request.env['wm.collection.point'].sudo().browse(point_id_int).exists() if 'wm.collection.point' in request.env else False
-        if not point or point.partner_id != partner:
-            return request.redirect('/my/subscriptions/new?error=invalid_point')
-
-        active_sub_count = request.env['wm.subscription'].sudo().search_count([
-            ('collection_point_id', '=', point.id),
-            ('state', '=', 'active'),
+        contracts = request.env['wm.partner.contract'].sudo().search([
+            ('partner_id', '=', partner.id),
+            ('state', 'in', ['ongoing', 'confirmed'])
         ])
-        if active_sub_count:
-            return request.redirect('/my/subscriptions/new?error=active_point_subscription')
+        collection_points = request.env['wm.collection.point'].sudo().search([
+            ('partner_id', '=', partner.id)
+        ])
+        categories = request.env['wm.waste.category'].sudo().search([])
+        container_types = request.env['wm.container.type'].sudo().search([])
 
-        sub_vals = {
+        return request.render('wm_contracts_billing.portal_service_request_form', {
+            'page_name': 'service_request_form',
+            'contracts': contracts,
+            'collection_points': collection_points,
+            'categories': categories,
+            'container_types': container_types,
+            'error': kw.get('error'),
+        })
+
+    @http.route(['/my/service-requests/submit'], type='http', auth="user", methods=['POST'], website=True, csrf=True)
+    def portal_submit_service_request(self, **post):
+        """
+        Handle portal service request form submission.
+        """
+        if 'wm.portal.service.request' not in request.env:
+            return request.not_found()
+        partner = request.env.user.partner_id
+        req_type = post.get('request_type', 'extra_pickup')
+        request_types = dict(request.env['wm.portal.service.request']._fields['request_type'].selection)
+        if req_type not in request_types:
+            return request.redirect('/my/service-requests/new?error=invalid_selection')
+
+        if not post.get('collection_point_id') or not post.get('requested_date'):
+            return request.redirect('/my/service-requests/new?error=missing_mandatory')
+
+        def _to_date(key):
+            value = post.get(key)
+            if not value:
+                return False
+            try:
+                return datetime.strptime(value, '%Y-%m-%d').date()
+            except (TypeError, ValueError):
+                return None
+
+        requested_date = _to_date('requested_date')
+        hold_start_date = _to_date('hold_start_date')
+        hold_end_date = _to_date('hold_end_date')
+        if None in (requested_date, hold_start_date, hold_end_date):
+            return request.redirect('/my/service-requests/new?error=invalid_selection')
+        if hold_start_date and hold_end_date and hold_end_date < hold_start_date:
+            return request.redirect('/my/service-requests/new?error=invalid_selection')
+
+        def _to_id(key):
+            try:
+                return int(post[key]) if post.get(key) else False
+            except (TypeError, ValueError):
+                return False
+
+        # Only accept the customer's own contracts and sites (the same records
+        # offered by the form); the ids come straight from the POST body.
+        contract_id = _to_id('contract_id')
+        collection_point_id = _to_id('collection_point_id')
+        if contract_id and not request.env['wm.partner.contract'].sudo().search_count([
+            ('id', '=', contract_id),
+            ('partner_id', '=', partner.id),
+            ('state', 'in', ['ongoing', 'confirmed']),
+        ]):
+            return request.redirect('/my/service-requests/new?error=invalid_selection')
+        if not collection_point_id or not request.env['wm.collection.point'].sudo().search_count([
+            ('id', '=', collection_point_id),
+            ('partner_id', '=', partner.id),
+        ]):
+            return request.redirect('/my/service-requests/new?error=invalid_selection')
+        category_id = _to_id('category_id')
+        if category_id and not request.env['wm.waste.category'].sudo().browse(category_id).exists():
+            category_id = False
+        container_type_id = _to_id('container_type_id')
+        if container_type_id and not request.env['wm.container.type'].sudo().browse(container_type_id).exists():
+            container_type_id = False
+
+        vals = {
             'partner_id': partner.id,
-            'plan_id': plan.id,
-            'collection_point_id': point.id,
-            'start_date': start_date,
-            'end_date': end_date,
-            'price': plan.price,
-            'auto_renew': bool(auto_renew),
-            'state': 'draft',
+            'request_type': req_type,
+            'contract_id': contract_id,
+            'collection_point_id': collection_point_id,
+            'category_id': category_id,
+            'container_type_id': container_type_id,
+            'requested_date': requested_date,
+            'hold_start_date': hold_start_date,
+            'hold_end_date': hold_end_date,
+            'notes': post.get('notes') or '',
         }
-        subscription = request.env['wm.subscription'].sudo().create(sub_vals)
+        # Created as draft so action_submit() moves it to submitted and
+        # notifies the managers.
+        new_req = request.env['wm.portal.service.request'].sudo().create(vals)
+        new_req.action_submit()
+        return request.redirect('/my/service-requests/%s?success=submitted' % new_req.id)
 
-        return request.redirect('/my/subscriptions/%s?success=created' % subscription.id)
+    @http.route(['/my/service-requests/<int:request_id>'], type='http', auth="user", website=True)
+    def portal_my_service_request_detail(self, request_id, **kw):
+        """
+        Render detail view for specific service request.
+        """
+        if 'wm.portal.service.request' not in request.env:
+            return request.not_found()
+        partner = request.env.user.partner_id
+        req_rec = request.env['wm.portal.service.request'].sudo().browse(request_id).exists()
+        if not req_rec or req_rec.partner_id != partner:
+            return request.not_found()
+
+        return request.render('wm_contracts_billing.portal_my_service_request_detail', {
+            'service_request': req_rec,
+            'page_name': 'service_request',
+            'success': kw.get('success'),
+        })
+
+    @http.route(['/my/service-requests/<int:request_id>/cancel'], type='http', auth="user", methods=['POST'], website=True, csrf=True)
+    def portal_cancel_service_request(self, request_id, **kw):
+        """
+        Cancel customer service request from portal.
+        """
+        if 'wm.portal.service.request' not in request.env:
+            return request.not_found()
+        partner = request.env.user.partner_id
+        req_rec = request.env['wm.portal.service.request'].sudo().browse(request_id).exists()
+        if not req_rec or req_rec.partner_id != partner:
+            return request.not_found()
+
+        if req_rec.state in ('draft', 'submitted'):
+            req_rec.action_cancel()
+        return request.redirect('/my/service-requests/%s?success=cancelled' % req_rec.id)
+
+    @staticmethod
+    def _wm_line_is_diverted(line, category):
+        """Return True when a collection line's weight counts as diverted
+        from landfill: the material product's ``recyclable`` flag when a
+        product is set, otherwise the category's default processing method:
+        only 'recycle' and 'compost' count as diverted ('sort', 'dispose',
+        'hazardous_treatment' and an unset method do not)."""
+        if line.product_id:
+            return bool(line.product_id.recyclable)
+        if category:
+            return category.default_processing in ('recycle', 'compost')
+        return False
 
     @http.route(['/my/collection/dashboard'], type='http', auth="user", website=True)
     def portal_my_collection_dashboard(self, date_start=None, date_end=None, preset='last_90',
@@ -455,9 +473,22 @@ class WmPortalController(CustomerPortal):
             return request.not_found()
         partner = request.env.user.partner_id
         today = date.today()
-        _month_names = ['January', 'February', 'March', 'April', 'May', 'June',
-                        'July', 'August', 'September', 'October', 'November', 'December']
+        _month_names = [_('January'), _('February'), _('March'), _('April'), _('May'), _('June'),
+                        _('July'), _('August'), _('September'), _('October'), _('November'), _('December')]
         all_time = False
+
+        def _bounded_int(value, low, high):
+            """Return the integer value when within [low, high], else None."""
+            try:
+                value = int(value)
+            except (TypeError, ValueError):
+                return None
+            return value if low <= value <= high else None
+
+        # Ignore out-of-range period parameters instead of failing with an error
+        period_year = _bounded_int(period_year, 1970, 2100)
+        period_month = _bounded_int(period_month, 1, 12)
+        period_quarter = _bounded_int(period_quarter, 1, 4)
 
         if preset == 'today':
             start_dt, end_dt = today, today
@@ -509,10 +540,10 @@ class WmPortalController(CustomerPortal):
 
         # ── Human-readable label ──────────────────────────────────────────
         _simple_labels = {
-            'today': 'Today', 'yesterday': 'Yesterday',
-            'last_7': 'Last 7 Days', 'last_30': 'Last 30 Days', 'last_90': 'Last 90 Days',
-            'month_to_date': 'Month to Date', 'last_month': 'Last Month',
-            'ytd': 'Year to Date', 'last_12': 'Last 12 Months', 'all_time': 'All time',
+            'today': _('Today'), 'yesterday': _('Yesterday'),
+            'last_7': _('Last 7 Days'), 'last_30': _('Last 30 Days'), 'last_90': _('Last 90 Days'),
+            'month_to_date': _('Month to Date'), 'last_month': _('Last Month'),
+            'ytd': _('Year to Date'), 'last_12': _('Last 12 Months'), 'all_time': _('All Time'),
         }
         if preset in _simple_labels:
             range_label = _simple_labels[preset]
@@ -596,8 +627,16 @@ class WmPortalController(CustomerPortal):
         total_spent = sum(completed_orders.mapped('order_line_ids').mapped('total_amount'))
 
         category_data = {}
+        recycled_weight = 0.0
+        co2_avoided_tons = 0.0
+
         for line in completed_orders.mapped('order_line_ids'):
             cat = getattr(line, 'category_id', False) or (line.product_id.wm_waste_category_id if line.product_id else False)
+            warm_factor = getattr(cat, 'warm_factor_co2', 1.50) if cat else 1.50
+            if self._wm_line_is_diverted(line, cat):
+                recycled_weight += line.weight
+            co2_avoided_tons += (line.weight / 1000.0) * warm_factor
+
             if cat:
                 c_id = cat.id
                 category_data.setdefault(c_id, {'name': cat.name, 'weight': 0.0, 'amount': 0.0})
@@ -608,6 +647,10 @@ class WmPortalController(CustomerPortal):
                 category_data.setdefault(p_id, {'name': line.product_id.name, 'weight': 0.0, 'amount': 0.0})
                 category_data[p_id]['weight'] += line.weight
                 category_data[p_id]['amount'] += line.total_amount
+
+        landfill_diversion_pct = (recycled_weight / total_weight * 100.0) if total_weight > 0 else 0.0
+        trees_equivalent = int(round(co2_avoided_tons * 16.5))
+        vehicles_equivalent = int(round(co2_avoided_tons * 0.22))
 
         category_list = sorted(category_data.values(), key=lambda x: x['weight'], reverse=True)
         for cat in category_list:
@@ -623,8 +666,8 @@ class WmPortalController(CustomerPortal):
         point_list = sorted(point_data.values(), key=lambda x: x['weight'], reverse=True)
 
         status_counts = {
-            'draft': 0, 'dispatched': 0, 'in_progress': 0,
-            'completed': 0, 'signed': 0, 'invoiced': 0, 'missed': 0,
+            'draft': 0, 'scheduled': 0, 'dispatched': 0, 'in_progress': 0,
+            'completed': 0, 'signed': 0, 'invoiced': 0, 'missed': 0, 'cancelled': 0,
         }
         for o in orders:
             if o.state in status_counts:
@@ -638,6 +681,11 @@ class WmPortalController(CustomerPortal):
             'total_weight': round(total_weight, 2),
             'avg_weight': round(avg_weight, 2),
             'total_spent': round(total_spent, 2),
+            'co2_avoided_tons': round(co2_avoided_tons, 3),
+            'landfill_diversion_pct': round(landfill_diversion_pct, 1),
+            'trees_equivalent': trees_equivalent,
+            'vehicles_equivalent': vehicles_equivalent,
+            'recycled_weight': round(recycled_weight, 2),
             'categories': category_list,
             'collection_points': point_list,
             'status_counts': status_counts,

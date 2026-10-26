@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 
 
 class SaleOrder(models.Model):
@@ -49,7 +48,7 @@ class SaleOrder(models.Model):
     def _action_confirm(self):
         """
         On confirmation, if this quotation originated from a WM
-        opportunity with waste category lines, schedule an activity         on
+        opportunity with waste category lines, schedule an activity on
         the lead for contract creation.
         """
         result = super()._action_confirm()
@@ -88,7 +87,6 @@ class SaleOrder(models.Model):
                 'default_partner_id': self.partner_id.id,
                 'default_frequency': lead.wm_frequency or 'weekly' if lead else 'weekly',
                 'default_service_type': lead.wm_service_type or 'collection' if lead else 'collection',
-                'default_fixed_price': self.amount_total,
                 'default_has_existing_contract': bool(existing),
                 'default_existing_contract_name': existing.name if existing else '',
             },

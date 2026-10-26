@@ -1,75 +1,77 @@
-/** @odoo-module */
-import publicWidget from "@web/legacy/js/public/public_widget";
+import { Interaction } from "@web/public/interaction";
+import { registry } from "@web/core/registry";
+import { _t } from "@web/core/l10n/translation";
 
-publicWidget.registry.PortalPDFDownload = publicWidget.Widget.extend({
-    selector: '.js_download_pdf',
-    events: {
-        'click': '_onClickDownload',
-    },
+const DOWNLOAD_TIMEOUT_ATTEMPTS = 120; // 60 seconds (120 * 500ms)
 
-    _onClickDownload: function (ev) {
-        ev.preventDefault();
-        const url = this.el.getAttribute('href');
-        if (!url) return;
+export class PortalPDFDownload extends Interaction {
+    static selector = ".js_download_pdf";
+    dynamicContent = {
+        _root: { "t-on-click.prevent": this.onClickDownload },
+    };
 
-        // Generate a unique token for this download request
+    onClickDownload() {
+        const url = this.el.getAttribute("href");
+        if (!url) {
+            return;
+        }
+        // Unique token for this download request
         const token = Date.now().toString();
+        this.showLoading();
 
-        // Show the Odoo-themed loader overlay on the current tab
-        this._showLoading();
-
-        // Start checking for the response cookie that Odoo sets when sending the file
+        // Wait for the cookie Odoo sets when it sends the file
         let attempts = 0;
-        const checkTimer = setInterval(() => {
-            const cookieVal = this._getCookie('fileDownloadToken');
+        const timer = setInterval(() => {
             attempts++;
-            if (cookieVal === token || attempts > 120) { // Timeout after 60 seconds (120 * 500ms)
-                clearInterval(checkTimer);
-                this._eraseCookie('fileDownloadToken');
-                this._hideLoading();
+            if (this.getCookie("fileDownloadToken") === token || attempts > DOWNLOAD_TIMEOUT_ATTEMPTS) {
+                clearInterval(timer);
+                this.eraseCookie("fileDownloadToken");
+                this.hideLoading();
             }
         }, 500);
+        this.registerCleanup(() => clearInterval(timer));
 
-        // Trigger the native browser download by navigating to the PDF URL with the token
-        const separator = url.indexOf('?') !== -1 ? '&' : '?';
-        window.location.href = url + separator + 'downloadToken=' + token;
-    },
+        // Native browser download with the token appended
+        const separator = url.includes("?") ? "&" : "?";
+        window.location.href = `${url}${separator}downloadToken=${token}`;
+    }
 
-    _getCookie: function (name) {
+    getCookie(name) {
         const parts = `; ${document.cookie}`.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return null;
-    },
+        return parts.length === 2 ? parts.pop().split(";").shift() : null;
+    }
 
-    _eraseCookie: function (name) {
-        document.cookie = name + '=; Max-Age=-99999999; path=/';
-    },
+    eraseCookie(name) {
+        document.cookie = `${name}=; Max-Age=-99999999; path=/`;
+    }
 
-    _showLoading: function () {
-        let loader = document.getElementById('pdf_download_loader');
+    showLoading() {
+        let loader = document.getElementById("pdf_download_loader");
         if (!loader) {
-            loader = document.createElement('div');
-            loader.id = 'pdf_download_loader';
-            loader.className = 'pdf-download-loader-overlay';
+            loader = document.createElement("div");
+            loader.id = "pdf_download_loader";
+            loader.className = "pdf-download-loader-overlay";
             loader.innerHTML = `
                 <div class="pdf-download-loader-card">
                     <div class="pdf-download-spinner"></div>
-                    <div class="pdf-download-loader-text">Generating PDF...</div>
-                    <div class="pdf-download-loader-subtext">Please wait while we prepare your document.</div>
+                    <div class="pdf-download-loader-text"></div>
+                    <div class="pdf-download-loader-subtext"></div>
                 </div>
             `;
+            loader.querySelector(".pdf-download-loader-text").textContent = _t("Generating PDF...");
+            loader.querySelector(".pdf-download-loader-subtext").textContent = _t(
+                "Please wait while we prepare your document."
+            );
             document.body.appendChild(loader);
         }
-        // Force reflow
+        // Force a reflow so the transition runs
         loader.offsetHeight;
-        loader.classList.add('active');
-    },
-
-    _hideLoading: function () {
-        const loader = document.getElementById('pdf_download_loader');
-        if (loader) {
-            loader.classList.remove('active');
-        }
+        loader.classList.add("active");
     }
-});
 
+    hideLoading() {
+        document.getElementById("pdf_download_loader")?.classList.remove("active");
+    }
+}
+
+registry.category("public.interactions").add("wm_contracts_billing.portal_pdf_download", PortalPDFDownload);

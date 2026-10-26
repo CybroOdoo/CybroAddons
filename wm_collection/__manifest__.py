@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,10 +20,9 @@
 #############################################################################
 {
     'name': 'Waste Management Collection',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.2',
     'category': 'Operations/Waste Management',
-    'summary': 'Waste Management Collection & Inventory (merged)',
-    'description': "Collection order lifecycle, collection points, route planning, missed-collection workflow, waste batch management, sorting, batch inspection, valuation reports, and stock integration.",
+    'summary': 'Collection operations, route optimization, and waste inventory management',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Technologies Pvt. Ltd.',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -32,7 +30,6 @@
     'depends': [
         'wm_base',
         'mail',
-        'portal',
         'fleet',
         'account',
         'base_geolocalize',
@@ -42,7 +39,7 @@
         'uom',
     ],
     'external_dependencies': {
-        'python': ['requests', 'openpyxl'],
+        'python': ['requests'],
     },
     'data': [
         'security/inventory_security.xml',
@@ -59,6 +56,7 @@
         'data/missed_collection_cron_data.xml',
         'data/schedule_cron_data.xml',
         'data/route_automation_cron_data.xml',
+        'data/geocoding_cron_data.xml',
         'data/collection_order_signature_template_data.xml',
         'data/survey_data.xml',
         'data/pre_trip_checklist_data.xml',
@@ -88,7 +86,10 @@
         'views/wm_collection_order_views.xml',
         'views/fleet_vehicle_views.xml',
         'views/wm_collection_point_views.xml',
+        'views/wm_container_views.xml',
+        'views/wm_container_type_views.xml',
         'views/wm_route_views.xml',
+        'views/wm_facility_gate_entry_views.xml',
         'views/wm_schedule_views.xml',
         'views/wm_vehicle_maintenance_checklist_views.xml',
         'views/wm_driver_shift_views.xml',
@@ -106,9 +107,12 @@
         'reports/wm_missed_collection_report_templates.xml',
         'wizard/wm_collection_order_report_wizard_views.xml',
         'wizard/wm_change_driver_wizard_views.xml',
+        'wizard/wm_add_status_log_wizard_views.xml',
         'reports/wm_collection_order_summary_report_actions.xml',
         'reports/wm_collection_order_summary_report_templates.xml',
         'views/wm_missed_collection_report_views.xml',
+        'views/wm_driver_change_history_views.xml',
+        'views/wm_signature_views.xml',
         'views/menu_views.xml',
         'views/menuitems.xml',
         'views/inventory_menu.xml',
@@ -124,6 +128,9 @@
         'demo/demo_driver_shifts.xml',
     ],
     'assets': {
+        'web.assets_tests': [
+            'wm_collection/static/tests/tours/wm_map_tours.js',
+        ],
         'web.assets_backend': [
             'wm_collection/static/src/js/wm_route_map.js',
             'wm_collection/static/src/xml/wm_route_map.xml',
@@ -143,7 +150,5 @@
     'post_init_hook': 'post_init_hook',
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
     'application': True,
 }

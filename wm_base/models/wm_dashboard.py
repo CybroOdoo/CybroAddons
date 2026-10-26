@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,7 +20,7 @@
 #############################################################################
 from datetime import date, datetime, timedelta
 
-from odoo import _, api, models
+from odoo import api, fields, models
 from odoo.exceptions import AccessError
 
 
@@ -43,6 +42,40 @@ class WmDashboard(models.AbstractModel):
         ]
 
     @api.model
+    def _get_order_revenue_exclusion_domain(self):
+        """
+        Domain excluding collection orders already billed by a POSTED
+        invoice: those are counted through the invoice revenue (posted
+        invoices only), so counting them again as order revenue would
+        double count. Orders whose invoice is still draft (or cancelled)
+        remain order revenue until the invoice is posted.
+
+        The invoice links (consolidated invoice, monthly billing run line,
+        direct invoice) only exist once wm_contracts_billing is installed,
+        so each one is guarded. Returns [] when none of them exists.
+        """
+        if 'wm.collection.order' not in self.env:
+            return []
+        Order = self.env['wm.collection.order']
+        posted_links = []
+        for order_field, invoice_path in (
+            ('consolidated_invoice_id', 'consolidated_invoice_id.invoice_id.state'),
+            ('billing_run_line_id', 'billing_run_line_id.invoice_id.state'),
+            ('direct_invoice_id', 'direct_invoice_id.state'),
+        ):
+            field = Order._fields.get(order_field)
+            if not field:
+                continue
+            comodel = self.env[field.comodel_name]
+            if invoice_path.count('.') == 2 and 'invoice_id' not in comodel._fields:
+                continue
+            posted_links.append([invoice_path, '=', 'posted'])
+        if not posted_links:
+            return []
+        # NOT (link1 posted OR link2 posted OR ...)
+        return ['!'] + ['|'] * (len(posted_links) - 1) + posted_links
+
+    @api.model
     def get_dashboard_data(self, timeframe='today'):
         """ Return all KPI data needed by the dashboard OWL component filtered by timeframe. """
         authorized_groups = (
@@ -53,7 +86,7 @@ class WmDashboard(models.AbstractModel):
             'wm_base.group_wm_admin',
         )
         if not (self.env.is_admin() or any(self.env.user.has_group(group) for group in authorized_groups)):
-            raise AccessError(_("You do not have access to the Waste Management Dashboard."))
+            raise AccessError(self.env._("You do not have access to the Waste Management Dashboard."))
 
         has_collection = 'wm.collection.order' in self.env.registry
         has_inspection = 'wm.batch.inspection' in self.env.registry
@@ -69,11 +102,13 @@ class WmDashboard(models.AbstractModel):
         can_access_account = has_account and self.env['account.move'].has_access('read')
 
         is_admin_or_ops = self.env.user.has_group('wm_base.group_wm_admin') or self.env.user.has_group('wm_base.group_wm_ops_manager')
+        # The contract manager group only exists when wm_contracts_billing is installed
+        contract_manager = self.env.ref('wm_contracts_billing.group_wm_contract_manager', raise_if_not_found=False)
         is_restricted_role = (
             self.env.user.has_group('wm_base.group_wm_finance') or
             self.env.user.has_group('wm_base.group_wm_compliance_officer') or
             self.env.user.has_group('wm_base.group_wm_dispatcher') or
-            self.env.user.has_group('wm_contracts_billing.group_wm_contract_manager')
+            bool(contract_manager and contract_manager in self.env.user.all_group_ids)
         )
         can_interact_collection = can_access_collection and not (is_restricted_role and not is_admin_or_ops)
 
@@ -85,17 +120,22 @@ class WmDashboard(models.AbstractModel):
         Material = self.env['wm.waste.material']
         Product = self.env['product.product']
 
-        all_prods = Product.search([('is_waste_material', '=', True)])
-        all_wm_mats = Material.search([('active', '=', True)])
+        # Data is read as superuser: restrict it to the user's companies
+        cat_company = company_domain if 'company_id' in Category._fields else []
+        prod_company = company_domain if 'company_id' in Product._fields else []
+        mat_company = company_domain if 'company_id' in Material._fields else []
 
-        total_categories = Category.search_count([('active', '=', True)])
+        all_prods = Product.search([('is_waste_material', '=', True)] + prod_company)
+        all_wm_mats = Material.search([('active', '=', True)] + mat_company)
+
+        total_categories = Category.search_count([('active', '=', True)] + cat_company)
         total_materials = len(all_prods) + len(all_wm_mats)
         hazardous_count = len(all_prods.filtered(lambda p: p.hazardous)) + len(all_wm_mats.filtered(lambda m: m.hazardous))
         recyclable_count = len(all_prods.filtered(lambda p: p.recyclable)) + len(all_wm_mats.filtered(lambda m: m.recyclable))
         critical_count = len(all_prods.filtered(lambda p: p.hazardous and not p.recyclable)) + len(all_wm_mats.filtered(lambda m: m.hazardous and not m.recyclable))
         safe_count = len(all_prods.filtered(lambda p: not p.hazardous and p.recyclable)) + len(all_wm_mats.filtered(lambda m: not m.hazardous and m.recyclable))
-        archived_categories = Category.search_count([('active', '=', False)])
-        archived_materials = Material.search_count([('active', '=', False)])
+        archived_categories = Category.search_count([('active', '=', False)] + cat_company)
+        archived_materials = Material.search_count([('active', '=', False)] + mat_company)
 
         # Pre-group products and materials by category ID to eliminate N+1 queries
         prods_by_cat = {}
@@ -114,7 +154,7 @@ class WmDashboard(models.AbstractModel):
             for cid in cat_ids:
                 mats_by_cat.setdefault(cid, []).append(m)
 
-        categories = Category.search([('active', '=', True)], order='name asc')
+        categories = Category.search([('active', '=', True)] + cat_company, order='name asc')
         category_data = []
         for cat in categories:
             prods = prods_by_cat.get(cat.id, [])
@@ -148,11 +188,14 @@ class WmDashboard(models.AbstractModel):
         elif timeframe == 'month':
             cur_month_start = date(today.year, today.month, 1)
             start_dt = datetime.combine(cur_month_start, datetime.min.time())
-            prior_end_date = cur_month_start - timedelta(days=1)
-            prior_start_date = date(prior_end_date.year, prior_end_date.month, 1)
+            prior_month_last = cur_month_start - timedelta(days=1)
+            prior_start_date = date(prior_month_last.year, prior_month_last.month, 1)
+            # Same elapsed days as the current month so far (equal-length periods)
+            prior_end_date = min(
+                prior_start_date + timedelta(days=today.day - 1), prior_month_last)
             prior_start_dt = datetime.combine(prior_start_date, datetime.min.time())
             prior_end_dt = datetime.combine(prior_end_date, datetime.max.time())
-        else: # today
+        else:  # today
             start_dt = datetime.combine(today, datetime.min.time())
             prior_start_dt = datetime.combine(today - timedelta(days=1), datetime.min.time())
             prior_end_dt = datetime.combine(today - timedelta(days=1), datetime.max.time())
@@ -207,35 +250,22 @@ class WmDashboard(models.AbstractModel):
                         'code': cat.code or cat.name[:3].upper(),
                         'tonnage': t,
                     })
-            # If no collection data for this period, fall back to catalogue material counts
-            if not stream_distribution:
-                stream_distribution = [
-                    {
-                        'id': cd['id'], 'name': cd['name'],
-                        'code': cd['code'], 'tonnage': cd['total'],
-                    }
-                    for cd in category_data if cd['total'] > 0
-                ]
+            # Left empty when nothing was collected in the period: the client then
+            # shows catalogue material counts, labelled as materials rather than kg.
         else:
-            tonnage_labels = category_names or ['Plastic', 'Paper', 'Organic', 'Glass', 'Metal']
+            tonnage_labels = category_names or []
             tonnage_today = [0.0] * len(tonnage_labels)
             tonnage_last_week = [0.0] * len(tonnage_labels)
-            # No collection module: fall back to catalogue material counts
-            stream_distribution = [
-                {
-                    'id': cd['id'], 'name': cd['name'],
-                    'code': cd['code'], 'tonnage': cd['total'],
-                }
-                for cd in category_data if cd['total'] > 0
-            ]
+            # No collection module: no tonnage; the client shows catalogue material counts.
+            stream_distribution = []
 
         # 2. Active Routes Counter
         if has_collection:
             CollectionOrder = self.env['wm.collection.order']
             base_domain = self._get_order_date_domain(start_dt, today_end) + company_domain
-            pending_count = CollectionOrder.search_count(base_domain + [('state', 'in', ('draft', 'scheduled'))])
+            pending_count = CollectionOrder.search_count(base_domain + [('state', '=', 'draft')])
             in_progress_count = CollectionOrder.search_count(base_domain + [('state', 'in', ('dispatched', 'in_progress'))])
-            completed_count = CollectionOrder.search_count(base_domain + [('state', 'in', ('completed', 'signed', 'invoiced'))])
+            completed_count = CollectionOrder.search_count(base_domain + [('state', 'in', ('completed', 'signed'))])
         else:
             pending_count = 0
             in_progress_count = 0
@@ -286,12 +316,14 @@ class WmDashboard(models.AbstractModel):
         dispatched_count = len(dispatched_vehicle_ids_list)
         maintenance_count = len(maintenance_vehicle_ids_list)
 
-        # 4. Compliance Alerts - Orders Awaiting Signature
+        # 4. Compliance Alerts - completed orders still awaiting signature
         open_manifests = []
+        awaiting_signature_count = 0
         if has_collection:
-            awaiting_signature = self.env['wm.collection.order'].search([
-                ('state', 'in', ('completed', 'in_progress', 'scheduled'))
-            ] + company_domain, order='create_date desc', limit=50)
+            awaiting_domain = [('state', '=', 'completed')] + company_domain
+            awaiting_signature_count = self.env['wm.collection.order'].search_count(awaiting_domain)
+            awaiting_signature = self.env['wm.collection.order'].search(
+                awaiting_domain, order='create_date desc', limit=5)
             open_manifests = [{
                 'id': o.id,
                 'name': o.name,
@@ -299,7 +331,17 @@ class WmDashboard(models.AbstractModel):
                 'date': o.scheduled_start.strftime('%Y-%m-%d') if o.scheduled_start else (o.create_date.strftime('%Y-%m-%d') if o.create_date else '')
             } for o in awaiting_signature]
 
-        # 5. Revenue Tile — tracked per source so frontend drilldowns match exactly
+        # 5. Revenue Tile — tracked per source so frontend drilldowns match exactly.
+        # Amounts of every allowed company are converted to the current company
+        # currency, the one the tile is displayed in.
+        company_currency = self.env.company.currency_id
+
+        def to_company_currency(amount, currency, date_ref):
+            if not amount or not currency or currency == company_currency:
+                return amount or 0.0
+            return currency._convert(
+                amount, company_currency, self.env.company,
+                fields.Date.to_date(date_ref) if date_ref else fields.Date.context_today(self))
         cur_invoice_revenue = 0.0
         cur_collection_revenue = 0.0
         cur_recycling_revenue = 0.0
@@ -320,7 +362,9 @@ class WmDashboard(models.AbstractModel):
                 ('invoice_date', '<=', today_end.date()),
             ] + company_domain)
             cur_invoice_revenue = sum(
-                (inv.amount_untaxed_signed if inv.amount_untaxed_signed is not False else inv.amount_total_signed) or 0.0
+                to_company_currency(
+                    (inv.amount_untaxed_signed if inv.amount_untaxed_signed is not False else inv.amount_total_signed) or 0.0,
+                    inv.company_currency_id, inv.invoice_date)
                 for inv in cur_invoices
             )
 
@@ -331,32 +375,43 @@ class WmDashboard(models.AbstractModel):
                 ('invoice_date', '<=', prior_end_dt.date()),
             ] + company_domain)
             prior_period_revenue += sum(
-                (inv.amount_untaxed_signed if inv.amount_untaxed_signed is not False else inv.amount_total_signed) or 0.0
+                to_company_currency(
+                    (inv.amount_untaxed_signed if inv.amount_untaxed_signed is not False else inv.amount_total_signed) or 0.0,
+                    inv.company_currency_id, inv.invoice_date)
                 for inv in prior_invoices
             )
 
         # 5.2 Collection Orders (Operational unbilled completed/active orders)
         if has_collection:
-            order_state_filter = ('completed', 'signed', 'in_progress') if has_account else ('completed', 'signed', 'invoiced', 'in_progress')
+            order_state_filter = ('completed', 'signed', 'in_progress')
+            # Orders billed by a POSTED invoice are already counted through
+            # that invoice (5.1); orders with a draft invoice still count here.
+            unbilled_domain = self._get_order_revenue_exclusion_domain()
             cur_orders = self.env['wm.collection.order'].search(
                 self._get_order_date_domain(start_dt, today_end) +
                 [('state', 'in', order_state_filter)] +
+                unbilled_domain +
                 company_domain
             )
             cur_collection_revenue = sum(
-                (o.total_amount if hasattr(o, 'total_amount') and o.total_amount is not None else sum(l.total_amount or (l.price * (l.weight or l.estimated_weight)) for l in o.order_line_ids))
-                if o.order_line_ids or getattr(o, 'total_amount', 0.0) else 0.0
+                to_company_currency(
+                    (o.total_amount if hasattr(o, 'total_amount') and o.total_amount is not None else sum(ln.total_amount or (ln.price * (ln.weight or ln.estimated_weight)) for ln in o.order_line_ids))
+                    if o.order_line_ids or getattr(o, 'total_amount', 0.0) else 0.0,
+                    o.currency_id, o.scheduled_start or o.create_date)
                 for o in cur_orders
             )
 
             prior_orders = self.env['wm.collection.order'].search(
                 self._get_order_date_domain(prior_start_dt, prior_end_dt) +
                 [('state', 'in', order_state_filter)] +
+                unbilled_domain +
                 company_domain
             )
             prior_order_rev = sum(
-                (o.total_amount if hasattr(o, 'total_amount') and o.total_amount is not None else sum(l.total_amount or (l.price * (l.weight or l.estimated_weight)) for l in o.order_line_ids))
-                if o.order_line_ids or getattr(o, 'total_amount', 0.0) else 0.0
+                to_company_currency(
+                    (o.total_amount if hasattr(o, 'total_amount') and o.total_amount is not None else sum(ln.total_amount or (ln.price * (ln.weight or ln.estimated_weight)) for ln in o.order_line_ids))
+                    if o.order_line_ids or getattr(o, 'total_amount', 0.0) else 0.0,
+                    o.currency_id, o.scheduled_start or o.create_date)
                 for o in prior_orders
             )
             prior_period_revenue += prior_order_rev
@@ -369,14 +424,20 @@ class WmDashboard(models.AbstractModel):
                 ('date_done', '>=', start_dt),
                 ('date_done', '<=', today_end),
             ] + rec_company)
-            cur_recycling_revenue = sum(cur_recycling.mapped('total_recovered_value'))
+            cur_recycling_revenue = sum(
+                to_company_currency(o.total_recovered_value, o.currency_id, o.date_done)
+                for o in cur_recycling
+            )
 
             prior_recycling = self.env['recycling.order'].search([
                 ('state', '=', 'done'),
                 ('date_done', '>=', prior_start_dt),
                 ('date_done', '<=', prior_end_dt),
             ] + rec_company)
-            prior_period_revenue += sum(prior_recycling.mapped('total_recovered_value'))
+            prior_period_revenue += sum(
+                to_company_currency(o.total_recovered_value, o.currency_id, o.date_done)
+                for o in prior_recycling
+            )
 
         cur_period_revenue = cur_invoice_revenue + cur_collection_revenue + cur_recycling_revenue
 
@@ -387,7 +448,7 @@ class WmDashboard(models.AbstractModel):
             completed_orders = self.env['wm.collection.order'].search(
                 self._get_order_date_domain(start_dt, today_end) +
                 [
-                    ('state', 'in', ('completed', 'signed', 'invoiced')),
+                    ('state', 'in', ('completed', 'signed')),
                     ('actual_end', '!=', False),
                     ('scheduled_end', '!=', False)
                 ] + company_domain
@@ -405,17 +466,18 @@ class WmDashboard(models.AbstractModel):
                 on_time_pct = round((on_time_count / total_completed) * 100, 1)
                 delayed_pct = round(100.0 - on_time_pct, 1)
             else:
-                on_time_pct = 0.0
-                delayed_pct = 0.0
+                # Nothing completed in the period: there is no ratio to show
+                on_time_pct = None
+                delayed_pct = None
         else:
-            on_time_pct = 0.0
-            delayed_pct = 0.0
+            on_time_pct = None
+            delayed_pct = None
 
         # ---- 10. Batch Inspection Pass/Fail ----
         inspection_passed = 0
         inspection_failed = 0
         inspection_pending = 0
-        inspection_pass_rate = 0.0
+        inspection_pass_rate = None
         recent_failed_inspections = []
 
         if has_inspection:
@@ -440,8 +502,6 @@ class WmDashboard(models.AbstractModel):
             decided_total = inspection_passed + inspection_failed
             if decided_total:
                 inspection_pass_rate = round(inspection_passed / decided_total * 100, 1)
-            else:
-                inspection_pass_rate = 0.0
 
             recent_failed = Inspection.search(
                 [('state', '=', 'failed'), ('inspection_date', '>=', start_dt)] + insp_company,
@@ -466,11 +526,12 @@ class WmDashboard(models.AbstractModel):
             Recycling = self.env['recycling.order']
             RecyclingLine = self.env['recycling.line']
 
+            rec_company = company_domain if 'company_id' in Recycling._fields else []
             done_orders = Recycling.search([
                 ('state', '=', 'done'),
                 ('date_done', '>=', start_dt),
                 ('date_done', '<=', today_end),
-            ])
+            ] + rec_company)
             recycling_orders_done_count = len(done_orders)
             if done_orders:
                 recycling_avg_recovery_rate = round(
@@ -493,17 +554,19 @@ class WmDashboard(models.AbstractModel):
                 ('order_id.state', '=', 'done'),
                 ('order_id.date_done', '>=', start_dt),
                 ('order_id.date_done', '<=', today_end),
-            ], order='line_value desc', limit=5)
+            ] + (['|', ('order_id.company_id', '=', False), ('order_id.company_id', 'in', company_ids)] if rec_company else []),
+                order='line_value desc', limit=5)
             top_recovered_materials = [{
-                'order_id': l.order_id.id,
-                'product': l.product_id.display_name or '—',
-                'recovered_qty': round(l.recovered_qty, 2),
-                'uom': l.uom_id.name or '',
-                'recovery_rate': round(l.recovery_rate, 1),
-                'line_value': round(l.line_value, 2),
-            } for l in month_lines]
+                'order_id': ln.order_id.id,
+                'product': ln.product_id.display_name or '—',
+                'recovered_qty': round(ln.recovered_qty, 2),
+                'uom': ln.uom_id.name or '',
+                'recovery_rate': round(ln.recovery_rate, 1),
+                'line_value': round(ln.line_value, 2),
+            } for ln in month_lines]
 
         return {
+            'company_name': self.env.company.name,
             'total_categories': total_categories,
             'total_materials': total_materials,
             'hazardous_count': hazardous_count,
@@ -533,6 +596,7 @@ class WmDashboard(models.AbstractModel):
             'fleet_dispatched_ids': dispatched_vehicle_ids_list,
             'fleet_maintenance_ids': maintenance_vehicle_ids_list,
             'open_manifests': open_manifests,
+            'awaiting_signature_count': awaiting_signature_count,
             'revenue_cur_month': round(cur_period_revenue, 2),
             'revenue_prior_month': round(prior_period_revenue, 2),
             # Revenue breakdown by source — used by frontend drilldown to open matching list
@@ -544,6 +608,9 @@ class WmDashboard(models.AbstractModel):
             'revenue_end_date': today_date_str,
             'revenue_start_dt': start_dt_str,
             'revenue_end_dt': today_end_str,
+            # Extra domain applied to collection-order revenue (excludes orders
+            # billed by a posted invoice) — reused by the frontend drilldown
+            'order_revenue_domain': self._get_order_revenue_exclusion_domain(),
             'on_time_pct': on_time_pct,
             'delayed_pct': delayed_pct,
             'efficiency_on_time_ids': efficiency_on_time_ids,
@@ -573,5 +640,5 @@ class WmDashboard(models.AbstractModel):
             'has_account': has_account,
             'can_access_account': can_access_account,
             'active_timeframe': timeframe,
-            'currency_symbol': self.env.company.currency_id.symbol or '$',
+            'currency_id': company_currency.id,
         }

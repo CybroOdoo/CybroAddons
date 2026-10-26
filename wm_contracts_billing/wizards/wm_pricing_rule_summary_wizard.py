@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,9 +21,8 @@
 import base64
 import io
 
-from odoo import fields, models, _
+from odoo import _, fields, models
 from odoo.exceptions import UserError
-
 
 try:
     import openpyxl
@@ -59,13 +57,13 @@ class WmPricingRuleSummaryWizard(models.TransientModel):
         if self.output_type == 'pdf':
             return self.env.ref('wm_contracts_billing.action_report_pricing_rule_summary').report_action(rules)
 
-        elif self.output_type == 'xlsx':
+        if self.output_type == 'xlsx':
             if not openpyxl:
                 raise UserError(_("The openpyxl library is required for Excel export."))
 
             wb = openpyxl.Workbook()
             ws = wb.active
-            ws.title = "Pricing Rule Summary"
+            ws.title = _("Pricing Rule Summary")
 
             # Header Style
             header_fill = PatternFill(start_color="005B1F", end_color="005B1F", fill_type="solid")
@@ -74,7 +72,10 @@ class WmPricingRuleSummaryWizard(models.TransientModel):
             left_align = Alignment(horizontal="left", vertical="center")
             right_align = Alignment(horizontal="right", vertical="center")
 
-            headers = ["Category", "Customer", "Price per kg", "Min Weight (kg)", "Min Charge", "Effective Date", "Expiry Date"]
+            headers = [
+                _("Category"), _("Customer"), _("Price per kg"), _("Min Weight (kg)"),
+                _("Min Charge"), _("Effective Date"), _("Expiry Date"),
+            ]
             ws.append(headers)
 
             for col_num in range(1, len(headers) + 1):
@@ -86,7 +87,7 @@ class WmPricingRuleSummaryWizard(models.TransientModel):
             row_idx = 2
             for rule in rules:
                 category_name = rule.waste_category_id.name or ''
-                partner_name = rule.partner_id.name or 'All Customers'
+                partner_name = rule.partner_id.name or _('All Customers')
                 price_kg = rule.price_per_kg or 0.0
                 min_wt = rule.min_weight or 0.0
                 min_chg = rule.min_charge or 0.0

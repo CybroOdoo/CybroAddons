@@ -48,10 +48,10 @@
         <field name="arch" type="xml">
             <form string="Compliance Manifest">
                 <header>
-                    <button name="action_submit" type="object" string="Submit Manifest" class="oe_highlight" invisible="state != 'draft'"/>
-                    <button name="action_collect" type="object" string="Mark as Collected" class="oe_highlight" invisible="state != 'submitted'"/>
-                    <button name="action_dispose" type="object" string="Mark as Disposed" class="oe_highlight" invisible="state != 'collected'"/>
-                    <button name="action_export_and_notify" type="object" string="Export &amp; Notify" invisible="state == 'draft'"/>
+                    <button name="action_submit" type="object" string="Submit Manifest" class="oe_highlight" invisible="state != 'draft'" groups="wm_base.group_wm_compliance_officer,wm_base.group_wm_admin"/>
+                    <button name="action_collect" type="object" string="Mark as Collected" class="oe_highlight" invisible="state != 'submitted'" groups="wm_base.group_wm_compliance_officer,wm_base.group_wm_admin"/>
+                    <button name="action_dispose" type="object" string="Mark as Disposed" class="oe_highlight" invisible="state != 'collected'" groups="wm_base.group_wm_compliance_officer,wm_base.group_wm_admin"/>
+                    <button name="action_export_and_notify" type="object" string="Export &amp; Notify" invisible="state == 'draft'" groups="wm_base.group_wm_compliance_officer,wm_base.group_wm_admin"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted,collected,disposed"/>
                 </header>
                 <sheet>
@@ -63,25 +63,26 @@
                     </div>
                     <group>
                         <group>
-                            <field name="generator_id" readonly="state == 'disposed'" domain="[('is_generator', '=', True)]" context="{'default_is_generator': True}"/>
-                            <field name="transporter_id" readonly="state == 'disposed'" domain="[('is_transporter', '=', True)]" context="{'default_is_transporter': True}"/>
-                            <field name="manifest_date" readonly="state == 'disposed'"/>
+                            <field name="generator_id" readonly="state != 'draft'" domain="[('is_generator', '=', True)]" context="{'default_is_generator': True}"/>
+                            <field name="transporter_id" readonly="state != 'draft'" domain="[('is_transporter', '=', True)]" context="{'default_is_transporter': True}"/>
+                            <field name="manifest_date" readonly="state != 'draft'"/>
                         </group>
                         <group>
-                            <field name="disposal_facility_id" readonly="state == 'disposed'"/>
+                            <field name="disposal_facility_id" readonly="state != 'draft'"/>
                             <field name="transport_mode" readonly="state == 'disposed'"/>
-                            <field name="compliance_code_ids" widget="many2many_tags" readonly="state == 'disposed'"/>
-                            <field name="company_id" groups="base.group_multi_company" readonly="state == 'disposed'"/>
+                            <field name="compliance_code_ids" widget="many2many_tags" readonly="state != 'draft'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Waste Items">
-                            <field name="line_ids" readonly="state == 'disposed'">
+                            <field name="line_ids" readonly="state != 'draft'">
                                 <list editable="bottom">
                                     <field name="waste_category_id"/>
                                     <field name="product_id" domain="[('wm_waste_category_id', '=', waste_category_id)]"/>
                                     <field name="quantity"/>
                                     <field name="uom_id"/>
+                                    <field name="collection_order_id" optional="show"/>
                                     <field name="notes" placeholder="e.g. Yellow bag, serial num..."/>
                                 </list>
                             </field>

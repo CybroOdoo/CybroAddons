@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,7 +22,7 @@ import logging
 
 from odoo import fields
 from odoo.exceptions import UserError, ValidationError
-from odoo.tests.common import tagged, TransactionCase
+from odoo.tests.common import TransactionCase, tagged
 
 try:
     import openpyxl
@@ -39,7 +38,7 @@ class TestWmComplianceReportBuilder(TransactionCase):
 
     def setUp(self):
         """Set up test fixtures including generator, transporter, and facility."""
-        super(TestWmComplianceReportBuilder, self).setUp()
+        super().setUp()
         self.generator = self.env['res.partner'].create({
             'name': 'Report Builder Generator',
             'is_generator': True,
@@ -117,7 +116,7 @@ class TestWmComplianceReportBuilder(TransactionCase):
             'date_to': fields.Date.today(),
             'facility_id': self.facility.id,
         })
-        self.manifest2.unlink()
+        self.manifest2.sudo().with_context(bypass_compliance_lock=True).unlink()
         res = wizard.action_generate()
         self.assertEqual(res.get('type'), 'ir.actions.report')
         self.assertEqual(res.get('report_name'), 'wm_compliance.report_compliance_manifest_template')
@@ -171,7 +170,8 @@ class TestWmComplianceReportBuilder(TransactionCase):
         res = wizard.action_generate()
         self.assertEqual(res.get('type'), 'ir.actions.report')
         self.assertEqual(res.get('report_name'), 'wm_compliance.report_compliance_certificate_template')
-        self.assertEqual(len(res.get('context', {}).get('active_ids', [])), 2)
+        # Only issued certificates are reported (cert2 is still a draft)
+        self.assertEqual(res.get('context', {}).get('active_ids', []), self.cert1.ids)
         report = self.env.ref('wm_compliance.action_report_compliance_certificate')
         pdf_bytes, _ = report._render_qweb_pdf(report.id, res['context']['active_ids'])
         self.assertTrue(len(pdf_bytes) > 0, "PDF content must be non-empty")

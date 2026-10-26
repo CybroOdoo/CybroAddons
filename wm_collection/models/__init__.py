@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -36,6 +35,7 @@ from . import fleet_vehicle
 from . import wm_service_zone
 from . import res_config_settings
 from . import wm_collection_order
+from . import wm_collection_order_status_log
 from . import wm_collection_point
 from . import wm_missed_collection
 from . import wm_missed_collection_report
@@ -47,10 +47,12 @@ from . import wm_signature
 from . import wm_schedule
 from . import wm_collection_order_summary_report
 from . import wm_collection_report
+from . import wm_container
 from . import wm_route_efficiency_report
 from . import wm_driver_performance_report
 from . import ir_ui_view
 from . import wm_vehicle_maintenance_checklist
 from . import wm_driver_shift
+from . import wm_facility_gate_entry
 from . import wm_fleet_expiry_report
 from . import wm_maintenance_history_report

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,8 +18,8 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError, ValidationError
 
 
 class RecyclingOrder(models.Model):
@@ -42,7 +41,7 @@ class RecyclingOrder(models.Model):
         required=True,
         tracking=True,
         ondelete='restrict',
-        domain="[('is_received', '=', True)]",
+        domain="[('is_received', '=', True), ('status', 'not in', ('recycled', 'disposed', 'sold'))]",
         help='Only received batches can be recycled.',
     )
     product_id = fields.Many2one(
@@ -103,16 +102,6 @@ class RecyclingOrder(models.Model):
         tracking=True,
     )
 
-    def _default_facility_location_id(self):
-        """
-        Default recycling facility stock location falling back to the first
-        available internal stock location.
-        """
-        stock_loc = self.env.ref('stock.stock_location_stock', raise_if_not_found=False)
-        if stock_loc and stock_loc.exists():
-            return stock_loc.id
-        return self.env['stock.location'].search([('usage', '=', 'internal')], limit=1).id
-
     # ── Input Quantities ────────────────────────────────────────────────────
     input_qty = fields.Float(
         string='Input Quantity',
@@ -126,14 +115,12 @@ class RecyclingOrder(models.Model):
         related='waste_batch_id.uom_id',
         store=True, readonly=True,
     )
-
     # ── Recovery Lines ──────────────────────────────────────────────────────
     line_ids = fields.One2many(
         'recycling.line',
         'order_id',
         string='Recovery Lines',
     )
-
     # ── Aggregated Metrics (computed) ────────────────────────────────────────
     total_recovered_qty = fields.Float(
         string='Total Recovered Qty',
@@ -160,24 +147,31 @@ class RecyclingOrder(models.Model):
         digits=(10, 3),
         help='Scope 3 Carbon Abatement (tCO2e avoided) based on EPA WARM standards = (Total Recovered Qty in kg ÷ 1000) × Waste Category EPA WARM Factor.'
     )
-
     # ── Sale References ──────────────────────────────────────────────────────
     sale_order_count = fields.Integer(
         string='Sale Orders',
         compute='_compute_sale_count',
     )
-
     # ── State ────────────────────────────────────────────────────────────────
     state = fields.Selection([
-        ('draft',       'Draft'),
-        ('confirmed',   'Confirmed'),
+        ('draft', 'Draft'),
+        ('confirmed', 'Confirmed'),
         ('in_progress', 'In Progress'),
-        ('done',        'Done'),
-        ('cancelled',   'Cancelled'),
+        ('done', 'Done'),
+        ('cancelled', 'Cancelled'),
     ], string='Status', default='draft', required=True,
        tracking=True, copy=False)
-
     notes = fields.Text(string='Internal Notes')
+
+    def _default_facility_location_id(self):
+        """
+        Default recycling facility stock location falling back to the first
+        available internal stock location.
+        """
+        stock_loc = self.env.ref('stock.stock_location_stock', raise_if_not_found=False)
+        if stock_loc and stock_loc.exists():
+            return stock_loc.id
+        return self.env['stock.location'].search([('usage', '=', 'internal')], limit=1).id
 
     # ── Compute Methods ──────────────────────────────────────────────────────
 
@@ -200,7 +194,7 @@ class RecyclingOrder(models.Model):
                 order.input_qty = 0.0
 
     @api.depends('line_ids.recovered_qty', 'line_ids.sale_price',
-                 'line_ids.recovery_rate', 'input_qty', 'category_id', 'category_id.warm_factor_co2')
+                 'line_ids.recovery_rate', 'line_ids.uom_id', 'input_qty', 'input_uom_id', 'category_id', 'category_id.warm_factor_co2')
     def _compute_totals(self):
         """
         Aggregate all recovery line quantities and values to compute the
@@ -209,17 +203,16 @@ class RecyclingOrder(models.Model):
         """
         for order in self:
             lines = order.line_ids
-            total_qty = sum(lines.mapped('recovered_qty'))
+            total_qty = sum(line._recovered_qty_in(order.input_uom_id) for line in lines)
             order.total_recovered_qty = total_qty
             if order.input_qty:
                 order.overall_recovery_rate = (total_qty / order.input_qty) * 100.0
             else:
                 order.overall_recovery_rate = 0.0
             order.total_recovered_value = sum(
-                l.recovered_qty * l.sale_price for l in lines
+                line.recovered_qty * line.sale_price for line in lines
             )
-            factor = order.category_id.warm_factor_co2 if order.category_id else 1.50
-            order.co2_avoided_tons = (total_qty / 1000.0) * factor
+            order.co2_avoided_tons = sum(lines.mapped('co2_avoided_tons')) if lines else 0.0
 
     def _compute_sale_count(self):
         """
@@ -227,7 +220,9 @@ class RecyclingOrder(models.Model):
         recovered product lines, driving the smart button badge on the
         recycling order form.
         """
-        SaleOrder = self.env['sale.order']
+        # Recyclers usually have no Sales rights: the badge count must not
+        # make the whole recycling order unreadable for them.
+        SaleOrder = self.env['sale.order'].sudo()
         valid_orders = [o for o in self if o.name and o.name != _('New')]
         if not valid_orders:
             for order in self:
@@ -282,13 +277,13 @@ class RecyclingOrder(models.Model):
         if not self.waste_batch_id:
             self.product_id = False
             self.category_id = False
-            return
+            return None
 
         batch_lines = self.waste_batch_id.line_ids
         if not batch_lines:
             self.product_id = False
             self.category_id = False
-            return
+            return None
 
         # ── Pre-fill header fields (primary material) ─────────────────────────
         haz_lines = batch_lines.filtered('hazardous')
@@ -325,6 +320,9 @@ class RecyclingOrder(models.Model):
             new_lines.append((0, 0, {
                 'product_id': dest_product.id,
                 'uom_id': dest_product.uom_id.id,
+                # Each recovery stream consumes its own batch material, not
+                # the order's primary product.
+                'source_product_id': batch_line.product_id.id,
                 'dest_location_id': config.dest_location_id.id,
                 'expected_qty': batch_line.remaining_qty or batch_line.quantity,
                 'sale_price': dest_product.list_price,
@@ -347,6 +345,77 @@ class RecyclingOrder(models.Model):
                     ) % '\n'.join('\u2022 %s' % m for m in missing_configs),
                 }
             }
+
+    @api.constrains('waste_batch_id', 'state')
+    def _check_single_active_order_per_batch(self):
+        """
+        A waste batch can only be processed by one recycling order at a time:
+        at most one non-cancelled recycling order may reference it.
+        """
+        for order in self:
+            if not order.waste_batch_id or order.state == 'cancelled':
+                continue
+            duplicates = self.search_count([
+                ('id', '!=', order.id),
+                ('waste_batch_id', '=', order.waste_batch_id.id),
+                ('state', '!=', 'cancelled'),
+            ])
+            if duplicates:
+                raise ValidationError(_(
+                    "Waste batch %(batch)s already has an active recycling "
+                    "order. Only one non-cancelled recycling order is allowed "
+                    "per waste batch.",
+                    batch=order.waste_batch_id.display_name,
+                ))
+
+    PROCESS_LOSS_LOCATION_NAME = 'Recycling Process Loss'
+
+    def _get_scrap_location(self):
+        """
+        Return the dedicated per-company "Recycling Process Loss" location
+        that receives process-loss residue, creating it on demand.
+
+        It is an 'inventory' (loss) location owned by the order company and
+        placed like the standard per-company "Scrap" / "Inventory adjustment"
+        locations Odoo creates (res.company._create_scrap_location): same
+        parent as those, i.e. top-level virtual location in Odoo 19.
+        """
+        self.ensure_one()
+        company = self.company_id or self.env.company
+        Location = self.env['stock.location'].sudo().with_company(company)
+        location = Location.with_context(active_test=False).search([
+            ('name', '=', self.PROCESS_LOSS_LOCATION_NAME),
+            ('usage', '=', 'inventory'),
+            ('company_id', '=', company.id),
+        ], order='id', limit=1)
+        if location:
+            if not location.active:
+                location.active = True
+        else:
+            # Mirror the parent of the company's standard loss locations.
+            sibling = Location.search([
+                ('usage', '=', 'inventory'),
+                ('company_id', '=', company.id),
+            ], order='id', limit=1)
+            location = Location.create({
+                'name': self.PROCESS_LOSS_LOCATION_NAME,
+                'usage': 'inventory',
+                'company_id': company.id,
+                'location_id': sibling.location_id.id if sibling else False,
+            })
+        return self.env['stock.location'].browse(location.id)
+
+    # Fields that define a finished order; they can no longer change once done.
+    _DONE_LOCKED_FIELDS = ('waste_batch_id', 'product_id', 'category_id', 'line_ids',
+                           'facility_location_id', 'date_start')
+
+    def write(self, vals):
+        if any(f in vals for f in self._DONE_LOCKED_FIELDS) and not self.env.context.get('wm_recycling_allow_done_write'):
+            done = self.filtered(lambda o: o.state == 'done')
+            if done:
+                raise UserError(_(
+                    "Recycling order '%s' is done and can no longer be edited.") % done[0].name)
+        return super().write(vals)
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -381,6 +450,8 @@ class RecyclingOrder(models.Model):
         """
         self._check_recycling_rights()
         for order in self:
+            if order.state != 'draft':
+                raise UserError(_("Only draft recycling orders can be confirmed."))
             if not order.line_ids:
                 raise UserError(
                     _("Please add at least one recovery line before confirming.")
@@ -418,7 +489,15 @@ class RecyclingOrder(models.Model):
                 if order.waste_batch_id:
                     self.env.cr.execute("SELECT id FROM waste_batch WHERE id = %s FOR UPDATE", [order.waste_batch_id.id])
 
-                lines_without_qty = order.line_ids.filtered(lambda l: not l.recovered_qty)
+                if not order.waste_batch_id or not order.waste_batch_id.location_id:
+                    raise UserError(_(
+                        "Recycling order '%s' has no source location: the waste batch must be "
+                        "stored in a location before the order can be completed.") % order.name)
+                if order.input_qty <= 0:
+                    raise UserError(_(
+                        "Recycling order '%s' has no waste quantity available to process.") % order.name)
+
+                lines_without_qty = order.line_ids.filtered(lambda line: not line.recovered_qty)
                 if lines_without_qty:
                     raise UserError(
                         _("All recovery lines must have a non-zero recovered quantity before "
@@ -434,12 +513,7 @@ class RecyclingOrder(models.Model):
                 # ── Move process loss/residue to scrap location if any remaining ────
                 residue_qty = order.input_qty - order.total_recovered_qty
                 if residue_qty > 0.001 and order.waste_batch_id and order.waste_batch_id.location_id:
-                    scrap_loc = self.env.ref('stock.stock_location_scrapped', raise_if_not_found=False)
-                    if not scrap_loc:
-                        scrap_loc = self.env['stock.location'].search([
-                            ('usage', '=', 'inventory'),
-                            ('company_id', 'in', [order.company_id.id, False])
-                        ], limit=1)
+                    scrap_loc = order._get_scrap_location()
                     product_to_move = order.product_id or (order.waste_batch_id.line_ids and order.waste_batch_id.line_ids[0].product_id)
                     if scrap_loc and product_to_move:
                         order.waste_batch_id._do_internal_move(
@@ -464,20 +538,20 @@ class RecyclingOrder(models.Model):
                 recovered_lines = order.line_ids.filtered('is_stocked')
 
                 consumed_summary = ', '.join(
-                    _('%(qty).3f %(uom)s of %(product)s') % {
-                        'qty': line.recovered_qty,
-                        'uom': line.order_id.waste_batch_id.uom_id.name or '',
-                        'product': line.source_product_id.display_name or _('waste material'),
+                    self.env._('%(qty).3f %(uom)s of %(product)s') % {
+                        'qty': line.consumption_move_id.product_uom_qty,
+                        'uom': line.consumption_move_id.product_uom.name or '',
+                        'product': line.source_product_id.display_name or self.env._('waste material'),
                     }
                     for line in consumed_lines
-                ) or _('(none — batch location not set)')
+                ) or self.env._('(none — batch location not set)')
 
                 recovered_summary = ', '.join(
-                    _('%(qty).3f %(uom)s of %(product)s → %(loc)s') % {
+                    self.env._('%(qty).3f %(uom)s of %(product)s → %(loc)s') % {
                         'qty': line.recovered_qty,
                         'uom': line.uom_id.name,
                         'product': line.product_id.display_name,
-                        'loc': line.dest_location_id.display_name if line.dest_location_id else _('no location'),
+                        'loc': line.dest_location_id.display_name if line.dest_location_id else self.env._('no location'),
                     }
                     for line in recovered_lines
                 ) or _('(none)')
@@ -497,13 +571,15 @@ class RecyclingOrder(models.Model):
     def action_cancel(self):
         """
         Cancel the recycling order and reverse any pending stock operations,
-        releasing the linked waste batch back to 'sorted' state for potential
+        releasing the linked waste batch back to 'received' state for potential
         re-processing.
         """
         self._check_recycling_rights()
         for order in self:
             if order.state == 'done':
                 raise UserError(_("Completed recycling orders cannot be cancelled."))
+            if order.state == 'cancelled':
+                raise UserError(_("Recycling order '%s' is already cancelled.") % order.name)
             order.write({'state': 'cancelled'})
             if order.waste_batch_id:
                 order.waste_batch_id.write({'status': 'received'})
@@ -543,7 +619,7 @@ class RecyclingOrder(models.Model):
             }
 
         lines_to_sell = self.line_ids.filtered(
-            lambda l: l.recovered_qty > 0 and l.sale_price > 0
+            lambda line: line.recovered_qty > 0 and line.sale_price > 0
         )
         if not lines_to_sell:
             raise UserError(

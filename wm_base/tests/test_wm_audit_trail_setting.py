@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -18,10 +17,11 @@
 #    (LGPL v3) along with this program.
 #    If not, see <https://www.gnu.org/licenses/>.
 #
-#############################################################################
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged('post_install', '-at_install')
 class TestWmAuditTrailSetting(TransactionCase):
     """Unit tests verifying audit log recording and status transition tracking."""
 
@@ -35,7 +35,7 @@ class TestWmAuditTrailSetting(TransactionCase):
         When wm_base.group_wm_audit_trail is not set or False, audit logs
         should not be created.
         """
-        self.env['ir.config_parameter'].sudo().set_param('wm_base.group_wm_audit_trail', 'False')
+        self.env['ir.config_parameter'].sudo().set_param('wm_base.group_wm_audit_trail', False)
         self.assertFalse(self.category_model._is_audit_trail_enabled())
 
         initial_count = self.env['wm.audit.log'].search_count([])

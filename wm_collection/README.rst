@@ -27,7 +27,7 @@ Company
 
 License
 =======
-General Public License, Version 3 (LGPL v3).
+GNU Lesser General Public License, Version 3 (LGPL-3).
 (https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 
 Credits
@@ -42,7 +42,7 @@ Contacts
 
 Bug Tracker
 ===========
-Bugs are tracked on GitHub Issues. In case of trouble, please check there if your issue has already been reported.
+Bugs are tracked on GitHub Issues. In case of trouble, please check whether your issue has already been reported.
 
 Maintainer
 ==========

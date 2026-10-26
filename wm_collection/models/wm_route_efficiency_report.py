@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -54,14 +53,17 @@ class WmRouteEfficiencyReport(models.Model):
                     r.driver_id AS driver_id,
                     r.vehicle_id AS vehicle_id,
                     CAST(COALESCE(r.date, r.create_date) AS DATE) AS date,
-                    MAX(o.company_id) AS company_id,
-                    0.0 AS distance_km,
+                    r.company_id AS company_id,
+                    COALESCE(r.estimated_distance_km, 0.0) AS distance_km,
                     COALESCE(r.estimated_duration * 60.0, 0.0) AS estimated_mins,
                     COUNT(DISTINCT rl.id) AS points_planned,
                     COUNT(DISTINCT CASE WHEN o.state IN ('completed', 'signed', 'invoiced') THEN o.id END) AS orders_completed,
+                    -- Completed orders over the route's non-cancelled orders,
+                    -- so the rate can never exceed 100 percent.
                     CASE
-                        WHEN COUNT(DISTINCT rl.id) > 0 THEN
-                            (COUNT(DISTINCT CASE WHEN o.state IN ('completed', 'signed', 'invoiced') THEN o.id END)::float / COUNT(DISTINCT rl.id)::float) * 100.0
+                        WHEN COUNT(DISTINCT CASE WHEN o.state != 'cancelled' THEN o.id END) > 0 THEN
+                            (COUNT(DISTINCT CASE WHEN o.state IN ('completed', 'signed', 'invoiced') THEN o.id END)::float
+                             / COUNT(DISTINCT CASE WHEN o.state != 'cancelled' THEN o.id END)::float) * 100.0
                         ELSE 0.0
                     END AS completion_rate
                 FROM wm_route r
@@ -71,7 +73,9 @@ class WmRouteEfficiencyReport(models.Model):
                     r.id,
                     r.driver_id,
                     r.vehicle_id,
+                    r.company_id,
                     CAST(COALESCE(r.date, r.create_date) AS DATE),
-                    r.estimated_duration
+                    r.estimated_duration,
+                    r.estimated_distance_km
             )
         """)

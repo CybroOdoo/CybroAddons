@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
 
@@ -28,15 +27,6 @@ class RecyclingLine(models.Model):
     _name = 'recycling.line'
     _description = 'Recycling Recovery Line'
     _order = 'order_id, sequence, id'
-
-    @api.model
-    def _valid_field_parameter(self, field, name):
-        """
-        Allow the 'tracking' parameter on recycling line fields so that
-        material-level change tracking is supported without Odoo raising an
-        unexpected keyword argument warning.
-        """
-        return name == 'tracking' or super()._valid_field_parameter(field, name)
 
     sequence = fields.Integer(string='Sequence', default=10)
     order_id = fields.Many2one(
@@ -69,8 +59,11 @@ class RecyclingLine(models.Model):
     source_product_id = fields.Many2one(
         'product.product',
         string='Source Material/Product',
-        related='order_id.product_id',
-        store=True, readonly=True,
+        compute='_compute_source_product_id',
+        store=True,
+        readonly=False,
+        precompute=True,
+        help='Waste material product being consumed for this recovery stream. Defaults to the order product or batch line material.',
     )
 
     # ── Quantities ──────────────────────────────────────────────────────────
@@ -82,7 +75,6 @@ class RecyclingLine(models.Model):
     recovered_qty = fields.Float(
         string='Actual Qty',
         digits=(16, 3),
-        tracking=True,
         help='Actual quantity recovered during processing.',
     )
     recovery_rate = fields.Float(
@@ -92,7 +84,6 @@ class RecyclingLine(models.Model):
         digits=(5, 2),
         help='Actual Qty / Target Qty × 100 — how well this line met its target.',
     )
-
     # ── Valuation & Sale ────────────────────────────────────────────────────
     sale_price = fields.Monetary(
         string='Sale Price / Unit',
@@ -112,18 +103,6 @@ class RecyclingLine(models.Model):
         digits=(10, 3),
         help='Scope 3 Carbon Abatement (tCO2e avoided) based on EPA WARM standards = (Actual Qty in kg ÷ 1000) × Waste Category EPA WARM Factor.'
     )
-
-    @api.depends('recovered_qty', 'order_id.category_id', 'order_id.category_id.warm_factor_co2')
-    def _compute_co2_avoided_tons(self):
-        """
-        Calculate the estimated CO₂ emissions avoided (in tonnes) by recovering
-        this material instead of landfilling, using the configured emissions
-        factor per tonne of material.
-        """
-        for line in self:
-            factor = line.order_id.category_id.warm_factor_co2 if line.order_id and line.order_id.category_id else 1.50
-            line.co2_avoided_tons = (line.recovered_qty / 1000.0) * factor
-
     # ── Stock destination ───────────────────────────────────────────────────
     dest_location_id = fields.Many2one(
         'stock.location',
@@ -152,9 +131,48 @@ class RecyclingLine(models.Model):
         default=False, readonly=True, copy=False,
         help='True once the source waste quantity has been moved out of the batch location.',
     )
-
     # ── Notes ───────────────────────────────────────────────────────────────
     notes = fields.Text(string='Notes')
+
+    @api.depends('order_id.product_id')
+    def _compute_source_product_id(self):
+        """Default the source material to the order's primary product."""
+        for line in self:
+            if not line.source_product_id:
+                line.source_product_id = line.order_id.product_id
+
+    def write(self, vals):
+        if not self.env.context.get('wm_recycling_allow_done_write'):
+            locked = [f for f in vals if f in ('product_id', 'recovered_qty', 'expected_qty',
+                                               'uom_id', 'sale_price')]
+            if locked and self.filtered(lambda line: line.order_id.state == 'done'):
+                raise UserError(_("Lines of a done recycling order can no longer be edited."))
+        return super().write(vals)
+
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_done_order(self):
+        if self.filtered(lambda line: line.order_id.state == 'done'):
+            raise UserError(_("Lines of a done recycling order cannot be deleted."))
+
+    def _recovered_qty_in(self, uom):
+        """Recovered quantity expressed in ``uom`` (raw quantity when either
+        unit is missing or the units are not convertible)."""
+        self.ensure_one()
+        if uom and self.uom_id and self.uom_id != uom and self.uom_id._has_common_reference(uom):
+            return self.uom_id._compute_quantity(self.recovered_qty, uom, round=False)
+        return self.recovered_qty
+
+    @api.depends('recovered_qty', 'uom_id', 'order_id.category_id', 'order_id.category_id.warm_factor_co2')
+    def _compute_co2_avoided_tons(self):
+        """
+        Calculate the estimated CO₂ emissions avoided (in tonnes) by recovering
+        this material instead of landfilling, using the configured emissions
+        factor per tonne of material.
+        """
+        for line in self:
+            factor = line.order_id.category_id.warm_factor_co2 if line.order_id and line.order_id.category_id else 1.50
+            kg = self.env.ref('uom.product_uom_kgm', raise_if_not_found=False)
+            line.co2_avoided_tons = (line._recovered_qty_in(kg) / 1000.0) * factor
 
     # ── Compute Methods ──────────────────────────────────────────────────────
 
@@ -189,8 +207,8 @@ class RecyclingLine(models.Model):
     def _check_total_recovery_qty(self):
         """
         Prevent the sum of recovered quantities across all recovery lines
-        from exceeding the parent order's input quantity.          Physically,
-        you cannot recover more material than you put in.  This
+        from exceeding the parent order's input quantity. Physically,
+        you cannot recover more material than you put in. This
         constraint fires on every create/write of a recovery line so it cannot
         be bypassed by directly writing a single line.
         """
@@ -199,8 +217,9 @@ class RecyclingLine(models.Model):
             if not order or not order.input_qty:
                 continue  # no input reference yet — nothing to enforce
 
-            total_recovered = sum(order.line_ids.mapped('recovered_qty'))
-            if total_recovered > order.input_qty:
+            total_recovered = sum(
+                rec_line._recovered_qty_in(order.input_uom_id) for rec_line in order.line_ids)
+            if total_recovered > order.input_qty + 1e-6:
                 raise ValidationError(
                     _(
                         "Total recovered quantity (%(total).3f %(uom)s) exceeds the "
@@ -219,8 +238,7 @@ class RecyclingLine(models.Model):
     @api.onchange('product_id')
     def _onchange_product_id(self):
         """
-        Pre-populate the unit of measure, expected quantity, and unit sale
-        price from the selected recovered product's configuration when the
+        Pre-populate the unit of measure and unit sale price from the selected recovered product's configuration when the
         product field changes.
         """
         if self.product_id:
@@ -245,30 +263,35 @@ class RecyclingLine(models.Model):
                     order=line.order_id.display_name if line.order_id else '',
                 ))
 
-            # ── Resolve the shared production/processing location ────────────
-            production_loc = self.env.ref(
-                'stock.location_production', raise_if_not_found=False
-            )
-            if not production_loc:
-                production_loc = self.env['stock.location'].search(
-                    [('usage', '=', 'production')], limit=1
-                )
+            order = line.order_id
+            batch = order.waste_batch_id
+            company_id = order.company_id.id
+
+            # ── Resolve the company's production/processing location ─────────
+            production_loc = line.product_id.with_company(
+                order.company_id).property_stock_production
+            if not production_loc or production_loc.usage != 'production' or (
+                    production_loc.company_id
+                    and production_loc.company_id != order.company_id):
+                production_loc = self.env['stock.location'].search([
+                    ('usage', '=', 'production'),
+                    ('company_id', '=', company_id),
+                ], limit=1)
             if not production_loc:
                 raise UserError(
                     _("No production location found. "
                       "Please configure a production stock location.")
                 )
 
-            order = line.order_id
-            batch = order.waste_batch_id
-            company_id = self.env.company.id
-
             # ── 1. Consumption move: batch stock → production location ────────
             # Determine the source waste product and lot from the batch line
-            # that matches the recycling order's primary product, or fall back
-            # to the first batch line.
+            # that matches this line's specific source_product_id or the recycling
+            # order's primary product, falling back to batch lines.
+            target_source_product = line.source_product_id or order.product_id
             source_batch_line = (
                 batch.line_ids.filtered(
+                    lambda bl: bl.product_id == target_source_product
+                ) or batch.line_ids.filtered(
                     lambda bl: bl.product_id == order.product_id
                 ) or batch.line_ids
             )
@@ -279,9 +302,23 @@ class RecyclingLine(models.Model):
                 source_product = source_batch_line.product_id
                 source_uom = source_batch_line.uom_id or source_product.uom_id
                 source_lot = source_batch_line.lot_id
-                # Use the recovered quantity as the consumption quantity;
-                # it represents the waste material converted in this line.
+                # The recovered quantity is entered in the line's own UoM
+                # (e.g. tonnes) while the waste stock is held in the batch
+                # line's UoM (e.g. kg): convert before consuming.
                 consume_qty = line.recovered_qty
+                if line.uom_id and source_uom and line.uom_id != source_uom:
+                    if line.uom_id._has_common_reference(source_uom):
+                        consume_qty = line.uom_id._compute_quantity(
+                            line.recovered_qty, source_uom, round=False)
+                    else:
+                        # Units that cannot be converted (e.g. pieces vs kg):
+                        # keep the entered quantity and flag it for review.
+                        order.message_post(body=_(
+                            "Waste consumption for %(product)s was recorded as %(qty)s %(batch_uom)s: "
+                            "the recovered unit (%(line_uom)s) cannot be converted to the batch unit. "
+                            "Please verify the quantity.",
+                            product=source_product.display_name, qty=consume_qty,
+                            batch_uom=source_uom.display_name, line_uom=line.uom_id.display_name))
 
                 consumption_move = self.env['stock.move'].create({
                     'description_picking': _('Waste Consumed: %s → Recycling') % source_product.display_name,
@@ -299,7 +336,7 @@ class RecyclingLine(models.Model):
                 for cml in consumption_move.move_line_ids:
                     if source_lot:
                         cml.lot_id = source_lot.id
-                    cml.quantity = source_uom._compute_quantity(consume_qty, cml.product_uom_id) if (source_uom and cml.product_uom_id) else consume_qty
+                    cml.quantity = source_uom._compute_quantity(consume_qty, cml.product_uom_id, rounding_method='HALF-UP') if (source_uom and cml.product_uom_id) else consume_qty
                     cml.picked = True
                 if not consumption_move.move_line_ids:
                     self.env['stock.move.line'].create({
@@ -325,13 +362,13 @@ class RecyclingLine(models.Model):
                 'location_id': production_loc.id,
                 'location_dest_id': line.dest_location_id.id,
                 'origin': line.order_id.name,
-                'company_id': self.env.company.id,
+                'company_id': company_id,
             })
             recovery_move._action_confirm()
             recovery_move._action_assign()
 
             for ml in recovery_move.move_line_ids:
-                ml.quantity = line.uom_id._compute_quantity(line.recovered_qty, ml.product_uom_id) if (line.uom_id and ml.product_uom_id) else line.recovered_qty
+                ml.quantity = line.uom_id._compute_quantity(line.recovered_qty, ml.product_uom_id, rounding_method='HALF-UP') if (line.uom_id and ml.product_uom_id) else line.recovered_qty
                 ml.picked = True
             if not recovery_move.move_line_ids:
                 self.env['stock.move.line'].create({
@@ -341,7 +378,7 @@ class RecyclingLine(models.Model):
                     'quantity': line.recovered_qty,
                     'location_id': production_loc.id,
                     'location_dest_id': line.dest_location_id.id,
-                    'company_id': self.env.company.id,
+                    'company_id': company_id,
                     'picked': True,
                 })
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,7 +20,7 @@
 #############################################################################
 import datetime
 
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 
 
 class ComplianceDocument(models.Model):
@@ -41,7 +40,7 @@ class ComplianceDocument(models.Model):
         ('other', 'Other')
     ], string='Document Type', required=True, default='permit')
 
-    attachment_id = fields.Many2one('ir.attachment', string='Attachment Record', ondelete='cascade')
+    attachment_id = fields.Many2one('ir.attachment', string='Attachment Record', ondelete='set null')
 
     attachment_file = fields.Binary(
         string='Attachment File',
@@ -61,7 +60,7 @@ class ComplianceDocument(models.Model):
     reminder_days = fields.Integer(string='Reminder Days', default=30, required=True)
     user_id = fields.Many2one(
         'res.users',
-        string='Responsible User',
+        string='Assigned Officer',
         default=lambda self: self.env.user,
         required=True
     )
@@ -111,14 +110,16 @@ class ComplianceDocument(models.Model):
                     rec.attachment_id = attachment
             else:
                 if rec.attachment_id:
+                    old_attachment = rec.attachment_id
                     rec.attachment_id = False
+                    old_attachment.unlink()
 
     @api.model
     def cron_check_document_expiry(self):
         """
         Scheduled cron job action for check document expiry.
         """
-        today = fields.Date.today()
+        today = fields.Date.context_today(self)
         # Find all documents
         docs = self.search([('expiry_date', '!=', False)])
 
@@ -138,13 +139,16 @@ class ComplianceDocument(models.Model):
                 # Find responsible user
                 responsible_user_id = doc.user_id.id or self.env.user.id
 
-                # Check if activity already exists to avoid spamming
-                existing = self.env['mail.activity'].search([
+                # One reminder per expiry date: activities marked done are
+                # archived in Odoo 19, so include them, otherwise a new To-Do
+                # is created every day once the previous one is done. A
+                # renewed document (new expiry date) gets a new reminder.
+                existing = self.env['mail.activity'].with_context(active_test=False).search([
                     ('res_model', '=', 'wm.compliance.document'),
                     ('res_id', '=', doc.id),
                     ('activity_type_id', '=', todo_activity_type.id),
-                    ('user_id', '=', responsible_user_id),
-                ])
+                    ('date_deadline', '=', doc.expiry_date),
+                ], limit=1)
                 if not existing:
                     self.env['mail.activity'].create({
                         'res_model_id': self.env['ir.model']._get_id('wm.compliance.document'),

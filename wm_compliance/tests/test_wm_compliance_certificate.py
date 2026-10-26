@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,8 +21,7 @@
 import logging
 
 from odoo.exceptions import UserError
-from odoo.tests.common import tagged, TransactionCase
-
+from odoo.tests.common import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -36,7 +34,7 @@ class TestWmComplianceCertificate(TransactionCase):
         """
         Set up test case preconditions and test data.
         """
-        super(TestWmComplianceCertificate, self).setUp()
+        super().setUp()
         self.generator = self.env['res.partner'].create({
             'name': 'Generator Partner',
             'is_generator': True,

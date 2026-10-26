@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,11 +18,35 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 import logging
+from datetime import datetime
 
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
+
+
+def wm_set_move_line_quantity(move, qty, uom=None, lot=None):
+    """Set the done quantity of a move without multiplying it by the number
+    of reserved move lines (a reservation may be split across lots/quants)."""
+    lines = move.move_line_ids
+    if not lines:
+        return
+    first = lines[0]
+    if lot or len(lines) == 1:
+        # One line carries the whole quantity; drop the other split lines.
+        (lines - first).unlink()
+        vals = {
+            'quantity': uom._compute_quantity(qty, first.product_uom_id, rounding_method='HALF-UP')
+            if (uom and first.product_uom_id) else qty,
+            'picked': True,
+        }
+        if lot:
+            vals['lot_id'] = lot.id
+        first.write(vals)
+    else:
+        # Keep the reserved split (already totals the demanded quantity).
+        lines.write({'picked': True})
 
 
 class WasteBatchLine(models.Model):
@@ -120,7 +143,7 @@ class WasteBatchLine(models.Model):
             if line.quantity and line.uom_id:
                 try:
                     if kg_uom and line.uom_id._has_common_reference(kg_uom):
-                        line.net_weight = line.uom_id._compute_quantity(line.quantity, kg_uom)
+                        line.net_weight = line.uom_id._compute_quantity(line.quantity, kg_uom, rounding_method='HALF-UP')
                     else:
                         line.net_weight = line.quantity
                 except Exception as e:
@@ -129,6 +152,18 @@ class WasteBatchLine(models.Model):
                     line.net_weight = line.quantity
             else:
                 line.net_weight = line.quantity or 0.0
+
+    def _get_valuation_qty(self):
+        """Quantity to value, in the product's UoM. A parent batch that was
+        sorted into children is valued only for what is still unsorted, so the
+        sorted stock is not counted twice (it lives on the child batches)."""
+        self.ensure_one()
+        qty = self.remaining_qty if self.batch_id.sorted_batch_ids else self.quantity
+        product_uom = self.product_id.uom_id
+        if self.uom_id and product_uom and self.uom_id != product_uom \
+                and self.uom_id._has_common_reference(product_uom):
+            return self.uom_id._compute_quantity(qty, product_uom, round=False)
+        return qty
 
     @api.depends('quantity', 'sorted_qty')
     def _compute_remaining_qty(self):
@@ -189,9 +224,18 @@ class WasteBatchLine(models.Model):
                         name=line.batch_id.name,
                         status=dict(line.batch_id._fields['status'].selection).get(line.batch_id.status, line.batch_id.status),
                     ))
+        if ('quantity' in vals or 'product_id' in vals) and not self.env.context.get('skip_status_validation') and not self.env.su:
+            for line in self:
+                if line.batch_id and line.batch_id.is_received:
+                    raise UserError(_(
+                        "Waste Batch '%(name)s' is already in stock: its quantity or product cannot be edited "
+                        "without a stock movement. Use a stock adjustment or the transfer/sort tools instead.",
+                        name=line.batch_id.name,
+                    ))
         return super().write(vals)
 
-    def unlink(self):
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_terminal_batch_line(self):
         """
         Prevent deleting lines from a waste batch if the batch is in a final/terminal status.
         """
@@ -203,8 +247,6 @@ class WasteBatchLine(models.Model):
                         name=line.batch_id.name,
                         status=dict(line.batch_id._fields['status'].selection).get(line.batch_id.status, line.batch_id.status),
                     ))
-        return super().unlink()
-
 
 class WasteBatch(models.Model):
     """Master waste intake batch tracking reception, sorting, weight reconciliation, and stock moves."""
@@ -231,6 +273,7 @@ class WasteBatch(models.Model):
         'wm.batch.inspection',
         'batch_id',
         string='Inspections',
+        copy=False,
     )
     inspection_count = fields.Integer(
         string='Inspection Count',
@@ -292,25 +335,6 @@ class WasteBatch(models.Model):
         readonly=False
     )
 
-    def _default_warehouse_id(self):
-        """
-        Return the default warehouse for waste batch stock operations from
-        company-level settings, ensuring batches are received into the correct
-        warehouse location.
-        """
-        return self.env['stock.warehouse'].search([('company_id', '=', self.env.company.id)], limit=1) or self.env['stock.warehouse'].search([], limit=1)
-
-    def _default_location_id(self):
-        """
-        Return the configured incoming waste stock location from system
-        settings, providing the default destination for new waste batch
-        receipts.
-        """
-        wh = self._default_warehouse_id()
-        if wh and wh.lot_stock_id:
-            return wh.lot_stock_id
-        return self.env['stock.location'].search([('usage', '=', 'internal')], limit=1)
-
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -324,21 +348,22 @@ class WasteBatch(models.Model):
         string='Warehouse',
         required=True,
         tracking=True,
-        default=_default_warehouse_id
+        default=lambda self: self._default_warehouse_id()
     )
     location_id = fields.Many2one(
         'stock.location',
         string='Location',
         required=True,
         tracking=True,
-        default=_default_location_id,
+        default=lambda self: self._default_location_id(),
         domain="[('usage', '=', 'internal')]"
     )
     received_date = fields.Date(
         string='Received Date',
         default=fields.Date.today,
         required=True,
-        tracking=True
+        tracking=True,
+        copy=False,
     )
     status = fields.Selection([
         ('draft', 'Draft'),
@@ -350,8 +375,7 @@ class WasteBatch(models.Model):
         ('recycled', 'Recycled'),
         ('disposed', 'Disposed'),
         ('sold', 'Sold'),
-    ], string='Status', default='draft', required=True, tracking=True, index=True)
-
+    ], string='Status', default='draft', required=True, tracking=True, index=True, copy=False)
     lot_id = fields.Many2one(
         'stock.lot',
         string='Stock Lot',
@@ -359,13 +383,20 @@ class WasteBatch(models.Model):
         readonly=True,
         store=False
     )
-
     # ── Container / Weighbridge ──────────────────────────────────────────────
     container_type_id = fields.Many2one(
         'wm.container.type',
         string='Container Type',
         tracking=True,
         ondelete='set null',
+    )
+    container_id = fields.Many2one(
+        'wm.container',
+        string='Individual Container Unit',
+        domain="[('container_type_id', '=', container_type_id)] if container_type_id else []",
+        tracking=True,
+        ondelete='set null',
+        help='Specific physical container/bin unit serviced during this pickup.',
     )
     container_count = fields.Integer(
         string='Container Count',
@@ -387,7 +418,6 @@ class WasteBatch(models.Model):
         store=True,
         digits=(16, 3),
     )
-
     # ── Smart-button counters ────────────────────────────────────────────────
     picking_ids = fields.One2many(
         'stock.picking',
@@ -399,7 +429,6 @@ class WasteBatch(models.Model):
         string='Pickings',
         compute='_compute_picking_count',
     )
-
     # ── Sorting / material split traceability ────────────────────────────────
     parent_batch_id = fields.Many2one(
         'waste.batch',
@@ -429,7 +458,6 @@ class WasteBatch(models.Model):
         ('material', 'Waste Material'),
         ('category_and_material', 'Waste Category and Material')
     ], string="Sort Based On", compute="_compute_wm_sort_based_on")
-
     category_id = fields.Many2one(
         'wm.waste.category',
         string='Waste Category',
@@ -444,6 +472,7 @@ class WasteBatch(models.Model):
         string='Intake Date',
         default=fields.Datetime.now,
         tracking=True,
+        copy=False,
     )
     intake_notes = fields.Text(
         string='Intake Notes',
@@ -458,12 +487,11 @@ class WasteBatch(models.Model):
         ('unsorted', 'Unsorted'),
         ('in_sorting', 'In Sorting'),
         ('sorted', 'Sorted'),
-    ], string='Sorting Status', default='unsorted', tracking=True)
+    ], string='Sorting Status', default='unsorted', tracking=True, copy=False)
     batch_type = fields.Selection([
         ('collection', 'Collection'),
         ('sorted_material', 'Sorted Material'),
     ], string='Batch Type', default='collection', tracking=True)
-
     is_category_batch = fields.Boolean(
         string='Is Category Batch',
         default=False,
@@ -486,15 +514,39 @@ class WasteBatch(models.Model):
         help='Percentage of total batch quantity that has been sorted out '
              'into child batches. Computed from line sorted_qty vs quantity.',
     )
-
     # ── Aging ────────────────────────────────────────────────────────────────
     days_in_current_status = fields.Integer(
-        string='Days Since Received',
+        string='Days in Current Status',
         compute='_compute_days_in_current_status',
-        store=True,
-        aggregator='avg',
-        help='Days elapsed since the batch was received.',
+        help='Days elapsed since the batch last changed status (falls back to '
+             'the received date, then the creation date, when no status change '
+             'has been tracked).',
     )
+
+    def _default_warehouse_id(self):
+        """
+        Return the default warehouse for waste batch stock operations from
+        company-level settings, ensuring batches are received into the correct
+        warehouse location.
+        """
+        return self.env['stock.warehouse'].search([('company_id', '=', self.env.company.id)], limit=1) or self.env['stock.warehouse'].search([], limit=1)
+
+    def _default_location_id(self):
+        """
+        Return the configured incoming waste stock location from system
+        settings, providing the default destination for new waste batch
+        receipts.
+        """
+        wh = self._default_warehouse_id()
+        if wh and wh.lot_stock_id:
+            return wh.lot_stock_id
+        return self.env['stock.location'].search([('usage', '=', 'internal')], limit=1)
+
+    @api.onchange('container_id')
+    def _onchange_container_id(self):
+        """Auto-set container_type_id from individual container unit if selected."""
+        if self.container_id and self.container_id.container_type_id:
+            self.container_type_id = self.container_id.container_type_id
 
     # ────────────────────────────────────────────────────────────────────────
     # Compute methods
@@ -546,8 +598,8 @@ class WasteBatch(models.Model):
         when fully sorted.
         """
         for batch in self:
-            active_lines = batch.line_ids.filtered(lambda l: l.quantity > 0)
-            batch.is_fully_sorted = bool(batch.sorted_batch_ids and active_lines and all(l.remaining_qty <= 0 for l in active_lines))
+            active_lines = batch.line_ids.filtered(lambda ln: ln.quantity > 0)
+            batch.is_fully_sorted = bool(batch.sorted_batch_ids and active_lines and all(ln.remaining_qty <= 0 for ln in active_lines))
 
     @api.depends('line_ids.material_id')
     def _compute_has_multiple_materials(self):
@@ -725,16 +777,32 @@ class WasteBatch(models.Model):
             else:
                 rec.picking_count = 0
 
-    @api.depends('received_date')
+    @api.depends('status', 'received_date')
     def _compute_days_in_current_status(self):
         """
         Count the number of calendar days the waste batch has remained in its
         current state (e.g. days awaiting inspection), supporting SLA
         monitoring and escalation alerts.
+
+        The last status change is read from the chatter tracking of the
+        ``status`` field. Not stored, since the value depends on today's date.
         """
         today = fields.Date.today()
+        last_change = {}
+        record_ids = [rid for rid in self.ids if isinstance(rid, int)]
+        status_field = self.env['ir.model.fields']._get(self._name, 'status')
+        if record_ids and status_field:
+            self.env.cr.execute("""
+                SELECT m.res_id, MAX(v.create_date)
+                  FROM mail_tracking_value v
+                  JOIN mail_message m ON m.id = v.mail_message_id
+                 WHERE m.model = %s AND m.res_id IN %s AND v.field_id = %s
+              GROUP BY m.res_id
+            """, (self._name, tuple(record_ids), status_field.id))
+            last_change = dict(self.env.cr.fetchall())
         for rec in self:
-            rec.days_in_current_status = (today - rec.received_date).days if rec.received_date else 0
+            since = last_change.get(rec.id) or rec.received_date or rec.create_date
+            rec.days_in_current_status = max(0, (today - fields.Date.to_date(since)).days) if since else 0
 
     @api.depends('inspection_ids.state')
     def _compute_inspection_count(self):
@@ -745,19 +813,22 @@ class WasteBatch(models.Model):
         for rec in self:
             rec.inspection_count = len(rec.inspection_ids)
 
-    @api.depends('inspection_ids.state')
+    @api.depends('inspection_ids.state', 'inspection_ids.inspection_date')
     def _compute_inspection_state(self):
         """
         Derive the aggregate inspection state of the waste batch from its
         linked inspection records, showing 'passed', 'failed', 'pending', or
         'not_required' on the batch form.
+
+        The most recent concluded inspection (by inspection date, then id)
+        wins, so a failed re-inspection overrides an earlier pass.
         """
         for rec in self:
+            concluded = rec.inspection_ids.filtered(lambda i: i.state in ('passed', 'failed')).sorted(
+                key=lambda i: (i.inspection_date or datetime.min, i._origin.id or 0))
             states = rec.inspection_ids.mapped('state')
-            if 'passed' in states:
-                rec.inspection_state = 'passed'
-            elif 'failed' in states:
-                rec.inspection_state = 'failed'
+            if concluded:
+                rec.inspection_state = concluded[-1].state
             elif 'in_progress' in states:
                 rec.inspection_state = 'in_progress'
             else:
@@ -796,7 +867,7 @@ class WasteBatch(models.Model):
         marked as hazardous-suitable, clear it with a warning.
         """
         if not self.container_type_id:
-            return
+            return None
         has_hazardous = any(self.line_ids.mapped('hazardous'))
         if has_hazardous and not self.container_type_id.is_hazardous_suitable:
             old_name = self.container_type_id.name
@@ -864,7 +935,7 @@ class WasteBatch(models.Model):
                         'product_id': prod_id,
                         'company_id': company_id,
                     })
-                    lot_dict[(lot_name, prod_id)] = lot
+                    lot_dict[lot_name, prod_id] = lot
                 line.lot_id = lot.id
 
     @api.model_create_multi
@@ -874,7 +945,7 @@ class WasteBatch(models.Model):
             if vals.get('name', _('New')) == _('New'):
                 vals['name'] = self.env['ir.sequence'].next_by_code('waste.batch') or _('New')
 
-        batches = super(WasteBatch, self).create(vals_list)
+        batches = super().create(vals_list)
         batches._assign_stock_lot()
 
         return batches
@@ -931,12 +1002,14 @@ class WasteBatch(models.Model):
                         name=batch.name,
                     ))
 
-        res = super(WasteBatch, self).write(vals)
+        res = super().write(vals)
         if 'status' in vals and vals['status'] in ('recycled', 'disposed', 'sold'):
             for batch in self:
                 if batch.parent_batch_id and batch.parent_batch_id.status not in ('recycled', 'disposed', 'sold'):
                     parent = batch.parent_batch_id
-                    if parent.sorted_batch_ids and all(child.status in ('recycled', 'disposed', 'sold') for child in parent.sorted_batch_ids):
+                    if (parent.sorted_batch_ids
+                            and not parent.line_ids.filtered(lambda ln: ln.remaining_qty > 1e-6)
+                            and all(child.status in ('recycled', 'disposed', 'sold') for child in parent.sorted_batch_ids)):
                         if all(c.status == 'recycled' for c in parent.sorted_batch_ids):
                             target_status = 'recycled'
                         elif all(c.status == 'disposed' for c in parent.sorted_batch_ids):
@@ -948,7 +1021,8 @@ class WasteBatch(models.Model):
                         parent.write({'status': target_status, 'sorting_status': 'sorted'})
         return res
 
-    def unlink(self):
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_received_batch(self):
         """ Prevent deletion of received or finalized waste batches. """
         for batch in self:
             if batch.status not in ('draft', 'cancel') or batch.is_received:
@@ -957,7 +1031,6 @@ class WasteBatch(models.Model):
                     name=batch.name,
                     status=dict(self._fields['status'].selection).get(batch.status, batch.status),
                 ))
-        return super().unlink()
 
     # ────────────────────────────────────────────────────────────────────────
     # Action helpers (smart buttons)
@@ -1025,6 +1098,18 @@ class WasteBatch(models.Model):
     # Workflow actions
     # ────────────────────────────────────────────────────────────────────────
 
+    def _inspection_gate_passed(self):
+        """True when the batch's latest concluded inspection passed.
+
+        Only the most recent result counts: a failed re-inspection overrides an
+        earlier pass (an old pass must not let a rejected batch into stock)."""
+        self.ensure_one()
+        latest = self.env['wm.batch.inspection'].search([
+            ('batch_id', '=', self.id),
+            ('state', 'in', ('passed', 'failed')),
+        ], order='inspection_date desc, id desc', limit=1)
+        return bool(latest) and latest.state == 'passed'
+
     def action_receive_batch(self):
         """
         Step 1 — Log Arrival: register that the batch has physically arrived.
@@ -1035,18 +1120,12 @@ class WasteBatch(models.Model):
         if not (self.env.user.has_group('wm_base.group_wm_inventory_operator') or self.env.user.has_group('wm_base.group_wm_ops_manager') or self.env.is_admin()):
             raise UserError(_("Only Inventory & Yard Operators and Operations Managers can receive batches."))
         if not self.env.context.get('skip_inspection_check') and self.use_batch_inspection:
-            has_passed = (self.inspection_state == 'passed') or bool(
-                self.env['wm.batch.inspection'].search_count([
-                    ('batch_id', '=', self.id),
-                    ('state', '=', 'passed')
-                ])
-            ) or any(insp.state == 'passed' for insp in self.inspection_ids)
-            if not has_passed:
+            if not self._inspection_gate_passed():
                 raise UserError(_("This batch requires inspection before it can be received into inventory. Please start and complete inspection first."))
 
         if self.status not in ('draft', 'inspection'):
             raise UserError(_("Only draft batches can be marked as arrived."))
-        if not any(l.quantity > 0 for l in self.line_ids):
+        if not any(ln.quantity > 0 for ln in self.line_ids):
             raise UserError(_("Add at least one batch line with a quantity greater than zero."))
         for line in self.line_ids:
             if not line.product_id.is_storable:
@@ -1072,13 +1151,7 @@ class WasteBatch(models.Model):
             raise UserError(_("This waste batch has already been received into stock."))
 
         if not self.env.context.get('skip_inspection_check') and self.use_batch_inspection:
-            has_passed = (self.inspection_state == 'passed') or bool(
-                self.env['wm.batch.inspection'].search_count([
-                    ('batch_id', '=', self.id),
-                    ('state', '=', 'passed')
-                ])
-            ) or any(insp.state == 'passed' for insp in self.inspection_ids)
-            if not has_passed:
+            if not self._inspection_gate_passed():
                 raise UserError(_("This batch requires inspection before it can be received into inventory. Please start and complete inspection first."))
 
         use_appr = self.env['ir.config_parameter'].sudo().get_param('wm_collection.use_batch_approval') == 'True'
@@ -1162,14 +1235,14 @@ class WasteBatch(models.Model):
             line_uom = line.uom_id or line.product_id.uom_id
             if move.move_line_ids:
                 for ml in move.move_line_ids:
-                    converted_qty = line_uom._compute_quantity(qty, ml.product_uom_id) if (line_uom and ml.product_uom_id) else qty
+                    converted_qty = line_uom._compute_quantity(qty, ml.product_uom_id, rounding_method='HALF-UP') if (line_uom and ml.product_uom_id) else qty
                     ml.write({
                         'lot_id': line.lot_id.id if line.lot_id else False,
                         'quantity': converted_qty,
                         'picked': True,
                     })
             else:
-                converted_qty = line_uom._compute_quantity(qty, move.product_uom) if (line_uom and move.product_uom) else qty
+                converted_qty = line_uom._compute_quantity(qty, move.product_uom, rounding_method='HALF-UP') if (line_uom and move.product_uom) else qty
                 self.env['stock.move.line'].create({
                     'move_id': move.id,
                     'product_id': line.product_id.id,
@@ -1186,7 +1259,7 @@ class WasteBatch(models.Model):
         self.write({'is_received': True, 'status': 'received'})
 
         # Auto-route single-material batch if sorting default exists
-        active_lines = self.line_ids.filtered(lambda l: l.quantity > 0)
+        active_lines = self.line_ids.filtered(lambda ln: ln.quantity > 0)
         if active_lines and not self.category_id and self.batch_type != 'collection':
             unique_materials = list(set(active_lines.mapped('material_id').ids))
             if len(active_lines) == 1 or len(unique_materials) == 1:
@@ -1202,15 +1275,9 @@ class WasteBatch(models.Model):
                         ], limit=1)
                         if config and config.dest_location_id:
                             if self.location_id != config.dest_location_id:
-                                self._do_internal_move(
-                                    self.line_ids[0].product_id,
-                                    self.quantity,
-                                    self.location_id,
-                                    config.dest_location_id,
-                                    self.lot_id,
-                                    origin=_('Auto-Sort: %s') % self.name,
-                                    uom=self.uom_id
-                                )
+                                self._move_lines_to_location(
+                                    active_lines, config.dest_location_id,
+                                    origin=_('Auto-Sort: %s') % self.name)
                                 self.location_id = config.dest_location_id
                     for line in active_lines:
                         line.sorted_qty = line.quantity
@@ -1236,7 +1303,7 @@ class WasteBatch(models.Model):
         operational efficiency.
         """
         self.ensure_one()
-        active_lines = self.line_ids.filtered(lambda l: l.remaining_qty > 0)
+        active_lines = self.line_ids.filtered(lambda ln: ln.remaining_qty > 0)
         if not active_lines:
             raise UserError(_("There is nothing left to sort on this batch — all lines have already been fully sorted."))
 
@@ -1251,10 +1318,9 @@ class WasteBatch(models.Model):
                 raise UserError(_("This single-material batch cannot be automatically sorted because no default Sort Configuration exists for %s. Please create one first.") % material.name)
 
             if self.location_id != config.dest_location_id:
-                self._do_internal_move(
-                    self.line_ids[0].product_id, self.quantity, self.location_id, config.dest_location_id, self.lot_id,
-                    origin=_('Auto-Sort: %s') % self.name, uom=self.uom_id
-                )
+                self._move_lines_to_location(
+                    self.line_ids.filtered(lambda ln: ln.quantity > 0 and ln.product_id),
+                    config.dest_location_id, origin=_('Auto-Sort: %s') % self.name)
 
             self.location_id = config.dest_location_id
             self.write({'status': 'sorted', 'sorting_status': 'sorted'})
@@ -1263,7 +1329,20 @@ class WasteBatch(models.Model):
                 line.sorted_qty = line.quantity
 
             return config
-        return False
+    def action_transfer_wizard(self):
+        """Open the location transfer wizard for this received waste batch."""
+        self.ensure_one()
+        return {
+            'name': _('Transfer Batch Location'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'waste.batch.transfer.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_batch_id': self.id,
+                'default_source_location_id': self.location_id.id,
+            },
+        }
 
     def action_sort_batch(self):
         """
@@ -1276,7 +1355,7 @@ class WasteBatch(models.Model):
         if not self.is_received:
             raise UserError(_("Only received batches can be sorted."))
 
-        active_lines = self.line_ids.filtered(lambda l: l.remaining_qty > 0)
+        active_lines = self.line_ids.filtered(lambda ln: ln.remaining_qty > 0)
         if not active_lines:
             raise UserError(_(
                 "There is nothing left to sort on this batch — all lines "
@@ -1317,7 +1396,7 @@ class WasteBatch(models.Model):
         if not self.is_received:
             raise UserError(_("Only received batches can be sorted."))
 
-        active_lines = self.line_ids.filtered(lambda l: l.remaining_qty > 0)
+        active_lines = self.line_ids.filtered(lambda ln: ln.remaining_qty > 0)
         if not active_lines:
             raise UserError(_(
                 "There is nothing left to sort on this batch — all lines "
@@ -1344,7 +1423,7 @@ class WasteBatch(models.Model):
         if not self.is_received:
             raise UserError(_("Only received batches can be sorted."))
 
-        active_lines = self.line_ids.filtered(lambda l: l.remaining_qty > 0)
+        active_lines = self.line_ids.filtered(lambda ln: ln.remaining_qty > 0)
         if not active_lines:
             raise UserError(_(
                 "There is nothing left to sort on this batch — all lines "
@@ -1433,6 +1512,22 @@ class WasteBatch(models.Model):
             uom = item.get('uom') or prod.uom_id
             lot = item.get('lot')
 
+            if src.company_id and src.company_id.id != company_id:
+                matching_src = self.env['stock.location'].search([
+                    ('usage', '=', src.usage),
+                    '|', ('company_id', '=', company_id), ('company_id', '=', False)
+                ], limit=1)
+                if matching_src:
+                    src = matching_src
+
+            if dest.company_id and dest.company_id.id != company_id:
+                matching_dest = self.env['stock.location'].search([
+                    ('usage', '=', dest.usage),
+                    '|', ('company_id', '=', company_id), ('company_id', '=', False)
+                ], limit=1)
+                if matching_dest:
+                    dest = matching_dest
+
             if lot and lot.product_id != prod:
                 matching_lot = self.env['stock.lot'].search([
                     ('product_id', '=', prod.id),
@@ -1458,13 +1553,9 @@ class WasteBatch(models.Model):
 
         for move, qty, uom, lot, src, dest in move_records:
             if move.move_line_ids:
-                for ml in move.move_line_ids:
-                    if lot:
-                        ml.lot_id = lot.id
-                    ml.quantity = uom._compute_quantity(qty, ml.product_uom_id) if (uom and ml.product_uom_id) else qty
-                    ml.picked = True
+                wm_set_move_line_quantity(move, qty, uom, lot)
             else:
-                converted_qty = uom._compute_quantity(qty, move.product_uom) if (uom and move.product_uom) else qty
+                converted_qty = uom._compute_quantity(qty, move.product_uom, rounding_method='HALF-UP') if (uom and move.product_uom) else qty
                 self.env['stock.move.line'].create({
                     'move_id': move.id,
                     'product_id': move.product_id.id,
@@ -1479,6 +1570,20 @@ class WasteBatch(models.Model):
 
         picking.with_context(cancel_backorder=True).button_validate()
         return picking
+
+    def _move_lines_to_location(self, lines, dest_loc, origin=None):
+        """Move each batch line in its own product and UoM (a batch can hold
+        lines in different units, so a single total quantity is meaningless)."""
+        self.ensure_one()
+        moves_data = [{
+            'product': line.product_id,
+            'qty': line.quantity,
+            'src_loc': self.location_id,
+            'dest_loc': dest_loc,
+            'lot': line.lot_id or self.lot_id,
+            'uom': line.uom_id or line.product_id.uom_id,
+        } for line in lines if line.product_id and line.quantity > 0]
+        return self._do_internal_moves_batch(moves_data, origin=origin)
 
     def _do_internal_move(self, product, qty, src_loc, dest_loc,
                           lot=None, origin=None, uom=None):
@@ -1523,7 +1628,13 @@ class WasteBatch(models.Model):
                         rem=line.remaining_qty,
                     ))
 
-            production_loc = self.env.ref('stock.location_production', raise_if_not_found=False)
+            domain_prod = [
+                ('usage', '=', 'production'),
+                '|', ('company_id', '=', self.company_id.id if self.company_id else False), ('company_id', '=', False)
+            ]
+            production_loc = self.env['stock.location'].search(domain_prod, limit=1)
+            if not production_loc:
+                production_loc = self.env.ref('stock.location_production', raise_if_not_found=False)
             if not production_loc:
                 production_loc = self.env['stock.location'].search(
                     [('usage', '=', 'production')], limit=1
@@ -1555,21 +1666,36 @@ class WasteBatch(models.Model):
         child_batches = self.env['waste.batch']
 
         if mode == 'consolidated':
-            child_line_vals = []
+            # Several materials can map to the same destination product; a
+            # batch allows only one line per product, so aggregate first.
+            kg_uom = self.env.ref('uom.product_uom_kgm', raise_if_not_found=False)
+            grouped = {}
             for d in lines_data:
                 batch_line = d['batch_line']
-                sort_qty = d['sort_qty']
                 product = d.get('dest_product') or batch_line.product_id
+                group = grouped.setdefault(product, {
+                    'qty': 0.0,
+                    'material': batch_line.material_id,
+                    'materials': [],
+                    'uom_id': batch_line.uom_id.id or self.uom_id.id,
+                    'dest_qty': {},
+                })
+                group['qty'] += d['sort_qty']
+                group['materials'].append(batch_line.material_id.display_name)
+                dest_loc = d.get('dest_location') or dest_location
+                group['dest_qty'][dest_loc] = group['dest_qty'].get(dest_loc, 0.0) + d['sort_qty']
+
+            child_line_vals = []
+            for product, group in grouped.items():
                 child_line_vals.append((0, 0, {
                     'product_id': product.id,
-                    'material_id': batch_line.material_id.id,
-                    'quantity': sort_qty,
+                    'material_id': group['material'].id,
+                    'quantity': group['qty'],
                     'sorted_qty': 0.0,
-                    'uom_id': batch_line.uom_id.id or self.uom_id.id,
-                    'net_weight': sort_qty if (batch_line.uom_id.id or self.uom_id.id) == self.env.ref(
-                        'uom.product_uom_kgm', raise_if_not_found=False).id else 0.0,
+                    'uom_id': group['uom_id'],
+                    'net_weight': group['qty'] if kg_uom and group['uom_id'] == kg_uom.id else 0.0,
                     'notes': _('Split from %(batch)s, line: %(material)s') % {
-                        'batch': self.name, 'material': batch_line.material_id.display_name,
+                        'batch': self.name, 'material': ', '.join(group['materials']),
                     },
                 }))
 
@@ -1590,16 +1716,19 @@ class WasteBatch(models.Model):
             child_batches |= child_batch
 
             dest_moves = []
-            for child_line, d in zip(child_batch.line_ids, lines_data):
-                dest_loc = d.get('dest_location') or dest_location
-                dest_moves.append({
-                    'product': child_line.product_id,
-                    'qty': child_line.quantity,
-                    'src_loc': production_loc,
-                    'dest_loc': dest_loc,
-                    'lot': child_line.lot_id or child_batch.lot_id,
-                    'uom': child_line.uom_id or child_batch.uom_id,
-                })
+            for child_line in child_batch.line_ids:
+                group = grouped.get(child_line.product_id)
+                if not group:
+                    continue
+                for dest_loc, qty in group['dest_qty'].items():
+                    dest_moves.append({
+                        'product': child_line.product_id,
+                        'qty': qty,
+                        'src_loc': production_loc,
+                        'dest_loc': dest_loc,
+                        'lot': child_line.lot_id or child_batch.lot_id,
+                        'uom': child_line.uom_id or child_batch.uom_id,
+                    })
             self._do_internal_moves_batch(dest_moves, origin=child_batch.name)
             child_batch.write({'is_received': True, 'status': 'received'})
 
@@ -1674,28 +1803,12 @@ class WasteBatch(models.Model):
                 parent=self.name,
             ))
 
-        if self.line_ids.filtered(lambda l: l.remaining_qty > 1e-6):
+        if self.line_ids.filtered(lambda ln: ln.remaining_qty > 1e-6):
             self.write({'status': 'sorting', 'sorting_status': 'in_sorting'})
         else:
             self.write({'status': 'sorted', 'sorting_status': 'sorted'})
 
         return child_batches
-
-    def _execute_sort_move(self, batch_line, sort_qty, dest_product, dest_location):
-        """
-        Execute a single material sort operation by creating the child batch
-        record and its corresponding internal stock move for the specified
-        quantity and category.
-        """
-        self.ensure_one()
-        lines_data = [{
-            'batch_line': batch_line,
-            'sort_qty': sort_qty,
-            'dest_product': dest_product,
-            'dest_location': dest_location,
-        }]
-        child_batches = self._create_sorted_child_batch(lines_data, dest_location, mode='per_material')
-        return child_batches[0]
 
     def _execute_grouped_sort_moves(self, lines_data, dest_location, dest_product=None):
         """
@@ -1719,8 +1832,8 @@ class WasteBatch(models.Model):
                 if not locked_row or locked_row[1] in ('recycled', 'sold', 'disposed') or batch.status in ('recycled', 'sold', 'disposed'):
                     raise UserError(_("Completed or already disposed batches cannot be disposed again."))
 
-                active_lines = batch.line_ids.filtered(lambda l: l.quantity > 0)
-                if batch.sorted_batch_ids and active_lines and all(l.remaining_qty <= 0 for l in active_lines):
+                active_lines = batch.line_ids.filtered(lambda ln: ln.quantity > 0)
+                if batch.sorted_batch_ids and active_lines and all(ln.remaining_qty <= 0 for ln in active_lines):
                     child_names = ', '.join(batch.sorted_batch_ids.mapped('name'))
                     raise UserError(_(
                         "Cannot dispose Waste Batch '%(name)s': This batch has been fully sorted into child batches (%(children)s). "
@@ -1739,7 +1852,7 @@ class WasteBatch(models.Model):
                         ], limit=1)
 
                     if scrap_loc:
-                        for line in batch.line_ids.filtered(lambda l: l.quantity > 0 and l.product_id):
+                        for line in batch.line_ids.filtered(lambda ln: ln.quantity > 0 and ln.product_id):
                             qty_to_scrap = line.remaining_qty if line.sorted_qty else line.quantity
                             if qty_to_scrap > 0:
                                 batch._do_internal_move(
@@ -1749,7 +1862,7 @@ class WasteBatch(models.Model):
                                     dest_loc=scrap_loc,
                                     lot=line.lot_id or batch.lot_id,
                                     origin=_('Disposal: %s') % batch.name,
-                                    uom=line.uom_id or batch.uom_id,
+                                    uom=line.uom_id or line.product_id.uom_id or batch.uom_id,
                                 )
 
                 batch.write({'status': 'disposed'})
@@ -1776,7 +1889,7 @@ class WasteBatch(models.Model):
             'state': 'in_progress',
         })
         self.write({
-            'status':'inspection',
+            'status': 'inspection',
         })
         return {
             'type': 'ir.actions.act_window',

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -29,5 +28,7 @@ from . import compliance_target
 from . import digital_signature
 from . import document_vault
 from . import report_builder
+from . import wm_compliance_rule_set
+from . import wm_safety_incident
 from . import compliance_dashboard
 from . import ir_actions_report

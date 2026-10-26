@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,9 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from markupsafe import Markup
+
+from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -153,8 +154,10 @@ class WmLeadConversionWizard(models.TransientModel):
             order = self.env['sale.order'].browse(order_id)
             if 'partner_id' in fields_list and not defaults.get('partner_id'):
                 defaults['partner_id'] = order.partner_id.id
+            # The quotation total is a tax-included (monthly) amount, not a
+            # per-collection price: leave it for the user to enter.
             if 'fixed_price' in fields_list:
-                defaults['fixed_price'] = order.amount_total
+                defaults['fixed_price'] = 0.0
             if order.opportunity_id:
                 if 'lead_id' in fields_list and not defaults.get('lead_id'):
                     defaults['lead_id'] = order.opportunity_id.id
@@ -166,7 +169,7 @@ class WmLeadConversionWizard(models.TransientModel):
             lead = self.env['crm.lead'].browse(lead_id)
             quotation = lead.order_ids.filtered(lambda o: o.state == 'sale')[:1]
             if quotation and 'fixed_price' in fields_list:
-                defaults['fixed_price'] = quotation.amount_total
+                defaults['fixed_price'] = 0.0
         return defaults
 
     # ------------------------------------------------------------------
@@ -175,9 +178,8 @@ class WmLeadConversionWizard(models.TransientModel):
     @api.constrains('contract_from_date', 'contract_to_date')
     def _check_dates(self):
         """
-        Validate that the proposed contract start date precedes the end date
-        and that the contract period meets the minimum duration configured in
-        system settings.
+        Validate that the proposed contract end date is not before the start
+        date.
         """
         for wiz in self:
             if wiz.contract_to_date and wiz.contract_from_date:
@@ -205,7 +207,7 @@ class WmLeadConversionWizard(models.TransientModel):
                 target_sites = existing_site
             else:
                 target_sites = self.env['wm.collection.point'].create({
-                    'name': f"{self.partner_id.name} - Main Site",
+                    'name': _("%s - Main Site") % self.partner_id.name,
                     'partner_id': self.partner_id.id,
                     'street': self.partner_id.street,
                     'city': self.partner_id.city,
@@ -223,8 +225,15 @@ class WmLeadConversionWizard(models.TransientModel):
                     'price': line.price_unit,
                 }))
 
+        assigned_user = (
+            (self.order_id.user_id if self.order_id and self.order_id.user_id else False) or
+            (self.lead_id.user_id if self.lead_id and self.lead_id.user_id else False) or
+            self.env.user
+        )
+
         contract_vals = {
             'partner_id': self.partner_id.id,
+            'user_id': assigned_user.id,
             'crm_lead_id': self.lead_id.id if self.lead_id else False,
             'sale_order_id': self.order_id.id if self.order_id else False,
             'from_date': self.contract_from_date,
@@ -236,7 +245,7 @@ class WmLeadConversionWizard(models.TransientModel):
             'state': 'draft',
             'fixed_price': self.fixed_price if self.billing_basis in ('per_collection', 'hybrid') else 0.0,
             'max_weight': self.max_weight if self.billing_basis == 'per_collection' else 0.0,
-            'overweight_price': self.overweight_price if self.billing_basis == 'per_collection' else 0.0,
+            'overweight_price': self.overweight_price if self.billing_basis in ('per_collection', 'hybrid') else 0.0,
             'included_weight': self.included_weight if self.billing_basis == 'hybrid' else 0.0,
             'collection_point_ids': [fields.Command.set(target_sites.ids)],
         }
@@ -248,11 +257,9 @@ class WmLeadConversionWizard(models.TransientModel):
         # Post chatter notes linking to the new contract
         if self.lead_id:
             self.lead_id.message_post(
-                body=_(
-                    'Converted to contract <a href="/web#id=%(id)s&model=wm.partner.contract">%(name)s</a>.',
-                    id=contract.id,
-                    name=contract.name,
-                )
+                body=Markup(_(
+                    'Converted to contract <a href="/odoo/wm.partner.contract/%(id)s">%(name)s</a>.'
+                )) % {'id': contract.id, 'name': contract.name}
             )
             # Mark pending contract-creation activities on the lead as done
             todo_activity_type = self.env.ref('mail.mail_activity_data_todo', raise_if_not_found=False)
@@ -267,11 +274,9 @@ class WmLeadConversionWizard(models.TransientModel):
 
         if self.order_id:
             self.order_id.message_post(
-                body=_(
-                    'Contract <a href="/web#id=%(id)s&model=wm.partner.contract">%(name)s</a> created from this quotation.',
-                    id=contract.id,
-                    name=contract.name,
-                )
+                body=Markup(_(
+                    'Contract <a href="/odoo/wm.partner.contract/%(id)s">%(name)s</a> created from this quotation.'
+                )) % {'id': contract.id, 'name': contract.name}
             )
 
         # Open the new contract form so the user can complete it

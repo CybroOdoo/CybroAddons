@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,9 +22,9 @@ import logging
 from datetime import timedelta
 
 from dateutil.relativedelta import relativedelta
-from odoo import api, fields, models, _
-from odoo.exceptions import UserError, ValidationError
 
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -106,9 +105,8 @@ class WmMonthlyBillingRun(models.Model):
     @api.constrains('period_start', 'period_end')
     def _check_period_dates(self):
         """
-        Validate that the billing period start date is earlier than the end
-        date, and that the period does not overlap with any existing confirmed
-        billing run.
+        Validate that the billing period end date is not earlier than the
+        start date.
         """
         for run in self:
             if run.period_start and run.period_end and run.period_end < run.period_start:
@@ -120,39 +118,66 @@ class WmMonthlyBillingRun(models.Model):
         Cron job to execute monthly billing for eligible customers.
         """
         today = fields.Date.today()
-        # Scoped to partners assigned to 'monthly_run' billing mode
-        partners = self.env['res.partner'].search([
-            ('billing_mode', '=', 'monthly_run'),
-        ])
-        if not partners:
-            _logger.info("Monthly Billing Cron: No partners found for monthly run billing mode.")
-            return
-
-        period_start = (today.replace(day=1) - relativedelta(months=1))
+        default_start = today.replace(day=1) - relativedelta(months=1)
         period_end = today.replace(day=1) - timedelta(days=1)
 
-        # Check if any billable orders exist for candidate partners before creating a run record
-        billable_orders = self.env['wm.collection.order']._get_billable_orders(
-            partner=partners,
-            period_start=period_start,
-            period_end=period_end,
-        )
-        if not billable_orders:
-            _logger.info("Monthly Billing Cron: No billable collection orders found for period %s - %s.", period_start, period_end)
-            return
+        # One run per company, billing only that company's orders
+        for company in self.env['res.company'].sudo().search([]):
+            run_model = self.sudo().with_company(company)
+            period_start = default_start
+            # Scoped to partners assigned to 'monthly_run' billing mode
+            partners = run_model.env['res.partner'].search([
+                ('billing_mode', '=', 'monthly_run'),
+                ('company_id', 'in', (False, company.id)),
+            ])
+            if not partners:
+                _logger.info("Monthly Billing Cron: No partners found for monthly run billing mode in %s.", company.name)
+                continue
 
-        run = self.create({
-            'period_start': period_start,
-            'period_end': period_end,
-        })
-        run.action_run_billing(partner_ids=partners.ids)
+            # Check if any billable orders exist for candidate partners before creating a run record
+            # Look back up to a year: an order completed (or approved) after its own
+            # month was billed would otherwise never fall inside any later window.
+            billable_orders = run_model.env['wm.collection.order']._get_billable_orders(
+                partner=partners,
+                period_start=period_start - relativedelta(years=1),
+                period_end=period_end,
+            ).filtered(lambda o: o.company_id == company)
+            order_dates = [o.actual_end or o.scheduled_start for o in billable_orders
+                           if o.actual_end or o.scheduled_start]
+            if order_dates:
+                period_start = min(period_start, min(order_dates).date())
+            if not billable_orders:
+                _logger.info("Monthly Billing Cron: No billable collection orders found for %s in period %s - %s.", company.name, period_start, period_end)
+                continue
+
+            run = run_model.create({
+                'period_start': period_start,
+                'period_end': period_end,
+                'company_id': company.id,
+            })
+            run.action_run_billing(partner_ids=partners.ids)
 
     def _get_billable_orders(self, partner, period_start, period_end):
         """
         Find completed/signed collection orders for partner in period that have
-        not been billed.
+        not been billed, restricted to the run's company.
         """
-        return self.env['wm.collection.order']._get_billable_orders(partner, period_start, period_end)
+        orders = self.env['wm.collection.order']._get_billable_orders(partner, period_start, period_end)
+        if self.company_id:
+            orders = orders.filtered(lambda o: o.company_id == self.company_id)
+        return orders
+
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_billed(self):
+        """
+        Block deleting a run that has billed orders: unlinking would free those
+        orders (billing_run_line_id is set null) and let them be billed again.
+        """
+        for run in self:
+            if run.state == 'done' or run.line_ids.filtered(lambda ln: ln.state == 'billed'):
+                raise UserError(_(
+                    "Monthly billing run %s has already billed collection orders and cannot be deleted."
+                ) % run.name)
 
     def action_run_billing(self, partner_ids=None):
         """
@@ -187,154 +212,209 @@ class WmMonthlyBillingRun(models.Model):
             for partner in partners:
                 orders = run._get_billable_orders(partner, run.period_start, run.period_end)
                 if not orders:
-                    log_messages.append(_("Partner '%s': No billable orders found in period.") % partner.display_name)
+                    log_messages.append(_("Partner '%s': No billable collection orders found in period.") % partner.display_name)
                     continue
 
                 try:
                     with self.env.cr.savepoint():
                         # Prevent check-then-act race: acquire row-level lock on billable orders
                         self.env.cr.execute(
-                            "SELECT id FROM wm_collection_order WHERE id IN %s AND billing_run_line_id IS NULL AND consolidated_invoice_id IS NULL FOR UPDATE SKIP LOCKED",
+                            "SELECT id FROM wm_collection_order WHERE id IN %s AND billing_run_line_id IS NULL AND consolidated_invoice_id IS NULL AND direct_invoice_id IS NULL FOR UPDATE SKIP LOCKED",
                             [tuple(orders.ids)]
                         )
                         locked_order_ids = [row[0] for row in self.env.cr.fetchall()]
                         if not locked_order_ids:
-                            log_messages.append(_("Partner '%s': Orders already claimed by another concurrent billing run.") % partner.display_name)
+                            log_messages.append(_("Partner '%s': Billable orders are locked by another process.") % partner.display_name)
                             continue
+                        locked_orders = orders.filtered(lambda o: o.id in locked_order_ids and not o.billing_run_line_id and not o.consolidated_invoice_id and not o.direct_invoice_id)
 
-                        orders = orders.filtered(lambda o: o.id in locked_order_ids and not o.billing_run_line_id and not o.consolidated_invoice_id)
-                        if not orders:
-                            log_messages.append(_("Partner '%s': Orders already billed.") % partner.display_name)
-                            continue
+                        # Group orders by contract (and corresponding subscription)
+                        orders_by_contract = {}
+                        for order in locked_orders:
+                            contract = order.contract_id or self.env['wm.partner.contract']
+                            orders_by_contract.setdefault(contract, self.env['wm.collection.order'])
+                            orders_by_contract[contract] |= order
 
-                        category_totals = {}
-                        for order in orders:
-                            for line in order.order_line_ids:
-                                if not line.category_id:
+                        # Subscription allowance left for these orders (kg), shared
+                        # across all of this partner's contract groups and with
+                        # earlier runs and invoices, so it is never granted twice.
+                        budget_of, remaining = locked_orders._get_allowance_budgets()
+                        for contract, c_orders in orders_by_contract.items():
+                            sub_ids = sorted({budget_of[o_id][0] for o_id in c_orders.ids if o_id in budget_of})
+                            sub = self.env['wm.subscription'].sudo().browse(sub_ids[0]) if sub_ids else False
+                            used = {}
+
+                            groups = c_orders._group_lines_for_billing()
+
+                            invoice_lines = []
+                            contract_fees = {}
+                            has_zero_price_warning = False
+                            period_label = _("%s to %s") % (
+                                run.period_start.strftime('%Y-%m-%d'), run.period_end.strftime('%Y-%m-%d'))
+
+                            Order = self.env['wm.collection.order']
+                            company_lines = []  # priced in company currency, converted below
+                            zero_price_categories = []
+
+                            for (order_contract, category), data in Order._sort_groups_for_allowance(groups, partner):
+                                # Price on the order's contract and service date,
+                                # not on the period end (the contract may have
+                                # ended or been replaced since).
+                                rule = Order._get_billing_rule(
+                                    category, partner, data['date'], contract=order_contract)
+                                target = invoice_lines if (rule and getattr(rule, 'from_contract', False)) else company_lines
+
+                                # Every collection is priced on its own weight, as on the
+                                # order total and the direct invoice (never pooled over the
+                                # period).
+                                order_weights = data['order_weights']
+                                product = data['product'] or False
+
+                                # A price per collection is not lowered by free kg: the
+                                # subscription allowance only applies to per-kg prices.
+                                if rule and getattr(rule, 'billing_basis', 'per_kg') in ('flat_per_collection', 'hybrid'):
+                                    if getattr(rule, 'contract_id', 0):
+                                        # Contract fee: once per collection, not per category
+                                        fee = contract_fees.setdefault(rule.contract_id, {
+                                            'rule': rule, 'order_weights': {}, 'product': product,
+                                        })
+                                        for order_id, weight in order_weights.items():
+                                            fee['order_weights'][order_id] = fee['order_weights'].get(order_id, 0.0) + weight
+                                    else:
+                                        target += Order._prepare_collection_fee_lines_per_order(
+                                            rule, order_weights, product,
+                                            _("%s (%s)") % (category.name, period_label))
                                     continue
-                                cat = line.category_id
-                                if cat not in category_totals:
-                                    category_totals[cat] = {
-                                        'weight': 0.0,
-                                        'line_count': 0,
-                                        'product': line.product_id or False,
-                                    }
-                                category_totals[cat]['weight'] += line.weight
-                                category_totals[cat]['line_count'] += 1
 
-                        if not category_totals:
-                            log_messages.append(_("Partner '%s': Billable orders exist but have no category lines.") % partner.display_name)
-                            continue
+                                charged, credited = Order._split_allowance(order_weights, budget_of, remaining, used)
+                                cat_weight = sum(charged.values())
+                                # Nothing left to bill: every collection fully covered by
+                                # the subscription, or no weight and no rule minimum.
+                                if not charged or (cat_weight <= 0 and not rule):
+                                    continue
 
-                        invoice_lines = []
-                        order_date = run.period_end or fields.Date.today()
-                        has_zero_price_warning = False
-
-                        for category, data in category_totals.items():
-                            rule = self.env['wm.collection.order']._get_billing_rule(category, partner, order_date)
-                            cat_weight = data['weight']
-                            data['line_count']
-
-                            if rule:
-                                billing_basis = getattr(rule, 'billing_basis', 'per_kg')
-                                if billing_basis == 'flat_per_collection':
-                                    # per_collection contract: fixed fee × collections
-                                    # + overweight surcharge if cat_weight > max_weight * len(orders)
-                                    flat_total = rule.price * len(orders)
-                                    max_weight = getattr(rule, 'max_weight', 0.0) or 0.0
-                                    overweight_price = getattr(rule, 'overweight_price', 0.0) or 0.0
-                                    allowed_weight = max_weight * len(orders)
-                                    overweight_surcharge = 0.0
-                                    if allowed_weight and overweight_price and cat_weight > allowed_weight:
-                                        overweight_kg = cat_weight - allowed_weight
-                                        overweight_surcharge = (overweight_kg / 10.0) * overweight_price
-                                    line_total = flat_total + overweight_surcharge
-                                    quantity = float(len(orders)) if len(orders) > 0 else 1.0
-                                    price_unit = currency.round(line_total / quantity)
-                                    desc = _("%s — %d collections (%s to %s)") % (
-                                        category.name, len(orders),
-                                        run.period_start.strftime('%Y-%m-%d'), run.period_end.strftime('%Y-%m-%d')
-                                    )
-                                    if overweight_surcharge:
-                                        desc += _(" (incl. overweight surcharge: %s)") % round(overweight_surcharge, 2)
-                                elif billing_basis == 'hybrid':
-                                    # hybrid: base fee per collection + overweight per 10 kg above included_weight * len(orders)
-                                    base_total = rule.price * len(orders)
-                                    included_weight = getattr(rule, 'included_weight', 0.0) or getattr(rule, 'min_weight', 0.0) or 0.0
-                                    overweight_price = getattr(rule, 'overweight_price', 0.0) or getattr(rule, 'min_charge', 0.0) or 0.0
-                                    allowed_weight = included_weight * len(orders)
-                                    overweight_surcharge = 0.0
-                                    if allowed_weight and overweight_price and cat_weight > allowed_weight:
-                                        overage_kg = cat_weight - allowed_weight
-                                        overweight_surcharge = (overage_kg / 10.0) * overweight_price
-                                    line_total = base_total + overweight_surcharge
-                                    quantity = float(len(orders)) if len(orders) > 0 else 1.0
-                                    price_unit = currency.round(line_total / quantity)
-                                    desc = _("%s — %d collections, %s kg (base: %s, overage: %s) (%s to %s)") % (
-                                        category.name, len(orders), round(cat_weight, 2),
-                                        round(base_total, 2), round(overweight_surcharge, 2),
-                                        run.period_start.strftime('%Y-%m-%d'), run.period_end.strftime('%Y-%m-%d')
-                                    )
-                                else:
-                                    # per_kg / category_rate / material
-                                    min_wt = getattr(rule, 'min_weight', 0.0) or 0.0
-                                    weight_to_bill = max(cat_weight, min_wt) if min_wt else cat_weight
-                                    line_total = weight_to_bill * rule.price
-                                    min_charge = getattr(rule, 'min_charge', 0.0) or 0.0
-                                    if min_charge and line_total < min_charge:
-                                        line_total = min_charge
-                                    quantity = cat_weight if cat_weight > 0 else 1.0
-                                    price_unit = currency.round(line_total / quantity)
-                                    desc = _("%s — %d collections, %s kg (%s to %s)") % (
-                                        category.name, len(orders), round(cat_weight, 2),
-                                        run.period_start.strftime('%Y-%m-%d'), run.period_end.strftime('%Y-%m-%d')
-                                    )
-                            else:
-                                fallback_price = category.price or 0.0
-                                if data['product'] and data['product'].list_price:
-                                    fallback_price = data['product'].list_price
-                                if fallback_price <= 0.0:
-                                    has_zero_price_warning = True
-                                    log_messages.append(_("WARNING: Partner '%s', Category '%s' priced at 0.00 (unconfigured rate card/pricing rule).") % (partner.display_name, category.name))
-                                quantity = cat_weight if cat_weight > 0 else 1.0
-                                price_unit = currency.round(fallback_price)
                                 desc = _("%s — %d collections, %s kg (%s to %s)") % (
-                                    category.name, len(orders), round(cat_weight, 2),
+                                    category.name, len(c_orders), round(cat_weight, 2),
                                     run.period_start.strftime('%Y-%m-%d'), run.period_end.strftime('%Y-%m-%d')
                                 )
+                                if rule:
+                                    rate = rule.price
+                                    line_total, billed_weight, charge_applied = Order._price_per_kg_per_collection(
+                                        rule, list(charged.values()))
+                                    if charge_applied:
+                                        # A minimum charge applied to at least one collection:
+                                        # bill the exact total as one unit (a rounded total/qty
+                                        # unit price would drift).
+                                        quantity = 1.0
+                                        price_unit = line_total
+                                        desc += _(" (minimum charge applied per collection)")
+                                    else:
+                                        quantity = billed_weight
+                                        price_unit = rule.price
+                                else:
+                                    fallback_price = category.price or 0.0
+                                    if data['product'] and data['product'].list_price:
+                                        fallback_price = data['product'].list_price
+                                    if fallback_price <= 0.0:
+                                        zero_price_categories.append(category.name)
+                                    quantity = cat_weight
+                                    price_unit = rate = currency.round(fallback_price)
 
-                            invoice_lines.append((0, 0, {
-                                'product_id': data['product'].id if data['product'] else False,
-                                'name': desc,
-                                'quantity': quantity,
-                                'price_unit': price_unit,
-                            }))
+                                target.append((0, 0, {
+                                    'product_id': data['product'].id if data['product'] else False,
+                                    'name': desc,
+                                    'quantity': quantity,
+                                    'price_unit': price_unit,
+                                }))
+                                if credited:
+                                    target.append(Order._prepare_allowance_discount_line(
+                                        category.name, credited, rate, product))
 
-                        invoice = self.env['account.move'].sudo().create({
-                            'move_type': 'out_invoice',
-                            'partner_id': partner.id,
-                            'company_id': run.company_id.id,
-                            'invoice_date': run.period_end or fields.Date.today(),
-                            'ref': run.name,
-                            'billing_run_id': run.id,
-                            'invoice_line_ids': invoice_lines,
-                        })
+                            if zero_price_categories:
+                                # Never bill (and mark as billed) at zero: the orders stay
+                                # unbilled until a price is configured.
+                                raise UserError(_(
+                                    "No price is configured for: %s. Configure a pricing rule or "
+                                    "category price, then run the billing again."
+                                ) % ', '.join(sorted(set(zero_price_categories))))
 
-                        run_line = self.env['wm.monthly.billing.run.line'].sudo().create({
-                            'run_id': run.id,
-                            'partner_id': partner.id,
-                            'collection_order_ids': [(6, 0, orders.ids)],
-                            'invoice_id': invoice.id,
-                            'total_amount': invoice.amount_total,
-                            'state': 'billed',
-                            'has_zero_price_warning': has_zero_price_warning,
-                        })
+                            for contract_id, fee in contract_fees.items():
+                                invoice_lines += Order._prepare_collection_fee_lines_per_order(
+                                    fee['rule'], fee['order_weights'], fee['product'],
+                                    _("%s (%s)") % (self.env['wm.partner.contract'].browse(contract_id).display_name, period_label))
 
-                        orders.sudo().write({'billing_run_line_id': run_line.id})
-                        created_invoices |= invoice
-                        log_messages.append(_("Partner '%s': Successfully generated invoice %s for %d order(s), total %s.") % (
-                            partner.display_name, invoice.name or invoice.id, len(orders), invoice.amount_total
-                        ))
+                            # Invoice in the contract's currency; prices that do not come from
+                            # the contract are in the company currency and are converted.
+                            invoice_currency = contract.currency_id if contract else (run.company_id.currency_id or currency)
+                            invoice_lines += Order._scale_invoice_lines(
+                                company_lines,
+                                Order._get_invoice_currency_factor(invoice_currency, run.company_id, run.period_end))
+
+                            if not invoice_lines:
+                                # Nothing to invoice (weight covered by the
+                                # subscription allowance, or no billable lines):
+                                # the orders are still settled by this run, so
+                                # they are not billed again later (in full) by a
+                                # consolidated/direct invoice or another run.
+                                allowance_used = sum(used.values())
+                                if allowance_used:
+                                    note = _("Covered by subscription allowance (%s, %s kg)") % (
+                                        sub.display_name, round(allowance_used, 2))
+                                else:
+                                    note = _("Nothing to invoice")
+                                run_line = self.env['wm.monthly.billing.run.line'].sudo().create({
+                                    'run_id': run.id,
+                                    'partner_id': partner.id,
+                                    'collection_order_ids': [(6, 0, c_orders.ids)],
+                                    'invoice_id': False,
+                                    'total_amount': 0.0,
+                                    'state': 'billed',
+                                    'invoice_not_required': True,
+                                    'note': note,
+                                    'has_zero_price_warning': has_zero_price_warning,
+                                })
+                                c_orders.sudo().write({'billing_run_line_id': run_line.id})
+                                c_orders._record_allowance_usage(budget_of, used)
+                                log_messages.append(_("Partner '%s' (Contract %s): No invoice needed for %d order(s): %s.") % (
+                                    partner.display_name, contract.name if contract else _('General'), len(c_orders), note
+                                ))
+                                continue
+
+                            ref_text = run.name
+                            if contract:
+                                ref_text = _("%s - %s") % (run.name, contract.name)
+
+                            invoice_vals = {
+                                'move_type': 'out_invoice',
+                                'partner_id': partner.id,
+                                'company_id': run.company_id.id,
+                                'currency_id': invoice_currency.id,
+                                'invoice_date': run.period_end or fields.Date.today(),
+                                'ref': ref_text,
+                                'billing_run_id': run.id,
+                                'invoice_line_ids': invoice_lines,
+                            }
+                            if sub and 'subscription_id' in self.env['account.move']._fields:
+                                invoice_vals['subscription_id'] = sub.id
+
+                            invoice = self.env['account.move'].sudo().create(invoice_vals)
+
+                            run_line = self.env['wm.monthly.billing.run.line'].sudo().create({
+                                'run_id': run.id,
+                                'partner_id': partner.id,
+                                'collection_order_ids': [(6, 0, c_orders.ids)],
+                                'invoice_id': invoice.id,
+                                'total_amount': invoice.amount_total,
+                                'state': 'billed',
+                                'has_zero_price_warning': has_zero_price_warning,
+                            })
+
+                            c_orders.sudo().write({'billing_run_line_id': run_line.id})
+                            c_orders._record_allowance_usage(budget_of, used)
+                            created_invoices |= invoice
+                            log_messages.append(_("Partner '%s' (Contract %s): Generated invoice %s for %d order(s), total %s.") % (
+                                partner.display_name, contract.name if contract else _('General'), invoice.name or invoice.id, len(c_orders), invoice.amount_total
+                            ))
 
                 except Exception as e:
                     has_error = True
@@ -349,11 +429,63 @@ class WmMonthlyBillingRun(models.Model):
                         'error_message': err_msg,
                     })
 
+            log_messages += run._invoice_billable_events(partners, created_invoices)
+
             final_state = 'done' if not has_error else 'error'
             run.write({
                 'state': final_state,
                 'error_message': '\n'.join(log_messages),
             })
+
+    def _invoice_billable_events(self, partners, created_invoices):
+        """
+        Bill the confirmed, uninvoiced ad-hoc events (extra pickups, overweight,
+        contamination, emergency callouts) of these customers up to the period
+        end. They are added to the partner's invoice of this run when it has
+        one in the event's currency, otherwise to a new invoice of the run.
+
+        :return: list of log messages
+        """
+        self.ensure_one()
+        messages = []
+        if 'wm.billable.event' not in self.env:
+            return messages
+        Event = self.env['wm.billable.event'].sudo()
+        for partner in partners:
+            events = Event.search([
+                ('partner_id', '=', partner.id),
+                ('company_id', '=', self.company_id.id),
+                ('state', '=', 'confirmed'),
+                ('invoice_id', '=', False),
+                ('event_date', '<=', self.period_end),
+            ])
+            for currency, currency_events in events.grouped('currency_id').items():
+                currency = currency or self.company_id.currency_id
+                try:
+                    with self.env.cr.savepoint():
+                        invoice = created_invoices.filtered(
+                            lambda i: i.partner_id == partner and i.currency_id == currency and i.state == 'draft')[:1]
+                        if not invoice:
+                            invoice = self.env['account.move'].sudo().create({
+                                'move_type': 'out_invoice',
+                                'partner_id': partner.id,
+                                'company_id': self.company_id.id,
+                                'currency_id': currency.id,
+                                'invoice_date': self.period_end or fields.Date.today(),
+                                'ref': self.name,
+                                'billing_run_id': self.id,
+                            })
+                            created_invoices |= invoice
+                        for event in currency_events:
+                            line = self.env['account.move.line'].sudo().create(dict(
+                                event._prepare_invoice_line_vals(), move_id=invoice.id))
+                            event.write({'state': 'invoiced', 'invoice_id': invoice.id, 'invoice_line_id': line.id})
+                        messages.append(_("Partner '%s': %d billable event(s) added to invoice %s.") % (
+                            partner.display_name, len(currency_events), invoice.name or invoice.id))
+                except Exception as e:
+                    _logger.error("Monthly billing: events of partner %s could not be invoiced: %s", partner.display_name, e, exc_info=True)
+                    messages.append(_("ERROR Partner '%s': billable events could not be invoiced: %s") % (partner.display_name, e))
+        return messages
 
     def action_view_invoices(self):
         """
@@ -392,4 +524,10 @@ class WmMonthlyBillingRunLine(models.Model):
         ('error', 'Error'),
     ], string='Status', default='draft', required=True)
     has_zero_price_warning = fields.Boolean(string='Zero Price Warning', default=False)
+    invoice_not_required = fields.Boolean(
+        string='No Invoice Required',
+        help="The orders were settled by this run without an invoice, e.g. "
+             "their weight was fully covered by the subscription allowance.",
+    )
+    note = fields.Char(string='Note')
     error_message = fields.Text(string='Error Message')

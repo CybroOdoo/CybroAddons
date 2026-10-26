@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -61,7 +60,8 @@ class WmRouteLine(models.Model):
                     ))
         return super().write(vals)
 
-    def unlink(self):
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_completed_route(self):
         """
         Prevent deleting stops from a route if the route is already in completed state.
         """
@@ -72,4 +72,3 @@ class WmRouteLine(models.Model):
                         "Cannot delete stop from route '%(name)s' because it is already completed.",
                         name=line.route_id.name,
                     ))
-        return super().unlink()

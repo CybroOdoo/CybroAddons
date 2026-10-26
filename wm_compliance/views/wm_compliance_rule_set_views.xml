@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Compliance Rule Set Form View -->
+    <record id="view_wm_compliance_rule_set_form" model="ir.ui.view">
+        <field name="name">wm.compliance.rule.set.form</field>
+        <field name="model">wm.compliance.rule.set</field>
+        <field name="arch" type="xml">
+            <form string="Compliance Rule Set">
+                <header>
+                    <button name="action_activate" string="Activate" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_lock" string="Lock Version" type="object" invisible="state != 'active'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,locked"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="e.g. California EPA Hazardous Waste Rules"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Applicability Criteria">
+                            <field name="sequence"/>
+                            <field name="country_id" placeholder="All Countries"/>
+                            <field name="state_id" placeholder="All States / Regions"/>
+                            <field name="waste_category_id" placeholder="All Waste Categories"/>
+                            <field name="manifest_type"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Regulatory Requirements">
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="requires_manifest"/>
+                            <field name="retention_years"/>
+                            <field name="effective_date"/>
+                            <field name="expiry_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Required Compliance Codes" name="compliance_codes">
+                            <field name="required_code_ids" widget="many2many_tags"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Compliance Rule Set List View -->
+    <record id="view_wm_compliance_rule_set_list" model="ir.ui.view">
+        <field name="name">wm.compliance.rule.set.list</field>
+        <field name="model">wm.compliance.rule.set</field>
+        <field name="arch" type="xml">
+            <list string="Compliance Rule Sets" default_order="sequence asc, id desc">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="country_id"/>
+                <field name="state_id"/>
+                <field name="waste_category_id"/>
+                <field name="manifest_type"/>
+                <field name="requires_manifest"/>
+                <field name="retention_years"/>
+                <field name="effective_date"/>
+                <field name="expiry_date"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'active'" decoration-muted="state == 'locked'"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Compliance Rule Set Search View -->
+    <record id="view_wm_compliance_rule_set_search" model="ir.ui.view">
+        <field name="name">wm.compliance.rule.set.search</field>
+        <field name="model">wm.compliance.rule.set</field>
+        <field name="arch" type="xml">
+            <search string="Search Compliance Rule Sets">
+                <field name="name"/>
+                <field name="country_id"/>
+                <field name="state_id"/>
+                <field name="waste_category_id"/>
+                <separator/>
+                <filter string="Requires Manifest" name="filter_requires_manifest" domain="[('requires_manifest', '=', True)]"/>
+                <filter string="Archived" name="archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Country" name="groupby_country" context="{'group_by': 'country_id'}"/>
+                    <filter string="State / Region" name="groupby_state" context="{'group_by': 'state_id'}"/>
+                    <filter string="Waste Category" name="groupby_category" context="{'group_by': 'waste_category_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Compliance Rule Set Action -->
+    <record id="action_wm_compliance_rule_set" model="ir.actions.act_window">
+        <field name="name">Compliance Rule Sets</field>
+        <field name="res_model">wm.compliance.rule.set</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wm_compliance_rule_set_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Compliance Rule Set
+            </p>
+            <p>
+                Configure region and waste stream specific compliance rules, manifest requirements, mandatory compliance codes, and record retention periods.
+            </p>
+        </field>
+    </record>
+</odoo>

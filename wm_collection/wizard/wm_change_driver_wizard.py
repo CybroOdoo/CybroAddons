@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models, _
+from odoo import _, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -63,8 +62,9 @@ class WmChangeDriverWizard(models.TransientModel):
         if conflicting_routes:
             raise ValidationError(_("Driver '%s' is already assigned to another route ('%s') on %s.") % (self.new_driver_id.name, conflicting_routes[0].name, route_date))
 
-        # Log the driver change in history
-        self.env['wm.driver.change.history'].create({
+        # Log the driver change in history (an audit log: users who may change
+        # the driver cannot write it directly, so it is logged as superuser)
+        self.env['wm.driver.change.history'].sudo().create({
             'route_id': route.id,
             'old_driver_id': old_driver.id if old_driver else False,
             'new_driver_id': self.new_driver_id.id,

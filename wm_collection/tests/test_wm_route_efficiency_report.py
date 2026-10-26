@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,8 +20,7 @@
 #############################################################################
 import logging
 
-from odoo.tests import tagged, TransactionCase
-
+from odoo.tests import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -85,3 +83,16 @@ class TestWmRouteEfficiencyReport(TransactionCase):
         self.assertTrue(reports)
         self.assertEqual(reports[0].completion_rate, 0.0, "Completion rate for route with 0 planned points should safely be 0.0")
         _logger.info('PASS: test_zero_division_guard')
+
+    def test_distance_reported_after_optimization(self):
+        """Optimizing a geolocated route stores its straight-line distance and the report shows it."""
+        p1 = self.env['wm.collection.point'].create({'name': 'D1', 'latitude': 10.0, 'longitude': 76.0})
+        p2 = self.env['wm.collection.point'].create({'name': 'D2', 'latitude': 10.1, 'longitude': 76.0})
+        route = self.env['wm.route'].create({'name': 'ROUTE-DIST', 'date': '2026-07-28'})
+        for i, pt in enumerate((p1, p2)):
+            self.env['wm.route.line'].create({'route_id': route.id, 'collection_point_id': pt.id, 'sequence': 10 * (i + 1)})
+        route.action_optimize_route()
+        self.assertAlmostEqual(route.estimated_distance_km, 11.12, delta=0.1)
+        self.env.flush_all()
+        report = self.env['wm.route.efficiency.report'].search([('route_id', '=', route.id)])
+        self.assertAlmostEqual(report.distance_km, route.estimated_distance_km, places=2)

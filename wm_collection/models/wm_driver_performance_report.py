@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,6 +19,7 @@
 #
 #############################################################################
 from odoo import fields, models
+from odoo.tools import SQL
 
 
 class WmDriverPerformanceReport(models.Model):
@@ -41,6 +41,18 @@ class WmDriverPerformanceReport(models.Model):
     completion_rate = fields.Float(string='Completion Rate (%)', readonly=True, aggregator='avg')
     missed_rate = fields.Float(string='Missed Rate (%)', readonly=True, aggregator='avg')
 
+    def _read_group_select(self, aggregate_spec, query):
+        """Grouped rates are total completed (or missed) / total orders, not a
+        plain average of the per-day percentages."""
+        rates = {'completion_rate:avg': 'completed_orders', 'missed_rate:avg': 'missed_orders'}
+        if aggregate_spec in rates:
+            return SQL(
+                'COALESCE(SUM(%(part)s)::float / NULLIF(SUM(%(total)s), 0) * 100.0, 0.0)',
+                part=self._field_to_sql(self._table, rates[aggregate_spec], query),
+                total=self._field_to_sql(self._table, 'total_orders', query),
+            )
+        return super()._read_group_select(aggregate_spec, query)
+
     def init(self):
         """
         Create or replace SQL view for driver performance analysis.
@@ -52,7 +64,7 @@ class WmDriverPerformanceReport(models.Model):
                     row_number() OVER () AS id,
                     driver_id,
                     CAST(COALESCE(scheduled_start, create_date) AS DATE) AS date,
-                    MAX(company_id) AS company_id,
+                    company_id,
                     COUNT(DISTINCT route_id) AS route_count,
                     COUNT(id) AS total_orders,
                     COUNT(CASE WHEN state IN ('completed', 'signed', 'invoiced') THEN 1 END) AS completed_orders,
@@ -71,6 +83,7 @@ class WmDriverPerformanceReport(models.Model):
                 WHERE driver_id IS NOT NULL
                 GROUP BY
                     driver_id,
+                    company_id,
                     CAST(COALESCE(scheduled_start, create_date) AS DATE)
             )
         """)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -25,8 +24,17 @@ import io
 import openpyxl
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
-from odoo import api, fields, models, _
+
+from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
+
+
+def _xlsx_safe(value):
+    """Neutralise spreadsheet formula injection: a text cell starting with
+    = + - @ (or a control character) would be executed as a formula."""
+    if isinstance(value, str) and value[:1] in ('=', '+', '-', '@', '\t', '\r'):
+        return "'" + value
+    return value
 
 
 class ComplianceReport(models.TransientModel):
@@ -95,8 +103,7 @@ class ComplianceReport(models.TransientModel):
 
         if self.report_type == 'certificate':
             return self._generate_certificate_report()
-        else:
-            return self._generate_manifest_report()
+        return self._generate_manifest_report()
 
     def _generate_manifest_report(self):
         """Generate PDF or XLSX report for waste compliance manifests."""
@@ -104,6 +111,8 @@ class ComplianceReport(models.TransientModel):
             ('manifest_date', '>=', self.date_from),
             ('manifest_date', '<=', self.date_to),
             ('company_id', '=', self.company_id.id),
+            # Drafts are not regulatory records yet
+            ('state', '!=', 'draft'),
         ]
         if self.facility_id:
             domain.append(('disposal_facility_id', '=', self.facility_id.id))
@@ -118,19 +127,16 @@ class ComplianceReport(models.TransientModel):
         if self.output_format == 'pdf':
             report = self.env.ref('wm_compliance.action_report_compliance_manifest')
             return report.report_action(manifests.ids, config=False)
-        else:
-            return self._generate_manifest_xlsx(manifests)
+        return self._generate_manifest_xlsx(manifests)
 
     def _generate_certificate_report(self):
         """Generate PDF or XLSX report for compliance certificates."""
-        start_dt = fields.Datetime.to_datetime(self.date_from)
-        end_dt = fields.Datetime.to_datetime(self.date_to).replace(hour=23, minute=59, second=59)
-
+        # Only issued certificates count, by their issue date
         domain = [
             ('company_id', '=', self.company_id.id),
-            '|',
-            '&', ('issued_date', '>=', self.date_from), ('issued_date', '<=', self.date_to),
-            '&', ('create_date', '>=', start_dt), ('create_date', '<=', end_dt),
+            ('state', '=', 'issued'),
+            ('issued_date', '>=', self.date_from),
+            ('issued_date', '<=', self.date_to),
         ]
         if self.facility_id:
             domain.append(('facility_id', '=', self.facility_id.id))
@@ -145,8 +151,7 @@ class ComplianceReport(models.TransientModel):
         if self.output_format == 'pdf':
             report = self.env.ref('wm_compliance.action_report_compliance_certificate')
             return report.report_action(certificates.ids, config=False)
-        else:
-            return self._generate_certificate_xlsx(certificates)
+        return self._generate_certificate_xlsx(certificates)
 
     def _generate_manifest_xlsx(self, manifests):
         """Build styled Excel workbook for manifests."""
@@ -241,7 +246,7 @@ class ComplianceReport(models.TransientModel):
             total_qty += m.total_quantity or 0
 
             for col_idx, value in enumerate(row_data, start=1):
-                cell = ws.cell(row=excel_row, column=col_idx, value=value)
+                cell = ws.cell(row=excel_row, column=col_idx, value=_xlsx_safe(value))
                 cell.font = data_font_base
                 cell.fill = fill
                 cell.border = thin_border
@@ -394,10 +399,12 @@ class ComplianceReport(models.TransientModel):
                 str(cert.issued_date) if cert.issued_date else '',
                 cert.signature_pdf_hash or ('Signed' if cert.signature_id else 'Unsigned'),
             ]
-            total_qty += cert.quantity or 0.0
+            # Normalise to kg where the certificate UoM allows it
+            total_qty += self.env['wm.compliance.manifest.line']._convert_quantity_to_kg(
+                cert.quantity or 0.0, cert.uom_id)
 
             for col_idx, value in enumerate(row_data, start=1):
-                cell = ws.cell(row=excel_row, column=col_idx, value=value)
+                cell = ws.cell(row=excel_row, column=col_idx, value=_xlsx_safe(value))
                 cell.font = data_font_base
                 cell.fill = fill
                 cell.border = thin_border

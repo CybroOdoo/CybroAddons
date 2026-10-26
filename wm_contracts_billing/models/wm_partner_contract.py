@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,12 +20,16 @@
 #############################################################################
 import calendar
 import collections
+import logging
 from datetime import datetime, time, timedelta
 
 from dateutil.relativedelta import relativedelta
 from markupsafe import Markup
-from odoo import api, fields, models, _
+
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class WmPartnerContract(models.Model):
@@ -47,17 +50,22 @@ class WmPartnerContract(models.Model):
         string='Customer',
         required=True
     )
+    user_id = fields.Many2one(
+        'res.users',
+        string='Account Manager',
+        tracking=True,
+        default=lambda self: self.env.user
+    )
     from_date = fields.Date(
         string='From Date',
         required=True,
-        default=fields.Date.today()
+        default=fields.Date.context_today
     )
     to_date = fields.Date(string='To Date', required=True)
     contract_line_ids = fields.One2many(
         'wm.partner.contract.line',
         'contract_id',
         string='Contract Lines',
-        required=True
     )
     selected_product_ids = fields.Many2many(
         'wm.waste.category',
@@ -146,6 +154,30 @@ class WmPartnerContract(models.Model):
         store=False
     )
 
+    crm_lead_id = fields.Many2one(
+        'crm.lead',
+        string='Source Opportunity',
+        copy=False,
+        readonly=True,
+        ondelete='set null',
+        help='The CRM opportunity this contract was converted from.',
+        index=True,
+    )
+    sale_order_id = fields.Many2one(
+        'sale.order',
+        string='Source Quotation / Order',
+        copy=False,
+        readonly=True,
+        ondelete='set null',
+        help='The Sales quotation / order this contract was converted from.',
+        index=True,
+    )
+    originated_from_crm = fields.Boolean(
+        string='Created from CRM / Quotation',
+        compute='_compute_originated_from_crm',
+        store=True,
+    )
+
     # Compute, Inverse, and Search Methods
     @api.depends('contract_line_ids.category_id')
     def _compute_selected_product_ids(self):
@@ -212,7 +244,7 @@ class WmPartnerContract(models.Model):
         for req in requests:
             try:
                 cid = int(str(req.reference_doc).split(',')[1])
-                requests_by_contract.setdefault(cid, self.env['wm.signature.request']).concat(req)
+                requests_by_contract[cid] = requests_by_contract.get(cid, self.env['wm.signature.request']) | req
             except (ValueError, IndexError, AttributeError):
                 continue
 
@@ -318,6 +350,8 @@ class WmPartnerContract(models.Model):
                     raise ValidationError(_("Fixed Price per Collection must be greater than zero."))
                 if contract.included_weight <= 0:
                     raise ValidationError(_("Included Weight per Collection must be greater than zero."))
+                if contract.overweight_price <= 0:
+                    raise ValidationError(_("Overweight Price per 10kg must be greater than zero."))
             elif contract.billing_basis == 'category_rate':
                 if not contract.contract_line_ids:
                     raise ValidationError(_("Add at least one waste category line before using category-rate billing."))
@@ -384,6 +418,22 @@ class WmPartnerContract(models.Model):
                 vals['name'] = self.env['ir.sequence'].next_by_code('wm.partner.contract')
         return super().create(vals_list)
 
+    _PRICE_LOCKED_FIELDS = ('billing_basis', 'fixed_price', 'overweight_price', 'included_weight',
+                            'max_weight', 'contract_line_ids', 'currency_id')
+    _PRICE_LOCKED_STATES = ('confirmed', 'ongoing')
+
+    def write(self, vals):
+        """Agreed prices are frozen once the contract is confirmed: a price
+        change after that point must go through a new or renewed contract."""
+        if (any(f in vals for f in self._PRICE_LOCKED_FIELDS)
+                and not self.env.context.get('wm_contract_price_override')):
+            locked = self.filtered(lambda c: c.state in self._PRICE_LOCKED_STATES)
+            if locked:
+                raise UserError(_(
+                    "The prices of contract '%s' cannot be changed once it is confirmed or ongoing.")
+                    % locked[0].name)
+        return super().write(vals)
+
     def message_post(self, **kwargs):
         """
         Override message_post to transition draft contracts to sent state and
@@ -410,7 +460,7 @@ class WmPartnerContract(models.Model):
             if contract.to_date and contract.to_date < today:
                 raise ValidationError(_("Cannot confirm contract '%s' because its end date (%s) has already passed.") % (contract.name, contract.to_date))
             if not (contract.contract_line_ids and contract.sla_id):
-                raise ValidationError(_('Select at least one waste type, SLA, and Collection point.'))
+                raise ValidationError(_('Select at least one waste type and an SLA.'))
 
             vals = {'state': 'confirmed'}
             if not contract.sla_snapshot_html:
@@ -424,11 +474,18 @@ class WmPartnerContract(models.Model):
         logging into the backend.
         """
         self.ensure_one()
+        # Only a contract sent to the customer can be signed. A draft one gets a
+        # link only while its send email is being composed (action_send), from
+        # the request action_send prepared; never on the portal or elsewhere.
+        if self.state == 'draft' and not self.env.context.get('mark_contract_as_sent'):
+            return ''
+        if self.state not in ('draft', 'sent'):
+            return ''
         sig_request = self.env['wm.signature.request'].sudo().search([
             ('reference_doc', '=', f'wm.partner.contract,{self.id}'),
             ('state', '!=', 'cancel')
         ], limit=1)
-        if not sig_request and self.state in ('draft', 'sent'):
+        if not sig_request and self.state == 'sent':
             role = self.env['wm.signature.role'].sudo().search([('name', 'ilike', 'customer')], limit=1)
             if not role:
                 role = self.env['wm.signature.role'].sudo().search([], limit=1)
@@ -477,8 +534,9 @@ class WmPartnerContract(models.Model):
                 "The customer %s does not have an email address configured."
             ) % partner.name)
 
-        # Create signature request if it doesn't exist
-        sig_request = self.env['wm.signature.request'].search([
+        # Create signature request if it doesn't exist (searched as superuser:
+        # it may have been created by someone else, e.g. the customer portal)
+        sig_request = self.env['wm.signature.request'].sudo().search([
             ('reference_doc', '=', f'wm.partner.contract,{self.id}'),
             ('state', '!=', 'cancel')
         ], limit=1)
@@ -577,7 +635,7 @@ class WmPartnerContract(models.Model):
         contract.
         """
         self.ensure_one()
-        requests = self.env['wm.signature.request'].search([
+        requests = self.env['wm.signature.request'].sudo().search([
             ('reference_doc', '=', f"wm.partner.contract,{self.id}"),
             ('state', '!=', 'cancel')
         ])
@@ -612,7 +670,7 @@ class WmPartnerContract(models.Model):
                 'default_state_id': self.partner_id.state_id.id if self.partner_id.state_id else False,
                 'default_zip': self.partner_id.zip,
                 'default_country_id': self.partner_id.country_id.id if self.partner_id.country_id else False,
-                'default_name': f"{self.partner_id.name} - Collection Point",
+                'default_name': _("%s - Collection Point") % self.partner_id.name,
             },
         }
 
@@ -634,9 +692,7 @@ class WmPartnerContract(models.Model):
 
     def action_start(self):
         """
-        Activate the contract and transition it to 'ongoing' status after
-        verifying that the start date has passed and all required fields are
-        populated.
+        Activate a confirmed contract and transition it to 'ongoing' status.
         """
         if any(c.state != 'confirmed' for c in self):
             raise UserError(_("Only confirmed contracts can be started."))
@@ -647,10 +703,30 @@ class WmPartnerContract(models.Model):
         Cancel the waste management service contract, releasing all allocated
         collection points and notifying the partner of the cancellation with a
         reason.
+        Auto-cancels draft subscriptions and posts chatter note for active/paused subscriptions.
         """
         if any(c.state in ('cancelled', 'expired') for c in self):
             raise UserError(_("This contract is already cancelled or expired."))
         self._cancel_pending_signature_requests()
+
+        for contract in self:
+            if 'wm.subscription' in self.env:
+                linked_subs = self.env['wm.subscription'].sudo().search([
+                    ('contract_id', '=', contract.id)
+                ])
+                draft_subs = linked_subs.filtered(lambda s: s.state == 'draft')
+                active_paused_subs = linked_subs.filtered(lambda s: s.state in ('active', 'paused'))
+
+                if draft_subs:
+                    draft_subs.action_cancel(reason=_("Linked contract %s was cancelled.") % contract.name)
+
+                if active_paused_subs:
+                    sub_names = ", ".join(active_paused_subs.mapped('name'))
+                    contract.message_post(body=_(
+                        "This contract has %d active/paused subscription(s): %s. "
+                        "They will keep running independently — cancel them separately if needed."
+                    ) % (len(active_paused_subs), sub_names))
+
         self.write({'state': 'cancelled'})
 
     def action_reset_to_draft(self):
@@ -667,13 +743,13 @@ class WmPartnerContract(models.Model):
     def _cancel_pending_signature_requests(self):
         """
         Cancel any non-cancelled signature requests linked to these contracts
-        so that a         subsequent action_send starts a fresh signature
-        request rather than reusing an old         one whose signers may
+        so that a subsequent action_send starts a fresh signature
+        request rather than reusing an old one whose signers may
         already be fully signed (which would leave no pending signer,
         and therefore no sign link, in the outgoing email).
         """
         for contract in self:
-            requests = self.env['wm.signature.request'].search([
+            requests = self.env['wm.signature.request'].sudo().search([
                 ('reference_doc', '=', f'wm.partner.contract,{contract.id}'),
                 ('state', '!=', 'cancel'),
             ])
@@ -745,7 +821,7 @@ class WmPartnerContract(models.Model):
         today = fields.Date.today()
         if self.to_date and self.to_date < today:
             return 'expired'
-        elif self.from_date and self.from_date > today:
+        if self.from_date and self.from_date > today:
             return 'pending'
         return 'active'
 
@@ -772,6 +848,51 @@ class WmPartnerContract(models.Model):
             expiring.write({'state': 'expired'})
 
     @api.model
+    def _cron_contract_renewal_reminders(self):
+        """
+        Cron action to create activity reminders for contracts nearing expiration based on the
+        'wm_contracts_billing.renewal_reminder_days' system parameter (default 30 days).
+        """
+        today = fields.Date.today()
+        reminder_days_str = self.env['ir.config_parameter'].sudo().get_param(
+            'wm_contracts_billing.renewal_reminder_days', '30'
+        )
+        try:
+            reminder_days = int(reminder_days_str)
+        except (ValueError, TypeError):
+            reminder_days = 30
+
+        target_date = today + timedelta(days=reminder_days)
+        expiring_contracts = self.search([
+            ('to_date', '=', target_date),
+            ('state', 'in', ('confirmed', 'ongoing', 'sent', 'signed')),
+        ])
+
+        todo_activity_type = self.env.ref('mail.mail_activity_data_todo', raise_if_not_found=False)
+
+        for contract in expiring_contracts:
+            assignee = contract.user_id or (contract.sale_order_id.user_id if contract.sale_order_id else False) or contract.create_uid or self.env.user
+            summary = _("Contract Renewal Reminder: %s") % contract.name
+            existing_activity = self.env['mail.activity'].search([
+                ('res_model', '=', 'wm.partner.contract'),
+                ('res_id', '=', contract.id),
+                ('summary', '=', summary),
+            ], limit=1)
+            if not existing_activity:
+                contract.activity_schedule(
+                    activity_type_id=todo_activity_type.id if todo_activity_type else False,
+                    summary=summary,
+                    note=_("The contract '%(name)s' for customer %(customer)s will expire in %(days)s days on %(date)s. Please contact the client regarding contract renewal.") % {
+                        'name': contract.name,
+                        'customer': contract.partner_id.name if contract.partner_id else '',
+                        'days': reminder_days,
+                        'date': contract.to_date,
+                    },
+                    user_id=assignee.id,
+                    date_deadline=target_date,
+                )
+
+    @api.model
     def _cron_generate_collection_orders(self):
         """
         Cron action to auto-generate recurring collection orders based on
@@ -781,120 +902,133 @@ class WmPartnerContract(models.Model):
         contracts = self.search([('state', '=', 'ongoing')])
 
         for contract in contracts:
-            if not contract.collection_point_ids or not contract.frequency:
-                continue
+            try:
+                with self.env.cr.savepoint():
+                    contract._generate_collection_orders(today)
+            except Exception:
+                _logger.exception("Could not generate collection orders for contract %s", contract.name)
 
-            # Ensure contract is within valid active dates
-            if (contract.from_date and today < contract.from_date) or (contract.to_date and today > contract.to_date):
-                continue
+    def _generate_collection_orders(self, today):
+        """
+        Generate the recurring collection orders of one ongoing contract for
+        the current period.
+        """
+        self.ensure_one()
+        contract = self
+        if not contract.collection_point_ids or not contract.frequency:
+            return
 
-            # Check if collection order generation is due based on contract schedule
-            if not self._is_contract_due(contract, today):
-                continue
+        # Ensure contract is within valid active dates
+        if (contract.from_date and today < contract.from_date) or (contract.to_date and today > contract.to_date):
+            return
 
-            num = contract.no_of_frequency or 1
+        # Check if collection order generation is due based on contract schedule
+        if not self._is_contract_due(contract, today):
+            return
 
-            if contract.frequency == 'daily':
-                period_start = today
-                period_end = today
-            elif contract.frequency == 'weekly':
-                period_start = today - timedelta(days=today.weekday())
-                period_end = period_start + timedelta(days=6)
-            elif contract.frequency == 'monthly':
-                period_start = today.replace(day=1)
-                period_end = (period_start + relativedelta(months=1)) - timedelta(days=1)
-            else:
-                continue
+        num = contract.no_of_frequency or 1
 
-            start_dt = datetime.combine(period_start, time.min)
-            end_dt = datetime.combine(period_end, time.max)
+        if contract.frequency == 'daily':
+            period_start = today
+            period_end = today
+        elif contract.frequency == 'weekly':
+            period_start = today - timedelta(days=today.weekday())
+            period_end = period_start + timedelta(days=6)
+        elif contract.frequency == 'monthly':
+            period_start = today.replace(day=1)
+            period_end = (period_start + relativedelta(months=1)) - timedelta(days=1)
+        else:
+            return
 
-            existing_orders = self.env['wm.collection.order'].search([
-                ('contract_id', '=', contract.id),
-                ('scheduled_start', '>=', start_dt),
-                ('scheduled_start', '<=', end_dt),
-            ])
+        start_dt = datetime.combine(period_start, time.min)
+        end_dt = datetime.combine(period_end, time.max)
 
-            site_order_counts = collections.Counter(existing_orders.mapped('collection_point_id.id'))
-            for site in contract.collection_point_ids:
-                site_existing_count = site_order_counts.get(site.id, 0)
-                if site_existing_count < num:
-                    to_create_count = num - site_existing_count
+        existing_orders = self.env['wm.collection.order'].search([
+            ('contract_id', '=', contract.id),
+            ('scheduled_start', '>=', start_dt),
+            ('scheduled_start', '<=', end_dt),
+        ])
 
-                    scheduled_dates = []
+        site_order_counts = collections.Counter(existing_orders.mapped('collection_point_id.id'))
+        for site in contract.collection_point_ids:
+            site_existing_count = site_order_counts.get(site.id, 0)
+            if site_existing_count < num:
+                to_create_count = num - site_existing_count
 
-                    if contract.frequency == 'weekly':
-                        weekday_flags = [
-                            contract.monday, contract.tuesday, contract.wednesday,
-                            contract.thursday, contract.friday, contract.saturday, contract.sunday
-                        ]
-                        selected_weekdays = [idx for idx, flag in enumerate(weekday_flags) if flag]
-                        if selected_weekdays:
-                            curr_date = period_start
-                            while curr_date <= period_end:
-                                if curr_date.weekday() in selected_weekdays and curr_date >= today:
-                                    scheduled_dates.append(curr_date)
-                                curr_date += timedelta(days=1)
+                scheduled_dates = []
 
-                    elif contract.frequency == 'monthly':
-                        if contract.monthly_option == 'last_day':
-                            target_date = period_end
-                            if target_date >= today:
-                                scheduled_dates.append(target_date)
-                        elif contract.monthly_option == 'date' and contract.day_of_month:
-                            max_days = calendar.monthrange(period_start.year, period_start.month)[1]
-                            target_day = min(contract.day_of_month, max_days)
-                            target_date = period_start.replace(day=target_day)
-                            if target_date >= today:
-                                scheduled_dates.append(target_date)
-
-                    if not scheduled_dates:
-                        remaining_dates = []
-                        curr_date = today
+                if contract.frequency == 'weekly':
+                    weekday_flags = [
+                        contract.monday, contract.tuesday, contract.wednesday,
+                        contract.thursday, contract.friday, contract.saturday, contract.sunday
+                    ]
+                    selected_weekdays = [idx for idx, flag in enumerate(weekday_flags) if flag]
+                    if selected_weekdays:
+                        curr_date = period_start
                         while curr_date <= period_end:
-                            remaining_dates.append(curr_date)
+                            if curr_date.weekday() in selected_weekdays and curr_date >= today:
+                                scheduled_dates.append(curr_date)
                             curr_date += timedelta(days=1)
 
-                        if not remaining_dates:
-                            continue
+                elif contract.frequency == 'monthly':
+                    if contract.monthly_option == 'last_day':
+                        target_date = period_end
+                        if target_date >= today:
+                            scheduled_dates.append(target_date)
+                    elif contract.monthly_option == 'date' and contract.day_of_month:
+                        max_days = calendar.monthrange(period_start.year, period_start.month)[1]
+                        target_day = min(contract.day_of_month, max_days)
+                        target_date = period_start.replace(day=target_day)
+                        if target_date >= today:
+                            scheduled_dates.append(target_date)
 
-                        for j in range(to_create_count):
-                            idx = (j * len(remaining_dates)) // to_create_count
-                            scheduled_dates.append(remaining_dates[idx])
-                    else:
-                        scheduled_dates = scheduled_dates[:to_create_count]
+                if not scheduled_dates:
+                    remaining_dates = []
+                    curr_date = today
+                    while curr_date <= period_end:
+                        remaining_dates.append(curr_date)
+                        curr_date += timedelta(days=1)
 
-                    if contract.frequency == 'daily' and to_create_count > 1:
-                        total_seconds = 8 * 3600  # 8 hours working window (09:00 to 17:00)
-                        step_seconds = total_seconds / to_create_count
-                        for idx, sched_date in enumerate(scheduled_dates):
-                            start_offset = idx * step_seconds
-                            end_offset = (idx + 1) * step_seconds
-                            base_dt = datetime.combine(sched_date, time(9, 0, 0))
-                            sched_start = base_dt + timedelta(seconds=start_offset)
-                            sched_end = base_dt + timedelta(seconds=end_offset)
-                            self.env['wm.collection.order'].create({
-                                'partner_id': contract.partner_id.id,
-                                'collection_point_id': site.id,
-                                'contract_id': contract.id,
-                                'scheduled_start': sched_start,
-                                'scheduled_end': sched_end,
-                                'state': 'draft',
-                            })
-                    else:
-                        for sched_date in scheduled_dates:
-                            sched_start = datetime.combine(sched_date, time(9, 0, 0))
-                            sched_end = datetime.combine(sched_date, time(17, 0, 0))
-                            self.env['wm.collection.order'].create({
-                                'partner_id': contract.partner_id.id,
-                                'collection_point_id': site.id,
-                                'contract_id': contract.id,
-                                'scheduled_start': sched_start,
-                                'scheduled_end': sched_end,
-                                'state': 'draft',
-                            })
+                    if not remaining_dates:
+                        continue
 
-            contract.write({'last_generated_date': today})
+                    for j in range(to_create_count):
+                        idx = (j * len(remaining_dates)) // to_create_count
+                        scheduled_dates.append(remaining_dates[idx])
+                else:
+                    scheduled_dates = scheduled_dates[:to_create_count]
+
+                if contract.frequency == 'daily' and to_create_count > 1:
+                    total_seconds = 8 * 3600  # 8 hours working window (09:00 to 17:00)
+                    step_seconds = total_seconds / to_create_count
+                    for idx, sched_date in enumerate(scheduled_dates):
+                        start_offset = idx * step_seconds
+                        end_offset = (idx + 1) * step_seconds
+                        base_dt = datetime.combine(sched_date, time(9, 0, 0))
+                        sched_start = base_dt + timedelta(seconds=start_offset)
+                        sched_end = base_dt + timedelta(seconds=end_offset)
+                        self.env['wm.collection.order'].create({
+                            'partner_id': contract.partner_id.id,
+                            'collection_point_id': site.id,
+                            'contract_id': contract.id,
+                            'scheduled_start': sched_start,
+                            'scheduled_end': sched_end,
+                            'state': 'draft',
+                        })
+                else:
+                    for sched_date in scheduled_dates:
+                        sched_start = datetime.combine(sched_date, time(9, 0, 0))
+                        sched_end = datetime.combine(sched_date, time(17, 0, 0))
+                        self.env['wm.collection.order'].create({
+                            'partner_id': contract.partner_id.id,
+                            'collection_point_id': site.id,
+                            'contract_id': contract.id,
+                            'scheduled_start': sched_start,
+                            'scheduled_end': sched_end,
+                            'state': 'draft',
+                        })
+
+        contract.write({'last_generated_date': today})
 
     @api.model
     def _is_contract_due(self, contract, today):
@@ -909,38 +1043,13 @@ class WmPartnerContract(models.Model):
 
         if contract.frequency == 'daily':
             return today > last
-        elif contract.frequency == 'weekly':
+        if contract.frequency == 'weekly':
             current_period_start = today - timedelta(days=today.weekday())
             return last < current_period_start
-        elif contract.frequency == 'monthly':
+        if contract.frequency == 'monthly':
             current_period_start = today.replace(day=1)
             return last < current_period_start
-        else:
-            return False
-
-    crm_lead_id = fields.Many2one(
-        'crm.lead',
-        string='Source Opportunity',
-        copy=False,
-        readonly=True,
-        ondelete='set null',
-        help='The CRM opportunity this contract was converted from.',
-        index=True,
-    )
-    sale_order_id = fields.Many2one(
-        'sale.order',
-        string='Source Quotation / Order',
-        copy=False,
-        readonly=True,
-        ondelete='set null',
-        help='The Sales quotation / order this contract was converted from.',
-        index=True,
-    )
-    originated_from_crm = fields.Boolean(
-        string='Created from CRM / Quotation',
-        compute='_compute_originated_from_crm',
-        store=True,
-    )
+        return False
 
     @api.depends('crm_lead_id', 'sale_order_id')
     def _compute_originated_from_crm(self):
@@ -955,6 +1064,8 @@ class WmPartnerContract(models.Model):
         Smart button: open the originating CRM opportunity form.
         """
         self.ensure_one()
+        if not self.crm_lead_id:
+            raise UserError(_("No source CRM opportunity is linked to this contract."))
         return {
             'type': 'ir.actions.act_window',
             'name': _('Source Opportunity'),
@@ -968,6 +1079,8 @@ class WmPartnerContract(models.Model):
         Smart button: open the originating Sales Quotation / Order form.
         """
         self.ensure_one()
+        if not self.sale_order_id:
+            raise UserError(_("No source quotation or sales order is linked to this contract."))
         return {
             'type': 'ir.actions.act_window',
             'name': _('Source Quotation'),

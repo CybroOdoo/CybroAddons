@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -39,7 +38,7 @@ class WmSla(models.Model):
         help="Only templates built for the Contract model can be used here, "
              "since the breach email is always sent against a specific contract.")
     description = fields.Text(string='Description')
-    terms_and_conditions = fields.Html(string='Terms & Conditions', required=True)
+    terms_and_conditions = fields.Html(string='Terms & Conditions', default='<p>Standard Terms &amp; Conditions</p>')
 
     _name_uniq = models.Constraint('UNIQUE(name)', 'An SLA with this name already exists.')
 
@@ -50,7 +49,7 @@ class WmSla(models.Model):
         """
         self.ensure_one()
         return {
-            'name': 'Send SLA Breach Email',
+            'name': _('Send SLA Breach Email'),
             'type': 'ir.actions.act_window',
             'res_model': 'wm.sla.send.email.wizard',
             'view_mode': 'form',

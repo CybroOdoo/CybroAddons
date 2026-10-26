@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,8 +22,7 @@ import datetime
 import logging
 
 from odoo import fields
-from odoo.tests.common import tagged, TransactionCase
-
+from odoo.tests.common import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -37,7 +35,7 @@ class TestWmComplianceTarget(TransactionCase):
         """
         Set up test case preconditions and test data.
         """
-        super(TestWmComplianceTarget, self).setUp()
+        super().setUp()
         self.partner = self.env['res.partner'].create({
             'name': 'Target Operator Partner',
             'is_generator': True,
@@ -102,7 +100,7 @@ class TestWmComplianceTarget(TransactionCase):
         target.invalidate_recordset()
         self.assertEqual(target.achieved_quantity, 60.0)
         self.assertEqual(target.compliance_pct, 60.0)
-        self.assertEqual(target.state, 'at_risk') # between 50% and 80%
+        self.assertEqual(target.state, 'at_risk')  # between 50% and 80%
 
         # Add another manifest and submit to get to 85% (on track)
         manifest2 = self.env['wm.compliance.manifest'].create({
@@ -123,6 +121,6 @@ class TestWmComplianceTarget(TransactionCase):
         target.invalidate_recordset()
         self.assertEqual(target.achieved_quantity, 85.0)
         self.assertEqual(target.compliance_pct, 85.0)
-        self.assertEqual(target.state, 'on_track') # >= 80%
+        self.assertEqual(target.state, 'on_track')  # >= 80%
 
         _logger.info('PASS: test_compliance_target_calculations')

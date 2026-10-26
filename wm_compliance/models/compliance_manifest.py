@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,36 +18,47 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+import logging
+
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools import float_compare
+
+_logger = logging.getLogger(__name__)
 
 
 class AuditMixin(models.AbstractModel):
     """Abstract mixin model providing audit trail capabilities for compliance models."""
     _inherit = 'wm.audit.mixin'
 
+    def _compliance_lock_bypassed(self):
+        """The lock bypass is honoured only for superuser (sudo) calls made by
+        trusted server code; a ``bypass_compliance_lock`` key sent in an RPC
+        context by a normal user is ignored."""
+        return bool(self.env.su and self.env.context.get('bypass_compliance_lock'))
+
     def write(self, vals):
         """
         Override write to implement business validations and side effects.
         """
-        if not self.env.context.get('bypass_compliance_lock'):
+        if not self._compliance_lock_bypassed():
             locked_states = getattr(self, 'LOCKED_STATES', [])
             for record in self:
                 if hasattr(record, 'state') and record.state in locked_states:
                     raise UserError(_("This compliance record is finalized in the locked state and cannot be modified."))
-        return super(AuditMixin, self).write(vals)
+        return super().write(vals)
 
-    def unlink(self):
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_locked_record(self):
         """
         Override unlink to handle cascading cleanup or prevent invalid
         deletions.
         """
-        if not self.env.context.get('bypass_compliance_lock'):
+        if not self._compliance_lock_bypassed():
             locked_states = getattr(self, 'LOCKED_STATES', [])
             for record in self:
                 if hasattr(record, 'state') and record.state in locked_states:
                     raise UserError(_("This compliance record is finalized in the locked state and cannot be deleted."))
-        return super(AuditMixin, self).unlink()
 
 
 class ComplianceManifest(models.Model):
@@ -59,12 +69,22 @@ class ComplianceManifest(models.Model):
     _order = 'id desc'
 
     LOCKED_STATES = ['disposed']
+    # Regulatory content frozen once the manifest leaves draft; state,
+    # signature and chatter stay writable for the workflow.
+    LOCKED_AFTER_SUBMIT_FIELDS = (
+        'generator_id', 'transporter_id', 'disposal_facility_id',
+        'compliance_code_ids', 'line_ids', 'manifest_date', 'company_id',
+    )
 
     name = fields.Char(
         string='Manifest Ref',
         copy=False,
         default=lambda self: ''
     )
+
+    notified_at = fields.Datetime(
+        string='Exported & Notified On', readonly=True, copy=False,
+        help='Set when the signed manifest was exported and stakeholders were emailed.')
 
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -128,15 +148,15 @@ class ComplianceManifest(models.Model):
         default=lambda self: self.env.company
     )
 
-    @api.depends('line_ids.quantity')
+    @api.depends('line_ids.quantity', 'line_ids.uom_id')
     def _compute_total_quantity(self):
         """
         Sum all waste stream line quantities on the manifest to compute the
         total collected weight, used for regulatory reporting and environmental
-        KPI dashboards.
+        KPI dashboards. Lines are normalised to kg where their UoM allows it.
         """
         for rec in self:
-            rec.total_quantity = sum(rec.line_ids.mapped('quantity'))
+            rec.total_quantity = rec.line_ids._get_total_quantity_kg()
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -147,17 +167,22 @@ class ComplianceManifest(models.Model):
         for vals in vals_list:
             if not vals.get('name') or vals.get('name') == ' ':
                 vals['name'] = self.env['ir.sequence'].next_by_code('wm.compliance.manifest') or ' '
-        records = super(ComplianceManifest, self).create(vals_list)
+        # Lines given inline belong to the manifest being created: allow them
+        # even when the manifest is created directly in a non-draft state.
+        records = super(ComplianceManifest, self.with_context(
+            wm_manifest_creating=True)).create(vals_list).with_env(self.env)
         records._trigger_target_recompute()
         return records
 
-    def _trigger_target_recompute(self):
+    def _trigger_target_recompute(self, old_partners=None):
         """
         Invalidate and recompute linked compliance target achievement
         percentages whenever manifest quantities change, keeping regulatory
         performance indicators current.
         """
         partners = self.mapped('generator_id') | self.mapped('transporter_id')
+        if old_partners:
+            partners |= old_partners
         if partners:
             targets = self.env['wm.compliance.target'].search([('partner_id', 'in', partners.ids)])
             if targets:
@@ -168,25 +193,101 @@ class ComplianceManifest(models.Model):
         """
         Override write to implement business validations and side effects.
         """
-        res = super(ComplianceManifest, self).write(vals)
+        if not self.env.su:
+            if 'state' in vals:
+                raise UserError(_("The manifest status can only be changed with the Submit, Collect and Dispose buttons."))
+            locked_fields = [f for f in self.LOCKED_AFTER_SUBMIT_FIELDS if f in vals]
+            if locked_fields and any(rec.state != 'draft' for rec in self):
+                raise UserError(_(
+                    "Submitted manifests cannot be modified (%s). Only draft manifests can be edited."
+                ) % ', '.join(self._fields[f].string for f in locked_fields))
+        old_partners = None
+        if any(f in vals for f in ['generator_id', 'transporter_id']):
+            old_partners = self.mapped('generator_id') | self.mapped('transporter_id')
+        res = super().write(vals)
         if any(f in vals for f in ['generator_id', 'transporter_id', 'state', 'manifest_date']):
-            self._trigger_target_recompute()
+            self._trigger_target_recompute(old_partners=old_partners)
         return res
 
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_submitted_manifest(self):
+        """Only draft manifests can be deleted."""
+        if not self._compliance_lock_bypassed():
+            for record in self:
+                if record.state != 'draft':
+                    raise UserError(_(
+                        "Manifest '%s' has been submitted and cannot be deleted. "
+                        "Only draft manifests can be deleted.") % record.display_name)
+
     def unlink(self):
-        """
-        Override unlink to handle cascading cleanup or prevent invalid
-        deletions.
-        """
+        """Refresh the compliance targets of the affected partners."""
         partners = self.mapped('generator_id') | self.mapped('transporter_id')
         partner_ids = partners.ids
-        res = super(ComplianceManifest, self).unlink()
+        res = super().unlink()
         if partner_ids:
             targets = self.env['wm.compliance.target'].search([('partner_id', 'in', partner_ids)])
             if targets:
                 for t in targets:
                     t._compute_achieved_quantity()
         return res
+
+    def _get_manifest_type(self):
+        """Derive the manifest stream type from the attached compliance codes.
+
+        Returns the type only when the typed codes agree on a single one,
+        otherwise False (meaning: match rules of any manifest type).
+        """
+        self.ensure_one()
+        types = set(self.compliance_code_ids.mapped('manifest_type')) - {False}
+        return types.pop() if len(types) == 1 else False
+
+    @api.onchange('generator_id', 'line_ids')
+    def _onchange_suggest_compliance_codes(self):
+        """
+        Suggest compliance codes and manifest requirements based on generator location and waste categories.
+        """
+        if not self.generator_id:
+            return None
+        point = getattr(self.generator_id, 'collection_point_ids', False)
+        point_rec = point[0] if point else False
+        c_state = point_rec.state_id if point_rec and point_rec.state_id else self.generator_id.state_id
+        c_country = point_rec.country_id if point_rec and point_rec.country_id else self.generator_id.country_id
+
+        categories = self.line_ids.mapped('waste_category_id')
+        RuleSet = self.env['wm.compliance.rule.set']
+        suggested_codes = self.env['wm.compliance.code']
+        manifest_required = False
+
+        for category in (categories or [False]):
+            rules = RuleSet._get_applicable_rules(
+                collection_point=point_rec,
+                waste_category=category,
+                manifest_type=self._get_manifest_type(),
+                date=self.manifest_date or fields.Date.today(),
+                country=c_country,
+                state=c_state
+            )
+            if rules:
+                best_rule = rules[0]
+                suggested_codes |= best_rule.required_code_ids
+                if best_rule.requires_manifest:
+                    manifest_required = True
+
+        if suggested_codes:
+            self.compliance_code_ids = [(6, 0, (self.compliance_code_ids | suggested_codes).ids)]
+
+        if not manifest_required and categories:
+            return {'warning': {
+                'title': _("Manifest May Not Be Required"),
+                'message': _("No active compliance rule for this region/category requires a manifest. Verify before submitting."),
+            }}
+
+    def _set_workflow_state(self, new_state):
+        """Move the manifest along its workflow. Reached only from the action
+        buttons, which validate the source state; direct writes of ``state``
+        by normal users are refused in ``write``."""
+        self.ensure_one()
+        self.sudo().write({'state': new_state})
 
     def action_submit(self):
         """
@@ -197,51 +298,134 @@ class ComplianceManifest(models.Model):
         for rec in self:
             if rec.state != 'draft':
                 raise UserError(_("Manifest can only be submitted from Draft state."))
-            rec.write({'state': 'submitted'})
+            if not rec.line_ids:
+                raise UserError(_(
+                    "Manifest '%s' has no waste lines: add at least one line before submitting.") % rec.name)
+
+            # Enforce required compliance codes at submission time
+            RuleSet = self.env['wm.compliance.rule.set']
+            point = getattr(rec.generator_id, 'collection_point_ids', False)
+            point_rec = point[0] if point else False
+            c_state = point_rec.state_id if point_rec and point_rec.state_id else rec.generator_id.state_id
+            c_country = point_rec.country_id if point_rec and point_rec.country_id else rec.generator_id.country_id
+            categories = rec.line_ids.mapped('waste_category_id')
+
+            required_codes = self.env['wm.compliance.code']
+            for cat in (categories or [False]):
+                rules = RuleSet._get_applicable_rules(
+                    collection_point=point_rec,
+                    waste_category=cat,
+                    manifest_type=rec._get_manifest_type(),
+                    date=rec.manifest_date or fields.Date.today(),
+                    country=c_country,
+                    state=c_state
+                )
+                if rules:
+                    required_codes |= rules[0].required_code_ids
+
+            # Every required code must be attached, not just one of them
+            missing_codes = required_codes - rec.compliance_code_ids
+            if missing_codes:
+                missing = missing_codes.mapped('name')
+                code_str = ', '.join(filter(None, missing)) if any(missing) else _("Required compliance codes")
+                raise UserError(_(
+                    "This waste stream/region combination requires mandatory compliance codes (%s) to be attached before submission."
+                ) % code_str)
+
+            rec._set_workflow_state('submitted')
             # Auto-log custody milestone
             self.env['wm.compliance.custody'].create({
                 'manifest_id': rec.id,
                 'action': 'generated',
                 'location': rec.generator_id.city or rec.generator_id.name,
+                'company_id': rec.company_id.id,
                 'notes': _("Manifest generated and submitted by %s") % self.env.user.name,
             })
             rec.action_export_and_notify()
 
     def action_collect(self):
         """
-        Transition the manifest from 'draft' to 'collected' state, recording
-        the collection timestamp and verifying that all required waste stream
-        fields are populated.
+        Transition the manifest from 'submitted' to 'collected' state and log
+        the collection milestone in the chain of custody.
         """
         for rec in self:
             if rec.state != 'submitted':
                 raise UserError(_("Manifest must be in Submitted state to be marked as Collected."))
-            rec.write({'state': 'collected'})
+            rec._set_workflow_state('collected')
             # Auto-log custody milestone
             self.env['wm.compliance.custody'].create({
                 'manifest_id': rec.id,
                 'action': 'collected',
                 'location': rec.generator_id.city or rec.generator_id.name,
+                'company_id': rec.company_id.id,
                 'notes': _("Consignment collected by %s") % (rec.transporter_id.name or 'Transporter'),
             })
 
     def action_dispose(self):
         """
         Mark the manifest as fully disposed by updating state to 'disposed',
-        recording the disposal facility, and closing the chain-of-custody
-        record.
+        recording the disposal facility, closing chain-of-custody, and
+        automatically issuing the Certificate of Destruction.
         """
         for rec in self:
             if rec.state != 'collected':
                 raise UserError(_("Manifest must be in Collected state to be marked as Disposed."))
-            rec.write({'state': 'disposed'})
-            # Auto-log custody milestone
+            # A Certificate of Destruction certifies the disposed quantity,
+            # so an empty manifest (no lines / zero total) cannot be disposed.
+            if float_compare(rec.total_quantity or 0.0, 0.0, precision_digits=6) <= 0:
+                raise UserError(_(
+                    "Manifest %(name)s has no waste quantity recorded. A "
+                    "Certificate of Destruction cannot be issued for an empty "
+                    "manifest: add the disposed waste lines with their "
+                    "quantities before marking it as Disposed.",
+                    name=rec.name or rec.display_name,
+                ))
+            # Auto-log the custody milestone before the manifest is locked as
+            # disposed: custody rows cannot be added afterwards.
             self.env['wm.compliance.custody'].create({
                 'manifest_id': rec.id,
                 'action': 'disposed',
                 'location': rec.disposal_facility_id.name,
+                'company_id': rec.company_id.id,
                 'notes': _("Consignment treated/disposed at %s") % (rec.disposal_facility_id.name or 'Facility'),
             })
+            rec._set_workflow_state('disposed')
+            # Auto-generate & issue Certificate of Destruction
+            rec._auto_issue_compliance_certificate()
+
+    def _auto_issue_compliance_certificate(self):
+        """Auto-generate and issue Certificate of Destruction upon manifest disposal."""
+        Cert = self.env['wm.compliance.certificate'].sudo()
+        kg_uom = self.env.ref('uom.product_uom_kgm', raise_if_not_found=False)
+        for manifest in self:
+            existing_cert = Cert.search([('manifest_id', '=', manifest.id)], limit=1)
+            if not existing_cert and manifest.disposal_facility_id:
+                seq_no = self.env['ir.sequence'].next_by_code('wm.compliance.certificate') or _("COD/%s") % manifest.name
+                cert = Cert.create({
+                    'name': _("Certificate of Disposal - %s") % manifest.name,
+                    'manifest_id': manifest.id,
+                    'certificate_type': 'destruction',
+                    'facility_id': manifest.disposal_facility_id.id,
+                    # Certify the real disposed quantity (never a placeholder)
+                    'quantity': manifest.total_quantity,
+                    # total_quantity is normalised to kg
+                    'uom_id': kg_uom.id if kg_uom else False,
+                    'certificate_no': seq_no,
+                    'state': 'draft',
+                    'company_id': manifest.company_id.id,
+                })
+                try:
+                    # Roll back only the failed issue (e.g. PDF rendering), keeping
+                    # the disposal and the draft certificate
+                    with self.env.cr.savepoint():
+                        cert.action_issue()
+                except Exception as e:
+                    _logger.warning("Failed to auto-issue compliance certificate for manifest %s: %s", manifest.name, e)
+                    manifest.message_post(
+                        body=_("Warning: Automatic compliance certificate issuance failed: %s. Certificate %s remains in draft.") % (
+                            str(e), cert.name or cert.certificate_no or ''
+                        )
+                    )
 
     def action_export_and_notify(self):
         """
@@ -250,7 +434,15 @@ class ComplianceManifest(models.Model):
         record keeping.
         """
         self.ensure_one()
-        self._generate_signed_pdf()
+        # Idempotent: the PDF is signed once, and stakeholders are emailed once.
+        # Re-clicking only re-attaches the existing signed copy to the chatter.
+        if not self.signature_id:
+            self._generate_signed_pdf()
+        if self.notified_at:
+            self.message_post(
+                body=_("Manifest was already exported and notified on %s.") % self.notified_at,
+                attachment_ids=[self.signature_id.pdf_attachment_id.id] if self.signature_id and self.signature_id.pdf_attachment_id else [])
+            return
 
         recipients = []
         if self.generator_id.email:
@@ -276,6 +468,8 @@ class ComplianceManifest(models.Model):
         else:
             chatter_msg = _("Manifest exported and signed PDF generated.")
 
+        self.sudo().with_context(bypass_compliance_lock=True).write({'notified_at': fields.Datetime.now()})
+
         # Log export & notify message in chatter with attached signed PDF
         self.message_post(
             body=chatter_msg,
@@ -293,7 +487,7 @@ class ComplianceManifest(models.Model):
         pdf_bytes, report_format = self.env['ir.actions.report']._render_qweb_pdf(report.id, [self.id])
         filename = f"MANIFEST_{self.name.replace('/', '_').replace(' ', '_')}.pdf"
         sig = self.env['wm.digital.signature'].sign_document(self, pdf_bytes, filename)
-        self.with_context(bypass_compliance_lock=True).write({'signature_id': sig.id})
+        self.sudo().with_context(bypass_compliance_lock=True).write({'signature_id': sig.id})
 
 
 class ComplianceManifestLine(models.Model):
@@ -307,14 +501,55 @@ class ComplianceManifestLine(models.Model):
     quantity = fields.Float(string='Quantity', required=True, default=0.0)
     uom_id = fields.Many2one('uom.uom', string='UoM')
     notes = fields.Text(string='Notes / Label')
+    collection_order_id = fields.Many2one(
+        'wm.collection.order', string='Collection Order', copy=False, index='btree_not_null',
+        ondelete='set null', readonly=True,
+        help="The collection order this waste line was taken from.")
 
-    def _trigger_target_recompute(self):
+    @api.model
+    def _convert_quantity_to_kg(self, quantity, uom):
+        """Convert ``quantity`` expressed in ``uom`` to the kg reference unit.
+
+        Quantities without a UoM, or whose UoM does not share a reference
+        with kg (e.g. litres, units), are returned unchanged.
+        """
+        if not quantity or not uom:
+            return quantity or 0.0
+        kg = self.env.ref('uom.product_uom_kgm', raise_if_not_found=False)
+        if not kg or uom == kg:
+            return quantity
+        uom = uom.sudo()
+        if not uom._has_common_reference(kg.sudo()):
+            return quantity
+        return uom._compute_quantity(quantity, kg, round=False)
+
+    def _get_quantity_kg(self):
+        """Return this line's quantity converted to kg when possible."""
+        self.ensure_one()
+        return self._convert_quantity_to_kg(self.quantity, self.uom_id)
+
+    def _get_total_quantity_kg(self):
+        """Sum the quantities of these lines, normalised to kg."""
+        return sum(line._get_quantity_kg() for line in self)
+
+    def _check_manifest_editable(self, manifests):
+        """Lines may only change while their manifest is still a draft."""
+        if self.env.su:
+            return
+        if manifests.filtered(lambda m: m.state != 'draft'):
+            raise UserError(_(
+                "Lines of a submitted manifest cannot be added, modified or deleted."
+            ))
+
+    def _trigger_target_recompute(self, extra_manifests=None):
         """
         Invalidate and recompute linked compliance target achievement
         percentages whenever manifest quantities change, keeping regulatory
         performance indicators current.
         """
         manifests = self.mapped('manifest_id')
+        if extra_manifests:
+            manifests |= extra_manifests
         if manifests:
             manifests._trigger_target_recompute()
 
@@ -324,7 +559,10 @@ class ComplianceManifestLine(models.Model):
         Override create to implement custom initialization and validation
         logic.
         """
-        records = super(ComplianceManifestLine, self).create(vals_list)
+        if not self.env.context.get('wm_manifest_creating'):
+            manifest_ids = {vals.get('manifest_id') for vals in vals_list if vals.get('manifest_id')}
+            self._check_manifest_editable(self.env['wm.compliance.manifest'].browse(manifest_ids))
+        records = super().create(vals_list)
         records._trigger_target_recompute()
         return records
 
@@ -332,9 +570,16 @@ class ComplianceManifestLine(models.Model):
         """
         Override write to implement business validations and side effects.
         """
-        res = super(ComplianceManifestLine, self).write(vals)
-        if 'quantity' in vals:
-            self._trigger_target_recompute()
+        manifests = self.mapped('manifest_id')
+        if vals.get('manifest_id'):
+            manifests |= self.env['wm.compliance.manifest'].browse(vals['manifest_id'])
+        self._check_manifest_editable(manifests)
+        extra_manifests = None
+        if 'manifest_id' in vals:
+            extra_manifests = self.mapped('manifest_id')
+        res = super().write(vals)
+        if any(f in vals for f in ['quantity', 'uom_id', 'waste_category_id', 'manifest_id']):
+            self._trigger_target_recompute(extra_manifests=extra_manifests)
         return res
 
     def unlink(self):
@@ -343,9 +588,10 @@ class ComplianceManifestLine(models.Model):
         deletions.
         """
         manifests = self.mapped('manifest_id')
+        self._check_manifest_editable(manifests)
         partners = manifests.mapped('generator_id') | manifests.mapped('transporter_id')
         partner_ids = partners.ids
-        res = super(ComplianceManifestLine, self).unlink()
+        res = super().unlink()
         if partner_ids:
             targets = self.env['wm.compliance.target'].search([('partner_id', 'in', partner_ids)])
             if targets:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,8 +21,9 @@
 from datetime import datetime, time
 
 from dateutil.relativedelta import relativedelta
+
 from odoo import fields
-from odoo.tests import tagged, TransactionCase
+from odoo.tests import TransactionCase, tagged
 
 
 @tagged('post_install', '-at_install', 'wm_billing')

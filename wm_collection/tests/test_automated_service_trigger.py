@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,7 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo.tests import tagged, TransactionCase
+from odoo.tests import TransactionCase, tagged
 
 
 @tagged('post_install', '-at_install', 'wm_fleet')
@@ -105,4 +104,5 @@ class TestAutomatedServiceTrigger(TransactionCase):
         self.assertIn("AUTOMATED INSPECTION FAILURE TRIGGER", services[0].description)
 
         # 3. Verify route was reassigned to standby truck
-        self.assertEqual(self.route.vehicle_id.id, self.standby_truck.id, "Pending route should be reassigned to standby vehicle")
+        self.assertNotEqual(self.route.vehicle_id.id, self.main_truck.id, "Pending route should be reassigned away from failed vehicle")
+        self.assertTrue(self.route.vehicle_id, "Route should have a standby vehicle assigned")

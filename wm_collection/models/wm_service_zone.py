@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -42,7 +41,7 @@ class WmServiceZone(models.Model):
         help='Once a route for this zone/day reaches this many stops, a new route is created instead of adding more.')
     active = fields.Boolean(string='Active', default=True)
     collection_point_ids = fields.One2many('wm.collection.point', 'zone_id', string='Collection Points')
-    collection_point_count = fields.Integer(string='Collection Points', compute='_compute_collection_point_count', store=True)
+    collection_point_count = fields.Integer(string='Collection Point Count', compute='_compute_collection_point_count', store=True)
 
     @api.onchange('default_vehicle_id')
     def _onchange_default_vehicle_id(self):

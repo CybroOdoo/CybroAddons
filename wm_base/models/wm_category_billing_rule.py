@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -38,10 +37,10 @@ class WmCategoryBillingRule(models.Model):
         ('per_kg', 'Per KG'),
         ('flat_per_collection', 'Flat per Collection'),
         ('per_m3', 'Per m³'),
-    ], string='Billing Basis', default='per_kg', required=True)
-    price = fields.Float(string='Price', digits=(16, 2))
+    ], default='per_kg', required=True)
+    price = fields.Float(digits=(16, 2))
     min_weight = fields.Float(string='Minimum Weight (kg)', digits=(16, 2))
     min_charge = fields.Float(string='Minimum Charge', digits=(16, 2))
     partner_id = fields.Many2one('res.partner', string='Partner (Optional)')
-    effective_date = fields.Date(string='Effective Date')
-    expiry_date = fields.Date(string='Expiry Date')
+    effective_date = fields.Date()
+    expiry_date = fields.Date()

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,10 +22,10 @@ import logging
 from datetime import timedelta
 
 from dateutil.relativedelta import relativedelta
-from markupsafe import escape, Markup
-from odoo import api, fields, models, _
-from odoo.exceptions import UserError, ValidationError
+from markupsafe import Markup, escape
 
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -81,7 +80,7 @@ class WmConsolidatedInvoice(models.Model):
         'consolidated_invoice_id',
         'order_id',
         string='Collection Orders',
-        domain="[('partner_id', '=', partner_id), ('state', 'in', ('completed', 'signed')), ('consolidated_invoice_id', '=', False), ('billing_run_line_id', '=', False)]",
+        domain="[('partner_id', '=', partner_id), ('state', 'in', ('completed', 'signed')), ('consolidated_invoice_id', '=', False), ('billing_run_line_id', '=', False), ('direct_invoice_id', '=', False)]",
     )
     order_count = fields.Integer(
         string='Orders',
@@ -106,8 +105,8 @@ class WmConsolidatedInvoice(models.Model):
     @api.depends('date_from')
     def _compute_billing_month(self):
         """
-        Derive the billing month label (e.g. 'August 2026') from the billing
-        run's period_start date for display on the consolidated invoice header.
+        Derive the billing month key (e.g. '2026-08') from the From Date, used
+        to prevent duplicate invoices for the same month.
         """
         for rec in self:
             rec.billing_month = rec.date_from.strftime('%Y-%m') if rec.date_from else False
@@ -124,6 +123,7 @@ class WmConsolidatedInvoice(models.Model):
                 continue  # Only enforce on invoiced records
             duplicate = self.search([
                 ('partner_id', '=', rec.partner_id.id),
+                ('company_id', '=', rec.company_id.id),
                 ('billing_month', '=', rec.billing_month),
                 ('state', '=', 'invoiced'),
                 ('id', '!=', rec.id),
@@ -227,99 +227,34 @@ class WmConsolidatedInvoice(models.Model):
                     rec.order_ids = [(6, 0, valid_order_ids)]
         return super().write(vals)
 
-    def _find_pricing_rule(self, category, date):
-        """
-        Find the best-matching wm.pricing.rule for a category on a given date.
-        Priority: customer-specific rule first, then general (no partner) rule.
-        Returns the rule record or False.
-        """
-        PricingRule = self.env['wm.pricing.rule']
-        base_domain = [
-            ('waste_category_id', '=', category.id),
-            ('active', '=', True),
-            ('effective_date', '<=', date),
-            '|', ('expiry_date', '=', False), ('expiry_date', '>=', date),
-        ]
-        # Customer-specific rule (higher priority)
-        partner_rule = PricingRule.search(
-            base_domain + [('partner_id', '=', self.partner_id.id)],
-            limit=1, order='sequence asc'
-        )
-        if partner_rule:
-            return partner_rule
-        # General rule (all customers)
-        return PricingRule.search(
-            base_domain + [('partner_id', '=', False)],
-            limit=1, order='sequence asc'
-        )
-
-    def _resolve_category_price(self, category, data, contract, today):
-        """
-        Resolve price_per_kg, quantity, and description for a category
-        aggregate.         Returns: (price_per_kg: float, quantity: float,
-        description: str)          Priority chain:           1. Contract
-        category_rate line (if contract has billing_basis='category_rate')
-        2. Contract per_collection or hybrid (flat fee handled separately — not
-        per category)           3. Customer-specific wm.pricing.rule
-        4. General wm.pricing.rule           5. category.price (flat field on
-        wm.waste.category)           6. Computed average from collected order
-        line amounts (fallback — warns)
-        """
-        weight = data['weight']
-        category_name = category.name
-
-        rule = self.env['wm.collection.order']._get_billing_rule(category, self.partner_id, today)
-        if rule:
-            price = getattr(rule, 'price', getattr(rule, 'price_per_kg', 0.0))
-            min_weight = getattr(rule, 'min_weight', 0.0) or 0.0
-            min_charge = getattr(rule, 'min_charge', 0.0) or 0.0
-
-            weight_to_bill = max(weight, min_weight) if min_weight else weight
-            line_total = weight_to_bill * price
-            if min_charge and line_total < min_charge:
-                line_total = min_charge
-
-            quantity = weight_to_bill if weight_to_bill > 0 else 1.0
-            price_unit = line_total / quantity
-            return (
-                price_unit,
-                quantity,
-                _("%(cat)s — %(wt).1f kg @ %(price)s/kg") % {
-                    'cat': category_name, 'wt': weight, 'price': round(price_unit, 2),
-                }
-            )
-
-        # Fallback 1: category.price (flat field on wm.waste.category)
-        category_price = getattr(category, 'price', 0.0) or 0.0
-        if category_price > 0:
-            return (
-                category_price,
-                weight,
-                _("%(cat)s — %(wt).1f kg @ %(price)s/kg [Category default rate]") % {
-                    'cat': category_name, 'wt': weight, 'price': category_price,
-                }
-            )
-
-        # Fallback 2: zero with warning
-        self.message_post(body=_(
-            "⚠ No price resolved for category '%(cat)s' (%(wt).1f kg). "
-            "Invoice line created with price = 0. "
-            "Configure a billing rule to fix this."
-        ) % {'cat': category_name, 'wt': weight})
-        return (0.0, weight, _("%(cat)s — %(wt).1f kg [NO PRICE]") % {
-            'cat': category_name, 'wt': weight,
-        })
-
     def action_generate_invoice(self):
         """
         Generate a single customer invoice covering all selected collection
-        orders,         aggregated by waste category.
+        orders, aggregated by waste category.
         """
         self.ensure_one()
         if self.state == 'invoiced':
             raise UserError(_("This consolidated invoice has already been processed."))
-        if not self.order_ids:
+        # Confirmed billable events in the period are invoiced even when the
+        # customer had no collection orders.
+        events = self.env['wm.billable.event'].sudo().search([
+            ('partner_id', '=', self.partner_id.id),
+            ('company_id', '=', self.company_id.id),
+            ('state', '=', 'confirmed'),
+            ('event_date', '>=', self.date_from),
+            ('event_date', '<=', self.date_to),
+        ])
+        if not self.order_ids and not events:
             raise UserError(_("Please select at least one collection order to invoice."))
+
+        already_billed = self.order_ids.filtered(
+            lambda o: o.direct_invoice_id or o.billing_run_line_id
+            or (o.consolidated_invoice_id and o.consolidated_invoice_id != self)
+        )
+        if already_billed:
+            raise UserError(_(
+                "Cannot generate invoice: the following orders are already billed: %s"
+            ) % ', '.join(already_billed.mapped('name')))
 
         non_billable = self.order_ids.filtered(
             lambda o: o.state not in ('completed', 'signed')
@@ -330,41 +265,21 @@ class WmConsolidatedInvoice(models.Model):
                 "state (completed or signed): %s"
             ) % ', '.join(non_billable.mapped('name')))
 
-        # Step 1: Aggregate weights by category across ALL orders
-        category_totals = {}
+        # Step 1: Aggregate weights per (contract, category) across ALL orders
+        groups = self.order_ids._group_lines_for_billing()
+        # Subscription allowance left for these orders, shared with the other
+        # invoicing paths so it is never granted twice
+        budget_of, remaining = self.order_ids._get_allowance_budgets()
+        used = {}
 
-        for order in self.order_ids:
-            for line in order.order_line_ids:
-                category = getattr(line, 'category_id', False)
-                if not category and line.product_id:
-                    category = getattr(line.product_id, 'wm_waste_category_id', False)
-                if not category:
-                    continue
-                if category not in category_totals:
-                    category_totals[category] = {
-                        'weight': 0.0,
-                        'amount': 0.0,
-                        'product': line.product_id,
-                        'orders': set(),
-                    }
-                category_totals[category]['weight'] += line.weight
-                category_totals[category]['amount'] += line.total_amount
-                category_totals[category]['orders'].add(order.id)
-
-        if not category_totals:
+        if self.order_ids and not groups:
             raise UserError(_(
                 "No billable waste lines found across the selected orders. "
                 "Ensure orders have waste category lines with weight > 0."
             ))
 
-        # Step 2: Find active contract for partner
-        self.env['wm.partner.contract'].sudo().search([
-            ('partner_id', '=', self.partner_id.id),
-            ('state', '=', 'ongoing'),
-        ], limit=1)
-
-        today = fields.Date.today()
         invoice_lines = []
+        contract_fees = {}
 
         # Section header — one for the whole period
         total_orders = len(self.order_ids)
@@ -385,115 +300,144 @@ class WmConsolidatedInvoice(models.Model):
             },
         }))
 
-        # Build one invoice line per category
-        for category, data in category_totals.items():
-            rule = self.env['wm.collection.order']._get_billing_rule(
-                category, partner=self.partner_id, date=today
+        # Build one invoice line per category; contract per-collection fees
+        # are collected and billed once per order after the loop. Every
+        # collection is priced on its own weight (never pooled over the period),
+        # exactly like the order total and the direct invoice. The allowance
+        # goes to the highest price first.
+        Order = self.env['wm.collection.order']
+        company_lines = []  # priced in company currency, converted below
+        for (contract, category), data in Order._sort_groups_for_allowance(groups, self.partner_id):
+            rule = Order._get_billing_rule(
+                category, partner=self.partner_id, date=data['date'], contract=contract
             )
+            target = invoice_lines if (rule and getattr(rule, 'from_contract', False)) else company_lines
+            order_weights = data['order_weights']
             cat_weight = data['weight']
             category_name = category.name
+            service_product = getattr(category, 'service_product_id', False) or data['product']
 
-            if rule:
-                billing_basis = getattr(rule, 'billing_basis', 'per_kg')
-                if billing_basis == 'flat_per_collection':
-                    order_count = len(data['orders'])
-                    flat_total = rule.price * order_count
-                    max_weight = getattr(rule, 'max_weight', 0.0) or 0.0
-                    overweight_price = getattr(rule, 'overweight_price', 0.0) or 0.0
-                    allowed_weight = max_weight * order_count
-                    overweight_surcharge = 0.0
-                    if allowed_weight and overweight_price and cat_weight > allowed_weight:
-                        overweight_kg = cat_weight - allowed_weight
-                        overweight_surcharge = (overweight_kg / 10.0) * overweight_price
-                    price_per_kg = flat_total + overweight_surcharge
+            # A price per collection is not lowered by free kg: the
+            # subscription allowance only applies to per-kg prices.
+            if rule and getattr(rule, 'billing_basis', 'per_kg') in ('flat_per_collection', 'hybrid'):
+                if getattr(rule, 'contract_id', 0):
+                    fee = contract_fees.setdefault(rule.contract_id, {
+                        'rule': rule, 'order_weights': {}, 'product': service_product,
+                    })
+                    for order_id, weight in order_weights.items():
+                        fee['order_weights'][order_id] = fee['order_weights'].get(order_id, 0.0) + weight
+                else:
+                    target += Order._prepare_collection_fee_lines_per_order(
+                        rule, order_weights, service_product, category_name)
+                continue
+
+            charged, credited = Order._split_allowance(order_weights, budget_of, remaining, used)
+            fully_covered = not charged
+            if fully_covered:
+                # Every collection covered by the subscription: shown at its
+                # weight and credited in full, no minimum
+                charged, credited = order_weights, cat_weight
+            cat_weight = sum(charged.values())
+
+            if rule and fully_covered:
+                price_per_kg = rule.price
+                qty = cat_weight
+                description = _("%(cat)s — %(wt).1f kg @ %(price)s/kg") % {
+                    'cat': category_name, 'wt': cat_weight, 'price': price_per_kg,
+                }
+            elif rule:
+                price_per_kg = rule.price
+                total, billed_weight, charge_applied = Order._price_per_kg_per_collection(
+                    rule, list(charged.values()))
+                if charge_applied:
                     qty = 1.0
-                    description = _("%(cat)s — %(count)d collection(s) @ %(price)s/collection") % {
-                        'cat': category_name, 'count': order_count, 'price': rule.price,
-                    }
-                    if overweight_surcharge:
-                        description += _(" + overweight surcharge %(surcharge)s") % {
-                            'surcharge': round(overweight_surcharge, 2)
-                        }
-                elif billing_basis == 'hybrid':
-                    order_count = len(data['orders'])
-                    base_total = rule.price * order_count
-                    included_weight = getattr(rule, 'included_weight', 0.0) or getattr(rule, 'min_weight', 0.0) or 0.0
-                    overweight_price = getattr(rule, 'overweight_price', 0.0) or getattr(rule, 'min_charge', 0.0) or 0.0
-                    allowed_weight = included_weight * order_count
-                    overweight_surcharge = 0.0
-                    if allowed_weight and overweight_price and cat_weight > allowed_weight:
-                        overage_kg = cat_weight - allowed_weight
-                        overweight_surcharge = (overage_kg / 10.0) * overweight_price
-                    price_per_kg = base_total + overweight_surcharge
-                    qty = 1.0
-                    description = _(
-                        "%(cat)s — %(count)d collection(s), %(wt).1f kg "
-                        "(base: %(base)s, overage: %(surcharge)s)"
-                    ) % {
-                        'cat': category_name, 'count': order_count, 'wt': cat_weight,
-                        'base': round(base_total, 2), 'surcharge': round(overweight_surcharge, 2),
+                    price_per_kg = total
+                    description = _("%(cat)s — %(wt).1f kg (minimum charge applied per collection)") % {
+                        'cat': category_name, 'wt': cat_weight,
                     }
                 else:
-                    price_per_kg = rule.price
-                    min_wt = getattr(rule, 'min_weight', 0.0) or 0.0
-                    qty = max(cat_weight, min_wt) if min_wt else cat_weight
+                    qty = billed_weight
                     description = _("%(cat)s — %(wt).1f kg @ %(price)s/kg") % {
-                        'cat': category_name, 'wt': qty, 'price': price_per_kg,
+                        'cat': category_name, 'wt': billed_weight, 'price': price_per_kg,
                     }
             else:
                 category_price = getattr(category, 'price', 0.0) or 0.0
+                total_amount = data.get('amount', 0.0)
                 if category_price > 0:
                     price_per_kg = category_price
                     qty = cat_weight
                     description = _("%(cat)s — %(wt).1f kg @ %(price)s/kg [Category default rate]") % {
                         'cat': category_name, 'wt': cat_weight, 'price': category_price,
                     }
+                elif total_amount and cat_weight:
+                    avg_rate = total_amount / data['weight']
+                    self.message_post(body=_(
+                        "No pricing rule found for category '%(cat)s'. "
+                        "Used average rate from order line prices (%(rate)s/kg)."
+                    ) % {'cat': category_name, 'rate': round(avg_rate, 4)})
+                    price_per_kg = avg_rate
+                    qty = cat_weight
+                    description = _("%(cat)s — %(wt).1f kg [Rate from order lines]") % {
+                        'cat': category_name, 'wt': cat_weight,
+                    }
                 else:
-                    total_amount = data.get('amount', 0.0)
-                    if total_amount and cat_weight:
-                        avg_rate = total_amount / cat_weight
-                        self.message_post(body=_(
-                            "⚠ No pricing rule found for category '%(cat)s'. "
-                            "Used average rate from order line prices (%(rate)s/kg)."
-                        ) % {'cat': category_name, 'rate': round(avg_rate, 4)})
-                        price_per_kg = avg_rate
-                        qty = cat_weight
-                        description = _("%(cat)s — %(wt).1f kg [Rate from order lines]") % {
-                            'cat': category_name, 'wt': cat_weight,
-                        }
-                    else:
-                        price_per_kg = 0.0
-                        qty = cat_weight
-                        self.message_post(body=_(
-                            "⚠ No price resolved for category '%(cat)s' (%(wt).1f kg). "
-                            "Invoice line created with price = 0. "
-                            "Configure a billing rule to fix this."
-                        ) % {'cat': category_name, 'wt': cat_weight})
-                        description = _("%(cat)s — %(wt).1f kg [NO PRICE — configure pricing rule]") % {
-                            'cat': category_name, 'wt': cat_weight,
-                        }
+                    # Never invoice (and mark orders as billed) at zero
+                    raise UserError(_(
+                        "No price could be resolved for category '%(cat)s' (%(wt).1f kg). "
+                        "Configure a pricing rule or category price, then generate the invoice again."
+                    ) % {'cat': category_name, 'wt': cat_weight})
 
-            service_product = getattr(category, 'service_product_id', False)
-            if not service_product:
-                service_product = data['product']
-
-            # Apply minimum charge for per_kg basis rules
-            if rule and getattr(rule, 'billing_basis', 'per_kg') == 'per_kg':
-                raw_amount = price_per_kg * qty
-                min_charge = getattr(rule, 'min_charge', 0.0) if rule else 0.0
-
-                if min_charge and raw_amount < min_charge:
-                    qty = 1.0
-                    price_per_kg = min_charge
-                    description += _(" (minimum charge applied)")
-
-            invoice_lines.append((0, 0, {
+            target.append((0, 0, {
                 'product_id': service_product.id if service_product else False,
                 'name': description,
                 'quantity': qty,
                 'price_unit': price_per_kg,
-                'tax_ids': [(5, 0, 0)],
             }))
+            if credited:
+                rate = rule.price if rule else price_per_kg
+                target.append(Order._prepare_allowance_discount_line(
+                    category_name, credited, rate, service_product))
+
+        for contract_id, fee in contract_fees.items():
+            invoice_lines += Order._prepare_collection_fee_lines_per_order(
+                fee['rule'], fee['order_weights'], fee['product'],
+                self.env['wm.partner.contract'].browse(contract_id).display_name)
+
+        # Invoice in the currency of the orders' contracts (company currency
+        # without a contract); prices that do not come from a contract are in
+        # the company currency and are converted.
+        currencies = {
+            (order.contract_id.currency_id or self.company_id.currency_id) for order in self.order_ids
+        }
+        if len(currencies) > 1:
+            raise UserError(_(
+                "The selected orders belong to contracts in different currencies (%s). "
+                "Invoice them separately."
+            ) % ', '.join(sorted(c.name for c in currencies)))
+        invoice_currency = currencies.pop() if currencies else self.company_id.currency_id
+        invoice_lines += Order._scale_invoice_lines(
+            company_lines,
+            Order._get_invoice_currency_factor(invoice_currency, self.company_id, self.date_to))
+
+        if events:
+            invoice_lines.append((0, 0, {
+                'display_type': 'line_section',
+                'name': _("Ad-Hoc / Service Events"),
+            }))
+            for event in events:
+                event_label = dict(event._fields['event_type'].selection).get(event.event_type, event.event_type)
+                invoice_lines.append((0, 0, {
+                    'name': _("%(type)s — %(date)s (Ref: %(ref)s)") % {
+                        'type': event_label,
+                        'date': event.event_date.strftime('%d/%m/%Y'),
+                        'ref': event.name,
+                    },
+                    'quantity': event.quantity or 1.0,
+                    'price_unit': (event.currency_id or invoice_currency)._convert(
+                        event.price_unit, invoice_currency, self.company_id,
+                        event.event_date or fields.Date.today()),
+                    'discount': min(max(event.discount_pct or 0.0, 0.0), 100.0),
+                }))
 
         # Note line: source order references
         invoice_lines.append((0, 0, {
@@ -512,15 +456,19 @@ class WmConsolidatedInvoice(models.Model):
             'move_type': 'out_invoice',
             'partner_id': self.partner_id.id,
             'company_id': self.company_id.id,
+            'currency_id': invoice_currency.id,
             'invoice_date': fields.Date.today(),
             'invoice_date_due': fields.Date.today() + relativedelta(days=30),
             'ref': self.name,
             'invoice_line_ids': invoice_lines,
         })
 
-        # Link invoice to consolidated record and mark orders as billed
+        # Link invoice to consolidated record, mark events as invoiced and orders as billed
         self.invoice_id = invoice.id
         self.order_ids.sudo().write({'consolidated_invoice_id': self.id})
+        self.order_ids._record_allowance_usage(budget_of, used)
+        if events:
+            events.sudo().write({'state': 'invoiced', 'invoice_id': invoice.id})
         self.write({'state': 'invoiced'})
 
         self.message_post(body=Markup(_(
@@ -580,8 +528,28 @@ class WmConsolidatedInvoice(models.Model):
                 ) % rec.invoice_id.name)
             # Unlink orders from consolidated invoice
             rec.order_ids.sudo().write({'consolidated_invoice_id': False})
+            # Release the billable events of the cancelled invoice so they are
+            # picked up again by the next consolidated invoice.
+            if rec.invoice_id:
+                self.env['wm.billable.event'].sudo().search([
+                    ('invoice_id', '=', rec.invoice_id.id),
+                    ('state', '=', 'invoiced'),
+                ]).write({'state': 'confirmed', 'invoice_id': False, 'invoice_line_id': False})
             # Note: do NOT change order state — they remain completed/signed
             rec.write({'state': 'draft', 'invoice_id': False})
+
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_invoiced(self):
+        """
+        Block deleting an invoiced record: unlinking would free its orders
+        (consolidated_invoice_id is set null) and let them be billed again.
+        """
+        for rec in self:
+            if rec.state != 'draft':
+                raise UserError(_(
+                    "Consolidated invoice %s is invoiced and cannot be deleted. "
+                    "Cancel its invoice and reset it to draft first."
+                ) % rec.name)
 
     @api.model
     def _cron_generate_monthly_invoices(self):
@@ -594,26 +562,44 @@ class WmConsolidatedInvoice(models.Model):
         date_from = (today.replace(day=1) - relativedelta(months=1))
         date_to = today.replace(day=1) - timedelta(days=1)
 
-        partners = self.env['res.partner'].search([('billing_mode', '=', 'consolidated')])
         generated = 0
         errors = []
 
-        for partner in partners:
-            partner_orders = self.env['wm.collection.order']._get_billable_orders(partner, date_from, date_to)
-            if not partner_orders:
-                continue
-            try:
-                consolidated = self.create({
-                    'partner_id': partner.id,
-                    'date_from': date_from,
-                    'date_to': date_to,
-                    'order_ids': [fields.Command.set(partner_orders.ids)],
-                })
-                consolidated.action_generate_invoice()
-                generated += 1
-            except Exception as e:
-                _logger.error("Failed to generate consolidated invoice for partner %s: %s", partner.name, e, exc_info=True)
-                errors.append(f"{partner.name}: {e}")
+        # Bill each company separately, with only that company's orders and events
+        for company in self.env['res.company'].sudo().search([]):
+            invoice_model = self.sudo().with_company(company)
+            partners = invoice_model.env['res.partner'].search([
+                ('billing_mode', '=', 'consolidated'),
+                ('company_id', 'in', (False, company.id)),
+            ])
+            for partner in partners:
+                partner_orders = invoice_model.env['wm.collection.order']._get_billable_orders(
+                    partner, date_from, date_to).filtered(lambda o: o.company_id == company)
+                partner_events = invoice_model.env['wm.billable.event'].search([
+                    ('partner_id', '=', partner.id),
+                    ('company_id', '=', company.id),
+                    ('state', '=', 'confirmed'),
+                    ('event_date', '>=', date_from),
+                    ('event_date', '<=', date_to),
+                ])
+                if not partner_orders and not partner_events:
+                    continue
+                try:
+                    # Roll back this partner's record and invoice on failure, so no
+                    # orphan account.move or half-linked orders get committed.
+                    with self.env.cr.savepoint():
+                        consolidated = invoice_model.create({
+                            'partner_id': partner.id,
+                            'company_id': company.id,
+                            'date_from': date_from,
+                            'date_to': date_to,
+                            'order_ids': [fields.Command.set(partner_orders.ids)],
+                        })
+                        consolidated.action_generate_invoice()
+                    generated += 1
+                except Exception as e:
+                    _logger.error("Failed to generate consolidated invoice for partner %s: %s", partner.name, e, exc_info=True)
+                    errors.append(f"{partner.name}: {e}")
 
         if errors:
             _logger.error("Monthly billing cron completed with errors:\n%s", '\n'.join(errors))

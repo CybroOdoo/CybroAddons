@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View: wm.compliance.custody - List -->
+    <record id="view_wm_compliance_custody_list" model="ir.ui.view">
+        <field name="name">wm.compliance.custody.list</field>
+        <field name="model">wm.compliance.custody</field>
+        <field name="arch" type="xml">
+            <list string="Chain of Custody">
+                <field name="manifest_id"/>
+                <field name="action"/>
+                <field name="custodian_id"/>
+                <field name="timestamp"/>
+                <field name="location"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- View: wm.compliance.custody - Form -->
+    <record id="view_wm_compliance_custody_form" model="ir.ui.view">
+        <field name="name">wm.compliance.custody.form</field>
+        <field name="model">wm.compliance.custody</field>
+        <field name="arch" type="xml">
+            <form string="Chain of Custody Record">
+                <sheet>
+                    <group>
+                        <group string="Custody Event">
+                            <field name="manifest_id"/>
+                            <field name="action"/>
+                            <field name="custodian_id"/>
+                            <field name="timestamp"/>
+                        </group>
+                        <group string="Location &amp; Entity">
+                            <field name="location"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" placeholder="Custody handover remarks..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- View: wm.compliance.custody - Search -->
+    <record id="view_wm_compliance_custody_search" model="ir.ui.view">
+        <field name="name">wm.compliance.custody.search</field>
+        <field name="model">wm.compliance.custody</field>
+        <field name="arch" type="xml">
+            <search string="Search Custody Records">
+                <field name="manifest_id"/>
+                <field name="custodian_id"/>
+                <field name="location"/>
+                <filter string="Collected" name="act_collected" domain="[('action', '=', 'collected')]"/>
+                <filter string="In Transit" name="act_transit" domain="[('action', '=', 'in_transit')]"/>
+                <filter string="Received" name="act_received" domain="[('action', '=', 'received')]"/>
+                <filter string="Disposed" name="act_disposed" domain="[('action', '=', 'disposed')]"/>
+                <group>
+                    <filter string="Manifest" name="group_manifest" context="{'group_by': 'manifest_id'}"/>
+                    <filter string="Action" name="group_action" context="{'group_by': 'action'}"/>
+                    <filter string="Custodian" name="group_custodian" context="{'group_by': 'custodian_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Chain of Custody -->
+    <record id="action_wm_compliance_custody" model="ir.actions.act_window">
+        <field name="name">Chain of Custody</field>
+        <field name="res_model">wm.compliance.custody</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wm_compliance_custody_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No chain-of-custody records found</p>
+            <p>Every physical handover and status change of a waste manifest is recorded in the chain of custody.</p>
+        </field>
+    </record>
+</odoo>

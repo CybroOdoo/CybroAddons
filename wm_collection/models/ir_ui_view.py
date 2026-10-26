@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -27,11 +26,11 @@ class View(models.Model):
 
     _inherit = 'ir.ui.view'
 
-    type = fields.Selection(selection_add=[('map', 'Map')])
+    type = fields.Selection(selection_add=[('wm_map', 'WM Map')], ondelete={'wm_map': 'cascade'})
 
     def _is_qweb_based_view(self, view_type):
         """ Return whether `view_type` is rendered via QWeb/Owl. """
-        return view_type == "map" or super()._is_qweb_based_view(view_type)
+        return view_type == "wm_map" or super()._is_qweb_based_view(view_type)
 
     def _get_view_info(self):
         """
@@ -40,7 +39,7 @@ class View(models.Model):
         list views.
         """
         return {
-            'map': {'icon': 'fa fa-map-marker'}} | super()._get_view_info()
+            'wm_map': {'icon': 'fa fa-map-marker'}} | super()._get_view_info()
 
 
 class ActWindowView(models.Model):
@@ -48,4 +47,4 @@ class ActWindowView(models.Model):
 
     _inherit = 'ir.actions.act_window.view'
 
-    view_mode = fields.Selection(selection_add=[('map', 'Map')], ondelete={'map': 'cascade'})
+    view_mode = fields.Selection(selection_add=[('wm_map', 'WM Map')], ondelete={'wm_map': 'cascade'})

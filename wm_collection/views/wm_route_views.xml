@@ -12,6 +12,7 @@
                 <field name="vehicle_id"/>
                 <field name="driver_id"/>
                 <field name="estimated_duration"/>
+                <field name="fill_level_percentage" widget="progressbar" optional="hide"/>
                 <field name="date"/>
                 <field name="is_inspected" widget="boolean_toggle" optional="show"/>
                 <field name="state" widget="badge" decoration-info="state == 'to_start'" decoration-warning="state == 'dispatched'" decoration-danger="state == 'running'" decoration-success="state == 'completed'"/>
@@ -28,12 +29,12 @@
                 <field name="use_route_zones" invisible="1"/>
                 <header>
                     <button name="action_inspect_vehicle" type="object" string="Inspect Vehicle" class="oe_highlight btn-primary" invisible="not vehicle_id or is_inspected or state != 'to_start'"/>
-                    <button name="action_dispatch_route" type="object" string="Dispatch Route" class="btn-primary" invisible="state != 'to_start' or not is_inspected"/>
-                    <button name="action_start_route" type="object" string="Start Route" class="btn-primary" invisible="state != 'dispatched'"/>
-                    <button name="action_complete_route" type="object" string="Complete Route" class="btn-primary" invisible="state != 'running'"/>
-                    <button name="action_optimize_route" string="Optimize Route" type="object" class="btn-secondary" icon="fa-calculator" invisible="state != 'to_start'"/>
-                    <button name="action_cancel_route" type="object" string="Cancel" class="btn-secondary" invisible="state not in ('running', 'dispatched')"/>
-                    <button name="action_change_driver_wizard" type="object" string="Change Driver" class="btn-secondary" invisible="state != 'to_start'"/>
+                    <button name="action_dispatch_route" type="object" groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_base.group_wm_admin" string="Dispatch Route" class="btn-primary" invisible="state != 'to_start' or not vehicle_id or not is_inspected"/>
+                    <button name="action_start_route" type="object" string="Start Route" class="btn-primary" groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_base.group_wm_admin" invisible="state != 'dispatched' or not vehicle_id"/>
+                    <button name="action_complete_route" type="object" groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_base.group_wm_admin" string="Complete Route" class="btn-primary" invisible="state != 'running'"/>
+                    <button name="action_optimize_route" string="Optimize Route" type="object" class="btn-secondary" icon="fa-calculator" invisible="state != 'to_start'" groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_base.group_wm_admin"/>
+                    <button name="action_cancel_route" type="object" groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_base.group_wm_admin" string="Cancel" class="btn-secondary" invisible="state not in ('running', 'dispatched')"/>
+                    <button name="action_change_driver_wizard" type="object" string="Change Driver" class="btn-secondary" invisible="state != 'to_start'" groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_base.group_wm_admin"/>
                     <field name="state" widget="statusbar" statusbar_visible="to_start,dispatched,running,completed"/>
                 </header>
                 <sheet>
@@ -43,6 +44,7 @@
                         </button>
                         <button name="action_view_route_map" type="object"
                                 class="oe_stat_button" icon="fa-map-marker"
+                                groups="wm_base.group_wm_dispatcher,wm_base.group_wm_ops_manager,wm_base.group_wm_admin"
                                 string="Route Map">
                         </button>
                         <button name="action_view_driver_history" type="object" class="oe_stat_button" icon="fa-history" invisible="driver_history_count == 0">
@@ -51,6 +53,10 @@
                         <button name="action_view_inspections" type="object" class="oe_stat_button" icon="fa-check-square-o" invisible="inspection_count == 0">
                             <field name="inspection_count" widget="statinfo" string="Inspections"/>
                         </button>
+                        <button name="action_view_gate_entries" type="object" class="oe_stat_button" icon="fa-building-o" invisible="gate_entry_count == 0">
+                            <field name="gate_entry_count" widget="statinfo" string="Gate Entries"/>
+                        </button>
+                        <button name="action_view_driver_shift" type="object" class="oe_stat_button" icon="fa-clock-o" invisible="not shift_id" string="Driver Shift"/>
                     </div>
                     <div class="oe_title">
                         <h1><field name="name" placeholder="Route Name"/></h1>
@@ -64,8 +70,13 @@
                         </group>
                         <group>
                             <field name="estimated_duration" readonly="state == 'completed'"/>
+                            <field name="estimated_distance_km" invisible="not estimated_distance_km"/>
+                            <field name="fill_level_percentage" widget="progressbar" invisible="not fill_level_percentage"/>
                             <field name="date" readonly="state in ('dispatched', 'running', 'completed')"/>
                             <field name="is_inspected" widget="boolean_toggle" readonly="state != 'to_start'"/>
+                            <field name="actual_start" invisible="not actual_start"/>
+                            <field name="actual_end" invisible="not actual_end"/>
+                            <field name="shift_id" invisible="not shift_id"/>
                         </group>
                     </group>
                     <notebook>
@@ -147,6 +158,10 @@
         <field name="name">Routes Analysis</field>
         <field name="res_model">wm.route</field>
         <field name="view_mode">graph,pivot,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No data to display</p>
+            <p>There are no records matching the current filters yet.</p>
+        </field>
     </record>
 
     <!-- Action: Routes -->
@@ -155,5 +170,9 @@
         <field name="res_model">wm.route</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_wm_route_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No records found</p>
+            <p>Click the New button to create the first record.</p>
+        </field>
     </record>
 </odoo>

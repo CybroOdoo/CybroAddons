@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,16 +19,17 @@
 #
 #############################################################################
 from odoo import fields, models
+from odoo.exceptions import AccessError
 
 
 class WmSignatureSignNowWizard(models.TransientModel):
-    """Wizard to execute an immediate digital signature capture on a target document."""
+    """Wizard to upload a PDF as a new signature template and open it in the designer."""
     _name = 'wm.signature.sign.now.wizard'
     _description = 'Sign Now Wizard'
 
     name = fields.Char(string='Document Name', required=True)
     document = fields.Binary(string='Document (PDF)', required=True, attachment=True)
-    document_filename = fields.Char(string='Document Filename')
+    document_filename = fields.Char()
 
     def action_upload_and_design(self):
         """
@@ -38,8 +38,14 @@ class WmSignatureSignNowWizard(models.TransientModel):
         before sending the request.
         """
         self.ensure_one()
+        # The template designer is restricted to signature managers, so
+        # creating a template here for anyone else would only dead-end.
+        if not (self.env.user.has_group('wm_base.group_signature_manager')
+                or self.env.user.has_group('base.group_system')):
+            raise AccessError(self.env._(
+                "Only signature managers can upload documents and design signature templates."))
         # Find or create roles
-        roles = self.env['wm.signature.role'].search([])
+        roles = self.env['wm.signature.role'].search([], limit=1)
         if not roles:
             roles = self.env['wm.signature.role'].create({'name': 'Signer'})
 

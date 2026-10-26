@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -29,5 +28,5 @@ class WmSignatureRole(models.Model):
     _order = 'id'
 
     name = fields.Char(string='Role Name', required=True, translate=True)
-    partner_id = fields.Many2one('res.partner', string='Partner')
-    description = fields.Text(string='Description')
+    partner_id = fields.Many2one('res.partner')
+    description = fields.Text()

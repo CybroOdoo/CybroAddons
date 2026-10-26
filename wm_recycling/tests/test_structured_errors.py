@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,7 +19,7 @@
 #
 #############################################################################
 from odoo.exceptions import UserError
-from odoo.tests import tagged, TransactionCase
+from odoo.tests import TransactionCase, tagged
 
 
 @tagged('post_install', '-at_install', 'wm_recycling')

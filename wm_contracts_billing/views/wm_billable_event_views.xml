@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Billable Event Form View -->
+    <record id="view_wm_billable_event_form" model="ir.ui.view">
+        <field name="name">wm.billable.event.form</field>
+        <field name="model">wm.billable.event</field>
+        <field name="arch" type="xml">
+            <form string="Billable Event">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_create_invoice" string="Create Invoice" type="object" class="oe_highlight" groups="wm_base.group_wm_finance,account.group_account_manager" invisible="state != 'confirmed'"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object" invisible="state not in ('confirmed', 'cancelled')"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state in ('invoiced', 'cancelled')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,invoiced,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <field name="invoice_id" invisible="1"/>
+                        <field name="invoice_count" invisible="1"/>
+                        <button name="action_view_invoice" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="invoice_count == 0">
+                            <field name="invoice_count" widget="statinfo" string="Invoice"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Customer &amp; Location">
+                            <field name="partner_id"/>
+                            <field name="collection_point_id" domain="[('partner_id', '=', partner_id)]"/>
+                            <field name="event_type"/>
+                            <field name="event_date"/>
+                        </group>
+                        <group string="Billing Details">
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="quantity"/>
+                            <field name="price_unit" widget="monetary"/>
+                            <field name="discount_pct" invisible="not discount_pct"/>
+                            <field name="amount" widget="monetary"/>
+                            <field name="rate_source"/>
+                        </group>
+                    </group>
+                    <group string="Origins &amp; References">
+                        <group>
+                            <field name="collection_order_id"/>
+                            <field name="portal_request_id"/>
+                        </group>
+                        <group>
+                            <field name="invoice_line_id" invisible="not invoice_line_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Detailed reason or observations..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Billable Event List View -->
+    <record id="view_wm_billable_event_list" model="ir.ui.view">
+        <field name="name">wm.billable.event.list</field>
+        <field name="model">wm.billable.event</field>
+        <field name="arch" type="xml">
+            <list string="Billable Events" default_order="event_date desc, id desc" decoration-info="state == 'draft'" decoration-success="state == 'confirmed'" decoration-muted="state == 'cancelled'" decoration-warning="state == 'invoiced'">
+                <field name="name"/>
+                <field name="event_date"/>
+                <field name="partner_id"/>
+                <field name="collection_point_id"/>
+                <field name="event_type"/>
+                <field name="quantity"/>
+                <field name="price_unit" widget="monetary"/>
+                <field name="amount" widget="monetary"/>
+                <field name="rate_source"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'confirmed'" decoration-muted="state == 'cancelled'" decoration-warning="state == 'invoiced'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Billable Event Search View -->
+    <record id="view_wm_billable_event_search" model="ir.ui.view">
+        <field name="name">wm.billable.event.search</field>
+        <field name="model">wm.billable.event</field>
+        <field name="arch" type="xml">
+            <search string="Search Billable Events">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="collection_point_id"/>
+                <field name="event_type"/>
+                <field name="collection_order_id"/>
+                <separator/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Invoiced" name="invoiced" domain="[('state', '=', 'invoiced')]"/>
+                <group>
+                    <filter string="Customer" name="groupby_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Event Type" name="groupby_event_type" context="{'group_by': 'event_type'}"/>
+                    <filter string="Status" name="groupby_state" context="{'group_by': 'state'}"/>
+                    <filter string="Event Date" name="groupby_date" context="{'group_by': 'event_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Billable Event Pivot View -->
+    <record id="view_wm_billable_event_pivot" model="ir.ui.view">
+        <field name="name">wm.billable.event.pivot</field>
+        <field name="model">wm.billable.event</field>
+        <field name="arch" type="xml">
+            <pivot string="Billable Events Analysis">
+                <field name="event_type" type="row"/>
+                <field name="event_date" type="col" interval="month"/>
+                <field name="amount" type="measure"/>
+                <field name="quantity" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Billable Event Action -->
+    <record id="action_wm_billable_event" model="ir.actions.act_window">
+        <field name="name">Ad-Hoc Billable Events</field>
+        <field name="res_model">wm.billable.event</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="search_view_id" ref="view_wm_billable_event_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No Billable Events found
+            </p>
+            <p>
+                Track and manage extra pickups, overweight loads, contamination charges, and emergency callouts.
+            </p>
+        </field>
+    </record>
+</odoo>

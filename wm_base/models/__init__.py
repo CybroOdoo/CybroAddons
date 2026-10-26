@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -20,6 +19,7 @@
 #
 #############################################################################
 
+from . import disposal_facility
 from . import wm_audit_mixin
 from . import product_template
 from . import res_config_settings

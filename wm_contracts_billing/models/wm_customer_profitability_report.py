@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -50,10 +49,6 @@ class WmCustomerProfitabilityReport(models.Model):
         Create or replace the SQL view for profitability analysis.
         """
         tools.drop_view_if_exists(self.env.cr, self._table)
-        self.env.cr.execute("SELECT 1 FROM information_schema.tables WHERE table_name='wm_consolidated_invoice'")
-        if not self.env.cr.fetchone():
-            self.env.cr.execute(f"CREATE OR REPLACE VIEW {self._table} AS (SELECT 1 AS id, NULL::integer AS partner_id, NULL::integer AS contract_id, NULL::varchar AS billing_basis, NULL::date AS date, NULL::integer AS company_id, NULL::integer AS currency_id, 0 AS total_orders, 0.0::numeric AS total_weight_kg, 0.0::numeric AS overage_weight_kg, 0.0::numeric AS revenue WHERE False)")
-            return
         self.env.cr.execute("""
             CREATE OR REPLACE VIEW wm_customer_profitability_report AS (
                 SELECT

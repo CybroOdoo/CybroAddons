@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- View: product.product - product.product.waste.list (List) -->
+    <!-- View: wm.waste.material - List -->
     <record id="view_wm_waste_material_list" model="ir.ui.view">
-        <field name="name">product.product.waste.list</field>
-        <field name="model">product.product</field>
+        <field name="name">wm.waste.material.list</field>
+        <field name="model">wm.waste.material</field>
         <field name="arch" type="xml">
             <list string="Waste Materials">
                 <field name="name"/>
-                <field name="wm_waste_category_id"/>
+                <field name="category_id"/>
+                <field name="category_ids" widget="many2many_tags"/>
+                <field name="compliance_code_id"/>
                 <field name="hazardous"/>
+                <field name="recyclable"/>
             </list>
         </field>
     </record>
 
-    <!-- View: product.product - product.product.waste.form (Form) -->
+    <!-- View: wm.waste.material - Form -->
     <record id="view_wm_waste_material_form" model="ir.ui.view">
-        <field name="name">product.product.waste.form</field>
-        <field name="model">product.product</field>
+        <field name="name">wm.waste.material.form</field>
+        <field name="model">wm.waste.material</field>
         <field name="arch" type="xml">
             <form string="Waste Material">
                 <sheet>
@@ -26,31 +29,44 @@
                     </div>
                     <group>
                         <group>
-                            <field name="wm_waste_category_id"/>
+                            <field name="category_id"/>
+                            <field name="category_ids" widget="many2many_tags"/>
+                            <field name="compliance_code_id"/>
                         </group>
                         <group>
                             <field name="hazardous"/>
+                            <field name="recyclable"/>
                             <field name="active" widget="boolean_toggle"/>
-                            <field name="type" invisible="1" readonly="0"/>
-                            <field name="is_waste_material" invisible="1"/>
                         </group>
                     </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Material description and handling notes..."/>
+                        </page>
+                    </notebook>
                 </sheet>
                 <chatter/>
             </form>
         </field>
     </record>
 
-    <!-- View: product.product - product.product.waste.search (Search) -->
+    <!-- View: wm.waste.material - Search -->
     <record id="view_wm_waste_material_search" model="ir.ui.view">
-        <field name="name">product.product.waste.search</field>
-        <field name="model">product.product</field>
+        <field name="name">wm.waste.material.search</field>
+        <field name="model">wm.waste.material</field>
         <field name="arch" type="xml">
             <search string="Search Waste Materials">
                 <field name="name"/>
-                <field name="wm_waste_category_id"/>
+                <field name="category_id"/>
+                <field name="compliance_code_id"/>
+                <separator/>
+                <filter string="Hazardous" name="hazardous" domain="[('hazardous', '=', True)]"/>
+                <filter string="Recyclable" name="recyclable" domain="[('recyclable', '=', True)]"/>
                 <separator/>
                 <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Primary Category" name="group_by_category" context="{'group_by': 'category_id'}"/>
+                </group>
             </search>
         </field>
     </record>
@@ -79,11 +95,13 @@
     <!-- Action: Waste Materials -->
     <record id="action_wm_waste_material" model="ir.actions.act_window">
         <field name="name">Waste Materials</field>
-        <field name="res_model">product.product</field>
+        <field name="res_model">wm.waste.material</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_wm_waste_material_list"/>
-        <field name="domain">[('is_waste_material', '=', True)]</field>
-        <field name="context">{'default_is_waste_material': True, 'default_type': 'consu'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No records found</p>
+            <p>Click the New button to create the first record.</p>
+        </field>
     </record>
 
     <!-- Menu: Waste Materials -->

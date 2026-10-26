@@ -177,6 +177,23 @@
                             </div>
                         </t>
 
+                        <!-- Signature -->
+                        <t t-set="sig_req" t-value="o.env['wm.signature.request'].sudo().search([('reference_doc', '=', 'wm.batch.inspection,%s' % o.id), ('state', '=', 'signed')], order='id desc', limit=1) if 'wm.signature.request' in o.env else False"/>
+                        <t t-set="sig_signer" t-value="sig_req.signer_ids.filtered(lambda s: s.state == 'signed')[:1] if sig_req else False"/>
+                        <t t-set="sig_val" t-value="sig_req.item_value_ids.filtered(lambda v: v.signature_image)[:1] if sig_req else False"/>
+                        <t t-set="sig_image" t-value="(sig_signer and sig_signer.signature_image) or (sig_val and sig_val.signature_image)"/>
+                        <div class="mt-4" style="width: 260px; page-break-inside: avoid;">
+                            <div style="height: 65px; text-align: center;">
+                                <img t-if="sig_image" t-att-src="image_data_uri(sig_image)" style="max-height: 60px; max-width: 220px;"/>
+                            </div>
+                            <div style="border-top: 1px solid #555; padding-top: 4px; text-align: center;">
+                                <strong>Inspector Signature</strong>
+                                <div class="text-muted small" t-if="sig_signer" t-esc="sig_signer.partner_id.name"/>
+                                <div class="text-muted small" t-elif="o.inspector_id" t-esc="o.inspector_id.name"/>
+                                <div class="text-muted small" t-if="sig_signer and sig_signer.signed_date" t-esc="sig_signer.signed_date" t-options='{"widget": "datetime"}'/>
+                            </div>
+                        </div>
+
                         <!-- Stamp -->
                         <div class="clearfix">
                             <div class="inspection-stamp-container">

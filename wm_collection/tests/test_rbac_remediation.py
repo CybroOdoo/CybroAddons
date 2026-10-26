@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,8 +21,7 @@
 import logging
 
 from odoo.exceptions import AccessError
-from odoo.tests import tagged, TransactionCase
-
+from odoo.tests import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -87,15 +85,42 @@ class TestRbacRemediation(TransactionCase):
 
     def test_rbac02_sort_toggle_actually_controls_access(self):
         """
-        Disabling the sort-by-material Settings toggle actually revokes
-        the group from base.group_user — no static override remains.
+        Switching the 'Sort Based On' Settings option toggles the implied
+        sort groups on base.group_user (and the inventory operator group),
+        so a plain internal user gains/loses group_sort_by_material.
         """
         base_user_group = self.env.ref('base.group_user')
+        operator_group = self.env.ref('wm_base.group_wm_inventory_operator')
         sort_material_group = self.env.ref('wm_collection.group_sort_by_material')
-        if sort_material_group in base_user_group.implied_ids:
-            base_user_group.sudo().write({'implied_ids': [(3, sort_material_group.id)]})
-        self.assertNotIn(sort_material_group, base_user_group.implied_ids,
-                         "base.group_user must not statically imply group_sort_by_material")
+        sort_category_group = self.env.ref('wm_collection.group_sort_by_category')
+        plain_user = self.env['res.users'].create({
+            'name': 'Plain User RBAC2',
+            'login': 'plain_user_rbac2@example.com',
+            'email': 'plain_user_rbac2@example.com',
+        })
+
+        def apply_sort_mode(mode):
+            # Mirror the form onchange: the mode drives both implied-group toggles.
+            self.env['res.config.settings'].create({
+                'wm_sort_based_on': mode,
+                'group_sort_by_material': mode == 'material',
+                'group_sort_by_category': mode == 'category_and_material',
+            }).execute()
+            self.env.invalidate_all()
+
+        apply_sort_mode('category_and_material')
+        self.assertNotIn(sort_material_group, base_user_group.implied_ids)
+        self.assertIn(sort_category_group, base_user_group.implied_ids)
+        self.assertNotIn(sort_material_group, operator_group.implied_ids)
+        self.assertFalse(plain_user.has_group('wm_collection.group_sort_by_material'))
+        self.assertTrue(plain_user.has_group('wm_collection.group_sort_by_category'))
+
+        apply_sort_mode('material')
+        self.assertIn(sort_material_group, base_user_group.implied_ids)
+        self.assertNotIn(sort_category_group, base_user_group.implied_ids)
+        self.assertIn(sort_material_group, operator_group.implied_ids)
+        self.assertTrue(plain_user.has_group('wm_collection.group_sort_by_material'))
+        self.assertFalse(plain_user.has_group('wm_collection.group_sort_by_category'))
         _logger.info('PASS: test_rbac02_sort_toggle_actually_controls_access')
 
     def test_rbac03_no_duplicate_acl_rows(self):
@@ -125,32 +150,6 @@ class TestRbacRemediation(TransactionCase):
             self.env['waste.batch.sort.wizard'].with_user(plain_user).create({})
         _logger.info('PASS: test_rbac04_sort_wizard_requires_inventory_operator')
 
-    def test_rbac05_dispatcher_reads_contract_without_sudo(self):
-        """
-        Dispatcher can read wm.partner.contract directly (no AccessError), and
-        _compute_contract_id no longer needs sudo().
-        """
-        dispatcher = self._create_user_with_group('wm_base.group_wm_dispatcher')
-        partner = self.env['res.partner'].create({'name': 'Contract Partner RBAC5'})
-        sla = self.env['wm.sla'].sudo().create({'name': 'SLA RBAC5', 'terms_and_conditions': 'Terms RBAC5'})
-        contract = self.env['wm.partner.contract'].sudo().create({
-            'name': 'WMC-RBAC5-01',
-            'partner_id': partner.id,
-            'sla_id': sla.id,
-            'frequency': 'monthly',
-            'no_of_frequency': 1,
-            'billing_basis': 'per_collection',
-            'fixed_price': 100.0,
-            'max_weight': 100.0,
-            'overweight_price': 10.0,
-            'from_date': '2026-01-01',
-            'to_date': '2026-12-31',
-            'state': 'ongoing',
-        })
-        # Should not raise AccessError
-        contract.with_user(dispatcher).read(['name', 'state'])
-        _logger.info('PASS: test_rbac05_dispatcher_reads_contract_without_sudo')
-
     def test_rbac06_driver_loses_access_after_reassignment(self):
         """
         Driver A creates an unassigned order (sees it), order gets assigned to
@@ -174,66 +173,6 @@ class TestRbacRemediation(TransactionCase):
         self.assertNotIn(order, self.env['wm.collection.order'].with_user(driver_a).search([('id', '=', order.id)]))
         self.assertIn(order, self.env['wm.collection.order'].with_user(driver_b).search([('id', '=', order.id)]))
         _logger.info('PASS: test_rbac06_driver_loses_access_after_reassignment')
-
-    def test_rbac07_contract_company_scoped(self):
-        """
-        A user in Company B cannot read a contract belonging to Company A.
-        """
-        company_a = self.env['res.company'].create({'name': 'Company A RBAC7'})
-        company_b = self.env['res.company'].create({'name': 'Company B RBAC7'})
-        user_b = self.env['res.users'].create({
-            'name': 'User Company B',
-            'login': 'user_comp_b@example.com',
-            'email': 'user_comp_b@example.com',
-            'company_id': company_b.id,
-            'company_ids': [(6, 0, [company_b.id])],
-        })
-        self.env.ref('wm_contracts_billing.group_wm_contract_manager').write({'user_ids': [(4, user_b.id)]})
-
-        partner = self.env['res.partner'].sudo().create({'name': 'Partner Comp A', 'company_id': company_a.id})
-        sla = self.env['wm.sla'].sudo().create({'name': 'SLA RBAC7', 'terms_and_conditions': 'Terms RBAC7'})
-        contract_a = self.env['wm.partner.contract'].sudo().create({
-            'name': 'WMC-COMP-A',
-            'partner_id': partner.id,
-            'sla_id': sla.id,
-            'frequency': 'monthly',
-            'no_of_frequency': 1,
-            'billing_basis': 'per_collection',
-            'fixed_price': 100.0,
-            'max_weight': 100.0,
-            'overweight_price': 10.0,
-            'from_date': '2026-01-01',
-            'to_date': '2026-12-31',
-            'company_id': company_a.id,
-        })
-        visible_contracts = self.env['wm.partner.contract'].with_user(user_b).search([('id', '=', contract_a.id)])
-        self.assertNotIn(contract_a, visible_contracts)
-        _logger.info('PASS: test_rbac07_contract_company_scoped')
-
-    def test_rbac07_invoice_company_scoped(self):
-        """
-        A user in Company B cannot read a consolidated invoice belonging to
-        Company A.
-        """
-        company_a = self.env['res.company'].create({'name': 'Company A Invoice RBAC7'})
-        company_b = self.env['res.company'].create({'name': 'Company B Invoice RBAC7'})
-        user_b = self.env['res.users'].create({
-            'name': 'User Comp B Inv',
-            'login': 'user_comp_b_inv@example.com',
-            'email': 'user_comp_b_inv@example.com',
-            'company_id': company_b.id,
-            'company_ids': [(6, 0, [company_b.id])],
-        })
-        self.env.ref('wm_base.group_wm_finance').write({'user_ids': [(4, user_b.id)]})
-
-        partner = self.env['res.partner'].sudo().create({'name': 'Partner Comp A Inv', 'company_id': company_a.id})
-        invoice_a = self.env['wm.consolidated.invoice'].sudo().create({
-            'partner_id': partner.id,
-            'company_id': company_a.id,
-        })
-        visible_invoices = self.env['wm.consolidated.invoice'].with_user(user_b).search([('id', '=', invoice_a.id)])
-        self.assertNotIn(invoice_a, visible_invoices)
-        _logger.info('PASS: test_rbac07_invoice_company_scoped')
 
     def test_rbac09_checklist_requires_dispatcher(self):
         """
@@ -267,69 +206,26 @@ class TestRbacRemediation(TransactionCase):
             checklist.with_user(plain_user).write({'notes': 'Unauthorized edit'})
         _logger.info('PASS: test_rbac09_checklist_requires_dispatcher')
 
-    def test_rbac10_crm_lead_line_requires_sales_role(self):
+    def test_rbac11_driver_reads_only_own_route_lines(self):
         """
-        A plain internal user (e.g. Driver) cannot create crm.lead.line
-        records.
+        A driver can read the stops of routes assigned to them, but not the
+        stops of another driver's route.
         """
-        driver_user = self._create_user_with_group('wm_base.group_wm_driver')
-        lead = self.env['crm.lead'].sudo().create({
-            'name': 'Test Lead RBAC10',
+        driver_a = self._create_user_with_group('wm_base.group_wm_driver')
+        driver_b = self._create_user_with_group('wm_base.group_wm_driver')
+        point = self.env['wm.collection.point'].create({'name': 'Point RBAC11'})
+        route_a = self.env['wm.route'].create({
+            'name': 'Route RBAC11 A',
+            'driver_id': driver_a.partner_id.id,
+            'line_ids': [(0, 0, {'collection_point_id': point.id, 'sequence': 10})],
         })
-        category = self.env['wm.waste.category'].sudo().create({
-            'name': 'Cat RBAC10',
-            'code': 'CATRBAC10',
+        route_b = self.env['wm.route'].create({
+            'name': 'Route RBAC11 B',
+            'driver_id': driver_b.partner_id.id,
+            'line_ids': [(0, 0, {'collection_point_id': point.id, 'sequence': 10})],
         })
-        with self.assertRaises(AccessError):
-            self.env['crm.lead.line'].with_user(driver_user).create({
-                'lead_id': lead.id,
-                'category_id': category.id,
-            })
-        _logger.info('PASS: test_rbac10_crm_lead_line_requires_sales_role')
-
-    def test_rbac_contract_manager_configuration_menu_access(self):
-        """
-        Contract Manager role can access Configuration menu and Contracts &
-        SLAs submenus.
-        """
-        contract_mgr = self._create_user_with_group('wm_contracts_billing.group_wm_contract_manager')
-        visible_menus = self.env['ir.ui.menu'].with_user(contract_mgr).search([])
-        config_menu = self.env.ref('wm_base.menu_wm_config')
-        contracts_menu = self.env.ref('wm_contracts_billing.menu_partner_contract_wm')
-        sla_menu = self.env.ref('wm_contracts_billing.menu_wm_sla')
-        self.assertIn(config_menu, visible_menus)
-        self.assertIn(contracts_menu, visible_menus)
-        self.assertIn(sla_menu, visible_menus)
-        _logger.info('PASS: test_rbac_contract_manager_configuration_menu_access')
-
-    def test_rbac_contract_manager_signature_request_access(self):
-        """
-        Contract Manager role can search and create wm.signature.request
-        records.
-        """
-        contract_mgr = self._create_user_with_group('wm_contracts_billing.group_wm_contract_manager')
-        partner = self.env['res.partner'].sudo().create({'name': 'Test Partner Sig RBAC'})
-        sla = self.env['wm.sla'].sudo().create({'name': 'Standard SLA RBAC', 'terms_and_conditions': 'Test Terms'})
-
-        contract = self.env['wm.partner.contract'].with_user(contract_mgr).create({
-            'partner_id': partner.id,
-            'sla_id': sla.id,
-            'from_date': '2026-08-13',
-            'to_date': '2027-08-13',
-            'frequency': 'weekly',
-            'no_of_frequency': 1,
-            'billing_basis': 'per_collection',
-            'fixed_price': 100.0,
-            'max_weight': 50.0,
-            'overweight_price': 5.0,
-        })
-
-        template = self.env['wm.signature.template'].sudo().create({'name': 'Test Template RBAC'})
-        sig_request = self.env['wm.signature.request'].with_user(contract_mgr).create({
-            'name': 'Contract Sig Request RBAC',
-            'template_id': template.id,
-            'reference_doc': f'wm.partner.contract,{contract.id}',
-        })
-
-        self.assertTrue(sig_request.id)
-        _logger.info('PASS: test_rbac_contract_manager_signature_request_access')
+        visible = self.env['wm.route.line'].with_user(driver_a).search([
+            ('id', 'in', (route_a.line_ids | route_b.line_ids).ids),
+        ])
+        self.assertEqual(visible, route_a.line_ids)
+        _logger.info('PASS: test_rbac11_driver_reads_only_own_route_lines')

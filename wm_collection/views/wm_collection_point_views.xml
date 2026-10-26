@@ -9,6 +9,7 @@
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="zone_id" optional="show"/>
+                <field name="container_id" optional="show"/>
                 <field name="city"/>
                 <field name="state_id"/>
             </list>
@@ -21,9 +22,17 @@
         <field name="model">wm.collection.point</field>
         <field name="arch" type="xml">
             <form string="Collection Point">
+                <header>
+                    <button name="action_log_emergency_callout" string="Log Emergency Callout" type="object" class="btn-warning"/>
+                </header>
                 <field name="use_route_zones" invisible="1"/>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
+                        <button name="action_view_containers" type="object"
+                                class="oe_stat_button" icon="fa-archive"
+                                invisible="container_count == 0">
+                            <field name="container_count" widget="statinfo" string="Containers"/>
+                        </button>
                         <button name="action_geo_localize" type="object"
                                 class="oe_stat_button" icon="fa-map-marker"
                                 string="Geolocate">
@@ -40,9 +49,11 @@
                         <group>
                             <field name="partner_id"/>
                             <field name="zone_id" invisible="not use_route_zones"/>
+                            <field name="container_id"/>
                             <field name="category_ids" widget="many2many_tags"/>
                             <field name="latitude"/>
                             <field name="longitude"/>
+                            <field name="geo_pending" readonly="1" invisible="not geo_pending"/>
                         </group>
                         <group>
                             <span class="o_form_label o_td_label" name="address_name">
@@ -69,13 +80,13 @@
     <record id="view_wm_collection_point_map" model="ir.ui.view">
         <field name="name">wm.collection.point.map</field>
         <field name="model">wm.collection.point</field>
-        <field name="type">map</field>
+        <field name="type">wm_map</field>
         <field name="arch" type="xml">
-            <map>
+            <wm_map>
                 <field name="latitude" string="Latitude"/>
                 <field name="longitude" string="Longitude"/>
                 <field name="contact_address" string="Address"/>
-            </map>
+            </wm_map>
         </field>
     </record>
 
@@ -83,6 +94,10 @@
     <record id="action_wm_collection_point" model="ir.actions.act_window">
         <field name="name">Collection Points</field>
         <field name="res_model">wm.collection.point</field>
-        <field name="view_mode">list,form,map</field>
+        <field name="view_mode">list,form,wm_map</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No records found</p>
+            <p>Click the New button to create the first record.</p>
+        </field>
     </record>
 </odoo>

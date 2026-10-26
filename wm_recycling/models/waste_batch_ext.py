@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,7 +18,8 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
 class WasteBatch(models.Model):
@@ -32,7 +32,7 @@ class WasteBatch(models.Model):
         string='Recycling Orders',
     )
     recycling_order_count = fields.Integer(
-        string='Recycling Orders',
+        string='Recycling Order Count',
         compute='_compute_recycling_order_count',
         store=True,
     )
@@ -69,14 +69,12 @@ class WasteBatch(models.Model):
         Quick-create a recycling order pre-filled from this batch.
         """
         self.ensure_one()
-        from odoo.exceptions import UserError
-
         if not self.is_received:
             raise UserError(
                 _("The batch must be received into stock before creating a recycling order.")
             )
 
-        if self.recycling_order_ids:
+        if self.recycling_order_ids.filtered(lambda o: o.state != 'cancelled'):
             raise UserError(
                 _("A recycling order already exists for this batch (%s). "
                   "Only one recycling order is allowed per waste batch.") % self.name

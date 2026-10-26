@@ -33,7 +33,7 @@
                         </group>
                     </group>
                     <field name="order_ids" nolabel="1">
-                        <list string="Collection Orders" optional="show">
+                        <list string="Collection Orders">
                             <field name="name"/>
                             <field name="partner_id" readonly="1"/>
                             <field name="collection_point_id"/>
@@ -71,10 +71,11 @@
         <field name="model_id" ref="wm_collection.model_wm_collection_order"/>
         <field name="binding_model_id" ref="wm_collection.model_wm_collection_order"/>
         <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[(4, ref('wm_base.group_wm_finance')), (4, ref('wm_base.group_wm_admin'))]"/>
         <field name="state">code</field>
         <field name="code">
 # Filter selected orders to only include completed/signed, un-consolidated, and unbilled ones
-eligible = records.filtered(lambda o: o.state in ('completed', 'signed') and not o.consolidated_invoice_id and not o.billing_run_line_id)
+eligible = records.filtered(lambda o: o.state in ('completed', 'signed') and not o.consolidated_invoice_id and not o.billing_run_line_id and not o.direct_invoice_id)
 if not eligible:
     raise UserError(env._("No completed or signed orders without an existing monthly invoice found in your selection."))
 partners = eligible.mapped('partner_id')

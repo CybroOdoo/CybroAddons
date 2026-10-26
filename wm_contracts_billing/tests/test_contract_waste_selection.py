@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -22,9 +21,11 @@
 from datetime import date, timedelta
 
 from odoo.exceptions import ValidationError
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged('post_install', '-at_install')
 class TestContractWasteSelection(TransactionCase):
     """Unit tests verifying contracted waste category selection and rate card lookups."""
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,8 +22,9 @@ from datetime import datetime, time
 from unittest.mock import patch
 
 from dateutil.relativedelta import relativedelta
+
 from odoo import fields
-from odoo.tests import tagged, TransactionCase
+from odoo.tests import TransactionCase, tagged
 
 
 @tagged('post_install', '-at_install', 'wm_billing')
@@ -125,8 +125,8 @@ class TestSavepointErrorIsolation(TransactionCase):
 
         self.assertEqual(run.state, 'error')
 
-        line_good = run.line_ids.filtered(lambda l: l.partner_id == self.partner_good)
-        line_bad = run.line_ids.filtered(lambda l: l.partner_id == self.partner_bad)
+        line_good = run.line_ids.filtered(lambda ln: ln.partner_id == self.partner_good)
+        line_bad = run.line_ids.filtered(lambda ln: ln.partner_id == self.partner_bad)
 
         self.assertEqual(line_good.state, 'billed', "Good partner line should be state='billed'.")
         self.assertTrue(line_good.invoice_id, "Good partner line should have an invoice.")

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -23,7 +22,7 @@ import base64
 import hashlib
 import logging
 
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -41,6 +40,13 @@ class DigitalSignature(models.Model):
     signed_at = fields.Datetime(string='Signed At', default=fields.Datetime.now, required=True)
     pdf_attachment_id = fields.Many2one('ir.attachment', string='Signed PDF Attachment', required=True)
     pdf_hash = fields.Char(string='PDF Hash (SHA-256)', size=64, required=True)
+    company_id = fields.Many2one(
+        'res.company',
+        string='Company',
+        index=True,
+        default=lambda self: self.env.company,
+        help='Company of the signed document, used for multi-company access.',
+    )
 
     hash_verified = fields.Boolean(
         string='Hash Verified',
@@ -48,6 +54,7 @@ class DigitalSignature(models.Model):
         store=False
     )
 
+    @api.depends('signer_id.name', 'signed_at')
     def _compute_display_name(self):
         """
         Build a descriptive display name for the digital signature record from
@@ -107,14 +114,24 @@ class DigitalSignature(models.Model):
         })
 
         # Create and return signature record
-        return self.create({
+        return self.sudo().create({
             'res_model': record._name,
             'res_id': record.id,
             'signer_id': self.env.user.id,
             'signed_at': fields.Datetime.now(),
             'pdf_attachment_id': attachment.id,
             'pdf_hash': pdf_hash,
+            'company_id': (record.company_id.id if 'company_id' in record._fields and record.company_id
+                           else self.env.company.id),
         })
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Signatures are evidence: only ``sign_document`` (server code running
+        as superuser) may create them, never a direct ORM/RPC create."""
+        if not self.env.su:
+            raise UserError(_("Digital signatures can only be created by signing a document."))
+        return super().create(vals_list)
 
     def write(self, vals):
         """
@@ -123,9 +140,10 @@ class DigitalSignature(models.Model):
         stored_fields = [f for f in vals if self._fields[f].store]
         if stored_fields:
             raise UserError(_("Digital signatures are legally binding records and cannot be modified."))
-        return super(DigitalSignature, self).write(vals)
+        return super().write(vals)
 
-    def unlink(self):
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_signature(self):
         """
         Override unlink to handle cascading cleanup or prevent invalid
         deletions.

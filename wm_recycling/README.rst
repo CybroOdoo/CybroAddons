@@ -2,12 +2,12 @@
     :target: https://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
-=========================
+==========================
 Waste Management Recycling
-=========================
+==========================
 Material Recovery Facility (MRF) management, sorting line recovery tracking, and recyclable commodity sales in Odoo 19.
 
-* Material Recovery Facility order lifecycle tracking: Draft, In Progress, Sorted, and Done.
+* Material Recovery Facility order lifecycle tracking: Draft, Confirmed, In Progress, Done, and Cancelled.
 * Detailed recovery lines capturing input waste batches, recovered recyclable materials, residual waste, and recovery rates.
 * Direct integration with Odoo Sales orders to monetize recovered raw materials and recyclable commodities.
 * Comprehensive Carbon Accounting and avoided greenhouse gas emissions reporting.
@@ -15,7 +15,7 @@ Material Recovery Facility (MRF) management, sorting line recovery tracking, and
 
 Configuration
 =============
-* Configure Recycling Facilities, Sorting Locations, and Residue Locations under ``Waste Management > Recycling``.
+* Set the Recycling Facility Location and the destination location of each recovery line on the recycling order. Process-loss residue is moved to a dedicated "Recycling Process Loss" location, which is created automatically.
 * Define Recyclable Output Products and pricing under ``Waste Management > Configuration > Products``.
 * Set up carbon emission factors per material category under ``Waste Management > Configuration``.
 
@@ -25,7 +25,7 @@ Company
 
 License
 =======
-General Public License, Version 3 (LGPL v3).
+GNU Lesser General Public License, Version 3 (LGPL-3).
 (https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 
 Credits
@@ -40,7 +40,7 @@ Contacts
 
 Bug Tracker
 ===========
-Bugs are tracked on GitHub Issues. In case of trouble, please check there if your issue has already been reported.
+Bugs are tracked on GitHub Issues. In case of trouble, please check whether your issue has already been reported.
 
 Maintainer
 ==========

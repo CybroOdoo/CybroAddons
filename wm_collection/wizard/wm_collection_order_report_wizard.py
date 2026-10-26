@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,7 +20,7 @@
 #############################################################################
 from datetime import timedelta
 
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -43,9 +42,8 @@ class WmCollectionOrderReportWizard(models.TransientModel):
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
         ('signed', 'Signed'),
-        ('invoiced', 'Invoiced'),
         ('missed', 'Missed'),
-        ('cancel', 'Cancelled'),
+        ('cancelled', 'Cancelled'),
     ], string='Status')
     product_id = fields.Many2one('product.product', string='Waste Material')
     route_id = fields.Many2one('wm.route', string='Route')

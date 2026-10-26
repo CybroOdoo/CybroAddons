@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,7 +20,7 @@
 #############################################################################
 import logging
 
-from odoo import api, exceptions, fields, models, _
+from odoo import api, exceptions, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -32,25 +31,25 @@ class WmAuditLog(models.Model):
     _description = 'Waste Management Audit Log'
     _order = 'log_date desc, id desc'
 
-    model_id = fields.Many2one('ir.model', string='Model', required=True, index=True, ondelete='cascade')
+    model_id = fields.Many2one('ir.model', required=True, index=True, ondelete='cascade')
     res_id = fields.Integer(string='Record ID', required=True, index=True)
-    field_name = fields.Char(string='Field Name')
-    old_value = fields.Text(string='Old Value')
-    new_value = fields.Text(string='New Value')
+    field_name = fields.Char()
+    old_value = fields.Text()
+    new_value = fields.Text()
     user_id = fields.Many2one('res.users', string='Responsible User', required=True, default=lambda self: self.env.user)
     log_date = fields.Datetime(string='Timestamp', required=True, default=fields.Datetime.now)
     action = fields.Selection([
         ('create', 'Create'),
         ('write', 'Write'),
         ('unlink', 'Delete'),
-    ], string='Action', required=True)
-    record_name = fields.Char(string='Record Name', compute='_compute_record_name')
+    ], required=True)
+    record_name = fields.Char(compute='_compute_record_name')
 
     @api.depends('model_id', 'res_id')
     def _compute_record_name(self):
         """
-        Resolve the display name of the audited source record by calling name_get on
-        the target model, providing a readable reference in the audit log list view.
+        Resolve the display name of the audited source record from the target
+        model, providing a readable reference in the audit log list view.
         """
         for log in self:
             if log.model_id and log.res_id:
@@ -70,16 +69,16 @@ class WmAuditLog(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         """
-        Override create to prevent any modification of audit log entries after
-        they are written; raises UserError if an attempt to update an existing
-        log record is detected.
+        Create audit log entries. Entries are append-only: modification is
+        rejected by write().
         """
         return super().create(vals_list)
 
     def write(self, vals):
-        """ Override write to implement business validations and side effects."""
-        raise exceptions.UserError(_('Audit records cannot be edited by any user, including administrators.'))
+        """ Block every write: audit log entries are immutable. """
+        raise exceptions.UserError(self.env._('Audit records cannot be edited by any user, including administrators.'))
 
-    def unlink(self):
-        """ Override unlink to handle cascading cleanup or prevent invalid deletions. """
-        raise exceptions.UserError(_('Audit records cannot be deleted by any user, including administrators.'))
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_audit_record(self):
+        """ Block deletion of audit log entries (allowed only at module uninstall). """
+        raise exceptions.UserError(self.env._('Audit records cannot be deleted by any user, including administrators.'))

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -19,10 +18,10 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
+import unittest
 import logging
 
-from odoo.tests import tagged, TransactionCase
-
+from odoo.tests import TransactionCase, tagged
 
 _logger = logging.getLogger(__name__)
 
@@ -37,6 +36,8 @@ class TestCategoryBillingFallback(TransactionCase):
         Set up test class fixtures and environment.
         """
         super().setUpClass()
+        if 'wm.consolidated.invoice' not in cls.env:
+            raise unittest.SkipTest("Needs the wm_contracts_billing module")
         cls.category = cls.env['wm.waste.category'].create({
             'name': 'Test Category Price Stream',
             'code': 'TCPRICE',

@@ -7,6 +7,7 @@ import {
     useRef,
     useEffect
 } from "@odoo/owl";
+import { escape } from "@web/core/utils/strings";
 
 export class MapRenderer extends Component {
     static template = "odoo_web_map.MapRenderer";
@@ -145,12 +146,12 @@ export class MapRenderer extends Component {
         popupContent.innerHTML = `
             <div class="mb-2">
                 <div class="fw-bold text-muted small">Name</div>
-                <div>${record.display_name}</div>
+                <div>${escape(record.display_name)}</div>
             </div>
             ${address ? `
             <div class="mb-3">
                 <div class="fw-bold text-muted small">Address</div>
-                <div class="text-break">${address}</div>
+                <div class="text-break">${escape(address)}</div>
             </div>` : ""}
             <div class="d-flex gap-2">
                 <button class="btn btn-primary btn-sm btn-open-record">
@@ -200,8 +201,8 @@ export class MapRenderer extends Component {
             const address = this.getNestedValue(record, addressField) || "";
             return `
                 <div class="o_map_cluster_record mb-2 pb-2 border-bottom">
-                    <div class="fw-bold">${record.display_name}</div>
-                    ${address ? `<div class="small text-muted text-truncate" style="max-width: 300px;">${address}</div>` : ""}
+                    <div class="fw-bold">${escape(record.display_name)}</div>
+                    ${address ? `<div class="small text-muted text-truncate" style="max-width: 300px;">${escape(address)}</div>` : ""}
                     <button class="btn btn-primary btn-sm mt-1 btn-open-record" data-record-id="${record.id}">
                         Open
                     </button>

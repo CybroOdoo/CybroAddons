@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -21,8 +20,9 @@
 #############################################################################
 from datetime import timedelta
 
-from markupsafe import escape, Markup
-from odoo import fields, models, _
+from markupsafe import Markup, escape
+
+from odoo import _, fields, models
 from odoo.exceptions import UserError
 
 
@@ -50,6 +50,8 @@ class WmMarkMissedWizard(models.TransientModel):
             raise UserError(_("Missed Collection functionality is disabled in settings."))
 
         order = self.order_id
+        if order.state not in ('draft', 'dispatched', 'in_progress') or order.retry_order_id:
+            raise UserError(_("Order '%s' is already closed or marked as missed.") % order.name)
 
         # Mark the order as missed
         order.with_context(
@@ -83,6 +85,9 @@ class WmMarkMissedWizard(models.TransientModel):
             'state': 'draft',
             'name': 'New',
             'parent_order_id': order.id,
+            # Unrouted, so it can be planned on a route for the retry date
+            # instead of sitting on today's (running or completed) route
+            'route_id': False,
             'scheduled_start': retry_start,
             'scheduled_end': retry_end,
             'actual_start': False,

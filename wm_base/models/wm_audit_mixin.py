@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
@@ -64,7 +63,7 @@ class WmAuditMixin(models.AbstractModel):
                     _logger.debug("Failed to calculate binary file size in audit: %s", e)
                     return "[Binary File]"
             return ""
-        elif field.type == 'html':
+        if field.type == 'html':
             if value:
                 try:
                     clean_text = html2plaintext(str(value)).strip()
@@ -74,11 +73,11 @@ class WmAuditMixin(models.AbstractModel):
                     _logger.debug("Failed to clean html text in audit: %s", e)
                     return str(value)[:200]
             return ""
-        elif field.type == 'many2one':
+        if field.type == 'many2one':
             try:
                 if isinstance(value, models.BaseModel):
                     return value.display_name if value.exists() else f"Deleted ({value.id})"
-                elif value:
+                if value:
                     record = self.env[field.comodel_name].browse(int(value))
                     return record.display_name if record.exists() else f"Deleted ({value})"
                 return ""
@@ -109,9 +108,8 @@ class WmAuditMixin(models.AbstractModel):
     @api.model_create_multi
     def create(self, vals_list):
         """
-        Override ORM create to stamp audit metadata (created_by, created_at) on
-        every new record before delegating to super(), ensuring all child
-        models carry a consistent audit trail.
+        Override ORM create to log an audit trail entry for each new record
+        when the global audit trail setting is enabled.
         """
         records = super().create(vals_list)
         if not self._is_audit_trail_enabled():
@@ -136,9 +134,8 @@ class WmAuditMixin(models.AbstractModel):
 
     def write(self, vals):
         """
-        Override ORM write to record the last modification author and timestamp
-        on every update, maintaining an accurate audit trail for compliance and
-        regulatory review.
+        Override ORM write to log changes to tracked and auditable fields
+        in the audit trail when the global audit trail setting is enabled.
         """
         if not self._is_audit_trail_enabled():
             return super().write(vals)
@@ -148,9 +145,10 @@ class WmAuditMixin(models.AbstractModel):
         # High-value compliance & tracked fields to audit (avoids duplicate logging of trivial UI/compute fields)
         def _is_auditable_field(fname):
             """
-            Determine whether a given field should be tracked in the audit log
-            based on the model's configured auditable field list, excluding
-            system and computed fields.
+            Determine whether a given field should be tracked in the audit log:
+            a fixed set of key fields (state, status, name, code, partner_id,
+            ...) or any field with tracking/audit enabled. Write/create
+            metadata fields are skipped.
             """
             if fname in ['write_date', 'write_uid', 'create_date', 'create_uid', '__last_update']:
                 return False
@@ -220,7 +218,7 @@ class WmAuditMixin(models.AbstractModel):
         return res
 
     def unlink(self):
-        """ Override unlink to handle cascading cleanup or prevent invalid deletions. """
+        """ Log a deletion audit entry for each record when the audit trail is enabled, then delete. """
         if self._is_audit_trail_enabled():
             model_id = self.env['ir.model']._get(self._name)
             log_vals_list = []
