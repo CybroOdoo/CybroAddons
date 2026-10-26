@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Inherit point_of_sale.Navbar View to Modify it -->
+    <t t-name="pos_chatter.Navbar" t-inherit="point_of_sale.Navbar"
+       t-inherit-mode="extension">
+         <xpath expr="//div[hasclass('status-buttons')]" position="inside">
+             <button class="btn btn-light btn-lg lh-lg position-relative" id="pos_systray_chatter_icon"
+                   t-if="!this.isScreensaver"
+                   t-on-click="() => this.onChatterClick()" title="POS Chat">
+                <i class="oi oi-fw" data-icon="forum"/>
+                <!-- Message count badge -->
+                <t t-if="this.chatterState and this.chatterState.messageCount > 0">
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          t-out="this.chatterState.messageCount"/>
+                </t>
+              </button>
+              <t t-if="!this.isScreensaver and this.chatterState and this.chatterState.isOpen">
+                  <PosMsgView onOpenChat="(channelId) => this.openChat(channelId)" onClose="() => this.closeMsgView()"/>
+              </t>
+              <t t-if="!this.isScreensaver and this.chatterState and this.chatterState.activeChannelId">
+                  <ChatMsgView channel_id="this.chatterState.activeChannelId" onClose="() => this.closeChat()"/>
+              </t>
+        </xpath>
+    </t>
+</templates>

@@ -1,0 +1,48 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#############################################################################
+from odoo import api, fields, models
+
+
+class WaterSupplyMethods(models.Model):
+    """Creating water supply methods. """
+    _name = 'water.supply.methods'
+    _description = 'Water Supply Methods'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _rec_name = 'supply_name'
+
+    code = fields.Char(string='Internal Code', help='Code of the supply method', required=True)
+    supply_name = fields.Char(string='Supply Name', help='Supply name', required=True)
+    created_product_id = fields.Many2one('product.product',
+                                         string='Created Product',
+                                         help="Product created automatically "
+                                              "when this supply method is created")
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Creating corresponding product for each method."""
+        records = super().create(vals_list)
+        for record in records:
+            product_records = {
+                'name': record.supply_name,
+                'type': 'consu',
+                'is_storable': True
+            }
+            created_product = self.env['product.product'].create(
+                product_records).id
+            record.created_product_id = created_product
+        return records

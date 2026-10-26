@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <!-- Info icon shown in the sale order line list -->
+    <t t-name="product_web_hover.ProductDetailWidget">
+        <a t-if="this.hasProduct"
+           class="o_product_hover_btn d-flex justify-content-center align-items-center text-primary"
+           style="height: 1.5em;"
+           role="button"
+           href="#"
+           aria-label="Product Info"
+           title="Hover or click to view the product details"
+           t-on-mouseenter="this.onMouseEnter"
+           t-on-mouseleave="this.onMouseLeave"
+           t-on-click.prevent.stop="this.onClick">
+            <i class="oi oi-info fs-6" data-icon="info"/>
+        </a>
+    </t>
+
+    <!-- Popover content -->
+    <t t-name="product_web_hover.ProductDetailPopover">
+        <div class="o_product_detail_popover p-3 bg-view text-body shadow rounded"
+             style="min-width: 270px; max-width: 340px;"
+             t-on-mouseenter="this.onMouseEnter"
+             t-on-mouseleave="this.onMouseLeave">
+            <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+                <img t-att-src="this.productImageUrl"
+                     alt="Product"
+                     class="rounded border flex-shrink-0 object-fit-cover"
+                     width="50" height="50"/>
+                <div class="flex-grow-1 overflow-hidden">
+                    <h6 class="mb-1 text-truncate fw-bold" t-att-title="this.details.name">
+                        <t t-out="this.details.name"/>
+                    </h6>
+                    <span t-if="this.details.default_code" class="badge bg-view text-body border font-monospace">
+                        Ref: <t t-out="this.details.default_code"/>
+                    </span>
+                </div>
+            </div>
+
+            <table class="table table-sm table-borderless mb-0">
+                <tbody>
+                    <tr t-if="this.categoryName">
+                        <td class="text-muted ps-0 py-1">Category:</td>
+                        <td class="text-end pe-0 py-1">
+                            <span class="badge text-bg-secondary"><t t-out="this.categoryName"/></span>
+                        </td>
+                    </tr>
+                    <tr t-if="this.hasCost">
+                        <td class="text-muted ps-0 py-1">Cost:</td>
+                        <td class="text-end pe-0 py-1">
+                            <t t-out="this.formatCurrency(this.details.standard_price)"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0 py-1">Unit Price:</td>
+                        <td class="text-end pe-0 py-1">
+                            <t t-out="this.formatCurrency(this.recordData.price_unit)"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0 py-1">Order Qty:</td>
+                        <td class="text-end pe-0 py-1">
+                            <t t-out="this.formatQuantity(this.recordData.product_uom_qty)"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0 py-1">On Hand:</td>
+                        <td class="text-end pe-0 py-1">
+                            <span t-attf-class="badge {{ this.isInStock ? 'text-bg-success' : 'text-bg-danger' }}">
+                                <t t-out="this.formatQuantity(this.details.qty_available)"/>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </t>
+
+</templates>

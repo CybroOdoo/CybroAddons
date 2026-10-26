@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Mobile service sequence-->
+    <record id="mobile_service_execute" model="ir.module.category">
+        <field name="name">Mobile Service</field>
+        <field name="sequence">5</field>
+    </record>
+
+    <!--Mobile service user group creation-->
+    <record id="mobile_service_shop_group_user" model="res.groups">
+        <field name="name">Mobile Technician</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!--Mobile service manager group creation-->
+    <record id="mobile_service_shop_group_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="implied_ids" eval="[(4, ref('mobile_service_shop_group_user')),
+                                          (4, ref('stock.group_stock_user')),
+                                          (4, ref('account.group_account_invoice'))]"/>
+    </record>
+
+    <!--Mobile service multi-company restriction-->
+    <record id="mobile_service_rule_multicompany" model="ir.access">
+        <field name="name">Mobile Service Multi-company</field>
+        <field name="model_id" ref="model_mobile_service"/>
+        <field name="operation">crud</field>
+        <field name="domain">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!--Mobile service technician record access rule-->
+    <record id="mobile_service_tech_rules" model="ir.access">
+        <field name="name">Mobile Service Technician Rule</field>
+        <field name="model_id" ref="model_mobile_service"/>
+        <field name="group_id" ref="mobile_service_shop_group_user"/>
+        <field name="operation">ru</field>
+        <field name="domain">[('technician_name', '=', user.id), ('service_state', '!=', 'draft'), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!--Mobile service manager record access rule-->
+    <record id="mobile_service_rule_manager" model="ir.access">
+        <field name="name">Mobile Service Manager Rule</field>
+        <field name="model_id" ref="model_mobile_service"/>
+        <field name="group_id" ref="mobile_service_shop_group_manager"/>
+        <field name="operation">crud</field>
+        <field name="domain">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>
