@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit the signup template to add the mobile number signup link -->
+    <template id="signup_with_mobile_link" inherit_id="auth_signup.signup"
+              name="Signup with mobile link">
+        <xpath expr="//button[@type='submit']" position="after">
+            <div class="justify-content-center mt-2 d-flex small signup-link">
+                <a class="sign-up-mobile small"
+                   t-attf-href="/web/signup-mobile?{{ keep_query() }}">Sign up with Mobile</a>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Template for signup with mobile fields -->
+    <template id="signup_with_mobile_fields"
+              name="Auth Signup with mobile form fields">
+        <div class="mb-3 field-login-mobile">
+            <label for="login_mobile" class="form-label">Mobile Number</label>
+            <div class="country-and-mobile-number">
+                <div class="field-phone country-code-col" id="country_code">
+                    <!-- Hidden input that stores the actual selected phone_code for form submission -->
+                    <input type="hidden" name="country_code" id="selected_country_code"/>
+                    <!-- Searchable text input -->
+                    <div class="country-code-search-wrapper">
+                        <input type="text" id="country_code_search"
+                               class="country-code-search form-control form-control-sm"
+                               placeholder="+Code" autocomplete="off"/>
+                        <ul id="country_code_dropdown" class="country-code-dropdown-list">
+                            <t t-foreach="request.env['res.country'].sudo().search([], order='name asc')"
+                               t-as="country">
+                                <t t-if="country.phone_code">
+                                    <li class="country-code-option"
+                                        t-att-data-code="country.phone_code"
+                                        t-att-data-name="country.name">
+                                        +<t t-out="country.phone_code"/>
+                                    </li>
+                                </t>
+                            </t>
+                        </ul>
+                    </div>
+                </div>
+                <div class="field-phone mobile-number-col" id="div_number">
+                    <input type="text" name="login_mobile"
+                           id="login_mobile"
+                           t-att-value="login_mobile"
+                           class="login_mobile form-control form-control-sm"
+                           autocapitalize="off"
+                           required="required"
+                           placeholder="Mobile Number"
+                           t-att-readonly="'readonly' if only_passwords else None"/>
+                </div>
+            </div>
+        </div>
+        <div class="mb-3 otp-verification">
+            <label for="sms_otp_verify" class="form-label">OTP Verification</label>
+            <div class="otp-verify-row">
+                <div class="sms-validate flex-grow-1">
+                    <input type="text" name="sms_otp" t-att-value="sms_otp"
+                           id="sms_otp_verify"
+                           class="form-control form-control-sm sms-otp-input"
+                           required="required"
+                           placeholder="Enter 4-digit OTP"/>
+                </div>
+                <button type="button" name="send_otp_sms"
+                        class="btn btn-primary send-otp-btn"
+                        role="button">Send OTP</button>
+            </div>
+        </div>
+        <div class="mb-3 field-name">
+            <label for="name" class="form-label">Your Name</label>
+            <input type="text" name="name" t-att-value="name" id="name"
+                   class="form-control form-control-sm"
+                   placeholder="e.g. John Doe"
+                   required="required"
+                   t-att-readonly="'readonly' if only_passwords else None"/>
+        </div>
+        <div class="mb-3 field-password">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" name="password" id="password"
+                   class="form-control form-control-sm"
+                   required="required"/>
+        </div>
+        <div class="mb-3 field-confirm_password">
+            <label for="confirm_password" class="form-label">Confirm Password</label>
+            <input type="password" name="confirm_password"
+                   id="confirm_password"
+                   class="form-control form-control-sm"
+                   required="required"/>
+        </div>
+    </template>
+
+    <!-- Template for signup with mobile -->
+    <template id="signup_mobile" name="Sign up login">
+        <t t-call="web.login_layout">
+            <form class="oe_signup_form_mobile" role="form" method="post"
+                  t-if="not message">
+                <input type="hidden" name="csrf_token"
+                       t-att-value="request.csrf_token()"/>
+                <t t-call="signup_with_twilio.signup_with_mobile_fields">
+                    <t t-set="only_passwords"
+                       t-value="bool(token and not invalid_token)"/>
+                </t>
+                <p class="alert alert-danger" t-if="error" role="alert">
+                    <t t-out="error"/>
+                </p>
+                <input type="hidden" name="redirect" t-att-value="redirect"/>
+                <input type="hidden" name="token" t-att-value="token"/>
+                <input type="hidden" name="signup_mobile" t-att-value="True"/>
+                <div class="text-center oe_login_buttons d-grid pt-3">
+                    <button type="submit" class="btn btn-primary sign-up">Sign up</button>
+                    <a t-attf-href="/web/login?{{ keep_query() }}"
+                       class="btn btn-link btn-sm mt-2" role="button">Already have an account?</a>
+                    <div class="o_login_auth"/>
+                </div>
+            </form>
+        </t>
+    </template>
+</odoo>

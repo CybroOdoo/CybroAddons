@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="product_ar_view" name="Product View"
+              inherit_id="website_sale.shop_product_carousel">
+        <!-- Container for the 3D model viewer on the product page -->
+        <xpath expr="//div[hasclass('o_carousel_product_outer')]"
+               position="after">
+            <div id="product_main"
+                 t-attf-class="carousel-item h-100#{' active' if product_image_first else ''}"
+                 style="text-align: center; position: relative; display:none;">
+            </div>
+            <script type="module"
+                    src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js">
+            </script>
+        </xpath>
+    </template>
+
+    <template id="product_extra_images" name="Product Extra Images View"
+              inherit_id="website_sale.carousel_product_indicators">
+        <!-- Ensure indicator container shows when only 1 image + AR model exists -->
+        <xpath expr="//div[contains(@t-attf-class, 'o_carousel_product_indicators')]"
+               position="attributes">
+            <attribute name="t-if">len(product_images) &gt; 1 or product.enable_ar_images</attribute>
+        </xpath>
+        <!-- Append 3D thumbnail indicator without replacing core indicator list -->
+        <xpath expr="//ol[contains(@t-attf-class, 'carousel-indicators')]"
+               position="inside">
+            <t t-if="product.enable_ar_images">
+                <li class="product_images align-top position-relative"
+                    data-type="3d"
+                    data-bs-target="#o-carousel-product"
+                    t-att-id="product.id"
+                    t-att-data-bs-slide-to="str(len(product_images))">
+                    <t t-if="product.poster_image">
+                        <div t-field="product.poster_image"
+                             data-type="3d"
+                             t-options='{"widget": "image", "qweb_img_responsive": False, "class": "o_image_64_cover", "alt-field": "name"}'/>
+                    </t>
+                    <t t-else="">
+                        <img data-type="3d"
+                             src="/website_webar_product/static/src/img/hand.png"
+                             alt="3D View"
+                             style="height: 100%; width: 100%; object-fit: contain;"/>
+                    </t>
+                </li>
+            </t>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="portal_my_home_menu_contracts" name="Portal layout : contracts menu entries" inherit_id="portal.portal_breadcrumbs" priority="30">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'contract' or page_name == 'contract_detail'" t-attf-class="breadcrumb-item #{'active ' if not records or page_name == 'contract' else ''}">
+                <a t-if="page_name == 'contract_detail'" href="/my/contracts">Contracts</a>
+                <t t-else="">Contracts</t>
+            </li>
+            <li t-if="page_name == 'contract_detail' and records" class="breadcrumb-item active">
+                <t t-out="records.name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="tmp_contract_details" name="My Contracts">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar" title.translate="My Contracts"/>
+            <div t-if="not records" class="alert alert-warning" role="alert">
+                There are currently no subscription contracts for your account.
+            </div>
+            <t t-if="records" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Contract Name</th>
+                        <th>Customer Name</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th class="text-end">Total Amount</th>
+                        <th class="text-center">Stage</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="records" t-as="order">
+                        <tr>
+                            <td>
+                                <a t-attf-href="/contracts/{{order.id}}/" t-out="order.name"/>
+                            </td>
+                            <td><span t-field="order.partner_id.name"/></td>
+                            <td><span t-field="order.date_start"/></td>
+                            <td><span t-field="order.date_end"/></td>
+                            <td class="text-end">
+                                <span t-field="order.amount_total"/>
+                            </td>
+                            <td class="text-center">
+                                <span t-if="order.state == 'ongoing'" class="badge rounded-pill text-bg-success">Ongoing</span>
+                                <span t-elif="order.state == 'expire_soon'" class="badge rounded-pill text-bg-warning">Expiring Soon</span>
+                                <span t-elif="order.state == 'new'" class="badge rounded-pill text-bg-info">New</span>
+                                <span t-elif="order.state in ('cancelled', 'expired')" class="badge rounded-pill text-bg-danger"><t t-out="order.state.capitalize()"/></span>
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" t-attf-href="/my/contracts/report/{{order.id}}">
+                                    <i class="fa fa-download me-1"/>PDF
+                                </a>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+            <div t-if="pager and pager.get('page_count', 1) > 1" class="d-flex justify-content-center my-3">
+                <t t-call="portal.pager"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="contract_details" name="Subscription Contract Details">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <div class="container my-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+                        <h4 class="mb-0 text-primary fw-bold" t-out="records.name"/>
+                        <a class="btn btn-primary" t-attf-href="/my/contracts/report/{{records.id}}">
+                            <i class="fa fa-download me-1"/>Download Report
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-6 col-md-3">
+                                <strong class="text-muted d-block small">Customer</strong>
+                                <span class="fw-semibold" t-field="records.partner_id.name"/>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <strong class="text-muted d-block small">Reference</strong>
+                                <span class="fw-semibold" t-out="records.reference or '-'"/>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <strong class="text-muted d-block small">Start Date</strong>
+                                <span class="fw-semibold" t-field="records.date_start"/>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <strong class="text-muted d-block small">End Date</strong>
+                                <span class="fw-semibold" t-field="records.date_end"/>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <strong class="text-muted d-block small">Recurring Period</strong>
+                                <span class="fw-semibold">
+                                    <t t-out="records.recurring_period"/>
+                                    <span t-field="records.recurring_period_interval"/>
+                                </span>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <strong class="text-muted d-block small">Stage</strong>
+                                <span t-if="records.state == 'ongoing'" class="badge rounded-pill text-bg-success">Ongoing</span>
+                                <span t-elif="records.state == 'expire_soon'" class="badge rounded-pill text-bg-warning">Expiring Soon</span>
+                                <span t-elif="records.state == 'new'" class="badge rounded-pill text-bg-info">New</span>
+                                <span t-elif="records.state in ('cancelled', 'expired')" class="badge rounded-pill text-bg-danger"><t t-out="records.state.capitalize()"/></span>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <strong class="text-muted d-block small">Next Invoice Date</strong>
+                                <span class="fw-semibold" t-field="records.next_invoice_date"/>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <strong class="text-muted d-block small">Company</strong>
+                                <span class="fw-semibold" t-field="records.company_id.name"/>
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold mt-4 mb-3 border-bottom pb-2">Contract Lines</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Description</th>
+                                        <th class="text-end">Qty</th>
+                                        <th class="text-end">Unit Price</th>
+                                        <th>Taxes</th>
+                                        <th class="text-end">Discount (%)</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="records.contract_line_ids" t-as="res">
+                                        <tr>
+                                            <td><span t-field="res.product_id.name"/></td>
+                                            <td><span t-field="res.description"/></td>
+                                            <td class="text-end">
+                                                <span t-field="res.qty_ordered"/>
+                                                <span t-field="res.product_uom_id.name"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-field="res.price_unit" t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
+                                            </td>
+                                            <td>
+                                                <t t-foreach="res.tax_ids" t-as="tax">
+                                                    <span class="badge rounded-pill text-bg-secondary me-1" t-out="tax.name"/>
+                                                </t>
+                                            </td>
+                                            <td class="text-end"><span t-field="res.discount"/></td>
+                                            <td class="text-end">
+                                                <span t-field="res.price_subtotal" t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row justify-content-end mt-3">
+                            <div class="col-md-5 col-lg-4">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <td><strong>Untaxed Amount</strong></td>
+                                        <td class="text-end">
+                                            <span t-field="records.amount_untaxed" t-options="{'widget': 'monetary', 'display_currency': records.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Taxes</td>
+                                        <td class="text-end">
+                                            <span t-field="records.amount_tax" t-options="{'widget': 'monetary', 'display_currency': records.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-top border-dark fw-bold">
+                                        <td>Total</td>
+                                        <td class="text-end">
+                                            <span t-field="records.amount_total" t-options="{'widget': 'monetary', 'display_currency': records.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

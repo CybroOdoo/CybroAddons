@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="report_subscription_contracts" name="Subscription contracts details">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>
+                            <t t-out="doc.name"/>
+                        </h2>
+
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <th style="width: 20%;">Customer:</th>
+                                <td style="width: 30%;"><t t-if="doc.partner_id" t-out="doc.partner_id.name"/></td>
+                                <th style="width: 20%;">Reference:</th>
+                                <td style="width: 30%;"><t t-if="doc.reference" t-out="doc.reference"/></td>
+                            </tr>
+                            <tr>
+                                <th>Recurring Period:</th>
+                                <td>
+                                    <t t-if="doc.recurring_period">
+                                        <t t-out="doc.recurring_period"/>
+                                        <t t-out="dict(doc._fields['recurring_period_interval'].selection).get(doc.recurring_period_interval)"/>
+                                    </t>
+                                </td>
+                                <th>Company:</th>
+                                <td><t t-if="doc.company_id" t-out="doc.company_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <th>Start Date:</th>
+                                <td><t t-out="doc.date_start"/></td>
+                                <th>End Date:</th>
+                                <td><t t-out="doc.date_end"/></td>
+                            </tr>
+                            <tr>
+                                <th>Stage:</th>
+                                <td><t t-out="dict(doc._fields['state'].selection).get(doc.state)"/></td>
+                                <th>Next Invoice Date:</th>
+                                <td><t t-out="doc.next_invoice_date"/></td>
+                            </tr>
+                        </table>
+
+                        <h3 class="mt-4">Contract Lines</h3>
+                        <table class="table table-sm o_main_table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Product</th>
+                                    <th class="text-start">Description</th>
+                                    <th class="text-end">Qty</th>
+                                    <th class="text-end">Unit Price</th>
+                                    <th class="text-start">Taxes</th>
+                                    <th class="text-end">Discount (%)</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody class="tbody">
+                                <t t-foreach="doc.contract_line_ids" t-as="res">
+                                    <tr>
+                                        <td><span t-field="res.product_id.name"/></td>
+                                        <td><span t-field="res.description"/></td>
+                                        <td class="text-end">
+                                            <span t-field="res.qty_ordered"/>
+                                            <span t-field="res.product_uom_id.name"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-field="res.price_unit" t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
+                                        </td>
+                                        <td>
+                                            <span t-out="', '.join(map(lambda x: (x.description or x.name), res.tax_ids))"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-field="res.discount"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-field="res.price_subtotal" t-options="{'widget': 'monetary', 'display_currency': res.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div class="clearfix mt-2" name="so_total_summary">
+                            <div id="total" class="row" name="total">
+                                <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'} ms-auto">
+                                    <table class="table table-sm table-borderless">
+                                        <tr class="border-black o_subtotal">
+                                            <td><strong>Untaxed Amount</strong></td>
+                                            <td class="text-end">
+                                                <span t-field="doc.amount_untaxed" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Taxes</td>
+                                            <td class="text-end">
+                                                <span t-field="doc.amount_tax" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr class="border-black o_total">
+                                            <td><strong>Total</strong></td>
+                                            <td class="text-end">
+                                                <span t-field="doc.amount_total" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="mt-4">Sale Order Lines</h3>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Description</th>
+                                    <th class="text-end">Qty</th>
+                                    <th class="text-end">Unit Price</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="doc.sale_order_line_ids" t-as="rec">
+                                    <tr>
+                                        <td><span t-field="rec.product_id.name"/></td>
+                                        <td><span t-field="rec.name"/></td>
+                                        <td class="text-end">
+                                            <span t-field="rec.product_uom_qty"/>
+                                            <span t-field="rec.product_uom_id.name"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-field="rec.price_unit" t-options="{'widget': 'monetary', 'display_currency': rec.currency_id}"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-field="rec.price_subtotal" t-options="{'widget': 'monetary', 'display_currency': rec.currency_id}"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
