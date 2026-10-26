@@ -20,8 +20,7 @@
 #
 #############################################################################
 from odoo import api, fields, models
-from odoo.exceptions import UserError
-from odoo.tools.translate import _
+from odoo.exceptions import UserError, ValidationError
 
 
 YIELD_THRESHOLD = 95.0  # percent — BMR flags a QA review below this
@@ -53,7 +52,6 @@ class PharmaBMR(models.Model):
     )
     product_id = fields.Many2one(
         comodel_name='product.template',
-        string='Product',
         required=True,
         ondelete='restrict',
         tracking=True,
@@ -86,7 +84,6 @@ class PharmaBMR(models.Model):
             ('on_hold', 'On Hold'),
             ('completed', 'Completed'),
         ],
-        string='Status',
         default='draft',
         required=True,
         copy=False,
@@ -106,6 +103,7 @@ class PharmaBMR(models.Model):
     )
     yield_percentage = fields.Float(
         string='Yield %',
+        aggregator='avg',
         compute='_compute_yield',
         store=True,
         digits=(5, 2),
@@ -113,7 +111,6 @@ class PharmaBMR(models.Model):
         help='Specifies the Yield % for this record.',
     )
     yield_flag = fields.Boolean(
-        string='Yield Flag',
         compute='_compute_yield',
         store=True,
         tracking=True,
@@ -155,13 +152,13 @@ class PharmaBMR(models.Model):
         help='Specifies the Ipqc Count for this record.',
     )
     all_steps_done = fields.Boolean(help='Specifies the All Steps Done for this record.',
-        string='All Steps Done',
         compute='_compute_all_steps_done',
     )
 
-    _sql_constraints = [
-        ('production_uniq', 'unique(production_id)', 'A Manufacturing Order can only have one BMR.')
-    ]
+    _production_uniq = models.Constraint(
+        'unique(production_id)',
+        'A Manufacturing Order can only have one BMR.',
+    )
 
     @api.depends('step_ids.operator_signed_on')
     def _compute_any_step_operator_signed(self):
@@ -211,14 +208,19 @@ class PharmaBMR(models.Model):
     def _compute_yield(self):
         """Compute the actual yield percentage and flag low-yield batches."""
         for rec in self:
-            if rec.yield_expected < rec.yield_actual:
-                raise UserError(_('Actual Yield Must be greater than Expected Yield.'))
             if rec.yield_expected:
                 pct = (rec.yield_actual / rec.yield_expected) * 100.0
             else:
                 pct = 0.0
             rec.yield_percentage = pct
             rec.yield_flag = pct < YIELD_THRESHOLD and rec.yield_expected > 0
+
+    @api.constrains('yield_expected', 'yield_actual')
+    def _check_yield(self):
+        """The actual yield cannot exceed the expected yield."""
+        for rec in self:
+            if rec.yield_actual > rec.yield_expected:
+                raise ValidationError(self.env._('The actual yield cannot be greater than the expected yield.'))
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -231,7 +233,14 @@ class PharmaBMR(models.Model):
         return super().create(vals_list)
 
     def write(self, vals):
-        """Drop the IPQC checks whenever in-process quality control is switched off."""
+        """Keep the BMR on its manufacturing order and product; drop the IPQC
+        checks whenever in-process quality control is switched off."""
+        if 'production_id' in vals and any(
+                bmr.production_id.id != vals['production_id'] for bmr in self):
+            raise UserError(self.env._('The manufacturing order of a BMR cannot be changed.'))
+        if 'product_id' in vals and any(
+                bmr.product_id.id != vals['product_id'] for bmr in self):
+            raise UserError(self.env._('The product of a BMR cannot be changed.'))
         if 'enable_ipqc' in vals and not vals['enable_ipqc']:
             vals['ipqc_ids'] = [(5, 0, 0)]
         return super().write(vals)
@@ -240,46 +249,42 @@ class PharmaBMR(models.Model):
         """Move BMR from Draft → In Progress."""
         for rec in self:
             if rec.status != 'draft':
-                raise UserError(_('Only Draft BMRs can be started.'))
+                raise UserError(self.env._('Only Draft BMRs can be started.'))
             if not rec.step_ids:
-                raise UserError(_('Add at least one step before starting the BMR.'))
+                raise UserError(self.env._('Add at least one step before starting the BMR.'))
             rec.status = 'in_progress'
-            rec.message_post(body=_('BMR started by %s.') % self.env.user.name)
+            rec.message_post(body=self.env._('BMR started by %s.', self.env.user.name))
         return True
 
     def action_hold(self):
         """Put the entire BMR On Hold."""
         for rec in self:
             if rec.status != 'in_progress':
-                raise UserError(_('Only In Progress BMRs can be put on hold.'))
+                raise UserError(self.env._('Only In Progress BMRs can be put on hold.'))
             rec.status = 'on_hold'
-            rec.message_post(body=_('BMR placed on hold by %s.') % self.env.user.name)
+            rec.message_post(body=self.env._('BMR placed on hold by %s.', self.env.user.name))
         return True
 
     def action_resume(self):
         """Resume a BMR from On Hold → In Progress."""
         for rec in self:
             if rec.status != 'on_hold':
-                raise UserError(_('Only On Hold BMRs can be resumed.'))
-            # Check for open IPQCs on steps that are currently active or on hold
+                raise UserError(self.env._('Only On Hold BMRs can be resumed.'))
             active_step_ids = rec.step_ids.filtered(lambda s: s.status in ('in_progress', 'hold')).ids
             open_ipqcs = rec.ipqc_ids.filtered(lambda r: r.step_id.id in active_step_ids and not r.signed_on and r.result == 'fail')
             if open_ipqcs:
-                raise UserError(_('Cannot resume — there are open IPQC failures that have not been signed/resolved.'))
+                raise UserError(self.env._('Cannot resume — there are open IPQC failures that have not been signed/resolved.'))
 
             # Block resume while the batch has open Deviations / CAPAs. This
             # gate lives in the optional pharma_capa_deviation module (no-op
             # here when that module is not installed).
             rec._check_open_deviations_capas()
 
-            # Ensure no step is still on hold
             held = rec.step_ids.filtered(lambda s: s.status == 'hold')
             if held:
-                raise UserError(_(
-                    'Cannot resume — the following step(s) are still on hold:\n%s'
-                ) % '\n'.join(held.mapped('description')))
+                raise UserError(self.env._('Cannot resume — the following step(s) are still on hold:\n%s', '\n'.join(held.mapped('description'))))
             rec.status = 'in_progress'
-            rec.message_post(body=_('BMR resumed by %s.') % self.env.user.name)
+            rec.message_post(body=self.env._('BMR resumed by %s.', self.env.user.name))
         return True
 
     def _check_open_deviations_capas(self):
@@ -294,18 +299,16 @@ class PharmaBMR(models.Model):
         """Move the BMR from In Progress to Completed once all gates pass."""
         self._check_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can mark a BMR as completed.'),
+            self.env._('Only QA can mark a BMR as completed.'),
         )
         for rec in self:
             if rec.status != 'in_progress':
-                raise UserError(_('Only In Progress BMRs can be completed.'))
+                raise UserError(self.env._('Only In Progress BMRs can be completed.'))
 
             # Gate 1: all steps done
             non_done = rec.step_ids.filtered(lambda s: s.status != 'done')
             if non_done:
-                raise UserError(_(
-                    'Cannot complete — %d step(s) are not yet Done.'
-                ) % len(non_done))
+                raise UserError(self.env._('Cannot complete — %d step(s) are not yet Done.', len(non_done)))
 
             # Gate 2: no unresolved IPQC failures. The deviation-based check
             # lives in the optional pharma_capa_deviation module (no-op here).
@@ -313,14 +316,14 @@ class PharmaBMR(models.Model):
 
             # Gate 3: yield flag requires QA sign-off
             if rec.yield_flag and not rec.qa_yield_signoff:
-                raise UserError(_(
-                    'Yield is below the %.1f%% threshold (actual: %.2f%%). '
+                raise UserError(self.env._(
+                    'Yield is below the %(threshold).1f%% threshold (actual: %(actual).2f%%). '
                     'A QA Director must sign off on the yield before this BMR '
-                    'can be completed.'
-                ) % (YIELD_THRESHOLD, rec.yield_percentage))
+                    'can be completed.',
+                    threshold=YIELD_THRESHOLD, actual=rec.yield_percentage))
 
             rec.status = 'completed'
-            rec.message_post(body=_('BMR completed by %s.') % self.env.user.name)
+            rec.message_post(body=self.env._('BMR completed by %s.', self.env.user.name))
 
             mo = rec.production_id
             if mo and mo.state not in ('done', 'cancel'):
@@ -335,34 +338,32 @@ class PharmaBMR(models.Model):
                     skip_backorder=True,
                     skip_sanity_check=True,
                 ).button_mark_done()
-                mo.message_post(body=_("BMR %s completed. Manufacturing Order closed automatically.") % rec.name)
+                mo.message_post(body=self.env._("BMR %s completed. Manufacturing Order closed automatically.", rec.name))
 
-            # Auto-create Finished Goods QC Test Order
             rec._create_fg_qc_test_order()
 
     def action_qa_yield_signoff(self):
         """QA Director accepts a below-threshold yield."""
         self._check_group(
             'pharmaceutical_base.group_pharma_qa_director',
-            _('Only the Pharma QA Director can sign off on yield deviations.'),
+            self.env._('Only the Pharma QA Director can sign off on yield deviations.'),
         )
         for rec in self:
             # Actual yield must be recorded before QA can sign off on it.
             if not rec.yield_actual:
-                raise UserError(_(
+                raise UserError(self.env._(
                     'Cannot sign off — the Actual Yield is zero. '
                     'Please record the actual yield before signing off on the yield.'
                 ))
             if not rec.yield_flag:
-                raise UserError(_('Yield sign-off is only required when the yield flag is set.'))
+                raise UserError(self.env._('Yield sign-off is only required when the yield flag is set.'))
             rec.write({
                 'qa_yield_signoff': True,
                 'qa_yield_signed_by': self.env.user.id,
             })
             rec.message_post(
-                body=_('Yield sign-off by QA Director %s. Yield: %.2f%%.') % (
-                    self.env.user.name, rec.yield_percentage
-                )
+                body=self.env._('Yield sign-off by QA Director %(user)s. Yield: %(actual).2f%%.',
+                                user=self.env.user.name, actual=rec.yield_percentage)
             )
 
     def _create_fg_qc_test_order(self):
@@ -372,7 +373,7 @@ class PharmaBMR(models.Model):
             lot = self.production_id.lot_producing_ids[0]
 
         if not lot:
-            self.message_post(body=_(
+            self.message_post(body=self.env._(
                 'BMR completed but no finished lot found on the MO. '
                 'Please create the Finished Goods QC Test Order manually.'
             ))
@@ -385,9 +386,7 @@ class PharmaBMR(models.Model):
             'lot_id': lot.id,
             'stage': 'finished',
         })
-        self.message_post(body=_(
-            'Finished Goods QC Test Order auto-created for lot %s.'
-        ) % lot.name)
+        self.message_post(body=self.env._('Finished Goods QC Test Order auto-created for lot %s.', lot.name))
 
     def _check_group(self, group_xmlid, message):
         """Check whether the current user is in a given security group."""

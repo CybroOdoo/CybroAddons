@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Pharmaceutical ERP — CAPA & Deviations',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Manufacturing',
     'summary': 'Quality Deviation and Corrective & Preventive Action (CAPA) '
                'management for the Pharmaceutical ERP suite.',
@@ -36,12 +36,15 @@
     'data': [
         'security/ir.model.access.csv',
         'data/pharma_sequences_data.xml',
+        'data/pharma_premium_feature_data.xml',
         'views/pharma_capa_views.xml',
         'views/pharma_deviation_views.xml',
         'views/pharma_qc_test_order_views.xml',
         'views/pharma_ipqc_result_views.xml',
         'views/pharma_bmr_views.xml',
+        'views/res_config_settings_views.xml',
         'views/menus.xml',
+        'views/pharma_reporting_views.xml',
     ],
     'post_init_hook': 'post_init_hook',
     'uninstall_hook': 'uninstall_hook',

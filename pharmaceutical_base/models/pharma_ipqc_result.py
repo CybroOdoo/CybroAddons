@@ -21,14 +21,14 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import UserError, ValidationError
-from odoo.tools.translate import _
 
 
 class PharmaIPQCResult(models.Model):
     """In-Process Quality Control result recorded at a specific BMR step."""
     _name = 'pharma.ipqc.result'
     _description = 'IPQC In-Process Quality Check'
-    _inherit = ['mail.thread']
+    _inherit = ['mail.thread', 'pharma.measured.value.mixin']
+    _measured_fields = ('actual_value',)
     _rec_name = 'parameter_id'
     _order = 'bmr_id, id'
 
@@ -50,7 +50,6 @@ class PharmaIPQCResult(models.Model):
     )
     parameter_id = fields.Many2one(
         comodel_name='pharma.qc.spec.line',
-        string='Parameter',
         required=True,
         domain="[('spec_id.product_id', '=', bmr_id.product_id), ('spec_id.stage', '=', 'ipqc')]",
         help='What is being checked, e.g. tablet hardness, weight.',
@@ -63,15 +62,12 @@ class PharmaIPQCResult(models.Model):
         help='Parameter name related from spec line.',
     )
     expected_min = fields.Float(
-        string='Expected Min',
         help='Acceptable minimum for this in-process check.',
     )
     expected_max = fields.Float(
-        string='Expected Max',
         help='Acceptable maximum for this in-process check.',
     )
     actual_value = fields.Float(
-        string='Actual Value',
         help='Value recorded by the analyst.',
     )
     result = fields.Selection(
@@ -79,7 +75,6 @@ class PharmaIPQCResult(models.Model):
             ('pass', 'Pass'),
             ('fail', 'Fail'),
         ],
-        string='Result',
         copy=False,
         compute='_compute_result',
         store=True,
@@ -88,13 +83,11 @@ class PharmaIPQCResult(models.Model):
     )
     signed_by = fields.Many2one(
         comodel_name='res.users',
-        string='Signed By',
         copy=False,
         readonly=True,
         help='Specifies the Signed By for this record.',
     )
     signed_on = fields.Datetime(
-        string='Signed On',
         copy=False,
         readonly=True,
         help='Specifies the Signed On for this record.',
@@ -105,13 +98,11 @@ class PharmaIPQCResult(models.Model):
         """IPQC check needs an operator-signed step without supervisor sign-off."""
         for rec in self:
             if not rec.step_id:
-                raise ValidationError(_('BMR Step is required for IPQC checks. You cannot save parameters without specifying a BMR Step.'))
+                raise ValidationError(self.env._('BMR Step is required for IPQC checks. You cannot save parameters without specifying a BMR Step.'))
             step = rec.step_id
             if not step.operator_signed_on:
-                raise ValidationError(_(
-                    'Cannot create an IPQC check for step "%s" — the operator '
-                    'has not signed off this step yet.'
-                ) % step.name)
+                raise ValidationError(self.env._('Cannot create an IPQC check for step "%s" — the operator '
+                    'has not signed off this step yet.', step.name))
 
     @api.depends('actual_value', 'expected_min', 'expected_max')
     def _compute_result(self):
@@ -144,10 +135,11 @@ class PharmaIPQCResult(models.Model):
                     self.parameter_id = False
                     return {
                         'warning': {
-                            'title': _("Duplicate Parameter"),
-                            'message': _("The parameter '%s' is already selected for BMR step '%s'.") % (
-                                line.parameter_id.parameter_name if line.parameter_id else '', self.step_id.name or ''
-                            )
+                            'title': self.env._("Duplicate Parameter"),
+                            'message': self.env._(
+                                "The parameter '%(param)s' is already selected for BMR step '%(step)s'.",
+                                param=line.parameter_id.parameter_name if line.parameter_id else '',
+                                step=self.step_id.name or ''),
                         }
                     }
 
@@ -155,15 +147,14 @@ class PharmaIPQCResult(models.Model):
     def _check_expected_range(self):
         """Expected Max must be greater than Expected Min when set."""
         for rec in self:
-            # Skip checks that define no numeric range.
             if not rec.expected_min and not rec.expected_max:
                 continue
             if rec.expected_max <= rec.expected_min:
-                raise ValidationError(_(
-                    "IPQC check '%s': Expected Max (%s) must be greater than "
-                    "Expected Min (%s).",
-                    rec.parameter_id.parameter_name if rec.parameter_id else _('Unnamed'),
-                    rec.expected_max, rec.expected_min))
+                raise ValidationError(self.env._(
+                    "IPQC check '%(param)s': Expected Max (%(max)s) must be greater than "
+                    "Expected Min (%(min)s).",
+                    param=rec.parameter_id.parameter_name if rec.parameter_id else self.env._('Unnamed'),
+                    max=rec.expected_max, min=rec.expected_min))
 
     @api.constrains('bmr_id', 'step_id', 'parameter_id')
     def _check_unique_step_parameter(self):
@@ -177,9 +168,9 @@ class PharmaIPQCResult(models.Model):
                     ('parameter_id', '=', rec.parameter_id.id)
                 ], limit=1)
                 if duplicate:
-                    raise ValidationError(_(
-                        "The parameter '%s' is already selected for step '%s' in this BMR."
-                    ) % (rec.parameter_id.parameter_name, rec.step_id.name))
+                    raise ValidationError(self.env._(
+                        "The parameter '%(param)s' is already selected for step '%(step)s' in this BMR.",
+                        param=rec.parameter_id.parameter_name, step=rec.step_id.name))
 
     def write(self, vals):
         """Auto-create a deviation and hold/release the BMR step on IPQC pass/fail."""
@@ -212,9 +203,9 @@ class PharmaIPQCResult(models.Model):
         """Analyst signs the IPQC result — records who and when."""
         for rec in self:
             if rec.signed_on:
-                raise UserError(_('This IPQC check is already signed.'))
+                raise UserError(self.env._('This IPQC check is already signed.'))
             if not rec.result:
-                raise UserError(_('Set the result (Pass/Fail) before signing.'))
+                raise UserError(self.env._('Set the result (Pass/Fail) before signing.'))
             rec.write({
                 'signed_by': self.env.user.id,
                 'signed_on': fields.Datetime.now(),

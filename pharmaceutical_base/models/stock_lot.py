@@ -20,7 +20,6 @@
 #
 #############################################################################
 from odoo import api, fields, models
-from odoo.tools.translate import _
 
 class StockLot(models.Model):
     """Extends stock.lot with pharma lot status, expiry, and QA traceability."""
@@ -35,7 +34,6 @@ class StockLot(models.Model):
             ('released', 'Released (FG)'),
             ('recalled', 'Recalled'),
         ],
-        string='Lot Status',
         default='quarantine',
         required=True,
         tracking=True,
@@ -46,24 +44,20 @@ class StockLot(models.Model):
     )
     status_changed_by = fields.Many2one(
         comodel_name='res.users',
-        string='Status Changed By',
         copy=False,
         tracking=True,
         help='Specifies the Status Changed By for this record.',
     )
     status_changed_on = fields.Datetime(
-        string='Status Changed On',
         copy=False,
         tracking=True,
         help='Specifies the Status Changed On for this record.',
     )
     expiry_date = fields.Date(
-        string='Expiry Date',
         tracking=True,
         help='Expiry date of this lot, calculated from manufacture date and shelf life.',
     )
     manufacture_date = fields.Date(
-        string='Manufacture Date',
         tracking=True,
         help='Specifies the Manufacture Date for this record.',
     )
@@ -92,7 +86,6 @@ class StockLot(models.Model):
         tracking=True,
     )
     disposition_remarks = fields.Text(
-        string='Disposition Remarks',
         tracking=True,
         help='QA justification for releasing, rejecting, or holding this lot.',
     )
@@ -208,7 +201,7 @@ class StockLot(models.Model):
             'location_id': source_locations[0].id,
             'location_dest_id': dest_location.id,
             'company_id': company.id,
-            'origin': _('QC Disposition: %s', self.name),
+            'origin': self.env._('QC Disposition: %s', self.name),
             'move_ids': move_vals,
         })
         # Skip the GMP consume-block check: this move IS the QA disposition.

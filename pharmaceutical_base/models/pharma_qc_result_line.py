@@ -21,18 +21,20 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools.translate import _
 
 
 class PharmaQcResultLine(models.Model):
     """QC Result Line — records the actual testing values for each parameter."""
     _name = 'pharma.qc.result.line'
     _description = 'QC Result Line'
+    # The mixin sits after this model so its create/write run inside the
+    # overrides below, each of which calls super().
+    _inherit = ['pharma.measured.value.mixin']
+    _measured_fields = ('actual_value',)
     _rec_name = 'parameter_id'
 
     test_order_id = fields.Many2one(
         comodel_name='pharma.qc.test.order',
-        string='Test Order',
         required=True,
         ondelete='cascade',
         index=True,
@@ -50,7 +52,6 @@ class PharmaQcResultLine(models.Model):
     )
     parameter_id = fields.Many2one(
         comodel_name='pharma.qc.spec.line',
-        string='Parameter',
         domain="[('spec_id.product_id', '=', test_order_id.product_id)]",
         help='Test parameter from spec.'
     )
@@ -62,7 +63,6 @@ class PharmaQcResultLine(models.Model):
         help='Parameter name related from parameter spec line.'
     )
     expected_min = fields.Float(
-        string='Expected Min',
         digits=(16, 4),
         help='Minimum copied from spec for reference during entry.',
         store=True
@@ -74,7 +74,6 @@ class PharmaQcResultLine(models.Model):
              'Set to False for parameters that have no lower bound.'
     )
     expected_max = fields.Float(
-        string='Expected Max',
         digits=(16, 4),
         help='Maximum copied from spec for reference during entry.',
         store=True
@@ -86,7 +85,6 @@ class PharmaQcResultLine(models.Model):
              'Set to False for parameters that have no upper bound.'
     )
     actual_value = fields.Float(
-        string='Actual Value',
         digits=(16, 4),
         help='Result entered by the analyst after running the test.'
     )
@@ -95,7 +93,6 @@ class PharmaQcResultLine(models.Model):
         help='Unit of measurement for this result.'
     )
     result_entered = fields.Boolean(
-        string='Result Entered',
         default=False,
         help='Indicates if the actual test result has been entered.'
     )
@@ -191,7 +188,7 @@ class PharmaQcResultLine(models.Model):
                 is_entered = vals.get('result_entered', rec.result_entered)
                 if is_entered and rec.test_order_id and rec.test_order_id.status not in ('in_progress', 'under_investigation'):
                     raise ValidationError(
-                        _('Results can only be entered once the test has been started '
+                        self.env._('Results can only be entered once the test has been started '
                           '(test order In Progress).')
                     )
         pre_oos = {rec.id: rec.is_oos for rec in self}

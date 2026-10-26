@@ -39,12 +39,44 @@
                         <h1><field name="name" readonly="1"/></h1>
                     </div>
 
+                    <field name="scope_site_wide" invisible="1"/>
+                    <field name="root_cause_overridden" invisible="1"/>
+                    <field name="preventive_managed" invisible="1"/>
+                    <field name="preventive_premium_locked" invisible="1"/>
+
+                    <!-- Recurring checks, schedule and effectiveness come with the
+                         Preventive Action add-on; without it a preventive CAPA
+                         is recorded with an action plan, as a corrective one. -->
+                    <div name="preventive_premium_notice" class="o_pharma_premium_notice"
+                         role="status" invisible="not preventive_premium_locked">
+                        <span class="o_pharma_premium_notice_icon">
+                            <i class="fa fa-star" title="Premium feature"/>
+                        </span>
+                        <div class="o_pharma_premium_notice_body">
+                            <div class="o_pharma_premium_notice_title">
+                                Preventive Action is a premium add-on
+                                <span class="o_pharma_premium_tag">Premium</span>
+                            </div>
+                            <div class="o_pharma_premium_notice_text">
+                                Recurring checks, scheduling and demonstrated
+                                effectiveness for preventive CAPAs come with this
+                                add-on. This CAPA is recorded with an action plan;
+                                the plan fields below are read-only samples and are not saved.
+                            </div>
+                        </div>
+                        <widget name="pharma_premium_learn_more" feature="capa_preventive"
+                                class_name="btn btn-sm o_pharma_premium_notice_btn"/>
+                    </div>
+
                     <group>
                         <group string="Reference">
                             <field name="deviation_id" readonly="status == 'closed'"/>
-                            <field name="capa_type" readonly="status == 'closed'"/>
+                            <field name="capa_type" readonly="status != 'open'"/>
                             <field name="assigned_to" readonly="status == 'closed'"/>
-                            <field name="due_date" readonly="status == 'closed'"/>
+                            <field name="due_date" readonly="status == 'closed'"
+                                   invisible="preventive_managed"/>
+                            <field name="company_id" groups="base.group_multi_company"
+                                   readonly="status != 'open'"/>
                         </group>
                         <group string="Closure" invisible="status not in ('verified', 'closed')">
                             <field name="closed_by" readonly="1"/>
@@ -52,24 +84,122 @@
                         </group>
                     </group>
 
+                    <!-- Scope, schedule and nature — what makes the choice of
+                         "preventive" mean something. A batch is in scope when
+                         it satisfies every filled field; entries within a
+                         field are alternatives. -->
+                    <group name="preventive_scope" class="o_pharma_premium_sample"
+                           string="Scope — which material the action observes"
+                           col="3" invisible="capa_type != 'preventive'">
+                        <group>
+                            <field name="scope_product_ids" widget="many2many_tags"
+                                   placeholder="Any product"
+                                   readonly="status == 'closed' or preventive_premium_locked"/>
+                        </group>
+                        <group>
+                            <field name="scope_location_ids" widget="many2many_tags"
+                                   placeholder="Any location"
+                                   readonly="status == 'closed' or preventive_premium_locked"/>
+                        </group>
+                        <group>
+                            <field name="scope_workcenter_ids" widget="many2many_tags"
+                                   placeholder="Any workcenter"
+                                   readonly="status == 'closed' or preventive_premium_locked"/>
+                        </group>
+                        <group colspan="3">
+                            <field name="scope_summary" readonly="1"/>
+                        </group>
+                    </group>
+                    <group name="preventive_plan" class="o_pharma_premium_sample"
+                           invisible="capa_type != 'preventive'">
+                        <group name="preventive_schedule" string="Schedule — when the check runs">
+                            <field name="trigger_type" readonly="status == 'closed' or preventive_premium_locked"/>
+                            <label for="interval_count" invisible="trigger_type != 'time'"/>
+                            <div class="o_row" invisible="trigger_type != 'time'">
+                                <field name="interval_count" readonly="status == 'closed' or preventive_premium_locked"/>
+                                <field name="interval_uom" readonly="status == 'closed' or preventive_premium_locked"/>
+                            </div>
+                            <label for="cycle_count" string="Tests to Observe"
+                                   invisible="control_nature != 'campaign' or trigger_type != 'batch'"/>
+                            <label for="cycle_count" string="Number of Checks"
+                                   invisible="control_nature != 'campaign' or trigger_type == 'batch'"/>
+                            <div invisible="control_nature != 'campaign'">
+                                <field name="cycle_count" nolabel="1"
+                                       readonly="status == 'closed' or preventive_premium_locked"/>
+                            </div>
+                            <field name="backstop_date"
+                                   invisible="trigger_type != 'batch'"
+                                   readonly="status == 'closed' or preventive_premium_locked"/>
+                        </group>
+                        <group string="Nature of the control">
+                            <field name="control_nature"
+                                   invisible="trigger_type == 'batch'"
+                                   readonly="status == 'closed' or preventive_premium_locked"/>
+                            <div class="text-muted" colspan="2"
+                                 invisible="trigger_type != 'batch'">
+                                A test-triggered action is a campaign over a
+                                set number of tests.
+                            </div>
+                            <field name="review_interval_months"
+                                   invisible="control_nature != 'permanent'"
+                                   readonly="status == 'closed' or preventive_premium_locked"/>
+                            <field name="review_date"
+                                   invisible="control_nature != 'permanent'"
+                                   readonly="status == 'closed' or preventive_premium_locked"/>
+                        </group>
+                    </group>
+                    <group name="preventive_handover" class="o_pharma_premium_sample"
+                           invisible="capa_type != 'preventive' or control_nature != 'permanent'">
+                        <group string="After closure">
+                            <field name="handover_owner_id"
+                                   readonly="status == 'closed' or preventive_premium_locked"/>
+                            <field name="handover_notes"
+                                   readonly="status == 'closed' or preventive_premium_locked"
+                                   placeholder="How the control is run as routine operations…"/>
+                        </group>
+                    </group>
+
                     <notebook>
                         <page name="analysis" string="Root Cause &amp; Action">
                             <group string="Root Cause Analysis">
+                                <div class="text-muted" colspan="2">
+                                    <span invisible="root_cause_overridden">
+                                        Taken from the source deviation. Edit
+                                        it here to override for this CAPA.
+                                    </span>
+                                    <span invisible="not root_cause_overridden">
+                                        Overridden on this CAPA; it no longer
+                                        follows the source deviation.
+                                    </span>
+                                    <button name="action_follow_deviation_root_cause"
+                                            type="object" class="btn-link p-0 ms-1"
+                                            string="Use the deviation's root cause"
+                                            invisible="not root_cause_overridden or status == 'closed'"/>
+                                </div>
                                 <field name="root_cause" nolabel="1" colspan="2"
                                        readonly="status == 'closed'"
                                        placeholder="5-Why / Ishikawa root cause analysis…"/>
                             </group>
-                            <group string="Action Plan">
+                            <group string="Action Plan" invisible="preventive_managed">
                                 <field name="action_plan" nolabel="1" colspan="2"
                                        readonly="status == 'closed'"
                                        placeholder="What will be done, by whom, and by when…"/>
                             </group>
+                            <group string="Plan" invisible="not preventive_managed">
+                                <field name="plan_summary" nolabel="1" colspan="2"
+                                       readonly="1"/>
+                            </group>
                         </page>
                         <page name="effectiveness" string="Effectiveness Check">
-                            <group>
+                            <group class="o_pharma_premium_sample" string="What the checks have shown"
+                                   invisible="capa_type != 'preventive'">
                                 <field name="effectiveness_check" nolabel="1"
-                                       readonly="status == 'closed'"
-                                       placeholder="Evidence that the CAPA actually fixed the problem…"/>
+                                       colspan="2" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="effectiveness_conclusion"
+                                       readonly="status in ('verified', 'closed')"
+                                       placeholder="e.g. No recurrence over five batches; control effective."/>
                             </group>
                         </page>
                     </notebook>
@@ -92,6 +222,7 @@
                        decoration-info="capa_type == 'corrective'"
                        decoration-warning="capa_type == 'preventive'"/>
                 <field name="assigned_to"/>
+                <field name="scope_summary" optional="show"/>
                 <field name="due_date"/>
                 <field name="closed_by" optional="show"/>
                 <field name="closed_on" optional="show"/>
@@ -112,6 +243,8 @@
                 <field name="name"/>
                 <field name="deviation_id"/>
                 <field name="assigned_to"/>
+                <field name="scope_product_ids"/>
+                <field name="scope_workcenter_ids"/>
                 <filter string="Open" name="open" domain="[('status','=','open')]"/>
                 <filter string="In Progress" name="in_progress"
                         domain="[('status','=','in_progress')]"/>
@@ -123,12 +256,24 @@
                         domain="[('capa_type','=','corrective')]"/>
                 <filter string="Preventive" name="preventive"
                         domain="[('capa_type','=','preventive')]"/>
+                <separator/>
+                <filter string="Site-Wide" name="site_wide"
+                        domain="[('scope_site_wide','=',True)]"/>
+                <filter string="Permanent Controls" name="permanent"
+                        domain="[('control_nature','=','permanent')]"/>
+                <filter string="Due for Review" name="review_due"
+                        domain="[('control_nature','=','permanent'),
+                                 ('review_date','&lt;=',context_today().strftime('%Y-%m-%d'))]"/>
                 <group name="group_by">
                     <filter string="Status" name="grp_status" context="{'group_by': 'status'}"/>
                     <filter string="Assigned To" name="grp_assigned"
                             context="{'group_by': 'assigned_to'}"/>
                     <filter string="CAPA Type" name="grp_type"
                             context="{'group_by': 'capa_type'}"/>
+                    <filter string="Site-Wide" name="grp_site_wide"
+                            context="{'group_by': 'scope_site_wide'}"/>
+                    <filter string="Control Nature" name="grp_nature"
+                            context="{'group_by': 'control_nature'}"/>
                 </group>
             </search>
         </field>
@@ -144,6 +289,29 @@
                 No CAPAs to display. A CAPA is auto-raised when a deviation moves
                 to Under Investigation.
             </p>
+        </field>
+    </record>
+
+    <!-- Starting a preventive CAPA without the Preventive Action add-on
+         opens its dialog: get the add-on, or start on the action plan. -->
+    <record id="pharma_premium_feature_view_form_capa_start" model="ir.ui.view">
+        <field name="name">pharma.premium.feature.view.form.capa.start</field>
+        <field name="model">pharma.premium.feature</field>
+        <field name="inherit_id" ref="pharmaceutical_base.pharma_premium_feature_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <div class="alert alert-info mb-0" role="status"
+                     invisible="is_installed or not context.get('pharma_capa_start_ids')">
+                    Starting this CAPA without the add-on records it with its
+                    action plan: no scope, schedule or recurring checks.
+                </div>
+            </xpath>
+            <xpath expr="//footer/button[@special='cancel']" position="before">
+                <button name="action_start_capa_with_action_plan" type="object"
+                        string="Start with Action Plan" class="btn-secondary"
+                        invisible="is_installed or not context.get('pharma_capa_start_ids')"
+                        groups="pharmaceutical_base.group_pharma_role_qa"/>
+            </xpath>
         </field>
     </record>
 </odoo>

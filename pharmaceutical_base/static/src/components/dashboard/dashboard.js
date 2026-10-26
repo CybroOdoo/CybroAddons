@@ -92,18 +92,6 @@ export class PharmaDashboard extends Component {
         this.updateCalDays();
 
         onWillStart(async () => {
-            if (user.name) {
-                this.state.userName = user.name;
-            } else {
-                try {
-                    const userData = await this.orm.read("res.users", [user.userId], ["name"]);
-                    if (userData && userData.length > 0) {
-                        this.state.userName = userData[0].name;
-                    }
-                } catch (e) {
-                    // Fallback
-                }
-            }
             await loadJS("/web/static/lib/Chart/Chart.js");
             await this.fetchData();
         });
@@ -138,7 +126,6 @@ export class PharmaDashboard extends Component {
         else if (this.state.chartFilter === "weekly") interval = "week";
         else if (this.state.chartFilter === "daily") interval = "day";
         const groupBy = `${chartField}:${interval}`;
-        const countKey = `${chartField}_count`;
 
         const startDT = luxon.DateTime.fromISO(this.state.startDate);
         const endDT = luxon.DateTime.fromISO(this.state.endDate);
@@ -193,11 +180,11 @@ export class PharmaDashboard extends Component {
             this.orm.searchCount("stock.lot", [["expiration_date", "<=", in90], ["expiration_date", ">=", todayStartStr]]).catch(() => 0),
 
             // Chart — Released (done) per bucket
-            this.orm.call("mrp.production", "read_group", [[["state", "=", "done"],
-                [chartField, ">=", startStr], [chartField, "<=", endStr]], ["id"], [groupBy]]).catch(() => []),
+            this.orm.formattedReadGroup("mrp.production", [["state", "=", "done"],
+                [chartField, ">=", startStr], [chartField, "<=", endStr]], [groupBy], ["__count"]).catch(() => []),
             // Chart — In-process (not done / not cancelled) per bucket
-            this.orm.call("mrp.production", "read_group", [[["state", "in", ["confirmed", "progress", "to_close"]],
-                [chartField, ">=", startStr], [chartField, "<=", endStr]], ["id"], [groupBy]]).catch(() => []),
+            this.orm.formattedReadGroup("mrp.production", [["state", "in", ["confirmed", "progress", "to_close"]],
+                [chartField, ">=", startStr], [chartField, "<=", endStr]], [groupBy], ["__count"]).catch(() => []),
 
             // Recent batches: the most recently created lots, any status.
             this.orm.searchRead("stock.lot",
@@ -222,7 +209,7 @@ export class PharmaDashboard extends Component {
 
             // Stage-specific QC Test Order & IPQC Result counts within selected date filter
             this.orm.searchCount("pharma.qc.test.order", [["stage", "=", "incoming"], ["status", "in", ["draft", "in_progress", "under_investigation"]], ...dateDomain]).catch(() => 0),
-            this.orm.searchCount("pharma.qc.test.order", [["stage", "=", "inprocess"], ...dateDomain]).catch(() => 0),
+            this.orm.searchCount("pharma.qc.test.order", [["stage", "=", "ipqc"], ...dateDomain]).catch(() => 0),
             this.orm.searchCount("pharma.ipqc.result", dateDomain).catch(() => 0),
             this.orm.searchCount("pharma.qc.test.order", [["stage", "=", "finished"], ["status", "=", "passed"], ...dateDomain]).catch(() => 0)
         ]);
@@ -289,17 +276,18 @@ export class PharmaDashboard extends Component {
         }));
 
         // Merge the two series (Released / In-process) on a shared, ordered set
-        // of bucket keys so bars align. read_group returns groups in ascending
-        // chronological order.
+        // of bucket keys so bars align. Groups come back in ascending
+        // chronological order, each date bucket as [start, label].
         const order = [];
         const relMap = {};
         const wipMap = {};
         const collect = (rows, map) => {
             for (const item of rows || []) {
-                const key = item[groupBy];
+                const bucket = item[groupBy];
+                const key = Array.isArray(bucket) ? bucket[1] : bucket;
                 if (!key) continue;
                 const k = String(key);
-                map[k] = (map[k] || 0) + (item[countKey] || 0);
+                map[k] = (map[k] || 0) + (item.__count || 0);
                 if (!order.includes(k)) order.push(k);
             }
         };
@@ -334,7 +322,7 @@ export class PharmaDashboard extends Component {
                     {
                         label: "Released",
                         data: this.state.chartData,
-                        backgroundColor: "#5295f8",   // Primary #5295f8
+                        backgroundColor: "#5295f8",
                         borderRadius: 4,
                         borderSkipped: false,
                         maxBarThickness: 26,
@@ -342,7 +330,7 @@ export class PharmaDashboard extends Component {
                     {
                         label: "In process",
                         data: this.state.chartWip,
-                        backgroundColor: "#93c5fd",   // Light Soft Blue
+                        backgroundColor: "#93c5fd",
                         borderRadius: 4,
                         borderSkipped: false,
                         maxBarThickness: 26,
@@ -580,7 +568,7 @@ export class PharmaDashboard extends Component {
                 type: "ir.actions.act_window",
                 name: "IPQC Products QC",
                 res_model: "pharma.qc.test.order",
-                domain: [["stage", "=", "inprocess"], ...dateDomain],
+                domain: [["stage", "=", "ipqc"], ...dateDomain],
                 views: [[false, "list"], [false, "form"]],
             });
         }
@@ -754,7 +742,7 @@ export class PharmaDashboard extends Component {
      * The inputs are bound with min/max, but a browser will still hand over an
      * out-of-range value when the year is typed instead of stepped — Chrome's
      * year field accepts up to six digits — so the range is clamped here too
-     * before it reaches any read_group domain.
+     * before it reaches any grouping domain.
      */
     onDateChange() {
         this.state.startDate = this.clampDate(this.state.startDate, this.dateMin);

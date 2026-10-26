@@ -29,11 +29,24 @@ class PharmaOosInvestigation(models.Model):
     def _create_oos_deviation(self):
         """Raise a critical QC deviation for a rejected OOS investigation."""
         for rec in self:
-            self.env['pharma.deviation'].create({
+            # Raised when QA closes the investigation with a reject; QA has no
+            # create right on deviations, so it is created elevated (the same
+            # as the CAPA auto-raised by a deviation investigation).
+            self.env['pharma.deviation'].sudo().create({
                 'stage': 'qc',
                 'classification': 'critical',
-                'description': f"OOS Failure — Parameter: {rec.result_line_id.parameter} | Expected: {rec.result_line_id.expected_min} - {rec.result_line_id.expected_max} | Actual: {rec.result_line_id.actual_value or '—'} | Batch: {rec.result_line_id.test_order_id.lot_id.name}",
-                'immediate_action': f"OOS investigation {rec.name} confirmed failure. Conclusion: {rec.conclusion or ''}",
+                'description': self.env._(
+                    "OOS Failure — Parameter: %(parameter)s | Expected: %(min)s - %(max)s"
+                    " | Actual: %(actual)s | Batch: %(batch)s",
+                    parameter=rec.result_line_id.parameter,
+                    min=rec.result_line_id.expected_min,
+                    max=rec.result_line_id.expected_max,
+                    actual=rec.result_line_id.actual_value or '—',
+                    batch=rec.result_line_id.test_order_id.lot_id.name,
+                ),
+                'immediate_action': self.env._(
+                    "OOS investigation %(oos)s confirmed failure. Conclusion: %(conclusion)s",
+                    oos=rec.name, conclusion=rec.conclusion or ''),
                 'oos_investigation_id': rec.id,
                 'qc_result_id': rec.result_line_id.id,
                 'lot_id': rec.result_line_id.test_order_id.lot_id.id,

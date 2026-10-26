@@ -26,3 +26,5 @@ from . import pharma_deviation
 from . import pharma_ipqc_result
 from . import pharma_oos_investigation
 from . import pharma_qc_test_order
+from . import pharma_premium_feature
+from . import res_config_settings

@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Reporting section of the Pharmaceutical ERP app; each pharma module
+         adds its own analysis under it. -->
+    <menuitem id="menu_pharma_reporting" name="Reporting"
+              parent="menu_pharma_quality_root"
+              groups="pharmaceutical_base.group_pharma_qa_manager"
+              sequence="90"/>
+
+    <!-- ============ QC Test Orders ============ -->
+
+    <!-- Search view for QC test order analysis. -->
+    <record id="pharma_qc_test_order_report_search" model="ir.ui.view">
+        <field name="name">pharma.qc.test.order.report.search</field>
+        <field name="model">pharma.qc.test.order</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="QC Test Order Analysis">
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="spec_id"/>
+                <filter string="Incoming" name="incoming" domain="[('stage', '=', 'incoming')]"/>
+                <filter string="In-Process" name="inprocess" domain="[('stage', '=', 'ipqc')]"/>
+                <filter string="Finished" name="finished" domain="[('stage', '=', 'finished')]"/>
+                <separator/>
+                <filter string="Passed" name="passed" domain="[('status', '=', 'passed')]"/>
+                <filter string="Failed" name="failed" domain="[('status', '=', 'failed')]"/>
+                <filter string="Under Investigation" name="investigation"
+                        domain="[('status', '=', 'under_investigation')]"/>
+                <separator/>
+                <filter string="Created On" name="filter_create_date" date="create_date"/>
+                <group name="group_by">
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Specification" name="grp_spec" context="{'group_by': 'spec_id'}"/>
+                    <filter string="Stage" name="grp_stage" context="{'group_by': 'stage'}"/>
+                    <filter string="Status" name="grp_status" context="{'group_by': 'status'}"/>
+                    <filter string="Reviewed By" name="grp_reviewer" context="{'group_by': 'reviewed_by'}"/>
+                    <filter string="Month" name="grp_month" context="{'group_by': 'create_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of QC test orders by stage and status. -->
+    <record id="pharma_qc_test_order_report_graph" model="ir.ui.view">
+        <field name="name">pharma.qc.test.order.report.graph</field>
+        <field name="model">pharma.qc.test.order</field>
+        <field name="arch" type="xml">
+            <graph string="QC Test Orders" type="bar" stacked="1" sample="1">
+                <field name="stage"/>
+                <field name="status"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of QC test orders by product and status. -->
+    <record id="pharma_qc_test_order_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.qc.test.order.report.pivot</field>
+        <field name="model">pharma.qc.test.order</field>
+        <field name="arch" type="xml">
+            <pivot string="QC Test Orders" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="status" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the QC test order analysis. -->
+    <record id="pharma_qc_test_order_report_action" model="ir.actions.act_window">
+        <field name="name">QC Test Order Analysis</field>
+        <field name="res_model">pharma.qc.test.order</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_qc_test_order_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_qc_test_order_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_qc_test_order_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No QC test orders yet</p>
+            <p>Throughput and pass/fail rate of QC testing by stage, product and specification.</p>
+        </field>
+    </record>
+
+    <!-- ============ QC Results (Pass / OOS) ============ -->
+
+    <!-- Search view for QC result analysis. -->
+    <record id="pharma_qc_result_line_report_search" model="ir.ui.view">
+        <field name="name">pharma.qc.result.line.report.search</field>
+        <field name="model">pharma.qc.result.line</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="QC Result Analysis">
+                <field name="parameter_id"/>
+                <field name="test_order_id"/>
+                <field name="value_source_id"/>
+                <filter string="Pass" name="pass" domain="[('status', '=', 'pass')]"/>
+                <filter string="OOS" name="oos" domain="[('status', '=', 'oos')]"/>
+                <filter string="Pending" name="pending" domain="[('status', '=', 'pending')]"/>
+                <separator/>
+                <filter string="Manual Entry" name="origin_manual" domain="[('value_origin', '=', 'manual')]"/>
+                <filter string="Device Capture" name="origin_device" domain="[('value_origin', '=', 'device')]"/>
+                <separator/>
+                <filter string="Created On" name="filter_create_date" date="create_date"/>
+                <group name="group_by">
+                    <filter string="Parameter" name="grp_parameter" context="{'group_by': 'parameter_id'}"/>
+                    <filter string="Test Order" name="grp_test_order" context="{'group_by': 'test_order_id'}"/>
+                    <filter string="Result" name="grp_status" context="{'group_by': 'status'}"/>
+                    <filter string="Value Origin" name="grp_origin" context="{'group_by': 'value_origin'}"/>
+                    <filter string="Measurement Source" name="grp_source" context="{'group_by': 'value_source_id'}"/>
+                    <filter string="Month" name="grp_month" context="{'group_by': 'create_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of QC results by parameter and outcome. -->
+    <record id="pharma_qc_result_line_report_graph" model="ir.ui.view">
+        <field name="name">pharma.qc.result.line.report.graph</field>
+        <field name="model">pharma.qc.result.line</field>
+        <field name="arch" type="xml">
+            <graph string="QC Results" type="bar" stacked="1" sample="1">
+                <field name="parameter_id"/>
+                <field name="status"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of QC results by parameter and outcome. -->
+    <record id="pharma_qc_result_line_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.qc.result.line.report.pivot</field>
+        <field name="model">pharma.qc.result.line</field>
+        <field name="arch" type="xml">
+            <pivot string="QC Results" sample="1">
+                <field name="parameter_id" type="row"/>
+                <field name="status" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the QC result analysis. -->
+    <record id="pharma_qc_result_line_report_action" model="ir.actions.act_window">
+        <field name="name">QC Result Analysis</field>
+        <field name="res_model">pharma.qc.result.line</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="pharma_qc_result_line_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_qc_result_line_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_qc_result_line_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No QC results yet</p>
+            <p>Out-of-specification rate per test parameter, and how results were captured.</p>
+        </field>
+    </record>
+
+    <!-- ============ OOS Investigations ============ -->
+
+    <!-- Search view for OOS investigation analysis. -->
+    <record id="pharma_oos_investigation_report_search" model="ir.ui.view">
+        <field name="name">pharma.oos.investigation.report.search</field>
+        <field name="model">pharma.oos.investigation</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="OOS Investigation Analysis">
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="investigated_by"/>
+                <filter string="Open" name="open" domain="[('closed_on', '=', False)]"/>
+                <filter string="Closed" name="closed" domain="[('closed_on', '!=', False)]"/>
+                <separator/>
+                <filter string="Lab Error Found" name="lab_error" domain="[('lab_error_found', '=', True)]"/>
+                <filter string="Released" name="released" domain="[('disposition', '=', 'release')]"/>
+                <filter string="Rejected" name="rejected" domain="[('disposition', '=', 'reject')]"/>
+                <separator/>
+                <filter string="Created On" name="filter_create_date" date="create_date"/>
+                <filter string="Closed On" name="filter_closed_on" date="closed_on"/>
+                <group name="group_by">
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Phase" name="grp_phase" context="{'group_by': 'phase'}"/>
+                    <filter string="Disposition" name="grp_disposition" context="{'group_by': 'disposition'}"/>
+                    <filter string="Lab Error" name="grp_lab_error" context="{'group_by': 'lab_error_found'}"/>
+                    <filter string="Investigator" name="grp_investigator" context="{'group_by': 'investigated_by'}"/>
+                    <filter string="Month" name="grp_month" context="{'group_by': 'create_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of OOS investigations over time by phase. -->
+    <record id="pharma_oos_investigation_report_graph" model="ir.ui.view">
+        <field name="name">pharma.oos.investigation.report.graph</field>
+        <field name="model">pharma.oos.investigation</field>
+        <field name="arch" type="xml">
+            <graph string="OOS Investigations" type="bar" stacked="1" sample="1">
+                <field name="create_date" interval="month"/>
+                <field name="phase"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of OOS investigations by product and disposition. -->
+    <record id="pharma_oos_investigation_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.oos.investigation.report.pivot</field>
+        <field name="model">pharma.oos.investigation</field>
+        <field name="arch" type="xml">
+            <pivot string="OOS Investigations" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="disposition" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the OOS investigation analysis. -->
+    <record id="pharma_oos_investigation_report_action" model="ir.actions.act_window">
+        <field name="name">OOS Investigation Analysis</field>
+        <field name="res_model">pharma.oos.investigation</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_oos_investigation_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_oos_investigation_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_oos_investigation_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No OOS investigations yet</p>
+            <p>OOS volume over time, lab-error rate and final disposition per product.</p>
+        </field>
+    </record>
+
+    <!-- ============ Batch Yield (BMR) ============ -->
+
+    <!-- Search view for batch yield analysis. -->
+    <record id="pharma_bmr_report_search" model="ir.ui.view">
+        <field name="name">pharma.bmr.report.search</field>
+        <field name="model">pharma.bmr</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Batch Yield Analysis">
+                <field name="product_id"/>
+                <field name="production_id"/>
+                <filter string="Completed" name="completed" domain="[('status', '=', 'completed')]"/>
+                <filter string="In Progress" name="in_progress" domain="[('status', '=', 'in_progress')]"/>
+                <filter string="On Hold" name="on_hold" domain="[('status', '=', 'on_hold')]"/>
+                <separator/>
+                <filter string="Low Yield" name="yield_flag" domain="[('yield_flag', '=', True)]"/>
+                <filter string="QA Yield Sign-off" name="qa_signoff" domain="[('qa_yield_signoff', '=', True)]"/>
+                <separator/>
+                <filter string="Created On" name="filter_create_date" date="create_date"/>
+                <group name="group_by">
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Status" name="grp_status" context="{'group_by': 'status'}"/>
+                    <filter string="Low Yield" name="grp_yield_flag" context="{'group_by': 'yield_flag'}"/>
+                    <filter string="Month" name="grp_month" context="{'group_by': 'create_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of average batch yield per product. -->
+    <record id="pharma_bmr_report_graph" model="ir.ui.view">
+        <field name="name">pharma.bmr.report.graph</field>
+        <field name="model">pharma.bmr</field>
+        <field name="arch" type="xml">
+            <graph string="Batch Yield" type="bar" sample="1">
+                <field name="product_id"/>
+                <field name="yield_percentage" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of expected vs actual yield per product. -->
+    <record id="pharma_bmr_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.bmr.report.pivot</field>
+        <field name="model">pharma.bmr</field>
+        <field name="arch" type="xml">
+            <pivot string="Batch Yield" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="yield_expected" type="measure"/>
+                <field name="yield_actual" type="measure"/>
+                <field name="yield_percentage" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the batch yield analysis (completed batches only). -->
+    <record id="pharma_bmr_report_action" model="ir.actions.act_window">
+        <field name="name">Batch Yield Analysis</field>
+        <field name="res_model">pharma.bmr</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_bmr_report_search"/>
+        <field name="context">{'search_default_completed': 1}</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_bmr_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_bmr_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No batch records yet</p>
+            <p>Average yield per product and the batches flagged for low yield.</p>
+        </field>
+    </record>
+
+    <!-- ============ IPQC Results ============ -->
+
+    <!-- Search view for IPQC result analysis. -->
+    <record id="pharma_ipqc_result_report_search" model="ir.ui.view">
+        <field name="name">pharma.ipqc.result.report.search</field>
+        <field name="model">pharma.ipqc.result</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="IPQC Analysis">
+                <field name="bmr_id"/>
+                <field name="parameter_id"/>
+                <field name="value_source_id"/>
+                <filter string="Pass" name="pass" domain="[('result', '=', 'pass')]"/>
+                <filter string="Fail" name="fail" domain="[('result', '=', 'fail')]"/>
+                <separator/>
+                <filter string="Manual Entry" name="origin_manual" domain="[('value_origin', '=', 'manual')]"/>
+                <filter string="Device Capture" name="origin_device" domain="[('value_origin', '=', 'device')]"/>
+                <separator/>
+                <filter string="Signed On" name="filter_signed_on" date="signed_on"/>
+                <group name="group_by">
+                    <filter string="Parameter" name="grp_parameter" context="{'group_by': 'parameter_id'}"/>
+                    <filter string="Batch Record" name="grp_bmr" context="{'group_by': 'bmr_id'}"/>
+                    <filter string="Step" name="grp_step" context="{'group_by': 'step_id'}"/>
+                    <filter string="Result" name="grp_result" context="{'group_by': 'result'}"/>
+                    <filter string="Value Origin" name="grp_origin" context="{'group_by': 'value_origin'}"/>
+                    <filter string="Signed By" name="grp_signed_by" context="{'group_by': 'signed_by'}"/>
+                    <filter string="Month" name="grp_month" context="{'group_by': 'signed_on:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of IPQC checks by parameter and result. -->
+    <record id="pharma_ipqc_result_report_graph" model="ir.ui.view">
+        <field name="name">pharma.ipqc.result.report.graph</field>
+        <field name="model">pharma.ipqc.result</field>
+        <field name="arch" type="xml">
+            <graph string="IPQC Checks" type="bar" stacked="1" sample="1">
+                <field name="parameter_id"/>
+                <field name="result"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of IPQC checks by parameter and result. -->
+    <record id="pharma_ipqc_result_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.ipqc.result.report.pivot</field>
+        <field name="model">pharma.ipqc.result</field>
+        <field name="arch" type="xml">
+            <pivot string="IPQC Checks" sample="1">
+                <field name="parameter_id" type="row"/>
+                <field name="result" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the IPQC analysis. -->
+    <record id="pharma_ipqc_result_report_action" model="ir.actions.act_window">
+        <field name="name">IPQC Analysis</field>
+        <field name="res_model">pharma.ipqc.result</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_ipqc_result_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_ipqc_result_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_ipqc_result_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No IPQC checks yet</p>
+            <p>In-process control failures per parameter and manufacturing step.</p>
+        </field>
+    </record>
+
+    <!-- ============ Menus ============ -->
+
+    <menuitem id="menu_pharma_report_qc_test_order" name="QC Test Orders"
+              parent="menu_pharma_reporting"
+              action="pharma_qc_test_order_report_action" sequence="10"/>
+
+    <menuitem id="menu_pharma_report_qc_result" name="QC Results"
+              parent="menu_pharma_reporting"
+              action="pharma_qc_result_line_report_action" sequence="15"/>
+
+    <menuitem id="menu_pharma_report_oos" name="OOS Investigations"
+              parent="menu_pharma_reporting"
+              action="pharma_oos_investigation_report_action" sequence="20"/>
+
+    <menuitem id="menu_pharma_report_bmr_yield" name="Batch Yield"
+              parent="menu_pharma_reporting"
+              action="pharma_bmr_report_action" sequence="25"/>
+
+    <menuitem id="menu_pharma_report_ipqc" name="IPQC Checks"
+              parent="menu_pharma_reporting"
+              action="pharma_ipqc_result_report_action" sequence="30"/>
+</odoo>

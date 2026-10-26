@@ -22,7 +22,6 @@
 from datetime import timedelta
 from odoo import api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools.translate import _
 
 # Days added to raised_on to compute deadline per classification
 _DEADLINE_DAYS = {
@@ -80,7 +79,6 @@ class PharmaDeviation(models.Model):
             ('qc', 'QC'),
             ('packaging', 'Packaging'),
         ],
-        string='Stage',
         required=True,
         tracking=True,
         help='Specifies the Stage for this record.',
@@ -91,7 +89,6 @@ class PharmaDeviation(models.Model):
             ('major', 'Major'),
             ('minor', 'Minor'),
         ],
-        string='Classification',
         required=True,
         default='major',
         tracking=True,
@@ -105,17 +102,19 @@ class PharmaDeviation(models.Model):
             ('method', 'Method'),
             ('environment', 'Environment'),
         ],
-        string='Root Cause Category',
         tracking=True,
         help='Structured category for trend analysis across batches.',
     )
     description = fields.Text(
-        string='Description',
         required=True,
         help='Full description of what went wrong.',
     )
+    root_cause = fields.Text(
+        tracking=True,
+        help='Root cause identified by the investigation (5-Why, Ishikawa). '
+             'CAPAs raised from this deviation take it unless they override it.',
+    )
     immediate_action = fields.Text(
-        string='Immediate Action',
         help='Action taken immediately when the deviation was discovered.',
     )
     status = fields.Selection(
@@ -124,7 +123,6 @@ class PharmaDeviation(models.Model):
             ('under_investigation', 'Under Investigation'),
             ('closed', 'Closed'),
         ],
-        string='Status',
         default='open',
         required=True,
         copy=False,
@@ -133,14 +131,12 @@ class PharmaDeviation(models.Model):
     )
     raised_by = fields.Many2one(
         comodel_name='res.users',
-        string='Raised By',
         default=lambda self: self.env.user,
         readonly=True,
         tracking=True,
         help='Specifies the Raised By for this record.',
     )
     raised_on = fields.Datetime(
-        string='Raised On',
         default=fields.Datetime.now,
         readonly=True,
         tracking=True,
@@ -158,10 +154,14 @@ class PharmaDeviation(models.Model):
             ('release', 'Release'),
             ('reject', 'Reject'),
         ],
-        string='Disposition',
         copy=False,
         tracking=True,
         help='Final decision on the batch — must be set before closing.',
+    )
+    preventive_capa_count = fields.Integer(
+        string='Preventive CAPAs',
+        compute='_compute_preventive_capa_count',
+        help='Specifies the Preventive CAPAs count for this record.',
     )
     capa_ids = fields.One2many(
         comodel_name='pharma.capa',
@@ -194,6 +194,23 @@ class PharmaDeviation(models.Model):
             else:
                 rec.all_capas_closed = all(c.status == 'closed' for c in rec.capa_ids)
 
+    @api.depends('capa_ids', 'capa_ids.capa_type')
+    def _compute_preventive_capa_count(self):
+        """Count preventive actions raised against this deviation."""
+        for rec in self:
+            rec.preventive_capa_count = len(rec.capa_ids.filtered(
+                lambda c: c.capa_type == 'preventive'))
+
+    def _pharma_scope_product(self):
+        """Product a preventive action from this deviation should watch.
+
+        A raw-material deviation carries a lot but no batch, so the lot's
+        product is used; scope matching then covers the batches consuming it.
+        """
+        self.ensure_one()
+        return (self.batch_id.product_id or self.lot_id.product_id) \
+            .product_tmpl_id
+
     @api.depends('raised_on', 'classification')
     def _compute_deadline(self):
         """Compute the investigation deadline from severity and creation date."""
@@ -215,28 +232,26 @@ class PharmaDeviation(models.Model):
         return super().create(vals_list)
 
     def write(self, vals):
-        # Protect the permanent deviation number
         """Overrides write to protect the permanent deviation number from manual edits."""
         if 'name' in vals:
             for rec in self:
                 if rec.name and rec.name != 'New':
-                    raise UserError(_(
-                        'The deviation number "%s" is permanent and cannot be edited.'
-                    ) % rec.name)
+                    raise UserError(self.env._(
+                        'The deviation number "%s" is permanent and cannot be edited.', rec.name))
         return super().write(vals)
 
     def action_investigate(self):
         """Move the deviation to Under Investigation and raise a CAPA."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can start a deviation investigation.'),
+            self.env._('Only QA can start a deviation investigation.'),
         )
         for rec in self:
             if rec.status not in ('open',):
-                raise UserError(_('Only Open deviations can be moved to Under Investigation.'))
+                raise UserError(self.env._('Only Open deviations can be moved to Under Investigation.'))
             rec.status = 'under_investigation'
             rec.message_post(
-                body=_('Deviation moved to Under Investigation by %s.') % self.env.user.name
+                body=self.env._('Deviation moved to Under Investigation by %s.', self.env.user.name)
             )
             if not rec.capa_ids:
                 # CAPA is auto-raised by the (QA) investigation; QA has no
@@ -248,32 +263,30 @@ class PharmaDeviation(models.Model):
                     'due_date': rec.deadline_date,
                 })
                 rec.message_post(
-                    body=_('CAPA auto-raised from deviation %s.') % rec.name
+                    body=self.env._('CAPA auto-raised from deviation %s.', rec.name)
                 )
 
     def action_close(self):
         """Close the deviation once disposition is set and all CAPAs are closed."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can close a deviation.'),
+            self.env._('Only QA can close a deviation.'),
         )
         for rec in self:
             if rec.status != 'under_investigation':
-                raise UserError(_('Only deviations Under Investigation can be closed.'))
+                raise UserError(self.env._('Only deviations Under Investigation can be closed.'))
             if not rec.disposition:
-                raise UserError(_(
-                    'Set a Disposition (Release / Reject) before closing deviation %s.'
-                ) % rec.name)
+                raise UserError(self.env._(
+                    'Set a Disposition (Release / Reject) before closing deviation %s.', rec.name))
             if not rec.capa_ids:
-                raise UserError(_(
-                    'At least one CAPA must be raised before closing deviation %s.'
-                ) % rec.name)
+                raise UserError(self.env._(
+                    'At least one CAPA must be raised before closing deviation %s.', rec.name))
             open_capas = rec.capa_ids.filtered(lambda c: c.status != 'closed')
             if open_capas:
-                raise UserError(_(
-                    'All CAPAs must be closed before closing deviation %s. '
-                    'Open CAPAs: %s'
-                ) % (rec.name, ', '.join(open_capas.mapped('name'))))
+                raise UserError(self.env._(
+                    'All CAPAs must be closed before closing deviation %(deviation)s. '
+                    'Open CAPAs: %(capas)s',
+                    deviation=rec.name, capas=', '.join(open_capas.mapped('name'))))
             rec.status = 'closed'
             if rec.oos_investigation_id and rec.disposition == 'release':
                 qc_test = rec.oos_investigation_id.result_line_id.test_order_id
@@ -283,11 +296,12 @@ class PharmaDeviation(models.Model):
                 rec._pharma_dispose_rejected_lot()
 
             rec.message_post(
-                body=_(
-                    'Deviation closed by %s. Disposition: %s.'
-                ) % (self.env.user.name, dict(rec._fields['disposition'].selection).get(
-                    rec.disposition, rec.disposition
-                ))
+                body=self.env._(
+                    'Deviation closed by %(user)s. Disposition: %(disposition)s.',
+                    user=self.env.user.name,
+                    disposition=dict(rec._fields['disposition'].selection).get(
+                        rec.disposition, rec.disposition),
+                )
             )
 
     def _pharma_dispose_rejected_lot(self):
@@ -300,15 +314,14 @@ class PharmaDeviation(models.Model):
         company = lot.company_id or self.env.company
         dest = company.pharma_rejected_location_id
         if not dest:
-            self.message_post(body=_(
+            self.message_post(body=self.env._(
                 'Deviation closed as Rejected, but no Rejected Location is '
                 'configured, so lot %s was not segregated. Set one under '
-                'Settings > Pharmaceutical ERP > Inventory & Quality Locations.'
-            ) % lot.name)
+                'Settings > Pharmaceutical ERP > Inventory & Quality Locations.', lot.name))
             return
         # QA can approve/reject but has no create right on stock.picking, so
         # the disposition transfer is built elevated (same as the CAPA above).
         if lot.sudo()._pharma_create_disposition_transfer(dest):
-            self.message_post(body=_(
-                'Lot %s moved to the Rejected location %s.'
-            ) % (lot.name, dest.complete_name))
+            self.message_post(body=self.env._(
+                'Lot %(lot)s moved to the Rejected location %(location)s.',
+                lot=lot.name, location=dest.complete_name))

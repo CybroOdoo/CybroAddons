@@ -3,7 +3,7 @@
     :alt: License: LGPL-3
 
 Pharmaceutical ERP — CAPA & Deviations
-==================
+======================================
 Quality deviation and CAPA management for the Pharmaceutical ERP.
 
 Configuration

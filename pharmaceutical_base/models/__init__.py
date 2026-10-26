@@ -20,6 +20,9 @@
 #
 #############################################################################
 from . import pharma_workflow_mixin
+from . import pharma_measured_value_mixin
+from . import pharma_value_source
+from . import pharma_premium_feature
 from . import mrp_bom
 from . import mrp_production
 from . import pharma_bmr

@@ -20,7 +20,6 @@
 #
 #############################################################################
 from odoo import fields, models
-from odoo.tools.translate import _
 
 
 class PharmaIPQCResult(models.Model):
@@ -46,7 +45,7 @@ class PharmaIPQCResult(models.Model):
         bmr = self.bmr_id
         dev = self.env['pharma.deviation'].create({
             'batch_id': bmr.production_id.id,
-            'description': _(
+            'description': self.env._(
                 'IPQC Failure — Parameter: %(param)s\n'
                 'Expected: %(expected)s\n'
                 'Actual: %(actual)s\n'
@@ -56,17 +55,18 @@ class PharmaIPQCResult(models.Model):
                 actual=self.actual_value or '—',
                 batch=bmr.batch_no,
             ),
-            'immediate_action': _('IPQC check failed. Batch placed under investigation.'),
+            'immediate_action': self.env._('IPQC check failed. Batch placed under investigation.'),
             'stage': 'manufacturing',
             'classification': 'major',
             'raised_by': self.env.user.id,
             'raised_on': fields.Datetime.now(),
         })
-        # Bypass the write() override to avoid recursive re-entry
-        super(PharmaIPQCResult, self).write({'deviation_id': dev.id})
+        # The base write() only reacts to 'result', so linking the deviation
+        # does not re-enter the failure handling.
+        self.write({'deviation_id': dev.id})
 
         bmr.message_post(
-            body=_(
+            body=self.env._(
                 'IPQC FAIL on "%(param)s". Deviation %(dev)s auto-raised. '
                 'Linked step placed on Hold.',
                 param=self.parameter,

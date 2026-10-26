@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools.translate import _
 
 
 class PharmaQcTestOrder(models.Model):
@@ -92,6 +91,6 @@ class PharmaQcTestOrder(models.Model):
                     ('status', '!=', 'closed')
                 ])
                 if open_devs:
-                    raise ValidationError(_(
+                    raise ValidationError(self.env._(
                         "Cannot approve a test order with open related deviations. "
                         "Close the deviations and CAPAs first."))

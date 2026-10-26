@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Pharmaceutical ERP',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Manufacturing',
     'summary': 'Make medicines and manage their quality, all in one place.',
     'description': """Core pharmaceutical manufacturing and quality management.""",
@@ -32,20 +32,17 @@
     'depends': [
         'mail',
         'mrp',
-        'purchase',
         'stock',
         'purchase_stock',
-        'account',
-        'hr',
         'base_setup',
-        'website',
-        'product_expiry'
+        'product_expiry',
     ],
     'sequence': 50,
     'data': [
         'security/pharma_groups.xml',
         'security/ir.model.access.csv',
         'data/pharma_sequences_data.xml',
+        'data/pharma_premium_feature_data.xml',
         'views/product_template_views.xml',
         'views/pharma_qc_spec_line_views.xml',
         'views/pharma_qc_spec_views.xml',
@@ -57,11 +54,14 @@
         'views/pharma_bmr_views.xml',
         'views/mrp_production_views.xml',
         'views/pharma_qc_result_line_views.xml',
+        'views/pharma_value_source_views.xml',
+        'views/pharma_premium_feature_views.xml',
         'views/pharma_qc_test_order_views.xml',
         'views/pharma_oos_investigation_views.xml',
         'views/purchase_order_views.xml',
         'views/res_config_settings_views.xml',
         'views/pharma_menus.xml',
+        'views/pharma_reporting_views.xml',
     ],
     'assets': {
         'web._assets_primary_variables': [
@@ -80,6 +80,8 @@
             'pharmaceutical_base/static/src/xml/side_bar_panel.xml',
             'pharmaceutical_base/static/src/xml/menu_panels.xml',
             'pharmaceutical_base/static/src/xml/home_menus.xml',
+            'pharmaceutical_base/static/src/views/widgets/premium_learn_more.js',
+            'pharmaceutical_base/static/src/views/widgets/premium_learn_more.xml',
         ],
         'web.assets_web_dark': [
             'pharmaceutical_base/static/src/scss/backend_theme.dark.scss',

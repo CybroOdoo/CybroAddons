@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools.translate import _
 
 
 class ResCompany(models.Model):
@@ -50,26 +49,13 @@ class ResCompany(models.Model):
         help='Minimum assessment score (%) required to pass SOP training.',
     )
 
-    def _auto_init(self):
-        """Ensure the pharma columns exist on res_company before any ORM query runs."""
-        # button_install() reads res.company before the schema pass runs, so a
-        # registry knowing these fields while the table lacks the columns fails
-        # any install/upgrade with 'column ... does not exist'. Creating them
-        # up-front breaks that chicken-and-egg. Keep every pharma column on
-        # res_company listed here — a partial list leaves the same trap open.
-        self.env.cr.execute("""
-            ALTER TABLE res_company
-            ADD COLUMN IF NOT EXISTS pharma_rejected_location_id INTEGER;
-        """)
-        return super()._auto_init()
-
     @api.constrains('pharma_rejected_location_id')
     def _check_pharma_locations(self):
         """Ensure the configured Rejected location is an internal location."""
         for company in self:
             location = company.pharma_rejected_location_id
             if location and location.usage != 'internal':
-                raise ValidationError(_(
+                raise ValidationError(self.env._(
                     "The Rejected Location must be an internal location."))
 
     @api.constrains(
@@ -87,5 +73,5 @@ class ResCompany(models.Model):
             ]
             for label, score in scores:
                 if not 0 < score <= 100:
-                    raise ValidationError(_(
+                    raise ValidationError(self.env._(
                         "The %s must be greater than 0 and at most 100.", label))

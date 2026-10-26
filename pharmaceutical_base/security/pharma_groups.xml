@@ -77,9 +77,11 @@
         ])]"/>
     </record>
 
-    <!-- Grants pharma admin rights to system users. -->
+    <!-- Pharma access is granted by the Pharmaceutical ERP role only, as for
+         any other app. Earlier versions made every Settings administrator a
+         Pharma Administrator; this drops the link they left behind. -->
     <record id="base.group_system" model="res.groups">
-        <field name="implied_ids" eval="[(4, ref('group_pharma_admin'))]"/>
+        <field name="implied_ids" eval="[(3, ref('group_pharma_admin'))]"/>
     </record>
 
     <!-- Role 1: daily user who creates and submits records. -->
@@ -101,22 +103,22 @@
         <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('group_pharma_qa_director')), (4, ref('group_audit_trail_feature'))]"/>
     </record>
 
-    <!-- Role 3: manager over QA plus configuration. -->
-    <record id="group_pharma_role_manager" model="res.groups">
-        <field name="name">Manager</field>
-        <field name="sequence">30</field>
-        <field name="privilege_id" ref="res_groups_privilege_pharma"/>
-        <field name="comment">Department/module manager. Full access within the module, including creating, editing, deleting, approving operational records, and viewing reports. Cannot manage users, security groups, or global system settings.</field>
-        <field name="implied_ids" eval="[(4, ref('group_pharma_role_qa')), (4, ref('group_pharma_admin'))]"/>
-    </record>
-
-    <!-- Role 4: administrator with full pharma access. -->
+    <!-- Role 3: administrator with full pharma access. -->
     <record id="group_pharma_role_admin" model="res.groups">
         <field name="name">Administrator</field>
-        <field name="sequence">40</field>
+        <field name="sequence">30</field>
         <field name="privilege_id" ref="res_groups_privilege_pharma"/>
         <field name="comment">Full system administrator. Complete access to all modules, settings, users, security groups, and configurations. Can perform any operation.</field>
-        <field name="implied_ids" eval="[(4, ref('group_pharma_role_manager')), (4, ref('base.group_system'))]"/>
+        <field name="implied_ids" eval="[(4, ref('group_pharma_role_qa')), (4, ref('group_pharma_admin')), (4, ref('base.group_system'))]"/>
     </record>
+
+
+    <!-- A fresh install gives the built-in administrator the pharma role,
+         once. Not re-applied on upgrade, so setting it to "No" sticks. -->
+    <data noupdate="1">
+        <record id="base.user_admin" model="res.users">
+            <field name="group_ids" eval="[(4, ref('group_pharma_role_admin'))]"/>
+        </record>
+    </data>
 
 </odoo>

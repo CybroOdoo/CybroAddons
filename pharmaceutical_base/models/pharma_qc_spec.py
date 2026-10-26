@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools.translate import _
 
 class PharmaQcSpec(models.Model):
     """QC Specification — acceptance criteria per product per testing stage."""
@@ -40,7 +39,6 @@ class PharmaQcSpec(models.Model):
     )
     product_id = fields.Many2one(
         comodel_name='product.template',
-        string='Product',
         required=True,
         ondelete='cascade',
         index=True,
@@ -73,7 +71,6 @@ class PharmaQcSpec(models.Model):
         help='Specifies the Pharmacopoeial Reference for this record.',
     )
     version = fields.Char(
-        string='Version',
         default='1.0',
         required=True,
         tracking=True,
@@ -94,13 +91,11 @@ class PharmaQcSpec(models.Model):
     )
     approved_by = fields.Many2one(
         comodel_name='res.users',
-        string='Approved By',
         tracking=True,
         readonly=True,
         help='Specifies the Approved By for this record.',
     )
     approval_date = fields.Date(
-        string='Approval Date',
         tracking=True,
         readonly=True,
         help='Specifies the Approval Date for this record.',
@@ -132,7 +127,7 @@ class PharmaQcSpec(models.Model):
         for rec in self:
             if rec.state == 'approved' and not (rec.approved_by and rec.approval_date):
                 raise ValidationError(
-                    _('Approved By and Approval Date are required when approving a specification.')
+                    self.env._('Approved By and Approval Date are required when approving a specification.')
                 )
 
     @api.constrains('effective_date')
@@ -140,14 +135,14 @@ class PharmaQcSpec(models.Model):
         """Executes the _check_effective_date operation."""
         for rec in self:
             if rec.effective_date and rec.effective_date < fields.Date.today():
-                raise ValidationError(_("The Valid Until Date cannot be less than today."))
+                raise ValidationError(self.env._("The Valid Until Date cannot be less than today."))
 
     @api.constrains('parameter_ids')
     def _check_parameter_ids(self):
         """Executes the _check_parameter_ids operation."""
         for rec in self:
             if not rec.parameter_ids:
-                raise ValidationError(_("At least one test parameter is required to save the specification."))
+                raise ValidationError(self.env._("At least one test parameter is required to save the specification."))
 
     def _next_version(self, product_id, stage):
         """Compute the next whole version number for a product/stage specification."""
@@ -192,7 +187,7 @@ class PharmaQcSpec(models.Model):
         """Approve the specification, logging the user and date."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can approve a QC specification.'),
+            self.env._('Only QA can approve a QC specification.'),
         )
         self.write({
             'state': 'approved',
@@ -204,7 +199,7 @@ class PharmaQcSpec(models.Model):
         """Mark the specification obsolete to prevent future use."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can mark a QC specification obsolete.'),
+            self.env._('Only QA can mark a QC specification obsolete.'),
         )
         self.write({'state': 'obsolete'})
 
@@ -212,6 +207,6 @@ class PharmaQcSpec(models.Model):
         """Reverts the specification back to Draft state for further editing."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can reset a QC specification to draft.'),
+            self.env._('Only QA can reset a QC specification to draft.'),
         )
         self.write({'state': 'draft'})

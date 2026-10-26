@@ -17,14 +17,14 @@
                     <field name="status" widget="statusbar"
                             statusbar_visible="pending,done"/>
                     <button name="action_operator_sign" type="object"
-                            string="Operator Sign-Off" style="bg-color:#577CBA !important;"
+                            string="Operator Sign-Off"
                             invisible="status != 'pending' or operator_signed_on"
                             groups="pharmaceutical_base.group_pharma_operator"/>
                     <button name="action_supervisor_sign" type="object"
-                            string="Supervisor Sign-Off" style="color:green !important;"
+                            string="Supervisor Sign-Off" class="btn-secondary text-success"
                             invisible="status != 'pending' or not operator_signed_on or supervisor_signed_on"
                             groups="pharmaceutical_base.group_pharma_role_qa"/>
-                    <button name="action_hold" type="object" string="Hold Step" style="color:red !important;"
+                    <button name="action_hold" type="object" string="Hold Step" class="btn-secondary text-danger"
                             invisible="status == 'done' or status == 'hold'"
                             groups="pharmaceutical_base.group_pharma_operator"/>
                     <button name="action_release_hold" type="object" string="Release Hold"
@@ -34,7 +34,7 @@
                 <sheet>
                     <group>
                         <group string="Step Info">
-                            <field name="bmr_id" readonly="status == 'done'"/>
+                            <field name="bmr_id" readonly="id"/>
                             <field name="sequence" readonly="status == 'done'"/>
                         </group>
                         <group string="Description">
@@ -50,6 +50,13 @@
                             <field name="supervisor_id" readonly="1"/>
                             <field name="supervisor_signed_on" readonly="1"/>
                         </group>
+                    </group>
+                    <group string="Measured Value">
+                        <field name="value_origin" widget="badge" readonly="1"
+                               decoration-info="value_origin == 'manual'"
+                               decoration-success="value_origin == 'device'"/>
+                        <field name="value_source_id" readonly="1"
+                               invisible="not value_source_id"/>
                     </group>
                 </sheet>
                 <chatter/>
@@ -68,6 +75,7 @@
                 <field name="description"/>
                 <field name="operator_id" optional="show"/>
                 <field name="supervisor_id" optional="show"/>
+                <field name="value_origin" optional="hide"/>
                 <field name="status" widget="badge"
                        decoration-success="status == 'done'"
                        decoration-warning="status == 'hold'"

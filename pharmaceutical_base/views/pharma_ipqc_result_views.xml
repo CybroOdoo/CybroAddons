@@ -1,10 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Search view for IPQC results, with the value origin filters. -->
+    <record id="pharma_ipqc_result_search" model="ir.ui.view">
+        <field name="name">pharma.ipqc.result.search</field>
+        <field name="model">pharma.ipqc.result</field>
+        <field name="arch" type="xml">
+            <search string="Search IPQC Results">
+                <field name="bmr_id"/>
+                <field name="step_id"/>
+                <field name="parameter_id"/>
+                <field name="value_source_id"/>
+                <filter string="Entered by a Person" name="origin_manual"
+                        domain="[('value_origin', '=', 'manual')]"/>
+                <filter string="Captured from a Device" name="origin_device"
+                        domain="[('value_origin', '=', 'device')]"/>
+                <separator/>
+                <filter string="Failed" name="failed"
+                        domain="[('result', '=', 'fail')]"/>
+                <group name="group_by">
+                    <filter string="Value Origin" name="grp_value_origin"
+                            context="{'group_by': 'value_origin'}"/>
+                    <filter string="BMR" name="grp_bmr"
+                            context="{'group_by': 'bmr_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
     <!-- Action opening IPQC results. -->
     <record id="pharma_ipqc_result_action" model="ir.actions.act_window">
         <field name="name">IPQC Results</field>
         <field name="res_model">pharma.ipqc.result</field>
         <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_ipqc_result_search"/>
     </record>
 
     <!-- Form view for an IPQC result. -->
@@ -32,6 +60,11 @@
                             <field name="expected_min" readonly="1" force_save="1"/>
                             <field name="expected_max" readonly="1" force_save="1"/>
                             <field name="actual_value"/>
+                            <field name="value_origin" widget="badge" readonly="1"
+                                   decoration-info="value_origin == 'manual'"
+                                   decoration-success="value_origin == 'device'"/>
+                            <field name="value_source_id" readonly="1"
+                                   invisible="not value_source_id"/>
                             <field name="result" widget="badge"
                                    decoration-success="result == 'pass'"
                                    decoration-danger="result == 'fail'"/>
@@ -61,6 +94,10 @@
                 <field name="expected_min" readonly="1"/>
                 <field name="expected_max" readonly="1"/>
                 <field name="actual_value"/>
+                <field name="value_origin" widget="badge" optional="show" readonly="1"
+                       decoration-info="value_origin == 'manual'"
+                       decoration-success="value_origin == 'device'"/>
+                <field name="value_source_id" optional="hide" readonly="1"/>
                 <field name="result" widget="badge"
                        decoration-success="result == 'pass'"
                        decoration-danger="result == 'fail'"/>

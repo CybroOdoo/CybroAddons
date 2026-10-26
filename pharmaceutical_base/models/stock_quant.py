@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools.translate import _
 
 
 class StockQuant(models.Model):
@@ -117,14 +116,14 @@ class StockQuant(models.Model):
             created_count += 1
 
         if created_count == 0:
-            raise UserError(_('No QC Test Orders were created. They may already exist for these specific lot(s) or lack a lot/batch.'))
+            raise UserError(self.env._('No QC Test Orders were created. They may already exist for these specific lot(s) or lack a lot/batch.'))
 
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': _('QC Test Orders Created'),
-                'message': _('Successfully created %d QC Test Order(s).') % created_count,
+                'title': self.env._('QC Test Orders Created'),
+                'message': self.env._('Successfully created %d QC Test Order(s).', created_count),
                 'sticky': False,
                 'type': 'success',
                 # Reload the queue so has_incoming_qc recomputes and the
@@ -145,7 +144,7 @@ class StockQuant(models.Model):
         self.ensure_one()
         title = self.lot_id.name or self.product_id.display_name
         return {
-            'name': _('Stock Moves — %s', title),
+            'name': self.env._('Stock Moves — %s', title),
             'type': 'ir.actions.act_window',
             'res_model': 'stock.move.line',
             'view_mode': 'list,form',
@@ -163,9 +162,9 @@ class StockQuant(models.Model):
         """Open the lot / batch record for full details and disposition."""
         self.ensure_one()
         if not self.lot_id:
-            raise UserError(_('No lot/batch linked to this record.'))
+            raise UserError(self.env._('No lot/batch linked to this record.'))
         return {
-            'name': _('Lot / Batch'),
+            'name': self.env._('Lot / Batch'),
             'type': 'ir.actions.act_window',
             'res_model': 'stock.lot',
             'view_mode': 'form',

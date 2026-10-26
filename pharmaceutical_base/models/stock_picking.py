@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import models
 from odoo.exceptions import UserError
-from odoo.tools.translate import _
 
 
 class StockPicking(models.Model):
@@ -47,11 +46,11 @@ class StockPicking(models.Model):
                 lines = self.env['stock.move.line'].search([('picking_id', '=', picking.id), ('state', '=', 'done')])
                 lots = lines.mapped('lot_id')
                 lots_to_quarantine = lots.filtered(
-                    lambda l: not l.lot_status or l.lot_status == 'quarantine'
+                    lambda lot: not lot.lot_status or lot.lot_status == 'quarantine'
                 )
                 if lots_to_quarantine:
                     lots_to_quarantine.write({'lot_status': 'quarantine'})
-                    msg = _('GMP: %d lot(s) automatically set to Quarantine on receipt validation.') % len(lots_to_quarantine)
+                    msg = self.env._('GMP: %d lot(s) automatically set to Quarantine on receipt validation.', len(lots_to_quarantine))
                     picking.message_post(body=msg)
         return result
 
@@ -68,7 +67,7 @@ class StockPicking(models.Model):
         for line in picking.move_line_ids:
             lot = line.lot_id
             if lot and lot.lot_status in BLOCKED:
-                raise UserError(_(
+                raise UserError(picking.env._(
                     'GMP Violation: Lot/Batch \'%(lot)s\' (%(product)s) '
                     'has status \'%(status)s\' and cannot be used in this operation.\n\n'
                     'Release the lot from the Quarantine Queue before proceeding.',
@@ -86,7 +85,7 @@ class StockPicking(models.Model):
             if not required or destination.usage != 'internal':
                 continue
             if required not in destination._pharma_storage_categories():
-                raise UserError(_(
+                raise UserError(picking.env._(
                     "GMP Violation: %(product)s requires storage class "
                     "'%(required)s', but '%(location)s' does not provide it.\n\n"
                     "Move the line to a location under the %(required)s area, or "

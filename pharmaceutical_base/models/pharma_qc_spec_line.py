@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools.translate import _
 
 
 class PharmaQcSpecLine(models.Model):
@@ -50,7 +49,6 @@ class PharmaQcSpecLine(models.Model):
         help='Name of the test parameter (e.g. Assay, Water Content, Hardness).',
     )
     test_method = fields.Char(
-        string='Test Method',
         help='Method reference (e.g. HPLC, BP 2.9.1, In-house STP-QC-001).',
     )
     uom_id = fields.Many2one(
@@ -83,12 +81,12 @@ class PharmaQcSpecLine(models.Model):
         """Validate that limits are non-negative and Max is not below Min."""
         for line in self:
             if line.min_value < 0 or line.max_value < 0:
-                raise ValidationError(_(
+                raise ValidationError(self.env._(
                     "Parameter '%s': Min. Limit and Max. Limit cannot be "
-                    "negative.", line.parameter_name or _('Unnamed')))
+                    "negative.", line.parameter_name or self.env._('Unnamed')))
             if line.max_value < line.min_value:
-                raise ValidationError(_(
-                    "Parameter '%s': Max. Limit (%s) cannot be smaller than "
-                    "Min. Limit (%s).",
-                    line.parameter_name or _('Unnamed'),
-                    line.max_value, line.min_value))
+                raise ValidationError(self.env._(
+                    "Parameter '%(param)s': Max. Limit (%(max)s) cannot be smaller than "
+                    "Min. Limit (%(min)s).",
+                    param=line.parameter_name or self.env._('Unnamed'),
+                    max=line.max_value, min=line.min_value))

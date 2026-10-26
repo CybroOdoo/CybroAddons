@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools.translate import _
 
 
 class PharmaQcTestOrder(models.Model):
@@ -41,7 +40,6 @@ class PharmaQcTestOrder(models.Model):
     )
     lot_id = fields.Many2one(
         comodel_name='stock.lot',
-        string='Lot',
         required=True,
         ondelete='restrict',
         index=True,
@@ -50,7 +48,6 @@ class PharmaQcTestOrder(models.Model):
     )
     product_id = fields.Many2one(
         comodel_name='product.template',
-        string='Product',
         required=True,
         ondelete='restrict',
         index=True,
@@ -70,14 +67,14 @@ class PharmaQcTestOrder(models.Model):
     stage = fields.Selection(
         selection=[
             ('incoming', 'Incoming'),
-            ('inprocess', 'In-Process'),
+            ('ipqc', 'In-Process'),
             ('finished', 'Finished Goods'),
         ],
         string='Testing Stage',
         required=True,
         default='incoming',
         tracking=True,
-        help='QC checkpoint stage.'
+        help='QC checkpoint stage; matches the stage of the QC specification.'
     )
     status = fields.Selection(
         selection=[
@@ -87,7 +84,6 @@ class PharmaQcTestOrder(models.Model):
             ('passed', 'Passed'),
             ('failed', 'Failed'),
         ],
-        string='Status',
         default='draft',
         required=True,
         tracking=True,
@@ -101,7 +97,6 @@ class PharmaQcTestOrder(models.Model):
     )
     reviewed_by = fields.Many2one(
         comodel_name='res.users',
-        string='Reviewed By',
         tracking=True,
         help='Second person who reviewed and signed, must differ from analyst.'
     )
@@ -148,9 +143,9 @@ class PharmaQcTestOrder(models.Model):
         """Open the stock move history for the tested lot."""
         self.ensure_one()
         if not self.lot_id:
-            raise ValidationError(_("This test order has no lot to trace."))
+            raise ValidationError(self.env._("This test order has no lot to trace."))
         return {
-            'name': _('Stock Moves — %s', self.lot_id.name),
+            'name': self.env._('Stock Moves — %s', self.lot_id.name),
             'type': 'ir.actions.act_window',
             'res_model': 'stock.move.line',
             'view_mode': 'list,form',
@@ -184,7 +179,7 @@ class PharmaQcTestOrder(models.Model):
         """Move the test order from Draft to In Progress, assigning the analyst."""
         for rec in self:
             if rec.status != 'draft':
-                raise ValidationError(_("Only draft test orders can be started."))
+                raise ValidationError(self.env._("Only draft test orders can be started."))
 
             vals = {'status': 'in_progress'}
             if not rec.entered_by:
@@ -195,18 +190,17 @@ class PharmaQcTestOrder(models.Model):
         """Approve the test order once results pass and OOS investigations are resolved."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can approve (pass) a QC test order.'),
+            self.env._('Only QA can approve (pass) a QC test order.'),
         )
         for rec in self:
             if rec.status not in ('in_progress', 'under_investigation'):
-                raise ValidationError(_("Only test orders in 'In Progress' or 'Under Investigation' status can be approved."))
+                raise ValidationError(self.env._("Only test orders in 'In Progress' or 'Under Investigation' status can be approved."))
 
-            # Check OOS investigations — all must be closed before approving
             investigations = self.env['pharma.oos.investigation'].search([
                 ('result_line_id', 'in', rec.result_line_ids.ids)
             ])
             if any(not inv.closed_on for inv in investigations):
-                raise ValidationError(_("Cannot approve a test order with open OOS investigations."))
+                raise ValidationError(self.env._("Cannot approve a test order with open OOS investigations."))
 
             # Block approval while related deviations are still open. The check
             # lives in the optional pharma_capa_deviation module (no-op here).
@@ -214,17 +208,19 @@ class PharmaQcTestOrder(models.Model):
 
             for line in rec.result_line_ids:
                 if not line.result_entered:
-                    raise ValidationError(_("You must enter a result for parameter '%s' before approving.") % (line.parameter_id.parameter_name if line.parameter_id else _('Unnamed')))
+                    raise ValidationError(self.env._(
+                        "You must enter a result for parameter '%s' before approving.",
+                        line.parameter_id.parameter_name if line.parameter_id else self.env._('Unnamed')))
                 if line.is_oos:
                     line_invs = sorted(
-                        investigations.filtered(lambda i, l=line: i.result_line_id == l),
+                        investigations.filtered(lambda i, rl=line: i.result_line_id == rl),
                         key=lambda i: i.id,
                     )
                     if not line_invs:
-                        raise ValidationError(_("OOS result has no investigation record. Cannot approve."))
+                        raise ValidationError(self.env._("OOS result has no investigation record. Cannot approve."))
                     latest = line_invs[-1]
                     if not latest.lab_error_found and latest.disposition != 'release':
-                        raise ValidationError(_("Cannot approve: OOS result has no 'Release' "
+                        raise ValidationError(self.env._("Cannot approve: OOS result has no 'Release' "
                                                 "disposition and was not resolved as a lab error."))
 
             rec.write({
@@ -240,11 +236,11 @@ class PharmaQcTestOrder(models.Model):
         """Reject the test order, marking it Failed when results fail."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can reject (fail) a QC test order.'),
+            self.env._('Only QA can reject (fail) a QC test order.'),
         )
         for rec in self:
             if rec.status not in ('in_progress', 'under_investigation'):
-                raise ValidationError(_("Only test orders in 'In Progress' or 'Under Investigation' "
+                raise ValidationError(self.env._("Only test orders in 'In Progress' or 'Under Investigation' "
                                         "status can be rejected."))
 
             if rec.lot_id:
@@ -286,10 +282,12 @@ class PharmaQcTestOrder(models.Model):
 
     @api.constrains('entered_by', 'reviewed_by')
     def _check_reviewer(self):
-        """Ensure the reviewer differs from the analyst who entered results."""
+        """The reviewer who signs a test order must not be the analyst who entered it."""
         for rec in self:
-            if rec.entered_by and rec.reviewed_by and rec.entered_by == rec.reviewed_by:
-                pass
+            if rec.entered_by and rec.entered_by == rec.reviewed_by:
+                raise ValidationError(self.env._(
+                    'Test order %s must be reviewed by someone other than the analyst '
+                    'who entered its results.', rec.name))
 
     @api.onchange('product_id', 'stage')
     def _onchange_product_stage(self):
@@ -312,9 +310,7 @@ class PharmaQcTestOrder(models.Model):
     def _onchange_spec_id(self):
         """Generate result lines from the selected QC specification's parameters."""
         if self.spec_id:
-            # Clear old lines
             self.result_line_ids = [(5, 0, 0)]
-            # Create new lines from spec parameter lines
             lines = []
             for line in self.spec_id.parameter_ids:
                 lines.append((0, 0, {
@@ -335,7 +331,6 @@ class PharmaQcTestOrder(models.Model):
             if not vals.get('name') or vals.get('name') == '/':
                 vals['name'] = self.env['ir.sequence'].next_by_code('pharma.qc.test.order') or '/'
 
-            # Auto load spec_id if product and stage are provided but spec_id is not
             if not vals.get('spec_id') and vals.get('product_id') and vals.get('stage'):
                 spec = self.env['pharma.qc.spec'].search([
                     ('product_id', '=', vals['product_id']),
@@ -347,12 +342,12 @@ class PharmaQcTestOrder(models.Model):
                     vals['spec_id'] = spec.id
                 else:
                     product = self.env['product.template'].browse(vals['product_id'])
-                    raise ValidationError(_(
-                        "Cannot generate QC Test Order: No approved '%s' QC Specification found for product '%s'. "
-                        "An approved specification is required before this product can be processed."
-                    ) % (vals['stage'], product.display_name))
+                    raise ValidationError(self.env._(
+                        "Cannot generate QC Test Order: No approved '%(stage)s' QC Specification found "
+                        "for product '%(product)s'. An approved specification is required before this "
+                        "product can be processed.",
+                        stage=vals['stage'], product=product.display_name))
 
-            # If spec_id is set/found, auto-load parameters if lines not provided
             if vals.get('spec_id') and not vals.get('result_line_ids'):
                 spec = self.env['pharma.qc.spec'].browse(vals['spec_id'])
                 lines = []
@@ -382,7 +377,7 @@ class PharmaQcTestOrder(models.Model):
                     current = rec[field].id if field in _many2one else rec[field]
                     if vals[field] != current:
                         raise ValidationError(
-                            _("Cannot modify material or parameter details once the test has started.")
+                            self.env._("Cannot modify material or parameter details once the test has started.")
                         )
         # If spec_id is updated on draft test orders and result_line_ids is not passed,
         # regenerate the result lines.

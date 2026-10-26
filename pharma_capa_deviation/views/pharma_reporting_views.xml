@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============ Deviations ============ -->
+
+    <!-- Search view for deviation analysis. -->
+    <record id="pharma_deviation_report_search" model="ir.ui.view">
+        <field name="name">pharma.deviation.report.search</field>
+        <field name="model">pharma.deviation</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Deviation Analysis">
+                <field name="batch_id"/>
+                <field name="lot_id"/>
+                <field name="raised_by"/>
+                <filter string="Open" name="open" domain="[('status', '!=', 'closed')]"/>
+                <filter string="Closed" name="closed" domain="[('status', '=', 'closed')]"/>
+                <filter string="Overdue" name="overdue"
+                        domain="[('status', '!=', 'closed'), ('deadline_date', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Critical" name="critical" domain="[('classification', '=', 'critical')]"/>
+                <filter string="Major" name="major" domain="[('classification', '=', 'major')]"/>
+                <filter string="Minor" name="minor" domain="[('classification', '=', 'minor')]"/>
+                <separator/>
+                <filter string="Raised On" name="filter_raised_on" date="raised_on"/>
+                <group name="group_by">
+                    <filter string="Classification" name="grp_class" context="{'group_by': 'classification'}"/>
+                    <filter string="Root Cause" name="grp_root_cause" context="{'group_by': 'root_cause_category'}"/>
+                    <filter string="Stage" name="grp_stage" context="{'group_by': 'stage'}"/>
+                    <filter string="Status" name="grp_status" context="{'group_by': 'status'}"/>
+                    <filter string="Disposition" name="grp_disposition" context="{'group_by': 'disposition'}"/>
+                    <filter string="Raised By" name="grp_raised_by" context="{'group_by': 'raised_by'}"/>
+                    <filter string="Month" name="grp_month" context="{'group_by': 'raised_on:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of deviations over time by classification. -->
+    <record id="pharma_deviation_report_graph" model="ir.ui.view">
+        <field name="name">pharma.deviation.report.graph</field>
+        <field name="model">pharma.deviation</field>
+        <field name="arch" type="xml">
+            <graph string="Deviations" type="bar" stacked="1" sample="1">
+                <field name="raised_on" interval="month"/>
+                <field name="classification"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of deviations by root cause and classification. -->
+    <record id="pharma_deviation_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.deviation.report.pivot</field>
+        <field name="model">pharma.deviation</field>
+        <field name="arch" type="xml">
+            <pivot string="Deviations" sample="1">
+                <field name="root_cause_category" type="row"/>
+                <field name="classification" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the deviation analysis. -->
+    <record id="pharma_deviation_report_action" model="ir.actions.act_window">
+        <field name="name">Deviation Analysis</field>
+        <field name="res_model">pharma.deviation</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_deviation_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_deviation_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_deviation_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No deviations yet</p>
+            <p>Deviation trend by classification, root cause and stage, including overdue investigations.</p>
+        </field>
+    </record>
+
+    <!-- ============ CAPA ============ -->
+
+    <!-- Search view for CAPA analysis. -->
+    <record id="pharma_capa_report_search" model="ir.ui.view">
+        <field name="name">pharma.capa.report.search</field>
+        <field name="model">pharma.capa</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="CAPA Analysis">
+                <field name="deviation_id"/>
+                <field name="assigned_to"/>
+                <filter string="Open" name="open" domain="[('status', 'in', ('open', 'in_progress'))]"/>
+                <filter string="Verified / Closed" name="done" domain="[('status', 'in', ('verified', 'closed'))]"/>
+                <filter string="Overdue" name="overdue"
+                        domain="[('status', 'in', ('open', 'in_progress')), ('due_date', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Corrective" name="corrective" domain="[('capa_type', '=', 'corrective')]"/>
+                <filter string="Preventive" name="preventive" domain="[('capa_type', '=', 'preventive')]"/>
+                <separator/>
+                <filter string="Created On" name="filter_create_date" date="create_date"/>
+                <filter string="Due Date" name="filter_due_date" date="due_date"/>
+                <filter string="Closed On" name="filter_closed_on" date="closed_on"/>
+                <group name="group_by">
+                    <filter string="Type" name="grp_type" context="{'group_by': 'capa_type'}"/>
+                    <filter string="Status" name="grp_status" context="{'group_by': 'status'}"/>
+                    <filter string="Assigned To" name="grp_assigned" context="{'group_by': 'assigned_to'}"/>
+                    <filter string="Control Nature" name="grp_nature" context="{'group_by': 'control_nature'}"/>
+                    <filter string="Due Month" name="grp_due_month" context="{'group_by': 'due_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of CAPAs by owner and status. -->
+    <record id="pharma_capa_report_graph" model="ir.ui.view">
+        <field name="name">pharma.capa.report.graph</field>
+        <field name="model">pharma.capa</field>
+        <field name="arch" type="xml">
+            <graph string="CAPA" type="bar" stacked="1" sample="1">
+                <field name="assigned_to"/>
+                <field name="status"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of CAPAs by type and status. -->
+    <record id="pharma_capa_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.capa.report.pivot</field>
+        <field name="model">pharma.capa</field>
+        <field name="arch" type="xml">
+            <pivot string="CAPA" sample="1">
+                <field name="capa_type" type="row"/>
+                <field name="status" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the CAPA analysis. -->
+    <record id="pharma_capa_report_action" model="ir.actions.act_window">
+        <field name="name">CAPA Analysis</field>
+        <field name="res_model">pharma.capa</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_capa_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_capa_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_capa_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No CAPAs yet</p>
+            <p>Corrective and preventive action workload per owner, and actions past their due date.</p>
+        </field>
+    </record>
+
+    <!-- ============ Menus ============ -->
+
+    <menuitem id="menu_pharma_report_deviation" name="Deviations"
+              parent="pharmaceutical_base.menu_pharma_reporting"
+              action="pharma_deviation_report_action" sequence="40"/>
+
+    <menuitem id="menu_pharma_report_capa" name="CAPA"
+              parent="pharmaceutical_base.menu_pharma_reporting"
+              action="pharma_capa_report_action" sequence="45"/>
+</odoo>

@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import fields, models
 from odoo.exceptions import UserError
-from odoo.tools.translate import _
 
 
 class PharmaBmr(models.Model):
@@ -70,13 +69,17 @@ class PharmaBmr(models.Model):
                 ('status', '!=', 'closed')
             ])
             if open_deviations:
-                raise UserError(_('Cannot resume — there are open Deviations:\n%s') % ', '.join(open_deviations.mapped('name')))
+                raise UserError(self.env._(
+                    'Cannot resume — there are open Deviations:\n%s',
+                    ', '.join(open_deviations.mapped('name'))))
             open_capas = self.env['pharma.capa'].search([
                 ('deviation_id.batch_id', '=', rec.production_id.id),
                 ('status', '!=', 'closed')
             ])
             if open_capas:
-                raise UserError(_('Cannot resume — there are open CAPAs:\n%s') % ', '.join(open_capas.mapped('name')))
+                raise UserError(self.env._(
+                    'Cannot resume — there are open CAPAs:\n%s',
+                    ', '.join(open_capas.mapped('name'))))
 
     def _check_ipqc_failure_deviations(self):
         """Require every failed IPQC check to have a linked, closed deviation."""
@@ -85,12 +88,11 @@ class PharmaBmr(models.Model):
             for check in failed_ipqc:
                 dev = check.deviation_id
                 if not dev:
-                    raise UserError(_(
+                    raise UserError(self.env._(
                         'IPQC check "%s" failed but has no linked deviation. '
-                        'Please raise a deviation first.'
-                    ) % check.parameter)
+                        'Please raise a deviation first.', check.parameter))
                 if dev.status != 'closed':
-                    raise UserError(_(
-                        'IPQC failure on "%s" has an open deviation (%s). '
-                        'Close the deviation before completing the BMR.'
-                    ) % (check.parameter, dev.name))
+                    raise UserError(self.env._(
+                        'IPQC failure on "%(parameter)s" has an open deviation (%(deviation)s). '
+                        'Close the deviation before completing the BMR.',
+                        parameter=check.parameter, deviation=dev.name))

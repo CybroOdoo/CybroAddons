@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools.translate import _
 
 
 class MrpBom(models.Model):
@@ -43,7 +42,6 @@ class MrpBom(models.Model):
             ('approved', 'Approved'),
             ('obsolete', 'Obsolete'),
         ],
-        string='Formula Status',
         default='draft',
         required=True,
         tracking=True,
@@ -64,13 +62,11 @@ class MrpBom(models.Model):
     # ── Approval Fields ───────────────────────────────────────────────────────
     approved_by = fields.Many2one(
         comodel_name='res.users',
-        string='Approved By',
         copy=False,
         tracking=True,
         help='QA person who signed off on this formula.',
     )
     approval_date = fields.Date(
-        string='Approval Date',
         copy=False,
         tracking=True,
         help='Date the formula was approved for production use.',
@@ -131,7 +127,7 @@ class MrpBom(models.Model):
         for rec in self:
             if rec.formula_status in ('approved', 'done') and not (rec.approved_by and rec.approval_date):
                 raise ValidationError(
-                    _('Approved By and Approval Date are required when setting formula status to Approved.')
+                    self.env._('Approved By and Approval Date are required when setting formula status to Approved.')
                 )
 
     @api.constrains('operation_ids', 'formula_status')
@@ -140,14 +136,14 @@ class MrpBom(models.Model):
         for rec in self:
             if rec.formula_status in ('approved', 'done'):
                 if not rec.operation_ids:
-                    raise ValidationError(_("A Pharma Formula (BOM) must have at least one Operation (Work Center) defined before it can be approved."))
+                    raise ValidationError(self.env._("A Pharma Formula (BOM) must have at least one Operation (Work Center) defined before it can be approved."))
 
     # ── Actions ───────────────────────────────────────────────────────────────
     def action_approve_formula(self):
         """Approves the formula for production use, recording the current user and date."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can approve a manufacturing formula.'),
+            self.env._('Only QA can approve a manufacturing formula.'),
         )
         for rec in self:
             rec.write({
@@ -160,7 +156,7 @@ class MrpBom(models.Model):
         """Marks the formula as obsolete, preventing its use in future production orders."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can mark a manufacturing formula obsolete.'),
+            self.env._('Only QA can mark a manufacturing formula obsolete.'),
         )
         self.write({'formula_status': 'obsolete'})
 
@@ -168,7 +164,7 @@ class MrpBom(models.Model):
         """Revert the formula to Draft, increment the version, and clear approvals."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can reset a manufacturing formula to draft.'),
+            self.env._('Only QA can reset a manufacturing formula to draft.'),
         )
         for rec in self:
             rec.write({

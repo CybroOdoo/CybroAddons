@@ -21,13 +21,16 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools.translate import _
 
 class PharmaBMRStep(models.Model):
     """A single execution step within a Batch Manufacturing Record."""
     _name = 'pharma.bmr.step'
     _description = 'BMR Execution Step'
-    _inherit = ['mail.thread', 'pharma.workflow.mixin']
+    _inherit = ['mail.thread', 'pharma.workflow.mixin',
+                'pharma.measured.value.mixin']
+    # No measured value is recorded on a step yet; a dispensed weight added
+    # later is declared here and is stamped from then on.
+    _measured_fields = ()
     _order = 'bmr_id, sequence, id'
 
     name = fields.Char(
@@ -45,7 +48,6 @@ class PharmaBMRStep(models.Model):
         help='Specifies the BMR for this record.',
     )
     sequence = fields.Integer(
-        string='Sequence',
         default=10,
         help='Specifies the Sequence for this record.',
     )
@@ -60,14 +62,12 @@ class PharmaBMRStep(models.Model):
             ('done', 'Done'),
             ('hold', 'Hold'),
         ],
-        string='Status',
         default='pending',
         required=True,
         help='Specifies the Status for this record.',
     )
     hold_source_step_id = fields.Many2one(
         comodel_name='pharma.bmr.step',
-        string='Hold Source Step',
         copy=False,
         readonly=True,
         ondelete='set null',
@@ -75,24 +75,20 @@ class PharmaBMRStep(models.Model):
     )
     operator_id = fields.Many2one(
         comodel_name='res.users',
-        string='Operator',
         copy=False,
         help='Specifies the Operator for this record.',
     )
     operator_signed_on = fields.Datetime(
-        string='Operator Signed On',
         copy=False,
         readonly=True,
         help='Specifies the Operator Signed On for this record.',
     )
     supervisor_id = fields.Many2one(
         comodel_name='res.users',
-        string='Supervisor',
         copy=False,
         help='Specifies the Supervisor for this record.',
     )
     supervisor_signed_on = fields.Datetime(
-        string='Supervisor Signed On',
         copy=False,
         readonly=True,
         help='Specifies the Supervisor Signed On for this record.',
@@ -103,55 +99,52 @@ class PharmaBMRStep(models.Model):
         """Build the step display name from its sequence and description."""
         for step in self:
             description = (step.description or '').strip()
-            step.name = '%s - %s' % (step.sequence, description) if description else _('Step %s') % step.sequence
+            step.name = '%s - %s' % (step.sequence, description) if description else self.env._('Step %s', step.sequence)
 
-    @api.constrains('operator_id', 'supervisor_id')
-    def _check_different_users(self):
-        """Validates that the operator and supervisor sign-offs are performed by different users."""
-        for step in self:
-            if step.operator_id and step.supervisor_id and \
-                    step.operator_id == step.supervisor_id:
-                continue
+    def write(self, vals):
+        """A step belongs to its BMR for good; it can never be moved to another one."""
+        if 'bmr_id' in vals and any(step.bmr_id.id != vals['bmr_id'] for step in self):
+            raise UserError(self.env._('A step cannot be moved to a different BMR.'))
+        return super().write(vals)
 
     def action_operator_sign(self):
         """Operator signs the step, recording who executed it and when."""
         for step in self:
             if step.status != 'pending':
-                raise UserError(_('Only Pending steps can receive an operator sign-off.'))
+                raise UserError(self.env._('Only Pending steps can receive an operator sign-off.'))
             if step.operator_signed_on:
-                raise UserError(_('This step already has an operator sign-off.'))
+                raise UserError(self.env._('This step already has an operator sign-off.'))
 
             held_step = step.bmr_id.step_ids.filtered(lambda s: s.status == 'hold' and s.sequence <= step.sequence)
             if held_step:
-                raise UserError(_('Cannot sign this step — Step %s is currently on Hold. Release it before proceeding.') % held_step[0].sequence)
+                raise UserError(self.env._('Cannot sign this step — Step %s is currently on Hold. Release it before proceeding.', held_step[0].sequence))
 
             step.write({
                 'operator_id': self.env.user.id,
                 'operator_signed_on': fields.Datetime.now(),
             })
             step.bmr_id.message_post(
-                body=_('Step "%s" operator sign-off by %s.') % (
-                    step.description[:60], self.env.user.name
-                )
+                body=self.env._('Step "%(step)s" operator sign-off by %(user)s.',
+                                step=step.description[:60], user=self.env.user.name)
             )
 
     def action_supervisor_sign(self):
         """Supervisor independently verifies the step and marks it Done."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can give a supervisor sign-off on a BMR step.'),
+            self.env._('Only QA can give a supervisor sign-off on a BMR step.'),
         )
         for step in self:
             if step.status != 'pending':
-                raise UserError(_('Only Pending steps can receive a supervisor sign-off.'))
+                raise UserError(self.env._('Only Pending steps can receive a supervisor sign-off.'))
             if not step.operator_signed_on:
-                raise UserError(_('The operator must sign off before the supervisor.'))
+                raise UserError(self.env._('The operator must sign off before the supervisor.'))
             if step.supervisor_signed_on:
-                raise UserError(_('This step already has a supervisor sign-off.'))
+                raise UserError(self.env._('This step already has a supervisor sign-off.'))
 
             ipqcs = step.bmr_id.ipqc_ids.filtered(lambda r: r.step_id == step)
             if any(not r.signed_on for r in ipqcs):
-                raise UserError(_('Complete and sign all IPQC checks for this step before supervisor sign-off.'))
+                raise UserError(self.env._('Complete and sign all IPQC checks for this step before supervisor sign-off.'))
 
             # Block sign-off while the batch has open Deviations / CAPAs. This
             # gate lives in the optional pharma_capa_deviation module (no-op
@@ -163,9 +156,8 @@ class PharmaBMRStep(models.Model):
                 'status': 'done',
             })
             step.bmr_id.message_post(
-                body=_('Step "%s" completed. Supervisor sign-off by %s.') % (
-                    step.description[:60], self.env.user.name
-                )
+                body=self.env._('Step "%(step)s" completed. Supervisor sign-off by %(user)s.',
+                                step=step.description[:60], user=self.env.user.name)
             )
 
     def _check_open_deviations_capas(self):
@@ -176,9 +168,9 @@ class PharmaBMRStep(models.Model):
         """Put this step on Hold and cascade Hold to subsequent Pending steps."""
         for step in self:
             if step.status == 'done':
-                raise UserError(_('Completed steps cannot be placed on hold.'))
+                raise UserError(self.env._('Completed steps cannot be placed on hold.'))
             if step.status == 'hold':
-                raise UserError(_('Step is already on hold.'))
+                raise UserError(self.env._('Step is already on hold.'))
             step.write({
                 'status': 'hold',
                 'hold_source_step_id': False,
@@ -196,30 +188,23 @@ class PharmaBMRStep(models.Model):
             if bmr.status == 'in_progress':
                 bmr.status = 'on_hold'
                 bmr.message_post(
-                    body=_('BMR placed on hold — step "%s" put on hold by %s.') % (
-                        step.description[:60], self.env.user.name
-                    )
+                    body=self.env._('BMR placed on hold — step "%(step)s" put on hold by %(user)s.',
+                                    step=step.description[:60], user=self.env.user.name)
                 )
             if cascaded_steps:
                 bmr.message_post(
-                    body=_(
-                        'Hold cascaded from step "%(step)s" to pending subsequent step(s): %(steps)s.'
-                    ) % {
-                        'step': step.description[:60],
-                        'steps': ', '.join(cascaded_steps.mapped('name')),
-                    }
+                    body=self.env._('Hold cascaded from step "%(step)s" to pending subsequent step(s): %(steps)s.',
+                                    step=step.description[:60], steps=', '.join(cascaded_steps.mapped('name')))
                 )
 
     def action_release_hold(self):
         """Release the directly held step and restore its cascaded holds."""
         for step in self:
             if step.status != 'hold':
-                raise UserError(_('Only steps on Hold can be released.'))
+                raise UserError(self.env._('Only steps on Hold can be released.'))
             if step.hold_source_step_id:
-                raise UserError(_(
-                    'This step is on hold because step "%s" is on hold. '
-                    'Release the source step first.'
-                ) % step.hold_source_step_id.name)
+                raise UserError(self.env._('This step is on hold because step "%s" is on hold. '
+                    'Release the source step first.', step.hold_source_step_id.name))
 
             cascaded_steps = step.bmr_id.step_ids.filtered(
                 lambda s: s.status == 'hold' and s.hold_source_step_id == step
@@ -229,15 +214,13 @@ class PharmaBMRStep(models.Model):
                 'hold_source_step_id': False,
             })
             step.bmr_id.message_post(
-                body=_('Step "%s" released from hold by %s.') % (
-                    step.description[:60], self.env.user.name
-                )
+                body=self.env._('Step "%(step)s" released from hold by %(user)s.',
+                                step=step.description[:60], user=self.env.user.name)
             )
             if cascaded_steps:
                 step.bmr_id.message_post(
-                    body=_(
-                        'Cascaded hold released. Step(s) restored to Pending: %s.'
-                    ) % ', '.join(cascaded_steps.mapped('name'))
+                    body=self.env._('Cascaded hold released. Step(s) restored to Pending: %s.',
+                                    ', '.join(cascaded_steps.mapped('name')))
                 )
 
     def _ipqc_hold(self):
@@ -253,10 +236,8 @@ class PharmaBMRStep(models.Model):
             bmr = step.bmr_id
             if bmr.status == 'in_progress':
                 bmr.status = 'on_hold'
-                bmr.message_post(body=_(
-                    'BMR placed on Hold — IPQC check failed on step "%s". '
-                    'Resolve the failure before resuming.'
-                ) % step.description[:60])
+                bmr.message_post(body=self.env._('BMR placed on Hold — IPQC check failed on step "%s". '
+                    'Resolve the failure before resuming.', step.description[:60]))
 
     def _ipqc_release(self):
         """Release the IPQC hold once all IPQC checks for the step pass."""
@@ -268,10 +249,7 @@ class PharmaBMRStep(models.Model):
             )
             (step | cascaded).write({'status': 'pending', 'hold_source_step_id': False})
             bmr = step.bmr_id
-            # Only resume BMR if no other steps are still on hold
             if bmr.status == 'on_hold' and not bmr.step_ids.filtered(lambda s: s.status == 'hold'):
                 bmr.status = 'in_progress'
-                bmr.message_post(body=_(
-                    'BMR resumed — IPQC checks for step "%s" cleared. '
-                    'Step and subsequent steps restored to Pending.'
-                ) % step.description[:60])
+                bmr.message_post(body=self.env._('BMR resumed — IPQC checks for step "%s" cleared. '
+                    'Step and subsequent steps restored to Pending.', step.description[:60]))

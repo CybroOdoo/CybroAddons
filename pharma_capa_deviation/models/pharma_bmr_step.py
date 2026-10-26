@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import models
 from odoo.exceptions import UserError
-from odoo.tools.translate import _
 
 
 class PharmaBmrStep(models.Model):
@@ -36,11 +35,15 @@ class PharmaBmrStep(models.Model):
                 ('status', '!=', 'closed')
             ])
             if open_deviations:
-                raise UserError(_('Cannot sign — there are open Deviations for this batch:\n%s') % ', '.join(open_deviations.mapped('name')))
+                raise UserError(self.env._(
+                    'Cannot sign — there are open Deviations for this batch:\n%s',
+                    ', '.join(open_deviations.mapped('name'))))
 
             open_capas = self.env['pharma.capa'].search([
                 ('deviation_id.batch_id', '=', step.bmr_id.production_id.id),
                 ('status', '!=', 'closed')
             ])
             if open_capas:
-                raise UserError(_('Cannot sign — there are open CAPAs for this batch:\n%s') % ', '.join(open_capas.mapped('name')))
+                raise UserError(self.env._(
+                    'Cannot sign — there are open CAPAs for this batch:\n%s',
+                    ', '.join(open_capas.mapped('name'))))

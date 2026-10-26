@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools.translate import _
 
 
 class MrpProduction(models.Model):
@@ -132,37 +131,38 @@ class MrpProduction(models.Model):
         """Executes the button_mark_done operation."""
         for rec in self:
             if not rec.pharma_bmr_completed:
-                raise UserError(_("Cannot produce: The linked Batch Manufacturing Record (BMR) must be completed first."))
+                raise UserError(self.env._("Cannot produce: The linked Batch Manufacturing Record (BMR) must be completed first."))
         return super(MrpProduction, self).button_mark_done()
 
     def action_confirm(self):
-        # Enforce that only approved formulas (BoMs) can be used to confirm a production order
         """Enforce approved BoM usage and auto-generate the BMR on confirmation."""
         for rec in self:
             if rec.bom_id and rec.bom_id.formula_status not in ('done', 'approved'):
-                raise UserError(_(
-                    'Cannot confirm Manufacturing Order %s because BoM/Formula "%s" is not Approved.'
-                ) % (rec.name, rec.bom_id.display_name))
+                raise UserError(self.env._(
+                    'Cannot confirm Manufacturing Order %(mo)s because BoM/Formula "%(bom)s" is not Approved.',
+                    mo=rec.name, bom=rec.bom_id.display_name))
             if rec.all_move_raw_ids:
                 for record in rec.all_move_raw_ids:
                     if record.qc_test_order_status != 'pass':
-                        raise UserError(_('Please check QC Test Order'))
+                        raise UserError(self.env._('All products must have an approved QC Test Order to continue.'))
 
         res = super(MrpProduction, self).action_confirm()
 
-        # Auto-create BMR
         for rec in self:
             if not rec.bmr_ids:
                 rec.action_create_bmr()
         return res
 
     def action_create_bmr(self):
-        """Generate a Draft BMR with steps and IPQC parameters from the BoM."""
+        """Generate a Draft BMR with one step per BoM operation.
+
+        IPQC checks are not generated: operators log them on a step once it
+        is signed, against the product's approved IPQC specification.
+        """
         self.ensure_one()
         if self.bmr_ids:
-            raise UserError(_('A BMR already exists for this Manufacturing Order.'))
+            raise UserError(self.env._('A BMR already exists for this Manufacturing Order.'))
 
-        # Expected yield calculation
         expected_yield = self.product_qty
         if self.bom_id and self.bom_id.theoretical_yield:
             expected_yield = self.product_qty * (self.bom_id.theoretical_yield / 100.0)
@@ -170,7 +170,6 @@ class MrpProduction(models.Model):
         # Batch number: use lot_producing_ids if set, otherwise default to MO name
         batch_no = self.lot_producing_ids[0].name if self.lot_producing_ids else self.name
 
-        # Create BMR
         bmr = self.env['pharma.bmr'].create({
             'production_id': self.id,
             'product_id': self.product_id.product_tmpl_id.id,
@@ -179,7 +178,6 @@ class MrpProduction(models.Model):
             'status': 'draft',
         })
 
-        # Pull steps from BOM operations
         if self.bom_id and self.bom_id.operation_ids:
             for op in self.bom_id.operation_ids:
                 self.env['pharma.bmr.step'].create({
@@ -189,28 +187,12 @@ class MrpProduction(models.Model):
                     'status': 'pending',
                 })
         else:
-            # Create a default step if BOM has no operations
             self.env['pharma.bmr.step'].create({
                 'bmr_id': bmr.id,
                 'sequence': 10,
-                'description': _('Standard Manufacturing Execution Step'),
+                'description': self.env._('Standard Manufacturing Execution Step'),
                 'status': 'pending',
             })
-
-        # Pull IPQC parameters from approved inprocess QC Spec
-        qc_spec = self.env['pharma.qc.spec'].search([
-            ('product_id', '=', self.product_id.product_tmpl_id.id),
-            ('stage', '=', 'inprocess'),
-            ('state', '=', 'approved'),
-        ], limit=1)
-        if qc_spec:
-            for line in qc_spec.parameter_ids:
-                self.env['pharma.ipqc.result'].create({
-                    'bmr_id': bmr.id,
-                    'parameter_id': line.id,
-                    'expected_min': line.min_value,
-                    'expected_max': line.max_value,
-                })
 
         return bmr
 
@@ -296,7 +278,7 @@ class MrpProduction(models.Model):
                 continue
             fg_qc = self.env['pharma.qc.test.order'].search([
                 ('lot_id', 'in', bmr.lot_producing_ids.ids),
-                ('stage', 'in', ('finished', 'finished_product')),
+                ('stage', '=', 'finished'),
             ])
             fg_qc_passed = bool(fg_qc) and all(t.status == 'passed' for t in fg_qc)
             bmr.qa_release_eligible = bool(
@@ -332,6 +314,6 @@ class MrpProduction(models.Model):
 
     def action_qa_release(self):
         """Placeholder QA Release action; overridden by the traceability module."""
-        raise UserError(_(
+        raise UserError(self.env._(
             "QA Release requires the 'Traceability, CoA & Audit Trail' feature. "
             "Enable it in the Pharmaceutical ERP settings."))

@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools.translate import _
 
 
 class PharmaOosInvestigation(models.Model):
@@ -53,25 +52,21 @@ class PharmaOosInvestigation(models.Model):
             ('phase_1', 'Phase I'),
             ('phase_2', 'Phase II'),
         ],
-        string='Phase',
         default='phase_1',
         required=True,
         tracking=True,
         help='Phase I checks for lab error, Phase II checks the full batch.'
     )
     lab_error_found = fields.Boolean(
-        string='Lab Error Found',
         default=False,
         tracking=True,
         help='If True in Phase I, result is invalidated and re-tested.'
     )
     conclusion_notes = fields.Text(
-        string='Conclusion Notes',
         tracking=True,
         help='User entered analysis and notes for the investigation.'
     )
     conclusion = fields.Text(
-        string='Conclusion',
         compute='_compute_conclusion',
         inverse='_inverse_conclusion',
         tracking=True,
@@ -82,18 +77,15 @@ class PharmaOosInvestigation(models.Model):
             ('release', 'Release'),
             ('reject', 'Reject'),
         ],
-        string='Disposition',
         tracking=True,
         help='Final decision on the batch after investigation.'
     )
     investigated_by = fields.Many2one(
         comodel_name='res.users',
-        string='Investigated By',
         tracking=True,
         help='QA person who led the investigation.'
     )
     closed_on = fields.Datetime(
-        string='Closed On',
         tracking=True,
         help='Date and time the investigation was formally closed.'
     )
@@ -215,41 +207,38 @@ class PharmaOosInvestigation(models.Model):
         """Escalate a Phase I investigation to Phase II."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can escalate an OOS investigation.'),
+            self.env._('Only QA can escalate an OOS investigation.'),
         )
         for rec in self:
             if rec.closed_on:
-                raise ValidationError(_("Closed investigations cannot be escalated."))
+                raise ValidationError(self.env._("Closed investigations cannot be escalated."))
             if rec.phase != 'phase_1':
-                raise ValidationError(_("Only Phase I investigations can be escalated."))
+                raise ValidationError(self.env._("Only Phase I investigations can be escalated."))
             if rec.lab_error_found:
-                raise ValidationError(_("Cannot escalate to Phase II if a lab error was found. Please invalidate and re-test instead."))
+                raise ValidationError(self.env._("Cannot escalate to Phase II if a lab error was found. Please invalidate and re-test instead."))
             rec.phase = 'phase_2'
 
     def action_invalidate_retest(self):
         """Invalidate the OOS result as a lab error and permit re-testing."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can invalidate and re-test an OOS result.'),
+            self.env._('Only QA can invalidate and re-test an OOS result.'),
         )
         for rec in self:
             if rec.closed_on:
-                raise ValidationError(_("This investigation is already closed."))
+                raise ValidationError(self.env._("This investigation is already closed."))
             if rec.phase != 'phase_1':
-                raise ValidationError(_("Invalidation and re-testing can only be triggered in Phase I."))
+                raise ValidationError(self.env._("Invalidation and re-testing can only be triggered in Phase I."))
             if not rec.lab_error_found:
-                raise ValidationError(_("You must select 'Lab Error Found' to invalidate and re-test."))
+                raise ValidationError(self.env._("You must select 'Lab Error Found' to invalidate and re-test."))
 
-            # Invalidate results: reset actual_value to 0.0 and result_entered to False
             rec.result_line_id.write({
                 'actual_value': 0.0,
                 'result_entered': False,
             })
 
-            # Set test order status to in_progress (if under_investigation)
             test_order = rec.result_line_id.test_order_id
             if test_order.status == 'under_investigation':
-                # Check if there are other open investigations for this test order
                 other_open = self.env['pharma.oos.investigation'].search([
                     ('result_line_id.test_order_id', '=', test_order.id),
                     ('id', '!=', rec.id),
@@ -267,18 +256,18 @@ class PharmaOosInvestigation(models.Model):
         """Close a Phase II investigation, updating the QC test order status."""
         self._check_pharma_group(
             'pharmaceutical_base.group_pharma_role_qa',
-            _('Only QA can close an OOS investigation.'),
+            self.env._('Only QA can close an OOS investigation.'),
         )
         for rec in self:
             if rec.closed_on:
-                raise ValidationError(_("This investigation is already closed."))
+                raise ValidationError(self.env._("This investigation is already closed."))
             if rec.phase != 'phase_2':
-                raise ValidationError(_("Only Phase II investigations can be closed directly. "
+                raise ValidationError(self.env._("Only Phase II investigations can be closed directly. "
                                         "If Phase I is sufficient, select lab error found or escalate to Phase II."))
             if not rec.conclusion:
-                raise ValidationError(_("You must enter a conclusion before closing Phase II."))
+                raise ValidationError(self.env._("You must enter a conclusion before closing Phase II."))
             if not rec.disposition:
-                raise ValidationError(_("You must enter a disposition before closing Phase II."))
+                raise ValidationError(self.env._("You must enter a disposition before closing Phase II."))
 
             rec.write({
                 'investigated_by': self.env.user.id,
@@ -293,21 +282,17 @@ class PharmaOosInvestigation(models.Model):
             if rec.disposition == 'reject':
                 rec._create_oos_deviation()
 
-            # Update parent test order status
             test_order = rec.result_line_id.test_order_id
             if test_order:
-                # If disposition is reject, set test order to failed
                 if rec.disposition == 'reject':
                     test_order.write({'status': 'failed'})
                 elif rec.disposition == 'release':
-                    # Check if all other OOS investigations for this test order are closed
                     other_open = self.env['pharma.oos.investigation'].search([
                         ('result_line_id.test_order_id', '=', test_order.id),
                         ('id', '!=', rec.id),
                         ('closed_on', '=', False)
                     ])
                     if not other_open:
-                        # Also check if any closed investigations were rejected
                         other_failed = self.env['pharma.oos.investigation'].search([
                             ('result_line_id.test_order_id', '=', test_order.id),
                             ('id', '!=', rec.id),
@@ -330,12 +315,11 @@ class PharmaOosInvestigation(models.Model):
         """Require a disposition on Phase II closures."""
         for rec in self:
             if rec.closed_on and not rec.disposition:
-                # Phase I lab-error closures (action_invalidate_retest) do not
-                # require a disposition — only Phase II closures do.  Allow the
-                # Phase I path through so that invalidate_retest can close without
+                # Phase I lab-error closures (action_invalidate_retest) close
+                # without a disposition; only Phase II closures need one.
                 if rec.phase == 'phase_2':
                     raise ValidationError(
-                        _("A Phase II investigation must have a disposition before it can be closed.")
+                        self.env._("A Phase II investigation must have a disposition before it can be closed.")
                     )
 
     @api.model_create_multi
@@ -352,5 +336,5 @@ class PharmaOosInvestigation(models.Model):
             if rec.closed_on:
                 restricted_fields = ('result_line_id', 'lab_error_found', 'phase', 'conclusion', 'disposition')
                 if any(f in vals for f in restricted_fields):
-                    raise ValidationError(_("Cannot modify details of a closed OOS investigation."))
+                    raise ValidationError(self.env._("Cannot modify details of a closed OOS investigation."))
         return super().write(vals)

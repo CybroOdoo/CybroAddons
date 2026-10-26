@@ -21,7 +21,6 @@
 #############################################################################
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools.translate import _
 
 
 class ProductTemplate(models.Model):
@@ -53,7 +52,6 @@ class ProductTemplate(models.Model):
         tracking=True,
     )
     storage_conditions = fields.Char(
-        string='Storage Conditions',
         help='Temperature, light, and humidity conditions (e.g. "Store below 25°C, protect from light").',
         tracking=True,
     )
@@ -220,7 +218,7 @@ class ProductTemplate(models.Model):
         """Ensures that all pharmaceutical products enforce lot/batch tracking."""
         for rec in self:
             if rec.product_type_pharma and rec.tracking != 'lot':
-                raise ValidationError(_('Pharmaceutical products must be tracked by lot/batch.'))
+                raise ValidationError(self.env._('Pharmaceutical products must be tracked by lot/batch.'))
 
     @api.constrains('product_type_pharma', 'storage_category_id')
     def _check_pharma_storage_category(self):
@@ -230,7 +228,7 @@ class ProductTemplate(models.Model):
             if not company.pharma_enforce_storage_class:
                 continue
             if rec.product_type_pharma and not rec.storage_category_id:
-                raise ValidationError(_(
+                raise ValidationError(self.env._(
                     "A Storage Class is required on pharmaceutical product "
                     "'%(product)s' while storage-class enforcement is enabled.",
                     product=rec.display_name,
