@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Report Template -->
+    <template id="report_trial_balance">
+        <t t-call="web.html_container">
+            <t t-set="company" t-value="(docs and docs.company_id) or (company_id and env['res.company'].browse(company_id)) or res_company"/>
+            <t t-set="currency" t-value="company.currency_id"/>
+            <t t-call="web.external_layout">
+                <div class="page" style="font-family: inherit;">
+                    <t t-if="start_date or end_date or journals_name or state">
+                        <div style="padding-top: 10px; padding-bottom: 10px; font-size: 13px;">
+                            <div t-if="start_date" style="margin-bottom: 12px;">
+                                Start Date : <span t-out="start_date"/>
+                            </div>
+                            <div t-if="end_date" style="margin-bottom: 12px;">
+                                End Date : <span t-out="end_date"/>
+                            </div>
+                            <div t-if="journals_name" style="margin-bottom: 12px;">
+                                Journals: <span t-out="journals_name"/>
+                            </div>
+                            <div t-if="state" style="margin-bottom: 12px;">
+                                State: <span t-out="state"/>
+                            </div>
+                        </div>
+                    </t>
+
+                    <div style="text-align: center; margin: 30px 0 20px 0;">
+                        <t t-if="query">
+                            <h2 style="color: #6C5B7B; font-weight: 500; margin: 0;">Trial Balance</h2>
+                        </t>
+                        <t t-else="">
+                            <h3 style="margin: 0;">There is no data</h3>
+                        </t>
+                    </div>
+
+                    <t t-if="query">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%; text-align: left; border-top: 1px solid #212529; border-bottom: 1px solid #212529; padding: 6px 4px;">Code</th>
+                                    <th style="width: 35%; text-align: left; border-top: 1px solid #212529; border-bottom: 1px solid #212529; padding: 6px 4px;">Account</th>
+                                    <th style="width: 16%; text-align: right; border-top: 1px solid #212529; border-bottom: 1px solid #212529; padding: 6px 4px;">Debit</th>
+                                    <th style="width: 16%; text-align: right; border-top: 1px solid #212529; border-bottom: 1px solid #212529; padding: 6px 4px;">Credit</th>
+                                    <th style="width: 18%; text-align: right; border-top: 1px solid #212529; border-bottom: 1px solid #212529; padding: 6px 4px;">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="query" t-as="i">
+                                    <td style="text-align: left; padding: 4px 4px;">
+                                        <span t-out="i['code']"/>
+                                    </td>
+                                    <td style="text-align: left; padding: 4px 4px;">
+                                        <span t-out="i['ac_name']"/>
+                                    </td>
+                                    <td style="text-align: right; padding: 4px 4px;">
+                                        <span t-out="i['debit']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                    <td style="text-align: right; padding: 4px 4px;">
+                                        <span t-out="i['credit']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                    <td style="text-align: right; padding: 4px 4px;">
+                                        <span t-out="i['balance']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align: center; font-weight: bold; border-top: 1px solid #212529; border-bottom: 1px solid #212529; padding: 6px 4px;">
+                                        Total
+                                    </td>
+                                    <td style="text-align: right; font-weight: bold; border-top: 1px solid #212529; border-bottom: 1px solid #212529; padding: 6px 4px;">
+                                        <span t-out="total_debit" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                    <td style="text-align: right; font-weight: bold; border-top: 1px solid #212529; border-bottom: 1px solid #212529; padding: 6px 4px;">
+                                        <span t-out="total_credit" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                    <td style="text-align: right; font-weight: bold; border-top: 1px solid #212529; border-bottom: 1px solid #212529; padding: 6px 4px;">
+                                        <span t-out="balance" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
