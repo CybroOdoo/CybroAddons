@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Override POS Config user access to restrict to allowed_pos_ids using sudo -->
+    <record id="point_of_sale.access_pos_config_user" model="ir.access">
+        <field name="domain">[(1, '=', 1)] if not user.sudo().allowed_pos_ids else [('id', 'in', user.sudo().allowed_pos_ids.ids)]</field>
+    </record>
+
+    <!-- Override POS Session user access to restrict to allowed_pos_ids using sudo -->
+    <record id="point_of_sale.access_pos_session_user" model="ir.access">
+        <field name="domain">[(1, '=', 1)] if not user.sudo().allowed_pos_ids else [('config_id', 'in', user.sudo().allowed_pos_ids.ids)]</field>
+    </record>
+
+    <!-- Override POS Order user access to restrict to allowed_pos_ids using sudo -->
+    <record id="point_of_sale.access_pos_order" model="ir.access">
+        <field name="domain">[(1, '=', 1)] if not user.sudo().allowed_pos_ids else [('config_id', 'in', user.sudo().allowed_pos_ids.ids)]</field>
+    </record>
+
+    <!-- Override POS Payment user access to restrict to allowed_pos_ids using sudo -->
+    <record id="point_of_sale.access_pos_payment_user" model="ir.access">
+        <field name="domain">[(1, '=', 1)] if not user.sudo().allowed_pos_ids else [('pos_order_id.config_id', 'in', user.sudo().allowed_pos_ids.ids)]</field>
+    </record>
+
+    <!-- Override POS Report Order user access to restrict to allowed_pos_ids using sudo -->
+    <record id="point_of_sale.access_report_pos_order" model="ir.access">
+        <field name="domain">[(1, '=', 1)] if not user.sudo().allowed_pos_ids else [('config_id', 'in', user.sudo().allowed_pos_ids.ids)]</field>
+    </record>
+
+    <!-- Override Product Template access to restrict based on allowed POS categories using sudo -->
+    <record id="point_of_sale.access_product_template_pos_user" model="ir.access">
+        <field name="domain">[(1, '=', 1)] if user.sudo().has_unlimited_pos else ['|', ('available_in_pos', '=', False), ('pos_categ_ids', 'in', user.sudo().allowed_pos_category_ids.ids)]</field>
+    </record>
+
+    <!-- Override Product Product access to restrict based on allowed POS categories using sudo -->
+    <record id="point_of_sale.access_product_product" model="ir.access">
+        <field name="domain">[(1, '=', 1)] if user.sudo().has_unlimited_pos else ['|', ('available_in_pos', '=', False), ('pos_categ_ids', 'in', user.sudo().allowed_pos_category_ids.ids)]</field>
+    </record>
+</odoo>
