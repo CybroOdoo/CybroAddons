@@ -1,0 +1,433 @@
+///
+/// Login, password reset and sign-up pages (web.login_layout)
+///
+/// This file is part of `web.assets_frontend`, which is also loaded by the
+/// website, portal and shop. Every rule is therefore scoped to `.o_cbt_login`
+/// (added by views/login_templates.xml) so nothing leaks into those pages.
+/// Button and link colours come from `primary_variables.scss`.
+///
+
+// Page background
+// ----------------------------------------------------------------------------
+$cbt-login-page-background:
+    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, .08) 0, transparent 35%),
+    radial-gradient(circle at 85% 85%, rgba(85, 110, 230, .45) 0, transparent 40%),
+    linear-gradient(135deg, #20253a 0%, #2a3042 40%, #34407e 100%);
+
+// Standalone page: the whole page
+body:has(.o_cbt_login):not(:has(.o_cbt_login_website)) {
+    background: $cbt-login-page-background fixed;
+}
+
+// Inside the website layout the website's own page background is kept
+
+// Layout
+// ----------------------------------------------------------------------------
+.o_cbt_login {
+    // `$o-enterprise-color`, not `$o-brand-primary`/`$primary`: when the
+    // Website app is installed, frontend pages take those from the website
+    // palette, which would turn the login page mauve.
+    --cbt-login-accent: #{$o-enterprise-color};
+    --cbt-login-accent-hover: #{mix(#000, $o-enterprise-color, 12%)};
+    --cbt-login-accent-soft: #{rgba($o-enterprise-color, .16)};
+    --cbt-login-accent-shadow: #{rgba($o-enterprise-color, .3)};
+    --cbt-login-text: #{$gray-900};
+    --cbt-login-text-muted: #{$gray-600};
+    --cbt-login-border: #{$gray-300};
+    --cbt-login-radius: 1rem;
+    --cbt-login-field-radius: .625rem;
+    --cbt-login-field-height: 2.875rem;
+    --cbt-login-transition: .2s ease;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding-block: 2rem !important; // overrides the template's `py-5` utility
+
+}
+
+.o_cbt_login_shell {
+    display: grid;
+    width: 100%;
+    max-width: 440px;
+    overflow: hidden;
+    border-radius: var(--cbt-login-radius);
+    background: $white;
+    box-shadow: 0 1.5rem 3.5rem rgba(10, 14, 28, .35), 0 .25rem .75rem rgba(10, 14, 28, .15);
+
+    @include media-breakpoint-up(lg) {
+        grid-template-columns: 1fr 1fr;
+        max-width: 940px;
+        min-height: 560px;
+    }
+}
+
+// Brand panel (wide screens only)
+// ----------------------------------------------------------------------------
+.o_cbt_login_brand {
+    position: relative;
+    display: none;
+    overflow: hidden;
+    padding: 3rem;
+    background: linear-gradient(150deg, var(--cbt-login-accent) 0%, #3f51b5 55%, #2a3042 100%);
+    color: $white;
+
+    @include media-breakpoint-up(lg) {
+        display: flex;
+        align-items: flex-end;
+    }
+
+    // Decorative rings
+    &::before,
+    &::after {
+        content: "";
+        position: absolute;
+        border: 1px solid rgba(255, 255, 255, .14);
+        border-radius: 50%;
+    }
+
+    &::before {
+        top: -120px;
+        right: -120px;
+        width: 340px;
+        height: 340px;
+        box-shadow: 0 0 0 60px rgba(255, 255, 255, .04);
+    }
+
+    &::after {
+        top: 90px;
+        right: 60px;
+        width: 120px;
+        height: 120px;
+        background: rgba(255, 255, 255, .06);
+    }
+}
+
+.o_cbt_login_brand_body {
+    position: relative; // above the decorative rings
+}
+
+.o_cbt_login_eyebrow {
+    display: inline-block;
+    margin-bottom: 1rem;
+    padding: .3rem .75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .14);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.o_cbt_login_headline {
+    margin-bottom: .75rem;
+    color: inherit;
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.o_cbt_login_tagline {
+    max-width: 22rem;
+    margin: 0;
+    color: rgba(255, 255, 255, .78);
+    font-size: 1rem;
+}
+
+// Form card
+// ----------------------------------------------------------------------------
+.o_cbt_login .card.o_database_list {
+    width: 100%;
+    max-width: none !important; // the template sets an inline max-width: 300px
+    margin: 0 !important;
+    border-radius: 0;
+    background: $white;
+
+    // The card has the `bg-100` utility (!important): paint the surface on
+    // the body instead of fighting the utility class.
+    > .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 2.5rem 2rem;
+        background: $white;
+        color: var(--cbt-login-text);
+
+        @include media-breakpoint-up(lg) {
+            padding: 3rem;
+        }
+    }
+
+    // Company logo block (only shown when a custom logo is set)
+    .card-body > .text-center:first-child {
+        margin-bottom: 1.75rem !important;
+        padding-bottom: 0 !important;
+        border: 0 !important;
+
+        img {
+            max-height: 56px !important;
+        }
+    }
+
+    // Footer links
+    .card-body > .border-top:last-child {
+        margin-top: 2rem !important;
+        border-color: var(--cbt-login-border) !important;
+        color: var(--cbt-login-text-muted);
+
+        a {
+            color: var(--cbt-login-text-muted);
+            text-decoration: none;
+            transition: color var(--cbt-login-transition);
+
+            &:hover {
+                color: var(--cbt-login-accent);
+            }
+        }
+    }
+}
+
+// The Website app gives the login, sign-up and reset forms a fixed width and
+// a 50px vertical margin (website.ui.scss); the card already handles both.
+.o_cbt_login {
+    .oe_login_form,
+    .oe_signup_form,
+    .oe_reset_password_form {
+        max-width: none;
+        margin: 0;
+    }
+}
+
+.o_cbt_login_title {
+    margin-bottom: 1.75rem;
+
+    // Fallbacks: the title is also rendered outside `.o_cbt_login` (e.g. in
+    // the Website app's login page), where the login tokens don't exist
+    h2 {
+        margin-bottom: .375rem;
+        color: var(--cbt-login-text, inherit);
+        font-size: 1.625rem;
+        font-weight: 700;
+    }
+
+    p {
+        margin: 0;
+        color: var(--cbt-login-text-muted, #{$gray-600});
+        font-size: .9rem;
+    }
+}
+
+// Fields
+// ----------------------------------------------------------------------------
+.o_cbt_login {
+    .form-label,
+    .col-form-label {
+        margin-bottom: .375rem;
+        color: var(--cbt-login-text);
+        font-size: .875rem;
+        font-weight: 500;
+    }
+
+    .form-control {
+        min-height: var(--cbt-login-field-height);
+        padding-inline: .875rem;
+        border-color: var(--cbt-login-border);
+        border-radius: var(--cbt-login-field-radius);
+        transition: border-color var(--cbt-login-transition), box-shadow var(--cbt-login-transition);
+
+        &::placeholder {
+            color: $gray-500;
+        }
+
+        &:focus {
+            border-color: var(--cbt-login-accent);
+            box-shadow: 0 0 0 .25rem var(--cbt-login-accent-soft);
+        }
+    }
+
+    // Field + attached button (database "Select", password visibility):
+    // a single seamless box, button content centred, shared focus ring
+    .input-group {
+        border-radius: var(--cbt-login-field-radius);
+        transition: box-shadow var(--cbt-login-transition);
+
+        > .form-control {
+            &:not(:last-child) {
+                border-right: 0;
+            }
+
+            &:focus {
+                box-shadow: none;
+            }
+        }
+
+        > .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .375rem;
+            min-width: var(--cbt-login-field-height);
+            padding-block: 0;
+            padding-inline: .875rem;
+            border-color: var(--cbt-login-border) !important; // `.border` utility
+            border-radius: 0 var(--cbt-login-field-radius) var(--cbt-login-field-radius) 0;
+            background: $white;
+            color: var(--cbt-login-text-muted);
+            font-size: .875rem;
+            line-height: 1;
+
+            .oi {
+                font-size: 1.125rem;
+                line-height: 1;
+            }
+
+            &:hover,
+            &:focus-visible {
+                color: var(--cbt-login-accent);
+            }
+        }
+
+        &:focus-within {
+            box-shadow: 0 0 0 .25rem var(--cbt-login-accent-soft);
+
+            > .form-control,
+            > .btn {
+                border-color: var(--cbt-login-accent) !important;
+            }
+        }
+    }
+
+    // Links (reset password, choose a user, sign up, superuser...)
+    a:not(.btn),
+    .btn-link {
+        color: var(--cbt-login-accent);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--cbt-login-accent-hover);
+        }
+    }
+
+    // Buttons
+    .oe_login_buttons {
+        gap: .5rem;
+    }
+
+    .btn-primary {
+        --#{$prefix}btn-color: #{$white};
+        --#{$prefix}btn-bg: var(--cbt-login-accent);
+        --#{$prefix}btn-border-color: var(--cbt-login-accent);
+        --#{$prefix}btn-hover-color: #{$white};
+        --#{$prefix}btn-hover-bg: var(--cbt-login-accent-hover);
+        --#{$prefix}btn-hover-border-color: var(--cbt-login-accent-hover);
+        --#{$prefix}btn-active-color: #{$white};
+        --#{$prefix}btn-active-bg: var(--cbt-login-accent-hover);
+        --#{$prefix}btn-active-border-color: var(--cbt-login-accent-hover);
+        --#{$prefix}btn-focus-shadow-rgb: #{to-rgb($o-enterprise-color)};
+
+        min-height: var(--cbt-login-field-height);
+        border-radius: var(--cbt-login-field-radius);
+        font-weight: 600;
+        box-shadow: 0 .5rem 1rem var(--cbt-login-accent-shadow);
+        transition: transform var(--cbt-login-transition), box-shadow var(--cbt-login-transition),
+            background-color var(--cbt-login-transition);
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 .75rem 1.5rem var(--cbt-login-accent-shadow);
+        }
+
+        &:active {
+            transform: none;
+        }
+    }
+
+    .btn-secondary,
+    .btn-light,
+    .btn-outline-secondary {
+        min-height: var(--cbt-login-field-height);
+        border-radius: var(--cbt-login-field-radius);
+    }
+
+    .alert {
+        border: 0;
+        border-radius: var(--cbt-login-field-radius);
+        font-size: .875rem;
+    }
+}
+
+// Compact variant: inside the website layout
+// ----------------------------------------------------------------------------
+// The website header and footer already take part of the screen, so the page
+// band, the shell and the inner spacing are all tightened.
+.o_cbt_login_website .o_cbt_login {
+    --cbt-login-field-height: 2.5rem;
+
+    min-height: auto;
+    padding-block: 2.5rem !important;
+
+    // On the website's light background a soft shadow and a hairline border
+    // replace the deep shadow made for the dark standalone page
+    .o_cbt_login_shell {
+        border: 1px solid $gray-200;
+        box-shadow: 0 .5rem 1.5rem rgba(18, 38, 63, .08);
+
+        // Both panels share the row height; the form is centred vertically
+        @include media-breakpoint-up(lg) {
+            max-width: 860px;
+            min-height: 0;
+            align-items: stretch;
+        }
+    }
+
+    .card.o_database_list {
+        height: 100%;
+    }
+
+    .o_cbt_login_brand {
+        padding: 2.25rem;
+    }
+
+    .o_cbt_login_eyebrow {
+        margin-bottom: .75rem;
+    }
+
+    .o_cbt_login_headline {
+        margin-bottom: .5rem;
+        font-size: 1.875rem;
+    }
+
+    .card.o_database_list > .card-body {
+        padding: 1.75rem 1.5rem;
+
+        @include media-breakpoint-up(lg) {
+            padding: 2rem 2.25rem;
+        }
+    }
+
+    .card.o_database_list .card-body > .text-center:first-child {
+        margin-bottom: 1.25rem !important;
+
+        img {
+            max-height: 44px !important;
+        }
+    }
+
+    .card.o_database_list .card-body > .border-top:last-child {
+        margin-top: 1.25rem !important;
+        padding-top: 1rem !important;
+    }
+
+    .o_cbt_login_title {
+        margin-bottom: 1.25rem;
+
+        h2 {
+            font-size: 1.375rem;
+        }
+    }
+
+    .oe_login_form .mb-3 {
+        margin-bottom: .75rem !important;
+    }
+}

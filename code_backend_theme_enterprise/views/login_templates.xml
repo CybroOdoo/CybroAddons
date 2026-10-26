@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--
+        Login layout: wraps Odoo's login card in a two-panel shell with a
+        branded welcome panel. Shared by every page built on web.login_layout
+        (login, password reset, sign-up), so the copy stays generic.
+
+        The Website app replaces this layout with its own (priority 20), so
+        this view runs after it (priority 30) and picks the layout at render
+        time:
+        - Website installed: the shell inside the website layout (header and
+          footer kept), like Website's own login page;
+        - otherwise: the shell on Odoo's bare frontend layout.
+        Website is detected through its layout template, not its model: in
+        Odoo 20 the `website` model is defined in `base`, so it always exists.
+        QWeb preloads every static `t-call` target, even in a branch that never
+        runs, so website.layout is called through a `{{ }}` name: those are
+        only resolved when rendered, which keeps the page working when Website
+        is not installed.
+
+        The shell is kept in a `t-set` rather than a separate template on
+        purpose: this module does not depend on Website, so on upgrade it can
+        load before it, and creating a new view then fails on Website's
+        required `visibility` column.
+    -->
+    <template id="login_layout" inherit_id="web.login_layout"
+              name="Code Backend Theme: Login Layout" priority="30">
+        <xpath expr="t[@t-call]" position="replace">
+            <t t-set="cbt_login_shell">
+                <div class="container py-5 o_cbt_login">
+                    <div class="o_cbt_login_shell">
+                        <section class="o_cbt_login_brand" aria-hidden="true">
+                            <div class="o_cbt_login_brand_body">
+                                <span class="o_cbt_login_eyebrow" t-out="res_company.name"/>
+                                <h2 class="o_cbt_login_headline">Welcome</h2>
+                                <p class="o_cbt_login_tagline">
+                                    Your whole business, in one place.
+                                </p>
+                            </div>
+                        </section>
+                        <div t-attf-class="card border-0 mx-auto bg-100 {{login_card_classes}} o_database_list" style="max-width: 300px;">
+                            <div class="card-body">
+                                <div class="text-center pb-3 border-bottom mb-4" t-if="not res_company.uses_default_logo">
+                                    <img t-attf-src="/web/binary/company_logo{{ '?dbname='+db if db else '' }}" alt="Logo" style="max-height:120px; max-width: 100%; width:auto"/>
+                                </div>
+                                <t t-out="0"/>
+                                <div class="text-center small mt-4 pt-3 border-top" t-if="not disable_footer">
+                                    <t t-if="not disable_database_manager">
+                                        <a class="border-end pe-2 me-1" href="/web/database/manager">Manage Databases</a>
+                                    </t>
+                                    <a href="https://www.odoo.com?utm_source=db&amp;utm_medium=auth" target="_blank">Powered by <span>Odoo</span></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+            <t t-set="cbt_website_layout" t-value="'website.layout'"/>
+            <t t-if="request.env.ref(cbt_website_layout, raise_if_not_found=False)"
+               t-call="{{ cbt_website_layout }}"
+               head="head"
+               disable_opengraph="disable_opengraph">
+                <div class="oe_website_login_container o_cbt_login_website">
+                    <t t-out="cbt_login_shell"/>
+                </div>
+            </t>
+            <t t-else=""
+               t-call="web.frontend_layout"
+               html_data="{'style': 'height: 100%;'}"
+               body_classname.f="bg-100"
+               no_header="True"
+               no_footer="True"
+               head="head">
+                <t t-out="cbt_login_shell"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!--
+        Login form: visible title, placed inside the form so it stays aligned
+        with the fields in any layout (e.g. the Website app renders the login
+        form in the website layout instead of web.login_layout).
+    -->
+    <template id="login" inherit_id="web.login"
+              name="Code Backend Theme: Login">
+        <xpath expr="//form[contains(@t-attf-class, 'oe_login_form')]/input[@name='csrf_token']" position="after">
+            <div class="o_cbt_login_title">
+                <h2>Log in</h2>
+                <p>Enter your credentials to access your account.</p>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template for adding review and rating for the products -->
+    <template id="customer_orders_comments"
+              inherit_id="website_sale.confirmation"
+              name="Customer Comment">
+        <xpath expr="//div[@id='oe_structure_website_sale_confirmation_2']"
+               position="after">
+            <t t-set="comment_enabled"
+               t-value="request.env['ir.config_parameter'].sudo().get_bool('customer_order_comment.comment_configuration')"/>
+            <t t-if="comment_enabled and (not order.rating or order.rating == '0')">
+                <div class="o_customer_order_comment_wrapper wrapper border rounded p-4 my-4 bg-white">
+                    <div class="master">
+                        <form action="/final/customer_rating" method="post" class="form">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <input type="hidden" name="order_id" t-att-value="order.id"/>
+                            <input type="hidden" name="access_token" t-att-value="order.access_token"/>
+                            <h3 class="text-center mb-2">Review and Rating</h3>
+                            <h5 class="text-center text-muted mb-4">How was your experience with our product?</h5>
+                            <div class="rating-component">
+                                <div class="status-msg text-center mb-2">
+                                    <input class="rating_msg"
+                                           type="hidden"
+                                           name="rating_msg"
+                                           value=""/>
+                                </div>
+                                <div class="stars-box text-center mb-3">
+                                    <i class="star oi"
+                                       data-icon="star"
+                                       title="1 star"
+                                       data-message="Very Bad"
+                                       data-value="1"/>
+                                    <i class="star oi"
+                                       data-icon="star"
+                                       title="2 stars"
+                                       data-message="Poor"
+                                       data-value="2"/>
+                                    <i class="star oi"
+                                       data-icon="star"
+                                       title="3 stars"
+                                       data-message="Average Quality"
+                                       data-value="3"/>
+                                    <i class="star oi"
+                                       data-icon="star"
+                                       title="4 stars"
+                                       data-message="Good"
+                                       data-value="4"/>
+                                    <i class="star oi"
+                                       data-icon="star"
+                                       title="5 stars"
+                                       data-message="Very Good Quality"
+                                       data-value="5"/>
+                                </div>
+                                <div class="star-rate">
+                                    <input class="rate-value"
+                                           type="hidden"
+                                           name="rate_value"
+                                           value=""/>
+                                </div>
+                            </div>
+                            <div class="feedback-tags">
+                                <div class="tags-container text-center mb-3"
+                                     data-tag-set="1"
+                                     style="display: none;">
+                                    <div class="question-tag text-muted">
+                                        Why was your experience so bad?
+                                    </div>
+                                </div>
+                                <div class="tags-container text-center mb-3"
+                                     data-tag-set="2"
+                                     style="display: none;">
+                                    <div class="question-tag text-muted">
+                                        What could we have done better?
+                                    </div>
+                                </div>
+                                <div class="tags-container text-center mb-3"
+                                     data-tag-set="3"
+                                     style="display: none;">
+                                    <div class="question-tag text-muted">
+                                        How can we improve our service?
+                                    </div>
+                                </div>
+                                <div class="tags-container text-center mb-3"
+                                     data-tag-set="4"
+                                     style="display: none;">
+                                    <div class="question-tag text-muted">
+                                        What did you like about our product?
+                                    </div>
+                                </div>
+                                <div class="tags-container text-center mb-3"
+                                     data-tag-set="5"
+                                     style="display: none;">
+                                    <div class="make-compliment">
+                                        <div class="compliment-container text-success">
+                                            <span>Give a compliment</span>
+                                            <i class="oi ms-1" data-icon="sentiment_satisfied"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tags-box mb-3">
+                                    <input type="text"
+                                           class="tag form-control"
+                                           name="comment"
+                                           id="customer_order_comment_input"
+                                           placeholder="Please enter your review"/>
+                                </div>
+                            </div>
+                            <div class="button-box text-center">
+                                <button type="submit"
+                                        class="done btn btn-primary px-4 py-2"
+                                        disabled="disabled">
+                                    Add review
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>
+

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="web_enterprise.EnterpriseNavBar" t-inherit-mode="extension">
+        <!-- Sidebar toggle, before the apps menu toggle -->
+        <xpath expr="//nav/*[1]" position="before">
+            <button type="button" class="o_cbt_sidebar_toggle"
+                    t-att-class="{'active': this.cbtSidebar.isOpen}"
+                    t-att-aria-expanded="this.cbtSidebar.isOpen ? 'true' : 'false'"
+                    aria-controls="o_cbt_sidebar" title="Apps sidebar"
+                    t-on-click="() => this.toggleCbtSidebar()">
+                <i class="oi" aria-hidden="true"
+                   t-att-data-icon="this.cbtSidebar.isOpen ? 'left_panel_close' : 'left_panel_open'"/>
+            </button>
+        </xpath>
+
+        <!-- Sidebar panel -->
+        <xpath expr="//nav" position="after">
+            <div class="o_cbt_sidebar_backdrop"
+                 t-on-click="() => this.toggleCbtSidebar(false)"/>
+            <aside id="o_cbt_sidebar" class="o_cbt_sidebar" aria-label="Apps">
+                <div class="o_cbt_sidebar_header">
+                    <img src="/web/binary/company_logo" class="o_cbt_sidebar_logo"
+                         alt="Company logo"/>
+                    <button type="button" class="o_cbt_sidebar_close" title="Close"
+                            t-on-click="() => this.toggleCbtSidebar(false)">
+                        <i class="oi" data-icon="close" aria-hidden="true"/>
+                    </button>
+                </div>
+                <h6 class="o_cbt_sidebar_heading">Menu</h6>
+                <ul class="o_cbt_sidebar_menu" role="menu">
+                    <li t-foreach="this.menuService.getApps()" t-as="app"
+                        t-key="app.id" role="none">
+                        <a role="menuitem" class="o_cbt_sidebar_link"
+                           t-att-class="{'active': this.currentApp?.id === app.id}"
+                           t-att-href="this.getMenuItemHref(app)"
+                           t-att-data-menu-xmlid="app.xmlid"
+                           t-on-click="(ev) => this.onCbtSidebarAppClick(app, ev)">
+                            <img t-if="app.webIconData" class="o_cbt_sidebar_icon"
+                                 t-att-src="app.webIconData" alt=""/>
+                            <span class="o_cbt_sidebar_label" t-out="app.name"/>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+        </xpath>
+    </t>
+</templates>

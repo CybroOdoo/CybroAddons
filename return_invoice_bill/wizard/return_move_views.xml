@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="return_move_view_form" model="ir.ui.view">
+        <field name="name">return.move.view.form</field>
+        <field name="model">return.move</field>
+        <field name="arch" type="xml">
+            <form string="Return with Credit / Debit Note">
+                <group>
+                    <group>
+                        <field name="picking_id" readonly="1"/>
+                        <field name="partner_id" readonly="1"/>
+                        <field name="picking_type_code" invisible="1"/>
+                        <field name="company_id" invisible="1"/>
+                    </group>
+                    <group>
+                        <field name="refund_date"/>
+                        <field name="journal_id" options="{'no_create': True}"/>
+                        <field name="auto_post"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="reason" required="1" placeholder="e.g. Damaged items / Customer returned goods"/>
+                </group>
+                <notebook>
+                    <page string="Items to Return" name="return_lines">
+                        <field name="line_ids">
+                            <list editable="bottom" create="false" delete="false">
+                                <field name="product_id" readonly="1"/>
+                                <field name="quantity_done"/>
+                                <field name="quantity"/>
+                                <field name="uom_id" readonly="1" groups="uom.group_uom"/>
+                            </list>
+                        </field>
+                    </page>
+                </notebook>
+                <footer>
+                    <button string="Apply Reverse Entry"
+                            class="btn-primary"
+                            type="object"
+                            name="action_apply_reverse_entry"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="return_move_action" model="ir.actions.act_window">
+        <field name="name">Return with Credit / Debit Note</field>
+        <field name="res_model">return.move</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="return_move_view_form"/>
+        <field name="target">new</field>
+    </record>
+</odoo>

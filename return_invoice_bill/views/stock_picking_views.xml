@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_picking_form" model="ir.ui.view">
+        <field name="name">stock.picking.view.form.inherit.return.invoice.bill</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="purchase_id" invisible="1"/>
+                <button name="action_return_with_credit_note"
+                        string="Return with Credit Note"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not show_return or state != 'done' or picking_type_code != 'outgoing' or not sale_id"/>
+                <button name="action_return_with_debit_note"
+                        string="Return with Debit Note"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not show_return or state != 'done' or picking_type_code != 'incoming' or not purchase_id"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_get_credit_note"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="edit_square"
+                        invisible="picking_type_code != 'outgoing' or return_invoice_count == 0">
+                    <field name="return_invoice_count" widget="statinfo" string="Credit Notes"/>
+                </button>
+                <button name="action_get_debit_note"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="edit_square"
+                        invisible="picking_type_code != 'incoming' or return_invoice_count == 0">
+                    <field name="return_invoice_count" widget="statinfo" string="Debit Notes"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

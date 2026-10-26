@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template for rendering sample products shop page -->
+    <template id="sample_order_template_view" name="Sample Products">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Sample Products</t>
+            <t t-set="grid_block_name">Grid</t>
+            <t t-set="product_block_name">Product</t>
+            <t t-set="navClass" t-valuef="light"/>
+            <div id="wrap" class="js_sale o_wsale_products_page">
+                <div class="oe_structure oe_empty oe_structure_not_nearest"
+                     id="oe_structure_website_sale_products_1"/>
+                <div class="container oe_website_sale pt-2">
+                    <div class="row o_wsale_products_main_row align-items-start flex-nowrap">
+                        <div id="products_grid" class="col-12">
+                            <t t-call="website_sale.products_breadcrumb">
+                                <t t-set="_classes"
+                                   t-valuef="d-none d-lg-flex w-100 p-0 small"/>
+                            </t>
+                            <div t-if="original_search and products"
+                                 class="alert alert-warning mt8">
+                                No results found for '<span t-out="original_search"/>'. Showing results for '<span t-out="search"/>'.
+                            </div>
+                            <div t-if="products"
+                                 class="o_wsale_products_grid_table_wrapper pt-3 pt-lg-0">
+                                <section
+                                    id="o_wsale_products_grid"
+                                    class="o_wsale_products_grid_table grid"
+                                    t-attf-style="--o-wsale-products-grid-gap: {{gap}}; --o-wsale-ppr: {{ppr}}; --o-wsale-ppg: {{ppg}}"
+                                    t-att-data-ppg="ppg"
+                                    t-att-data-ppr="ppr"
+                                    t-att-data-name="grid_block_name"
+                                >
+                                    <t t-foreach="bins" t-as="tr_product">
+                                        <t t-foreach="tr_product" t-as="td_product">
+                                            <t t-if="td_product">
+                                                <t t-set="product" t-value="td_product['product']"/>
+                                                <t t-set="product_variant" t-value="product_variants.get(product)"/>
+                                                <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
+                                                <t t-set="ribbon" t-value="td_product.get('ribbon') or product.website_ribbon_id"/>
+                                                <t t-set="col_height" t-value="td_product['y']"/>
+                                                <t t-set="col_width" t-value="12 // ppr * td_product['x']"/>
+                                                <t t-set="col_class_lg" t-value="'g-col-lg-' + str(col_width)"/>
+                                                <t t-set="col_class_md" t-value="'g-col-md-4'"/>
+                                                <t t-set="col_is_stretched" t-value="(td_product['x'] &gt;= td_product['y'] * 2)"/>
+                                                <t t-set="col_is_custom_portrait" t-value="not col_is_stretched and (col_height &gt; td_product['x'])"/>
+                                                <div
+                                                    t-attf-class="oe_product {{col_is_custom_portrait and 'oe_product_custom_portrait'}} g-col-6 {{col_class_md}} {{col_class_lg}} {{col_is_stretched and 'oe_product_size_stretch'}}"
+                                                    t-attf-style="--o-wsale-products-grid-product-col-height: {{col_height}};"
+                                                    t-att-data-ribbon-id="ribbon.id if ribbon else False"
+                                                    t-att-data-colspan="td_product['x'] != 1 and td_product['x']"
+                                                    t-att-data-rowspan="td_product['y'] != 1 and td_product['y']"
+                                                    t-att-data-name="product_block_name"
+                                                >
+                                                    <div class="o_wsale_product_grid_wrapper position-relative h-100">
+                                                        <a t-att-href="product.website_url"
+                                                           class="stretched-link"/>
+                                                        <t t-call="website_sale.products_item"
+                                                           show_ribbons="True"
+                                                           show_variations="False"
+                                                           product_href="product.website_url"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </t>
+                                    </t>
+                                </section>
+                            </div>
+                            <div t-else=""
+                                 class="text-center text-muted mt128 mb256">
+                                <t t-if="not search">
+                                    <h3 class="mt8">No product defined</h3>
+                                </t>
+                                <t t-else="">
+                                    <h3 class="mt8">No results</h3>
+                                    <p>No results for "<strong t-out="search"/>".</p>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="oe_structure oe_empty oe_structure_not_nearest"
+                     id="oe_structure_website_sale_products_2"/>
+            </div>
+        </t>
+    </template>
+</odoo>

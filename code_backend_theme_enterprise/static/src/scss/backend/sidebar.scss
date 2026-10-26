@@ -1,0 +1,145 @@
+///
+/// App sidebar
+///
+/// Open/closed state is driven by a single body class, `o_cbt_sidebar_open`,
+/// toggled from `sidebar.js`. On wide screens the sidebar pushes the content;
+/// on small screens it slides over it with a backdrop.
+///
+
+.o_cbt_sidebar {
+    position: fixed;
+    top: var(--cbt-navbar-height);
+    bottom: 0;
+    left: 0;
+    z-index: $zindex-fixed;
+    display: flex;
+    flex-direction: column;
+    width: var(--cbt-sidebar-width);
+    background: var(--cbt-sidebar-bg);
+    color: var(--cbt-sidebar-text);
+    box-shadow: var(--cbt-shadow-md);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform var(--cbt-transition), visibility var(--cbt-transition);
+
+    .o_cbt_sidebar_open & {
+        transform: none;
+        visibility: visible;
+    }
+}
+
+.o_cbt_sidebar_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: 1rem 1rem .75rem 1.25rem;
+}
+
+.o_cbt_sidebar_logo {
+    max-width: 140px;
+    max-height: 40px;
+    object-fit: contain;
+}
+
+.o_cbt_sidebar_close {
+    display: inline-flex;
+    padding: .25rem;
+    border: 0;
+    border-radius: var(--cbt-radius-sm);
+    background: transparent;
+    color: var(--cbt-sidebar-text);
+    font-size: 1.25rem;
+    transition: color var(--cbt-transition), background-color var(--cbt-transition);
+
+    &:hover,
+    &:focus-visible {
+        background: var(--cbt-sidebar-bg-hover);
+        color: var(--cbt-sidebar-text-active);
+    }
+}
+
+.o_cbt_sidebar_heading {
+    margin: 0;
+    padding: .75rem 1.25rem .5rem;
+    color: var(--cbt-sidebar-heading);
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.o_cbt_sidebar_menu {
+    flex: 1 1 auto;
+    margin: 0;
+    padding: 0 .75rem 1.25rem;
+    overflow-y: auto;
+    list-style: none;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, .15) transparent;
+}
+
+.o_cbt_sidebar_link {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .55rem .75rem;
+    border-radius: var(--cbt-radius-sm);
+    color: var(--cbt-sidebar-text);
+    font-size: .875rem;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color var(--cbt-transition), background-color var(--cbt-transition);
+
+    &:hover,
+    &:focus-visible {
+        background: var(--cbt-sidebar-bg-hover);
+        color: var(--cbt-sidebar-text-active);
+    }
+
+    &.active {
+        background: var(--cbt-sidebar-bg-active);
+        color: var(--cbt-sidebar-text-active);
+        box-shadow: inset 3px 0 0 var(--cbt-accent);
+    }
+}
+
+.o_cbt_sidebar_icon {
+    flex: 0 0 auto;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: .3rem;
+    object-fit: contain;
+}
+
+.o_cbt_sidebar_label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+// Backdrop, only used when the sidebar overlays the content
+.o_cbt_sidebar_backdrop {
+    display: none;
+}
+
+// Wide screens: push the content instead of covering it
+@include media-breakpoint-up(lg) {
+    .o_action_manager {
+        transition: margin-left var(--cbt-transition);
+
+        .o_cbt_sidebar_open & {
+            margin-left: var(--cbt-sidebar-width);
+        }
+    }
+}
+
+// Small screens: overlay with a backdrop that closes the sidebar on click
+@include media-breakpoint-down(lg) {
+    .o_cbt_sidebar_open .o_cbt_sidebar_backdrop {
+        position: fixed;
+        inset: var(--cbt-navbar-height) 0 0 0;
+        z-index: $zindex-fixed - 1;
+        display: block;
+        background: var(--cbt-sidebar-backdrop);
+    }
+}
