@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Add UOM selection dropdown to the product page -->
+    <template id="website_product_customization_product"
+              inherit_id="website_sale.product"
+              name="Website Product Multi UOM">
+        <xpath expr="//div[@id='product_details']//t[@name='variant_info']" position="after">
+            <t t-set="available_uoms" t-value="product._get_available_uoms()"/>
+            <t t-if="len(available_uoms) > 1">
+                <div class="o_uom_dropdown mb-3" style="max-width: 220px;">
+                    <t t-set="current_uom" t-value="product._get_main_uom()"/>
+                    <select class="form-select" id="o_uom_dropdown"
+                            t-att-data-product-id="product.id">
+                        <t t-foreach="available_uoms" t-as="uom">
+                            <option t-att-value="uom.id"
+                                    t-att-selected="current_uom.id == uom.id"
+                                    t-out="uom.name"/>
+                        </t>
+                    </select>
+                    <!-- Synchronized hidden radio inputs matching core Odoo 20 input[name="uom_id"]:checked specification -->
+                    <t t-foreach="available_uoms" t-as="uom">
+                        <input type="radio"
+                               class="d-none js_uom_radio"
+                               name="uom_id"
+                               t-att-id="'uom_radio_%s' % uom.id"
+                               t-att-value="uom.id"
+                               t-att-checked="current_uom.id == uom.id"/>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Show UOM label on shopping cart lines -->
+    <template id="website_sale_inherit_cart_lines"
+              inherit_id="website_sale.cart_lines"
+              name="Shopping Cart Lines Multi UOM">
+        <xpath expr="//t[@t-call='website_sale.cart_line_description_following_lines']" position="after">
+            <div t-if="line.product_uom_id" class="small text-muted mb-1 o_wsale_uom_label">
+                <span>Unit of Measure:</span> <span t-out="line.product_uom_id.name"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

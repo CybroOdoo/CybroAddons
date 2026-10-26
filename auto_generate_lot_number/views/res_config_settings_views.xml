@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherited the res.config.settings form view for adding new fields to
+        choose lot/serial number in product wise or globally-->
+    <record id="res_config_settings_view_form_purchase" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.auto.generate.lot.number</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="purchase.res_config_settings_view_form_purchase"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@data-string='Purchase']" position="inside">
+                <block title="Auto Generate Lot Number" name="auto_generate_lot_number_setting_container">
+                    <setting id="auto_generate_lot_number_setting" help="Auto generate serial and lot numbers on receipts">
+                        <field name="is_auto_generate"/>
+                        <div class="content-group" invisible="not is_auto_generate">
+                            <div class="mt16">
+                                <label for="serial_number_type" class="o_light_label d-block mb-2"/>
+                                <field name="serial_number_type" class="o_light_label" widget="radio" options="{'horizontal': true}"/>
+                            </div>
+                            <div class="mt8" invisible="serial_number_type != 'product'">
+                                <button name="%(product.product_template_action)d"
+                                        icon="fa-arrow-right"
+                                        type="action"
+                                        string="Show Products"
+                                        class="btn-link"/>
+                            </div>
+                            <div class="mt16 row" invisible="serial_number_type != 'global'">
+                                <div class="col-12 col-md-6 d-flex align-items-center mb-2">
+                                    <label for="prefix" class="o_light_label mb-0 me-3"/>
+                                    <field name="prefix" class="w-50" required="is_auto_generate and serial_number_type == 'global'"/>
+                                </div>
+                                <div class="col-12 col-md-6 d-flex align-items-center mb-2">
+                                    <label for="digits" class="o_light_label mb-0 me-3"/>
+                                    <field name="digits" class="w-50" required="is_auto_generate and serial_number_type == 'global'"/>
+                                </div>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

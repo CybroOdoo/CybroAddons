@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#############################################################################
+from odoo import fields, models
+
+
+class AccountAnalyticLine(models.Model):
+    """Inherit 'account.analytic.line' for recording timer sessions."""
+    _inherit = 'account.analytic.line'
+
+    date_start = fields.Datetime(
+        string='Start Date',
+        help='Shows the starting time of the timer.'
+    )
+    date_end = fields.Datetime(
+        string='End Date',
+        help='Shows the ending time of the timer.'
+    )
+    timer_duration = fields.Float(
+        string='Time Duration (Minutes)',
+        help='Shows the real time in minutes.'
+    )
