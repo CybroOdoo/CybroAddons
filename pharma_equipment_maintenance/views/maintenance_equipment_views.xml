@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- GMP register on the equipment form: one notebook page per obligation,
+         shown for the classes it applies to. -->
+    <record id="maintenance_equipment_view_form_pharma" model="ir.ui.view">
+        <field name="name">maintenance.equipment.form.pharma</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_raise_calibration" type="object" string="Raise Calibration"
+                            invisible="not calibration_required" class="btn-secondary"
+                            groups="pharmaceutical_base.group_pharma_role_user"/>
+                    <button name="action_raise_cleaning" type="object" string="Raise Cleaning"
+                            invisible="not cleaning_required" class="btn-secondary"/>
+                    <button name="%(pharma_equipment_maintenance.pharma_equipment_requalify_wizard_action)d"
+                            type="action" string="Requalify"
+                            class="btn-primary"
+                            invisible="qualification_state not in ('qualified', 'requalification_due', 'expired')"
+                            groups="pharmaceutical_base.group_pharma_qa_manager"/>
+                    <button name="action_raise_breakdown" type="object" string="Report Breakdown"
+                            class="btn-secondary"/>
+                    <button name="action_calibration_impact_assessment" type="object"
+                            string="Calibration Impact Assessment"
+                            invisible="not calibration_required"
+                            groups="pharmaceutical_base.group_pharma_qc_analyst"/>
+                </header>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_qualifications" type="object" class="oe_stat_button"
+                        icon="fa-check-square-o" invisible="not qualification_record_count">
+                    <field name="qualification_record_count" widget="statinfo" string="Qualification"/>
+                </button>
+                <button name="action_view_calibrations" type="object" class="oe_stat_button"
+                        icon="fa-tachometer" invisible="not calibration_required">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Calibrations</span>
+                    </div>
+                </button>
+                <button name="action_view_cleanings" type="object" class="oe_stat_button"
+                        icon="fa-tint" invisible="not cleaning_required">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Cleaning Log</span>
+                    </div>
+                </button>
+                <button name="action_calibration_impact_assessment" type="object" class="oe_stat_button"
+                        icon="fa-flask" invisible="equipment_class != 'testing'">
+                    <field name="impacted_result_count" widget="statinfo" string="Results"/>
+                </button>
+                <button name="action_view_impacted_batches" type="object" class="oe_stat_button"
+                        icon="fa-cubes" invisible="equipment_class != 'testing' or not impacted_result_count">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Batches Tested</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_title')]" position="after">
+                <div class="d-flex flex-wrap gap-1 mb-2" name="pharma_status_badges">
+                    <field name="qualification_state" widget="badge" invisible="qualification_state == 'not_required'"
+                           decoration-success="qualification_state == 'qualified'"
+                           decoration-warning="qualification_state in ('requalification_due', 'in_progress')"
+                           decoration-danger="qualification_state == 'expired'"/>
+                    <field name="calibration_state" widget="badge" invisible="calibration_state == 'not_required'"
+                           decoration-success="calibration_state == 'ok'"
+                           decoration-warning="calibration_state == 'due_soon'"
+                           decoration-danger="calibration_state == 'overdue'"/>
+                    <field name="cleaning_state" widget="badge" invisible="cleaning_state == 'not_required'"
+                           decoration-success="cleaning_state == 'clean'"
+                           decoration-info="cleaning_state == 'in_progress'"
+                           decoration-danger="cleaning_state in ('dirty', 'hold_expired', 'dirty_hold_expired')"/>
+                    <field name="sterile_state" widget="badge" invisible="sterile_state == 'not_required'"
+                           groups="pharma_equipment_maintenance.group_pharma_sterile_mfg"
+                           decoration-success="sterile_state == 'sterile'"
+                           decoration-danger="sterile_state in ('not_sterile', 'hold_expired')"/>
+                    <span class="badge rounded-pill text-bg-danger" invisible="not open_breakdown">Under Breakdown Repair</span>
+                    <field name="open_breakdown" invisible="1"/>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='category_id']" position="before">
+                <field name="equipment_code"/>
+            </xpath>
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="equipment_class" invisible="not equipment_class"/>
+                <field name="gmp_critical"/>
+                <field name="calibration_required"/>
+                <field name="cleaning_required"
+                       invisible="not equipment_class or equipment_class == 'utility'"/>
+                <field name="sterilisation_required" invisible="equipment_class != 'manufacturing'"
+                       groups="pharma_equipment_maintenance.group_pharma_sterile_mfg"/>
+                <field name="product_dedicated" invisible="equipment_class != 'manufacturing'"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Qualification" name="pharma_qualification">
+                    <group>
+                        <group string="Status">
+                            <field name="qualification_protocol_ref"/>
+                            <field name="iq_done" readonly="qualification_record_count"/>
+                            <field name="oq_done" readonly="qualification_record_count"/>
+                            <field name="pq_done" readonly="qualification_record_count"/>
+                        </group>
+                        <group string="Dates">
+                            <field name="qualification_date"/>
+                            <field name="requalification_date"/>
+                            <label for="requalification_reminder_days"/>
+                            <div class="o_row">
+                                <field name="requalification_reminder_days"/> days before
+                            </div>
+                        </group>
+                    </group>
+                </page>
+                <page string="Calibration" name="pharma_calibration" invisible="not calibration_required">
+                    <field name="calibration_result_ids" readonly="1">
+                        <list create="0" delete="0">
+                            <field name="name"/>
+                            <field name="calibration_performed_on"/>
+                            <field name="certificate_number"/>
+                            <field name="calibration_as_found_result" widget="badge"
+                                   decoration-success="calibration_as_found_result == 'pass'"
+                                   decoration-danger="calibration_as_found_result == 'fail'"/>
+                            <field name="calibration_as_left_result" widget="badge"
+                                   decoration-success="calibration_as_left_result == 'pass'"
+                                   decoration-danger="calibration_as_left_result == 'fail'"/>
+                            <field name="calibration_frequency_days" optional="hide"/>
+                            <field name="next_calibration_date"/>
+                            <field name="state" widget="badge"
+                                   decoration-info="state == 'in_progress'"
+                                   decoration-warning="state == 'completed'"
+                                   decoration-success="state == 'qa_verified'"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Cleaning" name="pharma_cleaning" invisible="not cleaning_required">
+                    <field name="cleaning_request_ids" readonly="1">
+                        <list create="0" delete="0">
+                            <field name="name"/>
+                            <field name="schedule_date" optional="hide"/>
+                            <field name="completed_on"/>
+                            <field name="completed_by" widget="many2one_avatar_user"/>
+                            <field name="clean_hold_hours" optional="show"/>
+                            <field name="dirty_hold_hours" optional="show"/>
+                            <field name="dirty_hold_exceeded" optional="show"/>
+                            <field name="qa_verified_by" widget="many2one_avatar_user" optional="show"/>
+                            <field name="pharma_state" widget="badge"
+                                   decoration-info="pharma_state == 'in_progress'"
+                                   decoration-warning="pharma_state == 'completed'"
+                                   decoration-success="pharma_state == 'qa_verified'"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Sterilisation" name="pharma_sterile"
+                      invisible="not sterilisation_required"
+                      groups="pharma_equipment_maintenance.group_pharma_sterile_mfg">
+                    <field name="sterilisation_request_ids" readonly="1">
+                        <list create="0" delete="0">
+                            <field name="name"/>
+                            <field name="completed_on"/>
+                            <field name="sterilisation_method"/>
+                            <field name="sterilisation_cycle_ref"/>
+                            <field name="sterile_hold_hours" optional="show"/>
+                            <field name="sterilisation_passed"/>
+                            <field name="pharma_state" widget="badge"
+                                   decoration-info="pharma_state == 'in_progress'"
+                                   decoration-warning="pharma_state == 'completed'"
+                                   decoration-success="pharma_state == 'qa_verified'"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Work Centres &amp; Devices" name="pharma_links">
+                    <group>
+                        <field name="workcenter_ids" widget="many2many_tags"
+                               invisible="equipment_class == 'testing'"/>
+                    </group>
+                    <separator string="Measurement Sources" class="o_pharma_device_premium"/>
+                    <field name="value_source_ids" readonly="1">
+                        <list>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="source_type"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Register columns on the equipment list. -->
+    <record id="maintenance_equipment_view_list_pharma" model="ir.ui.view">
+        <field name="name">maintenance.equipment.list.pharma</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="equipment_code"/>
+            </xpath>
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="equipment_class" optional="show"/>
+                <field name="gmp_critical" optional="show"/>
+                <field name="qualification_state" widget="badge" optional="show"
+                       decoration-success="qualification_state == 'qualified'"
+                       decoration-warning="qualification_state in ('requalification_due', 'in_progress')"
+                       decoration-danger="qualification_state == 'expired'"/>
+                <field name="calibration_state" widget="badge" optional="show"
+                       decoration-success="calibration_state == 'ok'"
+                       decoration-warning="calibration_state == 'due_soon'"
+                       decoration-danger="calibration_state == 'overdue'"/>
+                <field name="next_calibration_date" optional="show"/>
+                <field name="cleaning_state" widget="badge" optional="show"
+                       decoration-success="cleaning_state == 'clean'"
+                       decoration-info="cleaning_state == 'in_progress'"
+                       decoration-danger="cleaning_state in ('dirty', 'hold_expired', 'dirty_hold_expired')"/>
+                <field name="sterile_state" widget="badge" optional="hide"
+                       groups="pharma_equipment_maintenance.group_pharma_sterile_mfg"
+                       decoration-success="sterile_state == 'sterile'"
+                       decoration-danger="sterile_state in ('not_sterile', 'hold_expired')"/>
+                <field name="last_product_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Status badges on the equipment cards. -->
+    <record id="maintenance_equipment_view_kanban_pharma" model="ir.ui.view">
+        <field name="name">maintenance.equipment.kanban.pharma</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='serial_no']" position="before">
+                <span class="text-muted small"><field name="equipment_code"/></span>
+            </xpath>
+            <xpath expr="//footer" position="before">
+                <div class="d-flex flex-wrap gap-1">
+                    <field name="calibration_state" widget="badge" invisible="calibration_state == 'not_required'"
+                           decoration-success="calibration_state == 'ok'"
+                           decoration-warning="calibration_state == 'due_soon'"
+                           decoration-danger="calibration_state == 'overdue'"/>
+                    <field name="cleaning_state" widget="badge" invisible="cleaning_state == 'not_required'"
+                           decoration-success="cleaning_state == 'clean'"
+                           decoration-danger="cleaning_state in ('dirty', 'hold_expired', 'dirty_hold_expired')"/>
+                    <field name="qualification_state" widget="badge"
+                           invisible="qualification_state in ('not_required', 'qualified')"
+                           decoration-warning="qualification_state in ('requalification_due', 'in_progress')"
+                           decoration-danger="qualification_state == 'expired'"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- GMP filters on the equipment search. -->
+    <record id="maintenance_equipment_view_search_pharma" model="ir.ui.view">
+        <field name="name">maintenance.equipment.search.pharma</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category_id']" position="before">
+                <field name="equipment_code"/>
+                <field name="workcenter_ids"/>
+                <field name="last_product_id"/>
+            </xpath>
+            <xpath expr="//filter[@name='under_maintenance']" position="after">
+                <separator/>
+                <filter string="GMP Critical" name="gmp_critical" domain="[('gmp_critical', '=', True)]"/>
+                <filter string="Testing Instruments" name="testing" domain="[('equipment_class', '=', 'testing')]"/>
+                <filter string="Manufacturing Equipment" name="manufacturing" domain="[('equipment_class', '=', 'manufacturing')]"/>
+                <filter string="Utility Systems" name="utility" domain="[('equipment_class', '=', 'utility')]"/>
+                <separator/>
+                <filter string="Calibration Due" name="calibration_due"
+                        domain="[('calibration_state', 'in', ('due_soon', 'overdue'))]"/>
+                <filter string="Out of Calibration" name="calibration_overdue"
+                        domain="[('calibration_state', '=', 'overdue')]"/>
+                <filter string="Requalification Due" name="requalification_due"
+                        domain="[('qualification_state', 'in', ('requalification_due', 'expired'))]"/>
+                <filter string="Not Clean" name="not_clean"
+                        domain="[('cleaning_state', 'in', ('dirty', 'in_progress', 'hold_expired', 'dirty_hold_expired'))]"/>
+                <filter string="Under Breakdown Repair" name="open_breakdown"
+                        domain="[('open_breakdown', '=', True)]"/>
+            </xpath>
+            <xpath expr="//filter[@name='category']" position="after">
+                <filter string="Class" name="group_class" context="{'group_by': 'equipment_class'}"/>
+                <filter string="Qualification" name="group_qualification" context="{'group_by': 'qualification_state'}"/>
+                <filter string="Calibration" name="group_calibration" context="{'group_by': 'calibration_state'}"/>
+                <filter string="Cleaning" name="group_cleaning" context="{'group_by': 'cleaning_state'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- The GMP equipment register. -->
+    <record id="pharma_equipment_action" model="ir.actions.act_window">
+        <field name="name">Equipment Register</field>
+        <field name="res_model">maintenance.equipment</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="context">{'search_default_gmp_critical': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Register your GMP equipment</p>
+            <p>Instruments are calibrated, manufacturing equipment is cleaned between
+                products, utility systems are monitored. Enter asset codes, intervals,
+                qualification dates and hold times before go-live: manufacturing
+                orders are checked against this register.</p>
+        </field>
+    </record>
+
+    <record id="pharma_equipment_calibration_due_action" model="ir.actions.act_window">
+        <field name="name">Calibration Due</field>
+        <field name="res_model">maintenance.equipment</field>
+        <field name="view_mode">list,form</field>
+        <!-- A worklist derived from the register: equipment is added in the
+             Equipment Register, never here. -->
+        <field name="context">{'search_default_calibration_due': 1, 'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No calibration due</p>
+            <p>Equipment shows here on its own once its calibration falls due.</p>
+        </field>
+    </record>
+
+    <record id="pharma_equipment_requalification_due_action" model="ir.actions.act_window">
+        <field name="name">Requalification Due</field>
+        <field name="res_model">maintenance.equipment</field>
+        <field name="view_mode">list,form</field>
+        <!-- A worklist derived from the register: equipment is added in the
+             Equipment Register, never here. -->
+        <field name="context">{'search_default_requalification_due': 1, 'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No requalification due</p>
+            <p>Equipment shows here on its own when its requalification date
+                comes within the reminder window, or when QA verifies a repair
+                that requires requalification.</p>
+        </field>
+    </record>
+
+    <!-- Results of an instrument, for the calibration impact assessment. -->
+    <record id="pharma_qc_result_line_view_list_impact" model="ir.ui.view">
+        <field name="name">pharma.qc.result.line.list.impact</field>
+        <field name="model">pharma.qc.result.line</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <list string="Calibration Impact" create="0" edit="0">
+                <field name="test_order_id"/>
+                <field name="test_stage"/>
+                <field name="parameter"/>
+                <field name="actual_value"/>
+                <field name="uom"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'pass'" decoration-danger="status == 'oos'"/>
+                <field name="instrument_id"/>
+                <field name="instrument_calibration_date"/>
+                <field name="test_status"/>
+            </list>
+        </field>
+    </record>
+</odoo>

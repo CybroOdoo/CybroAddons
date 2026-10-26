@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Outside-normal-range flag next to each result, and QA's note on it. -->
+    <record id="pharma_qc_test_order_view_form_trend" model="ir.ui.view">
+        <field name="name">pharma.qc.test.order.form.trend</field>
+        <field name="model">pharma.qc.test.order</field>
+        <field name="inherit_id" ref="pharmaceutical_base.pharma_qc_test_order_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="before">
+                <field name="outside_normal_range" invisible="1"/>
+                <div class="alert alert-warning" role="status"
+                     invisible="not outside_normal_range or normal_range_reviewed">
+                    <i class="fa fa-line-chart me-1" title="Outside normal range"/>
+                    A result is <strong>outside its normal range</strong>. It still
+                    meets the specification, but the batch is <strong>on hold</strong>:
+                    the test order cannot be approved until QA notes and reviews it below.
+                </div>
+            </xpath>
+            <xpath expr="//page[@name='results']/field[@name='result_line_ids']" position="after">
+                <group name="normal_range_review" string="Outside Normal Range — QA Review"
+                       invisible="not outside_normal_range">
+                    <field name="normal_range_note" readonly="normal_range_reviewed"
+                           placeholder="Why the result is outside the normal range…"
+                           groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <field name="normal_range_reviewed"
+                           groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <!-- Only QA reviews; everyone else sees the review read-only. -->
+                    <field name="normal_range_note" readonly="1"
+                           groups="!pharmaceutical_base.group_pharma_role_qa"/>
+                    <field name="normal_range_reviewed" readonly="1"
+                           groups="!pharmaceutical_base.group_pharma_role_qa"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Flag column on the test order list. -->
+    <record id="pharma_qc_test_order_view_list_trend" model="ir.ui.view">
+        <field name="name">pharma.qc.test.order.list.trend</field>
+        <field name="model">pharma.qc.test.order</field>
+        <field name="inherit_id" ref="pharmaceutical_base.pharma_qc_test_order_view_list"/>
+        <field name="arch" type="xml">
+            <field name="status" position="after">
+                <field name="outside_normal_range" string="Outside Normal Range" optional="show"/>
+                <field name="normal_range_reviewed" string="Reviewed" optional="show"
+                       invisible="not outside_normal_range"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Filters for flagged results. -->
+    <record id="pharma_qc_test_order_view_search_trend" model="ir.ui.view">
+        <field name="name">pharma.qc.test.order.search.trend</field>
+        <field name="model">pharma.qc.test.order</field>
+        <field name="inherit_id" ref="pharmaceutical_base.pharma_qc_test_order_view_search"/>
+        <field name="arch" type="xml">
+            <filter name="filter_oos" position="after">
+                <filter string="Outside Normal Range" name="filter_outside_normal_range"
+                        domain="[('outside_normal_range', '=', True)]"/>
+                <filter string="Outside Normal Range — Not Reviewed" name="filter_normal_range_unreviewed"
+                        domain="[('outside_normal_range', '=', True), ('normal_range_reviewed', '=', False)]"/>
+            </filter>
+        </field>
+    </record>
+</odoo>

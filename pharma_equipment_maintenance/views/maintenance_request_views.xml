@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- GMP workflow on the request: buttons move it, the stage follows. -->
+    <record id="maintenance_request_view_form_pharma" model="ir.ui.view">
+        <field name="name">maintenance.request.form.pharma</field>
+        <field name="model">maintenance.request</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_request_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='stage_id']" position="replace">
+                <button name="action_pharma_start" type="object" string="Start" class="btn-primary"
+                        invisible="pharma_state != 'new' or archive"/>
+                <button name="action_pharma_complete" type="object" string="Mark Completed" class="btn-primary"
+                        invisible="pharma_state != 'in_progress'"/>
+                <button name="action_qa_verify" type="object" string="QA Verify" class="btn-primary"
+                        invisible="pharma_state != 'completed'"
+                        groups="pharmaceutical_base.group_pharma_qa_manager"
+                        confirm="Release the equipment back to GMP use and record the result on it?"/>
+                <field name="pharma_state" widget="statusbar" invisible="archive"/>
+                <field name="stage_id" invisible="1"/>
+            </xpath>
+            <xpath expr="//header/button[@name='archive_equipment_request']" position="attributes">
+                <attribute name="invisible">archive or pharma_state == 'qa_verified'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='equipment_id']" position="after">
+                <field name="equipment_class" invisible="not equipment_id"/>
+                <field name="gmp_critical" invisible="not equipment_id"/>
+            </xpath>
+            <xpath expr="//field[@name='maintenance_type']" position="attributes">
+                <attribute name="readonly">pharma_state != 'new'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='equipment_id']" position="attributes">
+                <attribute name="readonly">pharma_state != 'new'</attribute>
+            </xpath>
+            <xpath expr="//notebook" position="before">
+                <div class="alert alert-warning" role="alert" invisible="not dirty_hold_exceeded">
+                    <strong>Dirty hold exceeded.</strong>
+                    The cleaning started after the equipment's dirty hold ran out.
+                    Confirm the cleaning was effective before QA verification.
+                </div>
+                <group name="pharma_cleaning" string="Cleaning" invisible="maintenance_type != 'cleaning'">
+                    <group>
+                        <label for="clean_hold_hours"/>
+                        <div class="o_row">
+                            <field name="clean_hold_hours"
+                                   readonly="pharma_state not in ('new', 'in_progress')"/> hours
+                        </div>
+                        <label for="dirty_hold_hours"/>
+                        <div class="o_row">
+                            <field name="dirty_hold_hours"
+                                   readonly="pharma_state not in ('new', 'in_progress')"/> hours
+                        </div>
+                    </group>
+                </group>
+                <group name="pharma_sterilisation" string="Sterilisation"
+                       invisible="maintenance_type != 'cleaning'"
+                       groups="pharma_equipment_maintenance.group_pharma_sterile_mfg">
+                    <group>
+                        <field name="sterilisation_performed" readonly="pharma_state not in ('new', 'in_progress')"/>
+                        <field name="sterilisation_method" invisible="not sterilisation_performed"
+                               required="sterilisation_performed"
+                               readonly="pharma_state not in ('new', 'in_progress')"/>
+                        <label for="sterile_hold_hours" invisible="not sterilisation_performed"/>
+                        <div class="o_row" invisible="not sterilisation_performed">
+                            <field name="sterile_hold_hours"
+                                   readonly="pharma_state not in ('new', 'in_progress')"/> hours
+                        </div>
+                        <field name="sterilisation_cycle_ref" invisible="not sterilisation_performed"
+                               readonly="pharma_state not in ('new', 'in_progress')"/>
+                        <field name="sterilisation_passed" invisible="not sterilisation_performed"
+                               readonly="pharma_state not in ('new', 'in_progress')"/>
+                    </group>
+                </group>
+                <group name="pharma_work">
+                    <group>
+                        <field name="work_done" readonly="pharma_state not in ('new', 'in_progress')"
+                               placeholder="What was done, parts replaced, readings taken..."/>
+                        <field name="requalification_required"
+                               invisible="maintenance_type == 'cleaning'"
+                               readonly="pharma_state not in ('new', 'in_progress')"/>
+                    </group>
+                    <group>
+                        <field name="completed_by" invisible="not completed_by"/>
+                        <field name="completed_on" invisible="not completed_on"/>
+                        <field name="qa_verified_by" invisible="not qa_verified_by"/>
+                        <field name="qa_verified_on" invisible="not qa_verified_on"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Cards follow the buttons: a card dropped in another stage stays put
+         and a message points to the buttons. -->
+    <record id="maintenance_request_view_kanban_pharma" model="ir.ui.view">
+        <field name="name">maintenance.request.kanban.pharma</field>
+        <field name="model">maintenance.request</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_request_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="js_class">pharma_maintenance_request_kanban</attribute>
+            </xpath>
+            <xpath expr="//field[@name='schedule_date']" position="after">
+                <field name="maintenance_type" widget="badge"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="maintenance_request_view_list_pharma" model="ir.ui.view">
+        <field name="name">maintenance.request.list.pharma</field>
+        <field name="model">maintenance.request</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_request_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="multi_edit">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="equipment_id" optional="show"/>
+                <field name="maintenance_type" optional="show"/>
+                <field name="schedule_date" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='stage_id']" position="replace">
+                <field name="pharma_state" widget="badge"
+                       decoration-info="pharma_state == 'in_progress'"
+                       decoration-warning="pharma_state == 'completed'"
+                       decoration-success="pharma_state == 'qa_verified'"/>
+                <field name="qa_verified_by" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="maintenance_request_view_search_pharma" model="ir.ui.view">
+        <field name="name">maintenance.request.search.pharma</field>
+        <field name="model">maintenance.request</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_request_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter string="Preventive" name="preventive" domain="[('maintenance_type', '=', 'preventive')]"/>
+                <filter string="Breakdown" name="corrective" domain="[('maintenance_type', '=', 'corrective')]"/>
+                <filter string="Cleaning" name="cleaning" domain="[('maintenance_type', '=', 'cleaning')]"/>
+                <separator/>
+                <filter string="Open" name="pharma_open"
+                        domain="[('pharma_state', '!=', 'qa_verified'), ('archive', '=', False)]"/>
+                <filter string="Awaiting QA" name="awaiting_qa" domain="[('pharma_state', '=', 'completed')]"/>
+                <filter string="QA Verified" name="qa_verified" domain="[('pharma_state', '=', 'qa_verified')]"/>
+                <group name="pharma_group_by">
+                    <filter string="GMP Status" name="group_pharma_state" context="{'group_by': 'pharma_state'}"/>
+                    <filter string="Type" name="group_type" context="{'group_by': 'maintenance_type'}"/>
+                    <filter string="Equipment" name="group_equipment" context="{'group_by': 'equipment_id'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="pharma_maintenance_request_action" model="ir.actions.act_window">
+        <field name="name">Maintenance Requests</field>
+        <field name="res_model">maintenance.request</field>
+        <field name="view_mode">kanban,list,form,calendar</field>
+        <field name="context">{'search_default_pharma_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No maintenance requests</p>
+            <p>Preventive maintenance, breakdown repairs and cleanings.
+                Engineering completes the work; QA verifies it before the equipment
+                returns to GMP use.</p>
+        </field>
+    </record>
+
+    <record id="pharma_maintenance_awaiting_qa_action" model="ir.actions.act_window">
+        <field name="name">Awaiting QA Verification</field>
+        <field name="res_model">maintenance.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_awaiting_qa': 1, 'create': False}</field>
+    </record>
+</odoo>

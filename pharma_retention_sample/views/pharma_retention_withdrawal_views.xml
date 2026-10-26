@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Withdrawal history lines. -->
+    <record id="pharma_retention_withdrawal_view_list" model="ir.ui.view">
+        <field name="name">pharma.retention.withdrawal.list</field>
+        <field name="model">pharma.retention.withdrawal</field>
+        <field name="arch" type="xml">
+            <list string="Withdrawals" create="0" edit="0" delete="0">
+                <field name="date"/>
+                <field name="sample_id" optional="hide"/>
+                <field name="lot_id" optional="hide"/>
+                <field name="purpose"/>
+                <field name="quantity"/>
+                <field name="product_uom_id" groups="uom.group_uom"/>
+                <field name="reference" optional="show"/>
+                <field name="reason"/>
+                <field name="exam_result" optional="show"
+                       decoration-danger="exam_result == 'unsatisfactory'"/>
+                <field name="owner_id" widget="many2one_avatar_user"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Dialog used to record a withdrawal. -->
+    <record id="pharma_retention_withdrawal_view_form" model="ir.ui.view">
+        <field name="name">pharma.retention.withdrawal.form</field>
+        <field name="model">pharma.retention.withdrawal</field>
+        <field name="arch" type="xml">
+            <form string="Withdrawal" edit="0" delete="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="sample_id" readonly="1" force_save="1"/>
+                            <field name="lot_id"/>
+                            <label for="remaining_qty"/>
+                            <div class="o_row">
+                                <field name="remaining_qty"/>
+                                <field name="product_uom_id" groups="uom.group_uom"/>
+                            </div>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="purpose"/>
+                            <field name="quantity"/>
+                            <field name="exam_result" invisible="purpose != 'periodic_exam'"
+                                   required="purpose == 'periodic_exam'"/>
+                            <field name="reference"
+                                   placeholder="Complaint / recall / investigation no."/>
+                            <field name="owner_id"/>
+                        </group>
+                    </group>
+                    <field name="reason" placeholder="Details of the withdrawal..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

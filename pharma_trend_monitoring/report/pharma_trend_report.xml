@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Trend summary per parameter, for the annual product quality review. -->
+    <record id="action_report_pharma_trend_summary" model="ir.actions.report">
+        <field name="name">Trend Summary</field>
+        <field name="model">pharma.trend.parameter</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pharma_trend_monitoring.report_pharma_trend_summary</field>
+        <field name="report_file">pharma_trend_monitoring.report_pharma_trend_summary</field>
+        <field name="print_report_name">'Trend Summary - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_pharma_trend_parameter"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_pharma_trend_summary">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <t t-set="stats" t-value="doc._pharma_report_stats()"/>
+                    <div class="page">
+                        <h2>Trend Summary</h2>
+                        <h4 t-field="doc.name"/>
+                        <table class="table table-sm table-borderless mt-3">
+                            <tr>
+                                <td><strong>Site</strong></td><td><span t-field="doc.company_id"/></td>
+                                <td><strong>Specification</strong></td>
+                                <td>
+                                    <t t-if="doc.has_spec_min" t-out="'%.4f' % doc.spec_min"/>
+                                    <t t-else="">—</t>
+                                    to
+                                    <t t-if="doc.has_spec_max" t-out="'%.4f' % doc.spec_max"/>
+                                    <t t-else="">—</t>
+                                    <t t-out="doc.uom"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Normal Range</strong></td>
+                                <td>
+                                    <t t-if="doc.state == 'active'">
+                                        <t t-out="'%.4f' % doc.range_low"/> to <t t-out="'%.4f' % doc.range_high"/>
+                                    </t>
+                                    <t t-else="">Not approved yet — nothing flagged</t>
+                                </td>
+                                <td><strong>Approved</strong></td>
+                                <td>
+                                    <t t-if="doc.state == 'active'">
+                                        <span t-field="doc.range_approved_by"/>,
+                                        <span t-field="doc.range_approved_on" t-options="{'widget': 'date'}"/>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <h5 class="mt-4">Statistics (approved results)</h5>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Results</th><th>Mean</th><th>Std. Dev.</th>
+                                    <th>Min</th><th>Max</th><th>Outside Normal Range</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td t-out="stats['count']"/>
+                                    <td t-out="'%.4f' % stats['mean']"/>
+                                    <td t-out="'%.4f' % stats['std_dev']"/>
+                                    <td t-out="'%.4f' % stats['min']"/>
+                                    <td t-out="'%.4f' % stats['max']"/>
+                                    <td t-out="stats['flagged']"/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h5 class="mt-4">Results</h5>
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Test Order</th><th>Lot / Batch</th>
+                                    <th class="text-end">Value</th><th>Normal Range</th><th>QA Note</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="stats['lines']" t-as="line">
+                                    <td><span t-field="line.test_order_id"/></td>
+                                    <td><span t-field="line.test_order_id.lot_id"/></td>
+                                    <td class="text-end" t-out="'%.4f' % line.actual_value"/>
+                                    <td><t t-if="line.outside_normal_range">Outside</t></td>
+                                    <td><t t-if="line.outside_normal_range" t-out="line.test_order_id.normal_range_note or ''"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

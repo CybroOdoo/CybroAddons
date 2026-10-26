@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="pharma_trend_monitoring.ControlChart">
+        <div class="o_pharma_trend_chart o_action h-100 overflow-auto">
+            <div class="o_pharma_trend_toolbar d-flex flex-wrap align-items-end gap-3">
+                <div class="o_pharma_trend_field flex-grow-1">
+                    <label class="form-label small text-muted mb-1" for="pharma_trend_param">Parameter</label>
+                    <select id="pharma_trend_param" class="form-select" t-on-change="onParameterChange">
+                        <option t-if="!state.parameters.length" value="">No watched parameters</option>
+                        <t t-foreach="state.parameters" t-as="param" t-key="param.id">
+                            <option t-att-value="param.id" t-att-selected="param.id === state.parameterId"
+                                    t-esc="param.name"/>
+                        </t>
+                    </select>
+                </div>
+                <div class="o_pharma_trend_field">
+                    <label class="form-label small text-muted mb-1" for="pharma_trend_range">Show</label>
+                    <select id="pharma_trend_range" class="form-select" t-on-change="onLimitChange">
+                        <option value="30" t-att-selected="state.limit === 30">Last 30 results</option>
+                        <option value="60" t-att-selected="state.limit === 60">Last 60 results</option>
+                        <option value="0" t-att-selected="state.limit === 0">All results</option>
+                    </select>
+                </div>
+                <button t-if="state.parameterId" class="btn btn-secondary mb-1" t-on-click="openParameter">
+                    Open Parameter
+                </button>
+            </div>
+
+            <t t-if="state.data">
+                <div class="o_pharma_trend_summary d-flex flex-wrap gap-2">
+                    <span t-attf-class="badge rounded-pill {{ state.data.range ? 'text-bg-success' : 'text-bg-secondary' }}"
+                          t-esc="stateLabel"/>
+                    <span class="badge rounded-pill text-bg-light" t-if="state.data.range">Normal range <t t-esc="fmt(state.data.range.low)"/> – <t t-esc="fmt(state.data.range.high)"/></span>
+                    <span class="badge rounded-pill text-bg-light">Spec <t t-esc="fmt(state.data.spec.min)"/> – <t t-esc="fmt(state.data.spec.max)"/> <t t-esc="state.data.uom"/></span>
+                </div>
+                <div class="o_pharma_trend_canvas" t-if="state.data.points.length">
+                    <canvas t-ref="canvas"/>
+                </div>
+                <div class="o_pharma_trend_empty text-muted" t-else="">
+                    No approved results yet for this parameter.
+                </div>
+            </t>
+            <div class="o_pharma_trend_empty text-muted" t-elif="!state.parameters.length">
+                Tick Watch on a quantitative parameter of a QC specification. Results are collected once the specification is approved.
+            </div>
+        </div>
+    </t>
+</templates>

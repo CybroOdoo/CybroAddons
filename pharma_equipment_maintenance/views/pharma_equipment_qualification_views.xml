@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pharma_equipment_qualification_view_list" model="ir.ui.view">
+        <field name="name">pharma.equipment.qualification.list</field>
+        <field name="model">pharma.equipment.qualification</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-success="state == 'passed'" decoration-danger="state == 'failed'">
+                <field name="equipment_id"/>
+                <field name="stage"/>
+                <field name="protocol_ref"/>
+                <field name="performed_on"/>
+                <field name="report_ref"/>
+                <field name="signed_by" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'passed'"
+                       decoration-danger="state == 'failed'"
+                       decoration-warning="state == 'pending'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="pharma_equipment_qualification_view_form" model="ir.ui.view">
+        <field name="name">pharma.equipment.qualification.form</field>
+        <field name="model">pharma.equipment.qualification</field>
+        <field name="arch" type="xml">
+            <form create="0" delete="0">
+                <header>
+                    <button name="action_pass" type="object" string="Pass" class="btn-primary"
+                            invisible="state != 'pending'"
+                            groups="pharmaceutical_base.group_pharma_qa_manager"/>
+                    <button name="action_fail" type="object" string="Fail" class="btn-secondary"
+                            invisible="state != 'pending'"
+                            groups="pharmaceutical_base.group_pharma_qa_manager"/>
+                    <button name="action_reopen" type="object" string="Reopen" class="btn-secondary"
+                            invisible="state != 'failed'"
+                            groups="pharmaceutical_base.group_pharma_qa_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,passed"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="equipment_id"/>
+                            <field name="stage"/>
+                            <field name="protocol_ref"/>
+                        </group>
+                        <group>
+                            <field name="performed_on" readonly="state != 'pending'"/>
+                            <field name="report_ref" readonly="state != 'pending'"/>
+                            <field name="report_attachment" filename="report_attachment_name"
+                                   readonly="state != 'pending'"/>
+                            <field name="report_attachment_name" invisible="1"/>
+                            <field name="signed_by"/>
+                            <field name="signed_on"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Findings">
+                        <field name="notes" nolabel="1" readonly="state != 'pending'"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="pharma_equipment_qualification_view_search" model="ir.ui.view">
+        <field name="name">pharma.equipment.qualification.search</field>
+        <field name="model">pharma.equipment.qualification</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="equipment_id"/>
+                <field name="protocol_ref"/>
+                <filter name="pending" string="Pending" domain="[('state', '=', 'pending')]"/>
+                <filter name="passed" string="Passed" domain="[('state', '=', 'passed')]"/>
+                <filter name="failed" string="Failed" domain="[('state', '=', 'failed')]"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_equipment" string="Equipment" context="{'group_by': 'equipment_id'}"/>
+                    <filter name="group_stage" string="Stage" context="{'group_by': 'stage'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="pharma_equipment_qualification_action" model="ir.actions.act_window">
+        <field name="name">Qualification Records</field>
+        <field name="res_model">pharma.equipment.qualification</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+    </record>
+</odoo>

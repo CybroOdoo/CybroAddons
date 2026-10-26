@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Feature group: shows the equipment menus to every pharma role. -->
+    <record id="group_pharma_equipment_feature" model="res.groups">
+        <field name="name">Pharma / Equipment Feature</field>
+    </record>
+
+    <!-- Sterile manufacturing. Off by default; switched on for the whole site
+         in Settings, which implies it into every internal user. Without it no
+         sterile field, menu or rule appears. -->
+    <record id="group_pharma_sterile_mfg" model="res.groups">
+        <field name="name">Pharma / Sterile Manufacturing</field>
+    </record>
+
+    <record id="pharmaceutical_base.group_pharma_role_user" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_pharma_equipment_feature'))]"/>
+    </record>
+    <record id="pharmaceutical_base.group_pharma_role_qa" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_pharma_equipment_feature'))]"/>
+    </record>
+    <record id="pharmaceutical_base.group_pharma_admin" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_pharma_equipment_feature'))]"/>
+    </record>
+
+    <!-- The core maintenance rules only show a user the equipment they follow
+         and the requests they raised. In a GMP register everyone in a pharma
+         role sees all of it; rules of different groups add up. -->
+    <record id="rule_pharma_equipment_all" model="ir.rule">
+        <field name="name">Pharma roles see the whole equipment register</field>
+        <field name="model_id" ref="maintenance.model_maintenance_equipment"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('pharmaceutical_base.group_pharma_user'))]"/>
+    </record>
+    <record id="rule_pharma_maintenance_request_all" model="ir.rule">
+        <field name="name">Pharma roles see every maintenance request</field>
+        <field name="model_id" ref="maintenance.model_maintenance_request"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('pharmaceutical_base.group_pharma_user'))]"/>
+    </record>
+
+    <!-- A user with no pharma role has no access to the register: the core
+         maintenance ACLs give every internal user the Maintenance app, so
+         these global rules close it. Core equipment managers keep theirs. -->
+    <record id="rule_pharma_equipment_no_role" model="ir.rule">
+        <field name="name">No pharma role: no equipment access</field>
+        <field name="model_id" ref="maintenance.model_maintenance_equipment"/>
+        <field name="domain_force">[(1, '=', 1)] if user.has_group('pharmaceutical_base.group_pharma_user') or user.has_group('maintenance.group_equipment_manager') else [(0, '=', 1)]</field>
+    </record>
+    <record id="rule_pharma_request_no_role" model="ir.rule">
+        <field name="name">No pharma role: no maintenance request access</field>
+        <field name="model_id" ref="maintenance.model_maintenance_request"/>
+        <field name="domain_force">[(1, '=', 1)] if user.has_group('pharmaceutical_base.group_pharma_user') or user.has_group('maintenance.group_equipment_manager') else [(0, '=', 1)]</field>
+    </record>
+    <record id="rule_pharma_equipment_category_no_role" model="ir.rule">
+        <field name="name">No pharma role: no equipment category access</field>
+        <field name="model_id" ref="maintenance.model_maintenance_equipment_category"/>
+        <field name="domain_force">[(1, '=', 1)] if user.has_group('pharmaceutical_base.group_pharma_user') or user.has_group('maintenance.group_equipment_manager') else [(0, '=', 1)]</field>
+    </record>
+
+    <!-- The Maintenance app is for pharma roles and core equipment managers. -->
+    <record id="maintenance.menu_maintenance_title" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [ref('pharmaceutical_base.group_pharma_user'), ref('maintenance.group_equipment_manager')])]"/>
+    </record>
+</odoo>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view for watched parameters. -->
+    <record id="pharma_trend_parameter_view_list" model="ir.ui.view">
+        <field name="name">pharma.trend.parameter.list</field>
+        <field name="model">pharma.trend.parameter</field>
+        <field name="arch" type="xml">
+            <list string="Watched Parameters" create="0" delete="0"
+                  decoration-muted="not is_trended">
+                <field name="is_trended" column_invisible="True"/>
+                <field name="product_id"/>
+                <field name="parameter_name"/>
+                <field name="stage"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="result_count"/>
+                <field name="range_low" optional="show"/>
+                <field name="range_high" optional="show"/>
+                <field name="flagged_count" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'collecting'"
+                       decoration-success="state == 'active'"/>
+                <button name="action_open_chart" type="object" icon="fa-line-chart"
+                        title="Trend Chart" class="btn-link"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view for a watched parameter. -->
+    <record id="pharma_trend_parameter_view_form" model="ir.ui.view">
+        <field name="name">pharma.trend.parameter.form</field>
+        <field name="model">pharma.trend.parameter</field>
+        <field name="arch" type="xml">
+            <form string="Watched Parameter" create="0" delete="0" edit="0">
+                <header>
+                    <button name="action_open_chart" type="object" string="Trend Chart"
+                            class="oe_highlight"/>
+                    <button name="action_approve_range" type="object" string="Approve Normal Range"
+                            invisible="state != 'collecting' or result_count &lt; min_history"
+                            confirm="Approve the normal range from the approved results collected so far?"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_approve_range" type="object" string="Re-approve Normal Range"
+                            invisible="state != 'active' or result_count &lt; min_history"
+                            confirm="Rebuild the normal range from all approved results collected so far? Results already evaluated keep their flag; only orders still under test are checked against the new range."
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="action_open_apqr_export" type="object" string="APQR Trending Export"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <button name="%(pharma_trend_monitoring.action_report_pharma_trend_summary)d"
+                            type="action" string="Print Trend Summary"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div name="button_box" class="oe_button_box">
+                        <button name="action_view_flagged_orders" type="object" class="oe_stat_button"
+                                icon="fa-exclamation-triangle">
+                            <field name="flagged_count" widget="statinfo" string="Outside Range"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Not Watched" bg_color="text-bg-secondary"
+                            invisible="is_trended"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <div class="alert alert-info" role="status"
+                         invisible="state != 'collecting' or result_count &gt;= min_history">
+                        Collecting results: <field name="result_count" class="fw-bold"/> of
+                        <field name="min_history" class="fw-bold"/> approved results.
+                        Nothing is flagged until QA approves the normal range.
+                    </div>
+                    <div class="alert alert-warning" role="status"
+                         invisible="state != 'collecting' or result_count &lt; min_history">
+                        Enough results collected. QA can now approve the normal range.
+                    </div>
+                    <group>
+                        <group string="Parameter">
+                            <field name="product_id"/>
+                            <field name="stage"/>
+                            <field name="parameter_name"/>
+                            <field name="uom"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="spec_line_id"/>
+                            <field name="is_trended"/>
+                        </group>
+                        <group string="Specification">
+                            <field name="has_spec_min" invisible="1"/>
+                            <field name="has_spec_max" invisible="1"/>
+                            <field name="spec_min" invisible="not has_spec_min"/>
+                            <field name="spec_max" invisible="not has_spec_max"/>
+                        </group>
+                        <group string="Normal Range" invisible="state != 'active'">
+                            <field name="range_low"/>
+                            <field name="range_high"/>
+                            <field name="range_mean"/>
+                            <field name="range_std_dev"/>
+                            <field name="range_sigma"/>
+                            <field name="range_sample_count"/>
+                            <field name="range_approved_by"/>
+                            <field name="range_approved_on"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view for watched parameters. -->
+    <record id="pharma_trend_parameter_view_search" model="ir.ui.view">
+        <field name="name">pharma.trend.parameter.search</field>
+        <field name="model">pharma.trend.parameter</field>
+        <field name="arch" type="xml">
+            <search string="Search Watched Parameters">
+                <field name="product_id"/>
+                <field name="parameter_name"/>
+                <filter name="trended" string="Watched" domain="[('is_trended', '=', True)]"/>
+                <separator/>
+                <filter name="active_range" string="Range Approved" domain="[('state', '=', 'active')]"/>
+                <filter name="collecting" string="Collecting Results" domain="[('state', '=', 'collecting')]"/>
+                <separator/>
+                <filter name="incoming" string="Incoming" domain="[('stage', '=', 'incoming')]"/>
+                <filter name="finished" string="Finished Goods" domain="[('stage', '=', 'finished')]"/>
+                <filter name="ipqc" string="IPQC" domain="[('stage', '=', 'ipqc')]"/>
+                <group>
+                    <filter name="group_product" string="Product" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_stage" string="Stage" context="{'group_by': 'stage'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action opening watched parameters. -->
+    <record id="pharma_trend_parameter_action" model="ir.actions.act_window">
+        <field name="name">Watched Parameters</field>
+        <field name="res_model">pharma.trend.parameter</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_trended': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No watched parameters yet.</p>
+            <p>Tick <b>Watch</b> on a quantitative parameter of a QC specification.
+               Results are collected once the specification is approved.</p>
+        </field>
+    </record>
+
+    <!-- Client action opening the trend chart. -->
+    <record id="pharma_trend_control_chart_action" model="ir.actions.client">
+        <field name="name">Trend Charts</field>
+        <field name="tag">pharma_trend_control_chart</field>
+    </record>
+</odoo>

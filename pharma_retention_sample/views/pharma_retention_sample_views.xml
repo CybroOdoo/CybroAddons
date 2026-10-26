@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List of the retention sample register. -->
+    <record id="pharma_retention_sample_view_list" model="ir.ui.view">
+        <field name="name">pharma.retention.sample.list</field>
+        <field name="model">pharma.retention.sample</field>
+        <field name="arch" type="xml">
+            <list string="Retention Samples" create="0" delete="0"
+                  decoration-info="state == 'draft'"
+                  decoration-muted="state == 'disposed'">
+                <field name="name"/>
+                <field name="lot_id"/>
+                <field name="product_id"/>
+                <field name="location_id"/>
+                <field name="container" optional="hide"/>
+                <field name="retained_qty" optional="show"/>
+                <field name="remaining_qty"/>
+                <field name="product_uom_id" optional="show" groups="uom.group_uom"/>
+                <field name="expiry_date" optional="show"/>
+                <field name="next_exam_date"/>
+                <field name="disposal_due_date"/>
+                <field name="retained_by" optional="hide"/>
+                <field name="retained_on" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'retained'"
+                       decoration-muted="state == 'disposed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form of one retention sample with its withdrawal history. -->
+    <record id="pharma_retention_sample_view_form" model="ir.ui.view">
+        <field name="name">pharma.retention.sample.form</field>
+        <field name="model">pharma.retention.sample</field>
+        <field name="arch" type="xml">
+            <form string="Retention Sample" create="0" delete="0">
+                <header>
+                    <button name="action_confirm" string="Confirm"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"
+                            groups="pharmaceutical_base.group_pharma_role_user,pharmaceutical_base.group_pharma_role_admin"/>
+                    <button name="action_record_withdrawal" string="Record Withdrawal"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'retained'"
+                            groups="pharmaceutical_base.group_pharma_role_user,pharmaceutical_base.group_pharma_role_admin"/>
+                    <button name="action_open_disposal_wizard" string="Dispose"
+                            type="object" class="btn-danger"
+                            invisible="not is_disposal_due"
+                            groups="pharmaceutical_base.group_pharma_role_qa"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_lot" type="object"
+                                class="oe_stat_button" icon="fa-cubes">
+                            <span class="o_stat_text">Batch</span>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Disposed" bg_color="text-bg-secondary"
+                            invisible="state != 'disposed'"/>
+                    <div class="alert alert-warning" role="alert" invisible="not is_disposal_due">
+                        The retention period has expired. This sample is due for disposal.
+                    </div>
+                    <div class="alert alert-info" role="alert"
+                         invisible="state != 'draft' or location_id">
+                        Set the location where the reserve sample is held, then confirm it.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="state != 'draft' or expiry_date">
+                        This batch has no expiry date, so the disposal due date cannot be
+                        derived until one is set on the batch.
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Batch">
+                            <field name="lot_id"/>
+                            <field name="product_id"/>
+                            <field name="qa_release_id" invisible="not qa_release_id"/>
+                            <field name="production_id" invisible="not production_id"/>
+                            <field name="expiry_date"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Quantity">
+                            <label for="retained_qty"/>
+                            <div class="o_row">
+                                <field name="retained_qty" readonly="state != 'draft'"/>
+                                <field name="product_uom_id" groups="uom.group_uom"/>
+                            </div>
+                            <field name="withdrawn_qty"/>
+                            <field name="remaining_qty"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Storage">
+                            <field name="location_id" readonly="state == 'disposed'"
+                                   required="state == 'draft'"
+                                   options="{'no_create': True}"/>
+                            <field name="container" readonly="state == 'disposed'"/>
+                            <field name="retained_by"/>
+                            <field name="retained_on"/>
+                        </group>
+                        <group string="Schedule">
+                            <field name="retention_period_months"/>
+                            <field name="disposal_due_date"/>
+                            <field name="is_disposal_due" invisible="1"/>
+                            <field name="exam_interval_months"/>
+                            <field name="last_exam_date"/>
+                            <field name="next_exam_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Withdrawals" name="withdrawals">
+                            <field name="withdrawal_ids" nolabel="1"/>
+                        </page>
+                        <page string="Disposal" name="disposal" invisible="state != 'disposed'">
+                            <group>
+                                <group>
+                                    <field name="disposed_by"/>
+                                    <field name="disposed_on"/>
+                                </group>
+                                <group>
+                                    <field name="disposal_method"/>
+                                    <field name="disposal_reference"/>
+                                </group>
+                            </group>
+                            <field name="disposal_note" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search and filters for the register. -->
+    <record id="pharma_retention_sample_view_search" model="ir.ui.view">
+        <field name="name">pharma.retention.sample.search</field>
+        <field name="model">pharma.retention.sample</field>
+        <field name="arch" type="xml">
+            <search string="Retention Samples">
+                <field name="name"/>
+                <field name="lot_id"/>
+                <field name="product_id"/>
+                <field name="location_id"/>
+                <filter name="filter_draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_retained" string="Retained"
+                        domain="[('state', '=', 'retained')]"/>
+                <filter name="filter_disposed" string="Disposed"
+                        domain="[('state', '=', 'disposed')]"/>
+                <filter name="filter_exam_due" string="Examination Due"
+                        domain="[('state', '=', 'retained'), ('next_exam_date', '!=', False), ('next_exam_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_disposal_due" string="Due for Disposal"
+                        domain="[('state', '=', 'retained'), ('disposal_due_date', '!=', False), ('disposal_due_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group>
+                    <filter name="group_product" string="Product" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_location" string="Location" context="{'group_by': 'location_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Register of all retention samples. -->
+    <record id="pharma_retention_sample_action" model="ir.actions.act_window">
+        <field name="name">Retention Sample Register</field>
+        <field name="res_model">pharma.retention.sample</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_retention_sample_view_search"/>
+        <field name="context">{'search_default_filter_draft': 1, 'search_default_filter_retained': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No retention samples recorded yet.</p>
+            <p>Press <b>Retention Sample</b> on a released QA release or batch, then set its quantity and location and confirm it.</p>
+        </field>
+    </record>
+
+    <!-- Samples whose periodic visual examination is due. -->
+    <record id="pharma_retention_sample_exam_due_action" model="ir.actions.act_window">
+        <field name="name">Examination Due</field>
+        <field name="res_model">pharma.retention.sample</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_retention_sample_view_search"/>
+        <field name="context">{'search_default_filter_exam_due': 1}</field>
+    </record>
+
+    <!-- Samples whose retention period has expired. -->
+    <record id="pharma_retention_sample_disposal_due_action" model="ir.actions.act_window">
+        <field name="name">Due for Disposal</field>
+        <field name="res_model">pharma.retention.sample</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="pharma_retention_sample_view_search"/>
+        <field name="context">{'search_default_filter_disposal_due': 1}</field>
+    </record>
+</odoo>

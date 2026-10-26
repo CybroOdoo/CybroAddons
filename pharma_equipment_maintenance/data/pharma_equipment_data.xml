@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Equipment codes, one series per company. -->
+    <record id="seq_pharma_equipment" model="ir.sequence">
+        <field name="name">GMP Equipment</field>
+        <field name="code">pharma.equipment</field>
+        <field name="prefix">EQ-</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Calibration result references. -->
+    <record id="seq_pharma_calibration_result" model="ir.sequence">
+        <field name="name">Calibration Result</field>
+        <field name="code">pharma.calibration.result</field>
+        <field name="prefix">CAL/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Kanban columns the pharma state is mirrored into. New and In
+         Progress reuse the core stages; a request is closed (done) only once
+         QA has verified it, which is also what makes a recurring preventive
+         request schedule its next occurrence. -->
+    <data noupdate="1">
+        <record id="stage_pharma_completed" model="maintenance.stage">
+            <field name="name">Awaiting QA</field>
+            <field name="sequence">3</field>
+            <field name="fold" eval="False"/>
+            <field name="done" eval="False"/>
+        </record>
+        <record id="stage_pharma_qa_verified" model="maintenance.stage">
+            <field name="name">QA Verified</field>
+            <field name="sequence">4</field>
+            <field name="fold" eval="True"/>
+            <field name="done" eval="True"/>
+        </record>
+    </data>
+
+    <!-- Reminders raised on the equipment ahead of a due date. -->
+    <record id="mail_activity_calibration_due" model="mail.activity.type">
+        <field name="name">Calibration Due</field>
+        <field name="summary">Calibrate this equipment</field>
+        <field name="icon">fa-tachometer</field>
+        <field name="res_model">maintenance.equipment</field>
+        <field name="delay_count">0</field>
+    </record>
+    <record id="mail_activity_requalification_due" model="mail.activity.type">
+        <field name="name">Requalification Due</field>
+        <field name="summary">Requalify this equipment</field>
+        <field name="icon">fa-certificate</field>
+        <field name="res_model">maintenance.equipment</field>
+        <field name="delay_count">0</field>
+    </record>
+    <!-- Raised on a maintenance request or calibration waiting for QA verification. -->
+    <record id="mail_activity_qa_verify" model="mail.activity.type">
+        <field name="name">QA Verification</field>
+        <field name="summary">Verify the completed work</field>
+        <field name="icon">fa-check-square-o</field>
+        <field name="res_model" eval="False"/>
+        <field name="delay_count">0</field>
+    </record>
+    <!-- Raised when a verified calibration found the instrument out of tolerance as found. -->
+    <record id="mail_activity_calibration_impact" model="mail.activity.type">
+        <field name="name">Calibration Impact Assessment</field>
+        <field name="summary">Assess the results measured since the previous calibration</field>
+        <field name="icon">fa-exclamation-triangle</field>
+        <field name="res_model">pharma.calibration.result</field>
+        <field name="delay_count">0</field>
+    </record>
+</odoo>

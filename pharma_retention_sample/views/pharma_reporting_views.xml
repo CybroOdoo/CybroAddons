@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============ Retention Samples ============ -->
+
+    <!-- Search view for retention sample analysis. -->
+    <record id="pharma_retention_sample_report_search" model="ir.ui.view">
+        <field name="name">pharma.retention.sample.report.search</field>
+        <field name="model">pharma.retention.sample</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Retention Sample Analysis">
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="location_id"/>
+                <filter string="Retained" name="retained" domain="[('state', '=', 'retained')]"/>
+                <filter string="Disposed" name="disposed" domain="[('state', '=', 'disposed')]"/>
+                <separator/>
+                <filter string="Examination Due" name="exam_due"
+                        domain="[('state', '=', 'retained'), ('next_exam_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Due for Disposal" name="disposal_due"
+                        domain="[('state', '=', 'retained'), ('disposal_due_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Retained On" name="filter_retained_on" date="retained_on"/>
+                <filter string="Disposed On" name="filter_disposed_on" date="disposed_on"/>
+                <group name="group_by">
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Location" name="grp_location" context="{'group_by': 'location_id'}"/>
+                    <filter string="Status" name="grp_state" context="{'group_by': 'state'}"/>
+                    <filter string="Disposal Method" name="grp_disposal" context="{'group_by': 'disposal_method'}"/>
+                    <filter string="Retained Month" name="grp_month" context="{'group_by': 'retained_on:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of retention samples per location by status. -->
+    <record id="pharma_retention_sample_report_graph" model="ir.ui.view">
+        <field name="name">pharma.retention.sample.report.graph</field>
+        <field name="model">pharma.retention.sample</field>
+        <field name="arch" type="xml">
+            <graph string="Retention Samples" type="bar" stacked="1" sample="1">
+                <field name="location_id"/>
+                <field name="state"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of retained, withdrawn and remaining quantity per product. -->
+    <record id="pharma_retention_sample_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.retention.sample.report.pivot</field>
+        <field name="model">pharma.retention.sample</field>
+        <field name="arch" type="xml">
+            <pivot string="Retention Samples" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="retained_qty" type="measure"/>
+                <field name="withdrawn_qty" type="measure"/>
+                <field name="remaining_qty" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the retention sample analysis. -->
+    <record id="pharma_retention_sample_report_action" model="ir.actions.act_window">
+        <field name="name">Retention Sample Analysis</field>
+        <field name="res_model">pharma.retention.sample</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_retention_sample_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_retention_sample_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_retention_sample_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No retention samples yet</p>
+            <p>Reserve sample stock per product and location, with examinations and disposals falling due.</p>
+        </field>
+    </record>
+
+    <!-- ============ Retention Withdrawals ============ -->
+
+    <!-- Search view for retention withdrawal analysis. -->
+    <record id="pharma_retention_withdrawal_report_search" model="ir.ui.view">
+        <field name="name">pharma.retention.withdrawal.report.search</field>
+        <field name="model">pharma.retention.withdrawal</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Retention Withdrawal Analysis">
+                <field name="sample_id"/>
+                <field name="lot_id"/>
+                <field name="owner_id"/>
+                <filter string="Date" name="filter_date" date="date"/>
+                <group name="group_by">
+                    <filter string="Purpose" name="grp_purpose" context="{'group_by': 'purpose'}"/>
+                    <filter string="Examination Result" name="grp_exam_result" context="{'group_by': 'exam_result'}"/>
+                    <filter string="Withdrawn By" name="grp_owner" context="{'group_by': 'owner_id'}"/>
+                    <filter string="Month" name="grp_month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of withdrawals per month by purpose. -->
+    <record id="pharma_retention_withdrawal_report_graph" model="ir.ui.view">
+        <field name="name">pharma.retention.withdrawal.report.graph</field>
+        <field name="model">pharma.retention.withdrawal</field>
+        <field name="arch" type="xml">
+            <graph string="Retention Withdrawals" type="bar" stacked="1" sample="1">
+                <field name="date" interval="month"/>
+                <field name="purpose"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of withdrawn quantity by purpose and examination result. -->
+    <record id="pharma_retention_withdrawal_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.retention.withdrawal.report.pivot</field>
+        <field name="model">pharma.retention.withdrawal</field>
+        <field name="arch" type="xml">
+            <pivot string="Retention Withdrawals" sample="1">
+                <field name="purpose" type="row"/>
+                <field name="exam_result" type="col"/>
+                <field name="quantity" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the retention withdrawal analysis. -->
+    <record id="pharma_retention_withdrawal_report_action" model="ir.actions.act_window">
+        <field name="name">Retention Withdrawal Analysis</field>
+        <field name="res_model">pharma.retention.withdrawal</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_retention_withdrawal_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_retention_withdrawal_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_retention_withdrawal_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No withdrawals yet</p>
+            <p>Reserve sample usage by purpose, and the outcome of periodic examinations.</p>
+        </field>
+    </record>
+
+    <!-- ============ Menus ============ -->
+
+    <menuitem id="menu_pharma_report_retention_sample" name="Retention Samples"
+              parent="pharmaceutical_base.menu_pharma_reporting"
+              action="pharma_retention_sample_report_action" sequence="60"/>
+
+    <menuitem id="menu_pharma_report_retention_withdrawal" name="Retention Withdrawals"
+              parent="pharmaceutical_base.menu_pharma_reporting"
+              action="pharma_retention_withdrawal_report_action" sequence="65"/>
+</odoo>

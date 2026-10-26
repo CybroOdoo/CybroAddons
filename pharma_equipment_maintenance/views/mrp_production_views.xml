@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Equipment used, and the QA override, on the manufacturing order. -->
+    <record id="mrp_production_form_pharma_equipment" model="ir.ui.view">
+        <field name="name">mrp.production.form.pharma.equipment</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_pharma_open_override" type="object" string="Override Equipment Check"
+                        invisible="state != 'draft' or pharma_equipment_override_on"
+                        groups="pharmaceutical_base.group_pharma_qa_manager"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_pharma_equipment" type="object" class="oe_stat_button"
+                        icon="fa-cogs" invisible="not pharma_equipment_count">
+                    <field name="pharma_equipment_count" widget="statinfo" string="Equipment"/>
+                </button>
+            </xpath>
+            <xpath expr="//sheet/notebook" position="inside">
+                <page string="Equipment" name="pharma_equipment"
+                      invisible="not pharma_equipment_ids and not pharma_equipment_override_on">
+                    <group invisible="not pharma_equipment_override_on" string="QA Override">
+                        <field name="pharma_equipment_override_by"/>
+                        <field name="pharma_equipment_override_on"/>
+                        <field name="pharma_equipment_override_reason"/>
+                    </group>
+                    <field name="pharma_equipment_ids">
+                        <list>
+                            <field name="equipment_code"/>
+                            <field name="name"/>
+                            <field name="equipment_class"/>
+                            <field name="qualification_state"/>
+                            <field name="calibration_state"/>
+                            <field name="cleaning_state"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
