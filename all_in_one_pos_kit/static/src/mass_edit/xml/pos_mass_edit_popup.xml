@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="all_in_one_pos_kit.MassEditPopup">
+        <!-- Custom popup template -->
+        <Dialog title="props.title" bodyClass="'d-flex flex-column'" size="'lg'">
+            <main class="body">
+                <div class="section-product-info-title">
+                    <div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <b>Product</b>
+                                    </th>
+                                    <th style="padding: 0px 0px 0px 10px;">
+                                        <b>Quantity</b>
+                                    </th>
+                                    <th style="padding: 0px 0px 0px 10px;">
+                                        <b>Unit</b>
+                                    </th>
+                                    <th style="padding: 0px 0px 0px 10px;">
+                                        <b>Price without tax</b>
+                                    </th>
+                                    <th style="width: 90px;padding: 0px 0px 0px 10px;">
+                                        <b>Discount</b>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <t t-foreach="state.lines" t-as="line" t-key="line.id">
+                                <tbody>
+                                    <tr>
+                                    <td style="padding: 10px 10px 10px 0px;">
+                                        <b>
+                                            <t t-out="line.full_product_name || line.getFullProductName?.()"/>
+                                        </b>
+                                    </td>
+                                    <td style="padding: 10px;">
+                                        <input class="form-control form-control-lg mt-2"
+                                               t-on-change="(ev) => this.updateQty(line, ev.target.value)"
+                                               type="number"
+                                               name="quantity"
+                                               t-att-value="line.qty"/>
+                                    </td>
+                                    <td style="padding: 10px;">
+                                        <b>
+                                            <t t-out="line.product_id?.uom_id?.name || 'Unit'"/>
+                                        </b>
+                                    </td>
+                                    <td style="padding: 10px;">
+                                        <input class="form-control form-control-lg mt-2"
+                                               t-on-change="(ev) => this.updatePrice(line, ev.target.value)"
+                                               t-att-value="line.price_unit"
+                                               type="number" name="unitPrice"/>
+                                    </td>
+                                    <td t-if="pos.config.manual_discount"
+                                        style="padding: 10px;">
+                                        <input class="form-control form-control-lg mt-2"
+                                               t-on-change="(ev) => this.updateDiscount(line, ev.target.value)"
+                                               t-att-value="line.discount"
+                                               type="number" name="discount"/>
+                                    </td>
+                                    <td style="padding: 10px;">
+                                        <button class="input-button btn btn-danger btn-lg mt-2"
+                                                t-on-click="() => this.sendInput(line.id)">
+                                            <i class="fa fa-trash"/>
+                                        </button>
+                                    </td>
+                                    </tr>
+                                </tbody>
+                            </t>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <t t-set-slot="footer">
+                <!-- Undo button - only show when there's something to undo -->
+                <button t-if="state.lastDeleted"
+                        class="btn btn-warning"
+                        t-on-click="undoDelete">
+                    <i class="fa fa-undo"/> Undo Delete
+                </button>
+                <button class="btn btn-secondary"
+                        t-on-click="props.close"
+                        t-out="props.closeLabel"/>
+            </t>
+        </Dialog>
+    </t>
+</templates>

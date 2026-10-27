@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <!-- Inherit the pos config settings form view to add field's-->
+        <field name="name">
+            res.config.settings.view.form.inherit.all.in.one.pos.kit
+        </field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id"
+               ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Define the position to insert the new elements in the view -->
+            <xpath expr="//block[@id='pos_pricing_section']" position="inside">
+                <setting help="Allow service charges on orders.">
+                    <field name="pos_is_service_charges"
+                           readonly="pos_has_active_session"/>
+                    <div class="content-group mt16"
+                         invisible="not pos_is_service_charges">
+                        <div class="row">
+                            <label string="Visibility"
+                                   for="pos_visibility_type"
+                                   class="col-lg-3 o_light_label"/>
+                            <field name="pos_visibility_type"
+                                   widget="radio"
+                                   options="{'horizontal': true}"/>
+                        </div>
+                        <div class="row" invisible="pos_visibility_type == 'session'">
+                            <label string="Service Product"
+                                   for="pos_service_product_id"
+                                   class="col-lg-3 o_light_label"/>
+                            <field name="pos_service_product_id"
+                                   required="pos_is_service_charges"/>
+                        </div>
+                        <div class="row" invisible="pos_visibility_type == 'session'">
+                            <label string="Charge Type"
+                                   for="pos_service_charge_type"
+                                   class="col-lg-3 o_light_label"/>
+                            <field name="pos_service_charge_type"
+                                   widget="radio" options="{'horizontal': true}"/>
+                        </div>
+                        <div class="row" invisible="pos_visibility_type == 'session'">
+                            <label string="Service Charge"
+                                   for="pos_service_charge"
+                                   class="col-lg-3 o_light_label"/>
+                            <field name="pos_service_charge"/>
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+
+            <!-- Define the position to insert the new elements in the view -->
+            <xpath expr="//setting[@id='iface_tipproduct']" position="inside">
+                <div class="col-12 col-lg-6 o_setting_box"
+                     invisible="not pos_iface_tipproduct">
+                    <div class="o_setting_right_pane">
+                        <div class="text-muted mb16">
+                            Add % tip
+                        </div>
+                        <field name="custom_tip_percentage"/>
+                    </div>
+                </div>
+            </xpath>
+            <xpath expr="//block[@id='pos_accounting_section']" position="after">
+                <h2>POS Greetings</h2>
+                <div class="row mt16 o_settings_container">
+                    <div id="message_activation"
+                         class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane">
+                            <field name="customer_msg"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="customer_msg"/>
+                            <div class="text-muted">
+                                Send greetings to customers.
+                            </div>
+                            <div invisible="not customer_msg">
+                                <div class="content-group mt16">
+                                    <div role="alert"
+                                         class="alert alert-warning">
+                                        Create a Twilio account.
+                                        <a role="button"
+                                           href="https://www.twilio.com/try-twilio"
+                                           class="btn btn-link btn-success o_activity_link mr8">
+                                            <i class="fa fa-arrow-right"/>
+                                            Click Here
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label for="account_sid"
+                                           class="col-lg-4 o_light_label"/>
+                                    <field name="account_sid" required="customer_msg"/>
+                                </div>
+                                <div class="row">
+                                    <label for="twilio_auth_token"
+                                           class="col-lg-4 o_light_label"/>
+                                    <field name="twilio_auth_token" required="customer_msg"/>
+                                </div>
+                                <div class="row">
+                                    <label for="twilio_number"
+                                           class="col-lg-4 o_light_label"/>
+                                    <field name="twilio_number" required="customer_msg"/>
+                                </div>
+                                <div class="row">
+                                    <label for="sms_body"
+                                           class="col-lg-4 o_light_label"/>
+                                    <field name="sms_body"
+                                           class="col-lg-2 w-50" required="customer_msg"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+
+            <!-- Customer details, shown in their own section -->
+            <xpath expr="//block[@id='pos_accounting_section']" position="after">
+                <block title="Customer Details" id="pos_customer_details_section">
+                    <setting id="customer_details_setting"
+                             string="Customer Details"
+                             help="Enable to show customer details on the receipt.">
+                        <field name="customer_details"/>
+                        <div class="content-group mt16"
+                             invisible="not customer_details">
+                            <div class="mt8">
+                                <field name="customer_name"/>
+                                <label for="customer_name" string="Customer Name"
+                                       class="o_light_label ms-2"/>
+                            </div>
+                            <div class="mt8">
+                                <field name="customer_address"/>
+                                <label for="customer_address" string="Customer Address"
+                                       class="o_light_label ms-2"/>
+                            </div>
+                            <div class="mt8">
+                                <field name="customer_mobile"/>
+                                <label for="customer_mobile" string="Customer Mobile"
+                                       class="o_light_label ms-2"/>
+                            </div>
+                            <div class="mt8">
+                                <field name="customer_phone"/>
+                                <label for="customer_phone" string="Customer Phone"
+                                       class="o_light_label ms-2"/>
+                            </div>
+                            <div class="mt8">
+                                <field name="customer_email"/>
+                                <label for="customer_email" string="Customer Email"
+                                       class="o_light_label ms-2"/>
+                            </div>
+                            <div class="mt8">
+                                <field name="customer_vat"/>
+                                <label for="customer_vat" string="Customer VAT"
+                                       class="o_light_label ms-2"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+                <block title="Receipt Details" id="pos_receipt_details_section">
+                    <setting id="order_barcode_setting"
+                             string="Order Barcode"
+                             help="Enable or disable the display of the order barcode on the receipt.">
+                        <field name="barcode"/>
+                    </setting>
+                    <setting id="invoice_number_setting"
+                             string="Invoice Number"
+                             help="Enable or disable the display of the invoice number on the receipt.">
+                        <field name="invoice_number"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

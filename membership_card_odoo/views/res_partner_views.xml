@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Server action: Print Membership Card from Action menu -->
+    <record id="server_action_get_card" model="ir.actions.server">
+        <field name="name">Print Membership Card</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.server_action_get_card()</field>
+    </record>
+
+    <!-- Add Membership tab to partner form -->
+    <record id="view_partner_form_membership_card" model="ir.ui.view">
+        <field name="name">res.partner.form.membership.card</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page name="membership_card" string="Membership">
+                    <group>
+                        <group string="Membership Status">
+                            <field name="free_member"/>
+                        </group>
+                    </group>
+                    <field name="member_lines" invisible="free_member">
+                        <list editable="bottom">
+                            <field name="membership_id" domain="[('type', '=', 'service')]"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </list>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>

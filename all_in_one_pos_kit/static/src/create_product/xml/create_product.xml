@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Create Product button on the product screen -->
+    <t t-name="all_in_one_pos_kit.CreateProductButton"
+       t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension">
+        <xpath expr="//InternalNoteButton" position="after">
+            <button class="btn btn-secondary btn-lg lh-lg flex-shrink-0"
+                    t-on-click="() => this.onClickCreateProduct()">
+                <i class="fa fa-plus"/>
+                <span>Create Product</span>
+            </button>
+        </xpath>
+    </t>
+
+    <!-- Popup -->
+    <t t-name="all_in_one_pos_kit.CreateProductPopup">
+        <Dialog title="'Create Product'" size="'md'">
+            <div class="d-flex flex-column gap-3">
+                <div t-if="state.error" class="alert alert-danger mb-0" t-out="state.error"/>
+                <div>
+                    <label class="form-label fw-bold">Name</label>
+                    <input type="text" class="form-control" t-model="state.name" placeholder="Product name"/>
+                </div>
+                <div>
+                    <label class="form-label fw-bold">Sales Price</label>
+                    <input type="number" step="any" min="0" class="form-control" t-model="state.price" placeholder="0.00"/>
+                </div>
+                <div>
+                    <label class="form-label fw-bold">POS Category</label>
+                    <select class="form-select" t-model="state.categId">
+                        <option value="">None</option>
+                        <t t-foreach="props.categories" t-as="categ" t-key="categ.id">
+                            <option t-att-value="categ.id" t-out="categ.name"/>
+                        </t>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label fw-bold">Barcode</label>
+                    <input type="text" class="form-control" t-model="state.barcode" placeholder="Optional"/>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="confirm" t-att-disabled="state.saving">Create</button>
+                <button class="btn btn-secondary" t-on-click="props.close">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

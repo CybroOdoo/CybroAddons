@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Recurring Activity action-->
+    <record id="recurring_activity_action" model="ir.actions.act_window">
+        <field name="name">Recurring Activities</field>
+        <field name="res_model">recurring.activity</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Click to add a new recurring activity.
+            </p>
+        </field>
+    </record>
+    <!-- Recurring activity search view -->
+    <record id="recurring_activity_view_search" model="ir.ui.view">
+        <field name="name">recurring.activity.view.search</field>
+        <field name="model">recurring.activity</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="activity_type_id"/>
+                <field name="summary"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+    <!-- Recurring activity form view -->
+    <record id="recurring_activity_view_form" model="ir.ui.view">
+        <field name="name">recurring.activity.view.form</field>
+        <field name="model">recurring.activity</field>
+        <field name="arch" type="xml">
+            <form name="Activity form">
+                <sheet>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" class="oe_inline"
+                                   placeholder="Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="action"/>
+                            <field name="activity_type_id" required="True"/>
+                        </group>
+                        <group>
+                            <field name="user_id" required="True"/>
+                            <field name="summary" required="True"/>
+                            <field name="note"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Recurrence">
+                            <group>
+                                <group>
+                                    <field name="period"/>
+                                    <field name="start_date"/>
+                                    <field name="next_activity_date"/>
+                                    <field name="archive_date"/>
+                                </group>
+                                <group invisible="period != 'week'">
+                                    <field name="monday"/>
+                                    <field name="tue"/>
+                                    <field name="wed"/>
+                                    <field name="thu"/>
+                                    <field name="fri"/>
+                                    <field name="sat"/>
+                                    <field name="sun"/>
+                                </group>
+                                <group invisible="period != 'month'">
+                                    <label for="month_by"/>
+                                    <div class="o_row">
+                                        <field name="month_by"/>
+                                        <field name="date_of_month"
+                                               invisible="month_by != 'date'"/>
+                                    </div>
+                                </group>
+                                <group invisible="period != 'year'">
+                                    <label for="year_months"/>
+                                    <div class="o_row">
+                                        <field name="year_months"/>
+                                        <label for="year_date"/>
+                                        <field name="year_date"/>
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--    Recurring activity list view -->
+    <record id="recurring_activity_view_list" model="ir.ui.view">
+        <field name="name">recurring.activity.view.list</field>
+        <field name="model">recurring.activity</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="action"/>
+                <field name="user_id"/>
+                <field name="name"/>
+                <field name="activity_type_id"/>
+                <field name="summary"/>
+                <field name="next_activity_date"/>
+                <field name="archive_date"/>
+            </list>
+        </field>
+    </record>
+    <!-- Recurring activity menu -->
+    <menuitem id="recurring_activity_menu"
+              name="Recurring Activities"
+              action="recurring_activity_action"
+              parent="mail.menu_mail_activities_section"
+              sequence="40"/>
+</odoo>

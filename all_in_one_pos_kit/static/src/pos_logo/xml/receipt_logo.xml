@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Logo(s) at the top of the receipt, centred, according to the
+     "Receipt Logo Option" (POS logo / company logo / both side by side). -->
+<templates id="template" xml:space="preserve">
+    <t t-name="all_in_one_pos_kit.ReceiptLogo" t-inherit="point_of_sale.ReceiptHeader" t-inherit-mode="extension">
+        <xpath expr="//img" position="replace">
+            <t t-set="logoConfig" t-value="this.env.services.pos?.config"/>
+            <t t-set="logoOption" t-value="logoConfig?.logo_option or 'pos'"/>
+            <div class="pos-receipt-logos">
+                <img t-if="logoConfig and logoOption !== 'company' and logoConfig.image"
+                     t-attf-src="/web/image?model=pos.config&amp;field=image&amp;id={{ logoConfig.id }}"
+                     alt="POS Logo" class="pos-receipt-logo"/>
+                <img t-if="this.env.services.pos?.company and (logoOption !== 'pos' or !logoConfig?.image)"
+                     t-attf-src="/web/image?model=res.company&amp;id={{ this.env.services.pos.company.id }}&amp;field=logo"
+                     alt="Company Logo" class="pos-receipt-logo"/>
+            </div>
+        </xpath>
+    </t>
+</templates>

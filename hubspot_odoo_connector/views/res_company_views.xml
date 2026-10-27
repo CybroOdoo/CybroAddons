@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--  Record for inherit and add sync fields in company model.  -->
+    <record id="view_company_form" model="ir.ui.view">
+        <field name="name">res.company.view.form.inherit.hubspot.odoo.connector</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="after">
+                <field name="hs_object_id"/>
+                <field name="sync_mode"/>
+            </xpath>
+        </field>
+    </record>
+<!--  Menu action for Company Import.  -->
+    <record id="res_company_import_action" model="ir.actions.act_window">
+        <field name="name">Company Import</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+        <field name="domain">[('is_company', '=', True), ('sync_mode', '=', 'import')]</field>
+        <field name="context">{'default_is_company': True}</field>
+        <field name="help" type="html">
+            <p>
+                Odoo helps you track all imported companies from HubSpot.
+            </p>
+        </field>
+    </record>
+<!--  Menu action for Company Export   -->
+    <record id="res_company_export_action" model="ir.actions.act_window">
+        <field name="name">Company Export</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+        <field name="domain">[('is_company', '=', True), ('sync_mode', '=', 'export')]</field>
+        <field name="context">{'default_is_company': True}</field>
+        <field name="help" type="html">
+            <p>
+                Odoo helps you track all exported companies to HubSpot.
+            </p>
+        </field>
+    </record>
+    <!--  Menus for Company -->
+    <menuitem id="res_company_menu"
+              name="Company"
+              parent="hubspot_connector_menu_root"
+              groups="hubspot_odoo_connector.group_hubspot_manager"/>
+    <menuitem id="res_company_menu_action_import"
+              name="Company Import"
+              action="res_company_import_action"
+              parent="res_company_menu"
+              groups="hubspot_odoo_connector.group_hubspot_manager"/>
+    <menuitem id="res_company_menu_action_export"
+              name="Company Export"
+              action="res_company_export_action"
+              parent="res_company_menu"
+              groups="hubspot_odoo_connector.group_hubspot_manager"/>
+</odoo>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Used to change the format of pdf. -->
+    <record id="paperformat_card" model="report.paperformat">
+        <field name="name">Membership Card Paperformat</field>
+        <field name="format">custom</field>
+        <field name="page_height">95</field>
+        <field name="page_width">60</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">5.00</field>
+        <field name="margin_bottom">5.00</field>
+        <field name="margin_left">5.0</field>
+        <field name="margin_right">5.0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">125</field>
+    </record>
+    <record id="action_membership_card" model="ir.actions.report">
+        <field name="name">Membership Card</field>
+        <field name="model">res.partner</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">membership_card_odoo.print_member_ship_card</field>
+        <field name="report_file">membership_card_odoo.print_member_ship_card</field>
+        <field name="paperformat_id" ref="membership_card_odoo.paperformat_card"/>
+    </record>
+    <!-- To print Pdf. -->
+    <template id="print_member_ship_card">
+        <t t-call="web.html_container">
+            <div style="box-sizing: border-box; border: 2px solid black; padding: 12px 16px; height: 100%; page-break-after: always; page-break-inside: avoid;">
+                <t t-if="free_member">
+                    <div style="border-bottom: 2px solid black; margin-bottom: 0px; padding-bottom: 3px;">
+                        <h2 style="text-align: center; font-size: 22px; font-weight: bold; margin: 0;">Free Member</h2>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div style="border-bottom: 2px solid black; margin-bottom: 0px; padding-bottom: 3px;">
+                        <h2 style="text-align: center; font-size: 22px; font-weight: bold; margin: 0;">
+                            <t t-esc="membership_product[0] if membership_product else ''"/>
+                        </h2>
+                    </div>
+                </t>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <tbody>
+                        <tr>
+                            <td style="width: 110px; vertical-align: top; padding-right: 14px;">
+                                <img style="width: 110px; height: 120px; object-fit: cover; border-radius: 6px; display: block;"
+                                     t-attf-src="data:image/*;base64,{{image}}"/>
+                            </td>
+                            <td style="vertical-align: top;">
+                                <table class="session_1" style="width: 100%; border-collapse: collapse;">
+                                    <tbody>
+                                        <t t-if="free_member">
+                                            <tr t-if="name">
+                                                <td style="padding: 3px 0;">
+                                                    <h2 style="text-align: left; margin: 0; font-size: 16px; font-weight: bold; line-height: 1.2;">Name:
+                                                        <span t-esc="name"/>
+                                                    </h2>
+                                                </td>
+                                            </tr>
+                                            <tr t-if="phone">
+                                                <td style="padding: 3px 0;">
+                                                    <h2 style="text-align: left; margin: 0; font-size: 16px; font-weight: bold; line-height: 1.2; word-break: break-word;">Phone No:
+                                                        <span t-esc="phone"/>
+                                                    </h2>
+                                                </td>
+                                            </tr>
+                                            <tr t-if="function">
+                                                <td style="padding: 3px 0;">
+                                                    <h2 style="text-align: left; margin: 0; font-size: 16px; font-weight: bold; line-height: 1.2;">Job:
+                                                        <span t-esc="function"/>
+                                                    </h2>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-else="">
+                                            <tr t-if="name">
+                                                <td style="padding: 3px 0;">
+                                                    <h2 style="text-align: left; margin: 0; font-size: 16px; font-weight: bold; line-height: 1.2;">Name:
+                                                        <span t-esc="name"/>
+                                                    </h2>
+                                                </td>
+                                            </tr>
+                                            <tr t-if="phone">
+                                                <td style="padding: 3px 0;">
+                                                    <h2 style="text-align: left; margin: 0; font-size: 16px; font-weight: bold; line-height: 1.2; word-break: break-word;">Phone No:
+                                                        <span t-esc="phone"/>
+                                                    </h2>
+                                                </td>
+                                            </tr>
+                                            <tr t-if="start_date">
+                                                <td style="padding: 3px 0;">
+                                                    <h2 style="text-align: left; margin: 0; font-size: 16px; font-weight: bold; line-height: 1.2;">Start Date:
+                                                        <span t-esc="start_date"/>
+                                                    </h2>
+                                                </td>
+                                            </tr>
+                                            <tr t-if="end_date">
+                                                <td style="padding: 3px 0;">
+                                                    <h2 style="text-align: left; margin: 0; font-size: 16px; font-weight: bold; line-height: 1.2;">End Date:
+                                                        <span t-esc="end_date"/>
+                                                    </h2>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="box-sizing: border-box; border: 2px solid black; padding: 12px 18px; height: 100%; page-break-inside: avoid;">
+                <table class="session_2" style="width: 100%; border-collapse: collapse;">
+                    <tbody>
+                        <tr t-if="company_name">
+                            <td style="padding: 2px 0 6px 0;">
+                                <h2 style="text-align: left; margin: 0; font-size: 20px; font-weight: bold;">
+                                    <span t-esc="company_name"/>
+                                </h2>
+                            </td>
+                        </tr>
+                        <tr t-if="company_address or city or state or country">
+                            <td style="padding: 3px 0;">
+                                <h2 style="text-align: left; margin: 0; font-size: 14.5px; font-weight: 500; line-height: 1.3;">
+                                    <t t-if="company_address">
+                                        <span t-esc="company_address"/><br/>
+                                    </t>
+                                    <t t-set="location_parts" t-value="[p for p in [city, state, country] if p]"/>
+                                    <span t-esc="', '.join(location_parts)"/>
+                                </h2>
+                            </td>
+                        </tr>
+                        <tr t-if="company_email">
+                            <td style="padding: 3px 0;">
+                                <h2 style="text-align: left; margin: 0; font-size: 14.5px; font-weight: normal;">
+                                    Email:
+                                    <span t-esc="company_email"/>
+                                </h2>
+                            </td>
+                        </tr>
+                        <tr t-if="company_phone">
+                            <td style="padding: 3px 0;">
+                                <h2 style="text-align: left; margin: 0; font-size: 14.5px; font-weight: normal;">
+                                    Contact:
+                                    <span t-esc="company_phone"/>
+                                </h2>
+                            </td>
+                        </tr>
+                        <tr t-if="website">
+                            <td style="padding: 3px 0;">
+                                <h2 style="text-align: left; margin: 0; font-size: 14.5px; font-weight: normal;">
+                                    <span t-esc="website"/>
+                                </h2>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>
