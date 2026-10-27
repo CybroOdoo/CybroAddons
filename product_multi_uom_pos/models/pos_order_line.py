@@ -19,28 +19,31 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import models, fields, api, _
+from odoo import models, fields, api
+
 
 class PosOrderLine(models.Model):
     _inherit = 'pos.order.line'
 
     custom_uom_name = fields.Char(string='Custom UoM Name')
     custom_uom_price = fields.Float(string='Custom UoM Price')
+    selected_uom_id = fields.Many2one(
+        'uom.uom',
+        string='Selected UoM',
+        help='The unit of measure selected in POS for this order line '
+             '(overrides product default UoM for stock moves).'
+    )
 
     @api.model
     def _load_pos_data_fields(self, config):
-        """Include custom UoM fields so they are sent to the POS frontend when
-        loading saved/shared orders in a different POS session."""
-        fields = super()._load_pos_data_fields(config)
-        fields += ['custom_uom_name', 'custom_uom_price']
-        return fields
+        """Include custom UoM fields so they are sent to the POS frontend.
 
-    @api.model
-    def _order_line_fields(self, line, session_id=None):
-        """Updating order line fields to include custom UoM name and price."""
-        fields_res = super(PosOrderLine, self)._order_line_fields(line, session_id)
-        if line[2].get('custom_uom_name'):
-            fields_res[2].update({'custom_uom_name': line[2].get('custom_uom_name')})
-        if line[2].get('custom_uom_price'):
-            fields_res[2].update({'custom_uom_price': line[2].get('custom_uom_price')})
-        return fields_res
+        In Odoo 19 the framework reads _load_pos_data_fields to know which
+        fields to load from the DB AND to build the JS model field definitions
+        (type, relation, etc.) via _load_pos_data_relations.  Only fields
+        listed here are included in ormSerialization and therefore synced back
+        to the backend on sync_from_ui.
+        """
+        result = super()._load_pos_data_fields(config)
+        result += ['custom_uom_name', 'custom_uom_price', 'selected_uom_id']
+        return result

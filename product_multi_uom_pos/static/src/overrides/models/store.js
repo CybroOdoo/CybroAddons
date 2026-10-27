@@ -23,13 +23,20 @@ patch(PosStore.prototype, {
             }
 
             let uomId = rec.uom_id;
-            let uomName = "Unit";
-            if (typeof uomId === 'object') {
-                uomName = uomId.name || uomId.display_name;
+            let uomName = "";
+            if (uomId && typeof uomId === 'object') {
+                uomName = uomId.name || uomId.display_name || "";
                 uomId = uomId.id;
             } else if (Array.isArray(uomId)) {
-                uomName = uomId[1];
+                uomName = uomId[1] || "";
                 uomId = uomId[0];
+            }
+            if (!uomName && uomId) {
+                const uomRec = this.models["uom.uom"]?.get(uomId);
+                uomName = uomRec?.name || uomRec?.display_name || "";
+            }
+            if (!uomName) {
+                uomName = "Unit";
             }
 
             this.multi_uoms_by_tmpl_id[tmplId].push({

@@ -30,8 +30,7 @@ class PosConfig(models.Model):
 
     pos_multi_uom = fields.Boolean(
         string="Multi UoM",
-        help="Enable the option change UoM of products in POS"
-    )
+        help="Enable the option change UoM of products in POS")
 
     def read(self, fields=None, load='_classic_read'):
         """Overriding read function to include the fields when
