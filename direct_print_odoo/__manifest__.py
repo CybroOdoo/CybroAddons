@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Direct Print',
-    'version': '19.0.1.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Extra tools',
     'summary': 'The Direct Print is a tool that connects Odoo to PrintNode, '
                'a cloud-based printing service. This connector allows users to'
@@ -31,7 +31,7 @@
                    'businesses to print documents remotely from any device or '
                    'location. The Direct Print for Odoo is a '
                    'software module that integrates Odoo, an open-source ERP '
-                   'system, with PrintNodes printing capabilities.',
+                   'system, with PrintNode printing capabilities.',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

@@ -30,7 +30,6 @@ class ResCompany(models.Model):
     api_key_print_node = fields.Char(string="API Key",
                                      help='API Key of the print-node')
     available_printers_id = fields.Many2one('printer.details',
-                                            string='Available Printers',
                                             help='Available printers in the '
                                                  'connected computer')
     printers_ids = fields.Many2many('printer.details',

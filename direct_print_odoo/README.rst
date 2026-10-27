@@ -12,10 +12,17 @@ First you need to install the printnode application.
  * Go to www.printnode.com/en/download
  * Click on the download button for your operating system.
  * Install the printnode application
-After that create the apikey.Only one system is logged in at a time with all printers connected
-After installing this module, Set your api key and url and check the available printers.
-After that when you click the print button it will print the corresponding file and also download the file.
-And when you run the module in localhost there might be a chance to getting an access issue.
+Create a PrintNode API key in your PrintNode account. The PrintNode client
+connects the computers and printers associated with that account.
+
+After installing this module, enter your API key in **Settings → Direct
+Print**, then check the available printers and select one or more printers.
+When you print a PDF report, Odoo returns the PDF to your browser and sends a
+copy to the selected PrintNode printer. HTML and text reports continue to use
+Odoo's standard report behavior.
+
+Local development environments may need network access to the PrintNode API
+and a running PrintNode client to discover printers and submit print jobs.
 
 Company
 -------
@@ -23,7 +30,7 @@ Company
 
 License
 -------
-General Public License, Version 3 (LGPL v3).
+GNU Lesser General Public License, Version 3 (LGPL v3).
 (https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 
 Credits

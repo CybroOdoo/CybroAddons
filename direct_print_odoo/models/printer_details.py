@@ -31,6 +31,5 @@ class PrinterDetails(models.Model):
 
     id_of_printer = fields.Char(string="Printer ID", help="Id of printer")
     printers_name = fields.Char(string="Printer Name", help="Name of printer")
-    printer_description = fields.Char(string="Printer Description",
-                                      help="Description of printer")
+    printer_description = fields.Char(help="Description of printer")
     state = fields.Char(string="Status", help="Status of printer")
