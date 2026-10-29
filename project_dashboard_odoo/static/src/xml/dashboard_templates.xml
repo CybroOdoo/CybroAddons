@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="ProjectDashboard">
+        <div class="oh_dashboards container-fluid p-0">
+            <!-- Header (Matching Reference Image Floating Modern Header) -->
+            <div class="dashboard-header d-flex justify-content-between align-items-center">
+                <div class="sf-brand-wrap">
+                    <div class="sf-brand-icon">
+                        <i class="oi" data-icon="widgets"></i>
+                    </div>
+                    <div>
+                        <h2 class="sf-brand-title">Project Performance Dashboard</h2>
+                    </div>
+                </div>
+
+                <!-- Right Action Buttons -->
+                <div class="d-flex align-items-center">
+                    <button class="sf-btn-pill" t-on-click="() => this.refreshDashboard()">
+                        <i class="oi me-1" data-icon="refresh"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content (Scrollable Area) -->
+            <div class="dashboard-content p-4"
+                 style="max-height: calc(100vh - 90px); overflow-y: auto;">
+                <!-- Filter Section (Soft Elevated Card) -->
+                <div class="card mb-4 border-0">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0 fw-semibold text-dark">
+                            <i class="oi me-2" data-icon="filter_alt" style="color: var(--sf-cyan);"></i>Filter Options
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center g-3">
+                            <div class="col-md-2 col-sm-6">
+                                <label class="form-label fw-semibold small text-muted mb-1">Start Date</label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="start_date"
+                                       t-ref="this.start_date"
+                                       t-on-change="(ev) => this._onchangeFilter(ev)"/>
+                            </div>
+                            <div class="col-md-2 col-sm-6">
+                                <label class="form-label fw-semibold small text-muted mb-1">End Date</label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="end_date"
+                                       t-ref="this.end_date"
+                                       t-on-change="(ev) => this._onchangeFilter(ev)"/>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <label class="form-label fw-semibold small text-muted mb-1">Project</label>
+                                <select class="form-select"
+                                        id="project_selection"
+                                        t-ref="this.project_selection"
+                                        t-on-change="(ev) => this._onchangeFilter(ev)">
+                                    <option value="null">All Projects</option>
+                                    <option t-foreach="this.state.projects"
+                                            t-as="project" t-key="project.id || project_index"
+                                            t-att-value="project.id">
+                                        <t t-out="project.name"/>
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <label class="form-label fw-semibold small text-muted mb-1">Employees</label>
+                                <select class="form-select"
+                                        id="employee_selection"
+                                        t-ref="this.employee_selection"
+                                        t-on-change="(ev) => this._onchangeFilter(ev)">
+                                    <option value="null">All Employees</option>
+                                    <option t-foreach="this.state.employees"
+                                            t-as="employee" t-key="employee.id || employee_index"
+                                            t-att-value="employee.id">
+                                        <t t-out="employee.name"/>
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 col-sm-12 d-flex align-items-end justify-content-end">
+                                <button t-on-click="() => this.resetFilters()" class="btn reset-btn w-100">
+                                    <i class="oi me-1" data-icon="undo"></i>Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cards (Soft Neumorphic Rounded Cards using Odoo Icons) -->
+                <div class="row g-3 mb-4">
+                    <!-- Total Projects -->
+                    <div class="col-xl-2 col-md-4 col-sm-6"
+                         t-on-click="(e) => this.tot_projects(e)">
+                        <div class="card h-100 kpi-card">
+                            <div class="card-icon bg-primary">
+                                <i class="oi" data-icon="widgets"></i>
+                            </div>
+                            <h6>Total Projects</h6>
+                            <h4 t-ref="this.tot_project_ref"><t t-out="this.total_projects"/></h4>
+                            <div class="small">
+                                <i class="oi me-1" data-icon="arrow_upward"></i>View Details
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Employees (Manager Only) -->
+                    <t t-if="this.flag_user == 1">
+                        <div class="col-xl-2 col-md-4 col-sm-6"
+                             t-on-click="(e) => this.tot_emp(e)">
+                            <div class="card h-100 kpi-card">
+                                <div class="card-icon" style="background: var(--sf-purple-light); color: var(--sf-purple);">
+                                    <i class="oi" data-icon="group"></i>
+                                </div>
+                                <h6>Total Employees</h6>
+                                <h4 t-ref="this.tot_employee_ref"><t t-out="this.total_employees"/></h4>
+                                <div class="small">
+                                    <i class="oi me-1" data-icon="arrow_upward"></i>View Details
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Total Tasks -->
+                    <div class="col-xl-2 col-md-4 col-sm-6" t-on-click="(e) => this.tot_tasks(e)">
+                        <div class="card h-100 kpi-card">
+                            <div class="card-icon bg-info">
+                                <i class="oi" data-icon="task"></i>
+                            </div>
+                            <h6>Total Tasks</h6>
+                            <h4 t-ref="this.tot_task_ref"><t t-out="this.total_tasks"/></h4>
+                            <div class="small">
+                                <i class="oi me-1" data-icon="arrow_upward"></i>View Details
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hours Recorded (Manager Only) -->
+                    <t t-if="this.flag_user == 1">
+                        <div class="col-xl-2 col-md-4 col-sm-6"
+                             t-on-click="(e) => this.hr_recorded(e)">
+                            <div class="card h-100 kpi-card">
+                                <div class="card-icon bg-success">
+                                    <i class="oi" data-icon="timer"></i>
+                                </div>
+                                <h6>Hours Recorded</h6>
+                                <h4 t-ref="this.tot_hrs_ref"><t t-out="this.total_hours"/></h4>
+                                <div class="small">
+                                    <i class="oi me-1" data-icon="arrow_upward"></i>View Details
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Total Margin (Manager Only - Dark Hero Card Styling matching Screenshot) -->
+                    <t t-if="this.flag_user == 1">
+                        <div class="col-xl-2 col-md-4 col-sm-6"
+                             t-on-click="(e) => this.total_margin(e)">
+                            <div class="card h-100 kpi-card" style="background: linear-gradient(135deg, #091728 0%, #0d284a 55%, #0a3d66 100%); border-color: rgba(255,255,255,0.15) !important;">
+                                <div class="card-icon" style="background: rgba(0, 229, 255, 0.15); color: #00e5ff;">
+                                    <i class="oi" data-icon="attach_money"></i>
+                                </div>
+                                <h6 style="color: #94a3b8 !important;">Total Margin</h6>
+                                <h4 style="color: #ffffff !important;"
+                                    t-ref="this.tot_margin_ref"><t t-out="this.formatted_profitability"/></h4>
+                                <div class="small" style="background: rgba(0, 229, 255, 0.15); color: #00e5ff !important; border: 1px solid rgba(0, 229, 255, 0.3);">
+                                    <i class="oi me-1" data-icon="arrow_upward"></i>View Details
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Total Sale Orders -->
+                    <div class="col-xl-2 col-md-4 col-sm-6" t-on-click="(e) => this.tot_sale(e)">
+                        <div class="card h-100 kpi-card">
+                            <div class="card-icon bg-warning">
+                                <i class="oi" data-icon="shopping_cart"></i>
+                            </div>
+                            <h6>Total Sale Orders</h6>
+                            <h4 t-ref="this.tot_so_ref"><t t-out="this.total_sale_orders"/></h4>
+                            <div class="small">
+                                <i class="oi me-1" data-icon="arrow_upward"></i>View Details
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Existing Charts & Details (Exact Same 2 Charts, Styled to Match Screenshot) -->
+                <div class="row g-4">
+                    <!-- Left Column: Donut Chart + Task Details Table -->
+                    <div class="col-lg-6">
+                        <!-- Existing Donut Chart: Project Task Analysis -->
+                        <div class="card border-0 mb-4">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0 fw-semibold text-dark">
+                                    <i class="oi me-2" data-icon="pie_chart" style="color: var(--sf-cyan);"></i>Project Task Analysis
+                                </h5>
+                                <span class="badge bg-secondary">Tasks</span>
+                            </div>
+                            <div class="card-body py-3">
+                                <div style="height: 240px; position: relative;">
+                                    <canvas id="project_doughnut"
+                                            t-ref="this.project_doughnut"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Existing Project Task Details Table -->
+                        <div class="card border-0 mb-4">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0 fw-semibold text-dark">
+                                    <i class="oi me-2" data-icon="assignment" style="color: var(--sf-blue);"></i>Project Task Details
+                                </h5>
+                                <span class="badge bg-secondary"><t t-out="(this.task_data and this.task_data.length) or 0"/> Tasks</span>
+                            </div>
+                            <div class="card-body p-0"
+                                 style="max-height: 380px; overflow-y: auto;">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-4">Project Name</th>
+                                                <th>Task Name</th>
+                                                <th class="pe-4 text-end">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="this.task_data" t-as="proj" t-key="proj[1]">
+                                                <tr>
+                                                    <td class="ps-4 fw-semibold text-dark">
+                                                        <i class="oi me-2 text-muted" data-icon="folder"></i>
+                                                        <t t-out="(proj[2] and proj[2].en_US) || proj[2]"/>
+                                                    </td>
+                                                    <td><t t-out="proj[0]"/></td>
+                                                    <td class="pe-4 text-end">
+                                                        <span t-att-class="'badge ' +
+                                                            (((proj[3] and proj[3].en_US) || proj[3]) == 'Done' ? 'bg-success' : '') +
+                                                            (((proj[3] and proj[3].en_US) || proj[3]) == 'In Progress' ? 'bg-warning text-dark' : '') +
+                                                            (((proj[3] and proj[3].en_US) || proj[3]) == 'New' ? 'bg-secondary' : '')">
+                                                            <t t-out="(proj[3] and proj[3].en_US) || proj[3] || 'Active'"/>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Bar Chart + Stage Wise Table -->
+                    <div class="col-lg-6">
+                        <!-- Existing Bar Chart: Top Employees (Inflow Style) -->
+                        <div class="card border-0 mb-4">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0 fw-semibold text-dark">
+                                    <i class="oi me-2" data-icon="bar_chart" style="color: var(--sf-cyan);"></i>Top Employees Timesheet
+                                </h5>
+                                <span class="badge bg-secondary">Hours</span>
+                            </div>
+                            <div class="card-body py-3">
+                                <div style="height: 240px; position: relative;">
+                                    <canvas class="top_selling_employees"
+                                            t-ref="this.top_selling_employees"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Existing Stage Wise Total Projects Table -->
+                        <div class="card border-0">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0 fw-semibold text-dark">
+                                    <i class="oi me-2" data-icon="account_tree" style="color: var(--sf-blue);"></i>Stage Wise Total Projects
+                                </h5>
+                                <span class="badge bg-secondary">Stages</span>
+                            </div>
+                            <div class="card-body p-0" style="max-height: 380px; overflow-y: auto;">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-4">Stage Name</th>
+                                                <th class="pe-4 text-end">Project Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="this.project_stage_list"
+                                               t-as="data" t-key="data['id']">
+                                                <tr>
+                                                    <td class="ps-4 fw-semibold text-dark">
+                                                        <span class="d-inline-block rounded-circle me-2" style="width: 8px; height: 8px; background: var(--sf-cyan);"></span>
+                                                        <t t-out="data['name']"/>
+                                                    </td>
+                                                    <td class="pe-4 text-end">
+                                                        <span class="badge bg-primary">
+                                                            <t t-out="data['projects']"/> Projects
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

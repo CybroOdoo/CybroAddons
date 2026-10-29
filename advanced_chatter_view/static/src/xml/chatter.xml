@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t name="mail.ChatterAdvanced" t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <!-- Add reactive state classes to root chatter div without replacing it -->
+        <xpath expr="//div[hasclass('o-mail-Chatter')]" position="attributes">
+            <attribute name="t-att-class">{
+                'overflow-auto o-scrollbar-thin': this.webChatterProps.isChatterAside,
+                'o-chatter-disabled': this.thread().id === false,
+                'o-adv-chatter-collapsed': !this.state.isAdvChatterOpen,
+                'o-adv-chatter-expanded': this.state.isAdvChatterOpen,
+                'o-adv-filter-message': this.state.advChatterFilter === 'message',
+                'o-adv-filter-note': this.state.advChatterFilter === 'note',
+                'o-adv-filter-activity': this.state.advChatterFilter === 'activity'
+            }</attribute>
+        </xpath>
+
+        <!-- Insert close button and collapsed action icons before chatter top section -->
+        <xpath expr="//div[hasclass('o-mail-Chatter')]/div[hasclass('o-mail-Chatter-top')]" position="before">
+            <button t-if="this.state.isAdvChatterOpen"
+                    class="o_adv_chatter_close_btn fa fa-times"
+                    type="button"
+                    aria-label="Close chatter"
+                    t-on-click="this._onClickCross"/>
+
+            <div t-if="!this.state.isAdvChatterOpen" class="o_adv_chatter_actions d-flex flex-column align-items-center">
+                <div class="o_adv_chatter_action_item text-center">
+                    <button class="o_adv_chatter_icon o_adv_chatter_icon_message bi bi-chat-left-text"
+                            id="send_message"
+                            type="button"
+                            aria-label="Send message"
+                            t-on-click="this._onClickSendMessage"/>
+                    <div class="o_adv_chatter_label o_adv_chatter_label_message">Message</div>
+                </div>
+
+                <div class="o_adv_chatter_action_item text-center">
+                    <button class="o_adv_chatter_icon o_adv_chatter_icon_note bi bi-journal-text"
+                            id="log_note"
+                            type="button"
+                            aria-label="Log note"
+                            t-on-click="this._onClickLogNote"/>
+                    <div class="o_adv_chatter_label o_adv_chatter_label_note">Log Note</div>
+                </div>
+
+                <div class="o_adv_chatter_action_item text-center">
+                    <button class="o_adv_chatter_icon o_adv_chatter_icon_activity bi bi-clock-history"
+                            id="active"
+                            type="button"
+                            aria-label="Activities"
+                            t-on-click="this._onClickActive"/>
+                    <div class="o_adv_chatter_label o_adv_chatter_label_activity">Activities</div>
+                </div>
+            </div>
+        </xpath>
+
+        <!-- Conditionally display chatter top section when open -->
+        <xpath expr="//div[hasclass('o-mail-Chatter-top')]" position="attributes">
+            <attribute name="t-if">this.state.isAdvChatterOpen</attribute>
+        </xpath>
+
+        <!-- Conditionally display chatter content when open -->
+        <xpath expr="//div[hasclass('o-mail-Chatter-content')]" position="attributes">
+            <attribute name="t-if">this.state.isAdvChatterOpen</attribute>
+        </xpath>
+    </t>
+</templates>
