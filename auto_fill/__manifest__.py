@@ -21,21 +21,21 @@
 ###############################################################################
 {
     'name': 'Auto Fill',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Widget that suggests field value from existing records""",
     'description': 'Widget for auto completing a character field according'
                    ' to its existing record values',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-	'maintainer': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'assets': {
-        'web.assets_backend': {
-            '/auto_fill/static/src/css/auto_fill.css',
-            '/auto_fill/static/src/js/auto_fill.js',
-            '/auto_fill/static/src/xml/auto_fill.xml',
-        },
+        'web.assets_backend': [
+            'auto_fill/static/src/css/auto_fill.css',
+            'auto_fill/static/src/js/auto_fill.js',
+            'auto_fill/static/src/xml/auto_fill.xml',
+        ],
     },
     'images': ['static/description/banner.jpg'],
     'license': 'AGPL-3',
