@@ -21,14 +21,14 @@
 ###############################################################################
 {
     'name': 'Auto Fill',
-    'version': '1.0',
+    'version': '18.0.1.0.1',
     'category': 'Extra Tools',
     'summary': """Widget that suggests field value from existing records""",
     'description': 'Widget for auto completing a character field according'
                    ' to its existing record values',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
-	'maintainer': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
     'assets': {
         'web.assets_backend': {
