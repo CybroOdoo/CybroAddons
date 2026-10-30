@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Privilege grouping the Login Details roles on the user form -->
+    <record id="res_groups_privilege_login_detail" model="res.groups.privilege">
+        <field name="name">Login Details</field>
+        <field name="category_id" ref="base.module_category_administration"/>
+    </record>
+    <!-- User: sees only their own login history -->
+    <record id="group_login_detail_user" model="res.groups">
+        <field name="name">User: Own Login History</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_login_detail"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <!-- Manager: sees the login history of all users -->
+    <record id="group_login_detail_manager" model="res.groups">
+        <field name="name">Manager: All Login History</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_login_detail"/>
+        <field name="implied_ids" eval="[(4, ref('group_login_detail_user'))]"/>
+        <field name="user_ids"
+               eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

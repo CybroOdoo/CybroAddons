@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Replacing 'Add to cart' button in the product detail page in the website -->
+    <template id="product_custom" inherit_id="website_sale.cta_wrapper">
+        <xpath expr="//button[@name='add_to_cart' and @data-action='add_to_cart']" position="before">
+            <span t-if="request.env.user.blacklisted_partner" class="text-danger fw-bold">
+                You are not allowed to buy the product. Please contact the admin.
+            </span>
+        </xpath>
+        <xpath expr="//button[@name='add_to_cart' and @data-action='add_to_cart']" position="attributes">
+            <attribute name="t-attf-class" add="{{'d-none' if request.env.user.blacklisted_partner else ''}}" separator=" "/>
+            <attribute name="t-att-disabled">'disabled' if request.env.user.blacklisted_partner else None</attribute>
+        </xpath>
+    </template>
+
+    <!-- Replacing 'Buy Now' button in the product detail page in the website -->
+    <template id="product_buy_now_custom"
+              inherit_id="website_sale.product_buy_now">
+        <xpath expr="//button[@name='add_to_cart' and @data-action='buy_now']"
+               position="attributes">
+            <attribute name="t-attf-class" add="{{'d-none' if request.env.user.blacklisted_partner else ''}}" separator=" "/>
+            <attribute name="t-att-disabled">'disabled' if request.env.user.blacklisted_partner else None</attribute>
+        </xpath>
+    </template>
+
+    <!-- Hiding 'Add to wishlist' button for blacklisted users -->
+    <template id="product_add_to_wishlist_custom"
+              inherit_id="website_sale.wishlist_button">
+        <xpath expr="//button" position="attributes">
+            <attribute name="t-if">not request.env.user.blacklisted_partner</attribute>
+        </xpath>
+    </template>
+
+    <!-- Hiding 'Compare' button for blacklisted users -->
+    <template id="product_add_to_compare_custom"
+              inherit_id="website_sale.comparison_button">
+        <xpath expr="//button" position="attributes">
+            <attribute name="t-if">product._can_be_added_to_comparison() and not request.env.user.blacklisted_partner</attribute>
+        </xpath>
+    </template>
+
+    <!-- Hiding 'Add to Cart' button in the shop product grid for blacklisted users -->
+    <template id="shop_product_buttons_custom"
+              inherit_id="website_sale.shop_product_buttons">
+        <xpath expr="//button[@name='add_to_cart']" position="attributes">
+            <attribute name="t-if">not request.env.user.blacklisted_partner</attribute>
+        </xpath>
+    </template>
+</odoo>
