@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Dedicated customer list view used only by the Monday action-->
+    <record id="res_partner_monday_view_list" model="ir.ui.view">
+        <field name="name">res.partner.monday.view.list</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="create">false</attribute>
+                <attribute name="export_xlsx">0</attribute>
+            </xpath>
+        </field>
+    </record>
+    <!--    Dedicated customer form view used only by the Monday action-->
+    <record id="res_partner_monday_view_form" model="ir.ui.view">
+        <field name="name">res.partner.monday.view.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="attributes">
+                <attribute name="create">false</attribute>
+            </xpath>
+        </field>
+    </record>
+    <!--    Monday Customer menu action-->
+    <record id="res_partner_action" model="ir.actions.act_window">
+        <field name="name">Monday Customers</field>
+        <field name="res_model">res.partner</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('monday_reference', '=', True)]</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('res_partner_monday_view_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('res_partner_monday_view_form')})]"/>
+    </record>
+    <!--    Customer menu-->
+    <menuitem
+            id="res_partner_menu"
+            name="Customers"
+            parent="monday_imported_menu"
+            action="res_partner_action"
+            sequence="3"/>
+</odoo>

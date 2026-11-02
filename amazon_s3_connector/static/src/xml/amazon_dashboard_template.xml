@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Amazon S3 Dashboard Template
+    This template defines the layout for the Amazon S3 file management dashboard.
+    It includes:
+    - A header with branding and an upload button.
+    - Search and filter controls for navigating the file list.
+    - A responsive table displaying file metadata (No., Name, Type, Date, Size).
+-->
+<templates xml:space="preserve">
+    <t t-name="amazon_s3_connector.AmazonDashboard">
+        <section class="amazon_dashboard_main_section">
+            <img src="/amazon_s3_connector/static/src/img/s3_icon.png" alt="Amazon S3"
+                 style="width:150px; margin:5px;"/>
+            <img src="/amazon_s3_connector/static/src/img/amazon_s3_text.png" alt="Amazon S3"
+                 style="width:220px; margin:-10px;"/>
+            <input class="btn amazon_upload"
+                   type="button"
+                   value="Upload"
+                   t-on-click="this.upload"/>
+            <input type="search"
+                   class="amazon_header-search-input"
+                   placeholder="Search Files"
+                   t-on-input="this.search_file"/>
+            <label>
+                <select class="form-select files_select" aria-label="Filter by file type" t-on-change="this.filter_files">
+                    <option value="ALL FILES">All Files</option>
+                    <option value="pdf">PDF</option>
+                    <option value="image">Image</option>
+                    <option value="zip">ZIP</option>
+                    <option value="txt">Text</option>
+                    <option value="xlsx">Excel</option>
+                </select>
+            </label>
+            <div class="amazon_content">
+                <table class="table table-light table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th role="button" t-on-click="this.sort_number">No.</th>
+                            <th role="button" t-on-click="this.sort_name">Name</th>
+                            <th>Type</th>
+                            <th>Last Modified</th>
+                            <th>Size</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="this.filteredFiles" t-as="file" t-key="file.index">
+                            <tr>
+                                <td>
+                                    <t t-out="file.index"/>
+                                </td>
+                                <td>
+                                    <a t-att-href="file.url" target="_blank">
+                                        <t t-out="file.name"/>
+                                    </a>
+                                </td>
+                                <td>
+                                    <t t-out="file.type"/>
+                                </td>
+                                <td>
+                                    <t t-out="file.date"/>
+                                </td>
+                                <td>
+                                    <t t-out="file.size"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </t>
+</templates>

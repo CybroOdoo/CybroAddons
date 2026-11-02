@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--STANDARD Layout-->
+    <!--Inherited the standard external layout for changing company address position-->
+    <template id="custom_external_layout_standard"
+              inherit_id="web.external_layout_standard">
+        <!-- 1. Hide default table ONLY when custom invoice layout is active -->
+        <xpath expr="//div[contains(@t-attf-class, 'header')]/table" position="attributes">
+            <attribute name="t-if">not (model == 'account.move' and company.base_layout in ('normal', 'modern', 'old') and company.document_layout_id)</attribute>
+        </xpath>
+
+        <!-- 2. Show custom header before table so /table XPath in child views (like account_edi_ubl_cii) still resolves -->
+        <xpath expr="//div[contains(@t-attf-class, 'header')]/table" position="before">
+            <t t-if="model == 'account.move' and company.base_layout in ('normal', 'modern', 'old') and company.document_layout_id">
+                <div class="row">
+                    <div style="width:50%;"
+                         t-attf-class="{{'ms-auto' if company.document_layout_id.logo_position == 'right' else 'd-flex justify-content-start'}}">
+                        <div class="d-flex justify-content-end">
+                            <img t-if="company.logo"
+                                 t-att-src="image_data_uri(company.logo)"
+                                 style="max-height:40px;max-width:140%"
+                                 alt="Logo"/>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <t t-if="company.report_header">
+                        <div style="width:50%;"
+                             t-attf-class="{{'ms-auto' if company.document_layout_id.tagline_position == 'right' else 'd-flex justify-content-start'}}">
+                            <div class="d-flex justify-content-end">
+                                <div t-out="company.report_header"/>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+                <div class="row"
+                     t-attf-style="{{'color: ' + company.document_layout_id.company_text_color + ';' if company.document_layout_id.company_text_color else ''}}">
+                    <div style="width:50%;"
+                         t-attf-class="{{'ms-auto' if company.document_layout_id.company_position == 'right' else ''}}">
+                        <div itemprop="address" class="address">
+                            <ul class="list-unstyled">
+                                <li t-if="company.is_company_details_empty">
+                                    <t t-out="company.partner_id"
+                                       t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'/>
+                                </li>
+                                <li t-else="">
+                                    <t t-out="company.company_details"/>
+                                </li>
+                                <li t-if="forced_vat">
+                                    <t t-out="company.country_id.vat_label or 'Tax ID'"/>:
+                                    <span t-out="forced_vat"/>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

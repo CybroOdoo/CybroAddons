@@ -1,0 +1,57 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#############################################################################
+{
+    'name': 'Website Warranty Management',
+    'version': '20.0.1.0.0',
+    'category': 'Sales',
+    'summary': 'Manage product warranties, registrations, and claims from website and sales',
+    'description': """The "Warranty Management" module enables businesses to 
+    efficiently track product warranties, including expiration dates and 
+    associated customer details. Seamlessly integrated with sales processes,
+    it facilitates easy warranty claim creation from sales orders and enhances
+    customer experience with website warranty registration.""",
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
+    'depends': ['sale_management', 'website', 'stock', 'sale_stock'],
+    'data': [
+        'data/portal_entry_data.xml',
+        'data/website_menu_data.xml',
+        'data/mail_template_data.xml',
+        'data/ir_cron_data.xml',
+        'security/ir.access.csv',
+        'views/product_template_views.xml',
+        'views/sale_order_views.xml',
+        'views/website_registration_templates.xml',
+        'views/warranty_claim_views.xml',
+        'views/warranty_registration_views.xml',
+        'views/portal_templates.xml',
+    ],
+    'assets': {
+        'web.assets_frontend': [
+            'website_warranty_management/static/src/js/website_registration.js',
+            'website_warranty_management/static/src/css/warranty.css',
+        ],
+    },
+    'images': ['static/description/banner.jpg'],
+    'license': 'LGPL-3',
+    'installable': True,
+    'auto_install': False,
+    'application': False,
+}
