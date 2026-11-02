@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="accounting_dashboard_pro.KpiCard">
+        <div t-att-class="'adp-kpi-card kpi-' + (this.props.color || 'blue')"
+             t-on-click="this.props.onClick">
+            <div class="adp-kpi-inner">
+                <div class="adp-kpi-top">
+                    <span class="adp-kpi-label" t-out="this.props.title"/>
+                    <div class="adp-kpi-top-right">
+                        <span t-if="this.props.info" class="adp-info-btn"
+                              t-on-mouseenter="this.onInfoEnter"
+                              t-on-mouseleave="this.onInfoLeave">
+                            <i class="oi" data-icon="info"/>
+                        </span>
+                        <div class="adp-kpi-icon">
+                            <i class="oi" t-att-data-icon="this.props.icon"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="adp-kpi-amount" t-ref="this.amountRef">—</div>
+                <div class="adp-kpi-bottom">
+                    <span class="adp-kpi-subtitle" t-if="this.props.subtitle" t-out="this.props.subtitle"/>
+                    <span t-if="this.props.changePct !== undefined and this.props.changePct !== 0"
+                          t-att-class="'adp-kpi-change ' + this.changeClass">
+                        <i class="oi" t-att-data-icon="this.changeIcon"/>
+                        <t t-out="Math.abs(this.props.changePct) + '%'"/>
+                    </span>
+                </div>
+                <!-- Previous period comparison -->
+                <div class="adp-kpi-comparison" t-if="this.hasPrev">
+                    <span class="prev-label">vs prev:</span>
+                    <span class="prev-value" t-out="this.props.formatCurrency(this.props.prevAmount)"/>
+                </div>
+            </div>
+            <!-- Hover info tooltip overlay -->
+            <div t-if="this.infoState.show" class="adp-info-tooltip"
+                 t-on-mouseenter="this.onInfoEnter"
+                 t-on-mouseleave="this.onInfoLeave">
+                <div class="adp-info-tooltip-header">
+                    <i class="oi" data-icon="info"/> <t t-out="this.props.title"/>
+                </div>
+                <div class="adp-info-tooltip-body">
+                    <t t-foreach="this.infoLines" t-as="line" t-key="line_index">
+                        <div t-att-class="line_index === 0 ? 'info-desc' : 'info-formula'" t-out="line"/>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>
