@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Add the textile flag to the manufacturing order -->
+    <record id="mrp_production_form_view" model="ir.ui.view">
+        <field name="name">mrp.production.view.form.inherit.textile.management</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="is_textile_mrp_order" invisible="1"/>
+            </xpath>
+            <!-- Textile orders only build textile products -->
+            <xpath expr="//sheet/group/group/field[@name='product_id']"
+                   position="attributes">
+                <attribute name="domain">[('type', '=', 'consu'), ('company_id', 'in', [company_id, False])] + ([('is_textile_product', '=', True)] if is_textile_mrp_order else [])</attribute>
+            </xpath>
+            <!-- Choosing a BoM fills the product in, so filter the BoMs too -->
+            <xpath expr="//div[@name='bom_div']/field[@name='bom_id']"
+                   position="attributes">
+                <attribute name="domain">['&amp;', '|', ('company_id', '=', False), ('company_id', '=', company_id), '&amp;', '|', ('product_id', '=', product_id), '&amp;', ('product_tmpl_id.product_variant_ids', '=', product_id), ('product_id', '=', False), ('type', '=', 'normal')] + ([('product_tmpl_id.is_textile_product', '=', True)] if is_textile_mrp_order else [])</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

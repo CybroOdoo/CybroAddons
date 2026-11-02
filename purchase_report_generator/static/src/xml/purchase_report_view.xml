@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="PurchaseReport">
+        <div class="o_purchase_report_container d-flex flex-column h-100">
+            <!-- Header / Control Panel Bar -->
+            <div class="o_purchase_report_header px-4 py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="mb-0 fw-semibold text-body">
+                        <i class="oi oi-view-list me-2 text-primary"/>Purchase Report
+                    </h4>
+                    <span class="badge rounded-pill border text-muted px-2 py-1 fs-7" t-out="reportLabel"/>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2" id="pdf"
+                            t-on-click="(ev) => this.printPdf(ev)">
+                        <i class="oi oi-print"/> Print (PDF)
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2" id="xlsx"
+                            t-on-click="() => this.print_xlsx()">
+                        <i class="fa fa-file-excel-o text-success"/> Export (XLSX)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Toolbar -->
+            <div class="px-4 py-3">
+                <div class="o_purchase_report_filter_card p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <!-- Date Range Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle time_range_pr d-flex align-items-center gap-2"
+                                    type="button" id="date_chose"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="oi oi-calendar"/>
+                                <span>Date Range</span>
+                            </button>
+                            <div class="dropdown-menu my_custom_dropdown shadow" role="menu"
+                                 aria-labelledby="date_chose">
+                                <div class="mb-3">
+                                    <label class="form-label fs-7 fw-semibold" for="date_from">Start Date</label>
+                                    <input type="date" name="date_from"
+                                           id="date_from"
+                                           t-ref="this.startDate"
+                                           class="form-control form-control-sm"
+                                           t-on-change="() => this.onchangeFromDate()"/>
+                                </div>
+                                <div class="mb-1">
+                                    <label class="form-label fs-7 fw-semibold" for="date_to">End Date</label>
+                                    <input type="date" name="date_to"
+                                           id="date_to"
+                                           t-ref="this.endDate"
+                                           class="form-control form-control-sm"
+                                           t-on-change="() => this.onchangeEndDate()"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Report Type Selection -->
+                        <div class="d-flex align-items-center gap-2">
+                            <label for="selection" class="form-label mb-0 fs-7 fw-semibold text-nowrap text-muted">
+                                <i class="oi oi-article me-1"/>Report Type:
+                            </label>
+                            <select id="selection"
+                                    class="form-select form-select-sm w-auto"
+                                    t-ref="this.orderBy"
+                                    name="states[]">
+                                <option value="report_by_order" selected="">Report By Order</option>
+                                <option value="report_by_order_detail">Report By Order Detail</option>
+                                <option value="report_by_product">Report By Product</option>
+                                <option value="report_by_categories">Report By Categories</option>
+                                <option value="report_by_purchase_representative">Report By Purchase Representative</option>
+                                <option value="report_by_state">Report By State</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Apply Filter Button -->
+                    <div>
+                        <button type="button" id="apply_filter"
+                                class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-2"
+                                t-on-click="() => this.applyFilter()">
+                            <i class="fa fa-filter"/> Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Table Section -->
+            <div class="flex-grow-1 px-4 pb-4 overflow-hidden">
+                <t t-if="!this.state.order_line or this.state.order_line.length === 0">
+                    <div class="o_purchase_report_table_wrapper h-100 d-flex flex-column align-items-center justify-content-center p-5 text-center text-muted">
+                        <i class="fa fa-folder-open-o fs-1 mb-3 text-secondary opacity-50"/>
+                        <h5 class="fw-semibold">No records found</h5>
+                        <p class="fs-7 mb-0 text-muted">No purchase data matches the selected filters or date range.</p>
+                    </div>
+                </t>
+                <t t-else="">
+                    <!-- 1. Report By Order -->
+                    <div t-if="this.state.order_by == 'report_by_order'" class="o_purchase_report_table_wrapper">
+                        <table class="table table-sm table-hover o_list_table o_purchase_report_table align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Order</th>
+                                    <th class="text-center">Date Order</th>
+                                    <th class="text-start">Vendor</th>
+                                    <th class="text-start">Purchase Representative</th>
+                                    <th class="text-end">Total Qty</th>
+                                    <th class="text-end">Amount Total</th>
+                                    <th class="text-start">Note</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="this.state.order_line"
+                                   t-as="dynamic_purchase_report"
+                                   t-key="dynamic_purchase_report_index">
+                                    <tr>
+                                        <td class="text-start">
+                                            <t t-if="dynamic_purchase_report['id']">
+                                                <div class="dropdown d-inline-block">
+                                                    <a class="view_purchase_order dropdown-toggle d-inline-flex align-items-center gap-1 text-decoration-none fw-semibold"
+                                                       href="#"
+                                                       id="table_toggle_btn"
+                                                       data-bs-toggle="dropdown"
+                                                       aria-expanded="false">
+                                                        <t t-out="dynamic_purchase_report['name']"/>
+                                                    </a>
+                                                    <ul class="dropdown-menu shadow-sm" role="menu" aria-labelledby="table_toggle_btn">
+                                                        <li>
+                                                            <a class="dropdown-item d-flex align-items-center gap-2"
+                                                               href="#"
+                                                               t-att-id="dynamic_purchase_report['id']"
+                                                               t-on-click="(ev) => this.viewPurchaseOrder(ev)">
+                                                                <i class="fa fa-external-link text-primary"/> View Purchase Order
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </t>
+                                        </td>
+                                        <td class="text-center text-muted">
+                                            <t t-out="dynamic_purchase_report['date_order']"/>
+                                        </td>
+                                        <td class="text-start">
+                                            <t t-out="dynamic_purchase_report['partner']"/>
+                                        </td>
+                                        <td class="text-start">
+                                            <t t-out="dynamic_purchase_report['salesman']"/>
+                                        </td>
+                                        <td class="text-end font-monospace">
+                                            <t t-out="dynamic_purchase_report['sum']"/>
+                                        </td>
+                                        <td class="text-end font-monospace fw-semibold text-body">
+                                            <t t-out="dynamic_purchase_report['amount_total']"/>
+                                        </td>
+                                        <td class="text-start text-muted fs-7">
+                                            <t t-out="dynamic_purchase_report['note']"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 2. Report By Order Detail -->
+                    <div t-if="this.state.order_by == 'report_by_order_detail'" class="o_purchase_report_table_wrapper">
+                        <table class="table table-sm table-hover o_list_table o_purchase_report_table align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Order</th>
+                                    <th class="text-center">Date Order</th>
+                                    <th class="text-start">Vendor</th>
+                                    <th class="text-start">Purchase Representative</th>
+                                    <th class="text-start">Product Code</th>
+                                    <th class="text-start">Product Name</th>
+                                    <th class="text-end">Price Unit</th>
+                                    <th class="text-end">Qty</th>
+                                    <th class="text-end">Price Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="this.state.order_line"
+                                   t-as="dynamic_purchase_report"
+                                   t-key="dynamic_purchase_report_index">
+                                    <tr>
+                                        <td class="text-start">
+                                            <t t-if="dynamic_purchase_report['id']">
+                                                <div class="dropdown d-inline-block">
+                                                    <a class="view_purchase_order dropdown-toggle d-inline-flex align-items-center gap-1 text-decoration-none fw-semibold"
+                                                       href="#"
+                                                       id="table_toggle_btn"
+                                                       data-bs-toggle="dropdown"
+                                                       aria-expanded="false">
+                                                        <t t-out="dynamic_purchase_report['name']"/>
+                                                    </a>
+                                                    <ul class="dropdown-menu shadow-sm" role="menu" aria-labelledby="table_toggle_btn">
+                                                        <li>
+                                                            <a class="dropdown-item d-flex align-items-center gap-2"
+                                                               href="#"
+                                                               t-att-id="dynamic_purchase_report['id']"
+                                                               t-on-click="(ev) => this.viewPurchaseOrder(ev)">
+                                                                <i class="fa fa-external-link text-primary"/> View Purchase Order
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </t>
+                                        </td>
+                                        <td class="text-center text-muted">
+                                            <t t-out="dynamic_purchase_report['date_order']"/>
+                                        </td>
+                                        <td class="text-start">
+                                            <t t-out="dynamic_purchase_report['partner']"/>
+                                        </td>
+                                        <td class="text-start">
+                                            <t t-out="dynamic_purchase_report['salesman']"/>
+                                        </td>
+                                        <td class="text-start font-monospace text-muted fs-7">
+                                            <t t-out="dynamic_purchase_report['default_code']"/>
+                                        </td>
+                                        <td class="text-start">
+                                            <t t-out="dynamic_purchase_report['product']"/>
+                                        </td>
+                                        <td class="text-end font-monospace">
+                                            <t t-out="dynamic_purchase_report['price_unit']"/>
+                                        </td>
+                                        <td class="text-end font-monospace">
+                                            <t t-out="dynamic_purchase_report['sum']"/>
+                                        </td>
+                                        <td class="text-end font-monospace fw-semibold text-body">
+                                            <t t-out="dynamic_purchase_report['price_subtotal']"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 3. Report By Product -->
+                    <div t-if="this.state.order_by == 'report_by_product'" class="o_purchase_report_table_wrapper">
+                        <table class="table table-sm table-hover o_list_table o_purchase_report_table align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Category</th>
+                                    <th class="text-start">Product Code</th>
+                                    <th class="text-start">Product Name</th>
+                                    <th class="text-end">Qty</th>
+                                    <th class="text-end">Amount Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="this.state.order_line"
+                                   t-as="dynamic_purchase_report"
+                                   t-key="dynamic_purchase_report_index">
+                                    <tr>
+                                        <td class="text-start">
+                                            <t t-out="dynamic_purchase_report['name']"/>
+                                        </td>
+                                        <td class="text-start font-monospace text-muted fs-7">
+                                            <t t-out="dynamic_purchase_report['default_code']"/>
+                                        </td>
+                                        <td class="text-start fw-medium">
+                                            <t t-out="dynamic_purchase_report['product']"/>
+                                        </td>
+                                        <td class="text-end font-monospace">
+                                            <t t-out="dynamic_purchase_report['qty']"/>
+                                        </td>
+                                        <td class="text-end font-monospace fw-semibold text-body">
+                                            <t t-out="dynamic_purchase_report['amount_total']"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 4. Report By Categories -->
+                    <div t-if="this.state.order_by == 'report_by_categories'" class="o_purchase_report_table_wrapper">
+                        <table class="table table-sm table-hover o_list_table o_purchase_report_table align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Category</th>
+                                    <th class="text-end">Qty</th>
+                                    <th class="text-end">Amount Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="this.state.order_line"
+                                   t-as="dynamic_purchase_report"
+                                   t-key="dynamic_purchase_report_index">
+                                    <tr>
+                                        <td class="text-start fw-medium">
+                                            <t t-out="dynamic_purchase_report['name']"/>
+                                        </td>
+                                        <td class="text-end font-monospace">
+                                            <t t-out="dynamic_purchase_report['qty']"/>
+                                        </td>
+                                        <td class="text-end font-monospace fw-semibold text-body">
+                                            <t t-out="dynamic_purchase_report['amount_total']"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 5. Report By Purchase Representative -->
+                    <div t-if="this.state.order_by == 'report_by_purchase_representative'" class="o_purchase_report_table_wrapper">
+                        <table class="table table-sm table-hover o_list_table o_purchase_report_table align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Purchase Representative</th>
+                                    <th class="text-center">Total Orders</th>
+                                    <th class="text-end">Total Qty</th>
+                                    <th class="text-end">Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="this.state.order_line"
+                                   t-as="dynamic_purchase_report"
+                                   t-key="dynamic_purchase_report_index">
+                                    <tr>
+                                        <td class="text-start fw-medium">
+                                            <t t-out="dynamic_purchase_report['name']"/>
+                                        </td>
+                                        <td class="text-center font-monospace">
+                                            <span class="badge rounded-pill border text-body o_order_count_badge px-2 py-1" t-out="dynamic_purchase_report['order']"/>
+                                        </td>
+                                        <td class="text-end font-monospace">
+                                            <t t-out="dynamic_purchase_report['qty']"/>
+                                        </td>
+                                        <td class="text-end font-monospace fw-semibold text-body">
+                                            <t t-out="dynamic_purchase_report['amount']"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 6. Report By State -->
+                    <div t-if="this.state.order_by == 'report_by_state'" class="o_purchase_report_table_wrapper">
+                        <table class="table table-sm table-hover o_list_table o_purchase_report_table align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">State</th>
+                                    <th class="text-center">Total Orders</th>
+                                    <th class="text-end">Quantity</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="this.state.order_line"
+                                   t-as="dynamic_purchase_report"
+                                   t-key="dynamic_purchase_report_index">
+                                    <tr>
+                                        <td class="text-center">
+                                            <t t-if="dynamic_purchase_report['state'] == 'draft'">
+                                                <span class="badge rounded-pill text-bg-secondary px-2 py-1">RFQ</span>
+                                            </t>
+                                            <t t-elif="dynamic_purchase_report['state'] == 'sent'">
+                                                <span class="badge rounded-pill text-bg-info px-2 py-1">RFQ Sent</span>
+                                            </t>
+                                            <t t-elif="dynamic_purchase_report['state'] == 'purchase'">
+                                                <span class="badge rounded-pill text-bg-success px-2 py-1">Purchase Order</span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="badge rounded-pill border text-body px-2 py-1" t-out="dynamic_purchase_report['state']"/>
+                                            </t>
+                                        </td>
+                                        <td class="text-center font-monospace">
+                                            <span class="badge rounded-pill border text-body o_order_count_badge px-2 py-1" t-out="dynamic_purchase_report['order']"/>
+                                        </td>
+                                        <td class="text-end font-monospace">
+                                            <t t-out="dynamic_purchase_report['qty']"/>
+                                        </td>
+                                        <td class="text-end font-monospace fw-semibold text-body">
+                                            <t t-out="dynamic_purchase_report['amount']"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

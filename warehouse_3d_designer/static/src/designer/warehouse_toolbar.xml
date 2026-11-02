@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- OWL template: Warehouse Toolbar component -->
+<templates xml:space="preserve">
+
+    <t t-name="warehouse_3d_designer.WarehouseToolbar">
+        <div class="o_warehouse_toolbar d-flex align-items-center px-3">
+
+            <!-- ─── Left: Navigation ─── -->
+            <div class="o_tb_section d-flex align-items-center gap-2">
+                <!-- Layout Selector -->
+                <div class="o_toolbar_group d-flex align-items-center gap-1">
+                    <i class="oi text-muted" data-icon="map"/>
+                    <select class="form-select form-select-sm o_layout_select"
+                            t-on-change="this.onLayoutChange">
+                        <t t-foreach="this.props.layouts" t-as="layout" t-key="layout.id">
+                            <option t-att-value="layout.id"
+                                    t-att-selected="layout.id === this.props.selectedLayoutId">
+                                <t t-out="layout.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+
+                <!-- Floor Switcher (when multiple floors exist) -->
+                <t t-if="this.props.siblingFloors.length &gt; 1">
+                    <div class="o_toolbar_separator"/>
+                    <div class="o_toolbar_group o_floor_switcher d-flex align-items-center gap-0">
+                        <i class="oi text-muted me-1" data-icon="business" title="Floor"/>
+                        <t t-foreach="this.props.siblingFloors" t-as="floor" t-key="floor.id">
+                            <button class="btn btn-sm o_toolbar_btn o_floor_btn"
+                                    t-att-class="{'btn-info o_floor_active': floor.id === this.props.selectedLayoutId, 'btn-outline-secondary': floor.id !== this.props.selectedLayoutId}"
+                                    t-on-click="() => this.onFloorClick(floor.id)"
+                                    t-att-title="floor.name">
+                                <t t-out="this.getFloorLabel(floor.floor_level)"/>
+                            </button>
+                        </t>
+                    </div>
+                </t>
+            </div>
+
+            <div class="o_toolbar_separator"/>
+
+            <!-- ─── Center: View Controls ─── -->
+            <div class="o_tb_section d-flex align-items-center gap-2">
+                <!-- 2D / 3D Toggle -->
+                <div class="o_toolbar_group d-flex align-items-center gap-0">
+                    <button class="btn btn-sm o_toolbar_btn o_view_mode_btn"
+                            t-att-class="{'btn-info': this.props.viewMode === '2d', 'btn-outline-secondary': this.props.viewMode !== '2d'}"
+                            t-on-click="() => this.props.onToggleViewMode()"
+                            title="2D Top-down View">
+                        <i class="oi" data-icon="grid_view"/> 2D
+                    </button>
+                    <button class="btn btn-sm o_toolbar_btn o_view_mode_btn"
+                            t-att-class="{'btn-info': this.props.viewMode === '3d', 'btn-outline-secondary': this.props.viewMode !== '3d'}"
+                            t-on-click="() => this.props.onToggleViewMode()"
+                            title="3D Perspective View">
+                        <i class="oi" data-icon="deployed_code"/> 3D
+                    </button>
+                </div>
+
+                <!-- Focus Mode (3D only) -->
+                <t t-if="this.props.viewMode === '3d'">
+                    <button class="btn btn-sm btn-outline-secondary o_toolbar_btn o_icon_btn"
+                            t-on-click="() => this.props.onToggleFocusMode()"
+                            title="Focus Mode — immersive 3D view">
+                        <i class="oi" data-icon="fullscreen"/>
+                    </button>
+                </t>
+
+                <!-- Zoom Controls (2D only) -->
+                <t t-if="this.props.viewMode === '2d'">
+                    <div class="o_toolbar_group o_zoom_group d-flex align-items-center gap-1">
+                        <button class="btn btn-sm btn-outline-secondary o_toolbar_btn o_icon_btn"
+                                t-on-click="() => this.props.onZoomOut()"
+                                title="Zoom Out">
+                            <i class="oi" data-icon="remove"/>
+                        </button>
+                        <span class="o_zoom_label text-muted small">
+                            <t t-out="this.zoomPercent"/>%
+                        </span>
+                        <button class="btn btn-sm btn-outline-secondary o_toolbar_btn o_icon_btn"
+                                t-on-click="() => this.props.onZoomIn()"
+                                title="Zoom In">
+                            <i class="oi" data-icon="add"/>
+                        </button>
+                    </div>
+                </t>
+
+                <div class="o_toolbar_separator"/>
+
+                <!-- Grid Toggle (2D only) -->
+                <t t-if="this.props.viewMode === '2d'">
+                    <button class="btn btn-sm o_toolbar_btn o_icon_btn"
+                            t-att-class="{'btn-primary': this.props.gridEnabled, 'btn-outline-secondary': !this.props.gridEnabled}"
+                            t-on-click="() => this.props.onToggleGrid()"
+                            title="Toggle Grid">
+                        <i class="oi" data-icon="view_module"/>
+                    </button>
+                </t>
+
+                <!-- Heatmap Toggle -->
+                <button class="btn btn-sm o_toolbar_btn o_icon_btn"
+                        t-att-class="{'btn-warning': this.props.heatmapEnabled, 'btn-outline-secondary': !this.props.heatmapEnabled}"
+                        t-on-click="() => this.props.onToggleHeatmap()"
+                        title="Toggle Heatmap">
+                    <i class="oi" data-icon="whatshot"/>
+                </button>
+                <button t-if="this.props.heatmapEnabled"
+                        class="btn btn-sm btn-outline-secondary o_toolbar_btn o_icon_btn o_heatmap_refresh_btn"
+                        t-on-click="() => this.props.onRefreshHeatmap()"
+                        title="Refresh Heatmap Data">
+                    <i class="oi" data-icon="refresh"/>
+                </button>
+            </div>
+
+            <div class="o_toolbar_separator"/>
+
+            <!-- ─── Search ─── -->
+            <div class="o_toolbar_group d-flex align-items-center gap-1 o_product_search">
+                <i class="oi text-muted" data-icon="search"/>
+                <input type="text"
+                       class="form-control form-control-sm o_search_input"
+                       placeholder="Search product..."
+                       t-att-value="this.searchState.query"
+                       t-on-input="this.onSearchInput"
+                       t-on-keydown="this.onSearchKeydown"/>
+                <button t-if="this.searchState.query"
+                        class="btn btn-sm btn-link text-muted o_search_clear"
+                        t-on-click="this.onSearchClear"
+                        title="Clear">
+                    <i class="oi" data-icon="close"/>
+                </button>
+            </div>
+
+            <!-- ─── Right: Admin Actions & Shortcuts ─── -->
+            <div class="o_tb_section d-flex align-items-center gap-2 ms-auto">
+                <t t-if="this.props.isAdmin">
+                    <div class="o_admin_actions d-flex align-items-center gap-1">
+                        <button class="btn btn-sm o_toolbar_btn"
+                                t-att-class="{'btn-primary': this.props.isDirty, 'btn-outline-secondary': !this.props.isDirty}"
+                                t-att-disabled="!this.props.isDirty"
+                                t-on-click="() => this.props.onSaveLayout()"
+                                title="Save Layout">
+                            <i class="oi" data-icon="save"/>
+                            <span class="o_btn_label"> Save</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary o_toolbar_btn"
+                                t-on-click="() => this.onExportClick()"
+                                title="Export Layout as XML">
+                            <i class="oi" data-icon="download"/>
+                            <span class="o_btn_label"> Export</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary o_toolbar_btn"
+                                t-on-click="this.onImportClick"
+                                title="Import Layout (XML)">
+                            <i class="oi" data-icon="upload"/>
+                            <span class="o_btn_label"> Import</span>
+                        </button>
+                    </div>
+                </t>
+
+                <!-- Shortcuts Help Button -->
+                <button class="btn btn-sm btn-outline-secondary o_toolbar_btn o_icon_btn"
+                        t-on-click="() => this.props.onToggleShortcuts()"
+                        title="Keyboard Shortcuts (?)">
+                    <i class="oi" data-icon="keyboard"/>
+                </button>
+            </div>
+        </div>
+    </t>
+
+</templates>

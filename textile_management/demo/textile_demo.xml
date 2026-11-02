@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- The post_init_hook activates the Replenish on Order (MTO) route, but
+    demo data loads before it, so activate it first. Fabrics are then made
+    to order: they are manufactured because they have a bill of materials. -->
+    <function model="stock.route" name="write"
+              eval="[[ref('stock.route_warehouse0_mto')], {'active': True}]"/>
+
+    <!-- ============================================================== -->
+    <!-- Textile attributes                                              -->
+    <!-- ============================================================== -->
+    <record id="product_attribute_fabric_color" model="product.attribute">
+        <field name="name">Fabric Color</field>
+        <field name="display_type">color</field>
+        <field name="create_variant">always</field>
+    </record>
+    <record id="product_attribute_value_navy" model="product.attribute.value">
+        <field name="name">Navy Blue</field>
+        <field name="attribute_id" ref="product_attribute_fabric_color"/>
+        <field name="html_color">#1f2a44</field>
+        <field name="sequence">1</field>
+    </record>
+    <record id="product_attribute_value_ivory" model="product.attribute.value">
+        <field name="name">Ivory</field>
+        <field name="attribute_id" ref="product_attribute_fabric_color"/>
+        <field name="html_color">#f4efe1</field>
+        <field name="sequence">2</field>
+    </record>
+    <record id="product_attribute_value_charcoal" model="product.attribute.value">
+        <field name="name">Charcoal</field>
+        <field name="attribute_id" ref="product_attribute_fabric_color"/>
+        <field name="html_color">#3b3b3b</field>
+        <field name="sequence">3</field>
+    </record>
+
+    <record id="product_attribute_gsm" model="product.attribute">
+        <field name="name">GSM</field>
+        <field name="display_type">radio</field>
+        <field name="create_variant">always</field>
+    </record>
+    <record id="product_attribute_value_gsm_150" model="product.attribute.value">
+        <field name="name">150 GSM</field>
+        <field name="attribute_id" ref="product_attribute_gsm"/>
+        <field name="sequence">1</field>
+    </record>
+    <record id="product_attribute_value_gsm_220" model="product.attribute.value">
+        <field name="name">220 GSM</field>
+        <field name="attribute_id" ref="product_attribute_gsm"/>
+        <field name="sequence">2</field>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Raw materials, bought from the vendor                           -->
+    <!-- ============================================================== -->
+    <record id="product_cotton_yarn" model="product.product">
+        <field name="name">Combed Cotton Yarn</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="standard_price">4.20</field>
+        <field name="default_code">TX-YRN-COT</field>
+    </record>
+    <record id="product_linen_yarn" model="product.product">
+        <field name="name">Linen Yarn</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="standard_price">9.50</field>
+        <field name="default_code">TX-YRN-LIN</field>
+    </record>
+    <record id="product_silk_yarn" model="product.product">
+        <field name="name">Mulberry Silk Yarn</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="standard_price">48.00</field>
+        <field name="default_code">TX-YRN-SLK</field>
+    </record>
+    <record id="product_reactive_dye" model="product.product">
+        <field name="name">Reactive Dye</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+        <field name="standard_price">15.00</field>
+        <field name="default_code">TX-DYE-RCT</field>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Textile fabrics, manufactured to order                          -->
+    <!-- ============================================================== -->
+    <record id="product_linen_fabric" model="product.product">
+        <field name="name">Linen Fabric</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="is_textile_product" eval="True"/>
+        <field name="uom_id" ref="uom.product_uom_meter"/>
+        <field name="list_price">14.50</field>
+        <field name="standard_price">6.20</field>
+        <field name="default_code">TX-FAB-LIN</field>
+        <field name="route_ids" eval="[(6, 0, [ref('stock.route_warehouse0_mto')])]"/>
+        <field name="is_published" eval="True"/>
+        <field name="description_sale">Breathable 100% linen, ideal for summer shirts and home textiles.</field>
+    </record>
+    <record id="product_silk_fabric" model="product.product">
+        <field name="name">Silk Satin Fabric</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="is_textile_product" eval="True"/>
+        <field name="uom_id" ref="uom.product_uom_meter"/>
+        <field name="list_price">32.00</field>
+        <field name="standard_price">15.80</field>
+        <field name="default_code">TX-FAB-SLK</field>
+        <field name="route_ids" eval="[(6, 0, [ref('stock.route_warehouse0_mto')])]"/>
+        <field name="is_published" eval="True"/>
+        <field name="description_sale">Lustrous mulberry silk satin with a soft drape.</field>
+    </record>
+    <record id="product_cotton_shirting" model="product.product">
+        <field name="name">Cotton Shirting Fabric</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="is_textile_product" eval="True"/>
+        <field name="uom_id" ref="uom.product_uom_meter"/>
+        <field name="list_price">8.90</field>
+        <field name="standard_price">3.40</field>
+        <field name="default_code">TX-FAB-COT</field>
+        <field name="route_ids" eval="[(6, 0, [ref('stock.route_warehouse0_mto')])]"/>
+        <field name="is_published" eval="True"/>
+        <field name="description_sale">Crisp combed cotton for shirts and uniforms.</field>
+    </record>
+
+    <!-- Cotton twill with color and weight variants, for the website -->
+    <record id="product_template_cotton_twill" model="product.template">
+        <field name="name">Cotton Twill Fabric</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="is_textile_product" eval="True"/>
+        <field name="uom_id" ref="uom.product_uom_meter"/>
+        <field name="list_price">11.00</field>
+        <field name="standard_price">4.60</field>
+        <field name="default_code">TX-FAB-TWL</field>
+        <field name="route_ids" eval="[(6, 0, [ref('stock.route_warehouse0_mto')])]"/>
+        <field name="is_published" eval="True"/>
+        <field name="description_sale">Durable twill weave for workwear, chinos and upholstery.</field>
+    </record>
+    <record id="product_template_cotton_twill_color" model="product.template.attribute.line">
+        <field name="product_tmpl_id" ref="product_template_cotton_twill"/>
+        <field name="attribute_id" ref="product_attribute_fabric_color"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_value_navy'), ref('product_attribute_value_ivory'), ref('product_attribute_value_charcoal')])]"/>
+    </record>
+    <record id="product_template_cotton_twill_gsm" model="product.template.attribute.line">
+        <field name="product_tmpl_id" ref="product_template_cotton_twill"/>
+        <field name="attribute_id" ref="product_attribute_gsm"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_value_gsm_150'), ref('product_attribute_value_gsm_220')])]"/>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Bills of materials (quantities for 1 meter of fabric)           -->
+    <!-- ============================================================== -->
+    <record id="mrp_bom_linen_fabric" model="mrp.bom">
+        <field name="product_tmpl_id" ref="product_linen_fabric_product_template"/>
+        <field name="product_qty">1</field>
+        <field name="uom_id" ref="uom.product_uom_meter"/>
+        <field name="is_textile_bill_of_material" eval="True"/>
+        <field name="bom_line_ids" eval="[
+            (0, 0, {'product_id': ref('product_linen_yarn'), 'product_qty': 0.22}),
+            (0, 0, {'product_id': ref('product_reactive_dye'), 'product_qty': 0.01}),
+        ]"/>
+    </record>
+    <record id="mrp_bom_silk_fabric" model="mrp.bom">
+        <field name="product_tmpl_id" ref="product_silk_fabric_product_template"/>
+        <field name="product_qty">1</field>
+        <field name="uom_id" ref="uom.product_uom_meter"/>
+        <field name="is_textile_bill_of_material" eval="True"/>
+        <field name="bom_line_ids" eval="[
+            (0, 0, {'product_id': ref('product_silk_yarn'), 'product_qty': 0.12}),
+            (0, 0, {'product_id': ref('product_reactive_dye'), 'product_qty': 0.01}),
+        ]"/>
+    </record>
+    <record id="mrp_bom_cotton_shirting" model="mrp.bom">
+        <field name="product_tmpl_id" ref="product_cotton_shirting_product_template"/>
+        <field name="product_qty">1</field>
+        <field name="uom_id" ref="uom.product_uom_meter"/>
+        <field name="is_textile_bill_of_material" eval="True"/>
+        <field name="bom_line_ids" eval="[
+            (0, 0, {'product_id': ref('product_cotton_yarn'), 'product_qty': 0.16}),
+            (0, 0, {'product_id': ref('product_reactive_dye'), 'product_qty': 0.01}),
+        ]"/>
+    </record>
+    <record id="mrp_bom_cotton_twill" model="mrp.bom">
+        <field name="product_tmpl_id" ref="product_template_cotton_twill"/>
+        <field name="product_qty">1</field>
+        <field name="uom_id" ref="uom.product_uom_meter"/>
+        <field name="is_textile_bill_of_material" eval="True"/>
+        <field name="bom_line_ids" eval="[
+            (0, 0, {'product_id': ref('product_cotton_yarn'), 'product_qty': 0.28}),
+            (0, 0, {'product_id': ref('product_reactive_dye'), 'product_qty': 0.02}),
+        ]"/>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Textile purchase orders                                         -->
+    <!-- ============================================================== -->
+    <record id="purchase_order_yarn_confirmed" model="purchase.order">
+        <field name="partner_id" ref="base.res_partner_1"/>
+        <field name="is_textile_purchase_order" eval="True"/>
+        <field name="date_order" eval="(DateTime.today() - relativedelta(days=20)).strftime('%Y-%m-%d %H:%M')"/>
+        <field name="order_line" eval="[
+            (0, 0, {'product_id': ref('product_linen_yarn'), 'product_qty': 60, 'price_unit': 9.50}),
+            (0, 0, {'product_id': ref('product_cotton_yarn'), 'product_qty': 120, 'price_unit': 4.20}),
+        ]"/>
+    </record>
+    <function model="purchase.order" name="button_confirm"
+              eval="[[ref('purchase_order_yarn_confirmed')]]"/>
+
+    <record id="purchase_order_silk_rfq" model="purchase.order">
+        <field name="partner_id" ref="base.res_partner_1"/>
+        <field name="is_textile_purchase_order" eval="True"/>
+        <field name="date_order" eval="(DateTime.today() - relativedelta(days=3)).strftime('%Y-%m-%d %H:%M')"/>
+        <field name="order_line" eval="[
+            (0, 0, {'product_id': ref('product_silk_yarn'), 'product_qty': 15, 'price_unit': 48.00}),
+            (0, 0, {'product_id': ref('product_reactive_dye'), 'product_qty': 10, 'price_unit': 15.00}),
+        ]"/>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Textile sale orders                                             -->
+    <!-- ============================================================== -->
+    <record id="sale_order_linen_confirmed" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_2"/>
+        <field name="is_textile_sale_order" eval="True"/>
+        <field name="date_order" eval="(DateTime.today() - relativedelta(days=12)).strftime('%Y-%m-%d %H:%M')"/>
+        <field name="order_line" eval="[
+            (0, 0, {'product_id': ref('product_linen_fabric'), 'product_uom_qty': 150}),
+            (0, 0, {'product_id': ref('product_cotton_shirting'), 'product_uom_qty': 200}),
+        ]"/>
+    </record>
+    <!-- Confirming creates the manufacturing orders through the routes -->
+    <function model="sale.order" name="action_confirm"
+              eval="[[ref('sale_order_linen_confirmed')]]"/>
+
+    <record id="sale_order_silk_quotation" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_12"/>
+        <field name="is_textile_sale_order" eval="True"/>
+        <field name="date_order" eval="(DateTime.today() - relativedelta(days=2)).strftime('%Y-%m-%d %H:%M')"/>
+        <field name="order_line" eval="[
+            (0, 0, {'product_id': ref('product_silk_fabric'), 'product_uom_qty': 40}),
+        ]"/>
+    </record>
+
+    <!-- Website order with the customer feedback given at checkout -->
+    <record id="sale_order_website_feedback" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_3"/>
+        <field name="website_id" ref="base.default_website"/>
+        <field name="date_order" eval="(DateTime.today() - relativedelta(days=5)).strftime('%Y-%m-%d %H:%M')"/>
+        <field name="rating">4</field>
+        <field name="comment">Beautiful linen, exactly as described. Quick delivery too!</field>
+        <field name="order_line" eval="[
+            (0, 0, {'product_id': ref('product_linen_fabric'), 'product_uom_qty': 12}),
+        ]"/>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Textile manufacturing order created from the Textile menu       -->
+    <!-- ============================================================== -->
+    <record id="mrp_production_silk_fabric" model="mrp.production">
+        <field name="product_id" ref="product_silk_fabric"/>
+        <field name="bom_id" ref="mrp_bom_silk_fabric"/>
+        <field name="product_qty">25</field>
+        <field name="uom_id" ref="uom.product_uom_meter"/>
+        <field name="is_textile_mrp_order" eval="True"/>
+    </record>
+    <function model="mrp.production" name="action_confirm"
+              eval="[[ref('mrp_production_silk_fabric')]]"/>
+
+    <!-- ============================================================== -->
+    <!-- Website inquiries                                               -->
+    <!-- ============================================================== -->
+    <record id="website_inquiry_hotel_linen" model="website.inquiry">
+        <field name="inquirer">Grand Coast Hotels</field>
+        <field name="email">purchasing@grandcoast.example.com</field>
+        <field name="phone_number">+1 555 0142</field>
+        <field name="description"><![CDATA[<p>We need 2,000 m of white linen for bed sheets and 500 m of navy cotton twill for staff uniforms. Please send a quotation with delivery times.</p>]]></field>
+    </record>
+    <record id="website_inquiry_boutique_silk" model="website.inquiry">
+        <field name="inquirer">Maison Aurore Boutique</field>
+        <field name="email">atelier@maisonaurore.example.com</field>
+        <field name="description"><![CDATA[<p>Do you offer silk satin in custom colors? We are looking for 80 m in a dusty rose shade for an evening collection.</p>]]></field>
+        <field name="state">verified</field>
+    </record>
+    <record id="website_inquiry_school_uniform" model="website.inquiry">
+        <field name="inquirer">Greenfield School</field>
+        <field name="email">admin@greenfield.example.com</field>
+        <field name="phone_number">+1 555 0187</field>
+        <field name="description"><![CDATA[<p>Requesting samples of cotton shirting fabric for our new school uniforms (approx. 1,200 m).</p>]]></field>
+        <field name="state">replied</field>
+    </record>
+</odoo>

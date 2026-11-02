@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Textile Report Wizard -->
+    <record id="textile_report_view_form" model="ir.ui.view">
+        <field name="name">textile.report.view.form</field>
+        <field name="model">textile.report</field>
+        <field name="arch" type="xml">
+            <form string="Customer Vendor Report">
+                <group class="oe_title">
+                    <field name="type" widget="radio"/>
+                    <field name="customer_id" invisible="type == 'vendor'"
+                           domain="[('id','in', textile_customer_ids)]"
+                           required="type == 'customer'"/>
+                    <field name="vendor_id" invisible="type == 'customer'"
+                           domain="[('id','in', textile_vendor_ids)]"
+                           required="type == 'vendor'"/>
+                    <label for="date_begin" string="Period"/>
+                    <div class="o_row">
+                        <field name="date_begin" widget="daterange" nolabel="1"
+                               class="oe_inline"
+                               options="{'related_end_date': 'date_end'}"/>
+                        <i class="oi mx-2" data-icon="arrow_forward"
+                           aria-label="Arrow icon" title="Arrow"/>
+                        <field name="date_end" widget="daterange" nolabel="1"
+                               class="oe_inline"
+                               options="{'related_start_date': 'date_begin'}"/>
+                    </div>
+                </group>
+                <footer>
+                    <button name="action_customer_vendor_report" string="Print"
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- Textile Report Action -->
+    <record id="textile_report_action" model="ir.actions.act_window">
+        <field name="name">Customer Vendor Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">textile.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="textile_report_view_form"/>
+        <field name="target">new</field>
+    </record>
+</odoo>

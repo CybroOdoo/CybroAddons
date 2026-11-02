@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t t-name="odoo_product_expiry_dashboard.expiry_dashboard_template">
+        <div class="o_action_manager o_product_expiry_dashboard"
+             style="height:100%; overflow-y: auto; overflow-x: hidden;" t-ref="this.root">
+            <section class="dashboard_main_section px-3" id="main_section_manager">
+                <!-- Dashboard Header-->
+                <div class="dashboard-heading shadow-sm my-2">
+                    <h1 class="banner-heading">
+                        Product Expiry Dashboard
+                    </h1>
+                    <div class="dashboard-filters">
+                        <form class="d-flex align-items-center gap-2 m-0 flex-wrap">
+                            <span>Start Date:</span>
+                            <input type="date" id="start_date"
+                                   name="start_date" t-on-change="this.filterDate"/>
+                            <span>End Date:</span>
+                            <input type="date" id="end_date"
+                                   name="end_date" t-on-change="this.filterDate"/>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Dashboard Tiles -->
+                <div class="row g-3 my-2">
+                    <!-- Expired -->
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+                        <div class="card bg-c-red order-card h-100" t-on-click="this.expired_click">
+                            <div class="card-block expired">
+                                <h2>Expired</h2>
+                                <div class="text-center">
+                                    <span class="expiry-count"><t t-out="this.state.expire_quantity?.expired || 0"/></span>
+                                </div>
+                                <hr/>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Expire Today -->
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+                        <div class="card bg-c-lavender order-card h-100" t-on-click="this.today_click">
+                            <div class="card-block today">
+                                <h2>Expire Today</h2>
+                                <div class="text-center">
+                                    <span class="expiry-count"><t t-out="this.state.expire_quantity?.today || 0"/></span>
+                                </div>
+                                <hr/>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Expire in 1 Day -->
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+                        <div class="card bg-c-blue order-card h-100" t-on-click="this.one_day_click">
+                            <div class="card-block one-day">
+                                <h2>Expire in 1 Day</h2>
+                                <div class="text-center">
+                                    <span class="expiry-count"><t t-out="this.state.expire_quantity?.one_day || 0"/></span>
+                                </div>
+                                <hr/>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Expire in 7 Days -->
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+                        <div class="card bg-c-green order-card h-100" t-on-click="this.seven_day_click">
+                            <div class="card-block seven-day">
+                                <h2>Expire in 7 Days</h2>
+                                <div class="text-center">
+                                    <span class="expiry-count"><t t-out="this.state.expire_quantity?.seven_day || 0"/></span>
+                                </div>
+                                <hr/>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Expire in 30 Days -->
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+                        <div class="card bg-c-yellow order-card h-100" t-on-click="this.thirty_day_click">
+                            <div class="card-block thirty-day">
+                                <h2>Expire in 30 Days</h2>
+                                <div class="text-center">
+                                    <span class="expiry-count"><t t-out="this.state.expire_quantity?.thirty_day || 0"/></span>
+                                </div>
+                                <hr/>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Expire in 120 Days -->
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
+                        <div class="card bg-c-pink order-card h-100" t-on-click="this.one_twenty_day_click">
+                            <div class="card-block one-twenty-day">
+                                <h2>Expire in 120 Days</h2>
+                                <div class="text-center">
+                                    <span class="expiry-count"><t t-out="this.state.expire_quantity?.one_twenty_day || 0"/></span>
+                                </div>
+                                <hr/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphs Section -->
+                <div class="row g-3 my-2">
+                    <!-- Expired Products and Expired by Category -->
+                    <div class="col-12 col-lg-6">
+                        <div class="chart-card h-100">
+                            <!-- Graph of Expired Products -->
+                            <div class="chart-card-body border-bottom">
+                                <h2 class="card-title">Expired Products</h2>
+                                <div class="chart-canvas-container">
+                                    <canvas id="expired_product_count" t-ref="this.expiredProducts"/>
+                                </div>
+                                <span class="expired_product_count_chart" t-ref="this.expiredProductsEmpty">No data to display.</span>
+                            </div>
+                            <!-- Graph of Expired Products by Category -->
+                            <div class="chart-card-body">
+                                <h2 class="card-title">Expired Products by Category</h2>
+                                <div class="chart-canvas-container">
+                                    <canvas id="expired_product_category_count" t-ref="this.expiredCategory"/>
+                                </div>
+                                <span class="expired_product_catg_count" t-ref="this.expiredCategoryEmpty">No data to display.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Products Expiring in 7 Days and Category -->
+                    <div class="col-12 col-lg-6">
+                        <div class="chart-card h-100">
+                            <!-- Graph of Products Expiring in 7 Days -->
+                            <div class="chart-card-body border-bottom">
+                                <h2 class="card-title">Products Expiring in 7 Days</h2>
+                                <div class="chart-canvas-container">
+                                    <canvas id="nearby_expire_product" t-ref="this.nearProduct"/>
+                                </div>
+                                <span class="nearby_expire_prod" t-ref="this.nearProductEmpty">No data to display.</span>
+                            </div>
+                            <!-- Graph of Category of Products Expiring in 7 Days -->
+                            <div class="chart-card-body">
+                                <h2 class="card-title">Category of Products Expiring in 7 Days</h2>
+                                <div class="chart-canvas-container">
+                                    <canvas id="nearby_expire_catg" t-ref="this.nearCategory"/>
+                                </div>
+                                <span class="nearby_expire_cat" t-ref="this.nearCategoryEmpty">No data to display.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 my-2 mb-4">
+                    <!-- Location of Products Expiring in 7 Days -->
+                    <div class="col-12 col-lg-6">
+                        <div class="chart-card h-100">
+                            <div class="chart-card-body">
+                                <h2 class="card-title">Location of Products Expiring in 7 Days</h2>
+                                <div class="chart-canvas-container">
+                                    <canvas id="nearby_expire_location" t-ref="this.nearLocation"/>
+                                </div>
+                                <span class="nearby_expire_loc" t-ref="this.nearLocationEmpty">No data to display.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Warehouse of Products Expiring in 7 Days -->
+                    <div class="col-12 col-lg-6">
+                        <div class="chart-card h-100">
+                            <div class="chart-card-body">
+                                <h2 class="card-title">Warehouse of Products Expiring in 7 Days</h2>
+                                <div class="chart-canvas-container">
+                                    <canvas id="nearby_expire_warehouse" t-ref="this.nearWarehouse"/>
+                                </div>
+                                <span class="nearby_expire_wh" t-ref="this.nearWarehouseEmpty">No data to display.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </t>
+</templates>

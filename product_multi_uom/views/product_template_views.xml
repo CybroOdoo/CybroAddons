@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Added the fields in the product template form -->
+    <record id="product_template_only_form_view" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.tooltip</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_tooltip']" position="after">
+                <field name="is_need_secondary_uom" groups="uom.group_uom"/>
+                <field name="selected_uom_ids" invisible="1"/>
+                <field name="secondary_uom_ids"
+                       context="{'parent_uom_id': uom_id, 'default_product_template_id': id, 'selected_uom_ids': selected_uom_ids}"
+                       invisible="is_need_secondary_uom == False"
+                       groups="uom.group_uom" force_save="1">
+                    <list name="Secondary">
+                        <field name="secondary_uom_id" domain="[('relative_uom_id','in', [parent.uom_id])]"/>
+                        <field name="secondary_uom_ratio" column_invisible="1"/>
+                        <field name="example_ratio" force_save="1"/>
+                    </list>
+                </field>
+            </xpath>
+        </field>
+    </record>
+</odoo>

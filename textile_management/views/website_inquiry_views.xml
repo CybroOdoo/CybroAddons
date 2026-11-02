@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Website Inquiry List View -->
+    <record id="website_inquiry_view_list" model="ir.ui.view">
+        <field name="name">website.inquiry.view.list</field>
+        <field name="model">website.inquiry</field>
+        <field name="arch" type="xml">
+            <list sample="1">
+                <field name="name"/>
+                <field name="inquirer"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+<!-- Website Inquiry Search View -->
+    <record id="website_inquiry_view_search" model="ir.ui.view">
+        <field name="name">website.inquiry.view.search</field>
+        <field name="model">website.inquiry</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="inquirer"/>
+                <field name="email"/>
+                <field name="phone_number"/>
+                <filter string="Draft" name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter string="Verified" name="verified"
+                        domain="[('state', '=', 'verified')]"/>
+                <filter string="Replied" name="replied"
+                        domain="[('state', '=', 'replied')]"/>
+            </search>
+        </field>
+    </record>
+    <!-- Website Inquiry Form View -->
+    <record id="website_inquiry_view_form" model="ir.ui.view">
+        <field name="name">website.inquiry.view.form</field>
+        <field name="model">website.inquiry</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_verified" type="object"
+                            string="Verified" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_replied" type="object"
+                            string="Replied" class="btn-primary"
+                            invisible="state != 'verified'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="inquirer"/>
+                            <field name="email"/>
+                            <field name="phone_number"/>
+                        </group>
+                        <group>
+                            <field name="created_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description"
+                              name="inquiry_description"
+                              autofocus="autofocus">
+                            <field name="description"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!-- Website Inquiry Action -->
+    <record id="website_inquiry_action" model="ir.actions.act_window">
+        <field name="name">Website Inquiry</field>
+        <field name="res_model">website.inquiry</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

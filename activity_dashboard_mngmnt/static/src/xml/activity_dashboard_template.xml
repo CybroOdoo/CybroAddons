@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <!--    Dashboard template-->
+    <t t-name="ActivityDashboard">
+        <div class="o_action o_view_controller h-100">
+            <div class="o_content overflow-auto h-100 w-100">
+                <div class="form-group">
+                    <h1 class="head m-3">Activity Dashboard</h1>
+                </div>
+                <div>
+                    <div class="table_view">
+                        <t t-call="ManageActivity"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+    <t t-name="ManageActivity">
+        <section class="dashboard_main_section">
+            <div class="activity_dash_card row g-3">
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card all_activity cursor-pointer"
+                         t-on-click="(ev) => this.showAllActivities(ev)">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-clock-o me-2"/>
+                            <span class="card-count me-2"><t t-out="this.state.len_all"/></span>
+                            <span class="card-title-text">All Activities</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card planned_activity cursor-pointer"
+                         t-on-click="(ev) => this.showPlannedActivities(ev)">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-clock-o me-2"/>
+                            <span class="card-count me-2"><t t-out="this.state.len_planned"/></span>
+                            <span class="card-title-text">Planned Activities</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card completed_activity cursor-pointer"
+                         t-on-click="(ev) => this.showCompletedActivities(ev)">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-clock-o me-2"/>
+                            <span class="card-count me-2"><t t-out="this.state.len_done"/></span>
+                            <span class="card-title-text">Completed Activities</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card today_activity cursor-pointer"
+                         t-on-click="(ev) => this.showTodayActivities(ev)">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-clock-o me-2"/>
+                            <span class="card-count me-2"><t t-out="this.state.len_today"/></span>
+                            <span class="card-title-text">Today's Activities</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card overdue_activity cursor-pointer"
+                         t-on-click="(ev) => this.showOverdueActivities(ev)">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-clock-o me-2"/>
+                            <span class="card-count me-2"><t t-out="this.state.len_overdue"/></span>
+                            <span class="card-title-text">Overdue Activities</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card activity_type cursor-pointer"
+                         t-on-click="(ev) => this.showActivityTypes(ev)">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-clock-o me-2"/>
+                            <span class="card-count me-2"><t t-out="this.state.activity_type"/></span>
+                            <span class="card-title-text">Activity Types</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="table_activity table_planned_activity">
+            <table id="planned-table" cellspacing="10" width="100%">
+                <thead>
+                    <tr>
+                        <th colspan="6" class="activity_head">Planned Activities</th>
+                    </tr>
+                </thead>
+                <t t-if="!this.state.planned_activity || !this.state.planned_activity.length">
+                    <tbody>
+                        <tr><td colspan="6" class="p-3 text-center text-muted">No Data Available</td></tr>
+                    </tbody>
+                </t>
+                <t t-else="">
+                    <thead class="table table-bordered mt32">
+                        <tr class="table_head">
+                            <th class="table_head_ w-25">Name</th>
+                            <th class="table_head_">Activity Type</th>
+                            <th class="table_head_">Assigned to</th>
+                            <th class="table_head_">Deadline Date</th>
+                            <th class="table_head_">View</th>
+                            <th class="table_head_">Origin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="this.state.planned_activity || []" t-as="line"
+                            t-key="line.id">
+                            <td>
+                                <t t-out="line.display_name"/>
+                            </td>
+                            <td>
+                                <t t-out="line.activity_type_id ? line.activity_type_id[1] : ''"/>
+                            </td>
+                            <td>
+                                <t t-out="line.user_id ? line.user_id[1] : ''"/>
+                            </td>
+                            <td>
+                                <t t-out="line.date_deadline || ''"/>
+                            </td>
+                            <td>
+                                <button t-att-value="line.id"
+                                        t-on-click="(ev) => this.clickView(ev)"
+                                        class="click-view">
+                                    View
+                                </button>
+                            </td>
+                            <td>
+                                <button t-att-value="line.id"
+                                        class="click-origin-view"
+                                        t-on-click="(ev) => this.clickOrigin(ev)">
+                                    Origin
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </t>
+            </table>
+        </div>
+        <div class="table_activity table_today_activity">
+            <table cellspacing="10" width="100%">
+                <thead>
+                    <tr>
+                        <th colspan="6" class="activity_head">Today's Activities</th>
+                    </tr>
+                </thead>
+                <t t-if="!this.state.today_activity || !this.state.today_activity.length">
+                    <tbody>
+                        <tr><td colspan="6" class="p-3 text-center text-muted">No Data Available</td></tr>
+                    </tbody>
+                </t>
+                <t t-else="">
+                    <thead class="table table-bordered mt32">
+                        <tr class="table_head">
+                            <th class="table_head_ w-25">Name</th>
+                            <th class="table_head_">Activity Type</th>
+                            <th class="table_head_">Assigned to</th>
+                            <th class="table_head_">Deadline Date</th>
+                            <th class="table_head_">View</th>
+                            <th class="table_head_">Origin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="this.state.today_activity || []" t-as="line"
+                            t-key="line.id">
+                            <td>
+                                <t t-out="line.display_name"/>
+                            </td>
+                            <td>
+                                <t t-out="line.activity_type_id ? line.activity_type_id[1] : ''"/>
+                            </td>
+                            <td>
+                                <t t-out="line.user_id ? line.user_id[1] : ''"/>
+                            </td>
+                            <td>
+                                <t t-out="line.date_deadline || ''"/>
+                            </td>
+                            <td>
+                                <button t-att-value="line.id"
+                                        t-on-click="(ev) => this.clickView(ev)"
+                                        class="click-view">
+                                    View
+                                </button>
+                            </td>
+                            <td>
+                                <button t-att-value="line.id"
+                                        class="click-origin-view"
+                                        t-on-click="(ev) => this.clickOrigin(ev)">
+                                    Origin
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </t>
+            </table>
+        </div>
+        <div class="table_activity table_done_activity">
+            <table cellspacing="10" width="100%">
+                <thead>
+                    <tr>
+                        <th colspan="6" class="activity_head">Done Activities</th>
+                    </tr>
+                </thead>
+                <t t-if="!this.state.done_activity || !this.state.done_activity.length">
+                    <tbody>
+                        <tr><td colspan="6" class="p-3 text-center text-muted">No Data Available</td></tr>
+                    </tbody>
+                </t>
+                <t t-else="">
+                    <thead class="table table-bordered mt32">
+                        <tr class="table_head">
+                            <th class="table_head_">Name</th>
+                            <th class="table_head_">Activity Type</th>
+                            <th class="table_head_">Assigned to</th>
+                            <th class="table_head_">Deadline Date</th>
+                            <th class="table_head_">View</th>
+                            <th class="table_head_">Origin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="this.state.done_activity || []" t-as="line"
+                            t-key="line.id">
+                            <td class="w-25">
+                                <t t-out="line.display_name"/>
+                            </td>
+                            <td>
+                                <t t-out="line.activity_type_id ? line.activity_type_id[1] : ''"/>
+                            </td>
+                            <td>
+                                <t t-out="line.user_id ? line.user_id[1] : ''"/>
+                            </td>
+                            <td>
+                                <t t-out="line.date_deadline || ''"/>
+                            </td>
+                            <td>
+                                <button t-att-value="line.id"
+                                        class="click-view"
+                                        t-on-click="(ev) => this.clickView(ev)">
+                                    View
+                                </button>
+                            </td>
+                            <td>
+                                <button t-att-value="line.id"
+                                        t-on-click="(ev) => this.clickOrigin(ev)"
+                                        class="click-origin-view">
+                                    Origin
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </t>
+            </table>
+        </div>
+        <div class="table_activity table_main_view">
+            <table cellspacing="10" width="100%">
+                <thead>
+                    <tr>
+                        <th colspan="6" class="activity_head">Overdue Activities</th>
+                    </tr>
+                </thead>
+                <t t-if="!this.state.overdue_activity || !this.state.overdue_activity.length">
+                    <tbody>
+                        <tr><td colspan="6" class="p-3 text-center text-muted">No Data Available</td></tr>
+                    </tbody>
+                </t>
+                <t t-else="">
+                    <thead class="table table-bordered mt32">
+                        <tr class="table_head">
+                            <th class="table_head_">Name</th>
+                            <th class="table_head_">Activity Type</th>
+                            <th class="table_head_">Assigned to</th>
+                            <th class="table_head_">Deadline Date</th>
+                            <th class="table_head_">View</th>
+                            <th class="table_head_">Origin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="this.state.overdue_activity || []" t-as="line"
+                            t-key="line.id">
+                            <td class="w-25">
+                                <t t-out="line.display_name"/>
+                            </td>
+                            <td>
+                                <t t-out="line.activity_type_id ? line.activity_type_id[1] : ''"/>
+                            </td>
+                            <td>
+                                <t t-out="line.user_id ? line.user_id[1] : ''"/>
+                            </td>
+                            <td>
+                                <t t-out="line.date_deadline || ''"/>
+                            </td>
+                            <td>
+                                <button t-att-value="line.id"
+                                        t-on-click="(ev) => this.clickView(ev)"
+                                        class="click-view">
+                                    View
+                                </button>
+                            </td>
+                            <td>
+                                <button t-att-value="line.id"
+                                        class="click-origin-view"
+                                        t-on-click="(ev) => this.clickOrigin(ev)">
+                                    Origin
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </t>
+            </table>
+        </div>
+    </t>
+</templates>

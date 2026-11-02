@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- OWL template: Warehouse Designer main layout component -->
+<templates xml:space="preserve">
+
+    <t t-name="warehouse_3d_designer.WarehouseDesigner">
+        <div t-att-class="'o_warehouse_designer d-flex flex-column h-100' + (this.state.focusMode ? ' o_focus_mode' : '') + (this.state.hideOverlays ? ' o_hide_overlays' : '')">
+            <t t-if="!this.state.focusMode">
+                <ControlPanel>
+                    <t t-set-slot="control-panel-buttons">
+                        <WarehouseToolbar
+                            layouts="this.state.layouts"
+                            selectedLayoutId="this.state.selectedLayoutId"
+                            gridEnabled="this.state.gridEnabled"
+                            heatmapEnabled="this.state.heatmapEnabled"
+                            zoomLevel="this.state.zoomLevel"
+                            isDirty="this.state.isDirty"
+                            viewMode="this.state.viewMode"
+                            isAdmin="this.state.isAdmin"
+                            productSearchQuery="this.state.productSearchQuery"
+                            siblingFloors="this.state.siblingFloors"
+                            focusMode="this.state.focusMode"
+                            onSelectLayout.bind="this.selectLayout"
+                            onSelectFloor.bind="this.selectLayout"
+                            onToggleGrid.bind="this.toggleGrid"
+                            onToggleHeatmap.bind="this.toggleHeatmap"
+                            onToggleViewMode.bind="this.toggleViewMode"
+                            onToggleFocusMode.bind="this.toggleFocusMode"
+                            showShortcuts="this.state.showShortcuts"
+                            onToggleShortcuts="() => this.state.showShortcuts = !this.state.showShortcuts"
+                            onZoomIn.bind="this.zoomIn"
+                            onZoomOut.bind="this.zoomOut"
+                            onSaveLayout.bind="this.saveLayout"
+                            onSearchProduct.bind="this.searchProduct"
+                            onClearSearch.bind="this.clearHighlight"
+                            onExportLayout.bind="this.exportLayout"
+                            onImportLayout.bind="this.importLayout"
+                            onRefreshHeatmap.bind="this.refreshHeatmap"
+                        />
+                    </t>
+                </ControlPanel>
+            </t>
+
+            <div class="o_warehouse_content d-flex flex-grow-1 overflow-hidden">
+                <t t-if="this.state.isLoading">
+                    <div class="d-flex align-items-center justify-content-center flex-grow-1">
+                        <div class="o_loading_indicator">
+                            <i class="oi oi-spin oi-3x text-muted" data-icon="autorenew"/>
+                            <p class="mt-3 text-muted">Loading warehouse designer...</p>
+                        </div>
+                    </div>
+                </t>
+                <t t-elif="this.state.layouts.length === 0">
+                    <div class="d-flex align-items-center justify-content-center flex-grow-1">
+                        <div class="text-center text-muted">
+                            <i class="oi oi-5x mb-3" data-icon="map"/>
+                            <h3>No Warehouse Layouts Found</h3>
+                            <p>Go to <strong>Configuration → Warehouse Layouts</strong> to create one.</p>
+                        </div>
+                    </div>
+                </t>
+                <t t-else="">
+                    <!-- Focus Mode Floating Overlay -->
+                    <t t-if="this.state.focusMode">
+                        <div class="o_focus_overlay">
+                            <div class="o_focus_overlay_content">
+                                <!-- Layout Selector -->
+                                <div class="o_focus_layout_select">
+                                    <i class="oi" data-icon="map"/>
+                                    <select class="form-select form-select-sm"
+                                            t-on-change="this.onFocusLayoutChange">
+                                        <t t-foreach="this.state.layouts" t-as="layout" t-key="layout.id">
+                                            <option t-att-value="layout.id"
+                                                    t-att-selected="layout.id === this.state.selectedLayoutId">
+                                                <t t-out="layout.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <!-- Exit Focus Mode -->
+                                <button class="btn btn-sm o_focus_exit_btn"
+                                        t-on-click="() => this.toggleFocusMode()"
+                                        title="Exit Focus Mode (Esc)">
+                                    <i class="oi" data-icon="close"/>
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Canvas Area (2D or 3D) -->
+                    <div class="o_warehouse_canvas_wrapper flex-grow-1 overflow-auto">
+                        <WarehouseCanvas
+                            t-if="this.state.layoutData and this.state.viewMode === '2d'"
+                            locations="this.state.locations"
+                            layoutData="this.state.layoutData"
+                            mapObjects="this.state.mapObjects"
+                            gridEnabled="this.state.gridEnabled"
+                            heatmapEnabled="this.state.heatmapEnabled"
+                            heatmapData="this.state.heatmapData"
+                            zoomLevel="this.state.zoomLevel"
+                            selectedLocationId="this.state.selectedLocationId"
+                            highlightedLocationId="this.state.highlightedLocationId"
+                            selectedMapObjectId="this.state.selectedMapObjectId"
+                            isAdmin="this.state.isAdmin"
+                            measurementUnit="this.state.measurementUnit"
+                            cellSizeCm="this.state.cellSizeCm"
+                            productSearchResults="this.state.productSearchResults"
+                            onLocationSelected.bind="this.onLocationSelected"
+                            onLocationMoved.bind="this.onLocationMoved"
+                            onLocationResized.bind="this.onLocationResized"
+                            onLocationDropped.bind="this.onLocationDropped"
+                            onMapObjectDropped.bind="this.onMapObjectDropped"
+                            onMapObjectSelected.bind="this.onMapObjectSelected"
+                            onMapObjectMoved.bind="this.onMapObjectMoved"
+                            onMapObjectResized.bind="this.onMapObjectResized"
+                            onChildMoved.bind="this.onChildMoved"
+                            onChildResized.bind="this.onChildResized"
+                        />
+                        <Warehouse3DView
+                            t-if="this.state.layoutData and this.state.viewMode === '3d'"
+                            locations="this.state.locations"
+                            layoutData="this.state.layoutData"
+                            mapObjects="this.state.mapObjects"
+                            gridEnabled="this.state.gridEnabled"
+                            heatmapEnabled="this.state.heatmapEnabled"
+                            heatmapData="this.state.heatmapData"
+                            zoomLevel="this.state.zoomLevel"
+                            selectedLocationId="this.state.selectedLocationId"
+                            highlightedLocationId="this.state.highlightedLocationId"
+                            productSearchResults="this.state.productSearchResults"
+                            siblingFloors="this.state.siblingFloors"
+                            allFloorData="this.state.allFloorData"
+                            showAllFloors="this.state.showAllFloors3D"
+                            selectedLayoutId="this.state.selectedLayoutId"
+                            onLocationSelected.bind="this.onLocationSelected"
+                            onToggleAllFloors.bind="this.toggleAllFloors3D"
+                        />
+                    </div>
+
+                    <!-- Sidebar (hidden in focus mode) -->
+                    <t t-if="!this.state.focusMode">
+                        <WarehouseSidebar
+                            selectedLocationId="this.state.selectedLocationId"
+                            selectedLocationData="this.state.selectedLocationData"
+                            locations="this.state.locations"
+                            unplacedLocations="this.state.unplacedLocations"
+                            heatmapData="this.state.heatmapData"
+                            heatmapEnabled="this.state.heatmapEnabled"
+                            isAdmin="this.state.isAdmin"
+                            productSearchResults="this.state.productSearchResults"
+                            highlightedLocationId="this.state.highlightedLocationId"
+                            measurementUnit="this.state.measurementUnit"
+                            cellSizeCm="this.state.cellSizeCm"
+                            onLocationSelected.bind="this.onLocationSelected"
+                            onLocationDropped.bind="this.onLocationDropped"
+                            onLocationRemoved.bind="this.onLocationRemoved"
+                            onOpenLocation.bind="this.openLocationForm"
+                            onShapeChanged.bind="this.onLocationShapeChanged"
+                            onRotationChanged.bind="this.onLocationRotationChanged"
+                            onRowsChanged.bind="this.onLocationRowsChanged"
+                            onHighlightLocation.bind="this.highlightLocation"
+                            onUnitChanged.bind="this.changeUnit"
+                        />
+                    </t>
+
+                    <!-- Keyboard Shortcuts Panel -->
+                    <t t-if="this.state.showShortcuts">
+                        <div class="o_shortcuts_panel">
+                            <div class="o_shortcuts_header">
+                                <span>Keyboard Shortcuts</span>
+                                <button class="btn btn-sm o_shortcuts_close"
+                                        t-on-click="() => this.state.showShortcuts = false">
+                                    <i class="oi" data-icon="close"/>
+                                </button>
+                            </div>
+                            <div class="o_shortcuts_body">
+                                <t t-if="this.state.focusMode">
+                                    <div class="o_shortcut_row"><kbd>Esc</kbd><span>Exit Focus Mode</span></div>
+                                    <div class="o_shortcut_row"><kbd>F</kbd><span>Exit Focus Mode</span></div>
+                                    <div class="o_shortcut_row"><kbd>H</kbd><span>Hide / Show Overlays</span></div>
+                                    <div class="o_shortcut_row"><kbd>?</kbd><span>Toggle This Panel</span></div>
+                                </t>
+                                <t t-elif="this.state.viewMode === '3d'">
+                                    <div class="o_shortcut_row"><kbd>F</kbd><span>Enter Focus Mode</span></div>
+                                    <div class="o_shortcut_row"><kbd>?</kbd><span>Toggle This Panel</span></div>
+                                </t>
+                                <t t-if="this.state.viewMode === '2d' and this.state.isAdmin">
+                                    <div class="o_shortcut_row"><kbd>Del</kbd><span>Delete Selected</span></div>
+                                    <div class="o_shortcut_row"><kbd>F</kbd><span>Flip Wall</span></div>
+                                    <div class="o_shortcut_row"><kbd>?</kbd><span>Toggle This Panel</span></div>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Template for purchase pdf report -->
+    <template id="purchase_order_report">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-if="Filters.get('report_type')=='Report By Order'">
+                    <t t-call="purchase_report_generator.report_order"/>
+                </t>
+                <t t-if="Filters.get('report_type')=='Report By Order Detail'">
+                    <t t-call="purchase_report_generator.report_order_detail"/>
+                </t>
+                <t t-if="Filters.get('report_type')=='Report By Product'">
+                    <t t-call="purchase_report_generator.report_product"/>
+                </t>
+                <t t-if="Filters.get('report_type')=='Report By Categories'">
+                    <t t-call="purchase_report_generator.report_category"/>
+                </t>
+                <t t-if="Filters.get('report_type')=='Report By Purchase Representative'">
+                    <t t-call="purchase_report_generator.report_purchase_representative"/>
+                </t>
+                <t t-if="Filters.get('report_type')=='Report By State'">
+                    <t t-call="purchase_report_generator.report_state"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- 1. Report By Order -->
+    <template id="report_order">
+        <div class="page">
+            <div class="oe_structure"/>
+            <div class="row mb-4 align-items-center">
+                <div class="col-8">
+                    <h3 class="fw-bold mb-1">Purchase Report</h3>
+                    <div class="text-muted">
+                        <span class="fw-semibold">Report Type:</span> <t t-out="Filters.get('report_type')"/>
+                    </div>
+                </div>
+                <div class="col-4 text-end">
+                    <div class="p-2 border rounded bg-light d-inline-block text-start fs-7">
+                        <div t-if="date_from">
+                            <strong>From:</strong> <t t-out="date_from"/>
+                        </div>
+                        <div t-if="date_to">
+                            <strong>To:</strong> <t t-out="date_to"/>
+                        </div>
+                        <div t-if="not date_from and not date_to" class="text-muted">
+                            <em>All Dates</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-sm o_main_table table-striped">
+                <thead>
+                    <tr class="border-bottom border-dark">
+                        <th class="text-start">Order</th>
+                        <th class="text-center">Date Order</th>
+                        <th class="text-start">Vendor</th>
+                        <th class="text-start">Purchase Representative</th>
+                        <th class="text-end">Total Qty</th>
+                        <th class="text-end">Amount Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="report_main_line_data" t-as="main">
+                        <tr>
+                            <td class="text-start">
+                                <span class="fw-semibold" t-out="main['name']"/>
+                            </td>
+                            <td class="text-center">
+                                <span t-out="main['date_order']"/>
+                            </td>
+                            <td class="text-start">
+                                <span t-out="main['partner']"/>
+                            </td>
+                            <td class="text-start">
+                                <span t-out="main['salesman']"/>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="main['sum']"/>
+                            </td>
+                            <td class="text-end fw-semibold">
+                                <span t-out="main['amount_total']"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            <div class="oe_structure"/>
+        </div>
+    </template>
+
+    <!-- 2. Report By Order Detail -->
+    <template id="report_order_detail">
+        <div class="page">
+            <div class="oe_structure"/>
+            <div class="row mb-4 align-items-center">
+                <div class="col-8">
+                    <h3 class="fw-bold mb-1">Purchase Report</h3>
+                    <div class="text-muted">
+                        <span class="fw-semibold">Report Type:</span> <t t-out="Filters.get('report_type')"/>
+                    </div>
+                </div>
+                <div class="col-4 text-end">
+                    <div class="p-2 border rounded bg-light d-inline-block text-start fs-7">
+                        <div t-if="date_from">
+                            <strong>From:</strong> <t t-out="date_from"/>
+                        </div>
+                        <div t-if="date_to">
+                            <strong>To:</strong> <t t-out="date_to"/>
+                        </div>
+                        <div t-if="not date_from and not date_to" class="text-muted">
+                            <em>All Dates</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-sm o_main_table table-striped">
+                <thead>
+                    <tr class="border-bottom border-dark">
+                        <th class="text-start">Order</th>
+                        <th class="text-center">Date Order</th>
+                        <th class="text-start">Vendor</th>
+                        <th class="text-start">Purchase Representative</th>
+                        <th class="text-start">Product Code</th>
+                        <th class="text-start">Product Name</th>
+                        <th class="text-end">Price Unit</th>
+                        <th class="text-end">Qty</th>
+                        <th class="text-end">Price Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="report_main_line_data" t-as="main">
+                        <tr>
+                            <td class="text-start">
+                                <span class="fw-semibold" t-out="main['name']"/>
+                            </td>
+                            <td class="text-center">
+                                <span t-out="main['date_order']"/>
+                            </td>
+                            <td class="text-start">
+                                <span t-out="main['partner']"/>
+                            </td>
+                            <td class="text-start">
+                                <span t-out="main['salesman']"/>
+                            </td>
+                            <td class="text-start">
+                                <span t-out="main['default_code']"/>
+                            </td>
+                            <td class="text-start">
+                                <span t-out="main['product']"/>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="main['price_unit']"/>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="main['sum']"/>
+                            </td>
+                            <td class="text-end fw-semibold">
+                                <span t-out="main.get('price_subtotal') if main.get('price_subtotal') is not None else main.get('amount_total')"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            <div class="oe_structure"/>
+        </div>
+    </template>
+
+    <!-- 3. Report By Product -->
+    <template id="report_product">
+        <div class="page">
+            <div class="oe_structure"/>
+            <div class="row mb-4 align-items-center">
+                <div class="col-8">
+                    <h3 class="fw-bold mb-1">Purchase Report</h3>
+                    <div class="text-muted">
+                        <span class="fw-semibold">Report Type:</span> <t t-out="Filters.get('report_type')"/>
+                    </div>
+                </div>
+                <div class="col-4 text-end">
+                    <div class="p-2 border rounded bg-light d-inline-block text-start fs-7">
+                        <div t-if="date_from">
+                            <strong>From:</strong> <t t-out="date_from"/>
+                        </div>
+                        <div t-if="date_to">
+                            <strong>To:</strong> <t t-out="date_to"/>
+                        </div>
+                        <div t-if="not date_from and not date_to" class="text-muted">
+                            <em>All Dates</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-sm o_main_table table-striped">
+                <thead>
+                    <tr class="border-bottom border-dark">
+                        <th class="text-start">Category</th>
+                        <th class="text-start">Product Code</th>
+                        <th class="text-start">Product Name</th>
+                        <th class="text-end">Qty</th>
+                        <th class="text-end">Amount Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="report_main_line_data" t-as="main">
+                        <tr>
+                            <td class="text-start">
+                                <span t-out="main['name']"/>
+                            </td>
+                            <td class="text-start">
+                                <span t-out="main['default_code']"/>
+                            </td>
+                            <td class="text-start fw-semibold">
+                                <span t-out="main['product']"/>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="main['qty']"/>
+                            </td>
+                            <td class="text-end fw-semibold">
+                                <span t-out="main['amount_total']"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            <div class="oe_structure"/>
+        </div>
+    </template>
+
+    <!-- 4. Report By Categories -->
+    <template id="report_category">
+        <div class="page">
+            <div class="oe_structure"/>
+            <div class="row mb-4 align-items-center">
+                <div class="col-8">
+                    <h3 class="fw-bold mb-1">Purchase Report</h3>
+                    <div class="text-muted">
+                        <span class="fw-semibold">Report Type:</span> <t t-out="Filters.get('report_type')"/>
+                    </div>
+                </div>
+                <div class="col-4 text-end">
+                    <div class="p-2 border rounded bg-light d-inline-block text-start fs-7">
+                        <div t-if="date_from">
+                            <strong>From:</strong> <t t-out="date_from"/>
+                        </div>
+                        <div t-if="date_to">
+                            <strong>To:</strong> <t t-out="date_to"/>
+                        </div>
+                        <div t-if="not date_from and not date_to" class="text-muted">
+                            <em>All Dates</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-sm o_main_table table-striped">
+                <thead>
+                    <tr class="border-bottom border-dark">
+                        <th class="text-start">Category</th>
+                        <th class="text-end">Qty</th>
+                        <th class="text-end">Amount Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="report_main_line_data" t-as="purchase_category">
+                        <tr>
+                            <td class="text-start fw-semibold">
+                                <span t-out="purchase_category['name']"/>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="purchase_category['qty']"/>
+                            </td>
+                            <td class="text-end fw-semibold">
+                                <span t-out="purchase_category['amount_total']"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            <div class="oe_structure"/>
+        </div>
+    </template>
+
+    <!-- 5. Report By Purchase Representative -->
+    <template id="report_purchase_representative">
+        <div class="page">
+            <div class="oe_structure"/>
+            <div class="row mb-4 align-items-center">
+                <div class="col-8">
+                    <h3 class="fw-bold mb-1">Purchase Report</h3>
+                    <div class="text-muted">
+                        <span class="fw-semibold">Report Type:</span> <t t-out="Filters.get('report_type')"/>
+                    </div>
+                </div>
+                <div class="col-4 text-end">
+                    <div class="p-2 border rounded bg-light d-inline-block text-start fs-7">
+                        <div t-if="date_from">
+                            <strong>From:</strong> <t t-out="date_from"/>
+                        </div>
+                        <div t-if="date_to">
+                            <strong>To:</strong> <t t-out="date_to"/>
+                        </div>
+                        <div t-if="not date_from and not date_to" class="text-muted">
+                            <em>All Dates</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-sm o_main_table table-striped">
+                <thead>
+                    <tr class="border-bottom border-dark">
+                        <th class="text-start">Purchase Representative</th>
+                        <th class="text-center">Total Orders</th>
+                        <th class="text-end">Total Qty</th>
+                        <th class="text-end">Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="report_main_line_data" t-as="main">
+                        <tr>
+                            <td class="text-start fw-semibold">
+                                <span t-out="main['name']"/>
+                            </td>
+                            <td class="text-center">
+                                <span t-out="main['order']"/>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="main['qty']"/>
+                            </td>
+                            <td class="text-end fw-semibold">
+                                <span t-out="main['amount']"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            <div class="oe_structure"/>
+        </div>
+    </template>
+
+    <!-- 6. Report By State -->
+    <template id="report_state">
+        <div class="page">
+            <div class="oe_structure"/>
+            <div class="row mb-4 align-items-center">
+                <div class="col-8">
+                    <h3 class="fw-bold mb-1">Purchase Report</h3>
+                    <div class="text-muted">
+                        <span class="fw-semibold">Report Type:</span> <t t-out="Filters.get('report_type')"/>
+                    </div>
+                </div>
+                <div class="col-4 text-end">
+                    <div class="p-2 border rounded bg-light d-inline-block text-start fs-7">
+                        <div t-if="date_from">
+                            <strong>From:</strong> <t t-out="date_from"/>
+                        </div>
+                        <div t-if="date_to">
+                            <strong>To:</strong> <t t-out="date_to"/>
+                        </div>
+                        <div t-if="not date_from and not date_to" class="text-muted">
+                            <em>All Dates</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-sm o_main_table table-striped">
+                <thead>
+                    <tr class="border-bottom border-dark">
+                        <th class="text-center">State</th>
+                        <th class="text-center">Total Orders</th>
+                        <th class="text-end">Quantity</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="report_main_line_data" t-as="main">
+                        <tr>
+                            <td class="text-center">
+                                <t t-if="main['state'] == 'draft'">
+                                    <span>RFQ</span>
+                                </t>
+                                <t t-elif="main['state'] == 'sent'">
+                                    <span>RFQ Sent</span>
+                                </t>
+                                <t t-elif="main['state'] == 'purchase'">
+                                    <span>Purchase Order</span>
+                                </t>
+                                <t t-else="">
+                                    <span t-out="main['state']"/>
+                                </t>
+                            </td>
+                            <td class="text-center">
+                                <span t-out="main['order']"/>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="main['qty']"/>
+                            </td>
+                            <td class="text-end fw-semibold">
+                                <span t-out="main['amount']"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            <div class="oe_structure"/>
+        </div>
+    </template>
+
+    <!-- Report Action -->
+    <record id="action_report_purchase_all_in_one" model="ir.actions.report">
+        <field name="name">Purchase All In One Report</field>
+        <field name="model">dynamic.purchase.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">purchase_report_generator.purchase_order_report</field>
+    </record>
+</odoo>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Alert Message Form View -->
+    <record id="alert_message_view_form" model="ir.ui.view">
+        <field name="name">alert.message.view.form</field>
+        <field name="model">alert.message</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_apply" type="object"
+                            class="btn btn-primary"
+                            string="Apply"
+                            invisible="state != 'draft'"
+                            groups="smart_alert_warning.smart_alert_warning_group_admin"/>
+                    <button name="action_cancel" type="object"
+                            class="btn btn-secondary"
+                            string="Cancel"
+                            invisible="state != 'done'"
+                            groups="smart_alert_warning.smart_alert_warning_group_admin"/>
+                    <button name="action_reset_draft" type="object"
+                            class="btn btn-secondary"
+                            string="Reset to Draft"
+                            invisible="state != 'cancelled'"
+                            groups="smart_alert_warning.smart_alert_warning_group_admin"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="alert_messages"
+                               readonly="state != 'draft'"/>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="group_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="type" readonly="state != 'draft'"/>
+                            <field name="model_name" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="document_type_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="view_id"
+                                   readonly="state != 'draft' or not document_type_id"/>
+                            <field name="new_view_id" invisible="not new_view_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Filters" name="filters">
+                            <field name="field_filter"
+                                   widget="domain"
+                                   readonly="state != 'draft'"
+                                   options="{'model': 'model_name'}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Alert Message List View -->
+    <record id="alert_message_view_list" model="ir.ui.view">
+        <field name="name">alert.message.view.list</field>
+        <field name="model">alert.message</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="type"/>
+                <field name="document_type_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+    <!-- Alert Message Action -->
+    <record id="action_alert_message" model="ir.actions.act_window">
+        <field name="name">Alert Message</field>
+        <field name="res_model">alert.message</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <!-- Smart Alert Menus -->
+    <menuitem id="menu_alert_message_main" name="Smart Alerts" sequence="20"
+              web_icon="smart_alert_warning,static/description/icon.png"
+              groups="smart_alert_warning.smart_alert_warning_group_admin,smart_alert_warning.smart_alert_warning_group_user"/>
+    <menuitem id="menu_alert_message" name="Alerts"
+              parent="menu_alert_message_main"
+              sequence="2" action="action_alert_message"/>
+</odoo>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Add the textile flag and the customer feedback to the sale order -->
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.textile.management</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="is_textile_sale_order" invisible="1"/>
+            </xpath>
+            <!-- Textile orders only offer textile products on their lines -->
+            <xpath expr="//field[@name='order_line']/form//field[@name='product_id']"
+                   position="attributes">
+                <attribute name="domain">[('sale_ok', '=', True), ('company_id', 'in', [parent.company_id, False])] + ([('is_textile_product', '=', True)] if parent.is_textile_sale_order else [])</attribute>
+            </xpath>
+            <xpath expr="//list[@name='sol_list']//field[@name='product_template_id']"
+                   position="attributes">
+                <attribute name="domain">[('sale_ok', '=', True), ('company_id', 'in', [parent.company_id, False])] + ([('is_textile_product', '=', True)] if parent.is_textile_sale_order else [])</attribute>
+            </xpath>
+            <xpath expr="//list[@name='sol_list']//field[@name='product_id']"
+                   position="attributes">
+                <attribute name="domain">[('sale_ok', '=', True), ('company_id', 'in', [parent.company_id, False])] + ([('is_textile_product', '=', True)] if parent.is_textile_sale_order else [])</attribute>
+            </xpath>
+            <xpath expr="//notebook/page[@name='other_information']" position="after">
+                <page string="Customer Feedback" name="customer_feedback"
+                      invisible="not website_id">
+                    <group>
+                        <field name="comment" widget="text"/>
+                    </group>
+                    <group>
+                        <field name="rating" widget="priority"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
