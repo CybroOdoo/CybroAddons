@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class AccountingReport(models.TransientModel):
@@ -52,6 +53,12 @@ class AccountingReport(models.TransientModel):
         string='Filter by', required=True, default='filter_no')
     date_from_cmp = fields.Date(string='Date Start')
     date_to_cmp = fields.Date(string='Date End')
+
+    @api.constrains('date_from_cmp', 'date_to_cmp')
+    def _check_comparison_dates(self):
+        for record in self:
+            if record.filter_cmp == 'filter_date' and record.date_from_cmp and record.date_to_cmp and record.date_from_cmp > record.date_to_cmp:
+                raise ValidationError(_("Comparison Start Date cannot be later than Comparison End Date."))
     debit_credit = fields.Boolean(string='Display Debit/Credit Columns',
                                   help="This option allows you to get more details about the way your balances are computed. Because it is space consuming, we do not allow to use it while doing a comparison.")
 

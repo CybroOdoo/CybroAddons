@@ -2,14 +2,21 @@
 import { registry } from '@web/core/registry';
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
-import { Component, proxy } from "@odoo/owl";
+import { standardFieldProps } from "@web/views/fields/standard_field_props";
+import { Component, proxy, useProps } from "@odoo/owl";
+
 export class BankReconcileFormLinesWidget extends Component {
+    static template = "base_accounting_kit.bank_reconcile_widget_lines_widget";
+    props = useProps({
+        ...standardFieldProps,
+    });
+
     setup(){
         super.setup();
         this.state = proxy({statementLineResult: null,
                                 MoveLineResult:null});
-        this.action = useService("action")
-        this.orm = useService("orm")
+        this.action = useService("action");
+        this.orm = useService("orm");
     }
     range(n){
         return[...Array(Math.max(n,0)).keys()];
@@ -52,8 +59,10 @@ export class BankReconcileFormLinesWidget extends Component {
     }
     getRenderValues(){
         var self=this;
-        let data = this.props.record.context
-        this.orm.call('account.bank.statement.line', 'update_rowdata', [this.props.record.data.id])
+        let data = this.props.record?.context || {};
+        if (this.props.record?.data?.id) {
+            this.orm.call('account.bank.statement.line', 'update_rowdata', [this.props.record.data.id]);
+        }
         let columns=[
             ["account",_t("Account")],
             ["partner",_t("Partner")],
@@ -72,7 +81,6 @@ export class BankReconcileFormLinesWidget extends Component {
         return {...data,columns:columns}
     }
 }
-BankReconcileFormLinesWidget.template = 'base_accounting_kit.bank_reconcile_widget_lines_widget';
 export const FormLines = {
     component: BankReconcileFormLinesWidget
 }

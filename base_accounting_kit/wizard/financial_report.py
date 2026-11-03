@@ -20,7 +20,8 @@
 #
 #############################################################################
 import re
-from odoo import api, models, fields
+from odoo import api, models, fields, _
+from odoo.exceptions import ValidationError
 
 
 class FinancialReport(models.TransientModel):
@@ -81,6 +82,8 @@ class FinancialReport(models.TransientModel):
         from the wizard. Based on the values provided in the wizard, this
         function will print pdf report"""
         self.ensure_one()
+        if self.date_from and self.date_to and self.date_from > self.date_to:
+            raise ValidationError(_("Start Date cannot be later than End Date."))
         data = dict()
         data['ids'] = self.env.context.get('active_ids', [])
         data['model'] = self.env.context.get('active_model', 'ir.ui.menu')

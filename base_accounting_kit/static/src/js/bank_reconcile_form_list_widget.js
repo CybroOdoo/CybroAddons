@@ -2,9 +2,16 @@
 import { registry } from '@web/core/registry';
 import { standardWidgetProps } from "@web/views/widgets/standard_widget_props";
 import { View } from "@web/views/view";
-import { Component, useSubEnv } from "@odoo/owl";
+import { Component, t, useProps, useSubEnv } from "@odoo/owl";
 
 class FormListView extends Component {
+    static template = "base_accounting_kit.FormListView";
+    static components = { View };
+    props = useProps({
+        ...standardWidgetProps,
+        resModel: t.string().optional(),
+    });
+
     setup(){
         super.setup();
         useSubEnv({
@@ -110,12 +117,7 @@ class FormListView extends Component {
     }
 
 }
-FormListView.template = "base_accounting_kit.FormListView";
-FormListView.components = { View };
-FormListView.props = {
-    ...standardWidgetProps,
-    resModel: { type: String },
-};
+
 export const formListView = {
     component: FormListView,
     extractProps: ({ attrs }) => ({

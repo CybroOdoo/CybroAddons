@@ -1,5 +1,48 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
+    <!-- AML (Journal Items to Match) Selection List View for Bank Reconciliation -->
+    <record id="view_aml_bank_rec_select_tree" model="ir.ui.view">
+        <field name="name">account.move.line.select.bank.rec.list</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <list js_class="aml_rec_select_list" create="false" edit="false">
+                <field name="date"/>
+                <field name="move_id" string="Journal Entry"/>
+                <field name="partner_id"/>
+                <field name="name" string="Label"/>
+                <field name="account_id"/>
+                <field name="amount_residual" string="Amount Due"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Partner Selection List View for Bank Reconciliation -->
+    <record id="view_partner_bank_rec_select_tree" model="ir.ui.view">
+        <field name="name">res.partner.select.bank.rec.list</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <list js_class="partner_rec_select_list" create="false" edit="false">
+                <field name="display_name" string="Name"/>
+                <field name="vat" string="Tax ID"/>
+                <field name="email" string="Email"/>
+                <field name="phone" string="Phone"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Account Selection List View for Bank Reconciliation -->
+    <record id="view_account_bank_rec_select_tree" model="ir.ui.view">
+        <field name="name">account.account.select.bank.rec.list</field>
+        <field name="model">account.account</field>
+        <field name="arch" type="xml">
+            <list js_class="account_rec_select_list" create="false" edit="false">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="account_type"/>
+            </list>
+        </field>
+    </record>
+
     <!--    Account Bank Statement Line Search View-->
     <record id="account_bank_statement_line_view_search" model="ir.ui.view">
         <field name="name">account.bank.statement.line.view.search</field>
@@ -60,6 +103,10 @@
                 <field name="foreign_currency_id" invisible="1"/>
                 <field name="statement_line_id" invisible="1"/>
                 <field name="lines_widget_json" invisible="1"/>
+                <field name="has_matching_lines" invisible="1"/>
+                <field name="matched_reconcile_model_id" invisible="1"/>
+                <field name="matched_reconcile_model_name" invisible="1"/>
+                <field name="reconciled_info_badge" invisible="1"/>
                 <templates>
                     <t t-name="card">
                         <div t-attf-class="oe_kanban_card oe_kanban_global_click o_bank_reconcile_st_line_kanban_card"
@@ -108,15 +155,53 @@
                                         <field name="payment_ref" class="d-inline"/>
                                     </div>
                                     <div class="col-auto">
-                                        <div class="o_field_many2manytags o_field_widget d-flex flex-wrap gap-1">
+                                        <div class="o_field_many2manytags o_field_widget d-flex flex-wrap gap-1 align-items-center">
+                                            <button t-if="!record.is_reconciled.raw_value and record.matched_reconcile_model_id.raw_value"
+                                                    name="action_apply_reconcile_model" type="object"
+                                                    class="btn btn-sm btn-primary px-2 py-0 fw-semibold"
+                                                    style="font-size: 11px; line-height: 1.2; background-color: #714B67; border-color: #714B67;">
+                                                <span t-out="record.matched_reconcile_model_name.value || record.matched_reconcile_model_id.value"/>
+                                            </button>
+                                            <button t-if="!record.partner_id.raw_value and !record.is_reconciled.raw_value and !record.matched_reconcile_model_id.raw_value"
+                                                    name="button_set_partner" type="object"
+                                                    class="btn btn-sm btn-primary px-2 py-0"
+                                                    style="font-size: 11px; line-height: 1.2; background-color: #714B67; border-color: #714B67;">
+                                                Set Partner
+                                            </button>
+                                            <button t-if="!record.partner_id.raw_value and !record.is_reconciled.raw_value and !record.matched_reconcile_model_id.raw_value"
+                                                    name="button_set_account" type="object"
+                                                    class="btn btn-sm btn-outline-primary px-2 py-0"
+                                                    style="font-size: 11px; line-height: 1.2; color: #714B67; border-color: #714B67;">
+                                                Set Account
+                                            </button>
+                                            <button t-if="record.partner_id.raw_value and !record.is_reconciled.raw_value and record.has_matching_lines.raw_value"
+                                                    name="button_reconcile" type="object"
+                                                    class="btn btn-sm btn-primary px-2 py-0"
+                                                    style="font-size: 11px; line-height: 1.2; background-color: #714B67; border-color: #714B67;">
+                                                Reconcile
+                                            </button>
+                                            <button t-if="record.partner_id.raw_value and !record.is_reconciled.raw_value and !record.has_matching_lines.raw_value and !record.matched_reconcile_model_id.raw_value and record.amount.raw_value &gt; 0"
+                                                    name="button_reconcile_partner_account" type="object"
+                                                    class="btn btn-sm btn-primary px-2 py-0"
+                                                    style="font-size: 11px; line-height: 1.2; background-color: #714B67; border-color: #714B67;">
+                                                Receivable
+                                            </button>
+                                            <button t-if="record.partner_id.raw_value and !record.is_reconciled.raw_value and !record.has_matching_lines.raw_value and !record.matched_reconcile_model_id.raw_value and record.amount.raw_value &lt; 0"
+                                                    name="button_reconcile_partner_account" type="object"
+                                                    class="btn btn-sm btn-primary px-2 py-0"
+                                                    style="font-size: 11px; line-height: 1.2; background-color: #714B67; border-color: #714B67;">
+                                                Payable
+                                            </button>
                                             <span t-if="record.to_check.raw_value"
                                                   class="badge text-bg-warning fw-normal to_check">
                                                 To Check
                                             </span>
                                             <div t-if="record.is_reconciled.raw_value"
-                                                 class="badge text-bg-success fw-normal">
+                                                 class="badge text-bg-success fw-normal text-truncate"
+                                                 style="max-width: 250px;"
+                                                 t-att-title="record.reconciled_info_badge.value || 'Matched'">
                                                 <i class="oi oi-fw me-1" data-icon="check"/>
-                                                Matched
+                                                <span t-out="record.reconciled_info_badge.value || 'Matched'"/>
                                             </div>
                                         </div>
                                     </div>

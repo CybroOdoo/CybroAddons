@@ -19,8 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models, _
-from odoo.exceptions import UserError
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError, ValidationError
 
 
 class BankBookWizard(models.TransientModel):
@@ -39,6 +39,12 @@ class BankBookWizard(models.TransientModel):
                             default=fields.Date.context_today, required=True)
     date_to = fields.Date(string='End Date',
                           default=fields.Date.context_today, required=True)
+
+    @api.constrains('date_from', 'date_to')
+    def _check_dates(self):
+        for record in self:
+            if record.date_from and record.date_to and record.date_from > record.date_to:
+                raise ValidationError(_("Start Date cannot be later than End Date."))
     display_account = fields.Selection(
         [('all', 'All'), ('movement', 'With movements'),
          ('not_zero', 'With balance is not equal to 0')],

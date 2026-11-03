@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class AccountBalanceReport(models.TransientModel):
@@ -39,6 +40,12 @@ class AccountBalanceReport(models.TransientModel):
              "variance column.")
     date_from_cmp = fields.Date(string='Comparison Start Date')
     date_to_cmp = fields.Date(string='Comparison End Date')
+
+    @api.constrains('date_from_cmp', 'date_to_cmp')
+    def _check_comparison_dates(self):
+        for record in self:
+            if record.enable_filter and record.date_from_cmp and record.date_to_cmp and record.date_from_cmp > record.date_to_cmp:
+                raise ValidationError(_("Comparison Start Date cannot be later than Comparison End Date."))
 
     def _trial_balance_comparison(self, accounts):
         """Return ``{account_code: balance}`` for the comparison period."""

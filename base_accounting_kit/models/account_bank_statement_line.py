@@ -49,6 +49,98 @@ class AccountBankStatementLine(models.Model):
                                   compute='_compute_state', store=True)
     reconcile_models_widget = fields.Char()
     lines_widget_json = fields.Json(store=True)
+    has_matching_lines = fields.Boolean(
+        string="Has Matching Lines",
+        compute='_compute_has_matching_lines',
+    )
+    matched_reconcile_model_id = fields.Many2one(
+        'account.reconcile.model',
+        string="Matched Reconcile Model",
+        compute='_compute_matched_reconcile_model',
+    )
+    matched_reconcile_model_name = fields.Char(
+        string="Matched Reconcile Model Name",
+        related='matched_reconcile_model_id.name',
+        readonly=True,
+    )
+    reconciled_info_badge = fields.Char(
+        string="Reconciled Information",
+        compute='_compute_reconciled_info_badge',
+    )
+
+    @api.depends('payment_ref', 'narration', 'amount', 'partner_id', 'journal_id', 'is_reconciled')
+    def _compute_matched_reconcile_model(self):
+        for line in self:
+            if line.is_reconciled:
+                line.matched_reconcile_model_id = False
+                continue
+            models = self.env['account.reconcile.model'].search([
+                ('company_id', 'in', (line.company_id.id, False)),
+                ('trigger', '=', 'manual'),
+            ])
+            matched = False
+            for model in models:
+                if not model.line_ids.filtered(lambda l: l.account_id):
+                    continue
+                if line._reconcile_model_matches(model):
+                    matched = model
+                    break
+            line.matched_reconcile_model_id = matched
+
+    @api.depends('partner_id', 'company_id', 'is_reconciled')
+    def _compute_has_matching_lines(self):
+        for record in self:
+            if record.is_reconciled or not record.partner_id:
+                record.has_matching_lines = False
+                continue
+            partner = record.partner_id.commercial_partner_id
+            count = self.env['account.move.line'].search_count([
+                ('partner_id', '=', partner.id),
+                ('account_id.reconcile', '=', True),
+                ('parent_state', '=', 'posted'),
+                ('reconciled', '=', False),
+                ('company_id', '=', record.company_id.id),
+            ], limit=1)
+            record.has_matching_lines = bool(count)
+
+    @api.depends('is_reconciled', 'move_id.line_ids.matched_debit_ids', 'move_id.line_ids.matched_credit_ids', 'move_id.line_ids.account_id')
+    def _compute_reconciled_info_badge(self):
+        for line in self:
+            if not line.is_reconciled:
+                line.reconciled_info_badge = False
+                continue
+
+            _liquidity, _suspense, other_lines = line._seek_for_lines()
+            if not other_lines:
+                other_lines = line.move_id.line_ids.filtered(
+                    lambda l: l.account_id != line.journal_id.default_account_id
+                )
+
+            counterpart_amls = (
+                other_lines.matched_debit_ids.debit_move_id |
+                other_lines.matched_credit_ids.credit_move_id
+            ) - other_lines
+
+            matched_moves = (counterpart_amls.move_id - line.move_id).filtered(
+                lambda m: m.name and m.name != '/'
+            )
+            if matched_moves:
+                seen = set()
+                inv_names = []
+                for m in matched_moves:
+                    if m.name not in seen:
+                        seen.add(m.name)
+                        inv_names.append(m.name)
+                line.reconciled_info_badge = ', '.join(inv_names)
+                continue
+
+            accounts = other_lines.account_id
+            if not accounts and line.account_id:
+                accounts = line.account_id
+            if accounts:
+                line.reconciled_info_badge = ', '.join(accounts.mapped('name')) or accounts[:1].display_name
+            else:
+                line.reconciled_info_badge = _("Matched")
 
     @api.model
     def update_rowdata(self, record_id):
@@ -79,7 +171,7 @@ class AccountBankStatementLine(models.Model):
         return move_record_values
 
     def _get_selected_counterpart_aml(self):
-        """Return the journal item the user picked in the reconcile widget
+        """Return the journal item(s) the user picked in the reconcile widget
         (persisted as JSON in ``lines_widget_json``), if any."""
         self.ensure_one()
         if not self.lines_widget_json:
@@ -88,10 +180,25 @@ class AccountBankStatementLine(models.Model):
             data = json.loads(self.lines_widget_json)
         except (ValueError, TypeError):
             return self.env['account.move.line']
-        aml_id = data.get('id') if isinstance(data, dict) else None
-        if not aml_id:
+        if not isinstance(data, dict):
             return self.env['account.move.line']
-        return self.env['account.move.line'].browse(int(aml_id)).exists()
+
+        raw_ids = data.get('ids')
+        if raw_ids is None and data.get('id'):
+            raw_ids = [data.get('id')]
+        if not raw_ids:
+            return self.env['account.move.line']
+        if isinstance(raw_ids, (int, str)):
+            raw_ids = [raw_ids]
+        aml_ids = []
+        for i in raw_ids:
+            try:
+                aml_ids.append(int(i))
+            except (ValueError, TypeError):
+                continue
+        if not aml_ids:
+            return self.env['account.move.line']
+        return self.env['account.move.line'].browse(aml_ids).exists()
 
     def _reconcile_with(self, counterpart_account, target_aml=None):
         """Assign ``counterpart_account`` to the suspense line and, when a
@@ -114,6 +221,135 @@ class AccountBankStatementLine(models.Model):
             (new_counterpart | target_aml).filtered(
                 lambda l: not l.reconciled).reconcile()
 
+    def button_reconcile(self):
+        """Reconcile action for Kanban card:
+        If counterpart lines are explicitly selected in the widget, reconcile immediately.
+        Otherwise, open the 'Search: Journal Items to Match' pop-up list view."""
+        self.ensure_one()
+        if self.is_reconciled:
+            return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+        target_aml = self._get_selected_counterpart_aml()
+
+        if target_aml:
+            counterpart_account = target_aml[:1].account_id
+            self._reconcile_with(counterpart_account, target_aml=target_aml)
+            return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+        domain = [
+            ('parent_state', '=', 'posted'),
+            ('reconciled', '=', False),
+            ('account_id.reconcile', '=', True),
+            ('company_id', '=', self.company_id.id),
+        ]
+        if self.partner_id:
+            domain.append(('partner_id', '=', self.partner_id.commercial_partner_id.id))
+
+        return {
+            'name': _("Search: Journal Items to Match"),
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.move.line',
+            'view_mode': 'list',
+            'views': [(self.env.ref('base_accounting_kit.view_aml_bank_rec_select_tree').id, 'list')],
+            'target': 'new',
+            'domain': domain,
+            'context': {
+                'active_st_line_id': self.id,
+            },
+        }
+
+    def action_select_aml_to_reconcile(self, aml_id):
+        """Reconcile this statement line with the selected account.move.line(s)."""
+        self.ensure_one()
+        aml = self.env['account.move.line'].browse(aml_id)
+        if not aml.exists():
+            return
+        counterpart_account = aml[:1].account_id
+        self._reconcile_with(counterpart_account, target_aml=aml)
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    def button_reconcile_partner_account(self):
+        """Reconcile directly with the partner's default Receivable (if amount > 0)
+        or Payable (if amount < 0) account."""
+        self.ensure_one()
+        if self.is_reconciled:
+            return {'type': 'ir.actions.client', 'tag': 'reload'}
+        if not self.partner_id:
+            raise UserError(_("Please set a partner first."))
+
+        partner = self.partner_id.commercial_partner_id
+        if self.amount > 0:
+            account = partner.property_account_receivable_id
+        else:
+            account = partner.property_account_payable_id
+
+        if not account:
+            account_type_label = _("Receivable") if self.amount > 0 else _("Payable")
+            raise UserError(_("No default %s account found for partner %s.") % (account_type_label, partner.name))
+
+        self._reconcile_with(account)
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    def button_set_partner(self):
+        """Open the interactive list view of Partners for selecting a partner."""
+        self.ensure_one()
+        return {
+            'name': _("Select Partner"),
+            'type': 'ir.actions.act_window',
+            'res_model': 'res.partner',
+            'view_mode': 'list',
+            'views': [(self.env.ref('base_accounting_kit.view_partner_bank_rec_select_tree').id, 'list')],
+            'target': 'new',
+            'context': {
+                'active_st_line_id': self.id,
+            },
+        }
+
+    def action_set_partner(self, partner_id):
+        """Assign partner to statement line and its move."""
+        self.ensure_one()
+        partner = self.env['res.partner'].browse(partner_id)
+        if not partner.exists():
+            return
+        self.write({'partner_id': partner.id})
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    def button_set_account(self):
+        """Open the interactive list view of Chart of Accounts for selecting a counterpart account."""
+        self.ensure_one()
+        return {
+            'name': _("Select Account"),
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.account',
+            'view_mode': 'list',
+            'views': [(self.env.ref('base_accounting_kit.view_account_bank_rec_select_tree').id, 'list')],
+            'target': 'new',
+            'context': {
+                'active_st_line_id': self.id,
+            },
+        }
+
+    def action_set_account(self, account_id):
+        """Set counterpart account and reconcile directly."""
+        self.ensure_one()
+        account = self.env['account.account'].browse(account_id)
+        if not account.exists():
+            return
+        self._reconcile_with(account)
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    def action_apply_reconcile_model(self, model_id=None):
+        """Apply a manual reconciliation model to this statement line."""
+        self.ensure_one()
+        model = self.env['account.reconcile.model'].browse(model_id) if model_id else self.matched_reconcile_model_id
+        if not model or not model.exists():
+            return
+        account = model.line_ids.filtered(lambda l: l.account_id)[:1].account_id
+        if not account:
+            return
+        self._reconcile_with(account)
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
     def button_validation(self, async_action=False):
         """Reconcile the statement line with the counterpart the user chose in
         the widget (a matched entry or an account)."""
@@ -121,7 +357,7 @@ class AccountBankStatementLine(models.Model):
         if self.is_reconciled:
             return {'type': 'ir.actions.client', 'tag': 'reload'}
         target_aml = self._get_selected_counterpart_aml()
-        counterpart_account = target_aml.account_id or self.account_id
+        counterpart_account = target_aml[:1].account_id or self.account_id
         if not counterpart_account:
             raise UserError(_(
                 "Select an account or an existing entry to reconcile with."))
@@ -134,6 +370,9 @@ class AccountBankStatementLine(models.Model):
     def _reconcile_model_matches(self, model):
         """Whether the given reconcile model's conditions match this line."""
         self.ensure_one()
+        # Require at least one matching condition
+        if not (model.match_journal_ids or model.match_partner_ids or model.match_amount or (model.match_label and model.match_label_param)):
+            return False
         if model.match_journal_ids and self.journal_id not in model.match_journal_ids:
             return False
         if model.match_partner_ids and \

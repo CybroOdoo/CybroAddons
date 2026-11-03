@@ -21,7 +21,8 @@
 #############################################################################
 from datetime import timedelta
 
-from odoo import fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class DayBookWizard(models.TransientModel):
@@ -38,7 +39,7 @@ class DayBookWizard(models.TransientModel):
                                        'account.journal'].search([]))
     target_move = fields.Selection([('posted', 'All Posted Entries'),
                                     ('all', 'All Entries')], string='Target Moves', required=True,
-                                   default='posted')
+                                    default='posted')
 
     account_ids = fields.Many2many('account.account',
                                    'account_report_daybook_account_rel',
@@ -49,6 +50,12 @@ class DayBookWizard(models.TransientModel):
                             default=fields.Date.context_today, required=True)
     date_to = fields.Date(string='End Date',
                           default=fields.Date.context_today, required=True)
+
+    @api.constrains('date_from', 'date_to')
+    def _check_dates(self):
+        for record in self:
+            if record.date_from and record.date_to and record.date_from > record.date_to:
+                raise ValidationError(_("Start Date cannot be later than End Date."))
 
     def _build_contexts(self, data):
         result = {}

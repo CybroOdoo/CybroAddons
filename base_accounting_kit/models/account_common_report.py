@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 from odoo.tools import get_lang
 
 
@@ -50,7 +51,13 @@ class AccountCommonReport(models.TransientModel):
     target_move = fields.Selection([('posted', 'All Posted Entries'),
                                     ('all', 'All Entries'),
                                     ], string='Target Moves',
-                                   required=True, default='posted')
+                                    required=True, default='posted')
+
+    @api.constrains('date_from', 'date_to')
+    def _check_dates(self):
+        for record in self:
+            if record.date_from and record.date_to and record.date_from > record.date_to:
+                raise ValidationError(_("Start Date cannot be later than End Date."))
 
     @api.onchange('company_id')
     def _onchange_company_id(self):
@@ -87,6 +94,8 @@ class AccountCommonReport(models.TransientModel):
         """Function to check if the report comes active models and related
         values"""
         self.ensure_one()
+        if self.date_from and self.date_to and self.date_from > self.date_to:
+            raise ValidationError(_("Start Date cannot be later than End Date."))
         data = {}
         data['ids'] = self.env.context.get('active_ids', [])
         data['model'] = self.env.context.get('active_model', 'ir.ui.menu')
@@ -118,6 +127,9 @@ class AccountCommonReport(models.TransientModel):
     def _xlsx_base_data(self):
         """Build the shared ``data`` dict (mirrors ``check_report``) so a
         wizard's xlsx export reuses the exact same filters as its PDF."""
+        self.ensure_one()
+        if self.date_from and self.date_to and self.date_from > self.date_to:
+            raise ValidationError(_("Start Date cannot be later than End Date."))
         data = {}
         data['ids'] = self.env.context.get('active_ids', [])
         data['model'] = self.env.context.get('active_model', 'ir.ui.menu')

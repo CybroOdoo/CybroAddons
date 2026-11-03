@@ -2,7 +2,8 @@
 import { registry } from '@web/core/registry';
 import { ListController } from "@web/views/list/list_controller";
 import { listView } from "@web/views/list/list_view";
-import { proxy } from "@odoo/owl";
+import { proxy, onMounted, onWillUnmount } from "@odoo/owl";
+import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 export class AccountMoveLineListController extends ListController {
      constructor() {
@@ -123,24 +124,44 @@ export class AccountMoveLineListController extends ListController {
             });
             const moveLine = document.querySelectorAll('#moveLine');
             moveLine.forEach(line => {
-                line.addEventListener('click',async (event) => {
+                line.addEventListener('click', async (event) => {
                     const moveId = event.target.getAttribute('data-moveId');
                     await this.ShowMoveForm(moveId);
                 });
             });
         }
         this.updateResIdList();
+        if (data_id) {
+            if (this.resIdList.length) {
+                var data = await this.orm.call('account.bank.statement.line', 'update_match_row_data', [this.resIdList[0]]);
+                data.ids = this.resIdList;
+                await this.orm.call('account.bank.statement.line', 'write', [[data_id], { lines_widget_json: JSON.stringify(data) }]);
+            } else {
+                await this.orm.call('account.bank.statement.line', 'write', [[data_id], { lines_widget_json: null }]);
+            }
+        }
     }
-    async removeRecord(resId){
+    async removeRecord(resId) {
         const mainKanbanDiv = document.querySelector('#base_accounting_reconcile');
         const rowToRemove = document.querySelector(`tr[data-resId="${resId}"]`);
         if (rowToRemove) {
             mainKanbanDiv.removeChild(rowToRemove);
             this.updateResIdList();
+            const kanban_row = document.querySelector(`tr[data-id]`);
+            if (kanban_row) {
+                const data_id = parseInt(kanban_row.getAttribute('data-id'));
+                if (this.resIdList.length) {
+                    var data = await this.orm.call('account.bank.statement.line', 'update_match_row_data', [this.resIdList[0]]);
+                    data.ids = this.resIdList;
+                    await this.orm.call('account.bank.statement.line', 'write', [[data_id], { lines_widget_json: JSON.stringify(data) }]);
+                } else {
+                    await this.orm.call('account.bank.statement.line', 'write', [[data_id], { lines_widget_json: null }]);
+                }
+            }
         }
     }
     async ShowMoveForm(moveId) {
-    // Convert moveId from string to integer
+        // Convert moveId from string to integer
         const moveIdInt = parseInt(moveId, 10);
         // Check if the conversion is successful
         if (!isNaN(moveIdInt)) {
@@ -166,3 +187,117 @@ export const AccountMoveListView = {
     Controller: AccountMoveLineListController,
 };
 registry.category('views').add('account_move_line_list_controller', AccountMoveListView);
+
+export class AmlSelectListController extends ListController {
+    setup() {
+        super.setup();
+        this.actionService = useService("action");
+        this.orm = useService("orm");
+        this.notification = useService("notification");
+        let btnSelect = null;
+
+        onMounted(() => {
+            const activeStLineId = this.props.context && this.props.context.active_st_line_id;
+            if (activeStLineId) {
+                const modalDialog = document.querySelector('.modal-content') || document.querySelector('.o_dialog');
+                if (modalDialog) {
+                    let modalFooter = modalDialog.querySelector('.modal-footer');
+                    if (!modalFooter) {
+                        modalFooter = document.createElement('div');
+                        modalFooter.className = 'modal-footer justify-content-start border-top p-2 bg-body';
+                        modalDialog.appendChild(modalFooter);
+                    }
+                    if (!modalFooter.querySelector('.btn_aml_select')) {
+                        btnSelect = document.createElement('button');
+                        btnSelect.className = 'btn btn-primary px-3 btn_aml_select';
+                        btnSelect.style.backgroundColor = '#714B67';
+                        btnSelect.style.borderColor = '#714B67';
+                        btnSelect.style.fontWeight = '500';
+                        btnSelect.innerText = _t('Select');
+                        btnSelect.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.onClickSelectSelected();
+                        };
+                        modalFooter.prepend(btnSelect);
+                    }
+                }
+            }
+        });
+
+        onWillUnmount(() => {
+            if (btnSelect && btnSelect.parentNode) {
+                btnSelect.remove();
+            }
+        });
+    }
+
+    async onClickSelectSelected() {
+        const activeStLineId = this.props.context.active_st_line_id;
+        const selectedRecords = this.model.root.selection || [];
+        const amlIds = selectedRecords.map(r => r.resId).filter(Boolean);
+        if (!amlIds.length) {
+            this.notification.add(_t("Please select at least one line to reconcile."), { type: 'warning' });
+            return;
+        }
+        if (activeStLineId && amlIds.length > 0) {
+            await this.orm.call('account.bank.statement.line', 'action_select_aml_to_reconcile', [activeStLineId, amlIds]);
+            this.actionService.doAction({ type: 'ir.actions.client', tag: 'reload' });
+        }
+    }
+
+    async openRecord(record) {
+        if (record && record.toggleSelection) {
+            record.toggleSelection();
+        }
+    }
+}
+export const AmlSelectListView = {
+    ...listView,
+    Controller: AmlSelectListController,
+};
+registry.category('views').add('aml_rec_select_list', AmlSelectListView);
+
+export class PartnerSelectListController extends ListController {
+    setup() {
+        super.setup();
+        this.actionService = useService("action");
+        this.orm = useService("orm");
+    }
+    async openRecord(record) {
+        const activeStLineId = this.props.context && this.props.context.active_st_line_id;
+        if (activeStLineId && record.resId) {
+            await this.orm.call('account.bank.statement.line', 'action_set_partner', [activeStLineId, record.resId]);
+            this.actionService.doAction({ type: 'ir.actions.client', tag: 'reload' });
+            return;
+        }
+        super.openRecord(...arguments);
+    }
+}
+export const PartnerSelectListView = {
+    ...listView,
+    Controller: PartnerSelectListController,
+};
+registry.category('views').add('partner_rec_select_list', PartnerSelectListView);
+
+export class AccountSelectListController extends ListController {
+    setup() {
+        super.setup();
+        this.actionService = useService("action");
+        this.orm = useService("orm");
+    }
+    async openRecord(record) {
+        const activeStLineId = this.props.context && this.props.context.active_st_line_id;
+        if (activeStLineId && record.resId) {
+            await this.orm.call('account.bank.statement.line', 'action_set_account', [activeStLineId, record.resId]);
+            this.actionService.doAction({ type: 'ir.actions.client', tag: 'reload' });
+            return;
+        }
+        super.openRecord(...arguments);
+    }
+}
+export const AccountSelectListView = {
+    ...listView,
+    Controller: AccountSelectListController,
+};
+registry.category('views').add('account_rec_select_list', AccountSelectListView);
