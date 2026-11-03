@@ -1,7 +1,7 @@
 /** @odoo-module **/
 import { registry } from "@web/core/registry";
-import { useService } from "@web/core/utils/hooks";
-import { Component, proxy, signal, onWillStart, onWillUnmount } from "@odoo/owl";
+import { useService, useExternalListener } from "@web/core/utils/hooks";
+import { Component, proxy, signal, onWillStart } from "@odoo/owl";
 import SearchResult from "./SearchResult";
 import { fuzzyLookup } from "@web/core/utils/search";
 import { computeAppsAndMenuItems } from "@web/webclient/menus/menu_helpers";
@@ -42,11 +42,7 @@ class WebResponsive extends Component {
             this.state.menus = this.menuService.getApps();
             this.state.should_replace_nav = true;
         });
-        this._boundKeyDown = this.onKeyDown.bind(this);
-        window.addEventListener('keydown', this._boundKeyDown);
-        onWillUnmount(() => {
-            window.removeEventListener('keydown', this._boundKeyDown);
-        });
+        useExternalListener(window, 'keydown', this.onKeyDown.bind(this));
     }
 
     /**
@@ -112,12 +108,6 @@ class WebResponsive extends Component {
         this.state.query = "";
     }
 
-    /**
-     * Removes the keydown event listener when the component is unmounted.
-     */
-    willUnmount() {
-        window.removeEventListener('keydown', this._boundKeyDown);
-    }
 
     /**
      * Performs a search through the available apps and menu items using fuzzy matching.

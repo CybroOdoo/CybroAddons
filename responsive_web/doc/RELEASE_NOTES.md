@@ -5,5 +5,4 @@
 #### ADD
 
 - Initial release of Web Responsive.
-.
 

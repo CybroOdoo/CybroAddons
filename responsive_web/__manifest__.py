@@ -20,13 +20,13 @@
     "version": "20.0.1.0.0",
     'category': 'Extra Tools',
     'summary': 'Enterprise like app drawers and sticky headers.',
-    'description': """This module helps to create enterprise like app drawer,
+    'description': """This module helps to create enterprise-like app drawer,
      Responsiveness and sticky headers included in different views""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'web', 'mail'],
+    'depends': ['base', 'web'],
     'data': [
         'views/responsive_web_menus.xml',
     ],
@@ -43,11 +43,17 @@
         ],
         'web.assets_backend_lazy': [
             'responsive_web/static/src/xml/PivotCustom.xml',
-        ]
+        ],
+        'web.assets_unit_tests': [
+            'responsive_web/static/tests/**/*',
+            ('remove', 'responsive_web/static/tests/tours/**/*'),
+        ],
+        'web.assets_tests': [
+            'responsive_web/static/tests/tours/**/*',
+        ],
     },
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
-    'auto_install': False,
-    'application': False,
+
 }

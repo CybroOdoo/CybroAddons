@@ -3,6 +3,7 @@ import { useService, useBus } from "@web/core/utils/hooks";
 import { NavBar } from "@web/webclient/navbar/navbar";
 import { patch } from "@web/core/utils/patch";
 import { _t } from "@web/core/l10n/translation";
+import { routerBus } from "@web/core/browser/router";
 
 /**
  * Patch for the NavBar Component
@@ -13,14 +14,14 @@ import { _t } from "@web/core/l10n/translation";
 patch(NavBar.prototype, {
     /**
      * Sets up the component by initializing services, state variables, and registering a bus listener
-     * for route changes. This method is called when the component is initialized.
+     * on routerBus for route changes. This method is called when the component is initialized.
      */
     setup() {
         super.setup(...arguments);
         this.action = useService("action");
         this.menuService = useService("menu");
         this.isDashboardView = false;
-        useBus(this.env.bus, 'ROUTE_CHANGE', this._onRouteChange.bind(this));
+        useBus(routerBus, 'ROUTE_CHANGE', this._onRouteChange.bind(this));
     },
     /**
      * Override item selection to open the dashboard when the current app brand module name is clicked.

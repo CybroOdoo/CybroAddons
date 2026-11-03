@@ -6,14 +6,11 @@
     :target: https://www.odoo.com
     :alt: Odoo 20.0
 
-.. |edition| image:: https://img.shields.io/badge/Edition-Community-1ABC9C.svg
-    :alt: Community Edition
-
 .. |maintainer| image:: https://img.shields.io/badge/maintainer-Cybrosys-875A7B.svg
     :target: https://cybrosys.com
     :alt: Maintainer: Cybrosys Techno Solutions
 
-|license| |odoo| |edition| |maintainer|
+|license| |odoo| |maintainer|
 
 Web Responsive
 ==============
