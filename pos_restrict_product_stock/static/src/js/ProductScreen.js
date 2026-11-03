@@ -19,7 +19,7 @@ patch(ProductScreen.prototype, {
         this.dialog = useService("dialog");
     },
     async addProductToOrder(product, ...args) {
-        if (!product) {
+        if (!product || product.isConfigurable?.()) {
             return super.addProductToOrder(product, ...args);
         }
         const type = this.pos.config.stock_type;
@@ -31,7 +31,7 @@ patch(ProductScreen.prototype, {
             (type === 'virtual_qty' && virtualQty <= 0) ||
             (type === 'both' && (qty <= 0 || virtualQty <= 0));
 
-        if (this.pos.config.is_restrict_product && isOutOfStock && product.type !== 'service' && !product.to_weight) {
+        if (this.pos.config.is_restrict_product && product.is_storable && isOutOfStock && !product.to_weight) {
             const confirmed = await new Promise((resolve) => {
                 this.dialog.add(ConfirmationDialog, {
                     title: _t("Out of Stock"),
@@ -43,7 +43,6 @@ patch(ProductScreen.prototype, {
                 });
             });
             if (confirmed) {
-                product.order_status = true;
                 return super.addProductToOrder(product, ...args);
             }
         } else {

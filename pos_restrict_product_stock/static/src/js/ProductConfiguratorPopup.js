@@ -12,7 +12,7 @@ patch(ProductConfiguratorPopup.prototype, {
         const product = this.product;
         const posConfig = this.pos.config;
         const dialog = this.env.services.dialog;
-        if (!product) {
+        if (!product || !product.is_storable) {
             return super.confirm(...arguments);
         }
 

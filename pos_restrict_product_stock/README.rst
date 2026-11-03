@@ -6,14 +6,11 @@
     :target: https://www.odoo.com
     :alt: Odoo 20.0
 
-.. |edition| image:: https://img.shields.io/badge/Edition-Community-1ABC9C.svg
-    :alt: Community Edition
-
 .. |maintainer| image:: https://img.shields.io/badge/maintainer-Cybrosys-875A7B.svg
     :target: https://cybrosys.com
     :alt: Maintainer: Cybrosys Techno Solutions
 
-|license| |odoo| |edition| |maintainer|
+|license| |odoo| |maintainer|
 
 Display Stock in POS | Restrict Out-of-Stock Products in POS
 =============================================================
@@ -32,7 +29,10 @@ No external dependencies.
 
 Configuration
 =============
-No additional configuration required
+1. Navigate to **Point of Sale** -> **Configuration** -> **Settings**.
+2. Under **Stock Configuration**, enable **Display Stock in POS** to show quantities on product cards.
+3. Enable **Restrict Out-of-Stock Products in POS** to restrict out-of-stock ordering.
+4. Choose the **Stock Type** (*Qty on Hand*, *Virtual Qty*, or *Both*).
 
 Company
 -------

@@ -15,7 +15,7 @@ patch(PosStore.prototype, {
         if (currentOrder) {
             for (const line of currentOrder.getOrderlines()) {
                 const product = line.product_id;
-                if (!product || product.type === 'service' || product.to_weight) {
+                if (!product || !product.is_storable || product.to_weight) {
                     continue;
                 }
                 const qty = product.qty_available ?? 0;
@@ -34,7 +34,7 @@ patch(PosStore.prototype, {
             const confirmed = await new Promise((resolve) => {
                 this.dialog.add(ConfirmationDialog, {
                     title: _t("Out of Stock Warning"),
-                    body: _t("%s is out of stock. Click Order if you still want to process this order?").replace("%s", outOfStockProducts.join(", ")),
+                    body: _t("%s is out of stock. Do you want to proceed with this order?").replace("%s", outOfStockProducts.join(", ")),
                     confirmLabel: _t("Order"),
                     cancelLabel: _t("Cancel"),
                     confirm: () => resolve(true),
