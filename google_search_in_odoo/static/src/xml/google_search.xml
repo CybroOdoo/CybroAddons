@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Template Google Search Systray Widget -->
+    <t t-name="google_search_in_odoo.SearchSystray">
+        <div t-if="state.isGoogleSearchEnabled" class="o_google_search_systray position-relative d-flex align-items-center">
+            <div class="input-group input-group-sm o_google_search_input_group">
+                <span class="input-group-text o_google_search_icon_prepend">
+                    <i class="fa fa-google" aria-hidden="true"/>
+                </span>
+                <input
+                    type="text"
+                    t-ref="searchInput"
+                    class="form-control o_google_search_input"
+                    placeholder="Search..."
+                    t-model="state.query"
+                    t-on-keydown="onKeyPress"
+                />
+                <span
+                    class="input-group-text o_google_search_icon_append"
+                    role="button"
+                    title="Search"
+                    t-on-click="_onSearch"
+                >
+                    <i class="fa fa-search" aria-hidden="true"/>
+                </span>
+            </div>
+
+            <div t-if="state.showResults" class="o_google_search_results shadow-sm">
+                <div class="o_google_search_results_header d-flex justify-content-between align-items-center">
+                    <span class="o_google_search_results_title">Search Results</span>
+                    <button
+                        type="button"
+                        class="o_google_search_close_btn"
+                        aria-label="Close"
+                        t-on-click="_onCloseResults"
+                    >
+                        <i class="fa fa-times" aria-hidden="true"/>
+                    </button>
+                </div>
+                <div class="o_google_search_results_content">
+                    <t t-if="state.results.length === 0">
+                        <div class="o_google_search_empty text-muted text-center p-3">
+                            No results found.
+                        </div>
+                    </t>
+                    <t t-foreach="state.results" t-as="result" t-key="result_index">
+                        <div class="o_google_search_result_item">
+                            <h4 class="o_google_search_item_title">
+                                <t t-esc="result.title"/>
+                            </h4>
+                            <a
+                                class="o_google_search_item_link"
+                                t-att-href="result.link"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <t t-esc="result.link"/>
+                            </a>
+                            <p
+                                t-if="result.snippet"
+                                t-attf-class="o_google_search_item_snippet #{result.snippet.length > 150 ? 'collapsible' : ''} #{state.expandedIndices[result_index] ? 'expanded' : ''}"
+                                t-att-title="result.snippet.length > 150 ? (state.expandedIndices[result_index] ? 'Click to collapse' : 'Click to expand') : ''"
+                                t-on-click="() => this.toggleExpand(result_index)"
+                            >
+                                <t t-if="result.snippet.length > 150 and !state.expandedIndices[result_index]">
+                                    <t t-esc="result.snippet.substring(0, 150) + '...'"/>
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="result.snippet"/>
+                                </t>
+                            </p>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
