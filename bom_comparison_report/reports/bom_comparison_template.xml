@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- BoM comparison report -->
+    <template id="bom_compare_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <t t-call="web.external_layout">
+                    <t t-set="lines" t-value="comparisons[wizard.id]"/>
+                    <t t-set="best" t-value="lines[0]"/>
+                    <div class="page">
+                        <div class="o_bom_compare_header">
+                            <h3>BoM Comparison Report</h3>
+                        </div>
+                        <div id="informations" class="row mt-4 mb-4">
+                            <div class="col-auto col-3 mw-100 mb-2">
+                                <strong>Product:</strong>
+                                <t t-out="wizard.product_tmpl_id.display_name"/>
+                            </div>
+                            <div class="col-auto col-3 mw-100 mb-2">
+                                <strong>Analysis Based On:</strong>
+                                <t t-out="dict(wizard._fields['analysis'].selection).get(wizard.analysis)"/>
+                            </div>
+                            <div class="col-auto col-3 mw-100 mb-2">
+                                <strong>Number of Products:</strong>
+                                <t t-out="wizard.product_unit"/>
+                            </div>
+                            <div class="col-auto col-3 mw-100 mb-2">
+                                <strong>Date:</strong>
+                                <t t-out="context_timestamp(datetime.datetime.now()).date()"
+                                   t-options="{'widget': 'date'}"/>
+                            </div>
+                        </div>
+                        <div class="o_bom_compare_bar"/>
+                        <table class="table table-bordered mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Bill of Materials</th>
+                                    <th class="text-center">Components</th>
+                                    <th class="text-end">Price of the Components for One Product</th>
+                                    <th class="text-end">Price of the Components for the Products to Produce</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="lines" t-as="line">
+                                    <td>
+                                        <strong t-out="line['bom'].display_name"/>
+                                    </td>
+                                    <td class="text-center" t-out="line['components']"/>
+                                    <td class="text-end" t-out="line['unit_price']"
+                                        t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <td class="text-end" t-out="line['total']"
+                                        t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="o_bom_compare_bar"/>
+                        <h5 class="mt-4">
+                            Profitable BoM:
+                            <span class="o_bom_compare_best">
+                                <strong t-out="best['bom'].display_name"/>
+                            </span>
+                            with a total of
+                            <strong t-out="best['total']"
+                                    t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                        </h5>
+                        <div class="o_bom_compare_bar"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

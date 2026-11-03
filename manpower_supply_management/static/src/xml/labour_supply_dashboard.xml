@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+    <t t-name="DashboardLabourSupply">
+        <div class="o_labour_supply_dashboard container-fluid"
+             style="overflow: auto; max-height: 100%;">
+            <section class="dashboard_main_section" id="main_section_login">
+                <div class="row">
+                    <div class="col-sm-12 mb-4">
+                        <div class="row">
+                            <div class="col-12 col-sm-12 col-md-8">
+                                <h2 class="section-header">Manpower Supply
+                                    Management Dashboard
+                                </h2>
+                            </div>
+                        </div>
+                        <hr/>
+                    </div>
+                </div>
+            </section>
+            <section class="dashboard_card_section"
+                     id="main_section_cards">
+                <div class="crm_dash_cards row">
+                    <div class="col-sm-12 col-md-4">
+                        <div class="dashboard-card card-shadow my_lead">
+                            <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                                <i class="oi text-mauve" data-icon="show_chart"/>
+                            </div>
+                            <div class="dashboard-card__details">
+                                <h3>
+                                    <span>
+                                        <t t-out="this.state.labour_supply_details"/>
+                                    </span>
+                                </h3>
+                                <h4>Ongoing Contracts</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-4">
+                        <div class="dashboard-card card-shadow opportunity">
+                            <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                                <i class="oi" data-icon="receipt_long"/>
+                            </div>
+                            <div class="dashboard-card__details">
+                                <h3>
+                                    <span>
+                                        <t t-out="this.state.total_invoiced_amount"/>
+                                    </span>
+                                </h3>
+                                <h4>Invoiced Amount</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-4">
+                        <div class="dashboard-card card-shadow exp_revenue">
+                            <div class="dashboard-card__icon-container bg-mauve-light d-flex justify-content-center align-items-center">
+                                <i class="oi" data-icon="payments"/>
+                            </div>
+                            <div class="dashboard-card__details">
+                                <h3>
+                                    <span>
+                                        <t t-out="this.state.expected_amount"/>
+                                    </span>
+                                </h3>
+                                <h4>Expected Amount</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row col-md-12">
+                    <div class="col-md-5">
+                        <div class="row" style="display:flex; padding: 20px;">
+                            <div class="card-body" id="in_ex_body_hide">
+                                <div class="leads_stages chart-container card-shadow">
+                                    <h2>Labour Contract and Amount</h2>
+                                    <div class="form-group col-2"
+                                         id="top_product_button">
+                                        <form class="form-group">
+                                            <select name="period"
+                                                    id="filter_selection"
+                                                    selected="selected"
+                                                    t-model="this.period"
+                                                    style="border-radius: 5px;border-color: currentColor;border-width: 2px;background: lightgrey;">
+                                                <option id="daily"
+                                                        value="daily">Daily
+                                                </option>
+                                                <option id="monthly"
+                                                        value="monthly">Monthly
+                                                </option>
+                                                <option id="yearly"
+                                                        value="yearly">Yearly
+                                                </option>
+                                                <option id="totally"
+                                                        value="totally">Total
+                                                </option>
+                                            </select>
+                                        </form>
+                                    </div>
+                                    <br/>
+                                    <hr/>
+                                    <div class="graph_canvas">
+                                        <canvas t-ref="this.Leadstage"
+                                                width="200"
+                                                height="120"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="top_country_revenue_div col-12 col-sm-12 col-md-3">
+                        <div class="chart-container card-shadow">
+                            <h3 class="h5">Skills</h3>
+                            <hr/>
+                            <table class="table table-hover"
+                                   id="country_revenue_table">
+                                <thead>
+                                    <tr>
+                                        <th>Skill</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-if="this.state.skills">
+                                        <t t-foreach="this.state.skills"
+                                           t-as="skill" t-key="skill['name']">
+                                            <tr>
+                                                <td>
+                                                    <t t-out="skill['name']"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="top_country_count_div col-12 col-sm-12 col-md-3">
+                        <div class="chart-container card-shadow">
+                            <h3 class="h5">Available Workers</h3>
+                            <hr/>
+                            <table class="table table-hover"
+                                   id="country_count_table">
+                                <thead>
+                                    <tr>
+                                        <th>Workers</th>
+                                        <th>Rate Per Day</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-if="this.state.workers">
+                                        <t t-foreach="this.state.workers"
+                                           t-as="worker" t-key="worker['name']">
+                                            <tr>
+                                                <td>
+                                                    <t t-out="worker['name']"/>
+                                                </td>
+                                                <td>
+                                                    <t t-out="worker['rate']"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row" style="display:flex; padding: 20px;">
+                            <div class="card-body" id="in_ex_body_hide">
+                                <div class="leads_stages chart-container card-shadow">
+                                    <h2>Contracts by State</h2>
+                                    <hr/>
+                                    <div class="graph_canvas">
+                                        <canvas t-ref="this.LeadByMonth"
+                                                width="200"
+                                                height="120"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row" style="display:flex; padding: 20px;">
+                            <div class="card-body" id="in_ex_body_hide">
+                                <div class="leads_stages chart-container card-shadow">
+                                    <h2>Contracts by Customer</h2>
+                                    <hr/>
+                                    <div class="graph_canvas">
+                                        <canvas t-ref="this.CrmActivities"
+                                                width="200"
+                                                height="120"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row" style="display:flex; padding: 20px;">
+                            <div class="card-body" id="in_ex_body_hide">
+                                <div class="leads_campaign chart-container card-shadow">
+                                    <h2>Workers Availability</h2>
+                                    <hr/>
+                                    <div class="graph_canvas">
+                                        <canvas t-ref="this.LeadByCampaign"
+                                                width="200"
+                                                height="120"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="top_country_count_div col-12 col-sm-12 col-md-6">
+                        <div class="chart-container card-shadow">
+                            <h3 class="h5">Top 10 Customers</h3>
+                            <hr/>
+                            <table class="table table-hover"
+                                   id="country_count_table">
+                                <thead>
+                                    <tr>
+                                        <th>Customers</th>
+                                        <th>Number of Contracts</th>
+                                        <th>Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-if="this.state.customers">
+                                        <t t-foreach="this.state.customers"
+                                           t-as="customer"
+                                           t-key="customer['name']">
+                                            <tr>
+                                                <td>
+                                                    <t t-out="customer['name']"/>
+                                                </td>
+                                                <td>
+                                                    <t t-out="customer['count']"/>
+                                                </td>
+                                                <td>
+                                                    <t t-out="customer['email']"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </t>
+</template>

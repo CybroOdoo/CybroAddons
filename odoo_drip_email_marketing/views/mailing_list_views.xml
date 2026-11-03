@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Drip mailing configuration on the mailing list form -->
+    <record id="mailing_list_view_form" model="ir.ui.view">
+        <field name="name">mailing.list.view.form.inherit.odoo.drip.email.marketing</field>
+        <field name="model">mailing.list</field>
+        <field name="inherit_id" ref="mass_mailing.mailing_list_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe_stat_button" type="object"
+                        name="get_drip_history" icon="history">
+                    <field string="Drip History" name="drip_count"
+                           widget="statinfo"/>
+                </button>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page string="Drip Mailing Configuration"
+                          name="drip_mailing_configuration">
+                        <group>
+                            <field name="mail_contact"/>
+                            <field name="mass_mailing_enable"/>
+                            <field name="server_id"
+                                   required="mail_contact or mass_mailing_enable"/>
+                        </group>
+                    </page>
+                    <page string="Mail on Subscription Configuration"
+                          name="mail_on_subscription" invisible="not mail_contact">
+                        <group>
+                            <field name="template_id" required="mail_contact"/>
+                        </group>
+                    </page>
+                    <page string="Drip Mass Mail Configuration"
+                          name="drip_mass_mail" invisible="not mass_mailing_enable">
+                        <group>
+                            <group>
+                                <field name="start_date"
+                                       required="mass_mailing_enable"/>
+                            </group>
+                            <group>
+                                <field name="end_date"
+                                       required="mass_mailing_enable"/>
+                            </group>
+                        </group>
+                        <field name="template_ids">
+                            <list editable="bottom">
+                                <field name="name"/>
+                                <field name="days_after"/>
+                                <field name="template_id"/>
+                            </list>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+</odoo>

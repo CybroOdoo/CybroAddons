@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view for price.history -->
+    <record id="price_history_view_list" model="ir.ui.view">
+        <field name="name">price.history.view.list</field>
+        <field name="model">price.history</field>
+        <field name="arch" type="xml">
+            <list string="Price History" create="false" edit="false">
+                <field name="datetime"/>
+                <field name="product_id"/>
+                <field name="cost"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view for price.history -->
+    <record id="price_history_view_form" model="ir.ui.view">
+        <field name="name">price.history.view.form</field>
+        <field name="model">price.history</field>
+        <field name="arch" type="xml">
+            <form string="Price History" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="product_id" readonly="1"/>
+                            <field name="cost" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="datetime" readonly="1"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view for price.history -->
+    <record id="price_history_view_search" model="ir.ui.view">
+        <field name="name">price.history.view.search</field>
+        <field name="model">price.history</field>
+        <field name="arch" type="xml">
+            <search string="Search Price History">
+                <field name="product_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <filter string="Date" name="filter_date" date="datetime"/>
+                <group>
+                    <filter string="Product" name="group_by_product" domain="[]" context="{'group_by': 'product_id'}"/>
+                    <filter string="Company" name="group_by_company" domain="[]" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                    <filter string="Date" name="group_by_date" domain="[]" context="{'group_by': 'datetime:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action for price.history -->
+    <record id="price_history_action" model="ir.actions.act_window">
+        <field name="name">Price History</field>
+        <field name="res_model">price.history</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="price_history_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No price history recorded yet!
+            </p>
+            <p>
+                Product standard cost modifications will automatically appear here.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menuitem for price.history under Invoicing / Configuration -->
+    <menuitem id="price_history_menu"
+              name="Price History"
+              action="price_history_action"
+              parent="account.menu_finance_configuration"
+              sequence="50"/>
+</odoo>

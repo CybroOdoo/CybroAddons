@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Multi-currency settings in Point of Sale configuration -->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.pos.multi.currency.payment</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='pos_interface_section']" position="after">
+                <block title="Multi-Currency" id="pos_multi_currency_section">
+                    <setting id="pos_multi_currency_setting"
+                             string="Multi-Currency per Session"
+                             help="Allow processing payments in multiple foreign currencies.">
+                        <field name="enable_currency"/>
+                        <div class="content-group mt16" invisible="not enable_currency">
+                            <field name="currency_ids"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True, 'no_create_edit': True}"
+                                   placeholder="Select supported currencies..."/>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Multi-currency fields in POS Order form view -->
+    <record id="view_pos_pos_form" model="ir.ui.view">
+        <field name="name">pos.order.view.form.inherit.pos.multi.currency.payment</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount']" position="after">
+                <field name="currency_amount"/>
+                <field name="payment_currency"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

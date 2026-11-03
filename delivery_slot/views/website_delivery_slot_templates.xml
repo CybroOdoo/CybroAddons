@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="website_delivery_slot" inherit_id="website_sale.cart_lines">
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container']" position="after">
+            <!-- Checking if delivery slot is enabled -->
+            <t t-set="delivery_slot"
+               t-value="request.env['ir.config_parameter'].sudo().get_bool('delivery_slot.enable_delivery_date')"/>
+            <t t-if="delivery_slot">
+                <t t-set="slots"
+                   t-value="slots or request.env['slot.time'].sudo().search([])"/>
+                <!-- Scoped style injected directly — fixes invisible option text without a new CSS file -->
+                <style>
+                    .delivery_slot_div select#slot_id,
+                    .delivery_slot_div select#slot_id:focus,
+                    .delivery_slot_div select#slot_id:active,
+                    .delivery_slot_div select.form-select,
+                    .delivery_slot_div select.form-select:focus,
+                    .delivery_slot_div select.form-select:active,
+                    .delivery_slot_div input#date,
+                    .delivery_slot_div input#date:focus {
+                        color: #212529 !important;
+                        -webkit-text-fill-color: #212529 !important;
+                        background-color: #ffffff !important;
+                        opacity: 1 !important;
+                        --bs-form-select-color: #212529 !important;
+                        --bs-body-color: #212529 !important;
+                        --bs-form-select-bg: #ffffff !important;
+                        --bs-body-bg: #ffffff !important;
+                        --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+                    }
+                    .delivery_slot_div select#slot_id option,
+                    .delivery_slot_div select.form-select option,
+                    select#slot_id option,
+                    .delivery_slot_div select#slot_id option:hover,
+                    .delivery_slot_div select#slot_id option:checked,
+                    .delivery_slot_div select#slot_id option:focus {
+                        color: #212529 !important;
+                        -webkit-text-fill-color: #212529 !important;
+                        background-color: #ffffff !important;
+                        background: #ffffff !important;
+                        opacity: 1 !important;
+                    }
+                    .delivery_slot_div label,
+                    .delivery_slot_div span.s_website_form_label_content {
+                        color: #212529 !important;
+                        -webkit-text-fill-color: #212529 !important;
+                        opacity: 1 !important;
+                    }
+                    .slot-time-div label,
+                    .slot-time-div b,
+                    .slot-time-div span {
+                        color: #212529 !important;
+                        -webkit-text-fill-color: #212529 !important;
+                        opacity: 1 !important;
+                    }
+                </style>
+                <div class="delivery_slot_div">
+                    <div class="form-group col-12 s_website_form_field s_website_form_required"
+                         data-type="char" data-name="Field" id="date_div">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px;"
+                                   for="date">
+                                <span class="s_website_form_label_content">
+                                    Delivery Date
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <input id="date"
+                                       type="date"
+                                       class="form-control"
+                                       style="color: #212529 !important; -webkit-text-fill-color: #212529 !important; background-color: #ffffff !important;"
+                                       placeholder="Delivery Date"
+                                       name="date" required="1"
+                                       t-att-value="line.delivery_date"
+                                       t-att-data-line-id="line.id"
+                                       t-att-data-product-id="line.product_id.id"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-12 s_website_form_field s_website_form_required"
+                         data-type="char" data-name="Field" id="divs">
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px;"
+                                   for="slot_id">
+                                <span class="s_website_form_label_content">
+                                    Delivery Slot
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <select name="slot_id" id="slot_id"
+                                        class="form-select"
+                                        style="color: #212529 !important; -webkit-text-fill-color: #212529 !important; background-color: #ffffff !important; --bs-form-select-color: #212529 !important; --bs-body-color: #212529 !important; --bs-form-select-bg: #ffffff !important; --bs-body-bg: #ffffff !important; --bs-form-select-bg-img: url(&quot;data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e&quot;);"
+                                        t-att-data-line-id="line.id"
+                                        t-att-data-product-id="line.product_id.id">
+                                    <option value="" t-att-selected="not line.slot_id and 'selected' or None" style="color: #212529 !important; background-color: #ffffff !important;">Select a slot</option>
+                                    <t t-foreach="slots" t-as="slot">
+                                        <option t-att-value="slot.id"
+                                                t-att-selected="line.slot_id and slot.id == line.slot_id.id and 'selected' or None"
+                                                t-out="slot.name"
+                                                style="color: #212529 !important; background-color: #ffffff !important;"/>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

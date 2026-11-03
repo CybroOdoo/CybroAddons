@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Adds the pharma block to general settings. -->
+    <record id="res_config_settings_view_form_pharmaceutical_base" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.pharmaceutical.erp</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="80"/>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Pharmaceutical ERP"
+                     string="Pharmaceutical ERP"
+                     name="pharmaceutical_base"
+                     logo="/pharmaceutical_base/static/description/icon.png">
+
+                    <block title="Vendor Management" name="pharmaceutical_base_vendor_settings">
+                        <setting id="pharmaceutical_base_module_vendor_qualification"
+                                 string="Enable Vendor Qualification"
+                                 help="Manage Approved Vendor Lists (AVL), questionnaire portal, and PO enforcement.">
+                            <field name="module_pharma_vendor_qualification"/>
+                        </setting>
+                        <setting id="pharmaceutical_base_vendor_approval_percentage"
+                                 string="Vendor Qualification Approval (%)"
+                                 help="Minimum audit score (%) required for vendor approval."
+                                 invisible="not module_pharma_vendor_qualification">
+                            <field name="pharma_vendor_approval_percentage"
+                                   required="module_pharma_vendor_qualification"/>
+                        </setting>
+                    </block>
+
+                    <block title="Quality Assurance" name="pharmaceutical_base_quality_settings">
+                        <setting id="pharmaceutical_base_module_capa_deviation"
+                                 string="Enable CAPA &amp; Deviation Management"
+                                 help="Manage CAPA and deviations linked with quality and manufacturing workflows.">
+                            <field name="module_pharma_capa_deviation"/>
+                        </setting>
+                        <setting id="pharmaceutical_base_module_trend_monitoring"
+                                 string="Enable Trend Monitoring (Out of Trend)"
+                                 help="Flag results that pass their specification but fall outside the normal range QA approved for a watched parameter, with a trend chart.">
+                            <field name="module_pharma_trend_monitoring"/>
+                        </setting>
+                    </block>
+
+                    <block title="Equipment &amp; Maintenance" name="pharmaceutical_base_equipment_settings">
+                        <setting id="pharmaceutical_base_module_equipment_maintenance"
+                                 string="Enable Equipment Qualification &amp; Maintenance"
+                                 help="GMP equipment register with qualification, calibration and cleaning, QA-verified maintenance, and equipment checks on manufacturing orders and QC results.">
+                            <field name="module_pharma_equipment_maintenance"/>
+                        </setting>
+                    </block>
+
+                    <block title="SOP &amp; Training" name="pharmaceutical_base_sop_settings">
+                        <setting id="pharmaceutical_base_module_sop_training"
+                                 string="Enable SOP &amp; Training Management"
+                                 help="Track SOP lifecycles, training records, and training-gated BMR step sign-offs.">
+                            <field name="module_pharma_sop_training"/>
+                        </setting>
+                        <setting id="pharmaceutical_base_training_passing_score"
+                                 string="SOP Training Passing Percentage (%)"
+                                 help="Minimum assessment score, as a percentage of the Total Score, required to pass SOP training."
+                                 invisible="not module_pharma_sop_training">
+                            <field name="pharma_training_passing_score"
+                                   required="module_pharma_sop_training"/>
+                        </setting>
+                    </block>
+
+                    <block title="Traceability &amp; Certification" name="pharmaceutical_base_traceability_settings">
+                        <setting id="pharmaceutical_base_module_traceability_coa"
+                                 string="Enable Traceability, CoA &amp; Audit Trail"
+                                 help="Enable Certificate of Analysis (CoA), batch genealogy, and audit trail.">
+                            <field name="module_pharma_traceability_coa"/>
+                        </setting>
+                        <setting id="pharmaceutical_base_module_retention_sample"
+                                 string="Enable Retention Samples"
+                                 help="Keep a reserve sample register for released batches: withdrawals, periodic examination and approved disposal. Also enables Traceability, CoA &amp; Audit Trail.">
+                            <field name="module_pharma_retention_sample"/>
+                        </setting>
+                    </block>
+
+                    <block title="Inventory &amp; Quality Locations" name="pharmaceutical_base_location_settings">
+                        <setting id="pharmaceutical_base_rejected_location"
+                                 string="Rejected Location"
+                                 help="Location where QC-rejected material is automatically moved.">
+                            <field name="pharma_rejected_location_id"/>
+                        </setting>
+                        <setting id="pharmaceutical_base_enforce_storage_class"
+                                 string="Enforce Storage Class"
+                                 help="Restrict material transfers to locations matching their assigned Storage Class.">
+                            <field name="pharma_enforce_storage_class"/>
+                        </setting>
+                    </block>
+
+                    <!-- Premium add-ons, installed and not. The free module each one
+                         extends adds its card here. -->
+                    <block title="Premium Features" name="pharmaceutical_base_premium_settings">
+                        <setting id="pharmaceutical_base_premium_device_capture" class="o_pharma_premium_setting"
+                                 string="Device Capture"
+                                 help="Take measured values straight from registered balances, instruments and sensors.">
+                            <field name="module_pharma_device_capture" readonly="not pharma_device_capture_found"/>
+                            <field name="pharma_device_capture_found" invisible="1"/>
+                            <div class="o_pharma_premium_setting_footer">
+                                <span class="o_pharma_premium_tag"><i class="oi me-1" data-icon="star"/>Premium</span>
+                                <widget name="pharma_premium_learn_more" feature="device_capture"
+                                        class_name="btn btn-sm o_pharma_premium_notice_btn"/>
+                            </div>
+                        </setting>
+                    </block>
+
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action opening pharma settings. -->
+    <record id="pharma_config_settings_action" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'pharmaceutical_base', 'bin_size': False}</field>
+    </record>
+</odoo>

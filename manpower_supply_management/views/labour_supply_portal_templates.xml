@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!-- Templates for portal view-->
+    <template id="portal_breadcrumbs_labour_supply"
+              name="Portal layout : labour supply breadcrumbs"
+              inherit_id="portal.portal_breadcrumbs" priority="60">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'labour_supplies'"
+                class="breadcrumb-item active">Labour Supply</li>
+            <li t-if="page_name == 'labour_supply'" class="breadcrumb-item">
+                <a href="/labour_supplies">Labour Supply</a>
+            </li>
+            <li t-if="page_name == 'labour_supply' and contract"
+                class="breadcrumb-item active">
+                <t t-out="contract.sequence_number"/>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- List page -->
+    <template id="portal_labour_supply" name="My Labour Contracts">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar"
+               breadcrumbs_searchbar="True"
+               title.translate="Labour Contracts"/>
+            <t t-if="not labour_supplies_portal">
+                <p class="alert alert-info">
+                    There are no labour supply contracts for you yet.
+                </p>
+            </t>
+            <t t-if="labour_supplies_portal" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Number</th>
+                        <th class="text-end">Start Date</th>
+                        <th class="text-end">End Date</th>
+                        <th class="text-end">State</th>
+                    </tr>
+                </thead>
+                <t t-foreach="labour_supplies_portal" t-as="rec">
+                    <tr>
+                        <td>
+                            <a t-attf-href="/labour_supplies/#{rec.id}">
+                                <t t-out="rec.sequence_number"/>
+                            </a>
+                        </td>
+                        <td class="text-end">
+                            <span t-field="rec.from_date"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-field="rec.to_date"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-field="rec.state"/>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Detail page -->
+    <template id="portal_labour_supply_details"
+              name="Labour Supply Details">
+        <t t-call="portal.portal_layout">
+            <section class="container my-4">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3">
+                                <h3 class="fw-bold mb-0">
+                                    <t t-out="contract.sequence_number"/>
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-4">
+                                    <div class="col-md-4">
+                                        <div class="mb-2 fw-semibold text-muted">Start Date</div>
+                                        <span t-field="contract.from_date"
+                                              t-options='{"widget": "date"}'/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-2 fw-semibold text-muted">End Date</div>
+                                        <span t-field="contract.to_date"
+                                              t-options='{"widget": "date"}'/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-2 fw-semibold text-muted">Status</div>
+                                        <span t-attf-class="badge rounded-pill px-3 py-2 #{
+                                            'bg-secondary' if contract.state == 'draft' else
+                                            'bg-primary' if contract.state == 'ready' else
+                                            'bg-success' if contract.state in ('confirmed', 'invoiced') else
+                                            'bg-danger'}"
+                                              t-field="contract.state"/>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4 p-3 rounded border bg-light">
+                                    <div class="fw-semibold text-muted mb-2">Customer</div>
+                                    <div>
+                                        <span t-field="contract.customer_id.name"/><br/>
+                                        <span t-field="contract.customer_id.street"/><br/>
+                                        <span t-field="contract.customer_id.zip"/>
+                                        <span t-field="contract.customer_id.city"/>
+                                    </div>
+                                </div>
+
+                                <h5 class="fw-bold mb-3">Skill Requirements</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Skill</th>
+                                                <th class="text-center">From</th>
+                                                <th class="text-center">To</th>
+                                                <th class="text-center">Required</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="contract.skill_ids" t-as="line">
+                                                <td><span t-field="line.skill_id.name"/></td>
+                                                <td class="text-center"><span t-field="line.from_date"/></td>
+                                                <td class="text-center"><span t-field="line.to_date"/></td>
+                                                <td class="text-center"><span t-field="line.number_of_labour_required"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5">
+                            <h4 class="fw-bold mb-3">History</h4>
+                            <t t-call="portal.message_thread" hide_header="True">
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </t>
+    </template>
+</odoo>
+
+
+
+

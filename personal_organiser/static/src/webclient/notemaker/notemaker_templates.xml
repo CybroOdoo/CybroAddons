@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates xml:space="preserve">
+    <t t-name="personal_organiser.notemaker">
+        <div class="note-maker">
+            <h2 class="text-center m-0">Notes</h2>
+            <div>
+                <input type="text" t-model.proxy="this.state.note_title"
+                       class="form-control mt-2"
+                       placeholder="Note Title"/>
+                <textarea t-model.proxy="this.state.newNote" class="form-control mt-2"
+                          placeholder="Write your note here..." rows="4">
+                </textarea>
+                <button t-on-click="this.addNote" class="btn btn-primary mt-2"
+                        t-att-disabled="!(this.state.note_title and this.state.newNote)"
+                        >
+                    Save
+                </button>
+            </div>
+            <div>
+                <t t-if="this.state.notes.length > 0">
+                    <h3 class="mt-3 mb-0 text-center">Notes</h3>
+                </t>
+            </div>
+            <!-- Notes as cards -->
+            <div class="mt-2 o_po_note_list">
+                <t t-foreach="this.state.notes" t-as="note" t-key="note.id">
+                    <div>
+                        <!-- Add light brown border to the card -->
+                        <div class="card o_po_note_card">
+                            <div class="card-body p-0">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <!-- Show note title as editable input field when in edit mode -->
+                                        <h5 class="card-title mb-1" t-if="!note.isEditing" t-out="note.note_title" />
+                                        <input t-if="note.isEditing" t-model.proxy="note.note_title" class="form-control mb-2" />
+
+                                        <!-- Show note content as editable textarea when in edit mode -->
+                                        <div class="card-text mb-0 o_po_note_text" t-if="!note.isEditing" t-out="note.note" />
+                                        <textarea t-if="note.isEditing" t-model.proxy="note.note" class="form-control mb-2" rows="4"></textarea>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-link dropdown-toggle" type="button" t-att-id="'o_po_note_menu_' + note.id" data-bs-toggle="dropdown" aria-expanded="false" title="Note actions" aria-label="Note actions">
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" t-att-aria-labelledby="'o_po_note_menu_' + note.id">
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="(event) => this.editNote(note)">Edit</a></li>
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="(event) => this.deleteNote(note)">Delete</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <!-- Save button appears only when editing -->
+                                <div t-if="note.isEditing">
+                                    <button t-on-click="(event) => this.saveNote(note)" class="btn btn-success mt-2">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>
