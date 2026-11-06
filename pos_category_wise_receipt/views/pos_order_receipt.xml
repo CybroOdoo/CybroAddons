@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="pos_order_receipt" inherit_id="point_of_sale.pos_order_receipt">
+            <!-- Custom category grouping for POS receipt -->
+            <xpath expr="//table[@t-foreach='lines']" position="replace">
+                <t t-if="category_data">
+                    <t t-foreach="category_data" t-as="category">
+                        <h3 t-if="category['category_name']" style="font-weight:bold; text-decoration:underline;">
+                            <t t-out="category['category_name']"/>
+                        </h3>
+                        <table t-foreach="category['lines']" t-as="line" style="width:100%" t-att-class="{'mt-2': not line['combo_parent_id'], 'mt-1': line['combo_parent_id']}">
+                            <tbody>
+                                <t t-call="point_of_sale.pos_orderline_receipt" />
+                            </tbody>
+                        </table>
+                        <div style="font-weight: bold; margin-left: auto; text-align: right;" class="pos-receipt-right-align">
+                            SUB TOTAL:
+                            <span style="margin-left: 25px;">
+                                <t t-out="category['subtotal_formatted']"/>
+                            </span>
+                        </div>
+                        <br/>
+                    </t>
+                </t>
+                <t t-else="">
+                    <table t-foreach="lines" t-as="line" style="width:100%" t-att-class="{'mt-2': not line['combo_parent_id'], 'mt-1': line['combo_parent_id']}">
+                        <tbody>
+                            <t t-call="point_of_sale.pos_orderline_receipt" />
+                        </tbody>
+                    </table>
+                </t>
+            </xpath>
+        </template>
+    </data>
+</odoo>

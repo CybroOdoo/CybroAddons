@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Personal data page of the customer portal -->
+    <template id="gdpr_manager" name="Manage Your Personal Data">
+        <t t-call="portal.portal_layout" no_breadcrumbs="1">
+            <div class="o_gdpr_portal pb-5">
+                <div class="d-flex gap-2 my-3">
+                    <a href="/my/" title="Go Back" class="btn btn-light px-2">
+                        <i class="oi" data-icon="chevron_backward"/>
+                    </a>
+                    <h3 class="my-0">Manage Your Personal Data</h3>
+                </div>
+                <p class="text-muted">
+                    Under the General Data Protection Regulation (GDPR), you can
+                    ask for a copy of the personal data we keep about you, or
+                    ask us to delete it. Choose the data below and send your
+                    request; we will inform you by email once it is processed.
+                </p>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" data-bs-toggle="tab"
+                                data-bs-target="#gdpr_information" type="button"
+                                role="tab" aria-selected="true">
+                            Information About You
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link o_gdpr_requests_tab" data-bs-toggle="tab"
+                                data-bs-target="#gdpr_requests" type="button"
+                                role="tab" aria-selected="false">
+                            Your Requests
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content pt-3">
+                    <div class="tab-pane fade show active" id="gdpr_information"
+                         role="tabpanel">
+                        <p t-if="not templates" class="text-muted">
+                            No personal data can be requested yet.
+                        </p>
+                        <div t-foreach="templates" t-as="template"
+                             class="card o_gdpr_template mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title o_gdpr_template_name" t-out="template.name"/>
+                                <div class="card-text mb-3" t-field="template.description"/>
+                                <button type="button" class="btn btn-primary o_gdpr_download me-2"
+                                        t-att-data-template-id="template.id">
+                                    <i class="oi" data-icon="download"/> Download
+                                </button>
+                                <button type="button" class="btn btn-outline-danger o_gdpr_delete"
+                                        data-bs-toggle="modal" data-bs-target="#gdpr_delete_modal"
+                                        t-att-data-template-id="template.id">
+                                    <i class="oi" data-icon="delete"/> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="gdpr_requests" role="tabpanel">
+                        <table class="table table-hover o_gdpr_request_table">
+                            <thead>
+                                <tr>
+                                    <th>Reference</th>
+                                    <th>Request</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th/>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-if="not gdpr_requests">
+                                    <td colspan="5" class="text-center text-muted">
+                                        No GDPR requests submitted yet.
+                                    </td>
+                                </tr>
+                                <tr t-foreach="gdpr_requests" t-as="gdpr_request">
+                                    <td t-out="gdpr_request.name"/>
+                                    <td>
+                                        <span t-out="gdpr_request.template_id.name"/> -
+                                        <span t-field="gdpr_request.req_type"/>
+                                    </td>
+                                    <td><span t-field="gdpr_request.create_date" t-options="{'widget': 'date'}"/></td>
+                                    <td>
+                                        <span t-attf-class="badge rounded-pill o_gdpr_state_#{gdpr_request.state} #{'text-bg-success' if gdpr_request.state == 'done' else 'text-bg-danger' if gdpr_request.state == 'cancel' else 'text-bg-warning'}"
+                                              t-field="gdpr_request.state"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <a t-if="gdpr_request.state == 'done' and gdpr_request.req_type == 'download'"
+                                           t-attf-href="/gdpr_management/download/#{gdpr_request.id}"
+                                           class="btn btn-sm btn-primary o_gdpr_download_pdf"
+                                           title="Download your data">
+                                            <i class="oi" data-icon="download"/> PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal fade" id="gdpr_delete_modal" tabindex="-1"
+                     aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Delete Your Data</h5>
+                                <button type="button" class="btn-close"
+                                        data-bs-dismiss="modal" aria-label="Close"/>
+                            </div>
+                            <div class="modal-body">
+                                By confirming, you ask us to delete this
+                                personal data. This cannot be undone once the
+                                request is approved.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Discard</button>
+                                <button type="button" class="btn btn-danger o_gdpr_confirm_delete">
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <!-- Page shown after a request is sent -->
+    <template id="gdpr_submit" name="GDPR Request Sent">
+        <t t-call="portal.portal_layout" no_breadcrumbs="1">
+            <div class="o_gdpr_submit py-5 text-center">
+                <div t-if="status == 'error'" class="alert alert-danger">
+                    This request is not available anymore. Please choose
+                    another one.
+                </div>
+                <div t-elif="status == 'pending'" class="alert alert-info">
+                    You already have the same request pending. We will inform
+                    you by email once it is processed.
+                </div>
+                <div t-else="" class="alert alert-success">
+                    Your request has been sent. We will inform you by email
+                    once it is processed.
+                </div>
+                <a href="/my/data_management" class="btn btn-primary">
+                    <i class="oi" data-icon="chevron_backward"/> Back to Your Personal Data
+                </a>
+            </div>
+        </t>
+    </template>
+</odoo>

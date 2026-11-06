@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Search view for training compliance analysis. -->
+    <record id="pharma_training_report_search" model="ir.ui.view">
+        <field name="name">pharma.training.report.search</field>
+        <field name="model">pharma.training</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Training Compliance">
+                <field name="employee_id"/>
+                <field name="sop_id"/>
+                <field name="assessor_id"/>
+                <filter string="Pending" name="pending" domain="[('status', '=', 'pending')]"/>
+                <filter string="Passed" name="passed" domain="[('status', '=', 'passed')]"/>
+                <filter string="Failed" name="failed" domain="[('status', '=', 'failed')]"/>
+                <filter string="Expired" name="expired" domain="[('status', '=', 'expired')]"/>
+                <separator/>
+                <filter string="Expiring in 30 Days" name="expiring"
+                        domain="[('status', '=', 'passed'), ('expiry_date', '&lt;=', (context_today() + relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Completed On" name="filter_completed_on" date="completed_on"/>
+                <filter string="Expiry Date" name="filter_expiry_date" date="expiry_date"/>
+                <group name="group_by">
+                    <filter string="SOP" name="grp_sop" context="{'group_by': 'sop_id'}"/>
+                    <filter string="Employee" name="grp_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Status" name="grp_status" context="{'group_by': 'status'}"/>
+                    <filter string="Assessor" name="grp_assessor" context="{'group_by': 'assessor_id'}"/>
+                    <filter string="Completed Month" name="grp_month" context="{'group_by': 'completed_on:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of trainings per SOP by status. -->
+    <record id="pharma_training_report_graph" model="ir.ui.view">
+        <field name="name">pharma.training.report.graph</field>
+        <field name="model">pharma.training</field>
+        <field name="arch" type="xml">
+            <graph string="Training Compliance" type="bar" stacked="1" sample="1">
+                <field name="sop_id"/>
+                <field name="status"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of training status and average score per employee. -->
+    <record id="pharma_training_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.training.report.pivot</field>
+        <field name="model">pharma.training</field>
+        <field name="arch" type="xml">
+            <pivot string="Training Compliance" sample="1">
+                <field name="employee_id" type="row"/>
+                <field name="status" type="col"/>
+                <field name="score" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the training compliance analysis. -->
+    <record id="pharma_training_report_action" model="ir.actions.act_window">
+        <field name="name">Training Compliance</field>
+        <field name="res_model">pharma.training</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_training_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_training_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_training_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No training records yet</p>
+            <p>SOP training status per employee, assessment scores and qualifications about to expire.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_pharma_report_training" name="Training Compliance"
+              parent="pharmaceutical_base.menu_pharma_reporting"
+              action="pharma_training_report_action" sequence="80"/>
+</odoo>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- QA override of the equipment check, with mandatory justification. -->
+    <record id="pharma_equipment_override_wizard_view_form" model="ir.ui.view">
+        <field name="name">pharma.equipment.override.wizard.form</field>
+        <field name="model">pharma.equipment.override.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Override Equipment Check">
+                <div class="alert alert-warning" role="alert">
+                    The batch will run on equipment that is not fit for use. Your name and
+                    justification are recorded on the order, and a deviation is raised where
+                    deviation management is installed.
+                </div>
+                <group>
+                    <field name="production_id"/>
+                    <field name="issues_text" nolabel="1" colspan="2" class="text-danger"/>
+                    <field name="equipment_ids" widget="many2many_tags" invisible="1"/>
+                    <field name="justification" placeholder="Why the batch may proceed, and what was assessed..."/>
+                </group>
+                <footer>
+                    <button name="action_confirm_override" type="object" string="Override and Confirm"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="pharma_equipment_override_wizard_action" model="ir.actions.act_window">
+        <field name="name">Override Equipment Check</field>
+        <field name="res_model">pharma.equipment.override.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="group_ids" eval="[(4, ref('pharmaceutical_base.group_pharma_qa_manager'))]"/>
+    </record>
+</odoo>

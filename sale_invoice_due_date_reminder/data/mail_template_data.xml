@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sale order due date reminder -->
+        <record id="sale_order_due_mail_template" model="mail.template">
+            <field name="name">Sale Order: Due Reminder Email</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="email_from">{{ object.company_id.email_formatted or object.user_id.email_formatted or user.email_formatted }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="subject">Reminder: {{ object.name }} is due on {{ format_date(object.due_date_order) }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-size: 13px;">
+                    <p style="margin: 0px; padding: 0px;">
+                        Dear <t t-out="object.partner_id.name or ''"/>,
+                        <br/><br/>
+                        This is a reminder that the sale order <strong t-out="object.name or ''"/>
+                        is due on <strong t-out="format_date(object.due_date_order) or ''"/>.
+                        Please take the necessary actions.
+                        <br/><br/>
+                        <strong>Order details</strong><br/>
+                        Order: <t t-out="object.name or ''"/><br/>
+                        Order Date: <t t-out="format_date(object.date_order) or ''"/><br/>
+                        <t t-if="object.user_id">Salesperson: <t t-out="object.user_id.name"/><br/></t>
+                        Total Amount: <t t-out="format_amount(object.amount_total, object.currency_id) or ''"/>
+                        <br/><br/>
+                        Best regards,<br/>
+                        <t t-out="object.company_id.name or ''"/>
+                    </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+        <!-- Invoice due date reminder -->
+        <record id="invoice_due_mail_template" model="mail.template">
+            <field name="name">Invoice: Due Reminder Email</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="email_from">{{ object.company_id.email_formatted or object.invoice_user_id.email_formatted or user.email_formatted }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="subject">Reminder: invoice {{ object.name }} is due on {{ format_date(object.invoice_date_due) }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-size: 13px;">
+                    <p style="margin: 0px; padding: 0px;">
+                        Dear <t t-out="object.partner_id.name or ''"/>,
+                        <br/><br/>
+                        This is a reminder that the invoice <strong t-out="object.name or ''"/>
+                        is due on <strong t-out="format_date(object.invoice_date_due) or ''"/>,
+                        with <strong t-out="format_amount(object.amount_residual, object.currency_id) or ''"/>
+                        still to pay.
+                        <br/><br/>
+                        <strong>Invoice details</strong><br/>
+                        Invoice: <t t-out="object.name or ''"/><br/>
+                        Invoice Date: <t t-out="format_date(object.invoice_date) or ''"/><br/>
+                        <t t-if="object.invoice_user_id">Salesperson: <t t-out="object.invoice_user_id.name"/><br/></t>
+                        Total Amount: <t t-out="format_amount(object.amount_total, object.currency_id) or ''"/><br/>
+                        Amount Paid: <t t-out="format_amount(object.amount_total - object.amount_residual, object.currency_id) or ''"/><br/>
+                        Amount Due: <t t-out="format_amount(object.amount_residual, object.currency_id) or ''"/>
+                        <br/><br/>
+                        If you have already paid, please ignore this message.
+                        <br/><br/>
+                        Best regards,<br/>
+                        <t t-out="object.company_id.name or ''"/>
+                    </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+    </data>
+</odoo>

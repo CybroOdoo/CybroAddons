@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Email to the customer when a request is approved or cancelled -->
+    <record id="gdpr_request_email_template" model="mail.template">
+        <field name="name">GDPR Request: Status</field>
+        <field name="model_id" ref="model_gdpr_request"/>
+        <field name="subject">Your GDPR request {{ object.name }}</field>
+        <field name="partner_to">{{ object.partner_id.id }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+            <div>
+                <p>Hello <t t-out="object.partner_id.name or ''"/>,</p>
+                <p t-if="object.state == 'cancel'">
+                    Your request <t t-out="object.name or ''"/> has been
+                    cancelled. Please contact us if you have any questions.
+                </p>
+                <p t-elif="object.req_type == 'download'">
+                    Your request <t t-out="object.name or ''"/> has been
+                    approved. You can now download your data from the Personal
+                    Data page of your portal.
+                </p>
+                <p t-else="">
+                    Your request <t t-out="object.name or ''"/> has been
+                    approved and your personal data has been deleted.
+                </p>
+                <p>Regards,<br/><t t-out="user.company_id.name or ''"/></p>
+            </div>
+        </field>
+    </record>
+</odoo>

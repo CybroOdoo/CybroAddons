@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#############################################################################
+from odoo import fields, models
+
+
+class LabTest(models.Model):
+    """
+       Model for managing lab test details.
+    """
+    _name = 'lab.test'
+    _description = "Lab Test"
+    _rec_name = 'lab_test'
+    _inherit = ['mail.thread']
+
+    lab_test = fields.Char(string="Test Name", required=True,
+                           help="Name of the lab test")
+    lab_test_code = fields.Char(string="Test Code", required=True)
+    test_lines_ids = fields.One2many('lab.test.attribute',
+                                 'test_line_reverse_id',
+                                 string="Attribute")
+    test_cost = fields.Float(string="Cost", required=True)

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- List view of the GDPR requests -->
+    <record id="gdpr_request_view_list" model="ir.ui.view">
+        <field name="name">gdpr.request.view.list</field>
+        <field name="model">gdpr.request</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="template_id"/>
+                <field name="partner_id"/>
+                <field name="req_type"/>
+                <field name="create_date" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'cancel'"
+                       decoration-warning="state == 'pending'"/>
+            </list>
+        </field>
+    </record>
+    <!-- Search view of the GDPR requests -->
+    <record id="gdpr_request_view_search" model="ir.ui.view">
+        <field name="name">gdpr.request.view.search</field>
+        <field name="model">gdpr.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="template_id"/>
+                <filter name="filter_pending" string="Pending"
+                        domain="[('state', '=', 'pending')]"/>
+                <filter name="filter_download" string="Download Requests"
+                        domain="[('req_type', '=', 'download')]"/>
+                <filter name="filter_delete" string="Delete Requests"
+                        domain="[('req_type', '=', 'delete')]"/>
+                <filter name="group_state" string="Status"
+                        context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+    <!-- Form view of the GDPR requests -->
+    <record id="gdpr_request_view_form" model="ir.ui.view">
+        <field name="name">gdpr.request.view.form</field>
+        <field name="model">gdpr.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm_request" string="Confirm"
+                            type="object" class="btn-primary"
+                            invisible="state != 'pending' or req_type != 'download'"/>
+                    <button name="action_delete_request" string="Wipe Data"
+                            type="object" class="btn-primary"
+                            confirm="The selected fields of this customer will be cleared. Continue?"
+                            invisible="state != 'pending' or req_type != 'delete'"/>
+                    <button name="action_cancel_request" string="Cancel"
+                            type="object" invisible="state != 'pending'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="req_name" readonly="state != 'pending'"/>
+                            <field name="partner_id" readonly="state != 'pending'"/>
+                            <field name="req_type" readonly="state != 'pending'"/>
+                        </group>
+                        <group>
+                            <field name="template_id" readonly="state != 'pending'"/>
+                            <field name="create_date"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Action of the GDPR requests -->
+    <record id="gdpr_request_action" model="ir.actions.act_window">
+        <field name="name">GDPR Requests</field>
+        <field name="res_model">gdpr.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No GDPR request yet</p>
+            <p>Customers request a copy or the deletion of their personal
+                data from the Personal Data page of their portal.</p>
+        </field>
+    </record>
+    <!-- GDPR menus in the website configuration -->
+    <menuitem id="gdpr_main_root" name="GDPR"
+              parent="website.menu_website_global_configuration"
+              groups="website.group_website_designer"/>
+    <menuitem id="gdpr_main_root_request" name="GDPR Requests"
+              parent="gdpr_main_root" action="gdpr_request_action"
+              sequence="1"/>
+</odoo>

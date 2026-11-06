@@ -1,0 +1,41 @@
+# -*- coding: utf-8 -*-
+################################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#
+#    This program is free software: you can modify
+#    it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3)
+#    (https://www.gnu.org/licenses/lgpl-3.0-standalone.html).
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+{
+    'name': 'OpenAI Ecommerce Product Media',
+    'version': '20.0.1.0.0',
+    'category': 'Extra Tools',
+    'summary': 'AI-generated product media images for eCommerce',
+    'description': 'A longer description of what this module does.',
+    'author': 'Cybrosys Techno Solutions',  # pylint: disable=manifest-required-author
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'images': ['static/description/banner.jpg'],
+    'website': 'https://www.cybrosys.com',
+    'depends': ['product', 'website_sale', 'openai_product_images'],
+    'data': [
+        'views/openai_image_suggestion_views.xml'
+    ],
+    'license': 'LGPL-3',
+    'installable': True,
+    'auto_install': False,
+    'application': False,
+}
+

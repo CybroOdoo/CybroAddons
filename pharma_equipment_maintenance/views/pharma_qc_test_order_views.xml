@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Instrument and its calibration position beside each result. -->
+    <record id="pharma_qc_test_order_view_form_instrument" model="ir.ui.view">
+        <field name="name">pharma.qc.test.order.form.instrument</field>
+        <field name="model">pharma.qc.test.order</field>
+        <field name="inherit_id" ref="pharmaceutical_base.pharma_qc_test_order_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='result_line_ids']/list/field[@name='actual_value']" position="before">
+                <field name="instrument_required" column_invisible="True"/>
+                <field name="instrument_id" options="{'no_create': True}"
+                       readonly="parent.status != 'in_progress'"
+                       required="instrument_required"/>
+                <field name="support_instrument_ids" widget="many2many_tags" optional="hide"
+                       options="{'no_create': True}" readonly="parent.status != 'in_progress'"/>
+            </xpath>
+            <xpath expr="//field[@name='result_line_ids']/list/field[@name='uom']" position="after">
+                <field name="instrument_calibration_ok" optional="show" readonly="1"
+                       widget="boolean" string="Calibrated"/>
+                <field name="instrument_calibration_date" optional="hide" readonly="1"/>
+                <field name="instrument_calibration_due" optional="hide" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

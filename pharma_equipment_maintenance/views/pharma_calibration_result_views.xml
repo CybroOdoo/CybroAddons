@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form view for a calibration. -->
+    <record id="pharma_calibration_result_view_form" model="ir.ui.view">
+        <field name="name">pharma.calibration.result.form</field>
+        <field name="model">pharma.calibration.result</field>
+        <field name="arch" type="xml">
+            <form string="Calibration">
+                <header>
+                    <button name="action_start" type="object" string="Start" class="btn-primary"
+                            invisible="state != 'new'"
+                            groups="pharmaceutical_base.group_pharma_role_user"/>
+                    <button name="action_complete" type="object" string="Mark Completed" class="btn-primary"
+                            invisible="state != 'in_progress'"
+                            groups="pharmaceutical_base.group_pharma_role_user"/>
+                    <button name="action_calibration_impact_assessment" type="object" string="Impact Assessment"
+                            class="btn-warning"
+                            invisible="calibration_as_found_result != 'fail' or state not in ('completed', 'qa_verified')"/>
+                    <button name="action_qa_verify" type="object" string="QA Verify" class="btn-primary"
+                            invisible="state != 'completed'"
+                            groups="pharmaceutical_base.group_pharma_qa_manager"
+                            confirm="Apply this calibration to the equipment?"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="calibration_as_found_result != 'fail'">
+                        <strong>As-found out of tolerance.</strong>
+                        The instrument is fine now if it left in tolerance, but results measured since its
+                        previous calibration are suspect. QA verification raises the impact assessment.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="equipment_id" readonly="id"
+                                   options="{'no_create': True}"/>
+                            <field name="calibration_performed_on" readonly="state not in ('new', 'in_progress')"/>
+                            <label for="calibration_frequency_days"/>
+                            <div class="o_row">
+                                <field name="calibration_frequency_days" readonly="state not in ('new', 'in_progress')"/> days
+                            </div>
+                            <label for="calibration_reminder_days"/>
+                            <div class="o_row">
+                                <field name="calibration_reminder_days" readonly="state not in ('new', 'in_progress')"/> days before
+                            </div>
+                            <field name="next_calibration_date"/>
+                            <field name="calibration_passed" invisible="1"/>
+                            <field name="calibration_as_found_result" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="certificate_number" required="calibration_passed" readonly="state not in ('new', 'in_progress')"/>
+                            <field name="certificate_attachment" filename="certificate_attachment_name" readonly="state not in ('new', 'in_progress')"/>
+                            <field name="certificate_attachment_name" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="completed_by" invisible="not completed_by"/>
+                            <field name="completed_on" invisible="not completed_on"/>
+                            <field name="qa_verified_by" invisible="not qa_verified_by"/>
+                            <field name="qa_verified_on" invisible="not qa_verified_on"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Results" name="results">
+                            <field name="point_ids" readonly="state not in ('new', 'in_progress')">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="nominal_value"/>
+                                    <field name="unit"/>
+                                    <field name="tolerance"/>
+                                    <field name="as_found"/>
+                                    <field name="as_found_deviation"/>
+                                    <field name="as_found_result" widget="badge" optional="hide"
+                                           decoration-success="as_found_result == 'pass'"
+                                           decoration-danger="as_found_result == 'fail'"/>
+                                    <field name="as_left"/>
+                                    <field name="as_left_deviation"/>
+                                    <field name="as_left_result" widget="badge" optional="hide"
+                                           decoration-success="as_left_result == 'pass'"
+                                           decoration-danger="as_left_result == 'fail'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" readonly="state not in ('new', 'in_progress')" placeholder="Standards used, conditions, adjustments made..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- List view for calibrations. -->
+    <record id="pharma_calibration_result_view_list" model="ir.ui.view">
+        <field name="name">pharma.calibration.result.list</field>
+        <field name="model">pharma.calibration.result</field>
+        <field name="arch" type="xml">
+            <list string="Calibrations">
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="calibration_performed_on"/>
+                <field name="next_calibration_date" optional="show"/>
+                <field name="certificate_number" optional="show"/>
+                <field name="state" widget="badge" optional="show"
+                       decoration-info="state == 'in_progress'"
+                       decoration-warning="state == 'completed'"
+                       decoration-success="state == 'qa_verified'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search view for calibrations. -->
+    <record id="pharma_calibration_result_view_search" model="ir.ui.view">
+        <field name="name">pharma.calibration.result.search</field>
+        <field name="model">pharma.calibration.result</field>
+        <field name="arch" type="xml">
+            <search string="Calibrations">
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="certificate_number"/>
+                <filter string="Passed" name="passed" domain="[('calibration_passed', '=', True)]"/>
+                <filter string="Failed" name="failed" domain="[('calibration_passed', '=', False)]"/>
+                <filter string="As-Found Out of Tolerance" name="as_found_failed"
+                        domain="[('calibration_as_found_result', '=', 'fail')]"/>
+                <separator/>
+                <filter string="Awaiting QA" name="awaiting_qa"
+                        domain="[('state', '=', 'completed')]"/>
+                <filter string="QA Verified" name="qa_verified"
+                        domain="[('state', '=', 'qa_verified')]"/>
+                <group>
+                    <filter string="Equipment" name="group_equipment" context="{'group_by': 'equipment_id'}"/>
+                    <filter string="Calibrated On" name="group_date"
+                            context="{'group_by': 'calibration_performed_on'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action for calibrations. -->
+    <record id="pharma_calibration_result_action" model="ir.actions.act_window">
+        <field name="name">Calibrations</field>
+        <field name="res_model">pharma.calibration.result</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Record a calibration</p>
+            <p>Pick the instrument and enter the check points. QA verification
+                applies the calibration to the equipment.</p>
+        </field>
+    </record>
+</odoo>

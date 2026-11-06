@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============ Vendor Qualifications ============ -->
+
+    <!-- Search view for vendor qualification analysis. -->
+    <record id="pharma_vendor_qualification_report_search" model="ir.ui.view">
+        <field name="name">pharma.vendor.qualification.report.search</field>
+        <field name="model">pharma.vendor.qualification</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Vendor Qualification Analysis">
+                <field name="vendor_id"/>
+                <field name="template_id"/>
+                <field name="approved_by"/>
+                <filter string="In Progress" name="in_progress"
+                        domain="[('status', 'in', ('draft', 'questionnaire_sent', 'documents_received', 'audit_scheduled'))]"/>
+                <filter string="Approved" name="approved" domain="[('status', '=', 'approved')]"/>
+                <filter string="Rejected / Not Qualified" name="not_approved"
+                        domain="[('status', 'in', ('rejected', 'not_qualified'))]"/>
+                <separator/>
+                <filter string="Submission Date" name="filter_submission_date" date="submission_date"/>
+                <filter string="Audit Date" name="filter_audit_date" date="audit_date"/>
+                <group name="group_by">
+                    <filter string="Vendor" name="grp_vendor" context="{'group_by': 'vendor_id'}"/>
+                    <filter string="Status" name="grp_status" context="{'group_by': 'status'}"/>
+                    <filter string="Questionnaire" name="grp_template" context="{'group_by': 'template_id'}"/>
+                    <filter string="Approved By" name="grp_approved_by" context="{'group_by': 'approved_by'}"/>
+                    <filter string="Audit Month" name="grp_audit_month" context="{'group_by': 'audit_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of qualifications by status. -->
+    <record id="pharma_vendor_qualification_report_graph" model="ir.ui.view">
+        <field name="name">pharma.vendor.qualification.report.graph</field>
+        <field name="model">pharma.vendor.qualification</field>
+        <field name="arch" type="xml">
+            <graph string="Vendor Qualifications" type="pie" sample="1">
+                <field name="status"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of qualification status and audit score per vendor. -->
+    <record id="pharma_vendor_qualification_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.vendor.qualification.report.pivot</field>
+        <field name="model">pharma.vendor.qualification</field>
+        <field name="arch" type="xml">
+            <pivot string="Vendor Qualifications" sample="1">
+                <field name="vendor_id" type="row"/>
+                <field name="status" type="col"/>
+                <field name="audit_score" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the vendor qualification analysis. -->
+    <record id="pharma_vendor_qualification_report_action" model="ir.actions.act_window">
+        <field name="name">Vendor Qualification Analysis</field>
+        <field name="res_model">pharma.vendor.qualification</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_vendor_qualification_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_vendor_qualification_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_vendor_qualification_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No vendor qualifications yet</p>
+            <p>Qualification pipeline and average audit score per vendor.</p>
+        </field>
+    </record>
+
+    <!-- ============ Approved Vendor List ============ -->
+
+    <!-- Search view for AVL analysis. -->
+    <record id="pharma_avl_report_search" model="ir.ui.view">
+        <field name="name">pharma.avl.report.search</field>
+        <field name="model">pharma.avl</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Approved Vendor List Analysis">
+                <field name="vendor_id"/>
+                <field name="product_id"/>
+                <filter string="Approved" name="approved" domain="[('status', '=', 'approved')]"/>
+                <filter string="Pending Approval" name="pending_approval" domain="[('status', '=', 'pending_approval')]"/>
+                <filter string="Blocked" name="blocked" domain="[('status', '=', 'blocked')]"/>
+                <separator/>
+                <filter string="Expiring in 60 Days" name="expiring"
+                        domain="[('status', '=', 'approved'), ('expiry_date', '&lt;=', (context_today() + relativedelta(days=60)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Approval Date" name="filter_approval_date" date="approval_date"/>
+                <filter string="Expiry Date" name="filter_expiry_date" date="expiry_date"/>
+                <group name="group_by">
+                    <filter string="Vendor" name="grp_vendor" context="{'group_by': 'vendor_id'}"/>
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Status" name="grp_status" context="{'group_by': 'status'}"/>
+                    <filter string="Expiry Month" name="grp_expiry_month" context="{'group_by': 'expiry_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of AVL entries per vendor by status. -->
+    <record id="pharma_avl_report_graph" model="ir.ui.view">
+        <field name="name">pharma.avl.report.graph</field>
+        <field name="model">pharma.avl</field>
+        <field name="arch" type="xml">
+            <graph string="Approved Vendor List" type="bar" stacked="1" sample="1">
+                <field name="vendor_id"/>
+                <field name="status"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of AVL entries by vendor and status. -->
+    <record id="pharma_avl_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.avl.report.pivot</field>
+        <field name="model">pharma.avl</field>
+        <field name="arch" type="xml">
+            <pivot string="Approved Vendor List" sample="1">
+                <field name="vendor_id" type="row"/>
+                <field name="status" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the AVL analysis. -->
+    <record id="pharma_avl_report_action" model="ir.actions.act_window">
+        <field name="name">Approved Vendor List Analysis</field>
+        <field name="res_model">pharma.avl</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_avl_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_avl_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_avl_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No approved vendor list entries yet</p>
+            <p>Approved, blocked and expiring vendor/material approvals.</p>
+        </field>
+    </record>
+
+    <!-- ============ Menus ============ -->
+
+    <menuitem id="menu_pharma_report_vendor_qualification" name="Vendor Qualifications"
+              parent="pharmaceutical_base.menu_pharma_reporting"
+              action="pharma_vendor_qualification_report_action" sequence="90"/>
+
+    <menuitem id="menu_pharma_report_avl" name="Approved Vendor List"
+              parent="pharmaceutical_base.menu_pharma_reporting"
+              action="pharma_avl_report_action" sequence="95"/>
+</odoo>
