@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--
+        /shop — the standard website_sale shop (all products, category sidebar,
+        attribute / price filters, search, sorting, grid / list view, pagination)
+        with the Petzen banner and category tiles on top. Only additions are made
+        to website_sale.products; its look is done in css/shop.css.
+    -->
+    <template id="petzen_shop" inherit_id="website_sale.products" name="Petzen Shop" priority="999">
+        <!-- data-pz-filtered: a search / category / attribute filter is active
+             (css/shop.css then hides the category tiles) -->
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="pz-page-shop" separator=" "/>
+            <attribute name="t-att-data-pz-filtered">'1' if (search or category or attrib_values) else None</attribute>
+        </xpath>
+        <!-- Editable area of the editor: every block can be edited, moved or removed
+             (and dropped back from the blocks panel, Petzen group). Its id must not
+             contain "oe_structure", see views/home.xml. -->
+        <xpath expr="//div[@id='wrap']/div[hasclass('oe_website_sale')]" position="before">
+            <div class="oe_structure pz-scope pz-shop-top" id="petzen_shop_top">
+                <!-- ══ PAGE BANNER ══ -->
+                <section class="page-banner" data-name="Shop Banner">
+                    <div class="page-banner-inner">
+                        <div class="page-banner-eyebrow">Browse &amp; Buy</div>
+                        <h1 class="page-banner-title">Shop Our <span>Collection</span></h1>
+                        <p class="page-banner-sub">Premium food, toys, accessories and more — handpicked for every type of pet.</p>
+                    </div>
+                </section>
+
+                <!-- ══ SHOP BY CATEGORY ══
+                     Same markup as the dynamic snippet s_petzen_categories
+                     (views/snippets/s_categories_snippet.xml), written inline and not
+                     with t-snippet-call so that the editor can remove it. Its tiles are
+                     loaded in JS ("Pets Category" product categories) and are not
+                     saved in the page. -->
+                <section class="pz-scope section s_petzen_categories" data-snippet="s_petzen_categories"
+                         data-name="Petzen Categories" data-limit="5">
+                    <div class="section-header">
+                        <div>
+                            <div class="section-eyebrow">Browse by Pet</div>
+                            <h2 class="section-title">Shop by Category</h2>
+                        </div>
+                    </div>
+                    <div class="categories-bento o_not_editable"/>
+                    <p class="search-empty pz-categories-empty d-none o_not_editable">No categories found.</p>
+                </section>
+            </div>
+        </xpath>
+        <!-- section heading of the design above the product grid (Odoo prints the category name itself) -->
+        <xpath expr="//div[hasclass('products_header')]" position="before">
+            <div t-if="not category" class="pz-scope pz-shop-heading">
+                <div class="section-eyebrow" t-out="'Search results' if search else 'Our Catalogue'"/>
+                <h2 class="section-title" t-out="('“%s”' % search) if search else 'All Products'"/>
+            </div>
+        </xpath>
+        <!-- anchor for the category tiles / footer links -->
+        <xpath expr="//div[@id='wrap']/div[hasclass('oe_website_sale')]" position="attributes">
+            <attribute name="id">products</attribute>
+            <attribute name="class" add="pz-shop" separator=" "/>
+        </xpath>
+    </template>
+
+    <!--
+        Product tile of the shop grid → .product-card of the design.
+        Only additions (category tag, rating, Quick View, data for the quick view);
+        Odoo's form, add-to-cart (.a-submit) and wishlist (.o_add_wishlist) are kept.
+    -->
+    <template id="petzen_products_item" inherit_id="website_sale.products_item" name="Petzen Product Tile" priority="999">
+        <xpath expr="//form" position="attributes">
+            <attribute name="class" add="pz-tile" separator=" "/>
+            <attribute name="t-att-data-url">product.website_url</attribute>
+            <attribute name="t-att-data-pz-product-id">product.product_variant_id.id if website._petzen_is_direct_add(product) else None</attribute>
+        </xpath>
+        <xpath expr="//a[hasclass('oe_product_image_link')]" position="after">
+            <div class="product-quick">
+                <button type="button" class="pqv-btn"><iconify-icon icon="lucide:eye" style="font-size:14px"></iconify-icon> Quick View</button>
+            </div>
+        </xpath>
+        <xpath expr="//h6[hasclass('o_wsale_products_item_title')]" position="before">
+            <div class="product-tag" t-out="product.public_categ_ids[:1].name or product.categ_id.name or 'Pet Supply'"/>
+        </xpath>
+        <xpath expr="//h6[hasclass('o_wsale_products_item_title')]" position="after">
+            <t t-set="pz_rating" t-value="int(round(product.rating_avg or 0))"/>
+            <div class="product-rating-row">
+                <span class="stars"><t t-out="'★' * pz_rating"/><span t-if="pz_rating &lt; 5" class="star-dim" t-out="'★' * (5 - pz_rating)"/></span>
+                <span class="star-count">(<t t-out="product.rating_count"/>)</span>
+            </div>
+        </xpath>
+    </template>
+</odoo>

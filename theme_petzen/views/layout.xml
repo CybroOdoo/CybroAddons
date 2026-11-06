@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Website layout of the theme: fonts, header, checkout header, footer and the global overlays (toast, back to top, quick view). -->
+    <template id="petzen_layout" inherit_id="website.layout" name="Petzen Layout">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet" />
+        </xpath>
+    </template>
+
+    <!-- ══ HEADER ══
+         Odoo's own header is kept (website.template_header_* / menus / logo / search /
+         cart / sign in / call to action), so every Header option of the website editor
+         works; its look is done in css/header.css.
+         Pages may set pz_checkout_nav to get the minimal checkout header instead. -->
+    <template id="petzen_header" inherit_id="website.layout" name="Petzen Header">
+        <!-- checkout steps: logo / steps / secured badge instead of the full header -->
+        <xpath expr="//header" position="attributes">
+            <attribute name="t-if">not no_header and not pz_checkout_nav</attribute>
+        </xpath>
+        <xpath expr="//header" position="before">
+            <div t-if="pz_checkout_nav and not no_header" class="pz-scope pz-co-header">
+                <nav class="co-nav">
+                    <div class="co-nav-inner">
+                        <a href="/" class="co-nav-logo">
+                            <span t-field="website.logo" t-options="{'widget': 'image', 'class': 'nav-logo-img'}" role="img" t-att-aria-label="'Logo of %s' % website.name"/>
+                        </a>
+                        <div class="co-nav-steps">
+                            <t t-set="pz_steps" t-value="website._get_checkout_steps()"/>
+                            <t t-set="pz_current_index" t-value="([i for i, step in enumerate(pz_steps) if xmlid in step[0]] or [0])[0]"/>
+                            <t t-foreach="pz_steps" t-as="step">
+                                <t t-set="pz_step_state" t-value="'done' if step_index &lt; pz_current_index else ('active' if step_index == pz_current_index else '')"/>
+                                <a t-att-href="step[1]['current_href'] if pz_step_state == 'done' else None"
+                                   t-attf-class="co-nav-step #{pz_step_state}">
+                                    <span class="co-nav-step-num">
+                                        <iconify-icon t-if="pz_step_state == 'done'" icon="lucide:check" style="font-size:12px"></iconify-icon>
+                                        <t t-else="" t-out="step_index + 1"/>
+                                    </span>
+                                    <t t-out="step[1]['name']"/>
+                                </a>
+                                <span t-if="not step_last" class="co-nav-step-line"></span>
+                            </t>
+                        </div>
+                        <div class="co-nav-secure">
+                            <iconify-icon icon="lucide:lock" style="font-size:13px"></iconify-icon>
+                            <span>Secured checkout</span>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- call to action of the header: "Get Started" of the design
+         (default content only, still editable in the website editor) -->
+    <template id="petzen_header_call_to_action" inherit_id="website.header_call_to_action" name="Petzen Header Call to Action">
+        <xpath expr="//a[hasclass('btn_cta')]" position="attributes">
+            <attribute name="href">/shop</attribute>
+        </xpath>
+        <xpath expr="//a[hasclass('btn_cta')]" position="replace" mode="inner">Get Started</xpath>
+    </template>
+
+    <!-- default header template of the design: user avatar instead of the user name
+         (only applies while Odoo's "Default" header template is selected) -->
+    <template id="petzen_template_header_default" inherit_id="website.template_header_default" name="Petzen Header Default">
+        <xpath expr="//t[@t-call='portal.user_dropdown']/t[@t-set='_user_name']" position="replace">
+            <t t-set="_avatar" t-value="True"/>
+            <t t-set="_avatar_class" t-valuef="pz-user-avatar"/>
+            <t t-set="_no_caret" t-value="True"/>
+        </xpath>
+    </template>
+
+    <!-- ══ FOOTER ══
+         Odoo's own footer (footer#bottom, colors / templates / copyright / scroll-to-top
+         options of the website editor keep working). The design's footer is the content
+         of the "Default" footer template (website.footer_custom); choosing another
+         template in the editor shows Odoo's one. Look: css/footer.css. -->
+    <template id="petzen_footer" inherit_id="website.footer_custom" name="Petzen Footer">
+        <xpath expr="//div[@id='footer']" position="replace">
+            <div id="footer" class="oe_structure oe_structure_solo" t-ignore="true" t-if="not no_footer">
+                <section class="s_text_block pz-scope pz-footer" data-snippet="s_text_block" data-name="Petzen Footer">
+                    <div class="footer-watermark" aria-hidden="true">🐾</div>
+                    <div class="footer-top">
+                        <!-- Brand -->
+                        <div class="footer-brand">
+                            <div class="footer-brand-name">
+                                <img src="/theme_petzen/static/src/images/logo.png" alt="Petzen" class="nav-logo-img" />
+                            </div>
+                            <p class="footer-brand-tagline">"Every pet deserves a loving home."</p>
+                            <p class="footer-brand-desc">Connecting pets with loving families and delivering premium care since 2019. Over 2,400 pets rehomed.</p>
+                            <div class="footer-socials">
+                                <a href="#" class="social-btn" aria-label="Instagram"><iconify-icon icon="lucide:instagram" style="font-size:16px"></iconify-icon></a>
+                                <a href="#" class="social-btn" aria-label="Facebook"><iconify-icon icon="lucide:facebook" style="font-size:16px"></iconify-icon></a>
+                                <a href="#" class="social-btn" aria-label="X"><iconify-icon icon="ri:twitter-x-fill" style="font-size:15px"></iconify-icon></a>
+                                <a href="#" class="social-btn" aria-label="YouTube"><iconify-icon icon="lucide:youtube" style="font-size:16px"></iconify-icon></a>
+                            </div>
+                        </div>
+
+                        <!-- Quick Links -->
+                        <div class="footer-col">
+                            <div class="footer-col-title">Quick Links</div>
+                            <ul class="footer-links">
+                                <li><a href="/">Home</a></li>
+                                <li><a href="/shop">Shop</a></li>
+                                <li><a href="/services">Services</a></li>
+                                <li><a href="/reviews">Reviews</a></li>
+                                <li><a href="/about">About Us</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Categories -->
+                        <div class="footer-col">
+                            <div class="footer-col-title">Categories</div>
+                            <ul class="footer-links">
+                                <li><a t-att-href="website._petzen_shop_url('Dog')">Dog Supplies</a></li>
+                                <li><a t-att-href="website._petzen_shop_url('Cat')">Cat Essentials</a></li>
+                                <li><a t-att-href="website._petzen_shop_url('Bird')">Bird &amp; Exotic</a></li>
+                                <li><a href="/services">Grooming</a></li>
+                                <li><a href="/shop">Nutrition</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Contact -->
+                        <div class="footer-col">
+                            <div class="footer-col-title">Get in Touch</div>
+                            <ul class="footer-links">
+                                <li><a href="mailto:hello@petzen.com" class="footer-contact-item"><iconify-icon icon="lucide:mail" style="font-size:14px"></iconify-icon>hello@petzen.com</a></li>
+                                <li><a href="tel:+15551234567" class="footer-contact-item"><iconify-icon icon="lucide:phone" style="font-size:14px"></iconify-icon>+1 (555) 123-4567</a></li>
+                                <li><div class="footer-contact-item"><iconify-icon icon="lucide:map-pin" style="font-size:14px"></iconify-icon>123 Pet Lane, NY 10001</div></li>
+                                <li><div class="footer-contact-item"><iconify-icon icon="lucide:clock" style="font-size:14px"></iconify-icon>Mon–Sat, 9 am – 7 pm</div></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Newsletter Band -->
+                    <div class="footer-nl-band">
+                        <div class="footer-nl-label">
+                            <iconify-icon icon="lucide:sparkles" style="font-size:17px"></iconify-icon>
+                            Get pet care tips &amp; exclusive deals in your inbox
+                        </div>
+                        <form class="footer-nl-form" id="footer-nl-form">
+                            <input type="email" name="email" required="required" placeholder="Enter your email" class="footer-nl-input"/>
+                            <button class="btn btn-primary" type="submit">Subscribe</button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- copyright bar of the design ("© year Petzen…" + policy links), still Odoo's
+         editable copyright block -->
+    <template id="petzen_footer_copyright" inherit_id="website.layout" name="Petzen Footer Copyright" priority="99">
+        <xpath expr="//div[hasclass('o_footer_copyright')]" position="attributes">
+            <attribute name="class" add="pz-scope pz-footer-copyright" separator=" "/>
+        </xpath>
+        <xpath expr="//footer//span[hasclass('o_footer_copyright_name')]" position="replace">
+            <span class="o_footer_copyright_name footer-copy">© <t t-out="datetime.date.today().year"/> Petzen. All rights reserved.</span>
+        </xpath>
+        <xpath expr="//footer//span[hasclass('o_footer_copyright_name')]" position="after">
+            <span class="footer-policy">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Use</a>
+                <a href="/cookie-policy">Cookies</a>
+            </span>
+        </xpath>
+    </template>
+
+    <!-- ══ GLOBAL OVERLAYS: back to top, quick view, toast ══
+         (search and sign in are Odoo's own, in the header) -->
+    <template id="petzen_overlays" inherit_id="website.layout" name="Petzen Overlays">
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
+            <div class="pz-scope pz-overlays">
+                <button type="button" class="btt" id="btt" aria-label="Back to top">
+                    <iconify-icon icon="lucide:chevron-up" style="font-size:20px"></iconify-icon>
+                </button>
+
+                <!-- Quick View Modal -->
+                <div class="qv-overlay" id="qv-overlay" role="dialog" aria-modal="true" aria-label="Quick View">
+                    <div class="qv-modal">
+                        <button type="button" class="qv-close" id="qv-close" aria-label="Close"><iconify-icon icon="lucide:x" style="font-size:18px"></iconify-icon></button>
+                        <div class="qv-img-col">
+                            <img class="qv-img" id="qv-img" src="data:," alt="" />
+                            <span class="qv-badge" id="qv-badge"></span>
+                        </div>
+                        <div class="qv-info-col">
+                            <div class="qv-tag" id="qv-tag"/>
+                            <h2 class="qv-name" id="qv-name"/>
+                            <div class="qv-rating" id="qv-rating"/>
+                            <div class="qv-price-row" id="qv-price-row"/>
+                            <button type="button" class="qv-add-btn" id="qv-add-btn"><iconify-icon icon="lucide:shopping-bag" style="font-size:16px"></iconify-icon> Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="petzen-toast" id="petzen-toast"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,883 @@
+/* ════════════════════════════════════════════════════════════
+   PETZEN — cart & checkout (website_sale)
+   Look of cart.html / checkout.html applied on the standard Odoo markup.
+   Hooks set by views/cart.xml on the .oe_website_sale container:
+     .pz-checkout[data-pz-step="cart"]   → /shop/cart
+     .pz-checkout[data-pz-step="steps"]  → /shop/address, /shop/checkout,
+                                           /shop/extra_info, /shop/payment
+     [data-pz-empty="1"]                 → empty cart
+   Odoo's own classes/markup are untouched, so its JS keeps working.
+   Bootstrap utilities used by website_sale are !important, hence some
+   !important below.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── 0. Odoo components in the theme colours (cart, checkout, product page, portal) ── */
+:root {
+  --primary-rgb: 255, 107, 53;
+  --link-color-rgb: 232, 98, 10;
+  --link-hover-color-rgb: 232, 84, 32;
+}
+.btn-primary {
+  --btn-color: #fff;
+  --btn-bg: #ff6b35;
+  --btn-border-color: #ff6b35;
+  --btn-hover-color: #fff;
+  --btn-hover-bg: #e85420;
+  --btn-hover-border-color: #e85420;
+  --btn-active-color: #fff;
+  --btn-active-bg: #e85420;
+  --btn-active-border-color: #e85420;
+  --btn-disabled-color: #fff;
+  --btn-disabled-bg: #ff6b35;
+  --btn-disabled-border-color: #ff6b35;
+  --btn-focus-shadow-rgb: 255, 107, 53;
+}
+.btn-outline-primary {
+  --btn-color: #ff6b35;
+  --btn-border-color: #ff6b35;
+  --btn-hover-color: #fff;
+  --btn-hover-bg: #ff6b35;
+  --btn-hover-border-color: #ff6b35;
+  --btn-active-color: #fff;
+  --btn-active-bg: #e85420;
+  --btn-active-border-color: #e85420;
+}
+.form-check-input:checked {
+  background-color: #ff6b35;
+  border-color: #ff6b35;
+}
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.15);
+}
+
+/* ── 1. Common ── */
+.pz-checkout {
+  font-family: var(--f-body);
+  color: var(--foreground);
+}
+.pz-checkout .btn {
+  border-radius: var(--r-xl);
+  font-weight: 600;
+  /* the design's global .btn is inline-flex without centring */
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.pz-checkout .btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.pz-checkout .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: #fff; }
+
+/* main checkout button ("Checkout" / "Confirm") */
+.pz-checkout a[name="website_sale_main_button"] {
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 20px;
+  border: 0;
+  border-radius: var(--r-xl);
+  background: var(--foreground);
+  color: #fff;
+  font-family: var(--f-disp);
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.22s var(--ease), transform 0.22s var(--ease);
+}
+.pz-checkout a[name="website_sale_main_button"]:hover {
+  background: var(--primary);
+  color: #fff;
+  transform: translateY(-2px);
+}
+.pz-checkout a[name="website_sale_main_button"].disabled { opacity: 0.5; }
+
+/* ════════════════════════════════════════════════════════════
+   2. CART PAGE (cart.html)
+   ════════════════════════════════════════════════════════════ */
+.pz-checkout[data-pz-step="cart"] {
+  max-width: 1200px;
+  padding: 48px 80px 80px !important;
+  min-height: calc(100vh - 72px);
+}
+.pz-checkout[data-pz-step="cart"] > .row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 0 32px;
+  align-items: start;
+  margin: 0 !important;
+}
+.pz-checkout[data-pz-step="cart"] > .row > * {
+  width: auto;
+  max-width: none;
+  flex: none;
+  margin: 0 !important;
+  padding: 0;
+}
+.pz-checkout[data-pz-step="cart"] > .row > .col-12:has(> .cart-heading) { grid-column: 1 / -1; grid-row: 1; }
+.pz-checkout[data-pz-step="cart"] .oe_cart { grid-column: 1; grid-row: 2; }
+.pz-checkout[data-pz-step="cart"] #o_cart_summary { grid-column: 2; grid-row: 2; }
+.pz-checkout[data-pz-step="cart"][data-pz-empty="1"] > .row { grid-template-columns: minmax(0, 1fr); }
+.pz-checkout[data-pz-step="cart"][data-pz-empty="1"] #o_cart_summary { display: none; }
+
+.pz-checkout .cart-heading { line-height: 1.2; }
+.pz-checkout .cart-empty h2 { line-height: 1.3; }
+.pz-checkout .cart-empty p { margin-bottom: 28px; }
+.pz-checkout .cart-empty .btn { display: inline-flex; padding: 12px 28px; }
+
+/* ── cart lines → .cart-item ── */
+.pz-checkout[data-pz-step="cart"] #cart_products.js_cart_lines {
+  gap: 16px;
+  margin-bottom: 0 !important;
+}
+.pz-checkout[data-pz-step="cart"] .o_cart_product {
+  display: grid !important;
+  grid-template-columns: 90px minmax(0, 1fr) auto auto;
+  grid-template-rows: auto auto auto auto 1fr;
+  column-gap: 20px;
+  align-items: center;
+  background: #fff;
+  border: 0 !important;
+  border-radius: 20px;
+  padding: 20px !important;
+  box-shadow: 0 1px 3px rgba(26, 18, 8, 0.04), 0 6px 20px rgba(26, 18, 8, 0.06);
+}
+/* image */
+.pz-checkout[data-pz-step="cart"] .o_cart_product > div:first-child {
+  width: 90px !important;
+  grid-column: 1;
+  grid-row: 1 / span 5;
+  align-self: center;
+}
+.pz-checkout[data-pz-step="cart"] .o_cart_product > div:first-child img {
+  display: block;
+  width: 90px;
+  height: 90px;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  border-radius: 14px !important;
+  background: var(--muted);
+}
+/* the two wrapper columns of Odoo become part of the card grid */
+.pz-checkout[data-pz-step="cart"] .o_cart_product > .flex-grow-1,
+.pz-checkout[data-pz-step="cart"] .o_cart_product > .d-flex.flex-column { display: contents !important; }
+.pz-checkout[data-pz-step="cart"] .o_cart_product > .flex-grow-1 > * { grid-column: 2; min-width: 0; }
+/* name */
+.pz-checkout[data-pz-step="cart"] .o_cart_product > .flex-grow-1 > a { grid-row: 1; color: var(--foreground); text-decoration: none; }
+.pz-checkout[data-pz-step="cart"] .o_cart_product > .flex-grow-1 > a h6 {
+  display: block !important;
+  margin: 0 0 4px;
+  font-family: var(--f-disp);
+  font-size: 16px;
+  font-weight: 700 !important;
+  line-height: 1.3;
+  color: var(--foreground);
+}
+.pz-checkout[data-pz-step="cart"] .o_cart_product > .flex-grow-1 > a:hover h6 { color: var(--primary); }
+/* "$x each" */
+.pz-checkout[data-pz-step="cart"] .o_cart_product .ci-price { grid-row: 2; }
+/* description lines */
+.pz-checkout[data-pz-step="cart"] .o_cart_product > .flex-grow-1 > .text-muted { grid-row: 3; font-size: 12px; margin-top: 2px; }
+/* combo items (views/cart.xml wraps them in .pz-combo-items) */
+.pz-checkout[data-pz-step="cart"] .o_cart_product > .flex-grow-1 > div:not([name]):not(.ci-price):not(.text-muted) { grid-row: 4; }
+.pz-checkout[data-pz-step="cart"] .o_cart_product .pz-combo-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+.pz-checkout[data-pz-step="cart"] .pz-combo-items > div { padding: 0 !important; }
+.pz-checkout[data-pz-step="cart"] .pz-combo-items img,
+.pz-checkout[data-pz-step="cart"] .pz-combo-items .o_image_64_max {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 10px !important;
+  background: var(--muted);
+}
+.pz-checkout[data-pz-step="cart"] .pz-combo-items .ms-3 { min-width: 0; margin-left: 12px !important; }
+.pz-checkout[data-pz-step="cart"] .pz-combo-items a { color: var(--foreground); text-decoration: none; }
+.pz-checkout[data-pz-step="cart"] .pz-combo-items a:hover h6 { color: var(--primary); }
+.pz-checkout[data-pz-step="cart"] .pz-combo-items h6 {
+  display: block !important;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600 !important;
+  line-height: 1.35;
+}
+.pz-checkout[data-pz-step="cart"] .pz-combo-items .small { font-size: 11px; }
+/* remove button */
+.pz-checkout[data-pz-step="cart"] .o_cart_product [name="o_wsale_cart_line_button_container"] {
+  grid-column: 4;
+  grid-row: 1 / span 5;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.pz-checkout .ci-remove { padding: 0; }
+/* "Save for Later" (website_sale_wishlist) under the trash button */
+.pz-checkout[data-pz-step="cart"] [name="o_wsale_cart_line_button_container"] > span { margin: 0 !important; }
+.pz-checkout[data-pz-step="cart"] .o_add_wishlist {
+  display: inline-block;
+  padding: 0 !important;
+  border: 0 !important;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--muted-foreground);
+  text-decoration: none;
+}
+.pz-checkout[data-pz-step="cart"] .o_add_wishlist:hover { color: var(--primary); }
+/* quantity → round − / + (cart.html .ci-qty-btn / .ci-qty)
+   Odoo markup: .css_quantity.input-group > a.js_add_cart_json.btn.btn-link.d-inline-block
+   (icon <i class="fa fa-minus|fa-plus"> kept in the DOM: website_sale JS reads it) */
+.pz-checkout[data-pz-step="cart"] .o_cart_product .css_quantity {
+  grid-column: 2;
+  grid-row: 5;
+  justify-self: start;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 10px;
+  width: auto !important;
+  margin: 12px 0 0 !important;
+}
+.pz-checkout[data-pz-step="cart"] .css_quantity > a.js_add_cart_json {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  float: none !important;
+  border: 1.5px solid var(--border) !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: var(--foreground) !important;
+  font-family: var(--f-disp);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none !important;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.pz-checkout[data-pz-step="cart"] .css_quantity > a.js_add_cart_json i {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+.pz-checkout[data-pz-step="cart"] .css_quantity > a.js_add_cart_json::before { content: "+"; }
+.pz-checkout[data-pz-step="cart"] .css_quantity > a.js_add_cart_json:has(.fa-minus)::before { content: "−"; }
+.pz-checkout[data-pz-step="cart"] .css_quantity > a.js_add_cart_json:hover,
+.pz-checkout[data-pz-step="cart"] .css_quantity > a.js_add_cart_json:focus-visible {
+  border-color: var(--primary) !important;
+  background: var(--secondary) !important;
+  color: var(--primary) !important;
+}
+/* warning icon shown instead of "+" when the stock limit is reached */
+.pz-checkout[data-pz-step="cart"] .css_quantity > a.btn-link:not(.js_add_cart_json) {
+  padding: 0 4px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.pz-checkout[data-pz-step="cart"] .css_quantity > input.js_quantity {
+  flex: 0 0 auto;
+  width: 28px !important;
+  min-width: 0;
+  height: 30px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: var(--f-disp);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 30px;
+  color: var(--foreground);
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+/* line price */
+.pz-checkout[data-pz-step="cart"] .o_cart_product [name="website_sale_cart_line_price"] {
+  grid-column: 3;
+  grid-row: 1 / span 5;
+  align-self: center;
+  margin: 0 !important;
+  font-family: var(--f-disp);
+  font-size: 18px;
+  font-weight: 800 !important;
+  color: var(--foreground);
+  white-space: nowrap;
+}
+.pz-checkout[data-pz-step="cart"] .o_cart_product [name="website_sale_cart_line_price"] del {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+.pz-checkout[data-pz-step="cart"] .o_cart_product [name="website_sale_cart_line_price"] small { font-size: 11px; font-weight: 500; }
+
+/* warnings / suggested accessories under the lines */
+.pz-checkout[data-pz-step="cart"] .oe_cart > .alert,
+.pz-checkout[data-pz-step="cart"] .js_cart_lines.alert { border-radius: 14px; }
+.pz-checkout[data-pz-step="cart"] #cart_products > h5 {
+  margin: 24px 0 4px !important;
+  font-family: var(--f-disp);
+  font-size: 18px;
+  font-weight: 800;
+}
+.pz-checkout[data-pz-step="cart"] #suggested_products {
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 0 !important;
+  box-shadow: 0 1px 3px rgba(26, 18, 8, 0.04), 0 6px 20px rgba(26, 18, 8, 0.06);
+}
+.pz-checkout[data-pz-step="cart"] #suggested_products a { color: var(--foreground); text-decoration: none; }
+.pz-checkout[data-pz-step="cart"] #suggested_products .js_add_suggested_products {
+  border-radius: var(--r-xl);
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+}
+.pz-checkout[data-pz-step="cart"] #suggested_products .js_add_suggested_products:hover { background: var(--primary); color: #fff; }
+
+/* ── summary → .cart-summary ── */
+.pz-checkout[data-pz-step="cart"] #o_cart_summary .o_total_card {
+  background: #fff;
+  border: 0;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 1px 3px rgba(26, 18, 8, 0.04), 0 6px 20px rgba(26, 18, 8, 0.06);
+  top: 100px !important;
+}
+.pz-checkout[data-pz-step="cart"] #o_cart_summary .card-body { padding: 0 !important; }
+.pz-checkout[data-pz-step="cart"] .cs-title { margin-bottom: 20px; }
+.pz-checkout[data-pz-step="cart"] #cart_total .table {
+  --table-bg: transparent;
+  margin: 0;
+}
+.pz-checkout[data-pz-step="cart"] #cart_total td {
+  padding: 0 0 12px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 14px;
+  color: var(--muted-foreground) !important;
+}
+.pz-checkout[data-pz-step="cart"] #cart_total #order_total { border: 0 !important; }
+.pz-checkout[data-pz-step="cart"] #cart_total #order_total td {
+  padding-top: 16px !important;
+  border-top: 1.5px solid var(--border) !important;
+  font-family: var(--f-disp);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--foreground) !important;
+}
+.pz-checkout[data-pz-step="cart"] #cart_total #order_total strong { font-weight: 800; }
+
+/* promo code → .cs-promo */
+.pz-checkout .coupon_form .input-group {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin: 4px 0 8px !important;
+}
+.pz-checkout[data-pz-step="cart"] .coupon_form .form-control {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 14px;
+  border: 1.5px solid var(--border) !important;
+  border-radius: var(--r-sm) !important;
+  background: #fff;
+  font-size: 13px;
+  color: var(--foreground);
+  box-shadow: none !important;
+}
+.pz-checkout[data-pz-step="cart"] .coupon_form .form-control:focus { border-color: var(--primary) !important; }
+.pz-checkout[data-pz-step="cart"] .coupon_form .a-submit {
+  height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--r-sm) !important;
+  background: var(--muted);
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+.pz-checkout[data-pz-step="cart"] .coupon_form .a-submit:hover { background: var(--border); }
+
+/* navigation: "or" divider hidden, "Continue shopping" → .cs-continue */
+.pz-checkout[data-pz-step="cart"] #o_cart_summary .opacity-75 { display: none !important; }
+.pz-checkout[data-pz-step="cart"] #o_cart_summary .pt-4 { padding-top: 0 !important; margin-bottom: 0 !important; }
+
+/* express checkout ("Pay with Demo", Google/Apple Pay…) above the Checkout button */
+.pz-checkout[data-pz-step="cart"] #o_cart_summary form[name="o_payment_express_checkout_form"] {
+  padding: 0 !important;
+  margin: 8px 0 0;
+}
+.pz-checkout[data-pz-step="cart"] #o_cart_summary form[name="o_payment_express_checkout_form"]:empty { display: none; }
+.pz-checkout[data-pz-step="cart"] #o_cart_summary [name="o_express_checkout_container"] { margin-bottom: 0; }
+.pz-checkout[data-pz-step="cart"] #o_cart_summary [name="o_express_checkout_container"] + [name="o_express_checkout_container"] { margin-top: 10px; }
+.pz-checkout[data-pz-step="cart"] #o_cart_summary [name="o_express_checkout_container"] .btn {
+  display: flex;
+  width: 100%;
+  min-height: 52px;
+  margin: 0 !important;
+  padding: 14px 20px;
+  border: 0;
+  border-radius: var(--r-xl);
+  font-family: var(--f-disp);
+  font-size: 15px;
+  font-weight: 700;
+  gap: 8px;
+}
+.pz-checkout[data-pz-step="cart"] #o_cart_summary [name="o_express_checkout_container"] .btn-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.28);
+}
+.pz-checkout[data-pz-step="cart"] #o_cart_summary [name="o_express_checkout_container"] .btn-primary:hover { background: var(--primary-dark); }
+/* space between the express buttons and the Checkout button */
+.pz-checkout[data-pz-step="cart"] #o_cart_summary a[name="website_sale_main_button"] { margin-top: 14px; }
+.pz-checkout[data-pz-step="cart"] #o_cart_summary a.text-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+  text-decoration: none;
+}
+.pz-checkout[data-pz-step="cart"] #o_cart_summary a.text-center:hover { color: var(--primary); }
+
+/* ════════════════════════════════════════════════════════════
+   3. CHECKOUT STEPS (checkout.html)
+   ════════════════════════════════════════════════════════════ */
+#wrapwrap:has(.pz-checkout[data-pz-step="steps"]) { background: #f2ede8; }
+
+.pz-checkout[data-pz-step="steps"] {
+  --co-border: #e5ddd3;
+  --co-muted: #9a8a7a;
+  --co-orange: #e8620a;
+  max-width: 1180px;
+  padding: 40px 32px 80px !important;
+}
+/* the step wizard is shown in the checkout nav (header) */
+.pz-checkout[data-pz-step="steps"] .o_wizard,
+.pz-checkout[data-pz-step="steps"] > .row > .col-12:has(> .o_wizard),
+.pz-checkout[data-pz-step="steps"] > .row:not(:has(.oe_cart)) { display: none !important; }
+
+.pz-checkout[data-pz-step="steps"] > .row:has(> .oe_cart) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 0 32px;
+  align-items: start;
+  margin: 0 !important;
+}
+.pz-checkout[data-pz-step="steps"] > .row:has(> .oe_cart) > * {
+  width: auto;
+  max-width: none;
+  flex: none;
+  margin: 0 !important;
+  padding: 0;
+}
+.pz-checkout[data-pz-step="steps"] > .row > .oe_cart { grid-column: 1; grid-row: 1; }
+.pz-checkout[data-pz-step="steps"] > .row > #o_wsale_total_accordion { grid-column: 2; grid-row: 1; }
+/* address page has no summary column */
+.pz-checkout.o_wsale_address_fill > .row:has(> .oe_cart) { grid-template-columns: minmax(0, 820px); justify-content: center; }
+
+/* ── left column → .co-card ── */
+.pz-checkout[data-pz-step="steps"] .oe_cart {
+  background: #fff;
+  border: 1px solid #ede6de;
+  border-radius: 20px;
+  padding: 28px 32px 32px !important;
+  box-shadow: 0 4px 24px rgba(26, 18, 8, 0.05);
+}
+.pz-checkout[data-pz-step="steps"] .oe_cart h3,
+.pz-checkout[data-pz-step="steps"] .oe_cart h4 {
+  font-family: var(--f-body);
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  letter-spacing: 0;
+  line-height: 1.4;
+  color: var(--foreground);
+  padding-bottom: 18px;
+  margin: 0 0 22px !important;
+  border-bottom: 1px solid #f0e8e0;
+}
+.pz-checkout[data-pz-step="steps"] .oe_cart h4.mt-5,
+.pz-checkout[data-pz-step="steps"] .oe_cart h4.mt-3 { margin-top: 32px !important; }
+.pz-checkout[data-pz-step="steps"] .oe_cart a:not(.btn) { color: var(--co-orange); }
+
+/* fields → .co-field / .co-input */
+.pz-checkout[data-pz-step="steps"] .col-form-label,
+.pz-checkout[data-pz-step="steps"] .form-label {
+  display: block;
+  padding: 0;
+  margin-bottom: 7px;
+  font-size: 10px;
+  font-weight: 700 !important;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--co-muted);
+}
+.pz-checkout[data-pz-step="steps"] .form-control,
+.pz-checkout[data-pz-step="steps"] .form-select {
+  height: 48px;
+  padding: 0 15px;
+  border: 1.5px solid var(--co-border);
+  border-radius: 12px;
+  background-color: #fdfaf8;
+  font-family: var(--f-body);
+  font-size: 14px;
+  color: var(--foreground);
+  box-shadow: none;
+  transition: border-color 0.18s, box-shadow 0.18s, background-color 0.18s;
+}
+.pz-checkout[data-pz-step="steps"] .form-select { padding-right: 38px; }
+.pz-checkout[data-pz-step="steps"] textarea.form-control { height: auto; min-height: 96px; padding: 12px 15px; }
+.pz-checkout[data-pz-step="steps"] .form-control::placeholder { color: #c0b0a0; }
+.pz-checkout[data-pz-step="steps"] .form-control:focus,
+.pz-checkout[data-pz-step="steps"] .form-select:focus {
+  border-color: var(--co-orange);
+  background-color: #fff;
+  box-shadow: 0 0 0 3.5px rgba(232, 98, 10, 0.13);
+}
+.pz-checkout[data-pz-step="steps"] .form-control.is-invalid,
+.pz-checkout[data-pz-step="steps"] .form-select.is-invalid { border-color: #dc3545; }
+
+/* buttons */
+.pz-checkout[data-pz-step="steps"] .oe_cart .btn {
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.pz-checkout[data-pz-step="steps"] .oe_cart .btn-primary,
+.pz-checkout[data-pz-step="steps"] #save_address {
+  padding: 13px 28px;
+  border: 0;
+  background: linear-gradient(135deg, var(--co-orange), #f08030);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(232, 98, 10, 0.32);
+}
+.pz-checkout[data-pz-step="steps"] .oe_cart .btn-primary:hover,
+.pz-checkout[data-pz-step="steps"] #save_address:hover { opacity: 0.92; color: #fff; }
+.pz-checkout[data-pz-step="steps"] .oe_cart .btn-primary.fa { padding: 4px 6px; box-shadow: none; }
+.pz-checkout[data-pz-step="steps"] .btn-outline-secondary,
+.pz-checkout[data-pz-step="steps"] .btn-secondary {
+  padding: 13px 24px;
+  border: 0;
+  background: #f2ede8;
+  color: var(--foreground);
+}
+.pz-checkout[data-pz-step="steps"] .btn-outline-secondary:hover,
+.pz-checkout[data-pz-step="steps"] .btn-secondary:hover { background: #eae3db; color: var(--foreground); }
+.pz-checkout[data-pz-step="steps"] .oe_cart .btn-link { color: var(--co-orange); }
+
+/* address cards → .ship-tile */
+.pz-checkout[data-pz-step="steps"] .one_kanban .card {
+  border: 2px solid var(--co-border) !important;
+  border-radius: 14px !important;
+  background: #fdfaf8 !important;
+  color: var(--foreground) !important;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+.pz-checkout[data-pz-step="steps"] .one_kanban .card:hover { border-color: rgba(232, 98, 10, 0.5) !important; background: #fff !important; }
+.pz-checkout[data-pz-step="steps"] .one_kanban .card.bg-primary {
+  border-color: var(--co-orange) !important;
+  background: #fff5ee !important;
+  box-shadow: 0 4px 16px rgba(232, 98, 10, 0.12);
+}
+.pz-checkout[data-pz-step="steps"] .one_kanban .card.bg-primary :is(div, span, address, strong, b, i, small) { color: var(--foreground) !important; }
+.pz-checkout[data-pz-step="steps"] .one_kanban .card .btn-link { color: var(--co-orange) !important; }
+.pz-checkout[data-pz-step="steps"] .o_wsale_add_address {
+  min-height: 100px;
+  border: 2px dashed var(--co-border) !important;
+  border-radius: 14px !important;
+  color: var(--co-muted);
+  text-decoration: none;
+}
+.pz-checkout[data-pz-step="steps"] .o_wsale_add_address:hover { border-color: var(--co-orange) !important; color: var(--co-orange); }
+
+/* delivery methods / payment methods → .ship-tile */
+.pz-checkout[data-pz-step="steps"] .oe_cart .list-group {
+  gap: 12px;
+  border-radius: 0;
+}
+.pz-checkout[data-pz-step="steps"] .oe_cart .list-group-item {
+  border: 2px solid var(--co-border) !important;
+  border-radius: 14px !important;
+  background: #fdfaf8;
+  color: var(--foreground) !important;
+  padding: 16px 20px;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+.pz-checkout[data-pz-step="steps"] .oe_cart .list-group-item:hover { border-color: rgba(232, 98, 10, 0.5) !important; background: #fff; }
+.pz-checkout[data-pz-step="steps"] .oe_cart .list-group-item:has(input:checked) {
+  border-color: var(--co-orange) !important;
+  background: #fff5ee;
+  box-shadow: 0 4px 16px rgba(232, 98, 10, 0.12);
+}
+.pz-checkout[data-pz-step="steps"] .o_delivery_carrier_label,
+.pz-checkout[data-pz-step="steps"] .o_payment_option_label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+.pz-checkout[data-pz-step="steps"] .o_wsale_delivery_price_badge { color: var(--co-orange); }
+.pz-checkout[data-pz-step="steps"] .form-check-input:checked {
+  background-color: var(--co-orange);
+  border-color: var(--co-orange);
+}
+
+/* ── right column → dark .co-summary-box ── */
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion {
+  --accordion-bg: transparent;
+  --accordion-color: #fff;
+  --accordion-border-width: 0;
+  --accordion-btn-color: #fff;
+  --accordion-btn-bg: transparent;
+  --accordion-active-color: #fff;
+  --accordion-active-bg: transparent;
+  --accordion-btn-focus-box-shadow: none;
+  --table-bg: transparent;
+  --table-color: rgba(255, 255, 255, 0.88);
+  --table-border-color: rgba(255, 255, 255, 0.08);
+  background: #160f06 !important;
+  color: #fff;
+  border-radius: 24px !important;
+  padding: 30px 28px !important;
+  box-shadow: 0 24px 80px rgba(26, 18, 8, 0.22);
+  top: 24px !important;
+}
+/* website_sale paints the card / accordion item with `o-bg-color` (background !important) */
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .o_total_card,
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .accordion-item,
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .accordion-header,
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .accordion-collapse,
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .accordion-body {
+  position: static !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: #fff;
+}
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion table,
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion tr {
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .accordion-header { margin-bottom: 18px !important; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .accordion-button {
+  padding: 0;
+  /* website_sale paints it with --o-cc1-bg !important below lg (the mobile "Order summary" toggle) */
+  background: transparent !important;
+  color: #fff !important;
+  box-shadow: none;
+}
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .accordion-button::after { filter: invert(1) brightness(2); }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .accordion-button b {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #fff !important;
+}
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .accordion-button > div,
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .accordion-button > div * {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+/* every text inside the dark box readable, whatever Bootstrap utility Odoo used */
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion :is(h5, h6, td, th, p, span, b, strong, small, label, .text-muted, .text-600, .text-body, .text-secondary, .text-dark):not(.alert *):not(.btn *):not(.btn) {
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion a:not(.btn) { color: rgba(255, 255, 255, 0.55); text-decoration: none; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion a:not(.btn):hover { color: #fff; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion td {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+/* items */
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion #cart_products td { border-color: rgba(255, 255, 255, 0.07) !important; font-size: 13px; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion #cart_products h6 { margin: 0; font-size: 13px; font-weight: 500; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion #cart_products img {
+  width: 54px;
+  height: 54px;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .o_wsale_scrollable_table { scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
+/* totals */
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion #cart_total { border-color: rgba(255, 255, 255, 0.12) !important; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion #cart_total td {
+  padding: 7px 0 !important;
+  border: 0 !important;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion #cart_total #order_total { border: 0 !important; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion #cart_total #order_total td,
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion #cart_total #order_total td * {
+  padding-top: 16px !important;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff !important;
+}
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion #cart_total #order_total td { border-top: 1px solid rgba(255, 255, 255, 0.12) !important; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion #cart_total #order_total td * { padding-top: 0 !important; }
+/* promo code → .co-coupon */
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .coupon_form .form-control {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 10px !important;
+  color: #fff;
+  font-size: 13px;
+  box-shadow: none !important;
+}
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .coupon_form .form-control::placeholder { color: rgba(255, 255, 255, 0.28); }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .coupon_form .form-control:focus { border-color: rgba(232, 98, 10, 0.6) !important; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .coupon_form .a-submit {
+  height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .coupon_form .a-submit:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
+/* "Confirm" / "Pay now" → .co-place-btn */
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion a[name="website_sale_main_button"],
+.pz-checkout[data-pz-step="steps"] button[name="o_payment_submit_button"] {
+  width: 100% !important;
+  height: 56px;
+  margin: 8px 0 0 !important;
+  border: 0;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #e8620a, #f08030);
+  color: #fff !important;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 6px 24px rgba(232, 98, 10, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion a[name="website_sale_main_button"]:hover,
+.pz-checkout[data-pz-step="steps"] button[name="o_payment_submit_button"]:hover { opacity: 0.92; transform: none; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion hr { border-color: rgba(255, 255, 255, 0.3); opacity: 1; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .opacity-75 span { color: rgba(255, 255, 255, 0.4) !important; }
+.pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion a.text-center { font-size: 13px; }
+
+/* ════════════════════════════════════════════════════════════
+   4. Responsive (Bootstrap lg breakpoint, used by website_sale)
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 991.98px) {
+  .pz-checkout[data-pz-step="cart"] { padding: 28px 24px 60px !important; }
+  .pz-checkout[data-pz-step="cart"] > .row { grid-template-columns: minmax(0, 1fr); }
+  .pz-checkout[data-pz-step="cart"] #o_cart_summary { grid-column: 1; grid-row: 3; margin-top: 24px !important; }
+  .pz-checkout[data-pz-step="cart"] #o_cart_summary .o_total_card { position: static !important; }
+
+  .pz-checkout[data-pz-step="steps"] { padding: 24px 16px 60px !important; }
+  .pz-checkout[data-pz-step="steps"] > .row:has(> .oe_cart) { grid-template-columns: minmax(0, 1fr); }
+  .pz-checkout[data-pz-step="steps"] > .row > .oe_cart,
+  .pz-checkout[data-pz-step="steps"] > .row > #o_wsale_total_accordion { grid-column: 1; grid-row: auto; }
+  .pz-checkout[data-pz-step="steps"] > .row > #o_wsale_total_accordion { margin-bottom: 20px !important; position: static !important; }
+  .pz-checkout[data-pz-step="steps"] .oe_cart { padding: 22px 20px 24px !important; }
+  /* on mobile Odoo moves the buttons at the bottom of the page, outside the dark box */
+  .pz-checkout[data-pz-step="steps"] .o_cta_navigation_container {
+    margin-top: 16px;
+    padding: 16px 20px !important;
+    border-radius: 20px;
+    background: #160f06;
+  }
+  .pz-checkout[data-pz-step="steps"] .o_cta_navigation_container > div {
+    padding-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .o_cta_navigation_container a[name="website_sale_main_button"],
+  .pz-checkout[data-pz-step="steps"] #o_wsale_total_accordion .o_cta_navigation_container button[name="o_payment_submit_button"] { margin-top: 0 !important; }
+}
+@media (max-width: 560px) {
+  .pz-checkout[data-pz-step="cart"] { padding: 18px 16px 48px !important; }
+  .pz-checkout .cart-heading { font-size: 24px; margin-bottom: 24px; }
+  .pz-checkout[data-pz-step="cart"] .o_cart_product {
+    grid-template-columns: 64px minmax(0, 1fr) auto auto;
+    column-gap: 12px;
+    padding: 14px !important;
+  }
+  .pz-checkout[data-pz-step="cart"] .o_cart_product > div:first-child,
+  .pz-checkout[data-pz-step="cart"] .o_cart_product > div:first-child img { width: 64px !important; height: 64px; }
+  .pz-checkout[data-pz-step="cart"] .o_cart_product > .flex-grow-1 > a h6 { font-size: 14px; }
+  .pz-checkout[data-pz-step="cart"] .o_cart_product [name="website_sale_cart_line_price"] { font-size: 15px; }
+}
+@media (max-width: 400px) {
+  /* small phones: give the product name more room */
+  .pz-checkout[data-pz-step="cart"] .o_cart_product {
+    grid-template-columns: 52px minmax(0, 1fr) auto auto;
+    column-gap: 10px;
+    padding: 12px !important;
+  }
+  .pz-checkout[data-pz-step="cart"] .o_cart_product > div:first-child,
+  .pz-checkout[data-pz-step="cart"] .o_cart_product > div:first-child img { width: 52px !important; height: 52px; }
+  .pz-checkout[data-pz-step="cart"] .o_cart_product [name="website_sale_cart_line_price"] { font-size: 14px; }
+}
+
+/* checkout nav (header) */
+.co-nav a.co-nav-step { text-decoration: none; }
+.co-nav a.co-nav-step:hover { color: var(--foreground); }
+.co-nav .nav-logo-img { height: 34px; width: auto; }
+
+/* ── sticky summaries vs the fixed nav ──
+   Bootstrap's .sticky-lg-top puts them at z-index 1020 (above the nav, z-index 200).
+   Keep them under the header, and when Odoo's header is fixed (scroll effect "Fixed")
+   stick them just below it instead of at the top of the screen. */
+.pz-checkout #o_cart_summary .o_total_card,
+.pz-checkout #o_wsale_total_accordion,
+.pz-checkout #o_wsale_total_accordion .o_total_card {
+  z-index: 1 !important;
+}
+#wrapwrap:has(> header#top.o_header_fixed) .pz-checkout #o_wsale_total_accordion,
+#wrapwrap:has(> header#top.o_header_fixed) .pz-checkout #o_cart_summary .o_total_card {
+  top: 100px !important;
+}

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--
+        Petzen cart & checkout.
+        Only small additions are made to the website_sale templates: every element and
+        class used by the website_sale JS (o_cart_product, js_quantity, js_add_cart_json,
+        js_delete_product, js_cart_lines, #cart_total, navigation buttons, payment form…)
+        is kept, so the standard cart → address → delivery → payment flow is unchanged.
+        The look of the design (cart.html / checkout.html) is done in css/odoo.css.
+    -->
+
+    <!-- Layout shared by /shop/cart, /shop/checkout, /shop/address, /shop/payment… -->
+    <template id="petzen_checkout_layout" inherit_id="website_sale.checkout_layout" name="Petzen Checkout Layout">
+        <!-- minimal "co-nav" header on the checkout steps (not on the cart, like the design) -->
+        <xpath expr="//t[@t-call='website.layout']/t[1]" position="before">
+            <!-- only on the real checkout steps (not on the cart nor on /shop/confirmation,
+                 which also use this layout): those pages get the normal menu nav -->
+            <t t-set="pz_checkout_nav" t-value="not show_shorter_cart_summary and xmlid != 'website_sale.cart' and any(xmlid in step[0] for step in website._get_checkout_steps())"/>
+        </xpath>
+        <!-- NB: never set t-attf-class here: QWeb would drop the static classes
+             (oe_website_sale…) that the website_sale JS is bound to. -->
+        <xpath expr="//div[hasclass('oe_website_sale')]" position="attributes">
+            <attribute name="class" add="pz-checkout" separator=" "/>
+            <attribute name="t-att-data-pz-step">'cart' if show_shorter_cart_summary else 'steps'</attribute>
+            <attribute name="t-att-data-pz-empty">'0' if website_sale_order and website_sale_order.website_order_line else '1'</attribute>
+        </xpath>
+        <!-- cart.html heading, above both columns -->
+        <xpath expr="//div[@t-if='show_wizard_checkout']" position="after">
+            <div t-if="show_shorter_cart_summary" class="col-12">
+                <h1 class="cart-heading">Your <span>Cart</span></h1>
+            </div>
+        </xpath>
+        <!-- cart.html summary title -->
+        <xpath expr="//div[@id='o_cart_summary']//t[@t-call='website_sale.total']" position="before">
+            <div class="cs-title">Order Summary</div>
+        </xpath>
+    </template>
+
+    <!-- /shop/address has its own layout (no checkout_layout) -->
+    <template id="petzen_address" inherit_id="website_sale.address" name="Petzen Address">
+        <xpath expr="//t[@t-call='website.layout']/div[@id='wrap']" position="before">
+            <t t-set="pz_checkout_nav" t-value="True"/>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wsale_address_fill')]" position="attributes">
+            <attribute name="class" add="pz-checkout" separator=" "/>
+            <attribute name="data-pz-step">steps</attribute>
+        </xpath>
+    </template>
+
+    <template id="petzen_cart" inherit_id="website_sale.cart" name="Petzen Cart" priority="999">
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']/t[1]" position="before">
+            <t t-set="show_wizard_checkout" t-value="False"/>
+        </xpath>
+        <xpath expr="//t[@t-set='show_footer']" position="attributes">
+            <attribute name="t-value">False</attribute>
+        </xpath>
+        <!-- heading is rendered full width by petzen_checkout_layout -->
+        <xpath expr="//h3[hasclass('mb-4')]" position="replace"/>
+    </template>
+
+    <template id="petzen_cart_lines" inherit_id="website_sale.cart_lines" name="Petzen Cart Lines" priority="999">
+        <!-- empty state of cart.html -->
+        <xpath expr="//div[hasclass('js_cart_lines')][hasclass('alert-info')]" position="replace">
+            <div t-if="not website_sale_order or not website_sale_order.website_order_line" class="js_cart_lines cart-empty">
+                <div class="cart-empty-icon"><iconify-icon icon="lucide:shopping-bag"></iconify-icon></div>
+                <h2>Your cart is empty</h2>
+                <p>Looks like you haven't added anything yet.</p>
+                <a href="/shop" class="btn btn-primary">Start Shopping</a>
+            </div>
+        </xpath>
+        <!-- "$39.99 each" under the product name -->
+        <xpath expr="//div[@id='cart_products']//t[@t-call='website_sale.cart_line_product_link']" position="after">
+            <div t-if="not line._is_not_sellable_line()" class="ci-price">
+                <span t-out="line._get_displayed_unit_price()" t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/> each
+            </div>
+        </xpath>
+        <!-- combo items: one block in the card grid (else every item lands on the same grid cell) -->
+        <xpath expr="//div[@t-as='combo_item_line']/.." position="before">
+            <div t-if="line.product_type == 'combo'" class="pz-combo-items"/>
+        </xpath>
+        <xpath expr="//div[hasclass('pz-combo-items')]" position="inside">
+            <xpath expr="//div[@t-as='combo_item_line']" position="move"/>
+        </xpath>
+        <!-- one round trash button (design) instead of the "Remove" link + mobile button -->
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container']/a[hasclass('js_delete_product')]" position="attributes">
+            <attribute name="class">js_delete_product d-none</attribute>
+        </xpath>
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container']/button[hasclass('js_delete_product')]" position="attributes">
+            <attribute name="class">js_delete_product ci-remove</attribute>
+            <attribute name="type">button</attribute>
+            <attribute name="aria-label">Remove from cart</attribute>
+        </xpath>
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container']/button[hasclass('js_delete_product')]/i" position="replace">
+            <iconify-icon icon="lucide:trash-2" style="font-size:15px"></iconify-icon>
+        </xpath>
+    </template>
+</odoo>

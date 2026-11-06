@@ -1,0 +1,212 @@
+/* ════════════════════════════════════════════════════════════
+   PETZEN — Odoo integration
+   Loaded after styles.css / pages.css.
+   1. design classes that also exist in Bootstrap (.nav, .btn)
+   2. pages of Odoo that are not part of the design (product page, portal…)
+   3. elements the design does not have (form feedback, real reviews…)
+   4. cart & checkout (website_sale) with the look of cart.html / checkout.html
+   ════════════════════════════════════════════════════════════ */
+
+/* ── 1. Bootstrap name clashes ─────────────────────────────── */
+#nav {
+  display: block;
+  flex-wrap: nowrap;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+/* every other .nav is a Bootstrap nav of Odoo (shop category list, portal tabs…):
+   undo the design's fixed top bar (.nav { position: fixed … } in styles.css) */
+.nav:not(#nav) {
+  position: static;
+  top: auto;
+  left: auto;
+  right: auto;
+  z-index: auto;
+  transition: none;
+}
+.pz-scope .btn {
+  --btn-border-width: 0;
+  --btn-border-color: transparent;
+  --btn-hover-border-color: transparent;
+  --btn-active-border-color: transparent;
+  --btn-focus-box-shadow: none;
+}
+/* cart badge: Odoo's cart JS hides it / adds a warning icon when the cart is empty */
+.my_cart_quantity.fa::before { content: none; }
+
+/* preloader: never stays on screen if JS is slow or fails */
+.preloader { animation: pz-preloader-off 0.5s ease 3s forwards; }
+/* never in the website editor (the widgets are restarted there) */
+body.editor_enable .preloader { display: none; }
+@keyframes pz-preloader-off { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+
+/* ── 3. Elements not in the design ─────────────────────────── */
+/* "Add" of products with variants is a link to the product page: same box as the button */
+a.add-btn { line-height: normal; }
+/* product card name link */
+.product-name a { color: inherit; }
+.product-name a:hover { color: var(--primary); }
+.products-section .search-empty { text-align: center; padding: 40px 0; color: var(--muted-foreground); }
+
+/* initials avatar for approved customer reviews */
+.testi-avatar-initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--secondary);
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 16px;
+}
+
+/* contact page: Odoo's website form (#contactus_form) in the design look
+   (pages.css .ct-*); beats Bootstrap's .form-control / form builder styles. */
+.pz-page-contact .pz-contact-form { padding: 0; }
+.pz-page-contact .pz-contact-form .ct-input.form-control {
+  height: 48px;
+  border: 1.5px solid #E5DDD3;
+  border-radius: 12px;
+  padding: 0 15px;
+  font-size: 14px;
+  line-height: normal;
+  color: var(--foreground);
+  background-color: #FDFAF8;
+  box-shadow: none;
+}
+.pz-page-contact .pz-contact-form textarea.ct-input.form-control {
+  height: auto;
+  min-height: 130px;
+  padding: 14px 15px;
+  line-height: 1.6;
+}
+.pz-page-contact .pz-contact-form .ct-input.form-control:focus {
+  border-color: var(--primary);
+  background-color: #fff;
+  box-shadow: 0 0 0 3.5px rgba(232, 98, 10, .12);
+}
+.pz-page-contact .pz-contact-form .ct-input.form-control.is-invalid {
+  border-color: #dc2626;
+  background-image: none;
+}
+.pz-page-contact .pz-contact-form .ct-field > .s_website_form_label {
+  width: auto !important;
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.pz-page-contact .pz-contact-form .s_website_form_mark { color: var(--primary); font-size: 1em; }
+.pz-page-contact .pz-contact-form .s_website_form_dnone { display: none; }
+/* fields added later in the editor carry Bootstrap col-* classes: one per row */
+.pz-page-contact .pz-contact-form .s_website_form_rows > [class*="col-"] { grid-column: 1 / -1; width: auto; padding: 0; margin: 0; }
+.pz-page-contact .pz-contact-form .s_website_form_submit { gap: 12px; }
+.pz-page-contact .pz-contact-form a.ct-submit {
+  width: 100%;
+  padding: 0;
+  border: none;
+  color: #fff;
+  text-decoration: none;
+}
+.pz-page-contact .pz-contact-form a.ct-submit.disabled { opacity: .7; pointer-events: none; }
+.pz-page-contact .pz-contact-form #s_website_form_result:not(:empty) {
+  margin: 0 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.pz-page-contact .pz-contact-form #s_website_form_result.text-danger {
+  background: #fef2f2;
+  border: 1.5px solid #fecaca;
+  color: #dc2626 !important;
+}
+.pz-page-contact .pz-contact-form #s_website_form_result.text-success {
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  color: #16a34a !important;
+}
+
+/* review form feedback */
+.review-error-banner {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: #fef2f2;
+  border: 1.5px solid #fecaca;
+  color: #dc2626;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 20px;
+}
+.review-error-banner.visible { display: flex; }
+
+.review-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 18, 8, 0.55);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+.review-modal-overlay.open { opacity: 1; pointer-events: all; }
+.review-modal {
+  background: #fff;
+  border-radius: 28px;
+  padding: 56px 48px 48px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 32px 80px rgba(26, 18, 8, 0.22);
+  transform: translateY(32px) scale(0.96);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.review-modal-overlay.open .review-modal { transform: none; }
+.review-modal-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  box-shadow: 0 12px 36px rgba(34, 197, 94, 0.35);
+}
+.review-modal-icon svg {
+  width: 38px;
+  height: 38px;
+  stroke: #fff;
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.review-modal-stars { display: block; font-size: 28px; color: var(--gold); letter-spacing: 4px; margin-bottom: 20px; }
+.review-modal-title { font-family: var(--f-disp); font-size: 26px; font-weight: 900; color: var(--foreground); margin-bottom: 12px; }
+.review-modal-sub { font-size: 15px; line-height: 1.65; color: var(--muted-foreground); margin-bottom: 32px; }
+.review-modal-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--r-xl);
+  padding: 14px 36px;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+  transition: background 0.22s, transform 0.22s;
+}
+.review-modal-close:hover { background: var(--primary-dark); transform: translateY(-2px); }

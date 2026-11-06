@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- tabs of the Petzen Products snippet -->
+    <t t-name="theme_petzen.ProductsSnippetTabs">
+        <button type="button" class="tab-pill active" data-f="all">All Products</button>
+        <t t-foreach="tabs" t-as="tab" t-key="tab.key">
+            <button type="button" class="tab-pill" t-att-data-f="tab.key" t-esc="tab.name"/>
+        </t>
+    </t>
+
+    <!-- product card of the Petzen Products snippet -->
+    <t t-name="theme_petzen.ProductsSnippetCard">
+        <article class="product-card reveal in"
+                 t-att-data-cat="product.key"
+                 t-att-data-product-id="product.product_id or undefined"
+                 t-att-data-url="product.url">
+            <div class="product-img-wrap">
+                <span t-if="product.badge" t-attf-class="product-badge {{ product.is_new ? 'new-badge' : '' }}" t-esc="product.badge"/>
+                <!-- same button as the shop tiles (website_sale_wishlist.add_to_wishlist) -->
+                <button t-if="product.buttons.show_wishlist" type="button"
+                        t-attf-class="pq-wish pq-btn o_add_wishlist {{ product.buttons.in_wishlist ? 'pq-on' : '' }}"
+                        t-att-disabled="product.buttons.in_wishlist"
+                        t-att-data-product-template-id="product.buttons.template_id"
+                        t-att-data-product-product-id="product.buttons.variant_id"
+                        data-action="o_wishlist"
+                        title="Add to Wishlist"
+                        aria-label="Add to wishlist"
+                        t-att-aria-pressed="product.buttons.in_wishlist ? 'true' : 'false'">
+                    <iconify-icon t-att-icon="product.buttons.in_wishlist ? 'ri:heart-fill' : 'lucide:heart'" style="font-size:15px"/>
+                </button>
+                <a t-att-href="product.url" tabindex="-1">
+                    <img class="product-img" t-att-src="product.image" t-att-alt="product.name" loading="lazy"/>
+                </a>
+                <div class="product-quick">
+                    <button type="button" class="pqv-btn"><iconify-icon icon="lucide:eye" style="font-size:14px"/> Quick View</button>
+                </div>
+            </div>
+            <div class="product-body">
+                <div class="product-tag" t-esc="product.tag"/>
+                <h3 class="product-name"><a t-att-href="product.url" t-esc="product.name"/></h3>
+                <div class="product-rating-row">
+                    <span class="stars"><t t-esc="'★'.repeat(product.rating)"/><span t-if="product.rating &lt; 5" class="star-dim" t-esc="'★'.repeat(5 - product.rating)"/></span>
+                    <span class="star-count">(<t t-esc="product.rating_count"/>)</span>
+                </div>
+                <div class="product-footer">
+                    <div class="price-wrap">
+                        <span class="product-price" t-esc="product.price"/>
+                        <span t-if="product.price_old" class="product-price-old" t-esc="product.price_old"/>
+                    </div>
+                    <!-- same rules as the shop tiles (website_sale.products_add_to_cart) -->
+                    <button t-if="product.buttons.show_add" type="button" class="add-btn"
+                            t-att-data-product-template-id="product.buttons.template_id"
+                            t-att-data-product-id="product.buttons.variant_id"><iconify-icon icon="lucide:shopping-bag" style="font-size:14px"/>Add</button>
+                    <a t-else="" t-att-href="product.url" class="add-btn"><iconify-icon icon="lucide:shopping-bag" style="font-size:14px"/>Add</a>
+                </div>
+            </div>
+        </article>
+    </t>
+
+</templates>

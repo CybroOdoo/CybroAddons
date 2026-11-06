@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Backend views, action and menu of the customer reviews (petzen.review) -->
+
+    <!-- ══ LIST VIEW ══ -->
+    <record id="petzen_review_view_list" model="ir.ui.view">
+        <field name="name">petzen.review.view.list</field>
+        <field name="model">petzen.review</field>
+        <field name="arch" type="xml">
+            <list string="Customer Reviews"
+                  decoration-muted="state == 'rejected'"
+                  decoration-info="state == 'pending'">
+                <field name="create_date" string="Date" widget="date"/>
+                <field name="name" string="Reviewer"/>
+                <field name="email"/>
+                <field name="customer_type" optional="show"/>
+                <field name="rating" string="Rating"/>
+                <field name="review" string="Review" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'approved'"
+                       decoration-info="state == 'pending'"
+                       decoration-muted="state == 'rejected'"/>
+                <button name="action_approve" type="object" string="Approve" icon="fa-check"
+                        invisible="state == 'approved'"/>
+                <button name="action_reject" type="object" string="Reject" icon="fa-times"
+                        invisible="state == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══ FORM VIEW ══ -->
+    <record id="petzen_review_view_form" model="ir.ui.view">
+        <field name="name">petzen.review.view.form</field>
+        <field name="model">petzen.review</field>
+        <field name="arch" type="xml">
+            <form string="Customer Review">
+                <header>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary"
+                            invisible="state == 'approved'"/>
+                    <button name="action_reject" type="object" string="Reject"
+                            invisible="state == 'rejected'"/>
+                    <button name="action_reset_to_pending" type="object" string="Reset to Pending"
+                            invisible="state == 'pending'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Reviewer Details">
+                            <field name="name" string="Name"/>
+                            <field name="email" string="Email"/>
+                            <field name="customer_type"/>
+                            <field name="rating" string="Star Rating"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Review" name="review_text">
+                            <field name="review"
+                                   widget="text"
+                                   placeholder="Customer review content will appear here…"
+                                   style="min-height:160px;"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══ SEARCH VIEW ══ -->
+    <record id="petzen_review_view_search" model="ir.ui.view">
+        <field name="name">petzen.review.view.search</field>
+        <field name="model">petzen.review</field>
+        <field name="arch" type="xml">
+            <search string="Search Reviews">
+                <field name="name" string="Reviewer"/>
+                <field name="email"/>
+                <field name="review" string="Review Text"/>
+                <field name="customer_type"/>
+                <separator/>
+                <filter name="pending" string="Pending" domain="[('state','=','pending')]"/>
+                <filter name="approved" string="Approved" domain="[('state','=','approved')]"/>
+                <filter name="rejected" string="Rejected" domain="[('state','=','rejected')]"/>
+                <separator/>
+                <filter name="five_star" string="5 Stars" domain="[('rating','=',5)]"/>
+                <filter name="four_star" string="4 Stars" domain="[('rating','=',4)]"/>
+                <filter name="three_star" string="3 Stars" domain="[('rating','=',3)]"/>
+                <filter name="two_star" string="2 Stars" domain="[('rating','=',2)]"/>
+                <filter name="one_star" string="1 Star" domain="[('rating','=',1)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Status" context="{'group_by':'state'}"/>
+                    <filter name="group_rating" string="Rating" context="{'group_by':'rating'}"/>
+                    <filter name="group_customer_type" string="Reviewer Type" context="{'group_by':'customer_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══ WINDOW ACTION ══ -->
+    <record id="petzen_review_action" model="ir.actions.act_window">
+        <field name="name">Customer Reviews</field>
+        <field name="res_model">petzen.review</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No customer reviews yet</p>
+            <p>Reviews submitted on the website /reviews page appear here. Approve them to publish them on the page.</p>
+        </field>
+    </record>
+
+    <!-- ══ REVIEWS MENU UNDER WEBSITE → CONFIGURATION ══ -->
+    <menuitem id="petzen_review_menu"
+              name="Customer Reviews"
+              parent="website.menu_website_global_configuration"
+              action="petzen_review_action"
+              groups="website.group_website_designer"
+              sequence="50"/>
+</odoo>
