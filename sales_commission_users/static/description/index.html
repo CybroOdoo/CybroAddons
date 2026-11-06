@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Sales Commission for Odoo 20</title>
+    <!-- Google Fonts: Plus Jakarta Sans (Captions/Headings) & Inter (Text) -->
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700&amp;display=swap"
+          rel="stylesheet"/>
+    <!-- Bootstrap 5.0.2 CSS (used only to power the tab navigation) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <!--
+        NOTE: Everything that CAN be an inline style lives directly on the tag.
+        This block only holds what is impossible to write as an inline style="":
+          1) The @media rule for stacking columns on mobile.
+          2) Small overrides so Bootstrap's tab classes match the pill look.
+        Both are presentation-only. Every pane renders correctly with this whole
+        block removed — nothing here is load-bearing.
+      -->
+    <style>
+        /* Active tab pill. Must be !important: the pills carry their resting look
+                as inline styles (so it survives the Apps-list sanitizer, which drops
+                this whole block), and an inline style outranks a stylesheet rule.
+                On apps.odoo.com Bootstrap moves .active as you click and this repaints
+                the pill; in the Apps list the block is gone, every pill renders in its
+                resting state, and the anchors act as jump links. */
+        #cybrosys-acc-kit .nav-link.active {
+            background-color: #b12126 !important;
+            border-color: #b12126 !important;
+            color: #ffffff !important;
+            box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28) !important;
+        }
+
+        @media screen and (max-width: 768px) {
+
+            #cybrosys-acc-kit .mob-stack,
+            #cybrosys-acc-kit .mob-stack > tbody,
+            #cybrosys-acc-kit .mob-stack > tbody > tr,
+            #cybrosys-acc-kit .mob-stack > tbody > tr > td {
+                display: block !important;
+                width: 100% !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            #cybrosys-acc-kit .mob-space {
+                padding-bottom: 20px !important;
+            }
+
+            #cybrosys-acc-kit .mob-text-center {
+                text-align: center !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin:0; padding:0;">
+<div id="cybrosys-acc-kit"
+     style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background-color:#fafafa; color:#1e293b; margin:0; padding:0; line-height:1.6; -webkit-font-smoothing:antialiased;">
+    <div class="main-container"
+         style="width:100%; max-width:1240px; margin:0 auto; padding:24px 20px 60px; box-sizing:border-box;">
+        <!-- 1. HEADER BAR — logo left, capability rail right on two labelled rows:
+                 editions above, deployment targets below. A supported item carries a
+                 tick; an unsupported one carries a cross, a dashed edge, a struck
+                 label and an explicit tag, so it never reads as supported. -->
+        <table border="0" cellpadding="0" cellspacing="0"
+               style="background-color: #ffffff; border: 1px solid #f1ecee; border-radius: 12px; margin-bottom: 28px;"
+               width="100%">
+            <tr>
+                <td style="padding: 16px 22px;">
+                    <table border="0" cellpadding="0" cellspacing="0" class="mob-stack" width="100%">
+                        <tr>
+                            <!-- Brand -->
+                            <td class="mob-space mob-text-center" valign="middle" width="24%">
+                                <a href="https://www.cybrosys.com" rel="noopener" style="text-decoration: none;"
+                                   target="_blank">
+                                    <img alt="Cybrosys Technologies"
+                                         src="https://apps.odoocdn.com/apps/assets/17.0/theme_boec/images/Cybrosys.png?fcdde35"
+                                         style="height: 40px; max-width: 100%; border: 0; vertical-align: middle;"/>
+                                </a>
+                            </td>
+                            <!-- Capability rail -->
+                            <td align="right" class="mob-text-center" style="padding-left: 26px;" valign="middle">
+                                <table border="0" cellpadding="0" cellspacing="0" style="display: inline-table;">
+                                    <tr>
+                                        <td align="right"
+                                            style="padding: 0 0 7px; padding-right: 16px; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #f6f2f3; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: #94a3b8; white-space: nowrap;"
+                                            valign="middle">
+                                            Edition
+                                        </td>
+                                        <td style="padding: 0 0 7px; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #f6f2f3; white-space: nowrap;"
+                                            valign="middle">
+                                                         <span style="display: inline-block; background-color: #fdf3f4; border: 1px solid #f3e0e2; color: #0f172a; border-radius: 20px; padding: 6px 14px; margin-right: 7px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700;">
+                                                          <img alt="" src="./assets/icons/ic-6db19ab6-b12126.png" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 6px;"/>
+                                                          <span style="vertical-align: middle;">
+                                                           Community
+                                                          </span>
+                                                         </span>
+                                            <span style="display: inline-block; background-color: #fdf3f4; border: 1px solid #f3e0e2; color: #0f172a; border-radius: 20px; padding: 6px 14px; margin-right: 7px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700;">
+              <img alt="" src="./assets/icons/ic-6db19ab6-b12126.png"
+                   style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 6px;"/>
+              <span style="vertical-align: middle;">
+               Enterprise
+              </span>
+             </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="right"
+                                            style="padding: 7px 0; padding-right: 16px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: #94a3b8; white-space: nowrap;"
+                                            valign="middle">
+                                            Deploys on
+                                        </td>
+                                        <td style="padding: 7px 0; white-space: nowrap;" valign="middle">
+             <span style="display: inline-block; background-color: #fdf3f4; border: 1px solid #f3e0e2; color: #0f172a; border-radius: 20px; padding: 6px 14px; margin-right: 7px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700;">
+              <img alt="" src="./assets/icons/ic-6db19ab6-b12126.png"
+                   style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 6px;"/>
+              <span style="vertical-align: middle;">
+               Odoo.sh
+              </span>
+             </span>
+                                            <span style="display: inline-block; background-color: #fdf3f4; border: 1px solid #f3e0e2; color: #0f172a; border-radius: 20px; padding: 6px 14px; margin-right: 7px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700;">
+              <img alt="" src="./assets/icons/ic-6db19ab6-b12126.png"
+                   style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 6px;"/>
+              <span style="vertical-align: middle;">
+               On-Premise
+              </span>
+             </span>
+                                            <span style="display: inline-block; background-color: #f4f5f7; border: 1px dashed #c9d0d8; color: #7c848f; border-radius: 20px; padding: 6px 12px 6px 14px; margin-right: 7px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700;">
+              <img alt="" src="./assets/icons/ic-588e724f-7c848f.png"
+                   style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 6px;"/>
+              <span style="vertical-align: middle; text-decoration: line-through;">
+               Online
+              </span>
+              <span style="vertical-align: middle; margin-left: 7px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #ffffff; background-color: #9aa2ad; border-radius: 10px; padding: 2px 7px;">
+               Not supported
+              </span>
+             </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <!-- 2. MINIMAL HERO SECTION (TABLE LAYOUT) -->
+        <table border="0" cellpadding="0" cellspacing="0"
+               style="border-collapse: separate;background-color: #ffffff; background-repeat: no-repeat; background-position: top center; background-size: cover; border: 1px solid #b221261f; border-radius: 16px; margin-bottom: 28px;"
+               width="100%">
+            <tr>
+                <td align="center" style="padding: 56px 28px 48px;">
+                    <!-- Hero Title (Plus Jakarta Sans) -->
+                    <h1 style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 40px; font-weight: 900; color: #0f172a; line-height: 1.18; letter-spacing: -0.8px; margin: 0 auto 16px; max-width: 820px;">
+                        Sales Commission</h1>
+                    <!-- Hero Subtitle (Inter text font) -->
+                    <p style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; color: #666; line-height: 1.65; max-width: 780px; margin: 0 auto 30px; font-weight: 400;">
+                        A flexible commission system for sales orders, with rules based on salesperson, partner,
+                        product, and discount.</p>
+                    <!-- Contact Action Buttons (Plus Jakarta Sans Font) -->
+                    <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto 24px;">
+                        <tr>
+                            <!-- Email Button (Primary #b12126) -->
+                            <td style="padding: 0 6px;">
+                                <a class="d-flex align-items-center justify-content-center gap-1"
+                                   href="mailto:odoo@cybrosys.com" rel="noopener"
+                                   style="width: 160px;text-align: center;    text-decoration: unset;font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; display: inline-block; background-color: #b12126; color: #ffffff; padding: 10px 26px; border-radius: 30px; font-size: 14px; font-weight: 700; border: 1px solid #b221261f;"
+                                   target="_blank">
+                                    <img alt="" src="./assets/icons/ic-0b4c1767-ffffff.png"
+                                         style="width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"/>
+                                    <span style="vertical-align: middle;">
+            Email Us
+           </span>
+                                </a>
+                            </td>
+                            <!-- WhatsApp Button (ONLY Exception in WhatsApp Green #25d366) -->
+                            <td style="padding: 0 6px;">
+                                <a class="d-flex align-items-center justify-content-center gap-1"
+                                   href="https://wa.me/919074270811" rel="noopener"
+                                   style="width: 160px;text-align: center;    text-decoration: unset;font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; display: inline-block;  color: #b12126; padding: 10px 26px; border-radius: 30px; font-size: 14px; font-weight: 700; border: 1px solid #b221261f;"
+                                   target="_blank">
+                                    <img alt="" src="./assets/icons/ic-f466c5f2-b12126.png"
+                                         style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;"/>
+                                    <span style="vertical-align: middle;">
+            Whatsapp
+           </span>
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                    <!-- Minimal Bullet Checklist (Inter font) -->
+                    <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                        <tr>
+                            <td style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0 12px; font-size: 13px; font-weight: 600; color: #666;">
+                                <img alt="" src="./assets/icons/ic-8a7643e9-b12126.png"
+                                     style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"/>
+                                Sales Commission
+                            </td>
+                            <td style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0 12px; font-size: 13px; font-weight: 600; color: #666;">
+                                <img alt="" src="./assets/icons/ic-8a7643e9-b12126.png"
+                                     style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"/>
+                                Commission Rules
+                            </td>
+                            <td style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0 12px; font-size: 13px; font-weight: 600; color: #666;">
+                                <img alt="" src="./assets/icons/ic-8a7643e9-b12126.png"
+                                     style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"/>
+                                Commission Analysis and Reports
+                            </td>
+                            <td style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0 12px; font-size: 13px; font-weight: 600; color: #666;">
+                                <img alt="" src="./assets/icons/ic-8a7643e9-b12126.png"
+                                     style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"/>
+                                Salesperson Commission
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <div style="text-align: center; margin-bottom: 20px; margin-top: 40px;">
+            <h3 style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 26px; font-weight: 800; color: #0f172a; margin: 0;">
+                KEY
+                <span style="color: #b12126;">
+       HIGHLIGHTS
+      </span>
+            </h3>
+        </div>
+        <!-- HIGHLIGHTS GRID — 3 cards using the existing two-column layout -->
+        <table border="0" cellpadding="0" cellspacing="0" class="mob-stack" style="margin-bottom: 16px;" width="100%">
+            <!-- ROW 1 -->
+            <tr>
+                <td class="mob-space"
+                    style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);"
+                    valign="top" width="48%">
+                    <div style="padding: 24px 22px; min-height: 196px;">
+                        <div style="width: 48px; height: 48px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); color: #ffffff; text-align: center; line-height: 48px; margin-bottom: 16px;">
+                            <img alt="" src="./assets/icons/ic-f8f27dd0-ffffff.png"
+                                 style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;"/>
+                        </div>
+                        <h3 style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.35; margin: 0;">
+                            Odoo 20 Community &amp; Enterprise Edition Support
+                        </h3>
+                        <div style="border-top: 1px solid #f6eaea; margin-top: 14px; padding-top: 14px;">
+                            <p style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.7; margin: 0;">
+                                Sales commission in Odoo 20 Community and Enterprise editions.
+                            </p>
+                        </div>
+                    </div>
+                </td>
+                <td style="font-size: 0; line-height: 18px; height: 18px;" width="4%">
+                </td>
+                <td class="mob-space"
+                    style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);"
+                    valign="top" width="48%">
+                    <div style="padding: 24px 22px; min-height: 196px;">
+                        <div style="width: 48px; height: 48px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); color: #ffffff; text-align: center; line-height: 48px; margin-bottom: 16px;">
+                            <img alt="" src="./assets/icons/ic-f8f27dd0-ffffff.png"
+                                 style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;"/>
+                        </div>
+                        <h3 style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.35; margin: 0;">
+                            Sales Commission based on Partner, Product and Discount
+                        </h3>
+                        <div style="border-top: 1px solid #f6eaea; margin-top: 14px; padding-top: 14px;">
+                            <p style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.7; margin: 0;">
+                                Configure commission calculations for different sales scenarios.
+                            </p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <!-- Gutter -->
+            <tr>
+                <td colspan="3" style="font-size: 0; line-height: 18px; height: 18px;">
+                </td>
+            </tr>
+
+
+            <tr>
+                <td colspan="3" style="font-size: 0; line-height: 18px; height: 18px;"></td>
+            </tr>
+            <tr>
+                <td class="mob-space"
+                    style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);"
+                    valign="top" width="48%">
+                    <div style="padding: 24px 22px; min-height: 196px;">
+                        <div style="width: 48px; height: 48px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); color: #ffffff; text-align: center; line-height: 48px; margin-bottom: 16px;">
+                            <img alt="" src="./assets/icons/ic-f8f27dd0-ffffff.png"
+                                 style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;"/>
+                        </div>
+                        <h3 style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.35; margin: 0;">
+                            Commission Analysis and Report
+                        </h3>
+                        <div style="border-top: 1px solid #f6eaea; margin-top: 14px; padding-top: 14px;">
+                            <p style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.7; margin: 0;">
+                                Review commission amounts awarded to sales users.
+                            </p>
+                        </div>
+                    </div>
+                </td>
+                <td style="font-size: 0; line-height: 18px; height: 18px;" width="4%"></td>
+                <td width="48%"></td>
+            </tr>
+        </table>
+        <div class="nav" id="cakTabs" role="tablist"
+             style="text-align: center; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+            <a aria-controls="cak-pane-2" aria-selected="true" class="nav-link active" data-bs-target="#cak-pane-2"
+               data-bs-toggle="tab" href="#cak-pane-2" id="cak-tab-2-btn" role="tab"
+               style="display: inline-block; text-decoration: none; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; border-radius: 30px; padding: 10px 24px; margin: 4px 3px; background-color: #ffffff; border: 1px solid #f1dcdf; color: #5b6472;">
+                Screenshots
+            </a>
+            <a aria-controls="cak-pane-3" aria-selected="false" class="nav-link" data-bs-target="#cak-pane-3"
+               data-bs-toggle="tab" href="#cak-pane-3" id="cak-tab-3-btn" role="tab"
+               style="display: inline-block; text-decoration: none; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; border-radius: 30px; padding: 10px 24px; margin: 4px 3px; background-color: #ffffff; border: 1px solid #f1dcdf; color: #5b6472;">
+                Feature Matrix
+            </a>
+            <a aria-controls="cak-pane-1" aria-selected="false" class="nav-link" data-bs-target="#cak-pane-1"
+               data-bs-toggle="tab" href="#cak-pane-1" id="cak-tab-1-btn" role="tab"
+               style="display: inline-block; text-decoration: none; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; border-radius: 30px; padding: 10px 24px; margin: 4px 3px; background-color: #ffffff; border: 1px solid #f1dcdf; color: #5b6472;">
+                Frequent Questions
+            </a>
+            <a aria-controls="cak-pane-4" aria-selected="false" class="nav-link" data-bs-target="#cak-pane-4"
+               data-bs-toggle="tab" href="#cak-pane-4" id="cak-tab-4-btn" role="tab"
+               style="display: inline-block; text-decoration: none; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; border-radius: 30px; padding: 10px 24px; margin: 4px 3px; background-color: #ffffff; border: 1px solid #f1dcdf; color: #5b6472;">
+                Release Notes
+            </a>
+        </div>
+        <!-- Tab Content Box -->
+        <div class="tab-content" id="cakTabsContent"
+             style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 12px; margin-bottom: 48px; padding: 28px 24px; box-sizing:border-box;">
+            <!-- TAB PANE: SCREENSHOTS -->
+            <div aria-labelledby="cak-tab-2-btn" class="tab-pane fade show active" id="cak-pane-2" role="tabpanel">
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Sales Commission Menu</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">Under Sales &gt; Configuration
+                        &gt; Sales Commission, you can create various types of commission.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Sales Commission Menu" src="./assets/screenshots/1.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Commission Types</h3></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Commission Types" src="./assets/screenshots/2.png" style="width:100%;display:block"/>
+                </div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Standard Commission</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">Standard Commission is the
+                        simplest type of commission where you only need to specify the percentage to be given to the
+                        selected salesperson, based on the total sales orders assigned to that sales user.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Standard Commission ." src="./assets/screenshots/3.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Partner Based Commission</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">In Partner-Based Commission,
+                        you can define two separate commission percentages based on the partner category—whether the
+                        partner is classified as "Affiliated" or "Non-Affiliated".</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Partner Based Commission." src="./assets/screenshots/4.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Partner Based Commission Settings</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">Set commission percentages for
+                        affiliated and non-affiliated partners.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Partner Based Commission Settings" src="./assets/screenshots/5.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Product Based Commission</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">You can select the calculation
+                        based on Product, where the sales commission will be applied to the unit sale price of each
+                        product.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Product Based Commission." src="./assets/screenshots/6.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Discount Based Commission</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">You can set up commission rules
+                        based on specific discount percentages.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Discount Based Commission ." src="./assets/screenshots/7.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Confirm Sale Order</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">The salesperson's commission is
+                        calculated when the sales order is confirmed.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Confirm Sale Order" src="./assets/screenshots/8.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Commission Lines Menu</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">Navigate to Sales &gt;
+                        Configuration &gt; Commission Lines to view the generated commission lines.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Commission Lines Menu" src="./assets/screenshots/9.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Commission Lines</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">Track calculated commission records, order references, and payment invoice status.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Commission Lines" src="./assets/screenshots/10.png" style="width:100%;display:block"/>
+                </div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Generate Invoice</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">Users can generate an invoice
+                        directly from the commission line.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Generate Invoice." src="./assets/screenshots/11.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Commission Line Invoice</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">Generate an invoice directly
+                        from a commission line.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Commission Line Invoice" src="./assets/screenshots/12.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Sales Commission Report</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">Navigate to Sales &gt;
+                        Reporting &gt; Sales Commission Report to view an analysis of the commissions awarded to each
+                        sales user.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Sales Commission Report." src="./assets/screenshots/13.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Sales Commission Report</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">Analyze commissions awarded to
+                        sales users.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Sales Commission Report" src="./assets/screenshots/14.png"
+                         style="width:100%;display:block"/></div>
+                <div style="text-align:center;margin-bottom:16px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:700;color:#0f172a">
+                    Sales Commission Report Details</h3>
+                    <p style="font-family:Inter,sans-serif;font-size:14px;color:#64748b">View commission report data and
+                        analysis.</p></div>
+                <div style="background:#fff;border:1px solid #b221261f;border-radius:14px;overflow:hidden;margin-bottom:42px">
+                    <img alt="Sales Commission Report Details" src="./assets/screenshots/15.png"
+                         style="width:100%;display:block"/></div>
+            </div>
+            <div aria-labelledby="cak-tab-3-btn" class="tab-pane fade" id="cak-pane-3" role="tabpanel">
+                <div style="text-align:center;margin-bottom:26px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:22px;font-weight:800;color:#0f172a">
+                    DETAILED <span style="color:#b12126">FEATURES</span></h3></div>
+                <table class="mob-stack" width="100%">
+                    <tr>
+                        <td class="mob-space" width="48%"
+                            style="background:#fff;border:1px solid #f3e4e5;border-top:3px solid #b12126;border-radius:14px;box-shadow:0 10px 26px rgba(177,33,38,.10)">
+                            <div style="padding:22px 20px">
+                                <table width="100%">
+                                    <tr>
+                                        <td width="58">
+                                            <div style="width:44px;height:44px;border-radius:12px;background:#b12126;text-align:center;color:#fff;line-height:44px">
+                                                01
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div style="font-family:Plus Jakarta Sans,sans-serif;font-size:15px;font-weight:700;color:#0f172a">
+                                                Commission on Sales Order
+                                            </div>
+                                            <div style="font-family:Inter,sans-serif;font-size:13px;color:#64748b">
+                                                Calculate commission when a sales order is confirmed.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                        <td width="4%"></td>
+                        <td class="mob-space" width="48%"
+                            style="background:#fff;border:1px solid #f3e4e5;border-top:3px solid #b12126;border-radius:14px;box-shadow:0 10px 26px rgba(177,33,38,.10)">
+                            <div style="padding:22px 20px">
+                                <table width="100%">
+                                    <tr>
+                                        <td width="58">
+                                            <div style="width:44px;height:44px;border-radius:12px;background:#b12126;text-align:center;color:#fff;line-height:44px">
+                                                02
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div style="font-family:Plus Jakarta Sans,sans-serif;font-size:15px;font-weight:700;color:#0f172a">
+                                                Sales Commission based on Partner, Product and Discount.
+                                            </div>
+                                            <div style="font-family:Inter,sans-serif;font-size:13px;color:#64748b">
+                                                Configure commission rules based on partner, product, or discount.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div aria-labelledby="cak-tab-1-btn" class="tab-pane fade" id="cak-pane-1" role="tabpanel">
+                <div style="text-align:center;margin-bottom:26px"><h3
+                        style="font-family:Plus Jakarta Sans,sans-serif;font-size:22px;font-weight:800;color:#0f172a">
+                    Answers Before You <span style="color:#b12126">Install</span></h3></div>
+                <table width="100%">
+                    <tr>
+                        <td style="background:#fff;border:1px solid #f3e4e5;border-top:3px solid #b12126;border-radius:14px;box-shadow:0 10px 26px rgba(177,33,38,.10)">
+                            <div style="padding:22px">
+                                <div style="font-family:Plus Jakarta Sans,sans-serif;font-size:15px;font-weight:700;color:#0f172a">
+                                    Q&nbsp; How is the sales commission calculated in this module?
+                                </div>
+                                <div style="border-top:1px solid #f6eaea;margin-top:16px;padding-top:16px;font-family:Inter,sans-serif;font-size:13.5px;color:#64748b">
+                                    A&nbsp; The commission is calculated automatically based on the configured
+                                    commission rules for each sales user.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td height="14"></td>
+                    </tr>
+                    <tr>
+                        <td style="background:#fff;border:1px solid #f3e4e5;border-top:3px solid #b12126;border-radius:14px;box-shadow:0 10px 26px rgba(177,33,38,.10)">
+                            <div style="padding:22px">
+                                <div style="font-family:Plus Jakarta Sans,sans-serif;font-size:15px;font-weight:700;color:#0f172a">
+                                    Q&nbsp; Can different sales users have different commission rates?
+                                </div>
+                                <div style="border-top:1px solid #f6eaea;margin-top:16px;padding-top:16px;font-family:Inter,sans-serif;font-size:13.5px;color:#64748b">
+                                    A&nbsp; Yes. Individual commission structures can be assigned to sales users based
+                                    on roles, performance levels, or business policies.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div aria-labelledby="cak-tab-4-btn" class="tab-pane fade" id="cak-pane-4" role="tabpanel">
+                <!-- Pane heading -->
+                <div style="text-align: center; margin-bottom: 26px;">
+                    <h3 style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0;">
+                        Changelog &amp;
+                        <span style="color: #b12126;">
+         Version History
+        </span>
+                    </h3>
+                    <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.6; margin-top: 8px;">
+                        Latest Release 20.0.1.0.0: Sales commission rules for sales orders, including partner, product,
+                        and discount based calculations.
+                    </div>
+                    <div style="margin-top: 14px;">
+        <span style="display: inline-block; background-color: #b12126; color: #ffffff; border-radius: 20px; padding: 7px 16px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28);">
+         Current: v20.0.1.0.0
+        </span>
+                    </div>
+                </div>
+                <table border="0" cellpadding="0" cellspacing="0" class="mob-stack" width="100%">
+                    <tr>
+                        <!-- ===== RELEASE TILE ===== -->
+                        <td class="mob-space"
+                            style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);"
+                            valign="top" width="32%">
+                            <div style="padding: 26px 24px; min-height: 248px;">
+                                <div style="margin-bottom: 16px;">
+           <span style="display: inline-block; background-color: #b12126; color: #ffffff; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 10px; font-weight: 700; padding: 4px 11px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em;">
+            Release
+           </span>
+                                </div>
+                                <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.15;">
+                                    v20.0.1.0.0
+                                </div>
+                                <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color: #94a3b8; margin-top: 6px;">
+                                     October, 2026
+                                </div>
+                                <div style="border-top: 1px solid #f6eaea; margin-top: 18px; padding-top: 18px;">
+                                    <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.75;">
+                                        Sales Commission
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <!-- ===== END RELEASE TILE ===== -->
+                        <td style="font-size: 0; line-height: 18px; height: 18px;" width="2%">
+                        </td>
+                        <td valign="top" width="32%">
+                        </td>
+                        <td style="font-size: 0; line-height: 18px; height: 18px;" width="2%">
+                        </td>
+                        <td valign="top" width="32%">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <!-- 8. MINIMAL SERVICES GRID -->
+        <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 26px; font-weight: 800; color: #0f172a; margin: 0;">
+                Certified Odoo Implementation &amp;
+                <span style="color: #b12126;">
+       Support
+      </span>
+            </h2>
+        </div>
+        <!-- Services Row 1 -->
+        <table border="0" cellpadding="0" cellspacing="0" class="mob-stack" style="margin-bottom: 12px;" width="100%">
+            <tr>
+                <td class="mob-space" style="padding-right: 8px;" width="25%">
+                    <div style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img alt="" src="./assets/icons/ic-e7da58c3-b12126.png"
+                                 style="width: 25px; height: 25px; display: inline-block; vertical-align: middle;"/>
+                        </div>
+                        <div style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Customization
+                        </div>
+                    </div>
+                </td>
+                <td class="mob-space" style="padding-left:4px; padding-right:4px;" width="25%">
+                    <div style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img alt="" src="./assets/icons/ic-afc882f6-b12126.png"
+                                 style="width: 28px; height: 28px; display: inline-block; vertical-align: middle;"/>
+                        </div>
+                        <div style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Implementation
+                        </div>
+                    </div>
+                </td>
+                <td class="mob-space" style="padding-left:4px; padding-right:4px;" width="25%">
+                    <div style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img alt="" src="./assets/icons/ic-8432255a-b12126.png"
+                                 style="width: 28px; height: 28px; display: inline-block; vertical-align: middle;"/>
+                        </div>
+                        <div style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Support
+                        </div>
+                    </div>
+                </td>
+                <td style="padding-left:8px;" width="25%">
+                    <div style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img alt="" src="./assets/icons/ic-8d47220c-b12126.png"
+                                 style="width: 26px; height: 26px; display: inline-block; vertical-align: middle;"/>
+                        </div>
+                        <div style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Migration
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <!-- Services Row 2 -->
+        <table border="0" cellpadding="0" cellspacing="0" class="mob-stack" style="margin-bottom:48px;" width="100%">
+            <tr>
+                <td class="mob-space" style="padding-right:8px;" width="25%">
+                    <div style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img alt="" src="./assets/icons/ic-910f2a2f-b12126.png"
+                                 style="width: 28px; height: 28px; display: inline-block; vertical-align: middle;"/>
+                        </div>
+                        <div style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Integration
+                        </div>
+                    </div>
+                </td>
+                <td class="mob-space" style="padding-left:4px; padding-right:4px;" width="25%">
+                    <div style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img alt="" src="./assets/icons/ic-71169eb4-b12126.png"
+                                 style="width: 23px; height: 23px; display: inline-block; vertical-align: middle;"/>
+                        </div>
+                        <div style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Consultancy
+                        </div>
+                    </div>
+                </td>
+                <td class="mob-space" style="padding-left:4px; padding-right:4px;" width="25%">
+                    <div style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img alt="" src="./assets/icons/ic-dbc8ec1a-b12126.png"
+                                 style="width: 25px; height: 25px; display: inline-block; vertical-align: middle;"/>
+                        </div>
+                        <div style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Licensing
+                        </div>
+                    </div>
+                </td>
+                <td style="padding-left:8px;" width="25%">
+                    <div style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img alt="" src="./assets/icons/ic-f2398ec8-b12126.png"
+                                 style="width: 25px; height: 25px; display: inline-block; vertical-align: middle;"/>
+                        </div>
+                        <div style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Hire Developer
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <!-- 10. MINIMAL SUPPORT & GUARANTEE FOOTER -->
+        <table border="0" cellpadding="0" cellspacing="0"
+               style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 16px; margin-bottom: 20px;"
+               width="100%">
+            <tr>
+                <td style="padding: 44px 32px;">
+                    <table border="0" cellpadding="0" cellspacing="0" class="mob-stack" width="100%">
+                        <tr>
+                            <td class="mob-space" style="padding-right: 24px;" valign="middle" width="68%">
+                                <h3 style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 26px; font-weight: 800; color: #0f172a; margin-top:0; margin-bottom: 8px;">
+                                    Need Help with
+                                    <span style="color: #b12126;">
+            Sales Commission?
+           </span>
+                                </h3>
+                                <p style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; color: #666; line-height: 1.6; margin-top:0; margin-bottom: 22px; max-width: 600px;">
+                                    Our team can help configure Sales Commission rules to fit your sales workflows.
+                                </p>
+                                <table border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td style="padding-right: 10px;">
+                                            <a href="https://apps.odoo.com/apps/modules/20.0/sales_commission_users"
+                                               rel="noopener"
+                                               style="    text-decoration: unset;font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; display: inline-block; background-color: #b12126; color: #ffffff; padding: 11px 22px; border-radius: 30px; font-size: 13px; font-weight: 700;"
+                                               target="_blank">
+                                                <img alt="" src="./assets/icons/ic-0b4c1767-ffffff.png"
+                                                     style="width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-right: 6px;"/>
+                                                Get Support
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="https://wa.me/919074270811" rel="noopener"
+                                               style="    text-decoration: unset; text-align: center;font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; display: inline-block;  color: #b12126; padding: 10px 26px; border-radius: 30px; font-size: 14px; font-weight: 700; border: 1px solid #b221261f;"
+                                               target="_blank">
+                                                <img alt="" src="./assets/icons/ic-f466c5f2-b12126.png"
+                                                     style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;"/>
+                                                WhatsApp
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td align="center" valign="middle" width="32%">
+                                <div style="background-color: #fdf2f2; border: 1px solid #b221261f; border-radius: 12px; padding: 24px 20px; text-align: center; max-width: 280px; box-sizing:border-box;">
+                                    <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 36px; font-weight: 900; color: #b12126; line-height: 1;">
+                                        100%
+                                    </div>
+                                    <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 6px;">
+                                        Bug Fix Commitment
+                                    </div>
+                                    <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color: #666; margin-top: 6px; line-height: 1.5;">
+                                        Guaranteed fixes for any issue reported during the support window.
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<!-- Bootstrap 5.0.2 JS bundle (required so data-bs-toggle="tab" actually switches panes) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js">
+</script>
+</body>
+</html>

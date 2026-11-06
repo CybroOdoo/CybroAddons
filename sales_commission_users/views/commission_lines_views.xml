@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Server action to create invoice for selected commission lines -->
+    <record id="commission_lines_action_create_invoice" model="ir.actions.server">
+        <field name="name">Create Invoice</field>
+        <field name="model_id" ref="sales_commission_users.model_commission_lines"/>
+        <field name="binding_model_id" ref="sales_commission_users.model_commission_lines"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[Command.link(ref('account.group_account_invoice'))]"/>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_create_invoice()
+        </field>
+    </record>
+
+    <!-- Commission lines list view -->
+    <record id="commission_lines_view_list" model="ir.ui.view">
+        <field name="name">commission.lines.view.list</field>
+        <field name="model">commission.lines</field>
+        <field name="arch" type="xml">
+            <list string="Commission Lines" create="0">
+                <field name="date"/>
+                <field name="description"/>
+                <field name="sales_person_id"/>
+                <field name="order_ref"/>
+                <field name="commission"/>
+                <field name="commission_type"/>
+                <field name="partner_id"/>
+                <field name="commission_amount" sum="Total"/>
+                <field name="invoice_id"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'invoiced'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Commission lines form view -->
+    <record id="commission_lines_view_form" model="ir.ui.view">
+        <field name="name">commission.lines.view.form</field>
+        <field name="model">commission.lines</field>
+        <field name="arch" type="xml">
+            <form string="Commission Line" create="0">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,invoiced"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date" readonly="1"/>
+                            <field name="sales_person_id" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="sale_order_id" readonly="1"/>
+                            <field name="order_ref" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="commission" readonly="1"/>
+                            <field name="commission_type" readonly="1"/>
+                            <field name="commission_amount" readonly="1"/>
+                            <field name="invoice_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for commission lines -->
+    <record id="commission_lines_action" model="ir.actions.act_window">
+        <field name="name">Commission Lines</field>
+        <field name="res_model">commission.lines</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

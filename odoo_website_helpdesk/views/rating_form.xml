@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Rating form of a closed ticket, opened from the closing email -->
+    <template id="rating_form" name="Ticket Rating">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <section class="pt48 pb48">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-6">
+                                <h2 class="text-center">How did we do?</h2>
+                                <p class="text-center text-muted">
+                                    Ticket <strong t-out="ticket.name"/> -
+                                    <span t-out="ticket.subject"/>
+                                </p>
+                                <form t-attf-action="/rating/#{ticket.id}/submit" method="post"
+                                      class="o_helpdesk_rating_form">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="access_token" t-att-value="access_token"/>
+                                    <div class="d-flex justify-content-center gap-2 my-4" role="radiogroup">
+                                        <t t-foreach="[('1', 'Very Low'), ('2', 'Low'), ('3', 'Normal'), ('4', 'High'), ('5', 'Very High')]"
+                                           t-as="option">
+                                            <input type="radio" class="btn-check" name="rating"
+                                                   t-att-id="'rating_%s' % option[0]"
+                                                   t-att-value="option[0]"
+                                                   t-att-checked="option[0] == (ticket.customer_rating if ticket.customer_rating != '0' else '5')"
+                                                   required="required"/>
+                                            <label class="btn btn-outline-warning"
+                                                   t-att-for="'rating_%s' % option[0]"
+                                                   t-att-title="option[1]">
+                                                <i class="oi oi-filled" data-icon="star"/>
+                                                <t t-out="option[0]"/>
+                                            </label>
+                                        </t>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="rating_message" class="form-label">Your Review</label>
+                                        <textarea id="rating_message" name="message" rows="4"
+                                                  class="form-control" required="required"
+                                                  placeholder="Tell us about your experience"
+                                                  t-out="ticket.review or ''"/>
+                                    </div>
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-primary">Post Your Review</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+    <!-- Page shown once the rating is posted -->
+    <template id="rating_thanks" name="Thanks Rating">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <section class="pt48 pb48">
+                    <div class="container text-center">
+                        <i class="oi text-success" data-icon="check_circle" style="font-size: 4rem;"/>
+                        <h1 class="mt-3">Thank You!</h1>
+                        <p class="o_helpdesk_rating_thanks">Thank you for rating our support.</p>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

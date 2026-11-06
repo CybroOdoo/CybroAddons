@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Breadcrumbs of the ticket pages -->
+    <template id="portal_my_home_menu_tickets"
+              name="Portal layout : helpdesk tickets"
+              inherit_id="portal.portal_breadcrumbs" priority="30">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'ticket'"
+                t-attf-class="breadcrumb-item #{'active' if not ticket else ''}">
+                <a t-if="ticket" href="/my/tickets">Tickets</a>
+                <t t-else="">Tickets</t>
+            </li>
+            <li t-if="page_name == 'ticket' and ticket" class="breadcrumb-item active"
+                t-out="details.name"/>
+        </xpath>
+    </template>
+    <!-- Tickets of the customer -->
+    <template id="portal_my_tickets" name="My Tickets">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar" breadcrumbs_searchbar="True" title.translate="Tickets"/>
+            <div t-if="tickets" id="ticket" class="d-flex flex-wrap gap-2 mb-3">
+                <select id="group_select" class="form-select w-auto" aria-label="Group by">
+                    <option value="0">No grouping</option>
+                    <option value="1">Group by Stage</option>
+                    <option value="2">Group by Ticket Type</option>
+                </select>
+                <div class="input-group w-auto">
+                    <input type="search" id="search_box" class="form-control"
+                           placeholder="Ticket number or subject" aria-label="Search"/>
+                    <button type="button" id="search_ticket" class="btn btn-secondary">
+                        <i class="oi" data-icon="search" title="Search"/>
+                    </button>
+                </div>
+            </div>
+            <div class="search_ticket">
+                <t t-call="odoo_website_helpdesk.ticket_table"/>
+            </div>
+        </t>
+    </template>
+    <!-- One row of the ticket table -->
+    <template id="ticket_row" name="Ticket Row">
+        <tr>
+            <td>
+                <a t-att-href="ticket.access_url"
+                   t-att-title="ticket.description" t-out="ticket.name"/>
+            </td>
+            <td t-out="ticket.subject"/>
+            <td class="d-none d-md-table-cell"><span t-field="ticket.priority"/></td>
+            <td>
+                <span t-field="ticket.create_date" t-options="{'widget': 'date'}"/>
+            </td>
+            <td class="text-end">
+                <span class="badge rounded-pill text-bg-light" t-out="ticket.stage_id.name"/>
+            </td>
+        </tr>
+    </template>
+    <!-- Header of the ticket table -->
+    <template id="ticket_table_header" name="Ticket Table Header">
+        <thead>
+            <tr>
+                <th>Ticket #</th>
+                <th>Subject</th>
+                <th class="d-none d-md-table-cell">Priority</th>
+                <th>Date</th>
+                <th class="text-end">Stage</th>
+            </tr>
+        </thead>
+    </template>
+    <!-- Table of the tickets, also returned by the portal search -->
+    <template id="ticket_table" name="Ticket Table">
+        <t t-if="tickets" t-call="portal.portal_table">
+            <t t-call="odoo_website_helpdesk.ticket_table_header"/>
+            <tbody>
+                <t t-foreach="tickets" t-as="ticket">
+                    <t t-call="odoo_website_helpdesk.ticket_row"/>
+                </t>
+            </tbody>
+        </t>
+        <p t-else="" class="alert alert-info">
+            There are currently no tickets for your account.
+        </p>
+    </template>
+    <!-- Table of the tickets grouped by stage or by type -->
+    <template id="ticket_group_by_table" name="Grouped Ticket Table">
+        <t t-if="groups" t-call="portal.portal_table">
+            <t t-call="odoo_website_helpdesk.ticket_table_header"/>
+            <tbody>
+                <t t-foreach="groups" t-as="group">
+                    <tr t-if="group[0]" class="table-light">
+                        <th colspan="5" t-out="group[0]"/>
+                    </tr>
+                    <t t-foreach="group[1]" t-as="ticket">
+                        <t t-call="odoo_website_helpdesk.ticket_row"/>
+                    </t>
+                </t>
+            </tbody>
+        </t>
+        <p t-else="" class="alert alert-info">
+            There are currently no tickets for your account.
+        </p>
+    </template>
+    <!-- Details of a ticket -->
+    <template id="portal_ticket_details" name="Ticket Details">
+        <t t-call="portal.portal_layout">
+            <div class="row mt16 o_portal_helpdesk_sidebar">
+                <t t-set="title">
+                    <h4 class="mb-0" t-out="details.name"/>
+                </t>
+                <t t-set="entries">
+                    <div class="d-flex flex-column gap-4 mt-3">
+                        <a class="btn btn-primary o_ticket_download"
+                           t-att-href="'/my/tickets/download/%s%s' % (details.id, '?access_token=%s' % access_token if access_token else '')"
+                           target="_blank">
+                            <i class="oi me-1" data-icon="download"/> Download
+                        </a>
+                        <div t-if="details.customer_id">
+                            <h6><small class="text-muted">Customer</small></h6>
+                            <div class="d-flex align-items-center gap-2">
+                                <img class="o_avatar rounded" style="width: 32px; height: 32px;"
+                                     t-att-src="image_data_uri(details.customer_id.avatar_128)" alt="Customer"/>
+                                <span t-out="details.customer_id.name"/>
+                            </div>
+                        </div>
+                        <div t-if="details.assigned_user_id">
+                            <h6><small class="text-muted">Assigned to</small></h6>
+                            <t t-out="details.assigned_user_id.name"/>
+                        </div>
+                    </div>
+                </t>
+                <t t-call="portal.portal_record_sidebar"
+                   classes.f="col-12 col-lg-3 d-print-none"
+                   title="title"
+                   entries="entries"/>
+                <div id="helpdesk_content" class="col-12 col-lg-9">
+                    <div class="card" id="portal_doc_content">
+                        <t t-call="odoo_website_helpdesk.helpdesk_content_preview"/>
+                    </div>
+                    <div id="helpdesk_ticket_communication" class="mt-4">
+                        <t t-call="portal.message_thread"
+                           object="details" token="access_token"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <!-- Content of the ticket details -->
+    <template id="helpdesk_content_preview" name="Ticket Content">
+        <div class="card-body">
+            <h4 class="mb-3">
+                <t t-out="details.name"/> -
+                <span t-out="details.subject"/>
+            </h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Status:</strong> <span t-out="details.stage_id.name"/></p>
+                    <p class="mb-1"><strong>Ticket Type:</strong> <span t-out="details.ticket_type_id.name or ''"/></p>
+                    <p t-if="details.category_id" class="mb-1"><strong>Category:</strong> <span t-out="details.category_id.name"/></p>
+                    <p class="mb-1"><strong>Priority:</strong> <span t-field="details.priority"/></p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Created on:</strong> <span t-field="details.create_date"/></p>
+                    <p t-if="details.last_update_date" class="mb-1"><strong>Last Update:</strong> <span t-field="details.last_update_date"/></p>
+                    <p t-if="details.replied_date" class="mb-1"><strong>Replied on:</strong> <span t-field="details.replied_date"/></p>
+                    <p class="mb-1"><strong>Email:</strong> <span t-out="details.email or details.customer_id.email or ''"/></p>
+                </div>
+            </div>
+            <h5 class="mt-4">Description</h5>
+            <p style="white-space: pre-wrap;" t-out="details.description"/>
+        </div>
+    </template>
+</odoo>

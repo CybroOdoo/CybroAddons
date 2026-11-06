@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Helpdesk page in the website menu -->
+    <record id="website_helpdesk" model="website.menu">
+        <field name="name">Helpdesk</field>
+        <field name="url">/helpdesk_ticket</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" type="int">55</field>
+    </record>
+    <!-- Contact details of the company shown next to the helpdesk pages -->
+    <template id="company_contact" name="Helpdesk Company Contact">
+        <ul class="list-unstyled mb-0">
+            <li class="fw-bold mb-2" t-out="res_company.name"/>
+            <li t-if="res_company.partner_id.contact_address.strip()" class="d-flex mb-1">
+                <i class="oi oi-fw me-2" data-icon="location_on"/>
+                <span t-field="res_company.partner_id"
+                      t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+            </li>
+            <li t-if="res_company.phone" class="mb-1">
+                <i class="oi oi-fw me-2" data-icon="phone"/>
+                <span class="o_force_ltr" t-out="res_company.phone"/>
+            </li>
+            <li t-if="res_company.email">
+                <i class="oi oi-fw me-2" data-icon="mail"/>
+                <span t-out="res_company.email"/>
+            </li>
+        </ul>
+    </template>
+    <!-- Page shown once the ticket is created -->
+    <record id="odoo_website_helpdesk.helpdesk_thanks" model="website.page">
+        <field name="name">Thanks (Helpdesk)</field>
+        <field name="type">qweb</field>
+        <field name="url">/helpdesk-thank-you</field>
+        <field name="website_indexed" eval="False"/>
+        <field name="is_published">True</field>
+        <field name="key">odoo_website_helpdesk.helpdesk_thanks</field>
+        <field name="arch" type="xml">
+            <t name="Thanks (Helpdesk)" t-name="odoo_website_helpdesk.helpdesk_thanks">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure oe_empty">
+                        <section class="s_text_block pt40 pb40" data-snippet="s_text_block">
+                            <div class="container s_allow_columns">
+                                <div class="row">
+                                    <div class="col-lg-7 col-xl-6 me-lg-auto text-center">
+                                        <i class="oi text-success" data-icon="check_circle" style="font-size: 4rem;"/>
+                                        <h1 class="mt-3">Thank You!</h1>
+                                        <hr class="mx-auto w-50"/>
+                                        <h5 class="o_helpdesk_ticket_created">
+                                            <t t-set="ticket_number" t-value="request.session.get('ticket_number')"/>
+                                            <t t-if="ticket_number">
+                                                Your ticket
+                                                <a t-if="not request.env.user._is_public()"
+                                                   t-attf-href="/my/tickets/#{request.session.get('ticket_id')}">
+                                                    <strong t-out="ticket_number"/>
+                                                </a>
+                                                <strong t-else="" t-out="ticket_number"/>
+                                                has been created successfully.
+                                            </t>
+                                            <t t-else="">Your ticket has been created successfully.</t>
+                                        </h5>
+                                        <p>We will get back to you shortly.</p>
+                                    </div>
+                                    <div class="col-lg-4 mt-4 mt-lg-0">
+                                        <t t-call="odoo_website_helpdesk.company_contact"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+    <!-- Form creating a helpdesk ticket -->
+    <template id="ticket_form" name="Helpdesk Ticket">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <section class="s_title pt48 pb24" data-snippet="s_title">
+                    <div class="container">
+                        <h1>Support Tickets</h1>
+                        <p class="lead">Contact us about anything related to our company or services. We will get back to you as soon as possible.</p>
+                    </div>
+                </section>
+                <section class="s_text_block pt16 pb40" data-snippet="s_text_block">
+                    <div class="container s_allow_columns">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <section class="s_website_form" data-vcss="001" data-snippet="s_website_form">
+                                    <form id="ticket_form" action="/website/form/" method="post"
+                                          enctype="multipart/form-data" class="o_mark_required" data-mark="*"
+                                          data-model_name="ticket.helpdesk" data-success-mode="redirect"
+                                          data-success-page="/helpdesk-thank-you" data-pre-fill="true">
+                                        <div class="s_website_form_rows row s_col_no_bgcolor">
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_custom s_website_form_required" data-type="char">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="helpdesk_name">
+                                                <span class="s_website_form_label_content">Your Name</span>
+                                                <span class="s_website_form_mark"> *</span>
+                                            </label>
+                                            <div class="col-sm">
+                                                <input id="helpdesk_name" type="text" class="form-control s_website_form_input" name="customer_name" required="1" data-fill-with="name"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_custom" data-type="tel">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="helpdesk_phone">
+                                                <span class="s_website_form_label_content">Phone Number</span>
+                                            </label>
+                                            <div class="col-sm">
+                                                <input id="helpdesk_phone" type="tel" class="form-control s_website_form_input" name="phone" data-fill-with="phone"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_custom s_website_form_required" data-type="email">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="helpdesk_email">
+                                                <span class="s_website_form_label_content">Your Email</span>
+                                                <span class="s_website_form_mark"> *</span>
+                                            </label>
+                                            <div class="col-sm">
+                                                <input id="helpdesk_email" type="email" class="form-control s_website_form_input" name="email_from" required="1" data-fill-with="email"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_custom" data-type="char">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="helpdesk_company">
+                                                <span class="s_website_form_label_content">Your Company</span>
+                                            </label>
+                                            <div class="col-sm">
+                                                <input id="helpdesk_company" type="text" class="form-control s_website_form_input" name="company" data-fill-with="commercial_company_name"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_custom" data-type="char">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="helpdesk_type">
+                                                <span class="s_website_form_label_content">Ticket Type</span>
+                                            </label>
+                                            <div class="col-sm">
+                                                <select id="helpdesk_type" name="ticket_type_id" class="form-select s_website_form_input">
+                                                    <option value="">Select a type</option>
+                                                    <option t-foreach="types" t-as="ticket_type" t-att-value="ticket_type.id" t-out="ticket_type.name"/>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <t t-if="categories">
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_custom" data-type="char">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="helpdesk_category">
+                                                <span class="s_website_form_label_content">Category</span>
+                                            </label>
+                                            <div class="col-sm">
+                                                <select id="helpdesk_category" name="category" class="form-select s_website_form_input">
+                                                    <option value="">Select a category</option>
+                                                    <option t-foreach="categories" t-as="category" t-att-value="category.id" t-out="category.name"/>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </t>
+                                    <t t-if="products">
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_custom" data-type="char">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="helpdesk_products">
+                                                <span class="s_website_form_label_content">Products</span>
+                                            </label>
+                                            <div class="col-sm">
+                                                <select id="helpdesk_products" name="product" multiple="multiple" class="form-select s_website_form_input">
+                                                    <option t-foreach="products" t-as="product" t-att-value="product.id" t-out="product.name"/>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </t>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_custom" data-type="char">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="helpdesk_priority">
+                                                <span class="s_website_form_label_content">Priority</span>
+                                            </label>
+                                            <div class="col-sm">
+                                                <select id="helpdesk_priority" name="priority" class="form-select s_website_form_input">
+                                                    <option value="0">Very Low</option>
+                                                    <option value="1" selected="selected">Low</option>
+                                                    <option value="2">Normal</option>
+                                                    <option value="3">High</option>
+                                                    <option value="4">Very High</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_custom s_website_form_required" data-type="char">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="helpdesk_subject">
+                                                <span class="s_website_form_label_content">Subject</span>
+                                                <span class="s_website_form_mark"> *</span>
+                                            </label>
+                                            <div class="col-sm">
+                                                <input id="helpdesk_subject" type="text" class="form-control s_website_form_input" name="subject" required="1" placeholder="e.g. The printer does not start"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_custom s_website_form_required" data-type="text">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="helpdesk_description">
+                                                <span class="s_website_form_label_content">Description</span>
+                                                <span class="s_website_form_mark"> *</span>
+                                            </label>
+                                            <div class="col-sm">
+                                                <textarea id="helpdesk_description" class="form-control s_website_form_input" name="description" rows="5" required="1" placeholder="Describe the issue in detail"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_custom" data-type="binary">
+                                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                                            <label class="col-form-label col-sm-auto s_website_form_label" style="width: 200px" for="helpdesk_attachment">
+                                                <span class="s_website_form_label_content">Attachments</span>
+                                            </label>
+                                            <div class="col-sm">
+                                                <input id="helpdesk_attachment" type="file" class="form-control s_website_form_input" name="ticket_attachment" multiple="multiple"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-0 py-2 col-12 s_website_form_submit" data-name="Submit Button">
+                                                <div style="width: 200px;" class="s_website_form_label"/>
+                                                <a href="#" role="button" class="btn btn-primary s_website_form_send">Submit</a>
+                                                <span id="s_website_form_result"/>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </section>
+                            </div>
+                            <div class="col-lg-4 mt-4 mt-lg-0">
+                                <t t-call="odoo_website_helpdesk.company_contact"/>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Helpdesk access levels, shown in the user form -->
+    <record id="res_groups_privilege_helpdesk" model="res.groups.privilege">
+        <field name="name">Helpdesk</field>
+        <field name="sequence">20</field>
+        <field name="category_id" ref="base.module_category_services"/>
+    </record>
+    <!-- User: works on the tickets -->
+    <record id="helpdesk_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="privilege_id" ref="res_groups_privilege_helpdesk"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <!-- Team Leader: leads a helpdesk team -->
+    <record id="helpdesk_team_leader" model="res.groups">
+        <field name="name">Team Leader</field>
+        <field name="implied_ids" eval="[(4, ref('helpdesk_user'))]"/>
+        <field name="privilege_id" ref="res_groups_privilege_helpdesk"/>
+    </record>
+    <!-- Manager: configures the helpdesk and merges tickets -->
+    <record id="helpdesk_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="implied_ids" eval="[(4, ref('helpdesk_team_leader'))]"/>
+        <field name="privilege_id" ref="res_groups_privilege_helpdesk"/>
+        <field name="user_ids"
+               eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+    <!-- Enabled from the settings to categorize the tickets -->
+    <record id="group_show_category" model="res.groups">
+        <field name="name">Helpdesk Ticket Categories</field>
+    </record>
+</odoo>

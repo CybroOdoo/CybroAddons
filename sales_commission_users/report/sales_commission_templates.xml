@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template for sales commission report -->
+    <template id="report_sales_commission">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div class="text-center mb-4">
+                        <h2>
+                            <strong>Sales Commission Report</strong>
+                        </h2>
+                        <t t-if="data and (data.get('start_date') or data.get('end_date'))">
+                            <p class="text-muted mb-1">
+                                <t t-if="data.get('start_date')">
+                                    <span>From: </span>
+                                    <strong t-out="data['start_date']"/>
+                                </t>
+                                <t t-if="data.get('end_date')">
+                                    <span> To: </span>
+                                    <strong t-out="data['end_date']"/>
+                                </t>
+                            </p>
+                        </t>
+                        <t t-if="data and (data.get('sales_person_name') or data.get('sales_person_id'))">
+                            <p class="text-muted mb-0">
+                                <span>Salesperson: </span>
+                                <strong t-out="data.get('sales_person_name') or data.get('sales_person_id')"/>
+                            </p>
+                        </t>
+                    </div>
+
+                    <table class="table table-sm o_main_table mt-4">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Name</th>
+                                <th>Sale Reference</th>
+                                <th>Commission Name</th>
+                                <th>Commission Type</th>
+                                <th>Partner</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="d">
+                                <tr>
+                                    <td>
+                                        <span t-out="d.date"/>
+                                    </td>
+                                    <td>
+                                        <span t-out="d.description"/>
+                                    </td>
+                                    <td>
+                                        <span t-out="d.order_ref"/>
+                                    </td>
+                                    <td>
+                                        <span t-out="d.commission"/>
+                                    </td>
+                                    <td>
+                                        <span t-out="dict(d._fields['commission_type'].selection).get(d.commission_type) or d.commission_type"/>
+                                    </td>
+                                    <td>
+                                        <span t-out="d.partner_id.name or ''"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="d.commission_amount"
+                                              t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

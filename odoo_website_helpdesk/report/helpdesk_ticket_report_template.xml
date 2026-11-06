@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Define a Qweb template for the support ticket report -->
+    <template id="report_helpdesk_ticket">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="mb-4">
+                            <t t-out="o.name"/> - <span t-out="o.subject"/>
+                        </h2>
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <strong>Customer</strong>
+                                <div t-field="o.customer_id"
+                                     t-options='{"widget": "contact", "fields": ["name", "address"], "no_marker": True}'/>
+                            </div>
+                            <div class="col-6">
+                                <div><strong>Stage:</strong> <span t-out="o.stage_id.name"/></div>
+                                <div><strong>Priority:</strong> <span t-field="o.priority"/></div>
+                                <div t-if="o.team_id"><strong>Team:</strong> <span t-out="o.team_id.name"/></div>
+                                <div t-if="o.assigned_user_id"><strong>Assigned to:</strong> <span t-out="o.assigned_user_id.name"/></div>
+                                <div><strong>Created on:</strong> <span t-field="o.create_date"/></div>
+                            </div>
+                        </div>
+                        <h5>Description</h5>
+                        <p style="white-space: pre-wrap;" t-out="o.description"/>
+                        <t t-if="o.product_ids">
+                            <h5>Products</h5>
+                            <p t-out="', '.join(o.product_ids.mapped('display_name'))"/>
+                        </t>
+                        <t t-set="tasks" t-value="o.env['project.task'].sudo().search([('ticket_id', '=', o.id)])"/>
+                        <t t-if="tasks">
+                            <h5 class="mt-4">Tasks</h5>
+                            <table class="table table-sm o_main_table">
+                                <thead>
+                                    <tr>
+                                        <th>Task</th>
+                                        <th>Assignees</th>
+                                        <th class="text-end">Hours Spent</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="tasks" t-as="task">
+                                        <td t-out="task.name"/>
+                                        <td t-out="', '.join(task.user_ids.mapped('name'))"/>
+                                        <td class="text-end">
+                                            <span t-field="task.effective_hours" t-options='{"widget": "float_time"}'/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    <!-- Define an action for the Support Ticket report -->
+    <record id="report_ticket" model="ir.actions.report">
+        <field name="name">Support Ticket</field>
+        <field name="print_report_name">'Ticket - %s' % object.name</field>
+        <field name="model">ticket.helpdesk</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">odoo_website_helpdesk.report_helpdesk_ticket</field>
+        <field name="binding_model_id" ref="model_ticket_helpdesk"/>
+        <field name="binding_view_types"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
