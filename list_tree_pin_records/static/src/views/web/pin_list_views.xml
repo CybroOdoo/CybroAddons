@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Inheriting ListRenderer to add pin header and footer column -->
+    <t t-name="list_tree_pin_records.ListRenderer"
+       t-inherit="web.ListRenderer" t-inherit-mode="extension">
+        <xpath expr="//th[hasclass('o_list_record_selector')]" position="before">
+            <th t-if="this.canPinRecords" class="o_pin_column align-middle text-center p-0">
+                <i class="oi oi-fw" data-icon="push_pin"/>
+            </th>
+        </xpath>
+        <xpath expr="//tfoot//tr/td[1]" position="before">
+            <td t-if="this.canPinRecords" class="o_pin_cell align-middle text-center p-0"/>
+        </xpath>
+    </t>
+
+    <!-- Inheriting ListRenderer.Rows to reorder records based on pinned state reactively -->
+    <t t-name="list_tree_pin_records.Rows"
+       t-inherit="web.ListRenderer.Rows" t-inherit-mode="extension">
+        <xpath expr="//t[@t-foreach='list.records']" position="attributes">
+            <attribute name="t-foreach">this.getPinnedOrderedRecords(list)</attribute>
+        </xpath>
+    </t>
+
+    <!-- Inheriting ListRenderer.RecordRow to add pin button -->
+    <t t-name="list_tree_pin_records.RowListView"
+       t-inherit="web.ListRenderer.RecordRow" t-inherit-mode="extension">
+        <xpath expr="//td[hasclass('o_list_record_selector')]" position="before">
+            <td t-if="this.canPinRecords" class="o_pin_cell align-middle text-center p-0" tabindex="-1">
+                <i class="oi oi-fw o_pin_icon"
+                   data-icon="push_pin"
+                   t-att-class="{ 'o_pinned': this.isRecordPinned(record) }"
+                   t-on-click.stop="(ev) => this.pin_record_details(ev, record)"/>
+            </td>
+        </xpath>
+    </t>
+
+</templates>

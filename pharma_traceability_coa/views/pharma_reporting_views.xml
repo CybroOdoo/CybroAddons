@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============ Batch Releases ============ -->
+
+    <!-- Search view for batch release analysis. -->
+    <record id="pharma_qa_release_report_search" model="ir.ui.view">
+        <field name="name">pharma.qa.release.report.search</field>
+        <field name="model">pharma.qa.release</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Batch Release Analysis">
+                <field name="product_id"/>
+                <field name="production_id"/>
+                <field name="lot_id"/>
+                <filter string="To Release" name="to_release" domain="[('state', '=', 'draft')]"/>
+                <filter string="Released" name="released" domain="[('state', '=', 'released')]"/>
+                <separator/>
+                <filter string="Created On" name="filter_create_date" date="create_date"/>
+                <group name="group_by">
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Status" name="grp_state" context="{'group_by': 'state'}"/>
+                    <filter string="Month" name="grp_month" context="{'group_by': 'create_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of batch releases per month by status. -->
+    <record id="pharma_qa_release_report_graph" model="ir.ui.view">
+        <field name="name">pharma.qa.release.report.graph</field>
+        <field name="model">pharma.qa.release</field>
+        <field name="arch" type="xml">
+            <graph string="Batch Releases" type="bar" stacked="1" sample="1">
+                <field name="create_date" interval="month"/>
+                <field name="state"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of batch releases by product and status. -->
+    <record id="pharma_qa_release_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.qa.release.report.pivot</field>
+        <field name="model">pharma.qa.release</field>
+        <field name="arch" type="xml">
+            <pivot string="Batch Releases" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="state" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the batch release analysis. -->
+    <record id="pharma_qa_release_report_action" model="ir.actions.act_window">
+        <field name="name">Batch Release Analysis</field>
+        <field name="res_model">pharma.qa.release</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_qa_release_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_qa_release_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_qa_release_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No batch releases yet</p>
+            <p>Batches released by QA per product and month, and the backlog awaiting release.</p>
+        </field>
+    </record>
+
+    <!-- ============ Certificates of Analysis ============ -->
+
+    <!-- Search view for CoA analysis. -->
+    <record id="pharma_coa_report_search" model="ir.ui.view">
+        <field name="name">pharma.coa.report.search</field>
+        <field name="model">pharma.coa</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Certificate of Analysis">
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="released_by"/>
+                <filter string="Released" name="released" domain="[('release_date', '!=', False)]"/>
+                <filter string="Not Released" name="not_released" domain="[('release_date', '=', False)]"/>
+                <separator/>
+                <filter string="Release Date" name="filter_release_date" date="release_date"/>
+                <group name="group_by">
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Released By" name="grp_released_by" context="{'group_by': 'released_by'}"/>
+                    <filter string="Release Month" name="grp_month" context="{'group_by': 'release_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Graph view of CoAs issued per month. -->
+    <record id="pharma_coa_report_graph" model="ir.ui.view">
+        <field name="name">pharma.coa.report.graph</field>
+        <field name="model">pharma.coa</field>
+        <field name="arch" type="xml">
+            <graph string="Certificates of Analysis" type="line" sample="1">
+                <field name="release_date" interval="month"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view of CoAs by product and release month. -->
+    <record id="pharma_coa_report_pivot" model="ir.ui.view">
+        <field name="name">pharma.coa.report.pivot</field>
+        <field name="model">pharma.coa</field>
+        <field name="arch" type="xml">
+            <pivot string="Certificates of Analysis" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="release_date" interval="month" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Action opening the CoA analysis (released certificates). -->
+    <record id="pharma_coa_report_action" model="ir.actions.act_window">
+        <field name="name">CoA Analysis</field>
+        <field name="res_model">pharma.coa</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="pharma_coa_report_search"/>
+        <field name="context">{'search_default_released': 1}</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('pharma_coa_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('pharma_coa_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No certificates of analysis yet</p>
+            <p>Certificates issued per product and month.</p>
+        </field>
+    </record>
+
+    <!-- ============ Menus ============ -->
+
+    <menuitem id="menu_pharma_report_qa_release" name="Batch Releases"
+              parent="pharmaceutical_base.menu_pharma_reporting"
+              action="pharma_qa_release_report_action" sequence="55"/>
+
+    <menuitem id="menu_pharma_report_coa" name="Certificates of Analysis"
+              parent="pharmaceutical_base.menu_pharma_reporting"
+              action="pharma_coa_report_action" sequence="57"/>
+</odoo>
