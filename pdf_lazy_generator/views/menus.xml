@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_pdf_attachment_list" model="ir.ui.view">
+        <field name="name">ir.attachment.pdf.list</field>
+        <field name="model">ir.attachment</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <list string="All PDFs" create="false" edit="false">
+                <field name="name" string="Name"/>
+                <field name="res_id" string="Resource ID"/>
+                <field name="company_id" string="Company"/>
+                <field name="create_uid" string="Created by"/>
+                <field name="create_date" string="Created on"/>
+                <button name="action_download_pdf"
+                        string="Download"
+                        type="object"
+                        icon="fa-download"
+                        title="Download PDF"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pdf_attachment_form" model="ir.ui.view">
+        <field name="name">ir.attachment.pdf.form</field>
+        <field name="model">ir.attachment</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <form string="Background PDF Attachment" create="false" edit="false">
+                <header>
+                    <button name="action_download_pdf"
+                            string="Download PDF"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-download"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="res_model" readonly="1"/>
+                            <field name="res_id" readonly="1"/>
+                            <field name="mimetype" readonly="1"/>
+                            <field name="file_size" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="company_id" readonly="1"/>
+                            <field name="create_uid" readonly="1"/>
+                            <field name="create_date" readonly="1"/>
+                            <field name="is_background_pdf" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_pdf_attachments" model="ir.actions.act_window">
+        <field name="name">All PDFs</field>
+        <field name="res_model">ir.attachment</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_pdf_attachment_list"/>
+        <field name="domain">
+            [('mimetype', '=', 'application/pdf'), ('is_background_pdf', '=', True)]
+        </field>
+        <field name="views" eval="[
+            (ref('view_pdf_attachment_list'), 'list'),
+            (ref('view_pdf_attachment_form'), 'form'),
+        ]"/>
+    </record>
+
+    <menuitem id="menu_pdf_root"
+              name="PDF Lazy Generator"
+              sequence="10"/>
+
+    <menuitem id="menu_all_pdfs"
+              name="Background Generated PDF"
+              parent="menu_pdf_root"
+              action="action_pdf_attachments"/>
+</odoo>

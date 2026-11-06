@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── ai.provider list view ────────────────────────────────────────── -->
+    <record id="view_ai_provider_list" model="ir.ui.view">
+        <field name="name">ai.provider.list</field>
+        <field name="model">ai.provider</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="default_model"/>
+                <field name="api_base_url"/>
+                <field name="is_default"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── ai.provider form view ────────────────────────────────────────── -->
+    <record id="view_ai_provider_form" model="ir.ui.view">
+        <field name="name">ai.provider.form</field>
+        <field name="model">ai.provider</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_refresh_models"
+                            type="object"
+                            string="Refresh Models"
+                            class="btn-primary"
+                            icon="fa-refresh"
+                            confirm="This will fetch the current list of models from the provider's API using your personal API key, and replace the 'Available Models' field. Continue?"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Default"
+                            bg_color="bg-success"
+                            invisible="not is_default"/>
+
+                    <!-- Smart-button strip — Odoo's standard top-of-form stat zone -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_conversations"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-comments"
+                                invisible="conversation_count == 0">
+                            <field name="conversation_count" widget="statinfo"
+                                   string="Conversations"/>
+                        </button>
+                        <button class="oe_stat_button"
+                                icon="fa-bolt"
+                                disabled="True"
+                                invisible="tokens_used_total == 0">
+                            <field name="tokens_used_total" widget="statinfo"
+                                   string="Tokens"/>
+                        </button>
+                    </div>
+
+                    <group>
+                        <group string="Identity">
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="is_default"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="API">
+                            <field name="api_base_url"/>
+                            <field name="default_model"/>
+                        </group>
+                    </group>
+                    <group string="Available Model IDs (one per line)">
+                        <field name="available_models" nolabel="True"
+                               placeholder="gemini-2.5-flash&#10;gemini-2.0-flash"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── vibe.conversation list view (history view opened by the smart button) ── -->
+    <record id="view_vibe_conversation_history_list" model="ir.ui.view">
+        <field name="name">vibe.conversation.history.list</field>
+        <field name="model">vibe.conversation</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'archived'"
+                  decoration-info="state == 'active'">
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="provider_config_id"/>
+                <field name="state"
+                       widget="badge"
+                       decoration-info="state == 'active'"
+                       decoration-warning="state == 'draft'"
+                       decoration-muted="state == 'archived'"/>
+                <field name="tokens_input_total"
+                       string="Input Tokens"
+                       sum="Total Input"/>
+                <field name="tokens_output_total"
+                       string="Output Tokens"
+                       sum="Total Output"/>
+                <field name="tokens_total"
+                       string="Total Tokens"
+                       sum="Grand Total"/>
+                <field name="last_activity"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── vibe.conversation form view (admin detail view) ──────────────── -->
+    <record id="view_vibe_conversation_form" model="ir.ui.view">
+        <field name="name">vibe.conversation.form</field>
+        <field name="model">vibe.conversation</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <header>
+                    <button name="action_export_json"
+                            type="object"
+                            string="Export as JSON"
+                            class="btn-primary"
+                            icon="fa-download"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-comments"
+                                disabled="True">
+                            <field name="tokens_total" widget="statinfo"
+                                   string="Tokens"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="True"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Conversation">
+                            <field name="user_id"/>
+                            <field name="provider_config_id"/>
+                            <field name="state"/>
+                            <field name="last_activity"/>
+                        </group>
+                        <group string="Token Usage">
+                            <field name="tokens_input_total"/>
+                            <field name="tokens_output_total"/>
+                            <field name="tokens_total"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Messages" name="messages">
+                            <field name="message_ids" readonly="True">
+                                <list>
+                                    <field name="create_date" string="Time"/>
+                                    <field name="role"
+                                           widget="badge"
+                                           decoration-info="role == 'user'"
+                                           decoration-success="role == 'assistant'"/>
+                                    <field name="content"/>
+                                    <field name="tokens_input" optional="hide"/>
+                                    <field name="tokens_output" optional="hide"/>
+                                    <field name="tokens_used"
+                                           string="Tokens"
+                                           sum="Total"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Generated Modules" name="modules"
+                              invisible="not generated_module_ids">
+                            <field name="generated_module_ids" readonly="True">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="technical_name"/>
+                                    <field name="validation_state"
+                                           widget="badge"
+                                           decoration-success="validation_state == 'valid'"
+                                           decoration-warning="validation_state == 'invalid'"
+                                           decoration-info="validation_state == 'pending'"/>
+                                    <field name="download_count"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_vibe_conversation_history_search" model="ir.ui.view">
+        <field name="name">vibe.conversation.history.search</field>
+        <field name="model">vibe.conversation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="user_id"/>
+                <filter string="Active" name="filter_active"
+                        domain="[('state', '=', 'active')]"/>
+                <filter string="Draft" name="filter_draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter string="Archived" name="filter_archived"
+                        domain="[('state', '=', 'archived')]"/>
+                <separator/>
+                <filter string="Group by User" name="group_by_user"
+                        context="{'group_by': 'user_id'}"/>
+                <filter string="Group by State" name="group_by_state"
+                        context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+</odoo>

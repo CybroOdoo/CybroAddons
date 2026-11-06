@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            Curated starter templates. noupdate="1" so admin edits aren't
+            clobbered on -u. To refresh seed prompts after editing this
+            file, set noupdate="0" temporarily and re-run -u.
+        -->
+
+        <!-- ── CRUD modules ──────────────────────────────────────────── -->
+
+        <record id="tpl_brand" model="vibe.prompt.template">
+            <field name="name">Product Brand</field>
+            <field name="category">crud</field>
+            <field name="description">Brand model linked to products with logo and website.</field>
+            <field name="sequence">10</field>
+            <field name="prompt">Create a module that adds a Product Brand model with the following fields:
+- name (required, unique)
+- logo (image)
+- website (URL)
+- description (text)
+- product_ids (one2many back-reference to product.template)
+
+Add a brand_id Many2one field on product.template, with a smart button on
+the brand form showing the number of products. Include list, form, and
+kanban views, a top-level menu under Inventory, and ACL granting full
+access to internal users.</field>
+        </record>
+
+        <record id="tpl_library" model="vibe.prompt.template">
+            <field name="name">Library Books</field>
+            <field name="category">crud</field>
+            <field name="description">Simple library management: books, authors, borrowing.</field>
+            <field name="sequence">20</field>
+            <field name="prompt">Create a library management module with two models:
+
+1. library.author — name, biography (text), birth_date, book_ids (one2many)
+2. library.book — title, author_id (many2one, required), isbn, publication_year,
+   state (Selection: available/borrowed/lost, default available), borrower_id
+   (many2one res.partner), borrowed_date
+
+Add buttons on the book form to "Borrow" (asks for borrower, sets state to
+borrowed, records date) and "Return" (clears borrower, sets state to available).
+Include list, form, search views with filters by state and grouping by author.</field>
+        </record>
+
+        <record id="tpl_todo" model="vibe.prompt.template">
+            <field name="name">Todo List</field>
+            <field name="category">crud</field>
+            <field name="description">Personal task list with priority, deadlines, status.</field>
+            <field name="sequence">30</field>
+            <field name="prompt">Create a personal todo-list module with model x_todo.task:
+- name (required)
+- description (text)
+- priority (Selection: low/medium/high/urgent, default medium)
+- deadline (date)
+- state (Selection: draft/in_progress/done/cancelled, default draft)
+- user_id (many2one res.users, default current user)
+
+Add a kanban view grouped by state with color coding by priority, a
+calendar view by deadline, and a search view with filters "My Tasks",
+"Overdue", "High Priority". Record rule: users see only their own tasks.</field>
+        </record>
+
+        <!-- ── Extending existing modules ────────────────────────────── -->
+
+        <record id="tpl_partner_field" model="vibe.prompt.template">
+            <field name="name">Extend Partner</field>
+            <field name="category">inherit</field>
+            <field name="description">Add custom fields to res.partner.</field>
+            <field name="sequence">10</field>
+            <field name="prompt">Create a module that extends res.partner with the following fields:
+- secondary_email (Char, with email-format validation)
+- preferred_contact_method (Selection: email/phone/sms/none)
+- loyalty_points (Integer, readonly, default 0)
+- date_first_contact (Date)
+
+Add these as a new "Additional Info" tab on the partner form view.
+Include a search filter "VIP Partners" for partners with loyalty_points > 1000.</field>
+        </record>
+
+        <record id="tpl_sale_field" model="vibe.prompt.template">
+            <field name="name">Sale Order Field</field>
+            <field name="category">inherit</field>
+            <field name="description">Add a custom field to Sale Orders.</field>
+            <field name="sequence">20</field>
+            <field name="prompt">Create a module that adds a "Project Reference" Char field to sale.order,
+displayed prominently next to the order name in the form view. The field
+should be optional but indexed for search. Add it as a column in the
+sale order list view (optional, hidden by default) and as a searchable
+field in the search view.</field>
+        </record>
+
+        <record id="tpl_product_field" model="vibe.prompt.template">
+            <field name="name">Product Category Field</field>
+            <field name="category">inherit</field>
+            <field name="description">Add a hierarchical custom field to products.</field>
+            <field name="sequence">30</field>
+            <field name="prompt">Create a module that adds two fields to product.template:
+- material (Selection: plastic/metal/wood/glass/fabric/other)
+- recycled_percent (Float, between 0 and 100, with constraint)
+
+Show both fields in a new "Sustainability" section of the product form.
+Add a search filter "Sustainable Products" matching recycled_percent &gt;= 50.</field>
+        </record>
+
+        <!-- ── Reports ──────────────────────────────────────────────── -->
+
+        <record id="tpl_invoice_summary" model="vibe.prompt.template">
+            <field name="name">Invoice Summary Report</field>
+            <field name="category">report</field>
+            <field name="description">QWeb PDF report summarising invoices by partner.</field>
+            <field name="sequence">10</field>
+            <field name="prompt">Create a QWeb PDF report for account.move (invoices) titled "Monthly Invoice
+Summary". The report should:
+- Accept a date range (start_date, end_date) via a wizard
+- Group invoices by partner, showing partner name, count, total amount
+- Display a grand total at the bottom
+- Be available from the Invoices menu under Print
+
+Include the wizard model (transient), the report template, and the menu item.</field>
+        </record>
+
+        <!-- ── Wizards ──────────────────────────────────────────────── -->
+
+        <record id="tpl_mass_update" model="vibe.prompt.template">
+            <field name="name">Mass Update Wizard</field>
+            <field name="category">wizard</field>
+            <field name="description">Wizard to bulk-update a field on selected records.</field>
+            <field name="sequence">10</field>
+            <field name="prompt">Create a Server Action and wizard that lets users bulk-update the
+"customer rank" field on selected partners from the Contacts list view.
+The wizard should:
+- Accept new_rank (Integer)
+- Show how many partners will be affected
+- On confirm, write the new rank to all selected partners
+- Display a notification with the count of updated records
+
+Use models.TransientModel for the wizard, an act_window record for the
+server action, and bind it to res.partner in the list view's Action menu.</field>
+        </record>
+
+        <record id="tpl_archive_wizard" model="vibe.prompt.template">
+            <field name="name">Bulk Archive Wizard</field>
+            <field name="category">wizard</field>
+            <field name="description">Wizard to archive multiple records with a reason.</field>
+            <field name="sequence">20</field>
+            <field name="prompt">Create a wizard that archives selected records of res.partner with a
+recorded reason. The wizard should:
+- Accept a reason (Selection: duplicate/inactive/spam/other)
+- Accept an optional comment (text)
+- On confirm, set active=False on each selected partner and log a message
+  in the partner's chatter with the reason and comment
+
+Bind it to the partner list view via Action menu.</field>
+        </record>
+
+        <!-- ── Integrations ─────────────────────────────────────────── -->
+
+        <record id="tpl_webhook_log" model="vibe.prompt.template">
+            <field name="name">Webhook Log</field>
+            <field name="category">integration</field>
+            <field name="description">Public HTTP endpoint to receive webhooks, log them to a model.</field>
+            <field name="sequence">10</field>
+            <field name="prompt">Create a module that exposes a public HTTP controller at /webhook/inbound
+accepting POST requests with JSON body. Every incoming request should be
+logged to a new model x_webhook.log with fields:
+- received_at (Datetime, default now)
+- source_ip (Char)
+- payload (Text — full JSON dumped)
+- headers (Text — relevant headers)
+
+Include list and form views (read-only on form), a menu entry under
+Settings → Technical, and admin-only access. The controller should
+always return JSON {"ok": true, "id": ...} with HTTP 200, even on
+malformed input.</field>
+        </record>
+
+        <!-- ── Other ────────────────────────────────────────────────── -->
+
+        <record id="tpl_dashboard" model="vibe.prompt.template">
+            <field name="name">Sales Dashboard</field>
+            <field name="category">other</field>
+            <field name="description">Read-only dashboard with KPI cards.</field>
+            <field name="sequence">10</field>
+            <field name="prompt">Create a simple sales dashboard module. Add a TransientModel
+x_sales.dashboard with computed fields:
+- total_revenue_this_month (Monetary)
+- order_count_this_month (Integer)
+- avg_order_value (Monetary)
+- top_customer (Many2one res.partner)
+
+Show as a form view with KPI-style large numbers in cards (use Bootstrap
+classes for layout). Accessible from a top-level Sales menu entry called
+"Dashboard".</field>
+        </record>
+
+        <record id="tpl_scheduled_action" model="vibe.prompt.template">
+            <field name="name">Scheduled Cleanup</field>
+            <field name="category">other</field>
+            <field name="description">Cron job that archives old inactive records.</field>
+            <field name="sequence">20</field>
+            <field name="prompt">Create a module with a scheduled action (ir.cron) that runs daily at 2am
+and archives any res.partner record where:
+- active = True
+- write_date is more than 365 days ago
+- has no related sale orders or invoices
+
+The cron should be defined in XML data with active=True and a 1-day
+interval. Include a logger statement showing how many records were archived.</field>
+        </record>
+
+    </data>
+</odoo>

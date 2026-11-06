@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── vibe.prompt.template list view ─────────────────────────────── -->
+    <record id="view_vibe_prompt_template_list" model="ir.ui.view">
+        <field name="name">vibe.prompt.template.list</field>
+        <field name="model">vibe.prompt.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="description" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── vibe.prompt.template form view ─────────────────────────────── -->
+    <record id="view_vibe_prompt_template_form" model="ir.ui.view">
+        <field name="name">vibe.prompt.template.form</field>
+        <field name="model">vibe.prompt.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived"
+                            bg_color="bg-danger"
+                            invisible="active"/>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Product Brand"/></h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="category"/>
+                            <field name="sequence"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="description"
+                                   placeholder="Short hint shown on hover"/>
+                        </group>
+                    </group>
+
+                    <group string="Prompt">
+                        <field name="prompt" nolabel="True"
+                               placeholder="The full prompt text inserted when the user clicks this template chip."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── vibe.prompt.template search view ───────────────────────────── -->
+    <record id="view_vibe_prompt_template_search" model="ir.ui.view">
+        <field name="name">vibe.prompt.template.search</field>
+        <field name="model">vibe.prompt.template</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="prompt"/>
+                <filter string="Active" name="filter_active"
+                        domain="[('active', '=', True)]"/>
+                <filter string="Archived" name="filter_archived"
+                        domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter string="Group by Category" name="group_by_category"
+                        context="{'group_by': 'category'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Action + menu ──────────────────────────────────────────────── -->
+    <record id="action_vibe_prompt_template" model="ir.actions.act_window">
+        <field name="name">Prompt Templates</field>
+        <field name="res_model">vibe.prompt.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_group_by_category': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No prompt templates yet.
+            </p>
+            <p>
+                Templates show as clickable chips above the chat composer
+                when a conversation is empty. They help users discover
+                what the assistant can do.
+            </p>
+        </field>
+    </record>
+
+</odoo>

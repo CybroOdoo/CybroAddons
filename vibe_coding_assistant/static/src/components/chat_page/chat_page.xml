@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="vibe_coding_assistant.ChatPage">
+        <div class="o_vibe_chat_page o_view_controller">
+
+            <!-- Left: conversation list -->
+            <ConversationList/>
+
+            <!-- Centre: thread + composer OR no-provider warning -->
+            <div class="o_vibe_thread">
+                <t t-if="!providerLoaded">
+                    <!-- Still loading provider info — show a quiet spinner -->
+                    <div class="o_vibe_empty_state">
+                        <i class="fa fa-spinner fa-spin fa-2x mb-3 text-muted"/>
+                        <p class="text-muted">Loading…</p>
+                    </div>
+                </t>
+                <t t-elif="!hasProvider">
+                    <!-- No active provider configured -->
+                    <div class="o_vibe_empty_state">
+                        <div class="o_vibe_no_provider_card">
+                            <div class="o_vibe_no_provider_icon">🔑</div>
+                            <h4>No AI provider configured</h4>
+                            <p class="text-muted">
+                                You need to add an API key before you can generate modules.<br/>
+                                A free Gemini key takes about 30 seconds to set up.
+                            </p>
+                            <div class="d-flex gap-2 justify-content-center mt-2">
+                                <button class="btn btn-primary" t-on-click="goToSettings">
+                                    <i class="fa fa-cog me-1"/>Go to My AI Settings
+                                </button>
+                                <button class="btn btn-outline-secondary"
+                                        t-on-click="recheckProvider"
+                                        t-att-disabled="state.rechecking">
+                                    <i t-att-class="state.rechecking ? 'fa fa-spinner fa-spin me-1' : 'fa fa-refresh me-1'"/>
+                                    <t t-if="state.rechecking">Checking…</t>
+                                    <t t-else="">Recheck</t>
+                                </button>
+                            </div>
+                            <div class="mt-3 small text-muted">
+                                Already activated a config? Click <strong>Recheck</strong>.<br/>
+                                Get a free Gemini key at
+                                <a href="https://aistudio.google.com/apikey" target="_blank">
+                                    aistudio.google.com/apikey
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                <t t-else="">
+                    <!-- Normal chat view -->
+                    <MessageThread/>
+                    <Composer/>
+                </t>
+            </div>
+
+            <!-- Right: file preview panel -->
+            <div class="o_vibe_preview_panel">
+                <t t-if="storeState.activeModuleId">
+                    <FileTree/>
+                    <CodeViewer/>
+                </t>
+                <t t-else="">
+                    <div class="o_vibe_preview_placeholder">
+                        <div class="text-center text-muted p-4">
+                            <i class="fa fa-code fa-2x mb-2 d-block"/>
+                            <small>
+                                Generate a module, then click<br/>
+                                <strong>View Files</strong> to preview it here.
+                            </small>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+        </div>
+    </t>
+
+</templates>
