@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- ==========================================================
+         sale.order.commission (earned-commission ledger)
+         ========================================================== -->
+
+    <!-- Regular users: only the rows where they are the salesperson -->
+    <record id="sale_order_commission_rule_own" model="ir.rule">
+        <field name="name">Sale Order Commission: own records only</field>
+        <field name="model_id" ref="model_sale_order_commission"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Commission Managers: unrestricted (OR'd against the rule above,
+         so being in both groups still yields full visibility) -->
+    <record id="sale_order_commission_rule_manager" model="ir.rule">
+        <field name="name">Sale Order Commission: managers see all</field>
+        <field name="model_id" ref="model_sale_order_commission"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+    </record>
+
+    <!-- Multi-company: no groups set -> global, ANDed with the rules
+         above for every user regardless of group -->
+    <record id="sale_order_commission_rule_company" model="ir.rule">
+        <field name="name">Sale Order Commission: multi-company</field>
+        <field name="model_id" ref="model_sale_order_commission"/>
+        <field name="domain_force">
+            ['|', ('company_id', '=', False),
+                  ('company_id', 'in', company_ids)]
+        </field>
+    </record>
+
+    <!-- ==========================================================
+         commission.report (xlsx report wizard)
+         ========================================================== -->
+
+    <!-- Only Commission Managers have any ACL on commission.report (see
+         ir.model.access.csv), so this rule exists purely for consistency /
+         future-proofing rather than to restrict access further. -->
+    <record id="commission_report_rule_manager" model="ir.rule">
+        <field name="name">Commission Report: managers see all</field>
+        <field name="model_id" ref="model_commission_report"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+    </record>
+
+    <!-- ==========================================================
+         crm.commission / commission.product / commission.graduated
+         Only Commission Managers hold any ACL on these models (see
+         ir.model.access.csv), so these rules exist purely for
+         multi-company scoping among managers.
+         ========================================================== -->
+
+    <record id="crm_commission_rule_company" model="ir.rule">
+        <field name="name">Commission Plan: multi-company</field>
+        <field name="model_id" ref="model_crm_commission"/>
+        <field name="domain_force">
+            ['|', ('company_id', '=', False),
+                  ('company_id', 'in', company_ids)]
+        </field>
+    </record>
+
+    <record id="commission_product_rule_company" model="ir.rule">
+        <field name="name">Commission Product Rule: multi-company</field>
+        <field name="model_id" ref="model_commission_product"/>
+        <field name="domain_force">
+            ['|', ('commission_id.company_id', '=', False),
+                  ('commission_id.company_id', 'in', company_ids)]
+        </field>
+    </record>
+
+    <record id="commission_graduated_rule_company" model="ir.rule">
+        <field name="name">Commission Graduated Rule: multi-company</field>
+        <field name="model_id" ref="model_commission_graduated"/>
+        <field name="domain_force">
+            ['|', ('commission_id.company_id', '=', False),
+                  ('commission_id.company_id', 'in', company_ids)]
+        </field>
+    </record>
+</odoo>

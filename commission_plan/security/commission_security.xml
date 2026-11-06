@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Dedicated category so the group shows up cleanly in
+         Settings > Users & Companies > Groups -->
+    <record id="module_category_commission" model="ir.module.category">
+        <field name="name">Commission Plan</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Privilege for Commission groups -->
+    <record id="privilege_commission" model="res.groups.privilege">
+        <field name="name">Commission</field>
+        <field name="category_id" ref="module_category_commission"/>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Commission Manager: full control over plan configuration
+         (rates, brackets, product rules) and full visibility on
+         earned commissions. Regular internal users are NOT in this
+         group by default. -->
+    <record id="group_commission_manager" model="res.groups">
+        <field name="name">Commission Manager</field>
+        <field name="privilege_id" ref="privilege_commission"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Anyone who is already a Sales Manager is automatically a
+         Commission Manager too, so existing sales-admin users don't
+         lose access after upgrading this module. -->
+    <record id="sales_team.group_sale_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_commission_manager'))]"/>
+    </record>
+</odoo>
