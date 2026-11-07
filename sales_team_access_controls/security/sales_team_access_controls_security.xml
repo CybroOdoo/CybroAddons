@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Sales Team Category -->
+    <record id="module_category_sales_team" model="ir.module.category">
+        <field name="name">Sales Team</field>
+        <field name="description">Sales Team Access Groups</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Group Privilege -->
+    <record model="res.groups.privilege"
+            id="res_groups_privilege_sales_team_access_controls">
+        <field name="name">Sales Team</field>
+        <field name="category_id"
+               ref="sales_team_access_controls.module_category_sales_team"/>
+        <field name="sequence">7</field>
+    </record>
+
+    <!-- Group: Team Member -->
+    <record id="sales_team_access_controls_group_team_member"
+            model="res.groups">
+        <field name="name">Team Member</field>
+        <field name="privilege_id"
+               ref="res_groups_privilege_sales_team_access_controls"/>
+        <field name="implied_ids"
+               eval="[(4, ref('sales_team.group_sale_salesman'))]"/>
+    </record>
+
+    <!-- Group: Team Leader -->
+    <record id="sales_team_access_controls_group_team_leader"
+            model="res.groups">
+        <field name="name">Team Leader</field>
+        <field name="privilege_id"
+               ref="res_groups_privilege_sales_team_access_controls"/>
+        <field name="implied_ids"
+               eval="[(4, ref('sales_team_access_controls_group_team_member'))]"/>
+    </record>
+
+    <!-- How the access works: a Team Member is a salesperson, so the
+         standard salesperson grants already cover their own records. The
+         leader rows below only add the records of the teams they lead, and
+         the restriction rows at the end (no group) narrow what members and
+         leaders see. -->
+
+    <!-- Team Leader: CRM Leads - own and team members' leads -->
+    <record id="crm_lead_rule_team_leader" model="ir.access">
+        <field name="name">Team Leader: Own and Team Leads</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="group_id"
+               ref="sales_team_access_controls.sales_team_access_controls_group_team_leader"/>
+        <field name="operation">cru</field>
+        <field name="domain">['|', '|', '|', '|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id), ('team_id.member_ids', 'in', [user.id]), ('user_id.sale_team_id.user_id', '=', user.id), ('user_id.sale_team_id.member_ids', 'in', [user.id])]</field>
+    </record>
+
+    <!-- Team Leader: Sale Orders - own and team members' orders -->
+    <record id="sale_order_rule_team_leader" model="ir.access">
+        <field name="name">Team Leader: Own and Team Sale Orders</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="group_id"
+               ref="sales_team_access_controls.sales_team_access_controls_group_team_leader"/>
+        <field name="operation">cru</field>
+        <field name="domain">['|', '|', '|', '|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id), ('team_id.member_ids', 'in', [user.id]), ('user_id.sale_team_id.user_id', '=', user.id), ('user_id.sale_team_id.member_ids', 'in', [user.id])]</field>
+    </record>
+
+    <!-- Team Leader: Sale Order Lines - the lines of the orders above, so a
+         leader can open and edit a team member's order -->
+    <record id="sale_order_line_rule_team_leader" model="ir.access">
+        <field name="name">Team Leader: Own and Team Sale Order Lines</field>
+        <field name="model_id" ref="sale.model_sale_order_line"/>
+        <field name="group_id"
+               ref="sales_team_access_controls.sales_team_access_controls_group_team_leader"/>
+        <field name="operation">crud</field>
+        <field name="domain">['|', '|', '|', '|', ('salesman_id', '=', user.id), ('order_id.team_id.user_id', '=', user.id), ('order_id.team_id.member_ids', 'in', [user.id]), ('salesman_id.sale_team_id.user_id', '=', user.id), ('salesman_id.sale_team_id.member_ids', 'in', [user.id])]</field>
+    </record>
+
+    <record id="sale_order_restriction_team" model="ir.access">
+        <field name="name">Sales Team: Restrict Sale Orders</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="operation">crud</field>
+        <field name="domain">[] if user.has_group('sales_team.group_sale_manager') or not user.has_group('sales_team_access_controls.sales_team_access_controls_group_team_member') else ['|', '|', '|', '|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id), ('team_id.member_ids', 'in', [user.id]), ('user_id.sale_team_id.user_id', '=', user.id), ('user_id.sale_team_id.member_ids', 'in', [user.id])] if user.has_group('sales_team_access_controls.sales_team_access_controls_group_team_leader') else [('user_id', '=', user.id)]</field>
+    </record>
+
+    <record id="sale_order_line_restriction_team" model="ir.access">
+        <field name="name">Sales Team: Restrict Sale Order Lines</field>
+        <field name="model_id" ref="sale.model_sale_order_line"/>
+        <field name="operation">crud</field>
+        <field name="domain">[] if user.has_group('sales_team.group_sale_manager') or not user.has_group('sales_team_access_controls.sales_team_access_controls_group_team_member') else ['|', '|', '|', '|', ('salesman_id', '=', user.id), ('order_id.team_id.user_id', '=', user.id), ('order_id.team_id.member_ids', 'in', [user.id]), ('salesman_id.sale_team_id.user_id', '=', user.id), ('salesman_id.sale_team_id.member_ids', 'in', [user.id])] if user.has_group('sales_team_access_controls.sales_team_access_controls_group_team_leader') else [('salesman_id', '=', user.id)]</field>
+    </record>
+
+    <record id="crm_lead_restriction_team" model="ir.access">
+        <field name="name">Sales Team: Restrict Leads</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="operation">crud</field>
+        <field name="domain">[] if user.has_group('sales_team.group_sale_manager') or not user.has_group('sales_team_access_controls.sales_team_access_controls_group_team_member') else ['|', '|', '|', '|', ('user_id', '=', user.id), ('team_id.user_id', '=', user.id), ('team_id.member_ids', 'in', [user.id]), ('user_id.sale_team_id.user_id', '=', user.id), ('user_id.sale_team_id.member_ids', 'in', [user.id])] if user.has_group('sales_team_access_controls.sales_team_access_controls_group_team_leader') else [('user_id', '=', user.id)]</field>
+    </record>
+
+    <!-- Contacts: own contacts (as Salesperson, also via the parent
+         company), contacts they created, internal users, own companies,
+         and partners used on orders/leads the user can read. Leaders also
+         get the contacts of their team members. -->
+    <record id="res_partner_restriction_team" model="ir.access">
+        <field name="name">Sales Team: Restrict Contacts</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="operation">crud</field>
+        <field name="domain">[] if user.has_group('sales_team.group_sale_manager') or not user.has_group('sales_team_access_controls.sales_team_access_controls_group_team_member') else ['|', '|', '|', '|', '|', '|', '|', '|', '|', '|', '|', '|', ('user_id', '=', user.id), ('commercial_partner_id.user_id', '=', user.id), ('user_id.sale_team_id.user_id', '=', user.id), ('user_id.sale_team_id.member_ids', 'in', [user.id]), ('commercial_partner_id.user_id.sale_team_id.user_id', '=', user.id), ('commercial_partner_id.user_id.sale_team_id.member_ids', 'in', [user.id]), ('create_uid', '=', user.id), ('user_ids.share', '=', False), ('id', 'in', user.company_ids.partner_id.ids), ('sale_order_ids', 'any', [('id', 'access', 'read')]), ('team_access_invoice_order_ids', 'any', [('id', 'access', 'read')]), ('team_access_shipping_order_ids', 'any', [('id', 'access', 'read')]), ('team_access_lead_ids', 'any', [('id', 'access', 'read')])] if user.has_group('sales_team_access_controls.sales_team_access_controls_group_team_leader') else ['|', '|', '|', '|', '|', '|', '|', '|', ('user_id', '=', user.id), ('commercial_partner_id.user_id', '=', user.id), ('create_uid', '=', user.id), ('user_ids.share', '=', False), ('id', 'in', user.company_ids.partner_id.ids), ('sale_order_ids', 'any', [('id', 'access', 'read')]), ('team_access_invoice_order_ids', 'any', [('id', 'access', 'read')]), ('team_access_shipping_order_ids', 'any', [('id', 'access', 'read')]), ('team_access_lead_ids', 'any', [('id', 'access', 'read')])]</field>
+    </record>
+</odoo>

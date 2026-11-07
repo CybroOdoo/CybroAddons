@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--STANDARD Layout-->
+    <!--Inherited the standard external layout for changing company address position and adding watermark-->
+    <template id="custom_external_layout_standard"
+              inherit_id="web.external_layout_standard">
+        <xpath expr="//table" position="attributes">
+            <attribute name="t-if">not (company.document_layout_id and (model == 'sale.order' or (o and o._name == 'sale.order') or (doc and doc._name == 'sale.order')))</attribute>
+        </xpath>
+        <xpath expr="//table" position="after">
+            <t t-if="company.document_layout_id and (model == 'sale.order' or (o and o._name == 'sale.order') or (doc and doc._name == 'sale.order'))">
+                <div class="row">
+                    <div style="width:50%;"
+                         t-attf-class="{{'ms-auto' if company.document_layout_id.logo_position == 'right' else 'd-flex justify-content-start'}}">
+                        <div t-attf-class="{{'d-flex justify-content-end' if company.document_layout_id.logo_position == 'right' else 'd-flex justify-content-start'}}">
+                            <img t-if="company.logo"
+                                 t-att-src="image_data_uri(company.logo)"
+                                 style="max-height:40px;max-width:140%"
+                                 alt="Logo"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" t-if="company.report_header">
+                    <div style="width:50%;"
+                         t-attf-class="{{'ms-auto' if company.document_layout_id.tagline_position == 'right' else 'd-flex justify-content-start'}}">
+                        <div t-attf-class="{{'d-flex justify-content-end' if company.document_layout_id.tagline_position == 'right' else 'd-flex justify-content-start'}}">
+                            <div t-out="company.report_header"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row"
+                     t-attf-style="color:#{company.document_layout_id.company_text_color or ''};">
+                    <div style="width:50%;"
+                         t-attf-class="{{'ms-auto' if company.document_layout_id.company_position == 'right' else ''}}">
+                        <div itemprop="address"
+                             class="address">
+                            <ul class="list-unstyled">
+                                <li t-if="company.is_company_details_empty">
+                                    <t t-out="company.partner_id"
+                                       t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'/>
+                                </li>
+                                <li t-else="">
+                                    <t t-out="company.company_details"/>
+                                </li>
+                                <li t-if="forced_vat">
+                                    <t t-out="company.country_id.vat_label or 'Tax ID'"/>:
+                                    <span t-out="forced_vat"/>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//div[contains(@t-attf-class, 'header')]" position="inside">
+            <t t-if="company.watermark and (model == 'sale.order' or (o and o._name == 'sale.order') or (doc and doc._name == 'sale.order'))">
+                <div style="margin-left:20%;margin-top:50%;">
+                    <t t-if="company.watermark_show == 'logo'">
+                        <img t-if="company.logo"
+                             t-att-src="image_data_uri(company.logo)"
+                             style="position:absolute;height:300px; width:60%; opacity: 0.20;"/>
+                    </t>
+                    <t t-if="company.watermark_show == 'name'">
+                        <div t-out="company.name"
+                             style="text-align:center;position:absolute;opacity:0.25;font-size:70px;-webkit-transform:rotate(-30deg)"/>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

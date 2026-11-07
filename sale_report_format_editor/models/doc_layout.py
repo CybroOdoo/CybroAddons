@@ -1,0 +1,69 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#############################################################################
+from odoo import fields, models
+
+
+class DocLayout(models.Model):
+    """Used for designing the document template of sale"""
+    _name = "doc.layout"
+    _description = 'Layout Customization'
+
+    name = fields.Char(help="Name of the Layout")
+    base_color = fields.Char(help="Background color for the invoice")
+    heading_text_color = fields.Char(help="Text color for headings")
+    text_color = fields.Char(help="Text color of items")
+    customer_text_color = fields.Char(help="Customer address text color")
+    company_text_color = fields.Char(help="Company address Text color")
+    logo_position = fields.Selection([('left', 'Left'),
+                                      ('right', 'Right')],
+                                     help="Company logo position")
+    customer_position = fields.Selection([('left', 'Left'),
+                                          ('right', 'Right')],
+                                         string="Customer position",
+                                         help="Customer address position")
+    company_position = fields.Selection([('left', 'Left'),
+                                         ('right', 'Right')],
+                                        string="Company Address Position",
+                                        help="Company address position")
+    sales_person = fields.Boolean(string='Sales person', default=True,
+                                  help="Display sale person of the sale")
+    description = fields.Boolean(default=True,
+                                 help="Display product description")
+    tax_value = fields.Boolean(string='Tax', help="Applied tax of order line")
+    reference = fields.Boolean(string='Customer Reference',
+                               help="Display customer reference of the sale")
+    tagline_position = fields.Selection(
+        selection=[('left', 'Left'), ('right', 'Right')],
+        default='right',
+        help="Company Tagline position")
+    source = fields.Boolean(help="Display source document of the sale")
+    address = fields.Boolean(help="Display customer address")
+    city = fields.Boolean(help="Display city of customer address")
+    country = fields.Boolean(help="Display country of customer address")
+    company_id = fields.Many2one('res.company',
+                                 help="Current Company",
+                                 default=lambda self: self.env.company)
+    vat = fields.Boolean(string='VAT', default=True,
+                         help='Customer vat id')
+    watermark = fields.Boolean(string='Watermark', help="Watermark on report",
+                               related='company_id.watermark',
+                               readonly=False)
+    watermark_show = fields.Selection(
+        [('logo', 'Company Logo'), ('name', 'Company Name')],
+        default='logo', string="Watermark Show", help="Watermark types",
+        related='company_id.watermark_show', readonly=False)

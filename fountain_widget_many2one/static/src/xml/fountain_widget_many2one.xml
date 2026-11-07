@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="FountainWidgetField" owl="1">
+        <t t-if="this.props.readonly">
+            <span t-out="this.inputData.input" />
+        </t>
+        <t t-else="">
+            <!-- Template containing the dropdown component -->
+            <FountainDropdown inputData="this.inputData">
+                <div class="fountain-menu-container p-1">
+                    <div class="divMargin fountain-parent-column">
+                        <t t-foreach="this.parentMenu" t-as="category" t-key="category.id">
+                            <div class="dropdown-item-text fountain-item"
+                                 style="cursor: pointer;"
+                                 t-on-click.stop.prevent="() => this.onClickDropDown(category.id, 0)">
+                                <span class="fountain-item-name" t-out="category.name"/>
+                                <i t-if="this.hasChildren(category.id)" class="fa fa-arrow-right fountain-arrow"/>
+                            </div>
+                            <div class="dropdown-divider" role="separator"/>
+                        </t>
+                    </div>
+                    <div t-foreach="this.childKeys" t-as="cKeys" t-key="cKeys" class="divMargin fountain-child-column">
+                        <t t-foreach="this.state.childMenu[cKeys]" t-as="child" t-key="child.id">
+                            <div class="dropdown-item-text fountain-item"
+                                 style="cursor: pointer;"
+                                 t-on-click.stop.prevent="() => this.onClickDropDown(child.id, cKeys_index + 1)">
+                                <span class="fountain-item-name" t-out="child.name"/>
+                                <i t-if="this.hasChildren(child.id)" class="fa fa-arrow-right fountain-arrow"/>
+                            </div>
+                            <div class="dropdown-divider" role="separator"/>
+                        </t>
+                    </div>
+                </div>
+            </FountainDropdown>
+        </t>
+    </t>
+</templates>

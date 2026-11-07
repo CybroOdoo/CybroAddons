@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Extend Website Builder options to insert image_hotspot_option for images -->
+    <t t-inherit="website.BuilderOptions" t-inherit-mode="extension">
+        <xpath expr="//image_pop_up_option" position="after">
+            <image_hotspot_option selector="img" exclude="[data-oe-type='image'] > img, [data-oe-xpath]"/>
+        </xpath>
+    </t>
+
+    <!--
+        Builder options panel for the Image Hotspot feature.
+        Rendered by the html_builder OWL option system when an <img> is selected.
+    -->
+    <t t-name="dynamic_image_hotspot.ImageHotspotOption">
+
+        <!-- Toggle On / Off -->
+        <BuilderRow label.translate="Image Hotspot">
+            <BuilderSelect action="'imageHotspotToggle'">
+                <BuilderSelectItem actionValue="'off'">Off</BuilderSelectItem>
+                <BuilderSelectItem id="'hotspot_on_opt'" actionValue="'on'">On</BuilderSelectItem>
+            </BuilderSelect>
+        </BuilderRow>
+
+        <!-- Horizontal position (only visible when hotspot is On) -->
+        <BuilderRow
+            t-if="this.state.isHotspotOn"
+            label.translate="Move Horizontal"
+            level="1"
+        >
+            <BuilderRange
+                action="'imageHotspotHorizontal'"
+                min="5"
+                step="5"
+                max="95"
+            />
+        </BuilderRow>
+
+        <!-- Vertical position (only visible when hotspot is On) -->
+        <BuilderRow
+            t-if="this.state.isHotspotOn"
+            label.translate="Move Vertical"
+            level="1"
+        >
+            <BuilderRange
+                action="'imageHotspotVertical'"
+                min="5"
+                step="5"
+                max="95"
+            />
+        </BuilderRow>
+
+        <!-- Product link (only visible when hotspot is On) -->
+        <BuilderRow
+            t-if="this.state.isHotspotOn"
+            label.translate="Choose Product"
+            level="1"
+        >
+            <BuilderMany2One
+                id="'hotspot_product_m2o'"
+                action="'imageHotspotProduct'"
+                model="'product.template'"
+                domain="[['is_published', '=', true], ['sale_ok', '=', true]]"
+            />
+        </BuilderRow>
+
+    </t>
+
+</templates>

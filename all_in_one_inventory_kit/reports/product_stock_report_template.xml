@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Report template-->
+    <template id="report_product_stock_template">
+    <t t-call="web.html_container">
+        <t t-foreach="docs" t-as="doc">
+            <t t-call="web.external_layout">
+                <t t-set="o" t-value="doc"/>
+            <div class="page">
+                <!-- Manual logo header -->
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col-6">
+                        <img t-if="res_company and res_company.logo"
+                             t-att-src="image_data_uri(res_company.logo)"
+                             style="max-height: 80px;"/>
+                    </div>
+                    <div class="col-6 text-end">
+                        <h4 t-if="res_company">
+                            <t t-out="res_company.name"/>
+                        </h4>
+                    </div>
+                </div>
+                    <div>
+                        <div class="mb-4">
+                            <strong>Date:
+                                <span t-out="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/>
+                            </strong>
+                            <br/>
+                            <b>Product :
+                                <t t-out="doc.display_name"/>
+                            </b>
+                        </div>
+                        <table style="border:2px solid black;"
+                               class="table table-sm o_main_table">
+                            <tbody style="border:2px solid black;">
+                                <tr style="border:2px solid black;"
+                                    align="center">
+                                    <th style="border:2px solid black;">
+                                        Location
+                                    </th>
+                                    <th style="border:2px solid black;">
+                                        Available Qty
+                                    </th>
+                                    <th style="border:2px solid black;">
+                                        Forecasted Qty
+                                    </th>
+                                    <th style="border:2px solid black;">Incoming
+                                        Qty
+                                    </th>
+                                    <th style="border:2px solid black;">Outgoing
+                                        Qty
+                                    </th>
+                                </tr>
+                                <t t-foreach="doc.product_stock_location_ids"
+                                   t-as="quant">
+                                    <tr style="border:2px solid black;">
+                                        <td style="border:2px solid black;"
+                                            align="left">
+                                            <span t-field="quant.location_id"/>
+                                        </td>
+                                        <td style="border:2px solid black;"
+                                            align="right">
+                                            <span t-field="quant.available_quantity"/>
+                                        </td>
+                                        <td style="border:2px solid black;"
+                                            align="right">
+                                            <span t-field="quant.virtual_available"/>
+                                        </td>
+                                        <td style="border:2px solid black;"
+                                            align="right">
+                                            <span t-field="quant.incoming_qty"/>
+                                        </td>
+                                        <td style="border:2px solid black;"
+                                            align="right">
+                                            <span t-field="quant.outgoing_qty"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <tr>
+                                    <td style="border:2px solid black;"
+                                        align="right">
+                                        <strong>Total:</strong>
+                                    </td>
+                                    <td style="border:2px solid black;"
+                                        align="right">
+                                        <span>
+                                            <t t-out="sum(doc.product_stock_location_ids.mapped('available_quantity'))"/>
+                                        </span>
+                                    </td>
+
+                                    <td style="border:2px solid black;"
+                                        align="right">
+                                        <span>
+                                            <t t-out="sum(doc.product_stock_location_ids.mapped('virtual_available'))"/>
+                                        </span>
+                                    </td>
+                                    <td style="border:2px solid black;"
+                                        align="right">
+                                        <span>
+                                            <t t-out="sum(doc.product_stock_location_ids.mapped('incoming_qty'))"/>
+                                        </span>
+                                    </td>
+                                    <td style="border:2px solid black;"
+                                        align="right">
+                                        <span>
+                                            <t t-out="sum(doc.product_stock_location_ids.mapped('outgoing_qty'))"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </t>
+    </template>
+</odoo>

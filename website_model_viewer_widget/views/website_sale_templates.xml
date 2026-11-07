@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="product_3d_view" name="Product View"
+              inherit_id="website_sale.shop_product_carousel">
+        <!-- If product has 3D model and no 2D image, hide carousel outer by default -->
+        <xpath expr="//div[hasclass('o_carousel_product_outer')]" position="attributes">
+            <attribute name="t-attf-style" add="{{ 'display: none !important;' if product.model_3d and not product.image_1920 else '' }}" separator=" "/>
+        </xpath>
+        <!-- Created a container for the 3D model on the website -->
+        <xpath expr="//div[hasclass('o_carousel_product_outer')]" position="after">
+            <div id="product_main"
+                 class="view3d-wrapper"
+                 t-att-data-product-id="product.id"
+                 t-att-data-has-image="'true' if product.image_1920 else 'false'"
+                 t-attf-style="{{ 'display: block;' if product.model_3d and not product.image_1920 else 'display: none;' }} width: 100%; height: 500px; min-height: 400px; position: relative; border-radius: 8px; overflow: hidden; background: #ffffff;">
+                <canvas class="view3d-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"/>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="product_extra_images" name="Product Extra Images View"
+              inherit_id="website_sale.carousel_product_indicators">
+        <!-- Show indicators container if multiple images OR if 3D model exists -->
+        <xpath expr="//div[contains(@t-attf-class, 'o_carousel_product_indicators')]" position="attributes">
+            <attribute name="t-if">len(product_images) &gt; 1 or product.model_3d</attribute>
+        </xpath>
+        <!-- Add product_images class to standard indicator items so click event switches back to carousel -->
+        <xpath expr="//ol[contains(@t-attf-class, 'carousel-indicators')]/li" position="attributes">
+            <attribute name="class" add="product_images" separator=" "/>
+        </xpath>
+        <!-- Add the 3D model indicator thumbnail -->
+        <xpath expr="//ol[contains(@t-attf-class, 'carousel-indicators')]" position="inside">
+            <li t-if="product.model_3d"
+                t-attf-class="product_images o_3d_image align-top position-relative {{'active' if not product.image_1920 else ''}}"
+                data-type="3d"
+                id="product_3d_image"
+                t-att-data-product-id="product.id"
+                title="View in 3D">
+                <div class="d-flex align-items-center justify-content-center bg-white w-100 h-100" data-type="3d">
+                    <img src="/website_model_viewer_widget/static/src/img/360.png"
+                         class="product_images p-1"
+                         data-type="3d"
+                         alt="3D View"
+                         style="width: 100%; height: 100%; object-fit: contain; cursor: pointer;"/>
+                </div>
+            </li>
+        </xpath>
+    </template>
+</odoo>

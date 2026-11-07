@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#############################################################################
+from odoo import models
+
+
+class AccountMoveLine(models.Model):
+    """Add a feature to copy account move lines."""
+    _inherit = "account.move.line"
+
+
+    def action_copy_line(self):
+        """Copy the selected account move line."""
+        for line in self:
+            # Find the maximum sequence in the move line and add 1
+            max_sequence = max(line.move_id.invoice_line_ids.mapped('sequence'), default=0)
+
+            new_line = line.copy(default={
+                "move_id": line.move_id.id,
+                "sequence": max_sequence + 1,  # Always unique
+            })
+

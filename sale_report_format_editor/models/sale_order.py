@@ -1,0 +1,35 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#############################################################################
+from odoo import fields, models
+
+
+class SaleOrder(models.Model):
+    """Inheriting the sale order model and added the base layout and
+        a relational field to doc layout model"""
+    _inherit = 'sale.order'
+
+    base_layout = fields.Selection(
+        [('normal', 'Normal'), ('modern', 'Modern'),
+         ('old', 'Old Standard'),
+         ('default', 'Default')],
+        default="default",
+        string="Sale Document Layout", help="Type of sale document layout")
+    theme_id = fields.Many2one('doc.layout',
+                               string="Sale Layout Configuration",
+                               help="Configuration of sale document layout",
+                               related='company_id.document_layout_id')

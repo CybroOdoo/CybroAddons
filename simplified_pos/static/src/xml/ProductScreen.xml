@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Inherit ProductScreen to Modify it -->
+    <t t-name="simplified_pos.ProductScreen"
+       t-inherit="point_of_sale.ProductScreen"
+       t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('product-screen')]" position="replace">
+            <div class="product-screen d-flex h-100 overflow-hidden">
+                 <!-- COLUMN 1 (LEFT): Products & Order Summary -->
+                 <div class="leftpane pane-border d-flex flex-column h-100" style="width: 35%;">
+                     <div class="test-order-summary" style="max-height: 250px; overflow-y: auto; flex-shrink: 0;">
+                         <OrderSummary/>
+                     </div>
+                     <CategorySelector t-if="!ui?.isSmall or !pos.scanning" />
+                     <div class="product-card-scroll-container" style="flex-grow: 1; min-height: 0; overflow-y: auto;">
+                        <div t-if="this.pos.productToDisplayByCateg.length > 0" class="overflow-y-auto" t-on-scroll="this.onScroll">
+                            <div t-foreach="this.pos.productToDisplayByCateg" t-as="productCateg" t-key="productCateg[0]" class="product-list d-grid gap-1 gap-lg-2 px-2 pt-0 pb-2">
+                                <ProductCard
+                                    t-foreach="productCateg[1]" t-as="product" t-key="product.id"
+                                    productId="product.id"
+                                    product="product"
+                                    class="this.pos.productViewMode"
+                                    name="this.getProductName(product)"
+                                    color="product.color || product.pos_categ_ids?.at(-1)?.color"
+                                    imageUrl="this.pos.config.show_product_images and this.getProductImage(product)"
+                                    onClick.bind="() => this.addProductToOrder(product)"
+                                    t-on-pointerdown="(event) => this.onPointerDown(event, product)"
+                                    t-on-pointerup="this.longPressHandlers.onMouseUp"
+                                    productCartQty="this.state.quantityByProductTmplId[product.id]" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Numpad at the bottom of left pane -->
+                    <div class="pads">
+                        <div class="subpads d-flex flex-column gap-2">
+                            <Numpad t-if="!this.currentOrder?.isEmpty() and this.pos.getOrder()?.uiState.selected_orderline_uuid" class="'d-grid'" buttons="this.getNumpadButtons()" onClick.bind="this.onNumpadClick"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMN 2 (MIDDLE): Payment Methods, Lines & Validate -->
+                <div class="center d-flex flex-column justify-between h-100 flex-grow-1" style="width: 35%;">
+                    <div class="d-flex flex-column flex-grow-1 overflow-auto">
+                        <PaymentScreenStatus order="this.currentOrder"/>
+                        <div class="paymentmethods-container flex-grow-1 px-3">
+                            <div class="paymentmethods">
+                                <p class="title-category my-2">Payment method</p>
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <t t-foreach="this.payment_methods_from_config"
+                                       t-as="paymentMethod"
+                                       t-key="paymentMethod.id">
+                                        <div class="button paymentmethod btn btn-outline-secondary flex-grow-1 p-2 text-center"
+                                             t-on-click="() => this.addNewPaymentLine(paymentMethod)">
+                                            <div class="payment-name font-weight-bold">
+                                                <t t-out="paymentMethod.name"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                                <div class="summary">
+                                    <p class="title-category my-2">SUMMARY</p>
+                                </div>
+                                <PaymentScreenPaymentLines
+                                        paymentLines="this.paymentLines"
+                                        deleteLine.bind="this.deletePaymentLine"
+                                        sendForceDone.bind="this.sendForceDone"
+                                        sendForceCancel.bind="this.sendForceCancel"
+                                        sendPaymentCancel.bind="this.sendPaymentCancel"
+                                        sendPaymentRequest.bind="this.sendPaymentRequest"
+                                        selectLine.bind="this.selectPaymentLine"
+                                        updateSelectedPaymentline.bind="this.updateSelectedPaymentline"
+                                        isRefundOrder="this.isRefundOrder"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button next validation w-100 py-3 text-center cursor-pointer"
+                         t-on-click="this.confirmOrder" style="background:#39B8B8;">
+                        <div class="pay-circle d-inline-block me-2">
+                            <i class="oi oi-chevron-right" data-icon="chevron_right" role="img" aria-label="Pay" title="Pay"/>
+                        </div>
+                        <span class="next_text fw-bold text-white fs-5">Validate</span>
+                    </div>
+                </div>
+
+                <!-- COLUMN 3 (RIGHT): Customer Info & New Order -->
+                <div class="right d-flex flex-column justify-between h-100" style="width: 30%;">
+                    <div class="customer-section p-3 d-flex flex-column align-items-center w-100 flex-grow-1">
+                        <div class="head text-center my-3">
+                            <h2 class="fw-bold" style="color: #017e84;">CUSTOMER</h2>
+                        </div>
+                        <t t-call="simplified_pos.CustomerDetails"/>
+                        <div class="my-4 text-center w-100 d-flex justify-content-center">
+                            <button class="customer-button btn d-flex align-items-center justify-content-center p-2"
+                                    t-on-click="() => this.pos.selectPartner()"
+                                    style="width: 65%; border: 2px solid teal; color: teal; background: white; height: 38px;">
+                                <i class="oi oi-search" data-icon="search" role="img"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="button nextorder validation w-100 py-3 text-center cursor-pointer"
+                         t-att-class="{ highlight: !this.locked }"
+                         t-on-click="this.orderDone" style="background:#39B8B8;">
+                        <div class="pay-circle d-inline-block me-2">
+                            <i class="oi oi-chevron-right" data-icon="chevron_right" role="img" aria-label="Pay" title="Pay"/>
+                        </div>
+                        <span class="fw-bold text-white fs-5">New Order</span>
+                    </div>
+                </div>
+
+            </div>
+        </xpath>
+    </t>
+
+    <t t-name="simplified_pos.CustomerDetails">
+        <div class="_o_customer text-start w-100 p-3 rounded bg-light border">
+            <t t-if="this.currentOrder?.getPartner()">
+                <div class="mb-2">
+                    <span class="fw-bold text-muted small d-block">Name:</span>
+                    <span class="fs-6 fw-bold text-dark" t-out="this.currentOrder.getPartner().name"/>
+                </div>
+                <div class="mb-2" t-if="this.currentOrder.getPartner().contact_address or this.currentOrder.getPartner().street or this.currentOrder.getPartner().address">
+                    <span class="fw-bold text-muted small d-block">Address:</span>
+                    <span class="text-secondary small" t-out="this.currentOrder.getPartner().contact_address || this.currentOrder.getPartner().street || this.currentOrder.getPartner().address"/>
+                </div>
+                <div class="mb-2" t-if="this.currentOrder.getPartner().email">
+                    <span class="fw-bold text-muted small d-block">Email:</span>
+                    <span class="text-secondary small" t-out="this.currentOrder.getPartner().email"/>
+                </div>
+                <div t-if="this.currentOrder.getPartner().phone">
+                    <span class="fw-bold text-muted small d-block">Phone:</span>
+                    <span class="text-secondary small" t-out="this.currentOrder.getPartner().phone"/>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>
+
+
+

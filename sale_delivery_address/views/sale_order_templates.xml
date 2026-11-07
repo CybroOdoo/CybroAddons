@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Adding delivery details in sale order report -->
+    <template id="sale_order_portal_content_inherit"
+              name="Delivery Addresses in Portal"
+              inherit_id="sale.sale_order_portal_content">
+        <xpath expr="//table[@id='sales_order_table']//th[@id='product_name_header']"
+               position="after">
+            <th class="text-start">Delivery Address</th>
+        </xpath>
+        <xpath expr="//tr[@name='tr_product']/td[@name='td_product_name']"
+               position="after">
+            <td class="text-start">
+                <div id="address_deliver">
+                    <span t-field="line.delivery_addr_id"/>
+                </div>
+            </td>
+        </xpath>
+    </template>
+    <template id="report_saleorder_document_add_delivery_address"
+              inherit_id="sale.report_saleorder_document">
+        <!-- HEADER -->
+        <xpath expr="//table//thead//tr//th[@name='th_description']" position="attributes">
+            <attribute name="style">width: 32%;</attribute>
+        </xpath>
+        <xpath expr="//table//thead//tr//th[@name='th_description']" position="after">
+            <th name="th_delivery_address" class="text-start" style="width: 33%;">
+                <t t-set="colspan_count" t-value="colspan_count + 1"/>
+                Delivery Address
+            </th>
+        </xpath>
+        <!-- BODY -->
+        <xpath expr="//tr[@name='tr_product']/td[@name='td_product_name']" position="attributes">
+            <attribute name="class" remove="w-100"/>
+            <attribute name="t-att-style">(padding_style or '') + '; width: 32%;'</attribute>
+        </xpath>
+        <xpath expr="//tr[@name='tr_product']/td[@name='td_product_name']" position="after">
+            <td name="td_delivery_address" style="width: 33%;">
+                <t t-if="line.delivery_addr_id">
+                    <span t-out="line.delivery_addr_id.display_name"/>
+                    <span t-if="line.delivery_addr_id.street" t-out="' ' + line.delivery_addr_id.street"/>
+                    <span t-if="line.delivery_addr_id.city" t-out="' ' + line.delivery_addr_id.city"/>
+                    <span t-if="line.delivery_addr_id.zip" t-out="' ' + line.delivery_addr_id.zip"/>
+                </t>
+            </td>
+        </xpath>
+    </template>
+</odoo>

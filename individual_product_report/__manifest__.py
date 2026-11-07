@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#############################################################################
+{
+    'name': 'Product Sale Report Graph View',
+    'version': '20.0.1.0.0',
+    'category': 'Sales',
+    'summary': """Sale Report of Individual Products in Graph view""",
+    'description': """This module allows users to view sales reports of individual products in graph view.
+It adds a dedicated Sales Report smart button to product templates and variants to view sales analysis charts.""",
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': "https://www.cybrosys.com",
+    'depends': ['sale_management', 'sale', 'product'],
+    'data': [
+        'security/ir.access.csv',
+        'views/product_template_views.xml',
+        'views/product_product_views.xml',
+    ],
+    'images': ['static/description/banner.jpg'],
+    'license': 'LGPL-3',
+    'installable': True,
+    'auto_install': False,
+    'application': False,
+}

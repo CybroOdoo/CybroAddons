@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Introduce an interface to provide the points in website-->
+<odoo>
+    <template id="have_points" inherit_id="website_sale.total"
+              name="Referral Code">
+        <xpath expr="//table[@name='cart_total_table']" position="inside">
+            <t t-set="has_point" t-value="any(line.product_id.default_code == 'DISCOUNT001' for line in website_sale_order.order_line)"/>
+            <tr t-if="website_sale_order.partner_id.points and not has_point and not hide_promotions">
+                <td colspan="3" class="text-end border-0 p-0 pt-2">
+                    <t t-set="force_point" t-value="website_sale_order.partner_id.points"/>
+                    <a href="#" class="show_points btn btn-link p-0">I have points (<t t-out="force_point"/> pts)</a>
+                    <div class="point_form d-none mt-2">
+                        <t t-call="refer_friend_and_earn.point_form"/>
+                    </div>
+                </td>
+            </tr>
+        </xpath>
+    </template>
+    <!--    Template for applying the points-->
+    <template id='point_form' name='point form'>
+        <form t-att-action="'/shop/pricelist/points%s' % (redirect and '?r=' + redirect or '')"
+              method="post" name="coupon_code">
+            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+            <div class="input-group w-100">
+                <input name="points" class="form-control" type="text"
+                       id="points" placeholder="points..."
+                       t-att-value="website_sale_order.partner_id.points"/>
+                <button type="submit" class="btn btn-light border" id="points_apply">Apply</button>
+            </div>
+        </form>
+    </template>
+</odoo>

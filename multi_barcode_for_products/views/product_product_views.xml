@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Adding field template_multi_barcode_ids in product template -->
+    <record id="product_template_only_form_view" model="ir.ui.view">
+        <field name="name">product.template.view.form.inherit.multi.barcode.for.products</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']" position="after">
+                <page string="Barcodes" name="multi_barcodes">
+                    <field name="template_multi_barcode_ids">
+                        <list editable="bottom">
+                            <field name="product_multi_barcode"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <!-- Adding field product_multi_barcode in products -->
+    <record id="product_normal_form_view" model="ir.ui.view">
+        <field name="name">product.product.view.form.inherit.multi.barcode.for.products</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']" position="after">
+                <page string="Barcodes" name="multi_barcodes">
+                    <field name="multi_barcode_ids">
+                        <list editable="bottom">
+                            <field name="product_multi_barcode"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <!-- Searching the product variant with multi-barcodes -->
+    <record id="product_product_search_view" model="ir.ui.view">
+        <field name="name">product.product.view.search.inherit.multi.barcode.for.products</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_search_form_view"/>
+        <field name="arch" type="xml">
+            <field name="name" position="replace">
+                <field name="name" string="Product"
+                       filter_domain="['|', '|', '|', '|',
+                                      ('default_code', 'ilike', self),
+                                      ('name', 'ilike', self),
+                                      ('barcode', 'ilike', self),
+                                      ('display_name', '=', self),
+                                      ('multi_barcode_ids.product_multi_barcode', 'ilike', self)]"/>
+            </field>
+            <field name="name" position="after">
+                <field name="multi_barcode_ids" string="Multi Barcodes"
+                       filter_domain="[('multi_barcode_ids.product_multi_barcode', 'ilike', self)]"/>
+            </field>
+        </field>
+    </record>
+    <!-- Searching the product template with multi-barcodes -->
+    <record id="product_template_search_view" model="ir.ui.view">
+        <field name="name">product.template.view.search.inherit.multi.barcode.for.products</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <field name="name" position="replace">
+                <field name="name" string="Product"
+                       filter_domain="['|', '|', '|', '|',
+                                      ('default_code', 'ilike', self),
+                                      ('name', 'ilike', self),
+                                      ('barcode', 'ilike', self),
+                                      ('display_name', '=', self),
+                                      ('template_multi_barcode_ids.product_multi_barcode', 'ilike', self)]"/>
+            </field>
+            <field name="name" position="after">
+                <field name="template_multi_barcode_ids" string="Multi Barcodes"
+                       filter_domain="[('template_multi_barcode_ids.product_multi_barcode', 'ilike', self)]"/>
+            </field>
+        </field>
+    </record>
+</odoo>
