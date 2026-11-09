@@ -41,7 +41,6 @@ class ResUser(models.Model):
     is_dark = fields.Boolean('Dark mode Enabled', default=False)
     is_menu_bookmark = fields.Boolean('Menu Bookmark mode Enabled',
                                       default=False)
-    is_chameleon = fields.Boolean('Chameleon mode Enabled', default=False)
     dark_mode = fields.Selection([
         ('all', 'All'),
         ('schedule', 'Schedule'),

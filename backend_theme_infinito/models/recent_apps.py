@@ -15,7 +15,7 @@
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
 #############################################################################
-from odoo import api,fields, models
+from odoo import api, fields, models
 
 
 class RecentApps(models.Model):
@@ -52,8 +52,8 @@ class RecentApps(models.Model):
             spl_word = '.'
             res = la.split(spl_word, 1)
             if len(res) > 1:
-                splitString = res[1]
-                rec.type = splitString
+                split_string = res[1]
+                rec.type = split_string
             else:
                 rec.type = ""
 

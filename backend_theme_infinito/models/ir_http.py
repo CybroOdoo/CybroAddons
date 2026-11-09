@@ -57,12 +57,13 @@ class IrHttp(models.AbstractModel):
            - dict: A dictionary containing session information customized for
            the current user.
        """
-        res = super(IrHttp, self).session_info()
+        res = super().session_info()
         get_param = self.env['ir.config_parameter'].sudo().get_str
         if self.env.user.has_group('base.group_user'):
             user_edit = to_bool(get_param(
                 'backend_theme_infinito.is_user_edit', default=False))
             res['userEdit'] = user_edit
+            res['infinitoCanManageTheme'] = self.env.user.has_group('base.group_system')
             if user_edit:
                 res['sidebar'] = self.env.user.is_sidebar_enabled
                 res['fullscreen'] = self.env.user.is_fullscreen_enabled

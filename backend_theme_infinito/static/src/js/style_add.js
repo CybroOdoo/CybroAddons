@@ -1,6 +1,6 @@
-import { t, useProps } from "@odoo/owl";
-import { Component, proxy, usePlugin } from "@odoo/owl";
 /** @odoo-module **/
+import { t, useProps, Component, proxy, signal } from "@odoo/owl";
+
 
 import {Dialog} from "@web/core/dialog/dialog";
 import {_t} from "@web/core/l10n/translation";
@@ -10,6 +10,7 @@ import {NewTools} from "./change"
 const DesignDictionary = {}
 
 export class InfinitoDialog extends Component {
+    toolSelect = signal.ref();
     props = useProps({
         confirmLabel: t.string().optional(_t("ADD")),
         confirmClass: t.string().optional("btn-primary"),
@@ -37,7 +38,8 @@ export class InfinitoDialog extends Component {
      * Method to add selected tool to design dictionary
      */
     add() {
-        var val = document.querySelector('select').value;
+        const val = this.toolSelect()?.value;
+        if (!val) return;
         for (var i = 0; i < NewTools.property.length; i++) {
             for (var key in NewTools.property[i]) {
                 if (val.includes(NewTools.property[i][key]) && key === 'name' && NewTools.property[i][key] === val) {

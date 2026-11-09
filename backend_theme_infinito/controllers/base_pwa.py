@@ -19,6 +19,7 @@ import json
 from odoo import http
 from odoo.http import request
 
+
 class BasePwa(http.Controller):
     """
     Controller class for handling Progressive Web App (PWA) related functionalities.

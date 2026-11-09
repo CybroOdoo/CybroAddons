@@ -1,5 +1,6 @@
-import { onMounted, onPatched, proxy, signal } from "@odoo/owl";
 /** @odoo-module **/
+import { onMounted, onPatched, proxy, signal } from "@odoo/owl";
+
 
 
 import { ControlPanel } from "@web/search/control_panel/control_panel";

@@ -1,8 +1,8 @@
-import { onWillUnmount } from "@odoo/owl";
+/** @odoo-module **/
+import { onWillUnmount, Component, onMounted, onPatched, proxy } from "@odoo/owl";
 import { mount } from "./mount";
 import { useEnv } from "@web/owl2/utils";
-import { Component, onMounted, onPatched, proxy } from "@odoo/owl";
-/** @odoo-module **/
+
 
 import {EditorMenu} from "./editor_menu"
 import {ThemeEditorSidebar} from "./theme_editor_sidebar"
@@ -22,10 +22,15 @@ export class EditorClientAction extends Component {
         super.setup();
         this.env = useEnv();
         this.dialog = useService("dialog");
+        this.advancedPanel = useService("infinito_advanced_panel");
         this._mountedSidebar = null;
+        this._presetGeneration = 0;
         this._autoSelectTimer = null;
+        this._viewChangeTimer = null;
         onWillUnmount(() => {
+            this.advancedPanel.close();
             clearTimeout(this._autoSelectTimer);
+            clearTimeout(this._viewChangeTimer);
             this._closePresetSidebar();
             const navbar = document.querySelector('.o_main_navbar');
             if (navbar) navbar.style.removeProperty('display');
@@ -100,41 +105,15 @@ export class EditorClientAction extends Component {
     }
 
     _closeMainSidebar() {
-        const closeBtn = document.getElementById("closeSidebar");
-        const openBtn = document.getElementById("openSidebar");
-        const sidebarPanel = document.getElementById("sidebar_panel");
-
-        if (closeBtn) closeBtn.style.display = "none";
-        if (openBtn) openBtn.style.display = "block";
-        if (sidebarPanel) sidebarPanel.style.display = "none";
-
-        const actionManager = document.querySelector(".o_action_manager");
-        const topHead = document.querySelector(".top_heading");
-
-        if (actionManager) {
-            const actionManagerId = actionManager.dataset.id;
-            if (actionManagerId) {
-                document.querySelectorAll("div").forEach(div => div.classList.remove(actionManagerId));
-            }
-            actionManager.classList.remove("sidebar_margin");
-        }
-
-        if (topHead) {
-            const topHeadId = topHead.dataset.id;
-            if (topHeadId) {
-                document.querySelectorAll("div").forEach(div => div.classList.remove(topHeadId));
-            }
-            topHead.classList.remove("sidebar_margin");
-        }
+        this.env.bus.trigger("INFINITO:CLOSE_SIDEBAR");
     }
 
     _closePresetSidebar() {
-        try {
-            if (this._mountedSidebar?.destroy) {
-                this._mountedSidebar.destroy();
-            }
-        } catch {
+        this._presetGeneration++;
+        if (this._mountedSidebar?.destroy) {
+            this._mountedSidebar.destroy();
         }
+
         this._mountedSidebar = null;
         const existingSidebar = document.getElementById("theme_editor_sidebar_preset");
         if (existingSidebar) existingSidebar.remove();
@@ -203,7 +182,8 @@ export class EditorClientAction extends Component {
         }
 
         this.state.viewType = mode;
-        setTimeout(() => {
+        clearTimeout(this._viewChangeTimer);
+        this._viewChangeTimer = setTimeout(() => {
             this._syncMainOffsetForPresetSidebar();
             if (hadPresetSidebar) {
                 this._autoSelectFirstPreviewItem();
@@ -213,13 +193,8 @@ export class EditorClientAction extends Component {
 
     _closeSidebar() {
         const main_div = document.querySelector('.marg_main');
-        const sidebar = document.querySelector(".sidebar_simple_editor");
-
         this.state.sidebarOpen = false;
-
-        if (sidebar) {
-            sidebar.remove();
-        }
+        this.advancedPanel.close();
 
         if (main_div) {
             main_div.style.marginLeft = "0";
@@ -239,17 +214,8 @@ export class EditorClientAction extends Component {
      * @param {Event} ev - The click event object.
      */
     onItemClick(ev) {
-        try {
-            if (this._mountedSidebar?.destroy) {
-                this._mountedSidebar.destroy();
-            }
-        } catch {
-            // ignore
-        }
-        this._mountedSidebar = null;
-        const existingSidebar = document.getElementById("theme_editor_sidebar_preset");
-        if (existingSidebar) existingSidebar.remove();
-
+        this._closePresetSidebar();
+        const generation = this._presetGeneration;
 
         if (this.state.sidebarOpen || document.querySelector(".sidebar_simple_editor")) {
             this._closeSidebar();
@@ -262,7 +228,6 @@ export class EditorClientAction extends Component {
         var env = this.env;
         var dialog = this.dialog;
         ev.stopPropagation();
-        this.sidebar_pos = document.querySelector('.backend_theme_studio_sidebar .sidebar-here')
         const mounted = mount(ThemeEditorSidebar, document.body, {
             env,
             dialog,
@@ -273,17 +238,14 @@ export class EditorClientAction extends Component {
                 onClose: () => this._closePresetSidebar(),
             },
         });
-        if (mounted && typeof mounted.then === "function") {
-            mounted.then((inst) => {
-                this._mountedSidebar = inst;
-                // Ensure the newly rendered view is shifted correctly.
-                this._syncMainOffsetForPresetSidebar();
-            });
-        } else {
-            this._mountedSidebar = mounted;
-            // Mount is sync in this build, but defer to be safe.
-            setTimeout(() => this._syncMainOffsetForPresetSidebar(), 0);
-        }
+        return mounted.then((inst) => {
+            if (generation !== this._presetGeneration) {
+                inst.destroy();
+                return;
+            }
+            this._mountedSidebar = inst;
+            this._syncMainOffsetForPresetSidebar();
+        });
     }
 
     /**
@@ -299,11 +261,8 @@ export class EditorClientAction extends Component {
      * Handles the event when the reset button is clicked to reset to default settings.
      * @param {Event} ev - The click event object.
      */
-    _onResetClick(ev) {
-        rpc('/theme_studio/reset_to_default', {
-
-        });
-        this.setAssets();
+    async _onResetClick() {
+        await rpc('/theme_studio/reset_to_default', {});
         location.reload();
     }
 
@@ -323,28 +282,22 @@ export class EditorClientAction extends Component {
                 if (document.getElementById("theme_editor_sidebar_preset")) {
                     this._closePresetSidebar();
                 }
-                mount(EditorMenu, document.body, { env: this.env });
+                this.advancedPanel.open(EditorMenu);
                 main_div.style.marginLeft = "340px";
                 main_div.style.width = "calc(100% - 340px)";
             } else {
 
                 main_div.style.marginLeft = "0";
-                const side = document.querySelector(".sidebar_simple_editor");
-                if (side) side.remove();
+                this.advancedPanel.close();
                 main_div.style.width = "100%";
             }
         }
 
     }
 
-    /**
-     * Sets the assets for the theme editor.
-     */
-    setAssets() {
-        location.search = "?debug=assets";
-    }
 }
 
 EditorClientAction.template = "backend_theme_infinito.ThemeStudioMenu";
 
 registry.category("actions").add("backend_theme_infinito.editor_client_action", EditorClientAction);
+

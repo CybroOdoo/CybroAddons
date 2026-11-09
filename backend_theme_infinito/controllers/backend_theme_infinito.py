@@ -17,7 +17,8 @@
 #############################################################################
 import json
 import re
-from odoo import http
+from odoo import _, http
+from odoo.exceptions import AccessError
 from odoo.fields import Domain
 from odoo.http import request
 from odoo.tools import file_path
@@ -69,6 +70,15 @@ class ThemeStudio(http.Controller):
     applying themes, customizing themes, and saving theme settings.
     """
 
+    def _check_internal_user(self):
+        if not request.env.user.has_group('base.group_user'):
+            raise AccessError(_("Only internal users can access the backend theme."))
+
+    def _check_theme_admin(self):
+        self._check_internal_user()
+        if not request.env.user.has_group('base.group_system'):
+            raise AccessError(_("Only Settings administrators can change the global theme."))
+
     @http.route(['/theme_studio/save_styles'], type="jsonrpc", auth="user")
     def save_styles(self, kwargs):
         """
@@ -101,17 +111,18 @@ class ThemeStudio(http.Controller):
             })
             ```
         """
+        self._check_theme_admin()
         changed_styles_str = kwargs.get('changed_styles', '{}')
         object_class = kwargs.get('object_class', '')
         changed_styles = json.loads(changed_styles_str)
-        IrConfigParam = request.env['ir.config_parameter'].sudo()
-        css = IrConfigParam.get_str(_CSS_PARAM, default='')
+        config_parameters = request.env['ir.config_parameter'].sudo()
+        css = config_parameters.get_str(_CSS_PARAM, default='')
         css += '\n.' + object_class + ' {\n'
         for prop, val in changed_styles.items():
             css += '\t' + prop + ': ' + val + ';\n'
         css += '}\n'
         minified = _minify_css_string(css)
-        IrConfigParam.set_str(_CSS_PARAM, minified)
+        config_parameters.set_str(_CSS_PARAM, minified)
         return True
 
     @http.route(['/theme_studio/get_current_style'], type="jsonrpc", auth="user")
@@ -147,9 +158,10 @@ class ThemeStudio(http.Controller):
            # Output: [['color', 'red'], ['font-size', '16px']]
            ```
        """
+        self._check_internal_user()
         selector = kwargs.get('selector', '')
-        IrConfigParam = request.env['ir.config_parameter'].sudo()
-        css = IrConfigParam.get_str(_CSS_PARAM, default='')
+        config_parameters = request.env['ir.config_parameter'].sudo()
+        css = config_parameters.get_str(_CSS_PARAM, default='')
         css = re.sub(r'/\*[\s\S]*?\*/', "", css)
         css = re.sub(r'url\((["\'])([^)]*)\1\)', r'url(\2)', css)
         css = re.sub(r'\s+', ' ', css)
@@ -189,12 +201,14 @@ class ThemeStudio(http.Controller):
             reset_to_default()
             ```
         """
+        self._check_theme_admin()
         request.env['ir.config_parameter'].sudo().set_str(_CSS_PARAM, '')
         return True
 
-    @http.route(['/backend_theme_infinito/dynamic_styles.css'], type='http', auth='public')
+    @http.route(['/backend_theme_infinito/dynamic_styles.css'], type='http', auth='user')
     def serve_dynamic_styles(self):
         # Serve styles belonging to the current database.
+        self._check_internal_user()
         css = request.env['ir.config_parameter'].sudo().get_str(_CSS_PARAM, default='')
         return request.make_response(
             css,
@@ -246,36 +260,71 @@ class ThemeStudio(http.Controller):
             set_advanced_data(data)
     ```
         """
+        self._check_theme_admin()
         if args and 'vals' in args[0]:
             vals = args[0]['vals']
 
             # Get the ir.config_parameter object
-            IrConfigParam = request.env['ir.config_parameter'].sudo()
+            config_parameters = request.env['ir.config_parameter'].sudo()
 
             # ADD THE MISSING PARAMETERS:
-            IrConfigParam.set_bool('backend_theme_infinito.is_user_edit', vals.get('userEdit', False))
-            IrConfigParam.set_str('backend_theme_infinito.loader_class', vals.get('loaderClass', 'default'))
-            IrConfigParam.set_float('backend_theme_infinito.dark_start', vals.get('infinitoDarkStart', 19.0))
-            IrConfigParam.set_float('backend_theme_infinito.dark_end', vals.get('infinitoDarkEnd', 5.0))
+            config_parameters.set_bool(
+                'backend_theme_infinito.is_user_edit',
+                vals.get('userEdit', False)
+            )
+            config_parameters.set_str(
+                'backend_theme_infinito.loader_class',
+                vals.get('loaderClass', 'default')
+            )
+            config_parameters.set_float(
+                'backend_theme_infinito.dark_start',
+                vals.get('infinitoDarkStart', 19.0)
+            )
+            config_parameters.set_float(
+                'backend_theme_infinito.dark_end',
+                vals.get('infinitoDarkEnd', 5.0)
+            )
 
             # EXISTING PARAMETERS:
-            IrConfigParam.set_bool('backend_theme_infinito.is_sidebar_enabled', vals['sidebar'])
-            IrConfigParam.set_bool('backend_theme_infinito.is_fullscreen_enabled', vals['fullscreen'])
-            IrConfigParam.set_bool('backend_theme_infinito.is_sidebar_icon', vals['sidebarIcon'])
-            IrConfigParam.set_bool('backend_theme_infinito.is_sidebar_name', vals['sidebarName'])
-            IrConfigParam.set_bool('backend_theme_infinito.is_sidebar_company', vals['sidebarCompany'])
-            IrConfigParam.set_bool('backend_theme_infinito.is_sidebar_user', vals['sidebarUser'])
-            IrConfigParam.set_bool('backend_theme_infinito.is_recent_apps', vals['recentApps'])
-            IrConfigParam.set_bool('backend_theme_infinito.is_fullscreen_app', vals['fullScreenApp'])
-            IrConfigParam.set_bool('backend_theme_infinito.is_rtl', vals['infinitoRtl'])
-            IrConfigParam.set_bool('backend_theme_infinito.is_dark', vals['infinitoDark'])
-            IrConfigParam.set_str('backend_theme_infinito.dark_mode', vals['infinitoDarkMode'])
-            IrConfigParam.set_bool('backend_theme_infinito.is_menu_bookmark', vals['infinitoBookmark'])
+            config_parameters.set_bool(
+                'backend_theme_infinito.is_sidebar_enabled',
+                vals['sidebar']
+            )
+            config_parameters.set_bool(
+                'backend_theme_infinito.is_fullscreen_enabled',
+                vals['fullscreen']
+            )
+            config_parameters.set_bool(
+                'backend_theme_infinito.is_sidebar_icon',
+                vals['sidebarIcon']
+            )
+            config_parameters.set_bool(
+                'backend_theme_infinito.is_sidebar_name',
+                vals['sidebarName']
+            )
+            config_parameters.set_bool(
+                'backend_theme_infinito.is_sidebar_company',
+                vals['sidebarCompany']
+            )
+            config_parameters.set_bool(
+                'backend_theme_infinito.is_sidebar_user',
+                vals['sidebarUser']
+            )
+            config_parameters.set_bool('backend_theme_infinito.is_recent_apps', vals['recentApps'])
+            config_parameters.set_bool(
+                'backend_theme_infinito.is_fullscreen_app',
+                vals['fullScreenApp']
+            )
+            config_parameters.set_bool('backend_theme_infinito.is_rtl', vals['infinitoRtl'])
+            config_parameters.set_bool('backend_theme_infinito.is_dark', vals['infinitoDark'])
+            config_parameters.set_str('backend_theme_infinito.dark_mode', vals['infinitoDarkMode'])
+            config_parameters.set_bool(
+                'backend_theme_infinito.is_menu_bookmark',
+                vals['infinitoBookmark']
+            )
 
             return True
         return False
-
-
 
     @http.route(['/theme_studio/set_advanced_data_user'], type="jsonrpc", auth="user")
     def set_advanced_data_user(self, args):
@@ -321,6 +370,12 @@ class ThemeStudio(http.Controller):
             set_advanced_data_user(data)
             ```
         """
+        self._check_internal_user()
+        personal_edit = request.env['ir.config_parameter'].sudo().get_bool(
+            'backend_theme_infinito.is_user_edit', default=False,
+        )
+        if not personal_edit:
+            raise AccessError(_("Personal theme editing is disabled by the administrator."))
         if args and 'vals' in args[0]:
             vals = args[0]['vals']
             request.env.user.sudo().write({
@@ -342,6 +397,7 @@ class ThemeStudio(http.Controller):
             })
 
             return True
+        return False
 
     @http.route(['/theme_studio/add_recent_app'], type="jsonrpc", auth="user")
     def add_recent_app(self, args):
@@ -397,7 +453,8 @@ class ThemeStudio(http.Controller):
             ('app_id', '=', app_id),
             ('user_id', '=', request.env.user.id)
         ])
-        exist.unlink() if exist else None
+        if exist:
+            exist.unlink()
         total_recent = recent_app.search(
             [('user_id', '=', request.env.user.id)])
         if len(total_recent) > 4:
@@ -406,6 +463,7 @@ class ThemeStudio(http.Controller):
             'app_id': app_id,
             'user_id': request.env.user.id
         })
+        return True
 
     @http.route(['/theme_studio/get_recent_apps'], type="jsonrpc", auth="user")
     def get_recent_apps(self):
@@ -601,6 +659,5 @@ class ThemeStudio(http.Controller):
             ```
         """
         presets_path = file_path('backend_theme_infinito/static/src/json/presets.json')
-        file = open(presets_path, 'r')
-        presets = json.load(file)
-        return presets
+        with open(presets_path, encoding='utf-8') as presets_file:
+            return json.load(presets_file)

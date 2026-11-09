@@ -1,8 +1,9 @@
+/** @odoo-module **/
 import { registry } from "@web/core/registry";
-import { useBus } from "@web/core/utils/hooks";
+import { useService, useBus } from "@web/core/utils/hooks";
 import { routerBus } from "@web/core/browser/router";
 import { onMounted, onPatched, onWillStart, useListener } from "@odoo/owl";
-/** @odoo-module **/
+
 
 import { WebClient } from "@web/webclient/webclient";
 import { patch } from "@web/core/utils/patch";
@@ -16,6 +17,7 @@ patch(WebClient.prototype, {
 
     setup() {
         super.setup();
+        this.advancedPanel = useService("infinito_advanced_panel");
         useListener(document.body, 'mousemove', this.mouseMove.bind(this));
         onWillStart(this.onWillStart);
         useBus(routerBus, "ROUTE_CHANGE", () => this._closeThemeStudioPanels());
@@ -37,28 +39,7 @@ patch(WebClient.prototype, {
     },
 
     _closeThemeStudioPanels() {
-        // Case 1: Counter mounted via systray gear icon — destroy the Owl App so
-        // it doesn't re-render and re-insert its root element after DOM removal.
-        if (window._infinitoCounterApp) {
-            try { window._infinitoCounterApp.destroy(); } catch (e) {}
-            window._infinitoCounterApp = null;
-        }
-
-        document.body.classList.remove('infinito-advanced-sidebar-open');
-        document.body.style.removeProperty('--infinito-advanced-sidebar-width');
-        const webClient = document.querySelector('.o_web_client');
-        if (webClient) {
-            webClient.classList.remove('infinito-advanced-sidebar-open');
-            webClient.style.removeProperty('--infinito-advanced-sidebar-width');
-        }
-
-        // Case 2: EditorMenu wrapper (hamburger sidebar from editor_client_action)
-        const advPanel = document.querySelector('.sidebar_simple_editor');
-        if (advPanel) advPanel.remove();
-
-        // Case 3: Preset / element-editor sidebar
-        const presetSidebar = document.getElementById('theme_editor_sidebar_preset');
-        if (presetSidebar) presetSidebar.remove();
+        this.advancedPanel.close();
 
         // Restore action-manager width
         const main = document.querySelector('.o_action_manager');
@@ -146,22 +127,26 @@ patch(WebClient.prototype, {
             // is no double-inversion. Its background-color prevents the white
             // flash during the GPU compositing gap on every SPA navigation.
             document.documentElement.classList.add('dark-mode');
+            this.is_dark = true;
             try {
                 localStorage.setItem('infinito_dark_mode', '1');
-            } catch (e) {
+            } catch {
+                return; // Storage is unavailable; keep the current in-memory theme.
             }
-            this.is_dark = true;
+
         };
 
         const disableDark = () => {
             if (webClient) webClient.classList.remove('dark-mode');
             document.body.classList.remove('dark-mode');
             document.documentElement.classList.remove('dark-mode');
+            this.is_dark = false;
             try {
                 localStorage.removeItem('infinito_dark_mode');
-            } catch (e) {
+            } catch {
+                return; // Storage is unavailable; keep the current in-memory theme.
             }
-            this.is_dark = false;
+
         };
 
         if (session.infinitoDark) {

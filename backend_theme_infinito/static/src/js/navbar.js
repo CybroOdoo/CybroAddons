@@ -1,11 +1,13 @@
-import { onMounted, onPatched, proxy } from "@odoo/owl";
 /** @odoo-module **/
+import { onMounted, onPatched, onWillUnmount, useListener } from "@odoo/owl";
 
+
+import { useBus } from "@web/core/utils/hooks";
 import { NavBar } from "@web/webclient/navbar/navbar";
 import { patch } from "@web/core/utils/patch";
 import { rpc } from "@web/core/network/rpc";
 import { session } from "@web/session";
-import { renderToFragment } from "@web/core/utils/render";
+import { _t } from "@web/core/l10n/translation";
 import { fuzzyLookup } from "@web/core/utils/search";
 import { computeAppsAndMenuItems } from "@web/webclient/menus/menu_helpers";
 
@@ -23,33 +25,34 @@ patch(NavBar.prototype, {
         this._searchableMenus = menuItems;
         Object.assign(this.state, {
             flag: false,
-            sidebarOpen: false
+            sidebarOpen: false,
+            searchQuery: "",
+            searchResults: []
         });
 
 
+        useListener(document, "click", this.onSidebarOutsideClick.bind(this));
+        useBus(this.env.bus, "INFINITO:CLOSE_SIDEBAR", () => this.closeSidebar());
+        useBus(this.env.bus, "MENUS:APP-CHANGED", () => this.closeSidebar());
+
         onMounted(() => {
-            this.$search_container = document.querySelector(".search-container");
-            this.$search_input = document.querySelector(".search-input input");
-            this.$search_results = document.querySelector(".search-results");
-            this.$app_menu = document.querySelector(".app-menu");
-            this.$dropdown_menu = document.querySelector(".dropdown-menu");
-            // Delegated click listener on the search results container so that
-            // dynamically injected result anchors (rendered via renderToFragment,
-            // which cannot bind Owl component methods via t-on-click) still fire
-            // onClick without causing "Invalid handler: undefined" errors.
-            if (this.$search_results) {
-                this.$search_results.addEventListener('click', (ev) => this.onClick(ev));
-            }
-            this.doGreeting();
-            this.setupSidebarListeners();
             this._setupFullScreenAppsMenuListeners();
             this.updateSidebarMargin();
+        });
+
+        onWillUnmount(() => {
+            clearTimeout(this._search_timeout);
+            this._removeFullScreenListeners?.();
         });
 
         onPatched(() => {
             this.updateSidebarMargin();
         });
     },
+    get themeNav() {
+        return this.navRef?.() || this.root();
+    },
+
     _hideActionManagerForFullScreenMenu() {
         const actionManager = document.querySelector(".o_action_manager");
         if (actionManager) {
@@ -64,9 +67,9 @@ patch(NavBar.prototype, {
         }
     },
     _closeFullScreenMenu() {
-        const toggle = document.querySelector("a.full[data-bs-toggle='dropdown']");
+        const toggle = this.themeNav?.querySelector("a.full[data-bs-toggle='dropdown']");
         if (!toggle) return;
-        const menu = document.querySelector('.fullscreen-menu');
+        const menu = this.themeNav?.querySelector('.fullscreen-menu');
         if (menu) {
             menu.classList.remove('show');
         }
@@ -87,41 +90,39 @@ patch(NavBar.prototype, {
     },
 
     _setupFullScreenAppsMenuListeners() {
-        const toggle = document.querySelector("a.full[data-bs-toggle='dropdown']");
+        const toggle = this.themeNav?.querySelector("a.full[data-bs-toggle='dropdown']");
         if (!toggle) {
             return;
         }
-        toggle.addEventListener("show.bs.dropdown", () => {
+        const onShow = () => {
             this._hideNavbarMenusForFullScreenAppsMenu();
             this._hideActionManagerForFullScreenMenu();
-        });
-        toggle.addEventListener("hidden.bs.dropdown", () => {
+        };
+        const onHide = () => {
             this._showNavbarMenusAfterFullScreenAppsMenu();
             this._clearSearch();
             this._showActionManagerAfterFullScreenMenu();
-        });
+        };
+        toggle.addEventListener("show.bs.dropdown", onShow);
+        toggle.addEventListener("hidden.bs.dropdown", onHide);
+        this._removeFullScreenListeners = () => {
+            toggle.removeEventListener("show.bs.dropdown", onShow);
+            toggle.removeEventListener("hidden.bs.dropdown", onHide);
+        };
     }
     ,
 
-    setupSidebarListeners() {
-        const openSidebar = document.getElementById('openSidebar');
-        const closeSidebarButtons = document.querySelectorAll('#closeSidebar');
+    closeSidebar(ev) {
+        ev?.preventDefault();
+        this.state.sidebarOpen = false;
+        this.updateSidebarMargin();
+    },
 
-        if (openSidebar) {
-            openSidebar.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.state.sidebarOpen = true;
-                this.updateSidebarMargin();
-            });
+    onSidebarOutsideClick(ev) {
+        if (!this.state.sidebarOpen || !(ev.target instanceof Element)) return;
+        if (!ev.target.closest('#sidebar_panel, #openSidebar, #closeSidebar')) {
+            this.closeSidebar();
         }
-
-        closeSidebarButtons.forEach(closeBtn => {
-            closeBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.state.sidebarOpen = false;
-                this.updateSidebarMargin();
-            });
-        });
     },
 
     toggleSidebar(ev) {
@@ -132,7 +133,7 @@ patch(NavBar.prototype, {
 
     updateSidebarMargin() {
         const actionManager = document.querySelector(".o_action_manager");
-        const topHead = document.querySelector(".top_heading");
+        const topHead = this.themeNav?.querySelector(".top_heading");
         const sidebarPanel = document.getElementById('sidebar_panel');
         const isMin = sidebarPanel && sidebarPanel.classList.contains("m-sidebar");
 
@@ -165,83 +166,31 @@ patch(NavBar.prototype, {
         }
     },
 
-    async doGreeting() {
-        let time = new Date().getHours();
-        let greetings = 'Good';
+    get greeting() {
+        const hour = new Date().getHours();
+        const text = hour < 12 ? _t("Good Morning") : hour < 16 ? _t("Good Afternoon") : _t("Good Evening");
+        return `${text}, ${session.name || _t("User")}`;
+    },
 
-        if (time > 0 && time < 12) {
-            greetings = 'Good Morning, ';
-        } else if (time >= 12 && time < 16) {
-            greetings = 'Good Afternoon, ';
-        } else {
-            greetings = 'Good Evening, ';
-        }
-
-        try {
-            const sessionInfo = await rpc('/web/session/get_session_info');
-            const userName = sessionInfo.name || "User";
-            const userId = sessionInfo.uid;
-            const baseUrl = sessionInfo['web.base.url'] || window.location.origin;
-
-            greetings += userName;
-
-            const greetingEl = document.querySelector('.infinito-greeting');
-            if (greetingEl) {
-                greetingEl.textContent = greetings;
-            }
-
-            const imgUrl = `${baseUrl}/web/image?model=res.users&field=avatar_128&id=${userId}`;
-            const userImgEl = document.querySelector('.infinito-user_img');
-            if (userImgEl) {
-                userImgEl.setAttribute('src', imgUrl);
-            }
-        } catch (error) {
-            console.error("Error fetching session info:", error);
-        }
+    get userAvatar() {
+        return `/web/image?model=res.users&field=avatar_128&id=${session.uid}`;
     },
 
     _clearSearch() {
-        if (this.$search_input) {
-            this.$search_input.value = '';
-        }
-        if (this.$search_results) {
-            this.$search_results.innerHTML = '';
-        }
-        if (this.$search_container) {
-            this.$search_container.classList.remove('has-results');
-        }
-        if (this.$app_menu) {
-            this.$app_menu.classList.remove('o_hidden');
-        }
+        this.state.searchQuery = "";
+        this.state.searchResults = [];
     },
 
-    _searchMenusSchedule() {
-        if (this.$search_results) {
-            this.$search_results.classList.remove("o_hidden");
-        }
-        if (this.$app_menu) {
-            this.$app_menu.classList.add("o_hidden");
-        }
-        if (this._search_timeout) {
-            clearTimeout(this._search_timeout);
-        }
-        this._search_timeout = setTimeout(() => {
-            this._searchMenus();
-        }, 50);
+    _searchMenusSchedule(ev) {
+        this.state.searchQuery = ev.target.value;
+        clearTimeout(this._search_timeout);
+        this._search_timeout = setTimeout(() => this._searchMenus(), 50);
     },
 
     _searchMenus() {
-        var query = this.$search_input ? this.$search_input.value : "";
-        if (query === "") {
-            if (this.$search_container) {
-                this.$search_container.classList.remove("has-results");
-            }
-            if (this.$app_menu) {
-                this.$app_menu.classList.remove("o_hidden");
-            }
-            if (this.$search_results) {
-                this.$search_results.innerHTML = "";
-            }
+        const query = this.state.searchQuery;
+        if (!query) {
+            this.state.searchResults = [];
             return;
         }
 
@@ -272,19 +221,7 @@ patch(NavBar.prototype, {
             });
         });
 
-        if (this.$search_container) {
-            this.$search_container.classList.toggle("has-results", Boolean(results.length));
-        }
-
-        const render = renderToFragment("backend_theme_infinito.SearchResults", {
-            results: results,
-            widget: this,
-        });
-
-        if (this.$search_results) {
-            this.$search_results.innerHTML = "";
-            this.$search_results.appendChild(render);
-        }
+        this.state.searchResults = results;
     },
 
     onClick(ev) {
@@ -319,18 +256,20 @@ patch(NavBar.prototype, {
                     args: [app]
                 }).then(() => {
                     this.env.bus.trigger('INFINITO:RECENT_APPS_UPDATED');
-                }).catch(err => {
-                    console.error('Failed to add recent app:', err);
+                }).catch(() => {
+                    this.env.services.notification.add(_t("Could not update recent apps."), {
+                        type: "warning",
+                    });
                 });
             }
         }
 
-        if (window.innerWidth < 992) {
+        if (window.innerWidth < 992 || ev.target.closest('.sidebar')) {
             this.state.sidebarOpen = false;
             this.updateSidebarMargin();
         }
 
-        const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
+        const openDropdowns = this.themeNav?.querySelectorAll('.dropdown-menu.show') || [];
         openDropdowns.forEach(dropdown => {
             dropdown.classList.remove('show');
         });
@@ -370,7 +309,7 @@ patch(NavBar.prototype, {
     },
 
     OnclickFullScreenMenu() {
-        const hasShow = document.querySelector('a.show');
+        const hasShow = this.themeNav?.querySelector('a.show');
         if (hasShow) {
             this._setElementsDisplay('.o_menu_sections', 'none');
             this._setElementsDisplay('.o_menu_brand', 'none');
@@ -388,162 +327,35 @@ patch(NavBar.prototype, {
         });
     },
 
+    get infinitoRtl() {
+        return session.infinitoRtl ? "infinito-rtl" : "";
+    },
     get sidebarEnabled() {
         return session.sidebar;
-    },
-    set sidebarEnabled(val) {
     },
     get sidebarIcon() {
         return session.sidebarIcon;
     },
-    set sidebarIcon(val) {
-    },
     get sidebarName() {
         return session.sidebarName;
-    },
-    set sidebarName(val) {
     },
     get sidebarResize() {
         return session.sidebarIcon && !session.sidebarName ? 'm-sidebar' : '';
     },
-    set sidebarResize(val) {
-    },
     get sidebarCompany() {
         return session.sidebarCompany;
-    },
-    set sidebarCompany(val) {
     },
     get sidebarCompanyLogo() {
         return session.sidebarCompany ? 'has-company' : '';
     },
-    set sidebarCompanyLogo(val) {
-    },
     get sidebarUser() {
         return session.sidebarUser;
-    },
-    set sidebarUser(val) {
     },
     get FullScreenEnabled() {
         return session.fullscreen ? 'infinito-navbar-hover' : '';
     },
-    set FullScreenEnabled(val) {
-    },
     get fullScreenApp() {
         return session.fullScreenApp;
     },
-    set fullScreenApp(val) {
-    },
 });
 
-// Enterprise NavBar compatibility patch.
-//
-// EnterpriseNavBar._updateMenuAppsIcon is called in onMounted and looks for a
-// specific DOM element (e.g. the apps-toggle button).  When the Infinito sidebar
-// replaces that element the query returns null and Enterprise throws:
-//   TypeError: Cannot read properties of null (reading 'classList')
-// crashing the entire OWL app with a white page.
-//
-// We defer with Promise.resolve().then() so that all modules — including the
-// Enterprise bundle — finish evaluating synchronously before we try to read
-// odoo.loader.modules.  OWL mounts via DOMContentLoaded (a macrotask that runs
-// after the current microtask queue is drained), so our patch is always applied
-// before the first onMounted call.
-const _patchEnterpriseNavBarCompat = () => {
-    try {
-        const loader = globalThis.odoo && globalThis.odoo.loader;
-        if (!loader || !loader.modules) return;
-
-        let EnterpriseNavBar = null;
-
-        // Known path first (fast path for standard Enterprise layouts)
-        const knownPaths = [
-            '@enterprise/web/webclient/navbar/enterprise_navbar',
-        ];
-        for (const p of knownPaths) {
-            const mod = loader.modules.get(p);
-            if (mod && mod.EnterpriseNavBar) {
-                EnterpriseNavBar = mod.EnterpriseNavBar;
-                break;
-            }
-        }
-
-        // Fallback: scan all loaded modules for any that export EnterpriseNavBar
-        if (!EnterpriseNavBar) {
-            for (const [, mod] of loader.modules) {
-                if (mod && mod.EnterpriseNavBar) {
-                    EnterpriseNavBar = mod.EnterpriseNavBar;
-                    break;
-                }
-            }
-        }
-
-        if (!EnterpriseNavBar) return;
-
-        const proto = EnterpriseNavBar.prototype;
-        const orig = proto._updateMenuAppsIcon;
-        if (!orig || orig.__infinitoPatch) return;
-
-        proto._updateMenuAppsIcon = function () {
-            try {
-                orig.call(this);
-            } catch (e) {
-                // Sidebar has replaced the standard apps-icon element.
-                // Swallow the null-access error so OWL does not crash.
-            }
-        };
-        proto._updateMenuAppsIcon.__infinitoPatch = true;
-    } catch (e) {
-        // Enterprise not installed or module path unknown — nothing to patch.
-    }
-};
-
-Promise.resolve().then(_patchEnterpriseNavBarCompat);
-
-// Enterprise Home Menu compatibility patch.
-//
-// The Enterprise full-screen "Home Menu" (apps grid) renders its own app
-// icons and calls HomeMenu.prototype._onAppClick directly — it never goes
-// through DropdownItem or NavBar's onClick, so clicks there never reached
-// our /theme_studio/add_recent_app recorder and the Recent Apps tray stayed
-// empty for anyone navigating via that screen. We patch _onAppClick the same
-// defensive, dynamically-discovered way as _updateMenuAppsIcon above.
-const _patchEnterpriseHomeMenuCompat = () => {
-    try {
-        const loader = globalThis.odoo && globalThis.odoo.loader;
-        if (!loader || !loader.modules) return;
-
-        let HomeMenu = null;
-        for (const [, mod] of loader.modules) {
-            if (mod && mod.HomeMenu && mod.HomeMenu.prototype && mod.HomeMenu.prototype._onAppClick) {
-                HomeMenu = mod.HomeMenu;
-                break;
-            }
-        }
-        if (!HomeMenu) return;
-
-        const proto = HomeMenu.prototype;
-        const orig = proto._onAppClick;
-        if (!orig || orig.__infinitoPatch) return;
-
-        proto._onAppClick = function (app) {
-            try {
-                if (app && app.id) {
-                    rpc('/theme_studio/add_recent_app', {
-
-                        args: [{ appId: app.id }]
-                    }).then(() => {
-                        this.env.bus.trigger('INFINITO:RECENT_APPS_UPDATED');
-                    }).catch(() => {});
-                }
-            } catch (e) {
-                // Never let recent-app tracking break app navigation.
-            }
-            return orig.call(this, app);
-        };
-        proto._onAppClick.__infinitoPatch = true;
-    } catch (e) {
-        // Enterprise not installed or module shape unknown — nothing to patch.
-    }
-};
-
-Promise.resolve().then(_patchEnterpriseHomeMenuCompat);

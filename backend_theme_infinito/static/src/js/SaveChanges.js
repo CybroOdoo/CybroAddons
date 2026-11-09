@@ -1,11 +1,10 @@
-import { t, useProps } from "@odoo/owl";
-import { Component } from "@odoo/owl";
 /** @odoo-module **/
+import { t, useProps, Component } from "@odoo/owl";
+
 
 import {Dialog} from "@web/core/dialog/dialog";
 import {_t} from "@web/core/l10n/translation";
 import {rpc} from "@web/core/network/rpc";
-import {browser} from "@web/core/browser/browser";
 
 
 export class SaveChanges extends Component {
@@ -18,9 +17,6 @@ export class SaveChanges extends Component {
         targetClass: t.string().optional(),
         close: t.function().optional(),
     });
-    setup() {
-    }
-
     async _onClickApply() {
         const rules = [
             { targetClass: this.props.targetClass, styles: this.props.tools },
@@ -38,8 +34,8 @@ export class SaveChanges extends Component {
                 },
             });
         }
-        browser.location.search = "?debug=assets";
         this.props.close();
+        window.location.reload();
     }
 
     handleCloseDialog() {

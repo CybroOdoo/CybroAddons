@@ -1,7 +1,8 @@
-import { mount } from "./mount";
-import { useEnv } from "@web/owl2/utils";
-import { Component, proxy, usePlugin } from "@odoo/owl";
 /* @odoo-module */
+import { session } from "@web/session";
+import { useEnv } from "@web/owl2/utils";
+import { Component } from "@odoo/owl";
+
 
 import {registry} from "@web/core/registry";
 import {useService} from "@web/core/utils/hooks";
@@ -15,6 +16,7 @@ export class InfinitoSystrayItem extends Component {
     setup() {
 
         this.env = useEnv();
+        this.advancedPanel = useService("infinito_advanced_panel");
         this.action = useService("action");
         this.actionService = useService("action");
         this.mode = false;
@@ -32,12 +34,7 @@ export class InfinitoSystrayItem extends Component {
      * Method to handle click event for Advanced Editor
      */
     _onClickAdvancedEditor() {
-        if (window._infinitoCounterApp) {
-            window._infinitoCounterApp.destroy();
-            window._infinitoCounterApp = null;
-        }
-        document.body.classList.remove('infinito-advanced-sidebar-open');
-        document.querySelector('.o_web_client')?.classList.remove('infinito-advanced-sidebar-open');
+        this.advancedPanel.close();
         var navbar = document.querySelector(".o_main_navbar")
         if (navbar) {
             navbar.style.display = "none";
@@ -49,6 +46,7 @@ export class InfinitoSystrayItem extends Component {
 // Exporting systrayItem
 export const systrayItem = {
     Component: InfinitoSystrayItem,
+    isDisplayed: () => Boolean(session.infinitoCanManageTheme),
 };
 
 // Definition of InfinitoSystrayAdv component
@@ -58,62 +56,20 @@ export class InfinitoSystrayAdv extends Component {
     // Setup method to initialize component
     setup() {
         this.env = useEnv();
+        this.advancedPanel = useService("infinito_advanced_panel");
         this.action = useService("action");
         this.dialog = useService("dialog");
     }
 
-    _syncAdvancedSidebarLayout() {
-        const panel = document.getElementById('theme_editor_sidebar');
-        const width = Math.ceil(panel?.getBoundingClientRect().width || 343);
-        const webClient = document.querySelector('.o_web_client');
-
-        document.body.classList.add('infinito-advanced-sidebar-open');
-        document.body.style.setProperty('--infinito-advanced-sidebar-width', `${width}px`);
-
-        if (webClient) {
-            webClient.classList.add('infinito-advanced-sidebar-open');
-            webClient.style.setProperty('--infinito-advanced-sidebar-width', `${width}px`);
-        }
-    }
-
-    /**
-     * Method to handle click event for Advanced Systray
-     */
-
-
     _onClick() {
-        const env = this.env;
-        const dialog = this.dialog;
-
-        // Don't open a second panel if one is already mounted
-        if (window._infinitoCounterApp) {
-            this._syncAdvancedSidebarLayout();
-            return;
-        }
-
-        const main = document.querySelector('.o_action_manager');
-        const app = mount(Counter, document.body, {env, dialog});
-
-        // Store the App instance (sync or async) so we can destroy() it on navigation
-        if (app && typeof app.then === 'function') {
-            app.then(inst => {
-                window._infinitoCounterApp = inst;
-                requestAnimationFrame(() => this._syncAdvancedSidebarLayout());
-            });
-        } else {
-            window._infinitoCounterApp = app;
-            requestAnimationFrame(() => this._syncAdvancedSidebarLayout());
-        }
-
-        if (main) {
-            main.classList.add('infinito-sidebar-open');
-        }
+        return this.advancedPanel.open(Counter);
     }
 
 }
 
 export const InfinitoSystrayAdvItem = {
     Component: InfinitoSystrayAdv,
+    isDisplayed: () => Boolean(session.infinitoCanManageTheme || session.userEdit),
 };
 registry.category("systray").add("backend_theme_infinito.infinito_systray", systrayItem, {sequence: 25})
     .add("backend_theme_infinito.infinito_systray_adv", InfinitoSystrayAdvItem, {sequence: 26})

@@ -1,20 +1,31 @@
-import { Component, onWillUnmount, proxy, usePlugin, xml } from "@odoo/owl";
 /** @odoo-module **/
+import { Component, onWillUnmount, proxy, signal, t, useProps, xml } from "@odoo/owl";
+import { useEnv } from "@web/owl2/utils";
 
 
-import {Tool} from "./Tool"
+
 import {SaveChanges} from "./SaveChanges";
 import {NewTools} from "./change"
 import {useService, useBus} from "@web/core/utils/hooks";
 import {InfinitoDialog} from "./style_add"
+import { _t } from "@web/core/l10n/translation";
 import {rpc} from "@web/core/network/rpc";
 
 
 
 
 export class ThemeEditorSidebar extends Component {
+    panelRef = signal.ref();
+
+    props = useProps({
+        elem_name: t.string().optional(""),
+        preset: t.string().optional(),
+        object: t.object(),
+        onClose: t.function().optional(),
+    });
+
     static template = xml`<t t-name="backend_theme_infinito.theme_editor_sidebar">
-        <div id="theme_editor_sidebar_preset" class="main_sidebar">
+        <div id="theme_editor_sidebar_preset" class="main_sidebar" t-ref="this.panelRef">
             <div class="toggle-btn" t-on-click="this.toggleSidebar">
                 <div class="img_wrapper">
                     <img src="/backend_theme_infinito/static/src/img/infinito/arrow,-direction,-down,-navigate.svg"
@@ -36,7 +47,7 @@ export class ThemeEditorSidebar extends Component {
                                     <h6>Presets</h6>
                                     <div class="optss">
                                         <t t-if="this.state.preset_type == 'button' ">
-                                            <div class="form-group infinito-preset">
+                                            <div class="mb-3 infinito-preset">
                                                 <select class="form-control"
                                                         id="presets" t-on-change="this._onPresetChange">
                                                         <t t-if="this.state.presets">
@@ -149,7 +160,7 @@ export class ThemeEditorSidebar extends Component {
             </div>
             <div class="sidebar_footer">
                 <a href="#" class="btn btn-reset js_reset_changes" t-on-click="this._onResetChanges" style="margin-top:0px;">Reset</a>
-                <a href="#" class="btn btn-submit js_save_changes" t-on-click="this._onSaveChanges">Save Change
+                <a href="#" class="btn btn-submit js_save_changes" t-on-click="this._onSaveChanges">Save Changes
                 </a>
             </div>
         </div>
@@ -157,20 +168,19 @@ export class ThemeEditorSidebar extends Component {
 
     /**
      * Setup method for initializing the component
-     * @param {Object} parent - The parent object
-     * @param {Object} object - The object to initialize
      */
-    setup(parent, object) {
+    setup() {
+        this.env = useEnv();
         this.action = useService("action");
         this.dialog = useService("dialog");
+        this.notification = useService("notification");
         this._alive = true;
         onWillUnmount(() => {
             this._alive = false;
         });
 
         this.tools = NewTools.property
-        this.current_tools = [],
-            this.parent = parent;
+        this.current_tools = [];
         this.state = proxy({
             display_name: null,
             DesignDictionary: {},
@@ -226,7 +236,9 @@ export class ThemeEditorSidebar extends Component {
                     this.state.presets = response;
                 }
             } catch {
-                // ignore preset load failures
+                if (this._alive) {
+                    this.notification.add(_t("Could not load theme presets."), { type: "warning" });
+                }
             }
         }
     }
@@ -303,7 +315,9 @@ export class ThemeEditorSidebar extends Component {
                 self.renderExistingTool(data);
             }
         } catch {
-            // ignore style load failures
+            if (this._alive) {
+                this.notification.add(_t("Could not load the current style."), { type: "warning" });
+            }
         }
     }
 
@@ -368,36 +382,33 @@ export class ThemeEditorSidebar extends Component {
             const flexMap = {left: "flex-start", center: "center", right: "flex-end"};
             const selfAlign = (n) => {
                 if (!n || !n.style) return;
-                try {
-                    const parent = n.parentElement;
-                    if (!parent) return;
-                    const isInputLike =
-                        n.matches?.("input,select,textarea") ||
-                        n.classList?.contains("o_input") ||
-                        n.classList?.contains("form-control") ||
-                        n.classList?.contains("o_datepicker_input");
-                    if (!isInputLike) return;
+                const parent = n.parentElement;
+                if (!parent) return;
+                const isInputLike =
+                    n.matches?.("input,select,textarea") ||
+                    n.classList?.contains("o_input") ||
+                    n.classList?.contains("form-control") ||
+                    n.classList?.contains("o_datepicker_input");
+                if (!isInputLike) return;
 
-                    // Only try to reposition if it doesn't already span full width.
-                    const rect = n.getBoundingClientRect();
-                    const prect = parent.getBoundingClientRect();
-                    if ((prect.width - rect.width) < 4) return;
+                // Only try to reposition if it doesn't already span full width.
+                const rect = n.getBoundingClientRect();
+                const prect = parent.getBoundingClientRect();
+                if ((prect.width - rect.width) < 4) return;
 
-                    // Margins are the safest way to align a fixed-width control in its container.
-                    n.style.setProperty("display", "block", "important");
-                    if (align === "left") {
-                        n.style.setProperty("margin-left", "0", "important");
-                        n.style.setProperty("margin-right", "auto", "important");
-                    } else if (align === "center") {
-                        n.style.setProperty("margin-left", "auto", "important");
-                        n.style.setProperty("margin-right", "auto", "important");
-                    } else if (align === "right") {
-                        n.style.setProperty("margin-left", "auto", "important");
-                        n.style.setProperty("margin-right", "0", "important");
-                    }
-                } catch {
-                    // ignore
+                // Margins are the safest way to align a fixed-width control in its container.
+                n.style.setProperty("display", "block", "important");
+                if (align === "left") {
+                    n.style.setProperty("margin-left", "0", "important");
+                    n.style.setProperty("margin-right", "auto", "important");
+                } else if (align === "center") {
+                    n.style.setProperty("margin-left", "auto", "important");
+                    n.style.setProperty("margin-right", "auto", "important");
+                } else if (align === "right") {
+                    n.style.setProperty("margin-left", "auto", "important");
+                    n.style.setProperty("margin-right", "0", "important");
                 }
+
             };
 
             const searchInputContainer = target?.closest?.(".o_searchview_input_container");
@@ -428,14 +439,11 @@ export class ThemeEditorSidebar extends Component {
                 }
                 n.style.setProperty("text-align", align, "important");
                 selfAlign(n);
-                try {
-                    const disp = window.getComputedStyle(n).display;
-                    if (disp && disp.includes("flex") && flexMap[align]) {
-                        n.style.setProperty("justify-content", flexMap[align], "important");
-                    }
-                } catch {
-                    // Ignore if computed styles are not available for some reason.
+                const disp = window.getComputedStyle(n).display;
+                if (disp && disp.includes("flex") && flexMap[align]) {
+                    n.style.setProperty("justify-content", flexMap[align], "important");
                 }
+
             });
         }
 
@@ -449,103 +457,94 @@ export class ThemeEditorSidebar extends Component {
                 "text-bottom": "flex-end",
             };
 
-            try {
-                const disp = selectedTarget && window.getComputedStyle(selectedTarget).display;
-                const flexVal = flexAlignMap[align];
-                if (disp && disp.includes("flex") && flexVal) {
-                    const isProgress =
-                        selectedTarget?.classList?.contains("progress") ||
-                        selectedTarget?.classList?.contains("o_kanban_counter_progress");
-                    if (isProgress) {
+            const disp = selectedTarget && window.getComputedStyle(selectedTarget).display;
+            const flexVal = flexAlignMap[align];
+            if (disp && disp.includes("flex") && flexVal) {
+                const isProgress =
+                    selectedTarget?.classList?.contains("progress") ||
+                    selectedTarget?.classList?.contains("o_kanban_counter_progress");
+                if (isProgress) {
 
-                        selectedTarget.style.setProperty("display", "flex", "important");
-                        selectedTarget.style.setProperty("align-items", flexVal, "important");
-                        selectedTarget.style.setProperty("height", "18px", "important");
-                        selectedTarget
-                            .querySelectorAll?.(".progress-bar")
-                            ?.forEach((pb) => pb.style.setProperty("height", "10px", "important"));
-                    } else {
-                        selectedTarget.style.setProperty("align-items", flexVal, "important");
-                        if (!selectedTarget.style.minHeight) {
-                            selectedTarget.style.setProperty("min-height", "48px", "important");
-                        }
+                    selectedTarget.style.setProperty("display", "flex", "important");
+                    selectedTarget.style.setProperty("align-items", flexVal, "important");
+                    selectedTarget.style.setProperty("height", "18px", "important");
+                    selectedTarget
+                        .querySelectorAll?.(".progress-bar")
+                        ?.forEach((pb) => pb.style.setProperty("height", "10px", "important"));
+                } else {
+                    selectedTarget.style.setProperty("align-items", flexVal, "important");
+                    if (!selectedTarget.style.minHeight) {
+                        selectedTarget.style.setProperty("min-height", "48px", "important");
                     }
                 }
-            } catch {
-                // ignore
             }
 
-            try {
-                const searchInputContainer = target?.closest?.(".o_searchview_input_container");
-                const flexVal = flexAlignMap[align];
-                if (searchInputContainer && flexVal) {
-                    searchInputContainer.style.setProperty("display", "flex", "important");
-                    searchInputContainer.style.setProperty("align-items", flexVal, "important");
-                    searchInputContainer.style.setProperty("min-height", "36px", "important");
-                }
-            } catch {
-                // ignore
+
+            const searchInputContainer = target?.closest?.(".o_searchview_input_container");
+            if (searchInputContainer && flexVal) {
+                searchInputContainer.style.setProperty("display", "flex", "important");
+                searchInputContainer.style.setProperty("align-items", flexVal, "important");
+                searchInputContainer.style.setProperty("min-height", "36px", "important");
             }
+
 
             nodes.forEach((n) => {
                 if (!n?.style) return;
                 n.style.setProperty("vertical-align", align, "important");
-                try {
-                    const disp = window.getComputedStyle(n).display;
-                    const flexVal = flexAlignMap[align];
-                    if (!flexVal) return;
+                const disp = window.getComputedStyle(n).display;
+                const flexVal = flexAlignMap[align];
+                if (!flexVal) return;
 
-                    const applyFlexAlign = (el) => {
-                        if (!el?.style) return;
-                        // Avoid forcing flex on table structural elements (tr/tbody/etc).
-                        const t = (el.tagName || "").toUpperCase();
-                        if (t === "TR" || t === "TBODY" || t === "THEAD" || t === "TFOOT" || t === "TABLE") return;
-                        el.style.setProperty("display", "flex", "important");
-                        el.style.setProperty("align-items", flexVal, "important");
-                        // If the container has height, 100% makes the alignment visible.
-                        el.style.setProperty("height", "100%", "important");
-                        if (!el.style.minHeight) {
-                            el.style.setProperty("min-height", "48px", "important");
-                        }
-                    };
-
-                    if (disp && disp.includes("flex")) {
-                        const isProgress =
-                            n?.classList?.contains("progress") ||
-                            n?.classList?.contains("o_kanban_counter_progress");
-                        if (isProgress) {
-                            n.style.setProperty("display", "flex", "important");
-                            n.style.setProperty("align-items", flexVal, "important");
-                            n.style.setProperty("height", "18px", "important");
-                            n.querySelectorAll?.(".progress-bar")?.forEach((pb) => {
-                                pb.style.setProperty("height", "10px", "important");
-                            });
-                        } else {
-                            n.style.setProperty("align-items", flexVal, "important");
-                        }
-                        return;
+                const applyFlexAlign = (el) => {
+                    if (!el?.style) return;
+                    // Avoid forcing flex on table structural elements (tr/tbody/etc).
+                    const t = (el.tagName || "").toUpperCase();
+                    if (t === "TR" || t === "TBODY" || t === "THEAD" || t === "TFOOT" || t === "TABLE") return;
+                    el.style.setProperty("display", "flex", "important");
+                    el.style.setProperty("align-items", flexVal, "important");
+                    // If the container has height, 100% makes the alignment visible.
+                    el.style.setProperty("height", "100%", "important");
+                    if (!el.style.minHeight) {
+                        el.style.setProperty("min-height", "48px", "important");
                     }
+                };
 
-                    const tag = (n.tagName || "").toUpperCase();
-                    if (tag === "TD" || tag === "TH" || disp === "table-cell") {
-                        const inner = n.firstElementChild;
-                        if (inner && (inner.tagName === "DIV" || inner.tagName === "SPAN")) {
-                            applyFlexAlign(inner);
-                        } else {
-                            applyFlexAlign(n);
-                        }
-                        return;
+                if (disp && disp.includes("flex")) {
+                    const isProgress =
+                        n?.classList?.contains("progress") ||
+                        n?.classList?.contains("o_kanban_counter_progress");
+                    if (isProgress) {
+                        n.style.setProperty("display", "flex", "important");
+                        n.style.setProperty("align-items", flexVal, "important");
+                        n.style.setProperty("height", "18px", "important");
+                        n.querySelectorAll?.(".progress-bar")?.forEach((pb) => {
+                            pb.style.setProperty("height", "10px", "important");
+                        });
+                    } else {
+                        n.style.setProperty("align-items", flexVal, "important");
                     }
-
-                    applyFlexAlign(n);
-                } catch {
+                    return;
                 }
+
+                const tag = (n.tagName || "").toUpperCase();
+                if (tag === "TD" || tag === "TH" || disp === "table-cell") {
+                    const inner = n.firstElementChild;
+                    if (inner && (inner.tagName === "DIV" || inner.tagName === "SPAN")) {
+                        applyFlexAlign(inner);
+                    } else {
+                        applyFlexAlign(n);
+                    }
+                    return;
+                }
+
+                applyFlexAlign(n);
+
             });
         }
 
 
         // Active UI state
-        const scope = this.el || document;
+        const scope = this.panelRef();
         scope
             .querySelectorAll(`.t_align [data-type="${type}"]`)
             .forEach(el => el.classList.remove('active'));
@@ -602,7 +601,7 @@ export class ThemeEditorSidebar extends Component {
 
         // Reset sidebar UI state.
         this.state.tools = [];
-        const scope = this.el || document;
+        const scope = this.panelRef();
         scope
             .querySelectorAll(".t_align [data-align][data-type]")
             .forEach((el) => el.classList.remove("active"));
@@ -622,7 +621,12 @@ export class ThemeEditorSidebar extends Component {
         let value = el.value;
 
         const unit = el.dataset.unit || '';
-        const alt = el.dataset.alt;
+        let alt;
+        try {
+            alt = JSON.parse(el.dataset.alt || '[]');
+        } catch {
+            alt = (el.dataset.alt || '').split(',').filter(Boolean);
+        }
 
         if (unit) {
             value += unit;
@@ -647,106 +651,76 @@ export class ThemeEditorSidebar extends Component {
      * @param {string} [val=null] - Optional value to override the default value of the tool.
      */
     renderNewTool(tool, val = null) {
-        if (tool) {
-            // Get default value or use provided value
-            var value = this.getDefaultValue(tool.name);
-            if (val) {
-                value = val;
-            }
-            if (tool.type == 'range') {
-                value = value.replace(/[^0-9,.]+/g, "")
-            }
-            // Set the tool default value
-            this.state.widget = tool;
-            tool.default = value;
-            // Create a new div element for the tool
-            var newDiv = document.createElement("div");
-            newDiv.classList.add("optss", "infinito-remove");
-            // Generate HTML based on the tool type
-            if (tool.type == 'color') {
-                // Color type tool
-                newDiv.innerHTML = `<div class="bg_color">
-                                    <h6>${tool.displayName}</h6>
-                                    <div class="color_picker">
-                                        <input
-  class="favcolor"
-  type="color"
-  name="${tool.name}"
-  data-alt="${tool.alt || ''}"
->
+        const container = this.panelRef().querySelector('.button_cutomise');
+        if (!tool || !container) {
+            return;
+        }
+        let value = val ?? this.getDefaultValue(tool.name);
+        if (tool.type === 'range') {
+            value = String(value).replace(/[^0-9,.]+/g, '');
+        }
+        this.state.widget = tool;
+        tool.default = value;
 
-                                    </div>
-                                </div>`;
-                var customizeButton = document.querySelector('.button_cutomise');
-                customizeButton.appendChild(newDiv);
+        const wrapper = document.createElement('div');
+        wrapper.className = 'optss infinito-remove';
+        const heading = document.createElement('div');
+        heading.className = tool.type === 'color' ? 'bg_color' : 'b_slider';
+        const label = document.createElement('h6');
+        label.textContent = tool.displayName;
+        heading.appendChild(label);
+        wrapper.appendChild(heading);
+
+        const input = document.createElement(tool.type === 'select' ? 'select' : 'input');
+        input.name = tool.name;
+        input.dataset.alt = JSON.stringify(tool.alt || []);
+        if (tool.type === 'select') {
+            input.className = 'form-control';
+            input.setAttribute('aria-label', tool.displayName);
+            for (const optionValue of tool.options || []) {
+                const option = document.createElement('option');
+                option.value = optionValue;
+                option.textContent = optionValue;
+                input.appendChild(option);
             }
-            var rangeDiv = document.createElement("div");
-            rangeDiv.classList.add("optss", "infinito-remove");
-            if (tool.type == 'range') {
-                // Range type tool
-                rangeDiv.innerHTML = `<div class="b_slider">
-                                        <h6>
-                                            ${tool.displayName}
-                                        </h6>
-                                        <h6>
-                                            ${tool.unit}
-                                        </h6>
-                                    </div>
-                                    <div class="b_width">
-                                        <div class="sliderContainer">
-                                            <input type="range" t-att-name="${tool.name}" t-att-data-unit="${tool.unit}"
-                                                   value="${tool.default}" t-att-min="${tool.min}" t-att-max="${tool.max}"
-                                                   id="slider" t-att-data-alt="${tool.alt}"/>
-                                            <span id="output"/>
-                                        </div>
-                                    </div>`
-                var customizeButton = document.querySelector('.button_cutomise');
-                customizeButton.appendChild(rangeDiv);
-                var rangeInput = document.getElementById('slider');
-                rangeInput.addEventListener('click', function () {
-                    // Handle click event if needed
-                });
-            }
-            var SelectDiv = document.createElement("div");
-            SelectDiv.classList.add("optss", "infinito-remove");
-            if (tool.type == 'select') {
-                // Select type tool
-                SelectDiv.innerHTML = `<div class="b_slider">
-                                        <h6>
-                                             ${tool.displayName}
-                                        </h6>
-                                        <div class="form-group">
-                                            <select class="form-control" id="select" t-att-name="${tool.name}" aria-label="Default select example" t-att-data-alt="${tool.alt}">
-                                                <t t-foreach="${tool.options}" t-as="option" t-key="option">
-                                                    <option t-att-value="option"><t t-esc="option"/></option>
-                                                </t>
-                                            </select>
-                                        </div>
-                                    </div>`;
-                var customizeButton = document.querySelector('.button_cutomise');
-                customizeButton.appendChild(SelectDiv);
-            }
-            var InputDiv = document.createElement("div");
-            InputDiv.classList.add("optss", "infinito-remove");
-            if (tool.type == 'input') {
-                // Input type tool
-                InputDiv.innerHTML = `<div class="b_slider">
-                                        <h6>
-                                            ${tool.displayName}
-                                        </h6>
-                                    </div>
-                                    <ul class="b_style">
-                                        <li>
-                                            <input type="text" id="text" t-att-name="${tool.name}"
-                                                   t-att-value="${tool.default}" t-att-placeholder="${tool.displayName}"
-                                                   t-att-data-alt="${tool.alt}"/>
-                                        </li>
-                                    </ul>`
-                // Append the new tool to the DOM
-                var customizeButton = document.querySelector('.button_cutomise');
-                customizeButton.appendChild(InputDiv);
+        } else {
+            input.type = { color: 'color', range: 'range' }[tool.type] || 'text';
+            if (tool.type === 'color') {
+                input.className = 'favcolor';
+            } else if (tool.type === 'range') {
+                input.dataset.unit = tool.unit || '';
+                input.min = tool.min;
+                input.max = tool.max;
+                const unit = document.createElement('h6');
+                unit.textContent = tool.unit || '';
+                heading.appendChild(unit);
+            } else {
+                input.placeholder = tool.displayName;
             }
         }
+        input.value = value ?? '';
+        input.addEventListener('change', (event) => this._onClickInput(event));
+        const control = document.createElement(tool.type === 'input' ? 'ul' : 'div');
+        control.className = {
+            color: 'color_picker', range: 'b_width',
+            select: 'mb-3', input: 'b_style',
+        }[tool.type] || '';
+        if (tool.type === 'range' || tool.type === 'input') {
+            const inner = document.createElement(tool.type === 'range' ? 'div' : 'li');
+            if (tool.type === 'range') {
+                inner.className = 'sliderContainer';
+            }
+            inner.appendChild(input);
+            control.appendChild(inner);
+        } else {
+            control.appendChild(input);
+        }
+        if (tool.type === 'color' || tool.type === 'select') {
+            heading.appendChild(control);
+        } else {
+            wrapper.appendChild(control);
+        }
+        container.appendChild(wrapper);
     }
 
     /**
@@ -782,12 +756,6 @@ export class ThemeEditorSidebar extends Component {
         return val
     }
 
-    /**
-     * Sets the browser location search to enable assets debugging.
-     */
-    setAssets() {
-        browser.location.search = "?debug=assets";
-    }
 
     /**
      * Toggles the visibility of the sidebar in the theme editor.
@@ -802,7 +770,7 @@ export class ThemeEditorSidebar extends Component {
             return;
         }
         // Fallback for older callers that don't pass `onClose`.
-        var parent = document.querySelector("#theme_editor_sidebar_preset");
+        var parent = this.panelRef();
         if (parent) {
             var main_div = document.querySelector('.marg_main');
             if (main_div) {

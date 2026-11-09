@@ -1,6 +1,9 @@
-import { Component, onMounted, onWillStart, proxy, signal, xml } from "@odoo/owl";
 /** @odoo-module **/
+import { Component, onWillStart, proxy, signal, xml } from "@odoo/owl";
 
+
+
+import { useThemeDrag } from "./MenuBookmark";
 
 import {rpc} from "@web/core/network/rpc";
 import {useService, useBus} from "@web/core/utils/hooks";
@@ -13,7 +16,7 @@ export default class InfinitoRecentApps extends Component {
         this.ref = signal.ref();
         this.state = proxy({recent_app: []});
         onWillStart(this.willStart);
-        onMounted(this.mounted);
+        useThemeDrag(this.ref, 'x');
         useBus(this.env.bus, 'INFINITO:RECENT_APPS_UPDATED', () => this.refresh());
     }
 
@@ -43,9 +46,6 @@ export default class InfinitoRecentApps extends Component {
         }
     }
 
-    mounted() {
-        this.dragElement(this.ref(), 'x');
-    }
 }
 InfinitoRecentApps.template = xml`
 <div class="recent-apps d-none" id="recentApps" t-ref="this.ref">
@@ -56,7 +56,7 @@ InfinitoRecentApps.template = xml`
                 <img t-if="app.type=='svg'" class="sidebar_img" t-attf-src="data:image/svg+xml;base64,{{app.icon}}" width="40px" height="40px"/>
                 <img  t-if="app.type=='png'" class="sidebar_img" t-attf-src="data:image/png;base64,{{app.icon}}" width="40px" height="40px"/>
               </div>
-              <span class="zoomIn" t-esc="app.name"/>
+              <span class="zoomIn" t-out="app.name"/>
             </a>
          </t>
         </div>
