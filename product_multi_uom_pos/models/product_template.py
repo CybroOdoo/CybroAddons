@@ -1,0 +1,47 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Arshad Ali Pottengal (Contact : odoo@cybrosys.com)
+#
+#    You can modify it under the terms of the GNU AFFERO
+#    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#
+#    This program is distributed in the hope it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#
+#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
+#    (AGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
+from odoo import api, fields, models
+
+
+class ProductTemplate(models.Model):
+    _inherit = 'product.template'
+
+    multi_uom = fields.Boolean(
+        compute='_compute_multi_uom',
+        string='Multi UoM',
+        help='A boolean field to show the one2many field POS Multiple UoM'
+    )
+
+    pos_multi_uom_ids = fields.One2many(
+        'pos.multi.uom',
+        'product_template_id',
+        string="POS Multiple UoM"
+    )
+
+    @api.depends_context('company')
+    def _compute_multi_uom(self):
+        """Computes the status of multi uom from the system parameters."""
+        status = self.env['ir.config_parameter'].sudo().get_bool(
+            'product_multi_uom_pos.pos_multi_uom'
+        )
+        for record in self:
+            record.multi_uom = status
