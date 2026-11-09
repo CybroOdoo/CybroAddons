@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Template for Geolocation Map Widget in Odoo 20.
+    Extends web.CharField to display interactive Leaflet map preview and location selection.
+-->
+<templates xml:space="preserve">
+    <t t-name="geolocation_map_widget.GeoLocation" t-inherit="web.CharField">
+        <xpath expr="//t[@t-if='this.props.readonly']" position="replace">
+            <div t-if="this.props.readonly" class="o_input_map input-group">
+                <span class="o_form_uri form-control-plaintext" t-out="this.formattedValue"/>
+                <button type="button"
+                        class="btn btn-outline-primary o_icon_button o_open_map"
+                        t-on-click="this._openMapView"
+                        title="Open map">
+                    <i class="oi oi-fw" data-icon="location_on" role="img" aria-label="Open map" title="Open map"/>
+                </button>
+            </div>
+        </xpath>
+        <xpath expr="//input" position="replace">
+            <div class="o_input_map input-group">
+                <input
+                    class="o_input form-control"
+                    t-att-class="{'o_field_translate': this.isTranslatable}"
+                    t-att-id="this.props.id"
+                    t-att-type="this.props.isPassword ? 'password' : 'text'"
+                    t-att-autocomplete="this.props.autocomplete or (this.props.isPassword ? 'new-password' : 'off')"
+                    t-att-maxlength="this.maxLength > 0 and this.maxLength"
+                    t-att-placeholder="this.props.placeholder"
+                    t-att-readonly="this.props.readonly"
+                    t-att-value="this.props.record.data[this.props.name] || ''"
+                    t-on-change="this.onInputChange"
+                    t-ref="this.input"
+                />
+                <button type="button"
+                        class="btn btn-outline-primary o_icon_button o_open_map"
+                        t-on-click="this._openMapView"
+                        title="Open map">
+                    <i class="oi oi-fw" data-icon="location_on" role="img" aria-label="Open map" title="Open map"/>
+                </button>
+            </div>
+        </xpath>
+        <xpath expr="//t[@t-else='']" position="after">
+            <div class="input-group">
+                <div t-ref="this.mapContainerRef"
+                     class="map-preview o_leaflet_preview_open mt-2"/>
+            </div>
+        </xpath>
+    </t>
+</templates>

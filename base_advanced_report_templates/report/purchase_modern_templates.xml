@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--    Purchase order modern report template-->
+    <template id="report_purchaseorder_modern_document">
+        <t t-if="o and 'company_id' in o">
+            <t t-set="company" t-value="o.company_id"/>
+        </t>
+        <t t-if="not o or not 'company_id' in o">
+            <t t-set="company" t-value="res_company"/>
+        </t>
+        <div class="header row my-4">
+            <div class="page-header col-12">
+                <div t-attf-class="float-start">
+                    <t t-if="company.logo">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 80px;"/>
+                    </t>
+                </div>
+                <div t-attf-class="float-start" t-attf-style="font:14px lucida-console,sans-serif; color:#{o.theme_id.company_text_color} !important;">
+                    <span t-if="company.partner_id" t-field="company.partner_id"/>
+                    <br t-if="company.partner_id"/>
+                    <span t-if="company.partner_id.street" t-field="company.partner_id.street"/>
+                    <br t-if="company.partner_id.street"/>
+                    <span t-if="company.partner_id.street2" t-field="company.partner_id.street2"/>
+                    <br t-if="company.partner_id.street2"/>
+                    <span t-if="company.partner_id.city" t-field="company.partner_id.city"/>
+                    <br t-if="company.partner_id.city"/>
+                    <span t-if="company.partner_id.country_id" t-field="company.partner_id.country_id"/>
+                    <br t-if="company.partner_id.country_id"/>
+                    <span t-if="company.partner_id.vat" t-field="company.partner_id.vat"/>
+                    <br t-if="company.partner_id.vat"/>
+                </div>
+            </div>
+        </div>
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
+            <div class="page">
+                <div class="oe_structure"/>
+
+                <!-- 1. Purchase Order Title Badge (Right Aligned) -->
+                <div class="clearfix mb-2">
+                    <div class="float-end p-2"
+                         t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};font-weight:bold;font-size:14px;">
+                        <span t-if="o.state in ['draft', 'sent', 'to approve']">Request for Quotation # </span>
+                        <span t-elif="o.state in ['purchase', 'done']">Purchase Order # </span>
+                        <span t-elif="o.state == 'cancel'">Cancelled Purchase Order # </span>
+                        <span t-else="">Purchase Order # </span>
+                        <span t-field="o.name"/>
+                    </div>
+                </div>
+
+                <!-- 2. Centered Vendor Box -->
+                <div class="mb-4 p-3"
+                     t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};text-align:center;">
+                    <div style="font-weight: bold; font-size: 15px;">
+                        Vendor
+                    </div>
+                    <hr style="border-top: 1px solid rgba(255, 255, 255, 0.7); margin: 6px auto; width: 100%;"/>
+                    <div class="mt-2" style="line-height: 1.4;">
+                        <div t-if="o.partner_id.name" t-field="o.partner_id.name" style="font-weight: 500;"/>
+                        <div t-if="o.partner_id.street" t-field="o.partner_id.street"/>
+                        <div t-if="o.partner_id.street2" t-field="o.partner_id.street2"/>
+                        <div>
+                            <span t-if="o.partner_id.city" t-field="o.partner_id.city"/>
+                            <span t-if="o.partner_id.state_id" t-field="o.partner_id.state_id.code"/>
+                            <span t-if="o.partner_id.zip" t-field="o.partner_id.zip"/>
+                        </div>
+                        <div t-if="o.partner_id.country_id" t-field="o.partner_id.country_id"/>
+                        <div t-if="o.partner_id.phone">
+                            📞 <span t-field="o.partner_id.phone"/>
+                        </div>
+                        <div t-if="o.partner_id.vat">
+                            <t t-if="o.company_id.account_fiscal_country_id.vat_label" t-out="o.company_id.account_fiscal_country_id.vat_label"/>
+                            <t t-else="">TIN</t>: <span t-field="o.partner_id.vat"/>
+                        </div>
+                    </div>
+                </div>
+
+                <t t-if="o.dest_address_id">
+                    <t t-set="information_block">
+                        <strong>Shipping address:</strong>
+                        <div t-field="o.dest_address_id"
+                             t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'
+                             name="purchase_shipping_address"/>
+                    </t>
+                </t>
+
+                <!-- 3. Order Metadata Table -->
+                <table class="table table-sm o_main_table mb-4">
+                    <thead t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                        <tr>
+                            <th class="text-center" style="width: 25%;">
+                                <strong>Order Date</strong>
+                            </th>
+                            <th class="text-center" style="width: 25%;">
+                                <strong>Scheduled Date</strong>
+                            </th>
+                            <th class="text-center" style="width: 25%;">
+                                <strong>Approval Date</strong>
+                            </th>
+                            <th class="text-center" style="width: 25%;">
+                                <strong>Payment Term</strong>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-attf-style="color:#{o.theme_id.customer_text_color} !important;">
+                            <td class="text-center">
+                                <span t-if="o.date_order" t-field="o.date_order"/>
+                            </td>
+                            <td class="text-center">
+                                <span t-if="o.date_planned" t-field="o.date_planned"/>
+                            </td>
+                            <td class="text-center">
+                                <span t-if="o.state in ['purchase','done'] and o.date_approve" t-field="o.date_approve"/>
+                            </td>
+                            <td class="text-center">
+                                <span t-if="o.payment_term_id" t-field="o.payment_term_id.name"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 4. Line Items Table -->
+                <table class="table table-sm o_main_table mt-4" style="margin-bottom: 0px;">
+                    <thead t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                        <tr>
+                            <th name="th_description" class="text-start" style="width: 60%;">
+                                <strong>Description</strong>
+                            </th>
+                            <th name="th_date_req" class="text-center" style="width: 25%;">
+                                <strong>Expected Date</strong>
+                            </th>
+                            <th name="th_quantity" class="text-end" style="width: 15%;">
+                                <strong>Qty</strong>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="lines" t-value="o.order_line"/>
+                        <t t-foreach="lines" t-as="line">
+                            <tr t-attf-style="color:#{o.theme_id.customer_text_color} !important;"
+                                t-att-class="'bg-200 fw-bold o_line_section' if line.display_type == 'line_section' else 'fst-italic o_line_note' if line.display_type == 'line_note' else ''">
+                                <t t-if="not line.display_type">
+                                    <td id="product" class="text-start">
+                                        <span t-field="line.name"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="line.date_planned"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="line.product_qty"/>
+                                        <span t-if="'uom_id' in line and line.uom_id" t-field="line.uom_id.name" groups="uom.group_uom"/>
+                                        <span t-elif="'product_uom' in line and line.product_uom" t-field="line.product_uom.name" groups="uom.group_uom"/>
+                                    </td>
+                                </t>
+                                <t t-if="line.display_type == 'line_section'">
+                                    <td colspan="99" id="section">
+                                        <span t-field="line.name"/>
+                                    </td>
+                                </t>
+                                <t t-if="line.display_type == 'line_note'">
+                                    <td colspan="99" id="note">
+                                        <span t-field="line.name"/>
+                                    </td>
+                                </t>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- 5. Total Bar -->
+                <div id="total" class="p-2 mb-4"
+                     t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                    <table style="width: 100%; color: inherit; background-color: transparent;" class="table-borderless m-0">
+                        <tr>
+                            <td class="text-start p-0" style="font-weight: bold; font-size: 15px; color: inherit;">
+                                <span>Total</span>
+                            </td>
+                            <td class="text-end p-0" style="font-weight: bold; font-size: 15px; color: inherit;">
+                                <span t-field="o.amount_total"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- 6. Note Bar -->
+                <div class="mt-4" t-if="o.note">
+                    <div class="p-2 mb-2"
+                         t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};font-weight: bold;">
+                        <span>Note</span>
+                    </div>
+                    <div t-field="o.note" class="p-1"/>
+                    <div class="oe_structure"/>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

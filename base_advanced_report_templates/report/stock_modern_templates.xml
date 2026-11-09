@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+<!--    Stock report modern template-->
+    <template id="report_stock_modern_document">
+        <t t-if="o and 'company_id' in o">
+            <t t-set="company" t-value="o.company_id"/>
+        </t>
+        <t t-if="not o or not 'company_id' in o">
+            <t t-set="company" t-value="res_company"/>
+        </t>
+        <div class="header row my-4">
+            <div class="page-header col-12">
+                <div t-attf-class="float-start">
+                    <t t-if="company.logo">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)"
+                             style="max-height: 80px;"/>
+                    </t>
+                </div>
+                <div t-attf-class="float-start"
+                     t-attf-style="font:14px lucida-console,sans-serif; color:#{o.theme_id.company_text_color} !important;">
+                    <span t-field="company.partner_id"/>
+                    <br/>
+                    <span t-field="company.partner_id.street"/>
+                    <br/>
+                    <span t-field="company.partner_id.street2"/>
+                    <br/>
+                    <span t-field="company.partner_id.city"/>
+                    <br/>
+                    <span t-field="company.partner_id.country_id"/>
+                    <br/>
+                    <span t-field="company.partner_id.vat"/>
+                    <br/>
+                </div>
+            </div>
+        </div>
+        <t t-call="web.external_layout">
+                <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
+                <t t-set="partner" t-value="o.partner_id or (o.move_ids and o.move_ids[0].partner_id) or False"/>
+                <t t-set="wh_partner" t-value="o.picking_type_id.warehouse_id.partner_id or company.partner_id"/>
+
+                <div class="page">
+                    <!-- 1. Top Unified 4-Column Table: Customer Address | Warehouse Address | Order | Shipping Date -->
+                    <table class="table table-sm o_main_table mb-4" style="width: 100%;">
+                        <thead t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                            <tr>
+                                <th class="text-start" style="width: 30%;">
+                                    <strong t-if="o.picking_type_id.code == 'incoming'">Vendor Address</strong>
+                                    <strong t-else="">Customer Address</strong>
+                                </th>
+                                <th class="text-start" style="width: 30%;">
+                                    <strong>Warehouse Address</strong>
+                                </th>
+                                <th class="text-center" style="width: 20%;">
+                                    <strong>Order</strong>
+                                </th>
+                                <th class="text-center" style="width: 20%;">
+                                    <strong>Shipping Date</strong>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-attf-style="color:#{o.theme_id.customer_text_color} !important;">
+                                <td class="text-start" style="vertical-align: top;">
+                                    <div t-if="partner">
+                                        <div t-field="partner.commercial_partner_id"
+                                             t-options='{"widget": "contact", "fields": ["address", "name", "phone", "vat"], "no_marker": True, "phone_icons": True}'/>
+                                    </div>
+                                </td>
+                                <td class="text-start" style="vertical-align: top;">
+                                    <div t-if="o.picking_type_id.warehouse_id.partner_id"
+                                         t-field="o.picking_type_id.warehouse_id.partner_id"
+                                         t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                                    <div t-elif="company.partner_id"
+                                         t-field="company.partner_id"
+                                         t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                                </td>
+                                <td class="text-center" style="vertical-align: top;">
+                                    <span t-if="o.origin" t-field="o.origin"/>
+                                    <span t-elif="o.picking_type_id" t-field="o.picking_type_id.name"/>
+                                </td>
+                                <td class="text-center" style="vertical-align: top;">
+                                    <span t-if="o.state == 'done' and o.date_done" t-field="o.date_done"/>
+                                    <span t-elif="o.scheduled_date" t-field="o.scheduled_date"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- 2. Products Table (With Image Column) -->
+                    <table class="table table-sm o_main_table mb-4" name="stock_move_table">
+                        <thead t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                            <tr>
+                                <th name="th_sm_product" class="text-start" style="width: 40%;">
+                                    <strong>Product</strong>
+                                </th>
+                                <th name="th_sm_image" class="text-center" style="width: 20%;">
+                                    <strong>Image</strong>
+                                </th>
+                                <th name="th_sm_ordered" class="text-center" style="width: 20%;">
+                                    <strong>Ordered</strong>
+                                </th>
+                                <th name="th_sm_quantity" class="text-center" style="width: 20%;">
+                                    <strong>Delivered</strong>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody t-attf-style="color:#{o.theme_id.customer_text_color} !important;">
+                            <t t-set="lines" t-value="o.move_ids.filtered(lambda x: x.product_uom_qty or x.quantity)"/>
+                            <tr t-foreach="lines" t-as="move">
+                                <td class="text-start" style="vertical-align: middle;">
+                                    <span t-field="move.product_id"/>
+                                    <p t-if="move.description_picking != move.product_id.name and move.description_picking != move.product_id.display_name" class="m-0 text-muted small">
+                                        <span t-field="move.description_picking"/>
+                                    </p>
+                                </td>
+                                <td class="text-center" style="vertical-align: middle;">
+                                    <span t-if="move.product_id.image_128" t-field="move.product_id.image_128" t-options='{"widget": "image", "style": "max-height: 60px; max-width: 80px;"}'/>
+                                    <span t-elif="move.order_line_image" t-field="move.order_line_image" t-options='{"widget": "image", "style": "max-height: 60px; max-width: 80px;"}'/>
+                                </td>
+                                <td class="text-center" style="vertical-align: middle;">
+                                    <span t-field="move.product_uom_qty"/>
+                                    <span t-if="'product_uom' in move and move.product_uom" t-field="move.product_uom.name"/>
+                                    <span t-elif="'product_uom_id' in move and move.product_uom_id" t-field="move.product_uom_id.name"/>
+                                </td>
+                                <td class="text-center" style="vertical-align: middle;">
+                                    <span t-field="move.quantity"/>
+                                    <span t-if="'product_uom' in move and move.product_uom" t-field="move.product_uom.name"/>
+                                    <span t-elif="'product_uom_id' in move and move.product_uom_id" t-field="move.product_uom_id.name"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <t t-set="backorders"
+                       t-value="o.backorder_ids.filtered(lambda x: x.state not in ('done', 'cancel'))"/>
+                    <t t-if="o.backorder_ids and backorders">
+                        <p class="mt-4">
+                            <span>Remaining quantities not yet delivered:</span>
+                        </p>
+                        <table class="table table-sm" name="stock_backorder_table" style="table-layout: fixed;">
+                            <thead t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                                <tr>
+                                    <th name="th_sb_product" class="text-start">
+                                        <strong>Product</strong>
+                                    </th>
+                                    <th name="th_sb_quantity" class="text-center">
+                                        <strong>Quantity</strong>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody t-attf-style="color:#{o.theme_id.customer_text_color} !important;">
+                                <t t-foreach="backorders" t-as="backorder">
+                                    <t t-set="bo_lines"
+                                       t-value="backorder.move_ids.filtered(lambda x: x.product_uom_qty)"/>
+                                    <tr t-foreach="bo_lines" t-as="bo_line">
+                                        <td class="text-start">
+                                            <span t-field="bo_line.product_id"/>
+                                            <p t-if="bo_line.description_picking != bo_line.product_id.name and bo_line.description_picking != bo_line.product_id.display_name">
+                                                <span t-field="bo_line.description_picking"/>
+                                            </p>
+                                        </td>
+                                        <td class="text-center">
+                                            <span t-field="bo_line.product_uom_qty"/>
+                                            <span t-if="'product_uom' in bo_line and bo_line.product_uom" t-field="bo_line.product_uom.name"/>
+                                            <span t-elif="'product_uom_id' in bo_line and bo_line.product_uom_id" t-field="bo_line.product_uom_id.name"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <div t-if="o.signature" class="mt-4" name="signature">
+                        <div class="offset-8">
+                            <strong>Signature</strong>
+                        </div>
+                        <div class="offset-8">
+                            <img t-att-src="image_data_uri(o.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                        </div>
+                        <div class="offset-8 text-center">
+                            <p t-field="o.partner_id.name"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+    </template>
+</odoo>

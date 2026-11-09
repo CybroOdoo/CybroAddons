@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="portal_franchise_requests" model="portal.entry">
+        <field name="name">Franchise Requests</field>
+        <field name="description">View your franchise requests</field>
+        <field name="url">/my/franchise</field>
+        <field name="image" type="bytes" file="franchise_management/static/description/franchise.svg"/>
+        <field name="placeholder_count">franchise_count</field>
+        <field name="category">client_category</field>
+        <field name="is_config_card">True</field>
+        <field name="sequence" eval="60"/>
+    </record>
+<!--Franchise my account template-->
+    <template id="portal_my_franchise" name="My Franchise">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar" breadcrumbs_searchbar="True" title="Franchise"/>
+            <div class="franchise_dealer_selector">
+                <t t-if="franchise_registration" t-call="portal.portal_table">
+                    <thead>
+                        <tr class="active">
+                            <th>Sl No</th>
+                            <th class="text-right">Dealer</th>
+                            <th class="text-right">Email</th>
+                            <th class="text-end">State</th>
+                        </tr>
+                    </thead>
+                    <t t-foreach="franchise_registration" t-as="registration">
+                        <tr class="dealer_registration">
+                            <td>
+                                <a t-attf-href="/my/franchise/{{registration.id}}">
+                                    <t t-out="registration.serial_no or 'New'"/>
+                                </a>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="registration.dealer_name"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="registration.dealer_mail"/>
+                            </td>
+                            <td class="tx_status text-end">
+                                <t t-if="registration.state == 'e_contract'">
+                                    <span class="badge rounded-pill text-bg-info">
+                                        <i class="oi oi-fw" data-icon="schedule"
+                                           aria-label="Opened" title="Opened"
+                                           role="img"/>
+                                        <span class="d-none d-md-inline">Waiting
+                                             for sign
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="registration.state == 'f_signed'">
+                                    <span class="badge rounded-pill text-bg-success">
+                                        <i class="oi oi-fw" data-icon="check"
+                                           aria-label="signed" title="signed"
+                                           role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Signed
+                                        </span>
+                                    </span>
+                                </t>
+                                <t t-if="registration.state == 'g_declined'">
+                                    <span class="badge rounded-pill text-bg-danger">
+                                        <i class="oi oi-fw" data-icon="close"
+                                           aria-label="declined"
+                                           title="declined" role="img"/>
+                                        <span class="d-none d-md-inline">
+                                            Declined
+                                        </span>
+                                    </span>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>

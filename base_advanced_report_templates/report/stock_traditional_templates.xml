@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="stock.action_report_delivery" model="ir.actions.report">
+        <field name="name">Delivery Slip</field>
+        <field name="model">stock.picking</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">base_advanced_report_templates.report_deliveryslip_custom</field>
+        <field name="print_report_name">'Delivery Slip - %s - %s' % (object.partner_id.name or '', object.name)</field>
+        <field name="binding_type">report</field>
+    </record>
+    <template id="report_deliveryslip_custom">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="theme_style" t-value="o.theme_id.theme_style or ((o.theme_id.name or '').lower())"/>
+                <t t-if="theme_style == 'traditional' or 'traditional' in theme_style">
+                    <t t-call="base_advanced_report_templates.report_stock_traditional_document"
+                       t-lang="o.partner_id.lang"/>
+                </t>
+                <t t-elif="theme_style == 'standard' or 'standard' in theme_style">
+                    <t t-call="base_advanced_report_templates.report_stock_standard_document"
+                       t-lang="o.partner_id.lang"/>
+                </t>
+                <t t-elif="theme_style == 'modern' or 'modern' in theme_style">
+                    <t t-call="base_advanced_report_templates.report_stock_modern_document"
+                       t-lang="o.partner_id.lang"/>
+                </t>
+                <t t-elif="theme_style == 'attractive' or 'attractive' in theme_style">
+                    <t t-call="base_advanced_report_templates.report_stock_attractive_document"
+                       t-lang="o.partner_id.lang"/>
+                </t>
+                <t t-elif="o.theme_id">
+                    <t t-call="base_advanced_report_templates.report_stock_traditional_document"
+                       t-lang="o.partner_id.lang"/>
+                </t>
+                <t t-else="">
+                    <t t-call="stock.report_delivery_document"
+                       t-lang="o.partner_id.lang"/>
+                </t>
+            </t>
+        </t>
+    </template>
+<!--    Stock traditional report template-->
+    <template id="report_stock_traditional_document">
+        <t t-if="o and 'company_id' in o">
+            <t t-set="company" t-value="o.company_id"/>
+        </t>
+        <t t-if="not o or not 'company_id' in o">
+            <t t-set="company" t-value="res_company"/>
+        </t>
+        <div class="header row my-4">
+            <div class="page-header col-12">
+                <div t-attf-class="float-start">
+                    <t t-if="company.logo">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)"
+                             style="max-height: 80px;"/>
+                    </t>
+                </div>
+                <div t-attf-class="float-start"
+                     t-attf-style="font:14px lucida-console,sans-serif; color:#{o.theme_id.company_text_color} !important;">
+                    <span t-field="company.partner_id"/>
+                    <br/>
+                    <span t-field="company.partner_id.street"/>
+                    <br/>
+                    <span t-field="company.partner_id.street2"/>
+                    <br/>
+                    <span t-field="company.partner_id.city"/>
+                    <br/>
+                    <span t-field="company.partner_id.country_id"/>
+                    <br/>
+                    <span t-field="company.partner_id.vat"/>
+                    <br/>
+                </div>
+            </div>
+        </div>
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
+            <t t-set="partner" t-value="o.partner_id or (o.move_ids and o.move_ids[0].partner_id) or False"/>
+            <div class="page">
+                <style>
+                    .traditional_partner_box address, .traditional_partner_box span, .traditional_partner_box a {
+                        color: inherit !important;
+                    }
+                </style>
+
+                <!-- 1. Customer Address Block -->
+                <div t-if="partner" class="mb-4 traditional_partner_box"
+                     t-attf-style="width: 42%; background-color:#{o.theme_id.base_color}; color:#{o.theme_id.heading_text_color} !important; padding: 10px 14px;">
+                    <div style="font-weight: bold; margin-bottom: 2px;">
+                        <span t-if="o.picking_type_id.code == 'incoming'">Vendor Address:</span>
+                        <span t-elif="o.picking_type_id.code == 'internal'">Warehouse Address:</span>
+                        <span t-else="">Customer Address:</span>
+                    </div>
+                    <div style="color: inherit; line-height: 1.35;">
+                        <div t-field="partner.commercial_partner_id"
+                             t-options='{"widget": "contact", "fields": ["name", "address", "phone"], "no_marker": True, "phone_icons": True}'/>
+                    </div>
+                </div>
+
+                <!-- 2. Picking Details Banner: Number WH/OUT/... | Order | Shipping Date | Scheduled Date | Source -->
+                <div class="mb-4" style="width: 100%;">
+                    <div class="px-3 py-1"
+                         t-attf-style="background-color:#{o.theme_id.base_color}; color:#{o.theme_id.heading_text_color}; font-weight: bold; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.25);">
+                        <span>Number </span><span t-field="o.name"/>
+                    </div>
+                    <div class="px-3 py-2"
+                         t-attf-style="background-color:#{o.theme_id.base_color}; color:#{o.theme_id.heading_text_color};">
+                        <table style="width: 100%; color: inherit; background-color: transparent;" class="table-borderless m-0">
+                            <thead>
+                                <tr style="color: inherit;">
+                                    <th style="width: 25%; color: inherit; padding: 2px 4px; font-weight: 500;">Order:</th>
+                                    <th style="width: 25%; color: inherit; padding: 2px 4px; font-weight: 500;">Shipping Date:</th>
+                                    <th style="width: 25%; color: inherit; padding: 2px 4px; font-weight: 500;">Scheduled Date:</th>
+                                    <th style="width: 25%; color: inherit; padding: 2px 4px; font-weight: 500;">Source:</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="color: inherit;">
+                                    <td style="width: 25%; color: inherit; padding: 2px 4px;">
+                                        <span t-if="o.origin" t-field="o.origin"/>
+                                        <span t-elif="o.picking_type_id" t-field="o.picking_type_id.name"/>
+                                    </td>
+                                    <td style="width: 25%; color: inherit; padding: 2px 4px;">
+                                        <span t-if="o.state == 'done' and o.date_done" t-field="o.date_done"/>
+                                        <span t-elif="o.scheduled_date" t-field="o.scheduled_date"/>
+                                    </td>
+                                    <td style="width: 25%; color: inherit; padding: 2px 4px;">
+                                        <span t-if="o.scheduled_date" t-field="o.scheduled_date"/>
+                                    </td>
+                                    <td style="width: 25%; color: inherit; padding: 2px 4px;">
+                                        <span t-if="o.origin" t-field="o.origin"/>
+                                        <span t-elif="o.location_id" t-field="o.location_id.name"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. Products Table (When picking is not done) -->
+                <table class="table table-sm o_main_table mb-4" t-if="o.state!='done'" name="stock_move_table">
+                    <thead t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                        <tr>
+                            <th name="th_sm_product" class="text-start" style="width: 50%;">
+                                <strong>Product</strong>
+                            </th>
+                            <th name="th_sm_ordered" class="text-center" style="width: 25%;">
+                                <strong>Ordered</strong>
+                            </th>
+                            <th name="th_sm_quantity" class="text-end" style="width: 25%;">
+                                <strong>Delivered</strong>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody t-attf-style="color:#{o.theme_id.customer_text_color} !important;">
+                        <t t-set="lines" t-value="o.move_ids.filtered(lambda x: x.product_uom_qty)"/>
+                        <tr t-foreach="lines" t-as="move">
+                            <td class="text-start">
+                                <span t-field="move.product_id"/>
+                                <p t-if="move.description_picking != move.product_id.name and move.description_picking != move.product_id.display_name" class="m-0 text-muted small">
+                                    <span t-field="move.description_picking"/>
+                                </p>
+                            </td>
+                            <td class="text-center">
+                                <span t-field="move.product_uom_qty"/>
+                                <span t-if="'product_uom' in move and move.product_uom" t-field="move.product_uom.name"/>
+                                <span t-elif="'product_uom_id' in move and move.product_uom_id" t-field="move.product_uom_id.name"/>
+                            </td>
+                            <td class="text-end">
+                                <span t-field="move.quantity"/>
+                                <span t-if="'product_uom' in move and move.product_uom" t-field="move.product_uom.name"/>
+                                <span t-elif="'product_uom_id' in move and move.product_uom_id" t-field="move.product_uom_id.name"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 4. Products Table (When picking is done) -->
+                <table class="table table-sm o_main_table mb-4" t-if="o.move_line_ids and o.state=='done'"
+                       name="stock_move_line_table">
+                    <t t-set="has_serial_number" t-value="False"/>
+                    <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')"
+                       groups="stock.group_lot_on_delivery_slip"/>
+                     <t t-set="format_number" t-value="lambda x: int(x) if x == int(x) else x"/>
+                    <thead t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                        <tr>
+                            <th name="th_sml_product" class="text-start" style="width: 50%;">
+                                <strong>Product</strong>
+                            </th>
+                            <t name="lot_serial" t-if="has_serial_number">
+                                <th>
+                                    Lot/Serial Number
+                                </th>
+                            </t>
+                            <th name="th_sml_qty_ordered" class="text-center" t-if="not has_serial_number" style="width: 25%;">
+                                <strong>Ordered</strong>
+                            </th>
+                            <th name="th_sml_quantity" class="text-end" style="width: 25%;">
+                                <strong>Delivered</strong>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody t-attf-style="color:#{o.theme_id.customer_text_color} !important;">
+                        <!-- Destinations packages / lots / aggregated lines -->
+                        <t t-if="o.move_line_ids.filtered(lambda l: l.result_package_id)" name="has_packages">
+                            <t t-set="packages" t-value="o.move_line_ids.mapped('result_package_id')"/>
+                            <t t-foreach="packages" t-as="package">
+                                <t t-call="stock.stock_report_delivery_package_section_line"/>
+                                <t t-set="package_move_lines"
+                                   t-value="o.move_line_ids.filtered(lambda l: l.result_package_id == package)"/>
+                                <t t-if="has_serial_number">
+                                    <tr t-foreach="package_move_lines" t-as="move_line">
+                                        <t t-call="stock.stock_report_delivery_has_serial_move_line"/>
+                                    </tr>
+                                </t>
+                                <t t-else="">
+                                    <t t-set="aggregated_lines"
+                                       t-value="package_move_lines._get_aggregated_product_quantities(strict=True)"/>
+                                    <t t-call="stock.stock_report_delivery_aggregated_move_lines"/>
+                                </t>
+                            </t>
+                            <t t-set="move_lines"
+                               t-value="o.move_line_ids.filtered(lambda l: not l.result_package_id)"/>
+                            <t t-set="aggregated_lines"
+                               t-value="o.move_line_ids._get_aggregated_product_quantities(except_package=True)"/>
+                            <t t-if="move_lines or aggregated_lines" name="no_package_move_lines">
+                                <t t-call="stock.stock_report_delivery_no_package_section_line"
+                                   name="no_package_section"/>
+                                <t t-if="has_serial_number">
+                                    <tr t-foreach="move_lines" t-as="move_line">
+                                        <t t-call="stock.stock_report_delivery_has_serial_move_line"/>
+                                    </tr>
+                                </t>
+                                <t t-elif="aggregated_lines">
+                                    <t t-call="stock.stock_report_delivery_aggregated_move_lines"/>
+                                </t>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <t t-if="has_serial_number">
+                                <tr t-foreach="o.move_line_ids" t-as="move_line">
+                                    <t t-call="stock.stock_report_delivery_has_serial_move_line"/>
+                                </tr>
+                            </t>
+                            <t t-else="" name="aggregated_move_lines">
+                                <t t-set="aggregated_lines"
+                                   t-value="o.move_line_ids._get_aggregated_product_quantities()"/>
+                                <t t-call="stock.stock_report_delivery_aggregated_move_lines"/>
+                            </t>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- 5. Backorders Table -->
+                <t t-set="backorders"
+                   t-value="o.backorder_ids.filtered(lambda x: x.state not in ('done', 'cancel'))"/>
+                <t t-if="o.backorder_ids and backorders">
+                    <p class="mt-5">
+                        <span>Remaining quantities not yet delivered:</span>
+                    </p>
+                    <table class="table table-sm o_main_table mb-4" name="stock_backorder_table" style="table-layout: fixed;">
+                        <thead t-attf-style="background-color:#{o.theme_id.base_color};color:#{o.theme_id.heading_text_color};">
+                            <tr>
+                                <th name="th_sb_product" class="text-start" style="width: 50%;">
+                                    <strong>Product</strong>
+                                </th>
+                                <th style="width: 25%;"/>
+                                <th name="th_sb_quantity" class="text-end" style="width: 25%;">
+                                    <strong>Quantity</strong>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody t-attf-style="color:#{o.theme_id.customer_text_color} !important;">
+                            <t t-foreach="backorders" t-as="backorder">
+                                <t t-set="bo_lines"
+                                   t-value="backorder.move_ids.filtered(lambda x: x.product_uom_qty)"/>
+                                <tr t-foreach="bo_lines" t-as="bo_line">
+                                    <td class="text-start">
+                                        <span t-field="bo_line.product_id"/>
+                                        <p t-if="bo_line.description_picking != bo_line.product_id.name and bo_line.description_picking != bo_line.product_id.display_name" class="m-0 text-muted small">
+                                            <span t-field="bo_line.description_picking"/>
+                                        </p>
+                                    </td>
+                                    <td/>
+                                    <td class="text-end">
+                                        <span t-field="bo_line.product_uom_qty"/>
+                                        <span t-if="'product_uom' in bo_line and bo_line.product_uom" t-field="bo_line.product_uom.name"/>
+                                        <span t-elif="'product_uom_id' in bo_line and bo_line.product_uom_id" t-field="bo_line.product_uom_id.name"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+                <div t-if="o.signature" class="mt-4 ms-5 me-1" name="signature">
+                    <div class="offset-8">
+                        <strong>Signature</strong>
+                    </div>
+                    <div class="offset-8">
+                        <img t-att-src="image_data_uri(o.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                    </div>
+                    <div class="offset-8 text-center">
+                        <p t-field="o.partner_id.name"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
