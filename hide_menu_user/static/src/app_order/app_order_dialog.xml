@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="hide_menu_user.AppOrderDialog">
+        <Dialog title.translate="Arrange My Apps" size="'md'">
+            <p class="text-muted mb-3">
+                Drag the apps, or use the arrows, to choose the order you see
+                them in. Apps installed later are added at the end.
+            </p>
+            <ol class="o_hide_menu_app_order_list list-unstyled mb-0" t-ref="this.listRef">
+                <t t-foreach="this.apps()" t-as="app" t-key="app.id">
+                    <li class="o_hide_menu_app_order_item d-flex align-items-center gap-2 border rounded px-2 py-1 mb-1"
+                        t-att-data-app-id="app.id">
+                        <i class="oi o_hide_menu_app_order_handle text-muted" data-icon="drag_indicator"
+                           role="img" aria-label="Drag"/>
+                        <span class="o_hide_menu_app_order_rank text-muted small" t-out="app_index + 1"/>
+                        <img t-if="app.iconSrc" class="o_hide_menu_app_order_icon rounded"
+                             t-att-src="app.iconSrc" alt=""/>
+                        <span class="flex-grow-1 text-truncate" t-out="app.name"/>
+                        <button class="btn btn-link btn-sm p-1" title="Move up" aria-label="Move up"
+                                t-att-disabled="app_first" t-on-click="() => this.move(app_index, -1)">
+                            <i class="oi" data-icon="arrow_upward"/>
+                        </button>
+                        <button class="btn btn-link btn-sm p-1" title="Move down" aria-label="Move down"
+                                t-att-disabled="app_last" t-on-click="() => this.move(app_index, 1)">
+                            <i class="oi" data-icon="arrow_downward"/>
+                        </button>
+                    </li>
+                </t>
+            </ol>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-att-disabled="this.isBusy()"
+                        t-on-click="() => this.save()" data-hotkey="q">
+                    Save
+                </button>
+                <button class="btn btn-secondary" t-att-disabled="this.isBusy()"
+                        t-on-click="() => this.resetToTeamOrder()" data-hotkey="r">
+                    <i class="oi me-1" data-icon="history"/>Use Team Order
+                </button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()" data-hotkey="x">
+                    Cancel
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

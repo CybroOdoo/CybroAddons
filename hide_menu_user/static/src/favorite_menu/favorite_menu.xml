@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="hide_menu_user.FavoriteMenu">
+        <Dropdown position="'bottom-end'"
+                  state="this.dropdown"
+                  onOpened="() => this.onOpened()"
+                  menuClass="'o_hide_menu_favorite_dropdown p-0'"
+                  navigationOptions="{ 'shouldFocusChildInput': true }">
+            <button class="o_nav_entry o_hide_menu_favorite_toggle"
+                    title="Favourite Menus" aria-label="Favourite Menus">
+                <i class="oi" t-att-class="{ 'oi-filled': this.personalIds().length }" data-icon="star" role="img"/>
+            </button>
+            <t t-set-slot="content">
+                <div class="o_hide_menu_favorite_header d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+                    <i class="oi oi-filled text-warning" data-icon="star"/>
+                    <span class="fw-bold flex-grow-1">Favourites</span>
+                    <span class="badge rounded-pill text-bg-light"
+                          t-out="this.personalIds().length"/>
+                </div>
+
+                <t t-set="current" t-value="this.currentEntry()"/>
+                <div t-if="current and !this.isShared(current.id)"
+                     class="o_hide_menu_favorite_current px-3 py-2 border-bottom">
+                    <button class="btn btn-sm w-100 d-flex align-items-center gap-2"
+                            t-att-class="this.isFavorite(current.id) ? 'btn-light border' : 'btn-primary'"
+                            t-on-click="(ev) => { ev.currentTarget.blur(); this.toggleFavorite(current.id); }">
+                        <i class="oi" t-att-class="{ 'oi-filled': this.isFavorite(current.id) }" data-icon="star"/>
+                        <span class="d-flex flex-column align-items-start text-truncate">
+                            <span t-if="this.isFavorite(current.id)">Remove this page</span>
+                            <span t-else="">Add this page</span>
+                            <small class="fw-normal text-truncate mw-100" t-out="current.name"/>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="px-3 py-2 border-bottom">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text"><i class="oi" data-icon="search"/></span>
+                        <input type="search" class="form-control o-navigable"
+                               placeholder="Find any menu to star..."
+                               t-att-value="this.searchTerm()"
+                               t-on-input="(ev) => this.onSearchInput(ev)"/>
+                    </div>
+                </div>
+
+                <div class="o_hide_menu_favorite_body">
+                    <t t-if="this.searchTerm().trim()">
+                        <t t-set="results" t-value="this.searchResults()"/>
+                        <div t-if="!results.length" class="text-muted text-center small py-3">
+                            No menu matches your search.
+                        </div>
+                        <t t-foreach="results" t-as="entry" t-key="entry.id">
+                            <t t-call="hide_menu_user.FavoriteMenu.Entry" entry="entry" showApp="true" pinned="false"/>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <t t-set="shared" t-value="this.sharedEntries()"/>
+                        <t t-set="groups" t-value="this.personalGroups()"/>
+                        <div t-if="shared.length" class="o_hide_menu_favorite_section">
+                            <div class="o_hide_menu_favorite_section_title px-3 pt-2 pb-1">
+                                <i class="oi me-1" data-icon="groups"/>Team shortcuts
+                            </div>
+                            <t t-foreach="shared" t-as="entry" t-key="entry.id">
+                                <t t-call="hide_menu_user.FavoriteMenu.Entry" entry="entry" showApp="true" pinned="true"/>
+                            </t>
+                        </div>
+                        <t t-foreach="groups" t-as="group" t-key="group.appId">
+                            <div class="o_hide_menu_favorite_section">
+                                <div class="o_hide_menu_favorite_section_title px-3 pt-2 pb-1"
+                                     t-out="group.appName"/>
+                                <t t-foreach="group.entries" t-as="entry" t-key="entry.id">
+                                    <t t-call="hide_menu_user.FavoriteMenu.Entry" entry="entry" showApp="false" pinned="false"/>
+                                </t>
+                            </div>
+                        </t>
+                        <div t-if="!shared.length and !groups.length"
+                             class="o_hide_menu_favorite_empty text-center text-muted px-3 py-4">
+                            <i class="oi d-block mb-2" data-icon="star"/>
+                            <div class="fw-bold">No favourites yet</div>
+                            <div class="small">
+                                Use "Add this page" or search a menu above and
+                                click its star.
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </Dropdown>
+    </t>
+
+    <t t-name="hide_menu_user.FavoriteMenu.Entry">
+        <div class="o_hide_menu_favorite_entry d-flex align-items-center pe-2"
+             t-att-data-menu-xmlid="entry.menu.xmlid">
+            <DropdownItem class="'flex-grow-1 text-truncate py-1'"
+                          onSelected="() => this.openEntry(entry)">
+                <div class="d-flex flex-column text-truncate">
+                    <span class="text-truncate" t-out="entry.name"/>
+                    <small t-if="showApp or entry.parentPath" class="text-muted text-truncate"
+                           t-out="showApp ? entry.fullPath : entry.parentPath"/>
+                </div>
+            </DropdownItem>
+            <i t-if="pinned" class="oi text-muted px-1" data-icon="push_pin"
+               t-att-title="this.labels.pinned"/>
+            <button t-else="" class="btn btn-link btn-sm px-1 o_hide_menu_favorite_star"
+                    t-att-title="this.isFavorite(entry.id) ? this.labels.remove : this.labels.add"
+                    t-on-click.stop="() => this.toggleFavorite(entry.id)">
+                <i class="oi" t-att-class="{ 'oi-filled text-warning': this.isFavorite(entry.id) }"
+                   data-icon="star"/>
+            </button>
+        </div>
+    </t>
+
+</templates>

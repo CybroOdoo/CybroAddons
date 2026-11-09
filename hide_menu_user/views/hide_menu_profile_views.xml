@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- List view of menu profiles -->
+    <record id="hide_menu_profile_view_list" model="ir.ui.view">
+        <field name="name">hide.menu.profile.view.list</field>
+        <field name="model">hide.menu.profile</field>
+        <field name="arch" type="xml">
+            <list string="Menu Profiles">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="group_ids" widget="many2many_tags"/>
+                <field name="user_ids" widget="many2many_tags"/>
+                <field name="app_count"/>
+                <field name="shortcut_count"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view of a menu profile -->
+    <record id="hide_menu_profile_view_form" model="ir.ui.view">
+        <field name="name">hide.menu.profile.view.form</field>
+        <field name="model">hide.menu.profile</field>
+        <field name="arch" type="xml">
+            <form string="Menu Profile">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Sales Team"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Applies To">
+                            <field name="group_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="user_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group string="Priority">
+                            <field name="sequence"/>
+                            <field name="active" invisible="1"/>
+                            <div class="text-muted" colspan="2">
+                                Leave Groups and Users empty to apply this
+                                profile to every internal user. Each user gets
+                                the first matching profile, and can still set a
+                                personal app order from their user menu.
+                            </div>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="App Order" name="app_order">
+                            <button name="action_add_missing_apps" type="object"
+                                    string="Add all apps" icon="fa-plus"
+                                    class="btn-link ps-0"/>
+                            <field name="app_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="menu_id" options="{'no_create': True}"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Team Shortcuts" name="team_shortcuts">
+                            <field name="shortcut_menu_ids" nolabel="1"
+                                   options="{'no_create': True}">
+                                <list>
+                                    <field name="complete_name" string="Menu"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view of menu profiles -->
+    <record id="hide_menu_profile_view_search" model="ir.ui.view">
+        <field name="name">hide.menu.profile.view.search</field>
+        <field name="model">hide.menu.profile</field>
+        <field name="arch" type="xml">
+            <search string="Menu Profiles">
+                <field name="name"/>
+                <field name="group_ids"/>
+                <field name="user_ids"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action opening the menu profiles -->
+    <record id="hide_menu_profile_action" model="ir.actions.act_window">
+        <field name="name">Menu Profiles</field>
+        <field name="res_model">hide.menu.profile</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a menu profile
+            </p>
+            <p>
+                Set the order of the apps and the team shortcuts for a group
+                of users. Users can still reorder their own apps and star
+                their own favourite menus.
+            </p>
+        </field>
+    </record>
+</odoo>

@@ -54,7 +54,7 @@ class TestHideMenuFeatures(TransactionCase):
             'action': f'ir.actions.act_window,{self.action.id}',
             'restrict_group_ids': [Command.link(self.restricted_group.id)],
         })
-        self.env.registry.clear_cache()
+        self.env.transaction.invalidate_ormcache()
         visible = menu.with_user(self.user)._filter_visible_menus()
         self.assertNotIn(menu, visible)
 
@@ -66,7 +66,7 @@ class TestHideMenuFeatures(TransactionCase):
             'action': f'ir.actions.act_window,{self.action.id}',
             'restrict_group_ids': [Command.link(self.restricted_group.id)],
         })
-        self.env.registry.clear_cache()
+        self.env.transaction.invalidate_ormcache()
         visible = menu.with_user(admin_user)._filter_visible_menus()
         self.assertIn(menu, visible)
 

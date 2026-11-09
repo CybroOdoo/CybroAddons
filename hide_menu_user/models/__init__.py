@@ -15,5 +15,9 @@
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
 #############################################################################
+from . import hide_menu_favorite
+from . import hide_menu_profile
+from . import hide_menu_profile_app
 from . import ir_ui_menu
 from . import res_users
+from . import res_users_settings

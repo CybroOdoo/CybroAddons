@@ -15,7 +15,7 @@
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
 #############################################################################
-from odoo import Command, fields, models
+from odoo import Command, api, fields, models
 
 
 class IrUiMenu(models.Model):
@@ -49,6 +49,25 @@ class IrUiMenu(models.Model):
         return menus.filtered(
             lambda menu: user not in menu.restrict_user_ids
             and not user_group_ids.intersection(menu.restrict_group_ids.ids))
+
+    @api.model
+    def load_menus(self, debug):
+        """Sort the apps in the order chosen for the current user.
+
+        Apps listed in the user's order come first, in that order; the
+        others keep their standard order after them.
+        """
+        menus = super().load_menus(debug)
+        app_order = self.env.user._hide_menu_get_app_order()
+        if not app_order:
+            return menus
+        position = {menu_id: index for index, menu_id in enumerate(app_order)}
+        root = menus['root']
+        children = sorted(
+            root['children'],
+            key=lambda menu_id: position.get(menu_id, len(position)))
+        # The parent result is cached: return a copy, never mutate it.
+        return {**menus, 'root': {**root, 'children': children}}
 
     def action_restrict_submenus(self):
         """Copy this menu's restrictions onto all of its descendant menus."""

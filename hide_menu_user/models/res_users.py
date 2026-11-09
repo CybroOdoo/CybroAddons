@@ -73,3 +73,18 @@ class ResUsers(models.Model):
                     {'hide_menu_ids': [Command.clear()]})
             self._sync_restricted_menus(old_hide_menu_map)
         return res
+
+    def _hide_menu_get_app_order(self):
+        """Return the ids of the apps in the order that applies to the user.
+
+        The user's personal order wins; otherwise the order of the user's
+        menu profile applies. An empty list means the standard order.
+        """
+        self.ensure_one()
+        settings = self.sudo().res_users_settings_ids[:1]
+        personal_order = settings.hide_menu_app_order
+        if personal_order and isinstance(personal_order, list):
+            return [menu_id for menu_id in personal_order
+                    if isinstance(menu_id, int)]
+        profile = self.env['hide.menu.profile']._get_for_user(self)
+        return profile.app_ids.menu_id.ids

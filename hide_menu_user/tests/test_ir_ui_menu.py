@@ -52,7 +52,7 @@ class TestIrUiMenu(TransactionCase):
 
     def test_01_filter_visible_menus_hides_restricted(self):
         """_filter_visible_menus drops menus restricted for the user."""
-        self.env.registry.clear_cache()
+        self.env.transaction.invalidate_ormcache()
         menus = (self.menu_1 + self.menu_2).with_user(self.user)
         visible_menus = menus._filter_visible_menus()
         self.assertNotIn(self.menu_1, visible_menus)
@@ -61,7 +61,7 @@ class TestIrUiMenu(TransactionCase):
         """System administrators are never restricted."""
         admin_user = self.env.ref('base.user_admin')
         self.menu_1.restrict_user_ids = [Command.link(admin_user.id)]
-        self.env.registry.clear_cache()
+        self.env.transaction.invalidate_ormcache()
         visible_menus = self.menu_1.with_user(admin_user)._filter_visible_menus()
         self.assertIn(self.menu_1, visible_menus)
 
@@ -80,7 +80,7 @@ class TestIrUiMenu(TransactionCase):
         user_menus = menu_model.with_user(self.user)
 
         # Baseline: the child menu is part of the user's loaded menu tree.
-        self.env.registry.clear_cache()
+        self.env.transaction.invalidate_ormcache()
         self.assertIn(child.id, user_menus.load_menus(False))
 
         # Restricting writes to ir.ui.menu, which clears the menu cache.

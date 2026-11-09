@@ -17,9 +17,10 @@
 #############################################################################
 {
     'name': 'Hide Any Menu User & Group Wise',
-    'version': '20.0.1.0.0',
+    'version': '20.0.2.0.0',
     'category': 'Extra Tools',
-    'summary': 'Hide or restrict any menu item per user or per group in Odoo.',
+    'summary': 'Hide or restrict any menu per user or group, set the app order '
+               'per team or user, and star favourite menus.',
     'description': """This module provides functionality to hide or restrict menu
     items on a per-user or per-group basis in Odoo.
     Administrators can control which menus each user is allowed to see, so users
@@ -33,21 +34,34 @@
       Settings > Users & Companies.
     - Copy one user's hidden menus onto other users in a single click.
     - Cascade a menu's restrictions to all of its sub-menus.
+    - Menu Profiles: set the order of the apps and team shortcuts for a
+      group of users.
+    - Users can arrange their own apps and reset to the team order.
+    - Star any menu as a favourite and open it from the navbar.
     """,
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['base'],
+    'depends': ['web'],
     'data': [
         'security/ir.access.csv',
         'wizard/hide_menu_copy_wizard_views.xml',
         'views/res_users_views.xml',
         'views/ir_ui_menu_views.xml',
+        'views/hide_menu_profile_views.xml',
         'views/hide_menu_menus.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'hide_menu_user/static/src/**/*',
+        ],
+        'web.assets_tests': [
+            'hide_menu_user/static/tests/tours/**/*',
+        ],
+    },
     'license': 'LGPL-3',
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.gif'],
     'installable': True,
     'auto_install': False,
     'application': False,
