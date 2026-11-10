@@ -391,21 +391,3 @@ class WmCollectionPoint(models.Model):
             ],
             'target': 'current',
         }
-
-    def action_log_emergency_callout(self):
-        """Ops-triggered action to quickly log an Emergency Callout billable event."""
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Log Emergency Callout'),
-            'res_model': 'wm.billable.event',
-            'view_mode': 'form',
-            'target': 'current',
-            'context': {
-                'default_partner_id': self.partner_id.id if self.partner_id else False,
-                'default_collection_point_id': self.id,
-                'default_event_type': 'emergency_callout',
-                'default_event_date': fields.Date.context_today(self),
-                'default_quantity': 1.0,
-            },
-        }

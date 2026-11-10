@@ -212,22 +212,23 @@ class WmContainer(models.Model):
                     period=period_label.lower(), name=self.name, date=billing_start,
                 ))
 
-        invoice = self.env['account.move'].sudo().create({
-            'move_type': 'out_invoice',
-            'partner_id': self.partner_id.id,
-            'company_id': self.company_id.id,
-            'invoice_date': today,
-            'invoice_line_ids': [(0, 0, {
-                'name': _("Container Rental Fee — %(tag)s (%(type)s) [%(period)s, Site: %(site)s]") % {
-                    'tag': self.name,
-                    'type': self.container_type_id.name if self.container_type_id else _('Standard Unit'),
-                    'period': period_label,
-                    'site': self.collection_point_id.name if self.collection_point_id else _('Deployed Site'),
-                },
-                'quantity': qty,
-                'price_unit': self.rental_rate,
-            })],
-        })
+        with (self.company_id or self.env.company)._wm_invoicing_guard():
+            invoice = self.env['account.move'].sudo().create({
+                'move_type': 'out_invoice',
+                'partner_id': self.partner_id.id,
+                'company_id': self.company_id.id,
+                'invoice_date': today,
+                'invoice_line_ids': [(0, 0, {
+                    'name': _("Container Rental Fee — %(tag)s (%(type)s) [%(period)s, Site: %(site)s]") % {
+                        'tag': self.name,
+                        'type': self.container_type_id.name if self.container_type_id else _('Standard Unit'),
+                        'period': period_label,
+                        'site': self.collection_point_id.name if self.collection_point_id else _('Deployed Site'),
+                    },
+                    'quantity': qty,
+                    'price_unit': self.rental_rate,
+                })],
+            })
         self.sudo().write({
             'invoice_ids': [(4, invoice.id)],
             'last_invoiced_date': billed_until,

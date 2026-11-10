@@ -23,6 +23,15 @@ from datetime import timedelta
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
+LOCATION_SOURCES = [
+    ('device', 'Phone GPS'),
+    ('manual', 'Entered Manually'),
+    ('telematics', 'Estimated (Vehicle Tracker)'),
+    ('collection_point', 'Estimated (Collection Point)'),
+    ('none', 'Not Available'),
+]
+ESTIMATED_LOCATION_SOURCES = ('telematics', 'collection_point')
+
 
 class WmCollectionOrderStatusLog(models.Model):
     """
@@ -71,6 +80,12 @@ class WmCollectionOrderStatusLog(models.Model):
     )
     latitude = fields.Float(string='Latitude', digits=(10, 7))
     longitude = fields.Float(string='Longitude', digits=(10, 7))
+    location_source = fields.Selection(
+        LOCATION_SOURCES,
+        string='Location Source',
+        help='Where the coordinates come from. Estimated locations were filled in '
+             'because the driver\'s phone had no position when the status was logged.',
+    )
     note = fields.Char(string='Note', help='Optional free-text note, e.g. reason for a flagged stop.')
     photo = fields.Binary(string='Photo', attachment=True)
 
@@ -92,7 +107,7 @@ class WmCollectionOrderStatusLog(models.Model):
     @api.model
     def log_stop_event(
         self, order, status, driver=None, timestamp=None,
-        latitude=0.0, longitude=0.0, note='', photo=False,
+        latitude=0.0, longitude=0.0, note='', photo=False, location_source=False,
     ):
         """Create a stop status log entry for *order*.
 
@@ -100,21 +115,21 @@ class WmCollectionOrderStatusLog(models.Model):
         - the backend ``wm.add.status.log.wizard``
         - the driver-app REST API controller (``wm_driver_app``)
 
-        Coordinates fall back to the wizard's own ``_get_default_location``
-        when neither latitude nor longitude are supplied by the caller
-        (so the wizard can still auto-fill from telematics / collection-point
-        data without duplicating that logic here).
+        When neither latitude nor longitude is supplied, the coordinates are
+        estimated with the wizard's ``_get_estimated_location`` (vehicle
+        telematics, then the collection point) and the log is marked with
+        that estimated source, so it is never mistaken for a real position.
+        Supplied coordinates keep *location_source* (``manual`` by default).
         """
         if not status:
             raise ValidationError(_("A status is required to log a stop event."))
         if not order or not order.id:
             raise ValidationError(_("A valid collection order is required to log a stop event."))
-        if not latitude and not longitude:
-            try:
-                wizard = self.env['wm.add.status.log.wizard']
-                latitude, longitude = wizard._get_default_location(order)
-            except Exception:
-                latitude, longitude = 0.0, 0.0
+        if latitude or longitude:
+            location_source = location_source or 'manual'
+        else:
+            latitude, longitude, location_source = (
+                self.env['wm.add.status.log.wizard']._get_estimated_location(order))
         return self.create({
             'order_id': order.id,
             'status': status,
@@ -122,6 +137,7 @@ class WmCollectionOrderStatusLog(models.Model):
             'driver_id': (driver or self.env.user).id,
             'latitude': latitude or 0.0,
             'longitude': longitude or 0.0,
+            'location_source': location_source,
             'note': note or '',
             'photo': photo or False,
         })

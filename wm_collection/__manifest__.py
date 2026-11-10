@@ -20,7 +20,7 @@
 #############################################################################
 {
     'name': 'Waste Management Collection',
-    'version': '19.0.1.0.2',
+    'version': '19.0.1.0.3',
     'category': 'Operations/Waste Management',
     'summary': 'Collection operations, route optimization, and waste inventory management',
     'author': 'Cybrosys Techno Solutions',

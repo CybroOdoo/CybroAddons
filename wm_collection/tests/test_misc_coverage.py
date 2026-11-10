@@ -219,14 +219,25 @@ class TestMiscCoverage(TransactionCase):
         with self.assertRaises(ValidationError):
             Log.log_stop_event(self.env['wm.collection.order'], 'arrived')
         log = Log.log_stop_event(order, 'arrived', note='at gate')
-        # Coordinates fall back to the collection point
+        # Coordinates fall back to the collection point, marked as estimated
         self.assertAlmostEqual(log.latitude, 12.5)
         self.assertAlmostEqual(log.longitude, 45.25)
+        self.assertEqual(log.location_source, 'collection_point')
         self.assertEqual(log.driver_id, self.env.user)
         self.assertEqual(log.note, 'at gate')
         explicit = Log.log_stop_event(order, 'weighed', latitude=1.0, longitude=2.0)
         self.assertAlmostEqual(explicit.latitude, 1.0)
+        self.assertEqual(explicit.location_source, 'manual')
         self.assertEqual(order.status_log_ids, log | explicit)
+        device = Log.log_stop_event(order, 'lifted', latitude=1.0, longitude=2.0, location_source='device')
+        self.assertEqual(device.location_source, 'device')
+        # The source passed for a missing position is ignored: it is estimated
+        estimated = Log.log_stop_event(order, 'lifted', location_source='device')
+        self.assertEqual(estimated.location_source, 'collection_point')
+        # Nothing to estimate from: no coordinates, marked as not available
+        no_point = self._order(collection_point_id=False)
+        none = Log.log_stop_event(no_point, 'arrived')
+        self.assertEqual((none.latitude, none.longitude, none.location_source), (0.0, 0.0, 'none'))
 
     def test_client_uuid_unique(self):
         Log = self.env['wm.collection.order.status.log']
@@ -271,6 +282,22 @@ class TestMiscCoverage(TransactionCase):
         self.assertEqual(res['type'], 'ir.actions.act_window_close')
         self.assertEqual(order.status_log_ids.status, 'arrived')
         self.assertEqual(order.status_log_ids.note, 'hi')
+        # Prefilled coordinates left as they are stay marked as estimated
+        self.assertEqual(order.status_log_ids.location_source, 'collection_point')
+        # Coordinates the user typed in are a manual position
+        Wizard.create({'order_id': order.id, 'status': 'started',
+                       'latitude': 9.5, 'longitude': 76.25}).action_confirm()
+        typed = order.status_log_ids.filtered(lambda log: log.status == 'started')
+        self.assertEqual((typed.latitude, typed.longitude, typed.location_source), (9.5, 76.25, 'manual'))
+
+    def test_estimated_location_needs_both_coordinates(self):
+        """A collection point with only one coordinate set gives no estimate."""
+        Wizard = self.env['wm.add.status.log.wizard']
+        order = self._order()
+        self.assertEqual(Wizard._get_estimated_location(order), (12.5, 45.25, 'collection_point'))
+        self.point.longitude = 0.0
+        self.assertEqual(Wizard._get_estimated_location(order), (0.0, 0.0, 'none'))
+        self.assertEqual(Wizard._get_default_location(order), (0.0, 0.0))
 
     # ------------------------------------------------------------------
     # Change driver wizard
@@ -335,9 +362,6 @@ class TestMiscCoverage(TransactionCase):
         self.assertEqual(point.container_count, 0)
         action = point.action_view_containers()
         self.assertEqual(action['domain'], [('collection_point_id', '=', point.id)])
-        callout = self.partner and point.action_log_emergency_callout()
-        self.assertEqual(callout['context']['default_collection_point_id'], point.id)
-        self.assertEqual(callout['context']['default_event_type'], 'emergency_callout')
 
     def test_collection_point_use_settings(self):
         params = self.env['ir.config_parameter'].sudo()

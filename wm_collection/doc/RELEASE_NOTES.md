@@ -22,3 +22,9 @@
 - Tightened record rules: drivers only reach their own status logs, missed collections and signatures; read access is limited to the Waste Management roles.
 - Added multi-company rules for batch lines and gate entry lines.
 - Moved the delete guards to ondelete methods and fixed the inheritable defaults of waste batches.
+
+#### 02.11.2026
+#### Version 19.0.1.0.3
+##### UPDT
+- Stop status logs record where their location comes from: phone GPS, entered manually, estimated from the vehicle tracker or collection point, or not available.
+- A status logged without a position gets an estimated location that is marked as estimated instead of looking like a real position.

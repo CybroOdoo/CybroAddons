@@ -77,8 +77,17 @@ class WmAddStatusLogWizard(models.TransientModel):
 
     def _get_default_location(self, order):
         """Helper to get location from vehicle telematics event or collection point."""
-        lat = 0.0
-        lng = 0.0
+        lat, lng, _source = self._get_estimated_location(order)
+        return lat, lng
+
+    @api.model
+    def _get_estimated_location(self, order):
+        """Estimate where *order*'s stop is, for logs that have no position.
+
+        :returns: ``(latitude, longitude, location_source)``: the vehicle's
+            latest telematics position (``telematics``), else the collection
+            point's coordinates (``collection_point``), else ``(0.0, 0.0, 'none')``
+        """
         # 1. Try vehicle telematics latest position if available
         if order.vehicle_id and 'wm.telematics.event' in self.env:
             latest_event = self.env['wm.telematics.event'].sudo().search([
@@ -87,21 +96,27 @@ class WmAddStatusLogWizard(models.TransientModel):
                 ('longitude', '!=', 0.0),
             ], order='event_datetime desc, id desc', limit=1)
             if latest_event:
-                lat = latest_event.latitude
-                lng = latest_event.longitude
+                return latest_event.latitude, latest_event.longitude, 'telematics'
 
         # 2. Fall back to Collection Point coordinates
-        if (not lat or not lng) and order.collection_point_id:
-            lat = order.collection_point_id.latitude or 0.0
-            lng = order.collection_point_id.longitude or 0.0
+        point = order.collection_point_id
+        if point and point.latitude and point.longitude:
+            return point.latitude, point.longitude, 'collection_point'
 
-        return lat, lng
+        return 0.0, 0.0, 'none'
 
     def action_confirm(self):
         """Create the stop status log record and append it to the collection order."""
         self.ensure_one()
         if not self.order_id:
             raise UserError(_("No Collection Order selected."))
+
+        # Coordinates left as prefilled are still the estimate, not a position
+        # the user confirmed: keep them marked as estimated.
+        est_lat, est_lng, est_source = self._get_estimated_location(self.order_id)
+        location_source = 'manual'
+        if (self.latitude, self.longitude) == (est_lat, est_lng):
+            location_source = est_source
 
         self.env['wm.collection.order.status.log'].log_stop_event(
             order=self.order_id,
@@ -112,5 +127,6 @@ class WmAddStatusLogWizard(models.TransientModel):
             longitude=self.longitude or 0.0,
             note=self.note or '',
             photo=self.photo or False,
+            location_source=location_source,
         )
         return {'type': 'ir.actions.act_window_close'}

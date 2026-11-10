@@ -19,6 +19,7 @@
 #
 #############################################################################
 
+from . import res_company
 from . import waste_batch
 from . import waste_batch_collection_ext
 from . import waste_batch_inspection
