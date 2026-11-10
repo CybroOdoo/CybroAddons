@@ -19,8 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-"""
-Initialization file for theme_drivex module.
-"""
+
 from . import controllers
 from . import models

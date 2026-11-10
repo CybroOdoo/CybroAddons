@@ -19,7 +19,5 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-"""
-Controllers initialization for theme_drivex.
-"""
+
 from . import theme_drivex

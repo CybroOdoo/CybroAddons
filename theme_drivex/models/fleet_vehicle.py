@@ -19,9 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-"""
-This module defines extensions to the Fleet Vehicle model.
-"""
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -31,10 +28,10 @@ class FleetVehicle(models.Model):
     _inherit = 'fleet.vehicle'
 
     is_available_on_website = fields.Boolean(
-        string="Published on Website", default=False,
+        string="Published on Website",
         help='Is this vehicle available on the website?')
     publish_on_homepage = fields.Boolean(
-        string="Show on Homepage Premium Section", default=False,
+        string="Show on Homepage Premium Section",
         help='Show this vehicle on the homepage.')
     daily_rate = fields.Monetary(
         string="Daily Rental Rate", currency_field='currency_id',

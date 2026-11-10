@@ -19,9 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-"""
-This module defines the Fleet Vehicle Image model.
-"""
 from odoo import fields, models
 
 

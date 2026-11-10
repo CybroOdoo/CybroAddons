@@ -19,9 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-"""
-Models initialization for theme_drivex.
-"""
+
 from . import fleet_rental_addon
 from . import fleet_rental_insurance
 from . import fleet_rental_location
@@ -29,3 +27,4 @@ from . import fleet_rental_order
 from . import fleet_vehicle
 from . import fleet_vehicle_feature
 from . import fleet_vehicle_image
+

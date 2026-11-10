@@ -19,9 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-"""
-This module defines the Fleet Rental Location model.
-"""
 from odoo import fields, models
 
 
@@ -30,7 +27,11 @@ class FleetRentalLocation(models.Model):
     _name = 'fleet.rental.location'
     _description = 'Rental Pickup/Drop-off Location'
 
-    name = fields.Char(string='Location Name', required=True, help='Name of the rental location.')
-    code = fields.Char(string='Location Code', help='Short code for the location.')
-    address = fields.Text(string='Address', help='Full address of the location.')
-    active = fields.Boolean(string='Active', default=True, help='Is the location active?')
+    name = fields.Char(string='Location Name', required=True,
+                       help='Name of the rental location.')
+    code = fields.Char(string='Location Code',
+                       help='Short code for the location.')
+    address = fields.Text(string='Address',
+                          help='Full address of the location.')
+    active = fields.Boolean(string='Active', default=True,
+                            help='Is the location active?')

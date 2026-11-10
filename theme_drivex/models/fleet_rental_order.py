@@ -19,9 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-"""
-This module defines the Fleet Rental Order model.
-"""
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -35,7 +32,8 @@ class FleetRentalOrder(models.Model):
 
     name = fields.Char(
         string='Booking Reference', required=True, copy=False, readonly=True,
-        index=True, default=lambda self: 'New', help='Booking reference number.')
+        index=True, default=lambda self: 'New',
+        help='Booking reference number.')
     state = fields.Selection(
         selection=[
             ('draft', 'Draft'),
@@ -71,28 +69,43 @@ class FleetRentalOrder(models.Model):
                                help='Email of the driver.')
     driver_phone = fields.Char(string='Driver Phone', required=True,
                                help='Phone number of the driver.')
-    driver_license = fields.Char(string='License Number', help='Driver license number.')
-    driver_age = fields.Integer(string='Driver Age', help='Age of the driver.')
+    driver_license = fields.Char(string='License Number',
+                                 readonly=True,
+                                 help='Driver license number.')
+    driver_dob = fields.Date(string='Date of Birth',
+                             help='Driver date of birth.')
+    driver_age = fields.Integer(
+        string='Driver Age', compute='_compute_driver_age', readonly=True,
+        help='Current age calculated from the driver date of birth.')
+    license_expiry_date = fields.Date(string='Licence Expiry Date',
+                                      help='Expiry date of the driving licence.')
     currency_id = fields.Many2one(
-        'res.currency', string="Currency", default=lambda self: self.env.company.currency_id,
+        'res.currency', string="Currency",
+        default=lambda self: self.env.company.currency_id,
         readonly=True, help='Currency for the booking.')
     insurance_id = fields.Many2one(
         'fleet.rental.insurance', string='Insurance Plan',
         help='Selected insurance plan.')
     addon_ids = fields.Many2many('fleet.rental.addon',
                                  string='Add-ons', help='Selected add-ons.')
-    amount_base = fields.Float(string='Base Rate', tracking=True, help='Base rental rate.')
-    amount_insurance = fields.Float(string='Insurance Cost', tracking=True, help='Cost of insurance.')
-    amount_addons = fields.Float(string='Add-ons Cost', tracking=True, help='Cost of add-ons.')
-    amount_total = fields.Float(string='Total Amount', compute='_compute_amount_total',
-                                store=True, tracking=True, help='Total cost of the booking.')
+    amount_base = fields.Float(string='Base Rate', tracking=True,
+                               help='Base rental rate.')
+    amount_insurance = fields.Float(string='Insurance Cost', tracking=True,
+                                    help='Cost of insurance.')
+    amount_addons = fields.Float(string='Add-ons Cost', tracking=True,
+                                 help='Cost of add-ons.')
+    amount_total = fields.Float(string='Total Amount',
+                                compute='_compute_amount_total',
+                                store=True, tracking=True,
+                                help='Total cost of the booking.')
 
     @api.model_create_multi
     def create(self, vals_list):
         """Override create to assign sequence."""
         for vals in vals_list:
             if vals.get('name', 'New') == 'New':
-                vals['name'] = self.env['ir.sequence'].next_by_code('fleet.rental.order') or 'New'
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'fleet.rental.order') or 'New'
         return super().create(vals_list)
 
     @api.depends('amount_base', 'amount_insurance', 'amount_addons')
@@ -100,6 +113,18 @@ class FleetRentalOrder(models.Model):
         """Compute the total amount."""
         for order in self:
             order.amount_total = order.amount_base + order.amount_insurance + order.amount_addons
+
+    @api.depends('driver_dob')
+    def _compute_driver_age(self):
+        """Calculate the driver's current age from their date of birth."""
+        today = fields.Date.context_today(self)
+        for order in self:
+            if not order.driver_dob or order.driver_dob > today:
+                order.driver_age = 0
+                continue
+            order.driver_age = today.year - order.driver_dob.year - (
+                (today.month, today.day) <
+                (order.driver_dob.month, order.driver_dob.day))
 
     @api.constrains('vehicle_id', 'pickup_datetime', 'return_datetime', 'state')
     def _check_overlap(self):
@@ -114,20 +139,21 @@ class FleetRentalOrder(models.Model):
                     ('return_datetime', '>', order.pickup_datetime),
                 ])
                 if overlapping:
-                    raise ValidationError("This vehicle is already booked for the selected dates.")
+                    raise ValidationError(
+                        "This vehicle is already booked for the selected dates.")
 
     def action_confirm(self):
         """Confirm the booking."""
         self.write({'state': 'confirmed'})
-        
+
     def action_pickup(self):
         """Mark the vehicle as picked up."""
         self.write({'state': 'picked_up'})
-        
+
     def action_return(self):
         """Mark the vehicle as returned."""
         self.write({'state': 'returned'})
-        
+
     def action_cancel(self):
         """Cancel the booking."""
         self.write({'state': 'cancelled'})

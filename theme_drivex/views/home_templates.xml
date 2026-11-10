@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Description: This file defines the home_templates views/templates for the theme_drivex module. -->
 <odoo>
     <!--DriveX Homepage-->
-    <template id="drivex_homepage" inherit_id="website.homepage" name="DriveX Homepage">
+    <record id="drivex_homepage" model="theme.ir.ui.view">
+        <field name="name">DriveX Homepage</field>
+        <field name="key">theme_drivex.drivex_homepage</field>
+        <field name="type">qweb</field>
+        <field name="inherit_id" ref="website.homepage"/>
+        <field name="arch" type="xml">
         <xpath expr="//div[@id='wrap']" position="replace">
-            <div id="wrap">
-                <!-- ═══════════════════════════════════════════════
-                     HERO SECTION  (full inline — no snippet call)
-                ═══════════════════════════════════════════════ -->
+            <div id="wrap" class="oe_structure">
+                <!-- HERO SECTION-->
                 <section class="hero" data-name="Hero">
                     <div class="hero-content">
                         <div class="hero-badge">
@@ -31,12 +35,8 @@
                                         <span class="cs-val">Pick a city</span>
                                         <i class="fa-solid fa-chevron-down cs-arrow"/>
                                     </div>
-                                    <div class="cs-menu">
-                                        <t t-set="all_locations" t-value="request.env['fleet.rental.location'].sudo().search([('active', '=', True)])"/>
-                                        <t t-foreach="all_locations" t-as="loc">
-                                            <div class="cs-opt" t-att-data-value="loc.id"><span class="cs-opt-icon"><i class="fa-solid fa-building"/></span><t t-esc="loc.name"/></div>
-                                        </t>
-                                    </div>
+                                    <!-- Options injected by JS via /homepage/data -->
+                                    <div class="cs-menu" id="locationMenu"/>
                                 </div>
                             </div>
                             <!-- Pickup Date -->
@@ -128,24 +128,11 @@
                                         <span class="cs-val">All Vehicles</span>
                                         <i class="fa-solid fa-chevron-down cs-arrow"/>
                                     </div>
-                                    <div class="cs-menu cs-menu--right">
-                                        <div class="cs-opt cs-opt--active" data-value="all"><span class="cs-opt-icon"><i class="fa-solid fa-car-side"/></span>All Vehicles</div>
-                                        <t t-set="has_vehicles" t-value="request.env['fleet.vehicle'].sudo().search_count([('is_available_on_website', '=', True)]) &gt; 0"/>
-                                        <t t-set="demo_fallback" t-value="not has_vehicles"/>
-                                        <t t-if="not demo_fallback">
-                                            <t t-set="all_categories" t-value="request.env['fleet.vehicle.model.category'].sudo().search([])"/>
-                                            <t t-foreach="all_categories" t-as="cat">
-                                                <div class="cs-opt" t-att-data-value="cat.name.lower()"><span class="cs-opt-icon"><i class="fa-solid fa-car"/></span><t t-esc="cat.name"/></div>
-                                            </t>
-                                        </t>
-                                        <t t-else="">
-                                            <div class="cs-opt" data-value="luxury"><span class="cs-opt-icon"><i class="fa-solid fa-car"/></span>Luxury</div>
-                                            <div class="cs-opt" data-value="sports"><span class="cs-opt-icon"><i class="fa-solid fa-car"/></span>Sports</div>
-                                            <div class="cs-opt" data-value="electric"><span class="cs-opt-icon"><i class="fa-solid fa-car"/></span>Electric</div>
-                                            <div class="cs-opt" data-value="suv"><span class="cs-opt-icon"><i class="fa-solid fa-car"/></span>SUV</div>
-                                            <div class="cs-opt" data-value="supercar"><span class="cs-opt-icon"><i class="fa-solid fa-car"/></span>Supercar</div>
-                                            <div class="cs-opt" data-value="economy"><span class="cs-opt-icon"><i class="fa-solid fa-car"/></span>Economy</div>
-                                        </t>
+                                    <!-- Options injected by JS via /homepage/data -->
+                                    <div class="cs-menu cs-menu--right" id="carTypeMenu">
+                                        <div class="cs-opt cs-opt--active" data-value="all">
+                                            <span class="cs-opt-icon"><i class="fa-solid fa-car-side"/></span>All Vehicles
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -158,7 +145,7 @@
                     </div>
                 </section>
                 <!-- ═══════════════════════════════════════════════
-                     STATS BAR  (inline — no container wrapper issues)
+                     STATS BAR
                 ═══════════════════════════════════════════════ -->
                 <section class="stats-bar" data-name="Stats Bar" style="background:#0a0e1a;padding:44px 0;">
                     <div style="display:flex;flex-direction:row;align-items:stretch;width:100%;max-width:1300px;margin:0 auto;padding:0 24px;box-sizing:border-box;text-align:center;">
@@ -182,138 +169,20 @@
                 </section>
                 <!-- ═══════════════════════════════════════════════
                      FLEET SECTION
+                     Cards + filter buttons injected by JS via /homepage/data
                 ═══════════════════════════════════════════════ -->
-                <section class="fleet-section" id="fleet" data-name="Fleet">
+                <section class="fleet-section" id="fleet" data-snippet="theme_drivex.drivex_fleet_section" data-name="Fleet Section">
                     <div class="fleet-header">
-                        <span class="section-badge">Our Fleet</span>
-                        <h2>Premium Vehicles for Every Journey</h2>
-                        <p>Choose from our wide selection of high-end vehicles, perfectly<br/>maintained and ready for your next adventure.</p>
+                        <span class="section-badge o_editable">Our Fleet</span>
+                        <h2 class="o_editable">Premium Vehicles for Every Journey</h2>
+                        <p class="o_editable">Choose from our wide selection of high-end vehicles, perfectly<br/>maintained and ready for your next adventure.</p>
                     </div>
-                    <t t-set="has_vehicles" t-value="request.env['fleet.vehicle'].sudo().search_count([('is_available_on_website', '=', True)]) &gt; 0"/>
-                    <t t-set="demo_fallback" t-value="not has_vehicles"/>
-                    <div class="fleet-filter">
+                    <div class="fleet-filter" id="snippetFleetFilter">
                         <button class="filter-btn active" data-filter="all">All</button>
-                        <t t-if="not demo_fallback">
-                            <t t-set="all_categories" t-value="request.env['fleet.vehicle.model.category'].sudo().search([])"/>
-                            <t t-foreach="all_categories" t-as="cat">
-                                <button class="filter-btn" t-att-data-filter="cat.name.lower()"><t t-esc="cat.name"/></button>
-                            </t>
-                        </t>
-                        <t t-else="">
-                            <button class="filter-btn" data-filter="luxury">Luxury</button>
-                            <button class="filter-btn" data-filter="sports">Sports</button>
-                            <button class="filter-btn" data-filter="electric">Electric</button>
-                            <button class="filter-btn" data-filter="suv">SUV</button>
-                            <button class="filter-btn" data-filter="supercar">Supercar</button>
-                            <button class="filter-btn" data-filter="economy">Economy</button>
-                        </t>
+                        <!-- category filter buttons populated by JS via /homepage/data -->
                     </div>
-                    <div class="fleet-grid">
-                        <t t-if="not demo_fallback">
-                            <!-- Dynamic Premium Vehicles (Max 3) -->
-                            <t t-set="premium_vehicles" t-value="request.env['fleet.vehicle'].sudo().search([('publish_on_homepage', '=', True)], limit=3)"/>
-                            <t t-foreach="premium_vehicles" t-as="pv">
-                                <div class="car-card" t-att-data-category="pv.category_id.name.lower() if pv.category_id else 'all'">
-                                    <div class="car-image">
-                                        <span class="car-badge" t-if="pv.category_id"><t t-esc="pv.category_id.name"/></span>
-                                        <img t-attf-src="/web/image/fleet.vehicle/#{pv.id}/image_128" t-att-alt="pv.model_id.name"/>
-                                    </div>
-                                    <div class="car-info">
-                                        <div class="car-title-row">
-                                            <h3><t t-esc="pv.model_id.brand_id.name"/> <t t-esc="pv.model_id.name"/></h3>
-                                            <div class="price">$<t t-esc="pv.daily_rate"/> <span>/ day</span></div>
-                                        </div>
-                                        <p class="car-type">
-                                            <i class="fa-solid fa-tag"/> <t t-if="pv.category_id"><t t-esc="pv.category_id.name"/> · </t><t t-esc="pv.horsepower or 0"/> HP
-                                        </p>
-                                        <div class="car-specs">
-                                            <span><i class="fa-solid fa-sliders"/> <t t-esc="pv.transmission and pv.transmission.capitalize() or 'Auto'"/></span>
-                                            <span><i class="fa-solid fa-users"/> <t t-esc="pv.seats"/> Seats</span>
-                                            <span><i class="fa-solid fa-gas-pump"/> <t t-esc="pv.fuel_type and pv.fuel_type.capitalize() or 'Petrol'"/></span>
-                                        </div>
-                                        <div class="card-footer">
-                                            <a t-attf-href="/car-detail/#{pv.id}" class="view-link"><i class="fa-solid fa-arrow-right"/> View Details</a>
-                                            <a t-attf-href="/booking/#{pv.id}" class="rent-btn">Rent Now</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </t>
-                        </t>
-                        <t t-else="">
-                            <!-- Fallback Demo Vehicles -->
-                            <div class="car-card" data-category="sports">
-                                <div class="car-image">
-                                    <span class="car-badge">Sports</span>
-                                    <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&amp;w=600&amp;auto=format&amp;fit=crop" alt="BMW M4 Competition"/>
-                                </div>
-                                <div class="car-info">
-                                    <div class="car-title-row">
-                                        <h3>BMW M4 Competition</h3>
-                                        <div class="price">$180 <span>/ day</span></div>
-                                    </div>
-                                    <p class="car-type">
-                                        <i class="fa-solid fa-tag"/> Sports · 503 HP
-                                    </p>
-                                    <div class="car-specs">
-                                        <span><i class="fa-solid fa-sliders"/> Auto</span>
-                                        <span><i class="fa-solid fa-users"/> 4 Seats</span>
-                                        <span><i class="fa-solid fa-gas-pump"/> Petrol</span>
-                                    </div>
-                                    <div class="card-footer">
-                                        <a href="/car-detail" class="view-link"><i class="fa-solid fa-arrow-right"/> View Details</a>
-                                        <a href="/booking" class="rent-btn">Rent Now</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="car-card" data-category="electric">
-                                <div class="car-image">
-                                    <span class="car-badge">Electric</span>
-                                    <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&amp;w=600&amp;auto=format&amp;fit=crop" alt="Tesla Model 3"/>
-                                </div>
-                                <div class="car-info">
-                                    <div class="car-title-row">
-                                        <h3>Tesla Model 3</h3>
-                                        <div class="price">$120 <span>/ day</span></div>
-                                    </div>
-                                    <p class="car-type">
-                                        <i class="fa-solid fa-tag"/> Electric · 450 HP
-                                    </p>
-                                    <div class="car-specs">
-                                        <span><i class="fa-solid fa-sliders"/> Auto</span>
-                                        <span><i class="fa-solid fa-users"/> 5 Seats</span>
-                                        <span><i class="fa-solid fa-gas-pump"/> Electric</span>
-                                    </div>
-                                    <div class="card-footer">
-                                        <a href="/car-detail" class="view-link"><i class="fa-solid fa-arrow-right"/> View Details</a>
-                                        <a href="/booking" class="rent-btn">Rent Now</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="car-card" data-category="suv">
-                                <div class="car-image">
-                                    <span class="car-badge">SUV</span>
-                                    <img src="https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?q=80&amp;w=600&amp;auto=format&amp;fit=crop" alt="Range Rover Sport"/>
-                                </div>
-                                <div class="car-info">
-                                    <div class="car-title-row">
-                                        <h3>Range Rover Sport</h3>
-                                        <div class="price">$220 <span>/ day</span></div>
-                                    </div>
-                                    <p class="car-type">
-                                        <i class="fa-solid fa-tag"/> SUV · 395 HP
-                                    </p>
-                                    <div class="car-specs">
-                                        <span><i class="fa-solid fa-sliders"/> Auto</span>
-                                        <span><i class="fa-solid fa-users"/> 7 Seats</span>
-                                        <span><i class="fa-solid fa-gas-pump"/> Diesel</span>
-                                    </div>
-                                    <div class="card-footer">
-                                        <a href="/car-detail" class="view-link"><i class="fa-solid fa-arrow-right"/> View Details</a>
-                                        <a href="/booking" class="rent-btn">Rent Now</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </t>
+                    <div class="fleet-grid" id="snippetFleetGrid">
+                        <!-- vehicle cards populated by JS via /homepage/data -->
                     </div>
                     <div class="fleet-cta">
                         <a href="/fleet" class="btn-outline-white">View All Vehicles <i class="fa-solid fa-arrow-right"/></a>
@@ -411,8 +280,9 @@
                         </div>
                     </div>
                 </section>
-                <div class="oe_structure oe_empty"/>
+                <div class="oe_structure"/>
             </div>
         </xpath>
-    </template>
+        </field>
+    </record>
 </odoo>

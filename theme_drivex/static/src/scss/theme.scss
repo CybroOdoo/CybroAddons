@@ -49,19 +49,26 @@ body.menu-open {
    HEADER / NAV
    =========================== */
 
+header#top.header,
 .header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 100;
-  padding: 20px 0;
+  z-index: 1000;
+  background: transparent;
   transition: background 0.35s, padding 0.35s, box-shadow 0.35s;
+
+  padding: 12px 0;
+  &:has(.nav) {
+    padding: 20px 0;
+  }
 }
 
 /* Use ::before for the blur so backdrop-filter never lands on the header
    element itself — if it did, the header would become a containing block for
    position:fixed children (e.g. the mobile menu overlay) per CSS spec. */
+header#top.header::before,
 .header::before {
   content: '';
   position: absolute;
@@ -74,16 +81,297 @@ body.menu-open {
   pointer-events: none;
 }
 
-.header.scrolled::before {
+header#top.header.scrolled::before,
+header#top.header.o_header_is_scrolled::before,
+header#top.header.o_header_affixed::before,
+.header.scrolled::before,
+.header.o_header_is_scrolled::before,
+.header.o_header_affixed::before {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   background: rgba(10, 14, 26, 0.96);
   box-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+header#top.header.scrolled,
+header#top.header.o_header_is_scrolled,
+header#top.header.o_header_affixed,
 .header.scrolled {
-  padding: 30px 0;
+  padding: 10px 0;
+  &:has(.nav) {
+    padding: 20px 0;
+  }
 }
+
+/* ── Cross-Template Odoo Navbar Styling (Hamburger, Boxed, Stretch, etc.) ── */
+.header {
+  /* Reset Odoo's light navbar backgrounds so our dark glass shines through */
+  .navbar:not(.rounded-pill) {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Rounded box / Boxed template */
+  .navbar.rounded-pill,
+  .navbar.o_full_border {
+    background: rgba(15, 23, 36, 0.85) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  /* Brand / Logo */
+  .navbar-brand,
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    color: #fff !important;
+    font-weight: 700;
+    text-decoration: none;
+
+    img {
+      height: 34px !important;
+      max-height: 38px !important;
+      width: auto;
+      object-fit: contain;
+    }
+  }
+
+  /* Main Navigation Menu links (both DriveX .menu and Odoo #top_menu) */
+  #top_menu > .nav-item > .nav-link,
+  .top_menu > .nav-item > .nav-link,
+  .navbar-nav > .nav-item > .nav-link,
+  .menu a {
+    color: rgba(255, 255, 255, 0.82) !important;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    padding: 8px 14px;
+    position: relative;
+    background: transparent !important;
+    transition: color 0.2s;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 12px;
+      right: 12px;
+      height: 2px;
+      background: var(--accent, #D4191C);
+      border-radius: 2px;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.25s ease;
+    }
+
+    &:hover,
+    &.active,
+    &:focus {
+      color: #fff !important;
+      &::after {
+        transform: scaleX(1);
+      }
+    }
+  }
+
+  /* Dropdown togglers arrow */
+  .nav-item.dropdown > .nav-link.dropdown-toggle::after {
+    border-top-color: rgba(255, 255, 255, 0.7);
+  }
+
+  /* Dropdown Menus */
+  .dropdown-menu {
+    background: rgba(10, 14, 26, 0.96) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6) !important;
+    padding: 8px;
+    margin-top: 8px;
+
+    .dropdown-item {
+      color: rgba(255, 255, 255, 0.8) !important;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 9px 14px;
+      border-radius: 6px;
+      transition: all 0.2s;
+
+      &:hover,
+      &.active,
+      &:focus {
+        color: #fff !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+      }
+    }
+
+    .dropdown-divider {
+      border-top-color: rgba(255, 255, 255, 0.08) !important;
+    }
+  }
+
+  /* Hamburger toggler button (Odoo template_header_hamburger & mobile) */
+  .navbar-toggler {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-radius: 8px;
+    padding: 8px 12px !important;
+    color: #fff !important;
+    transition: all 0.2s;
+
+    &:hover,
+    &:focus {
+      background: rgba(255, 255, 255, 0.14) !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
+      outline: none;
+      box-shadow: none;
+    }
+
+    .navbar-toggler-icon {
+      filter: invert(1) brightness(2);
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  /* Right-side elements (Search, Buttons, Sign In, CTA) */
+  .o_navlink_background,
+  .o_navlink_background_hover {
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-radius: 50% !important;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.18) !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
+      color: #fff !important;
+    }
+  }
+
+  /* Sign in and Call to action buttons across all headers */
+  .btn-signin,
+  .o_nav_link_btn,
+  .btn_cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 20px !important;
+    border-radius: 8px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px;
+    background: var(--accent, #D4191C) !important;
+    color: #fff !important;
+    border: none !important;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+
+    &:hover {
+      background: var(--accent-hover, #b81518) !important;
+      color: #fff !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(212, 25, 28, 0.4);
+    }
+  }
+
+  .btn-outline-secondary {
+    color: rgba(255, 255, 255, 0.85) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    background: transparent !important;
+
+    &:hover {
+      color: #fff !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
+  }
+
+  /* Contrast borders & text elements (e.g. stretch template) */
+  .o_border_contrast {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .text-reset {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+
+  /* Search input in stretch / header */
+  .o_header_stretch_search_input,
+  input.form-control {
+    background: transparent !important;
+    color: #fff !important;
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.45) !important;
+    }
+  }
+}
+
+/* Offcanvas Hamburger / Mobile Drawer (applies globally across all header templates) */
+.offcanvas.o_navbar_mobile,
+.header .offcanvas {
+  background: #0a0e1a !important;
+  color: #fff !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+  .offcanvas-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    .btn-close {
+      filter: invert(1) brightness(2);
+      opacity: 0.8;
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 8px;
+    transition: all 0.2s;
+
+    &:hover,
+    &.active {
+      color: #fff !important;
+      background: rgba(255, 255, 255, 0.06) !important;
+    }
+  }
+
+  .dropdown-menu {
+    background: rgba(15, 23, 36, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .btn-outline-secondary {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #fff !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
+    }
+  }
+
+  .o_border_contrast {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
 
 .nav {
   display: flex;
@@ -133,15 +421,220 @@ body.menu-open {
   color: white;
 }
 
+// .menu a:hover::after {
+//   width: 100%;
+// }
+
 .menu a:hover::after {
   width: 100%;
 }
+
+/* "+" overflow toggle appended as the last <li> in .menu when there are
+   more than 5 top-level items (see ThemeDriveXHeader._initMenuOverflow). */
+.menu-more {
+  display: flex;
+  align-items: center;
+}
+
+.menu-more-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.menu-more-toggle:hover {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.menu-more.open .menu-more-toggle {
+  color: white;
+  border-color: var(--accent);
+  background: rgba(212, 25, 28, 0.15);
+  transform: rotate(45deg);
+}
+
+/* Dropdown panel — appended to the header itself (not nested inside .menu),
+   positioned in JS via top/right so it can't be clipped by the nav row. */
+.menu-more-dropdown {
+  position: absolute;
+  min-width: 180px;
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(10, 14, 26, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+  z-index: 99;
+}
+
+.menu-more-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.menu-more-dropdown li {
+  list-style: none;
+}
+
+.menu-more-dropdown a {
+  display: block;
+  padding: 9px 12px;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+
+.menu-more-dropdown a:hover,
+.menu-more-dropdown a.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.08);
+}
+
 
 .nav-right {
   display: flex;
   align-items: center;
   gap: 14px;
   flex-shrink: 0;
+}
+
+// Hide menu until JS overflow adapt() runs — prevents flash/jump
+// opacity:0 keeps the layout space so header doesn't shift
+.menu.menu-loading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+// Hide mobile-only elements on desktop
+.mobile-nav-overlay {
+  display: none;
+}
+
+.mobile-account-links {
+  display: none;
+}
+.mobile-menu-divider,
+.mobile-menu-account {
+  display: none;
+}
+// ── Header Search (modal trigger icon) ───────────────────────────────────────
+// The <li> wrapper Odoo injects — strip list styling, make it inline
+.nav-right li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+// The circular icon button Odoo renders to open the search modal
+.nav-right .o_not_editable {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: background 0.2s, border-color 0.2s;
+  text-decoration: none;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.18) !important;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .oi-search {
+    font-size: 0.9rem;
+    color: white;
+  }
+}
+
+// ── Odoo Search Modal ─────────────────────────────────────────────────────────
+#o_search_modal {
+  .modal-dialog {
+    max-width: 680px;
+    margin: 80px auto 0;
+  }
+
+  .modal-content {
+    background: #0d1117;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+
+    // Override the broken .input-group global — make the search row horizontal
+    .input-group {
+      flex-direction: row !important;
+      align-items: center;
+      padding: 0 !important;
+      border-right: none !important;
+      background: transparent;
+    }
+
+    .search-query {
+      background: rgba(255, 255, 255, 0.07) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-right: none !important;
+      border-radius: 10px 0 0 10px !important;
+      color: white !important;
+      font-size: 1rem;
+      padding: 14px 18px;
+      height: auto;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      &:focus {
+        box-shadow: none !important;
+        border-color: var(--accent, #d4191c) !important;
+        outline: none;
+      }
+    }
+
+    .oe_search_button {
+      background: var(--accent, #d4191c) !important;
+      border: 1px solid var(--accent, #d4191c) !important;
+      border-radius: 0 10px 10px 0 !important;
+      color: white !important;
+      padding: 14px 20px;
+      height: auto;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #b81517 !important;
+        border-color: #b81517 !important;
+      }
+
+      .oi-search {
+        font-size: 1rem;
+        color: white;
+      }
+    }
+  }
 }
 
 .btn-signin {
@@ -279,7 +772,9 @@ body.menu-open {
   min-width: 0;
 }
 
-.input-group {
+// Scope .input-group overrides to only the hero booking search box
+// so Odoo's native Bootstrap .input-group (header search, forms, etc.) is unaffected
+.search-box .input-group {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -288,15 +783,15 @@ body.menu-open {
   min-width: 0;
 }
 
-.input-group:first-child {
+.search-box .input-group:first-child {
   padding-left: 8px;
 }
 
-.input-group:last-of-type {
+.search-box .input-group:last-of-type {
   border-right: none;
 }
 
-.input-group label {
+.search-box .input-group label {
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 1.2px;
@@ -589,7 +1084,9 @@ body.menu-open {
   letter-spacing: 0.2px;
 }
 
-.dp-nav {
+.dp-nav,
+.dp-prev,
+.dp-next {
   background: rgba(255, 255, 255, 0.06);
   border: none;
   color: rgba(255, 255, 255, 0.55);
@@ -604,19 +1101,23 @@ body.menu-open {
   transition: background 0.15s, color 0.15s;
 }
 
-.dp-nav:hover {
+.dp-nav:hover,
+.dp-prev:hover,
+.dp-next:hover {
   background: rgba(255, 255, 255, 0.12);
   color: white;
 }
 
 /* Day-of-week header */
-.dp-day-names {
+.dp-day-names,
+.dp-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   margin-bottom: 6px;
 }
 
-.dp-day-names span {
+.dp-day-names span,
+.dp-weekdays span {
   text-align: center;
   font-size: 0.67rem;
   font-weight: 700;
@@ -726,7 +1227,8 @@ body.menu-open {
 
 
 /* Time row */
-.dp-time-row {
+.dp-time-row,
+.dp-time {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1690,9 +2192,12 @@ body.menu-open {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 32px;
+    padding: 80px 24px 180px;
+    gap: 24px;
     z-index: 200;
     backdrop-filter: blur(8px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .menu.open {
@@ -1701,15 +2206,8 @@ body.menu-open {
   }
 
   @keyframes menuSlideIn {
-    from {
-      opacity: 0;
-      transform: translateY(-12px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   .menu li {
@@ -1738,8 +2236,61 @@ body.menu-open {
     position: relative;
   }
 
+  // Hide desktop sign-in button and user dropdown on mobile
   .btn-signin {
     display: none;
+  }
+
+  .mobile-user-dropdown-hide {
+    display: none !important;
+  }
+
+  // Account links: fixed at bottom of screen, only visible when menu is open
+  .mobile-account-links {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 201;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 0 0 32px;
+    background: rgba(7, 9, 14, 0.97);
+  }
+
+  body.menu-open .mobile-account-links {
+    display: flex;
+  }
+
+  .mobile-menu-divider {
+    display: block;
+    width: 120px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 0 0 16px;
+  }
+
+  .mobile-menu-account {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+    padding: 8px 0;
+
+    i {
+      font-size: 0.95rem;
+      width: 18px;
+      text-align: center;
+    }
+
+    &:hover {
+      color: var(--accent, #D4191C);
+    }
   }
 
   .search-box {
@@ -1965,7 +2516,8 @@ body.menu-open {
   min-height: 360px;
   display: flex;
   align-items: center;
-  padding: 120px 0 60px;
+  /* Reduced top-padding — #wrap already clears the fixed header */
+  padding: 56px 0 90px;
   position: relative;
   text-align: center;
   color: white;
@@ -1976,7 +2528,10 @@ body.menu-open {
 }
 
 .page-hero-content {
-  width: 100%;
+  /* width: 100% was overriding .container's 92% width, causing content to
+     bleed edge-to-edge on mobile. Let .container handle the responsive width. */
+  padding-left: 16px;
+  padding-right: 16px;
 }
 
 .breadcrumb {
@@ -3434,7 +3989,8 @@ body.menu-open {
 @media (max-width: 600px) {
   .page-hero {
     min-height: 280px;
-    padding: 100px 0 48px;
+    /* Reduced top-padding — #wrap already clears the fixed header */
+    padding: 48px 0 60px;
   }
 
   .page-hero h1 {
@@ -3540,7 +4096,7 @@ body.menu-open {
 }
 
 .fb-search i {
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.8rem;
 }
 
@@ -4990,13 +5546,178 @@ body.menu-open {
   color: var(--accent)
 }
 
+/* ============================================================
+   BOOKING PAGE — Add-Ons & Insurance Cards
+   ============================================================ */
+
+/* Insurance cards */
+.bw-ins-card {
+  border: 2px solid rgba(255, 255, 255, .08);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all .25s;
+  background: transparent;
+}
+
+.bw-ins-card:hover {
+  border-color: rgba(255, 255, 255, .15);
+  background: rgba(255, 255, 255, .02);
+}
+
+.bw-ins-card.selected {
+  border-color: var(--accent);
+  background: rgba(212, 25, 28, .08);
+}
+
+/* Add-on grid */
+.addonOptions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Add-on cards */
+.bw-addon {
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all .25s;
+  background: transparent;
+  overflow: hidden;
+}
+
+.bw-addon:hover {
+  border-color: rgba(255, 255, 255, .15);
+  background: rgba(255, 255, 255, .02);
+}
+
+.bw-addon.selected {
+  border-color: var(--accent);
+  background: rgba(212, 25, 28, .08);
+}
+
+/* Mobile: switch add-ons to single column to prevent text cutoff */
+@media (max-width: 600px) {
+  .addonOptions {
+    grid-template-columns: 1fr;
+  }
+
+  .bw-nav {
+    flex-wrap: wrap;
+  }
+
+  .bw-btn-back,
+  .bw-btn-next {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+  }
+}
+
+/* ── Add-On cards — mobile layout fixes ───────────────────── */
+
+/* Prevent the addon grid from overflowing narrow containers */
+.addonOptions {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Each addon card: constrain width, allow content to wrap */
+.bw-addon {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0; /* critical: lets flex/grid children shrink below content size */
+}
+
+/* Price + label row inside each add-on card */
+.bw-addon .bw-addon-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  word-break: break-word;
+}
+
+/* Icon inside the card header */
+.bw-addon .bw-addon-icon {
+  flex-shrink: 0;
+}
+
+/* Price badge — allow it to wrap, never clip */
+.bw-addon .bw-addon-price {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  font-size: 0.82rem;
+}
+
+/* Title text — allow wrapping */
+.bw-addon .bw-addon-title,
+.bw-addon h4,
+.bw-addon strong {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  font-size: 0.88rem;
+}
+
+/* Sub-label / description */
+.bw-addon p,
+.bw-addon .bw-addon-desc {
+  font-size: 0.78rem;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+
+/* Switch to single column below 480px for even tighter screens */
+@media (max-width: 480px) {
+  .addonOptions {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* On screens 481px–600px keep 2 cols but clamp card padding */
+@media (min-width: 481px) and (max-width: 600px) {
+  .addonOptions {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .bw-addon {
+    padding: 12px 10px;
+  }
+}
+
+/* Ensure the booking wizard body doesn't overflow on mobile */
+@media (max-width: 600px) {
+  .bw-body {
+    padding: 24px 16px 60px;
+  }
+
+  .bw-card {
+    padding: 20px 16px;
+  }
+}
+
 /* Odoo overrides */
 #wrapwrap {
   background: #0a0e1a !important
 }
 
+/* Push content below the fixed header on every page */
 #wrap {
-  padding-top: 0 !important
+  padding-top: 74px !important;
+}
+
+@media (max-width: 900px) {
+  #wrap {
+    padding-top: 64px !important;
+  }
 }
 
 .o_website_info,
@@ -5393,14 +6114,13 @@ body.o_login_page,
 
 /* ── 4. Contact page — stack form + sidebar on tablet ── */
 @media (max-width: 768px) {
-  .contact-main-section>div[style*="display:flex"] {
-    flex-direction: column !important;
+  .contact-main-grid {
+    grid-template-columns: 1fr !important;
     padding: 40px 24px !important;
     gap: 32px !important;
   }
 
-  .contact-side[style*="flex:0 0 380px"] {
-    flex: 1 1 100% !important;
+  .contact-side {
     width: 100% !important;
   }
 
@@ -5526,7 +6246,8 @@ body.o_login_page,
 /* ── 11. Page hero — tighten on mobile ── */
 @media (max-width: 480px) {
   .page-hero {
-    padding: 100px 0 48px !important;
+    /* Reduced top-padding — #wrap already clears the fixed header */
+    padding: 40px 0 48px !important;
     min-height: 220px !important;
   }
 
@@ -5577,19 +6298,6 @@ img {
 @media (max-width: 768px) {
   .about-story [style*="flex-direction:row"] {
     flex-direction: column !important;
-  }
-}
-
-/* Contact main row */
-@media (max-width: 768px) {
-  .contact-main-section [style*="flex-direction:row"] {
-    flex-direction: column !important;
-    padding: 36px 20px !important;
-    gap: 28px !important;
-  }
-
-  .contact-main-section [style*="flex:0 0 380px"] {
-    flex: 1 1 auto !important;
   }
 }
 
@@ -5741,6 +6449,74 @@ img {
   }
 }
 
+@media (max-width: 900px) {
+
+  /* Keep the top nav bar as a single row */
+  .header .nav {
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Logo stays left, shrink slightly */
+  .header .logo {
+    flex-shrink: 0;
+  }
+
+  .header .logo img {
+    height: 28px;
+  }
+
+  /* nav-right: avatar + hamburger grouped on the right */
+  .nav-right {
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  /* Hide plain sign-in link on mobile (show avatar instead when logged in) */
+  .nav-right > a.btn-signin:not([class*="dropdown"]) {
+    display: none;
+  }
+
+  /* User avatar dropdown — keep just the avatar circle, hide name */
+  .nav-right .o_no_autohide_item,
+  .nav-right .list-unstyled.dropdown {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .nav-right .btn-signin.dropdown-toggle,
+  .nav-right .dropdown-toggle.btn-signin {
+    padding: 4px 0px !important;
+    gap: 0 !important;
+  }
+
+  /* Hide the text username next to avatar */
+  .nav-right .btn-signin span.oe_topbar_name,
+  .nav-right .dropdown-toggle span.oe_topbar_name {
+    display: none !important;
+  }
+
+  /* Make the avatar image compact */
+  .nav-right img.rounded-circle,
+  .nav-right .o_user_avatar {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  /* Hamburger stays visible, pushed right of avatar */
+  .hamburger {
+    display: flex;
+    flex-shrink: 0;
+    z-index: 210;
+    position: relative;
+  }
+}
+
 /* Overrides to disable website builder hover outlines/shadows when not in active edit mode */
 body:not(.editor_enable) {
   .o_editable,
@@ -5749,13 +6525,13 @@ body:not(.editor_enable) {
     outline: none !important;
     outline-offset: 0 !important;
     box-shadow: none !important;
-    
+
     &:hover {
       outline: none !important;
       outline-offset: 0 !important;
       box-shadow: none !important;
     }
-    
+
     &::after {
       outline: none !important;
       border: none !important;

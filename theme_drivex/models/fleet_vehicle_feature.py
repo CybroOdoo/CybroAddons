@@ -19,9 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-"""
-This module defines the Fleet Vehicle Feature model.
-"""
 from odoo import fields, models
 
 
@@ -32,5 +29,7 @@ class FleetVehicleFeature(models.Model):
 
     name = fields.Char(string="Feature Name", required=True, translate=True,
                        help='Name of the feature.')
-    icon = fields.Char(string="FontAwesome Icon", help="e.g. fa-wifi, fa-snowflake")
-    color = fields.Integer(string="Color Index", default=0, help='Color code index.')
+    icon = fields.Char(string="FontAwesome Icon",
+                       help="e.g. fa-wifi, fa-snowflake")
+    color = fields.Integer(string="Color Index", default=0,
+                           help='Color code index.')

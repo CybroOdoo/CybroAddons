@@ -1,5 +1,7 @@
 /** @odoo-module **/
 import publicWidget from "@web/legacy/js/public/public_widget";
+import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
+import { _t } from "@web/core/l10n/translation";
 
 // ── Shared DatePicker Logic ─────────────────────────────────────────────
 const MONTHS_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -156,20 +158,29 @@ class DatePicker {
         this._positionPanel();
         this.s.open = true;
         this.panel.classList.add("dp-open");
-        this._scrollHandler = () => { if (this.s.open) this._positionPanel(); };
-        document.addEventListener("scroll", this._scrollHandler, { capture: true, passive: true });
+        // A fixed panel should not remain visible while its trigger scrolls
+        // away. Capturing catches scrolls from Odoo's inner page containers.
+        this._closeOnScroll = () => this._close();
+        window.addEventListener("scroll", this._closeOnScroll, { passive: true });
+        document.addEventListener("scroll", this._closeOnScroll, true);
     }
     _positionPanel() {
         const rect = this.field.getBoundingClientRect();
         const panelW = 300, vw = window.innerWidth;
-        let top = rect.bottom + 8, left = rect.left;
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+        let top = isMobile ? 104 : rect.bottom + 8;
+        let left = rect.left;
         if (left + panelW > vw - 12) left = rect.right - panelW;
         this.panel.style.cssText = `position:fixed;top:${top}px;left:${left}px;width:300px;z-index:999999;margin:0;`;
     }
     _close() {
         this.s.open = false;
         this.panel.classList.remove("dp-open");
-        if (this._scrollHandler) { document.removeEventListener("scroll", this._scrollHandler, { capture: true }); this._scrollHandler = null; }
+        if (this._closeOnScroll) {
+            window.removeEventListener("scroll", this._closeOnScroll);
+            document.removeEventListener("scroll", this._closeOnScroll, true);
+            this._closeOnScroll = null;
+        }
         if (this.panel.parentElement === document.body && this.field) {
             this.field.appendChild(this.panel);
             this.panel.style.cssText = "";
@@ -183,6 +194,20 @@ function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
+// ── Global Helper: show a styled Odoo AlertDialog instead of native alert() ──
+function showAlert(dialogService, message, title) {
+    if (dialogService && dialogService.add) {
+        dialogService.add(AlertDialog, {
+            body: message,
+            title: title || _t("Notice"),
+            confirmLabel: _t("Close"),
+        });
+    } else {
+        // Fallback in case the dialog service isn't available for some reason
+        window.alert(message);
+    }
+}
+
 // ── Widget: Header & Mobile Menu ─────────────────────────────────────
 publicWidget.registry.ThemeDriveXHeader = publicWidget.Widget.extend({
     selector: "#header",
@@ -190,11 +215,9 @@ publicWidget.registry.ThemeDriveXHeader = publicWidget.Widget.extend({
         'click #hamburger': '_onHamburgerClick',
     },
     start() {
-        const onScroll = () => this.el.classList.toggle("scrolled", window.scrollY > 60);
-        window.addEventListener("scroll", onScroll, { passive: true });
-        onScroll();
         this.menu = this.el.querySelector("#menu");
         this.hamburger = this.el.querySelector("#hamburger");
+
         // Document click for closing menu
         document.addEventListener("click", (e) => {
             if (this.menu && this.menu.classList.contains("open") && !this.el.contains(e.target)) {
@@ -202,15 +225,146 @@ publicWidget.registry.ThemeDriveXHeader = publicWidget.Widget.extend({
                 this.menu.classList.remove("open");
                 document.body.classList.remove("menu-open");
             }
+            // Close the "more" overflow dropdown on outside click too.
+            if (this._moreBtn && this._moreBtn.classList.contains("open")
+                && !this._moreBtn.contains(e.target)
+                && !(this._moreDropdown && this._moreDropdown.contains(e.target))) {
+                this._moreBtn.classList.remove("open");
+                this._moreBtn.querySelector(".menu-more-toggle").setAttribute("aria-expanded", "false");
+                if (this._moreDropdown) {
+                    this._moreDropdown.classList.remove("open");
+                }
+            }
         });
+
+        this._initMenuOverflow();
+
         return this._super.apply(this, arguments);
     },
     _onHamburgerClick(e) {
         if (!this.hamburger || !this.menu) return;
+        // Always restore collapsed items before opening — handles the case
+        // where the page was loaded at desktop width (items moved to + dropdown)
+        // but is now being viewed in a narrowed/mobile viewport.
+        if (this._moreBtn) {
+            [...this._moreDropdown.children].forEach((li) => {
+                this.menu.insertBefore(li, this._moreBtn);
+            });
+            this._moreBtn.remove();
+            this._moreDropdown.remove();
+            this._moreBtn = null;
+            this._moreDropdown = null;
+        }
+        this.menu.classList.remove("menu-loading");
         this.hamburger.classList.toggle("open");
         this.menu.classList.toggle("open");
         document.body.classList.toggle("menu-open");
-    }
+    },
+
+    /**
+     * Mirrors Odoo's core "auto-hide menu" behaviour (see
+     * website/static/src/js/content/auto_hide_menu.js): on desktop widths,
+     * Collapses menu items into a "+" dropdown based on a simple item count
+     * rather than measured pixel widths: if there are more than
+     * MAX_VISIBLE_ITEMS top-level menu items, everything after that count is
+     * moved into the dropdown. Below the mobile breakpoint the existing
+     * hamburger already shows the full menu, so this is skipped there.
+     */
+    _initMenuOverflow() {
+        const menu = this.menu;
+        if (!menu) {
+            return;
+        }
+
+        const MOBILE_BREAKPOINT = 900; // keep in sync with theme.scss
+        const MAX_VISIBLE_ITEMS = 5;   // show the first 5 menu items, collapse the rest
+        this._moreBtn = null;      // <li class="menu-more"> toggle, lives inside .menu
+        this._moreDropdown = null; // <ul class="menu-more-dropdown">, lives outside .menu
+
+        const restore = () => {
+            if (!this._moreBtn) {
+                return;
+            }
+            [...this._moreDropdown.children].forEach((li) => {
+                menu.insertBefore(li, this._moreBtn);
+            });
+            this._moreBtn.remove();
+            this._moreDropdown.remove();
+            this._moreBtn = null;
+            this._moreDropdown = null;
+        };
+
+        const positionDropdown = () => {
+            // Positioned relative to the header (JS-computed) rather than
+            // nested inside .menu, so it can't get clipped by anything.
+            const headerRect = this.el.getBoundingClientRect();
+            const toggleRect = this._moreBtn.getBoundingClientRect();
+            this._moreDropdown.style.top = `${toggleRect.bottom - headerRect.top + 12}px`;
+            this._moreDropdown.style.right = `${headerRect.right - toggleRect.right}px`;
+        };
+
+        const buildMoreButton = () => {
+            const li = document.createElement("li");
+            li.className = "menu-more";
+            li.innerHTML =
+                '<a href="#" class="menu-more-toggle" aria-haspopup="true" aria-expanded="false">' +
+                '<i class="fa-solid fa-plus"></i></a>';
+            menu.appendChild(li);
+
+            const dropdown = document.createElement("ul");
+            dropdown.className = "menu-more-dropdown";
+            this.el.appendChild(dropdown); // outside .menu on purpose, see restore()/positionDropdown()
+
+            const toggle = li.querySelector(".menu-more-toggle");
+            toggle.addEventListener("click", (e) => {
+                e.preventDefault();
+                const isOpen = li.classList.toggle("open");
+                toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+                dropdown.classList.toggle("open", isOpen);
+                if (isOpen) {
+                    positionDropdown();
+                }
+            });
+
+            this._moreBtn = li;
+            this._moreDropdown = dropdown;
+        };
+
+        const adapt = () => {
+            // Below the mobile breakpoint, the hamburger owns the full menu.
+            if (window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches) {
+                restore();
+                requestAnimationFrame(() => menu.classList.remove("menu-loading"));
+                return;
+            }
+
+            restore();
+
+            // Only the real page/menu links count toward the limit — not a
+            // "+" button from a previous run (already removed by restore()).
+            const items = [...menu.children];
+            if (items.length <= MAX_VISIBLE_ITEMS) {
+                requestAnimationFrame(() => menu.classList.remove("menu-loading"));
+                return; // fits within the limit, nothing to collapse
+            }
+
+            buildMoreButton();
+
+            const overflowItems = items.slice(MAX_VISIBLE_ITEMS);
+            overflowItems.forEach((li) => this._moreDropdown.appendChild(li));
+            // Remove loading class in next frame — after DOM mutations are done
+            requestAnimationFrame(() => menu.classList.remove("menu-loading"));
+        };
+
+        window.addEventListener("resize", () => {
+            // Item count doesn't change with width, but we still need to
+            // switch between "hamburger owns it" and "+ owns it" as the
+            // viewport crosses the mobile breakpoint.
+            adapt();
+        });
+
+        adapt();
+    },
 });
 
 // ── Widget: Custom Selects ───────────────────────────────────────────
@@ -257,38 +411,59 @@ publicWidget.registry.ThemeDriveXDatePicker = publicWidget.Widget.extend({
         return this._super.apply(this, arguments);
     }
 });
-// Global click closes all pickers
-document.addEventListener("click", () => {
-    if (window._dpAll) window._dpAll.forEach(dp => dp._close());
+// Close a picker only when the click is outside both its trigger and panel.
+document.addEventListener("click", event => {
+    if (!window._dpAll) return;
+    window._dpAll.forEach(dp => {
+        if (dp.s.open && !dp.field.contains(event.target) &&
+            !dp.panel.contains(event.target)) {
+            dp._close();
+        }
+    });
 });
 
-// ── Widget: Fleet Filter (Homepage) ──────────────────────────────────
+// ── Widget: Fleet Filter (Homepage + Snippet) ────────────────────────
+// Covers both:
+//   • home_templates.xml  – "All" button is server-rendered; all other
+//     filter buttons and car cards are injected by _buildFilterButtons /
+//     _buildVehicleCards *after* page load.
+//   • drivex_fleet_section snippet – all buttons and cards are server-
+//     rendered by Qweb t-foreach, present in the DOM from the start.
+//
+// Using the section as the selector + delegated 'click .filter-btn'
+// means the handler fires for every button regardless of when it was
+// added to the DOM.  disabledInEditableMode:false lets the filter also
+// work in Website Builder preview mode.
 publicWidget.registry.ThemeDriveXFleetFilter = publicWidget.Widget.extend({
-    selector: ".filter-btn",
+    selector: ".fleet-section",
+    disabledInEditableMode: false,
     events: {
-        'click': '_onClick',
+        'click .filter-btn': '_onClick',
     },
     _onClick(e) {
         const btn = e.currentTarget;
-        const container = btn.closest(".container, section") || document;
-        container.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+        // De-activate all sibling buttons inside this section
+        this.el.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         const filter = (btn.dataset.filter || btn.dataset.cat || "all").toLowerCase();
-        container.querySelectorAll(".car-card").forEach(card => {
+        // Show / hide car cards – handles both single-value ("sports") and
+        // space-separated multi-value ("luxury sports") data-category attrs.
+        this.el.querySelectorAll(".car-card").forEach(card => {
             const cat = (card.dataset.cat || card.dataset.category || "").toLowerCase();
-            card.style.display = (filter === "all" || cat.includes(filter)) ? "" : "none";
+            card.style.display = (filter === "all" || cat.split(" ").some(c => c === filter)) ? "" : "none";
         });
     }
 });
 
 // ── Widget: Fleet Page ───────────────────────────────────────────────
 publicWidget.registry.ThemeDriveXFleetPage = publicWidget.Widget.extend({
-    selector: ".fleet-page-wrap, .fleet-page, .fc-grid", // Depending on class in fleet page
+    selector: ".fleet-page", // Cover both filter bar and grid
+
     events: {
         'click .fb-cat': '_onCatFilter',
         'input .fb-search input': '_onSearch',
         'click .fv-btn': '_onViewToggle',
-        'change #sortSelect': '_onSort',
+        'change .fb-sort': '_onSortChange',
     },
     start() {
         const filterBar = this.el.querySelector(".filter-bar-wrap") || this.el.closest('body').querySelector(".filter-bar-wrap");
@@ -297,20 +472,37 @@ publicWidget.registry.ThemeDriveXFleetPage = publicWidget.Widget.extend({
                 filterBar.classList.toggle("fb-sticky", window.scrollY > 100);
             }, { passive: true });
         }
-
-        // Auto-select category if passed in URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlCat = urlParams.get('category');
-        if (urlCat) {
-            const catBtn = Array.from(this.el.querySelectorAll(".fb-cat")).find(btn =>
-                (btn.dataset.cat || "").toLowerCase() === urlCat.toLowerCase()
-            );
-            if (catBtn) {
-                catBtn.click();
-            }
-        }
-
+        // Store original index for default sorting
+        this.el.querySelectorAll('.fc-card').forEach((card, index) => {
+            card.dataset.index = index;
+        });
+        // Update counts from real rendered cards
+        this._updateCount();
+        // Update hero stats from rendered data
+        this._updateHeroStats();
         return this._super.apply(this, arguments);
+    },
+    _updateCount() {
+        const cnt = document.getElementById('resultsCount');
+        if (!cnt) return;
+        const visible = Array.from(this.el.querySelectorAll('.fc-card'))
+            .filter(c => c.style.display !== 'none').length;
+        cnt.innerHTML = `Showing <strong>${visible}</strong> vehicle${visible !== 1 ? 's' : ''}`;
+    },
+    _updateHeroStats() {
+        const cards = this.el.querySelectorAll('.fc-card');
+        const total = cards.length;
+        const catSet = new Set();
+        cards.forEach(c => {
+            const cat = (c.dataset.cat || '').trim();
+            if (cat && cat !== 'all') {
+                cat.split(' ').forEach(part => { if (part) catSet.add(part); });
+            }
+        });
+        const heroCount = document.getElementById('heroVehicleCount');
+        const heroCats = document.getElementById('heroCategoryCount');
+        if (heroCount) heroCount.textContent = total > 0 ? total + '+' : total;
+        if (heroCats) heroCats.textContent = catSet.size;
     },
     _onCatFilter(e) {
         const btn = e.currentTarget;
@@ -325,9 +517,9 @@ publicWidget.registry.ThemeDriveXFleetPage = publicWidget.Widget.extend({
             card.style.display = show ? "" : "none";
             if (show) visible++;
         });
-        const cnt = this.el.querySelector(".resultsCount");
+        const cnt = document.getElementById('resultsCount');
         if (cnt) cnt.innerHTML = `Showing <strong>${visible}</strong> vehicles`;
-        const noRes = this.el.querySelector(".noResults");
+        const noRes = this.el.querySelector("#noResults");
         if (noRes) noRes.style.display = visible === 0 ? "" : "none";
     },
     _onSearch(e) {
@@ -345,34 +537,288 @@ publicWidget.registry.ThemeDriveXFleetPage = publicWidget.Widget.extend({
         const grid = this.el.classList.contains("fc-grid") ? this.el : this.el.querySelector(".fc-grid");
         if (grid) grid.classList.toggle("fc-list-mode", btn.dataset.view === "list");
     },
-    _onSort(e) {
-        const sortVal = e.currentTarget.value;
-        const grid = this.el.classList.contains("fc-grid") ? this.el : this.el.querySelector(".fc-grid");
+    _onSortChange(e) {
+        const val = e.currentTarget.value;
+        const grid = this.el.querySelector('.fc-grid');
         if (!grid) return;
-        const cards = Array.from(grid.querySelectorAll(".fc-card"));
-        cards.forEach((card, i) => {
-            if (card.dataset.origIndex === undefined) {
-                card.dataset.origIndex = i;
-            }
-        });
-        cards.sort((a, b) => {
-            const priceA = parseFloat(a.dataset.price || 0);
-            const priceB = parseFloat(b.dataset.price || 0);
-            const ratingA = parseFloat(a.dataset.rating || 0);
-            const ratingB = parseFloat(b.dataset.rating || 0);
-            const yearA = parseInt(a.dataset.year || 0);
-            const yearB = parseInt(b.dataset.year || 0);
-            const idxA = parseInt(a.dataset.origIndex || 0);
-            const idxB = parseInt(b.dataset.origIndex || 0);
 
-            if (sortVal === "price-asc") return priceA - priceB;
-            if (sortVal === "price-desc") return priceB - priceA;
-            if (sortVal === "rating") return ratingB - ratingA;
-            if (sortVal === "newest") return yearB - yearA;
-            return idxA - idxB;
+        const cards = Array.from(grid.querySelectorAll('.fc-card'));
+
+        cards.sort((a, b) => {
+            if (val === 'price-asc') {
+                return parseFloat(a.dataset.price || 0) - parseFloat(b.dataset.price || 0);
+            } else if (val === 'price-desc') {
+                return parseFloat(b.dataset.price || 0) - parseFloat(a.dataset.price || 0);
+            } else if (val === 'rating') {
+                return parseFloat(b.dataset.rating || 0) - parseFloat(a.dataset.rating || 0);
+            } else if (val === 'newest') {
+                return parseInt(b.dataset.year || 0) - parseInt(a.dataset.year || 0);
+            }
+            // default
+            return parseInt(a.dataset.index || 0) - parseInt(b.dataset.index || 0);
         });
+
         cards.forEach(card => grid.appendChild(card));
+    },
+});
+
+// ── Widget: Homepage Dynamic Content Loader ───────────────────────────────────
+// Populates homepage-specific IDs: #locationMenu, #carTypeMenu, #fleetFilter,
+// #fleetGrid. Separate from the snippet widget so the homepage and the snippet
+// can coexist without interfering with each other.
+publicWidget.registry.ThemeDriveXHomepageLoader = publicWidget.Widget.extend({
+    selector: '#wrap',
+    start() {
+        // Only load on homepage (check if we have the hero section)
+        if (!this.el.querySelector('.hero')) {
+            return this._super.apply(this, arguments);
+        }
+        // Fetch homepage data from controller
+        fetch('/homepage/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params: {} }),
+        })
+        .then(r => r.json())
+        .then(resp => {
+            const data = resp.result || {};
+            this._populateLocations(data.locations || []);
+            this._populateCarTypes(data.categories || [], data.has_vehicles);
+            this._populateFleetFilters(data.categories || [], data.has_vehicles);
+            this._populateVehicleCards(data.vehicles || [], data.has_vehicles);
+        })
+        .catch(e => {
+            console.warn('[DriveX] homepage/data fetch failed:', e);
+            this._showUnavailableStates();
+        });
+        return this._super.apply(this, arguments);
+    },
+
+    _populateLocations(locations) {
+        const locationMenu = document.getElementById('locationMenu');
+        if (!locationMenu) return;
+        locationMenu.innerHTML = '';
+        if (!locations.length) return;
+        locations.forEach(loc => {
+            const opt = document.createElement('div');
+            opt.className = 'cs-opt';
+            opt.dataset.value = loc.id;
+            opt.innerHTML = '<span class="cs-opt-icon"><i class="fa-solid fa-building"></i></span>' + loc.name;
+            locationMenu.appendChild(opt);
+        });
+    },
+
+    _populateCarTypes(categories, hasVehicles) {
+        const carTypeMenu = document.getElementById('carTypeMenu');
+        if (!carTypeMenu) return;
+        // Keep "All Vehicles" — remove any previously injected
+        carTypeMenu.querySelectorAll('.cs-opt[data-dynamic]').forEach(el => el.remove());
+        if (!hasVehicles || !categories.length) return;
+        categories.forEach(cat => {
+            const opt = document.createElement('div');
+            opt.className = 'cs-opt';
+            opt.dataset.value = cat.name_lower;
+            opt.dataset.dynamic = '1';
+            opt.innerHTML = '<span class="cs-opt-icon"><i class="fa-solid fa-car"></i></span>' + cat.name;
+            carTypeMenu.appendChild(opt);
+        });
+    },
+
+    _populateFleetFilters(categories, hasVehicles) {
+        const fleetFilter = document.getElementById('fleetFilter');
+        if (!fleetFilter) return;
+        // Remove previously injected buttons (keep "All")
+        fleetFilter.querySelectorAll('.filter-btn[data-dynamic]').forEach(el => el.remove());
+        if (!hasVehicles) {
+            fleetFilter.style.display = 'none';
+            return;
+        }
+        // Force flex centering in case Website Builder CSS overrides SCSS
+        fleetFilter.style.display = 'flex';
+        fleetFilter.style.justifyContent = 'center';
+        fleetFilter.style.alignItems = 'center';
+        fleetFilter.style.flexWrap = 'wrap';
+        if (categories.length) {
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.dataset.filter = cat.name_lower;
+                btn.dataset.dynamic = '1';
+                btn.textContent = cat.name;
+                fleetFilter.appendChild(btn);
+            });
+        }
+    },
+
+    _populateVehicleCards(vehicles, hasVehicles) {
+        const fleetGrid = document.getElementById('fleetGrid');
+        if (!fleetGrid) return;
+        fleetGrid.innerHTML = '';
+        if (!hasVehicles || !vehicles.length) {
+            this._showFleetUnavailable(fleetGrid);
+            return;
+        }
+        vehicles.forEach(v => {
+            const card = document.createElement('div');
+            card.className = 'car-card';
+            card.dataset.category = v.category_lower;
+            card.innerHTML = 
+                '<div class="car-image">' +
+                    '<span class="car-badge">' + (v.category || '') + '</span>' +
+                    '<img src="' + v.image + '" alt="' + v.name + '">' +
+                '</div>' +
+                '<div class="car-info">' +
+                    '<div class="car-title-row">' +
+                        '<h3>' + v.name + '</h3>' +
+                        '<div class="price">$' + v.daily_rate + ' <span>/ day</span></div>' +
+                    '</div>' +
+                    '<p class="car-type">' +
+                        '<i class="fa-solid fa-tag"></i> ' + (v.category || '') + ' · ' + v.horsepower + ' HP' +
+                    '</p>' +
+                    '<div class="car-specs">' +
+                        '<span><i class="fa-solid fa-sliders"></i> ' + v.transmission + '</span>' +
+                        '<span><i class="fa-solid fa-users"></i> ' + v.seats + ' Seats</span>' +
+                        '<span><i class="fa-solid fa-gas-pump"></i> ' + v.fuel_type + '</span>' +
+                    '</div>' +
+                    '<div class="card-footer">' +
+                        '<a href="/car-detail/' + v.id + '" class="view-link"><i class="fa-solid fa-arrow-right"></i> View Details</a>' +
+                        '<a href="/booking/' + v.id + '" class="rent-btn">Rent Now</a>' +
+                    '</div>' +
+                '</div>';
+            fleetGrid.appendChild(card);
+        });
+    },
+
+    _showFleetUnavailable(fleetGrid) {
+        const msg = document.createElement('div');
+        msg.style.cssText = 'text-align:center;padding:60px 20px;width:100%;';
+        msg.innerHTML =
+            '<i class="fa-solid fa-car" style="font-size:2.8rem;color:#ccc;margin-bottom:16px;display:block;"></i>' +
+            '<h3 style="font-size:1.4rem;font-weight:700;color:#222;margin-bottom:10px;">No Vehicles Available</h3>' +
+            '<p style="font-size:0.95rem;color:#666;max-width:420px;margin:0 auto;">' +
+                'No vehicles have been published yet. Configure and publish vehicles from the Fleet module in the backend.' +
+            '</p>';
+        fleetGrid.appendChild(msg);
+    },
+
+    _showUnavailableStates() {
+        this._populateCarTypes([], false);
+        this._populateFleetFilters([], false);
+        const fleetGrid = document.getElementById('fleetGrid');
+        if (fleetGrid) {
+            this._showFleetUnavailable(fleetGrid);
+        }
     }
+});
+
+// ── Widget: Fleet Section Snippet Loader ──────────────────────────────────────
+// Handles the drivex_fleet_section snippet when dropped on any page.
+// Uses /homepage/data so vehicle data is always live, never baked into the
+// saved page arch. Re-initialisation safe: clears containers before rebuild.
+publicWidget.registry.ThemeDriveXFleetSnippet = publicWidget.Widget.extend({
+    selector: '#snippetFleetGrid',
+    start() {
+        const grid = this.el;                                    // #snippetFleetGrid
+        const filter = document.getElementById('snippetFleetFilter');
+        // Guard: avoid double-init if widget fires twice on the same element
+        if (grid.dataset.dxSnippetLoaded) {
+            return this._super.apply(this, arguments);
+        }
+        grid.dataset.dxSnippetLoaded = '1';
+        // Force flex centering on the filter bar — Website Builder can override SCSS
+        if (filter) {
+            filter.style.display = 'flex';
+            filter.style.justifyContent = 'center';
+            filter.style.alignItems = 'center';
+            filter.style.flexWrap = 'wrap';
+        }
+        fetch('/homepage/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params: {} }),
+        })
+        .then(r => r.json())
+        .then(resp => {
+            const data = resp.result || {};
+            this._buildFilters(filter, data.categories || [], data.has_vehicles);
+            this._buildCards(grid, data.vehicles || [], data.has_vehicles);
+        })
+        .catch(() => {
+            this._buildFilters(filter, [], false);
+            this._showUnavailable(grid);
+        });
+        return this._super.apply(this, arguments);
+    },
+
+    _buildFilters(filter, categories, hasVehicles) {
+        if (!filter) return;
+        if (!hasVehicles) {
+            filter.style.display = 'none';
+            return;
+        }
+        // Force flex centering
+        filter.style.display = 'flex';
+        filter.style.justifyContent = 'center';
+        filter.style.alignItems = 'center';
+        filter.style.flexWrap = 'wrap';
+        // Remove previously injected category buttons (safe re-init)
+        filter.querySelectorAll('.filter-btn:not([data-filter="all"])').forEach(btn => btn.remove());
+        if (categories.length) {
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.dataset.filter = cat.name_lower;
+                btn.textContent = cat.name;
+                filter.appendChild(btn);
+            });
+        }
+    },
+
+    _buildCards(grid, vehicles, hasVehicles) {
+        grid.innerHTML = '';
+        if (!hasVehicles || !vehicles.length) {
+            this._showUnavailable(grid);
+            return;
+        }
+        vehicles.forEach(v => {
+            const card = document.createElement('div');
+            card.className = 'car-card';
+            card.dataset.category = v.category_lower;
+            card.innerHTML =
+                '<div class="car-image">' +
+                    '<span class="car-badge">' + (v.category || '') + '</span>' +
+                    '<img src="' + v.image + '" alt="' + v.name + '">' +
+                '</div>' +
+                '<div class="car-info">' +
+                    '<div class="car-title-row">' +
+                        '<h3>' + v.name + '</h3>' +
+                        '<div class="price">$' + v.daily_rate + ' <span>/ day</span></div>' +
+                    '</div>' +
+                    '<p class="car-type"><i class="fa-solid fa-tag"></i> ' + (v.category || '') + ' · ' + v.horsepower + ' HP</p>' +
+                    '<div class="car-specs">' +
+                        '<span><i class="fa-solid fa-sliders"></i> ' + v.transmission + '</span>' +
+                        '<span><i class="fa-solid fa-users"></i> ' + v.seats + ' Seats</span>' +
+                        '<span><i class="fa-solid fa-gas-pump"></i> ' + v.fuel_type + '</span>' +
+                    '</div>' +
+                    '<div class="card-footer">' +
+                        '<a href="/car-detail/' + v.id + '" class="view-link"><i class="fa-solid fa-arrow-right"></i> View Details</a>' +
+                        '<a href="/booking/' + v.id + '" class="rent-btn">Rent Now</a>' +
+                    '</div>' +
+                '</div>';
+            grid.appendChild(card);
+        });
+    },
+
+    _showUnavailable(grid) {
+        grid.innerHTML =
+            '<div style="text-align:center;padding:60px 20px;width:100%;">' +
+                '<i class="fa-solid fa-car" style="font-size:2.8rem;color:#ccc;margin-bottom:16px;display:block;"></i>' +
+                '<h3 style="font-size:1.4rem;font-weight:700;color:#222;margin-bottom:10px;">No Vehicles Available</h3>' +
+                '<p style="font-size:0.95rem;color:#666;max-width:420px;margin:0 auto;">' +
+                    'No vehicles have been published yet. Configure and publish vehicles from the Fleet module in the backend.' +
+                '</p>' +
+            '</div>';
+    },
 });
 
 // ── Widget: Homepage Search ──────────────────────────────────────────
@@ -380,6 +826,13 @@ publicWidget.registry.ThemeDriveXHomepageSearch = publicWidget.Widget.extend({
     selector: ".search-btn",
     events: {
         'click': '_onSearchClick',
+    },
+    /**
+     * @override
+     */
+    init() {
+        this._super(...arguments);
+        this.dialog = this.bindService("dialog");
     },
     _onSearchClick(e) {
         const container = this.el.closest(".search-box, section") || document;
@@ -392,7 +845,7 @@ publicWidget.registry.ThemeDriveXHomepageSearch = publicWidget.Widget.extend({
         const pDp = pickupField && pickupField._dpInstance;
         const rDp = returnField && returnField._dpInstance;
         if (!pDp || pDp.s.selDay === null || !rDp || rDp.s.selDay === null) {
-            alert("Please select both Pickup Date and Return Date.");
+            showAlert(this.dialog, _t("Please select both Pickup Date and Return Date."));
             return;
         }
         const formatNum = n => String(n).padStart(2, "0");
@@ -413,7 +866,7 @@ publicWidget.registry.ThemeDriveXHomepageSearch = publicWidget.Widget.extend({
         const pDateObj = new Date(pYear, pDp.s.selMonth, pDp.s.selDay, pHour, pMin);
         const rDateObj = new Date(rYear, rDp.s.selMonth, rDp.s.selDay, rHour, rMin);
         if (rDateObj <= pDateObj) {
-            alert("Return Date & Time must be after the Pickup Date & Time.");
+            showAlert(this.dialog, _t("Return Date & Time must be after the Pickup Date & Time."));
             return;
         }
         let url = `/fleet?pickup_date=${pDateStr}&pickup_time=${encodeURIComponent(pTimeStr)}&return_date=${rDateStr}&return_time=${encodeURIComponent(rTimeStr)}`;
@@ -469,8 +922,19 @@ publicWidget.registry.ThemeDriveXBookingWizard = publicWidget.Widget.extend({
         'click .bw-btn-copy-ref': '_onCopyRef',
         'input .bw-card-number-input': '_formatCardNumber',
         'input .bw-expiry-input': '_formatExpiry',
+        // Listen to both date fields AND time selects so any change
+        // immediately recalculates duration and all dependent pricing.
         'change .tripPickup': '_updatePricing',
         'change .tripReturn': '_updatePricing',
+        'change .tripPickupTime': '_updatePricing',
+        'change .tripReturnTime': '_updatePricing',
+    },
+    /**
+     * @override
+     */
+    init() {
+        this._super(...arguments);
+        this.dialog = this.bindService("dialog");
     },
     start() {
         // Pre-fill from URL params
@@ -532,9 +996,77 @@ publicWidget.registry.ThemeDriveXBookingWizard = publicWidget.Widget.extend({
             const inputs = curr.querySelectorAll("input[required], select[required], textarea[required]");
             for (let input of inputs) {
                 if (!input.value || input.value.trim() === "") {
-                    alert("Please fill in all required fields before continuing.");
+                    showAlert(this.dialog, _t("Please fill in all required fields before continuing."));
                     input.focus();
                     return;
+                }
+            }
+        }
+
+        // ── Step 1: validate selected dates don't overlap any booked range ──
+        if (current === 1) {
+            const pickupInput = this.el.querySelector(".tripPickup");
+            const returnInput = this.el.querySelector(".tripReturn");
+            const pickupTimeInput = this.el.querySelector(".tripPickupTime");
+            const returnTimeInput = this.el.querySelector(".tripReturnTime");
+
+            if (pickupInput && returnInput && pickupInput.value && returnInput.value) {
+                const parseDate = (dateStr, timeStr) => {
+                    if (!dateStr) return null;
+                    const [y, m, d] = dateStr.split('-').map(Number);
+                    let h = 12, min = 0;
+                    if (timeStr) {
+                        const tm = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+                        if (tm) {
+                            h = parseInt(tm[1]);
+                            min = parseInt(tm[2]);
+                            const ampm = tm[3].toUpperCase();
+                            if (ampm === 'AM' && h === 12) h = 0;
+                            else if (ampm === 'PM' && h !== 12) h += 12;
+                        }
+                    }
+                    return new Date(y, m - 1, d, h, min, 0, 0);
+                };
+
+                const pickupDt = parseDate(pickupInput.value, pickupTimeInput ? pickupTimeInput.value : '12:00 PM');
+                const returnDt = parseDate(returnInput.value, returnTimeInput ? returnTimeInput.value : '12:00 PM');
+
+                if (returnDt && pickupDt && returnDt <= pickupDt) {
+                    showAlert(this.dialog, _t("Return Date & Time must be after the Pickup Date & Time."));
+                    return;
+                }
+
+                // Get booked ranges — read from picker instance (most reliable)
+                // or fall back to grid element store
+                const bwDateGrid = document.getElementById('bwDateGrid');
+                let bookedRanges = [];
+                if (bwDateGrid) {
+                    // Try reading from the picker instance first
+                    const pickupField = bwDateGrid.querySelector('.tripPickupField');
+                    const dp = pickupField && pickupField._dpInstance;
+                    if (dp && dp.bookedRanges && dp.bookedRanges.length) {
+                        bookedRanges = dp.bookedRanges;
+                    } else if (bwDateGrid._bookedRanges && bwDateGrid._bookedRanges.length) {
+                        bookedRanges = bwDateGrid._bookedRanges;
+                    }
+                }
+
+                if (pickupDt && returnDt && bookedRanges.length) {
+                    const selStart = pickupDt.getTime();
+                    const selEnd = returnDt.getTime();
+                    const conflict = bookedRanges.some(r => {
+                        const bookedStart = new Date(r.from + 'T00:00:00').getTime();
+                        const bookedEnd = new Date(r.to + 'T23:59:59').getTime();
+                        return selStart < bookedEnd && selEnd > bookedStart;
+                    });
+                    if (conflict) {
+                        showAlert(
+                            this.dialog,
+                            _t("This vehicle is not available for the selected dates. Please choose different dates."),
+                            _t("Vehicle Not Available")
+                        );
+                        return;
+                    }
                 }
             }
         }
@@ -582,40 +1114,94 @@ publicWidget.registry.ThemeDriveXBookingWizard = publicWidget.Widget.extend({
         el.style.background = selected ? "rgba(212,25,28,.06)" : "transparent";
         this._updatePricing();
     },
+    /**
+     * Recalculate booking duration and all pricing components.
+     *
+     * Duration logic mirrors the backend exactly:
+     *   delta_seconds = (return_datetime - pickup_datetime).total_seconds()
+     *   days = max(1, delta.days + (1 if delta.seconds > 0 else 0))
+     *
+     * Both the date (YYYY-MM-DD from the hidden inputs set by the custom
+     * DatePicker) and the time (HH:MM AM/PM from the <select> dropdowns)
+     * are combined before computing the difference, so changing either
+     * field will always produce the same result as the backend.
+     */
     _updatePricing() {
-        const sumDays = this.el.querySelector(".sumDays");
-        const sumIns = this.el.querySelector(".sumInsurance");
-        const sumAddons = this.el.querySelector(".sumAddons");
-        const sumTotal = this.el.querySelector(".sumTotal");
+        const sumDays    = this.el.querySelector(".sumDays");
+        const sumIns     = this.el.querySelector(".sumInsurance");
+        const sumAddons  = this.el.querySelector(".sumAddons");
+        const sumTotal   = this.el.querySelector(".sumTotal");
         const baseRateSpan = this.el.querySelector(".sumBaseRate");
-        const pickupInput = this.el.querySelector(".tripPickup");
-        const returnInput = this.el.querySelector(".tripReturn");
+
         if (!sumTotal || !baseRateSpan) return;
-        let dailyRate = parseFloat((baseRateSpan.textContent || "0").replace(/[^0-9.]/g, ""));
+
+        const dailyRate = parseFloat(
+            (baseRateSpan.textContent || "0").replace(/[^0-9.]/g, "")
+        );
+
+        // ── Build full datetimes from date + time fields ──────────────────
+        const pickupDateInput  = this.el.querySelector(".tripPickup");
+        const returnDateInput  = this.el.querySelector(".tripReturn");
+        const pickupTimeSelect = this.el.querySelector(".tripPickupTime");
+        const returnTimeSelect = this.el.querySelector(".tripReturnTime");
+
         let days = 1;
-        if (pickupInput && returnInput && pickupInput.value && returnInput.value) {
-            const ms = new Date(returnInput.value) - new Date(pickupInput.value);
-            if (ms > 0) days = Math.ceil(ms / 86400000);
+
+        const pickupDate = pickupDateInput ? pickupDateInput.value.trim() : "";
+        const returnDate = returnDateInput ? returnDateInput.value.trim() : "";
+
+        if (pickupDate && returnDate) {
+            // Default to 12:00 PM when the time select has no value yet,
+            // matching the backend's default of '12:00 PM'.
+            const pickupTimeStr = (pickupTimeSelect && pickupTimeSelect.value)
+                ? pickupTimeSelect.value.trim()
+                : "12:00 PM";
+            const returnTimeStr = (returnTimeSelect && returnTimeSelect.value)
+                ? returnTimeSelect.value.trim()
+                : "12:00 PM";
+
+            const pickupDt = _parseDateTimeLocal(pickupDate, pickupTimeStr);
+            const returnDt = _parseDateTimeLocal(returnDate, returnTimeStr);
+
+            if (pickupDt && returnDt && returnDt > pickupDt) {
+                // Mirror Python: delta.days + (1 if delta.seconds > 0 else 0)
+                const totalSeconds = (returnDt - pickupDt) / 1000;
+                const deltaDays    = Math.floor(totalSeconds / 86400);
+                const extraSeconds = totalSeconds % 86400;
+                days = Math.max(1, deltaDays + (extraSeconds > 0 ? 1 : 0));
+            }
         }
+
         if (sumDays) sumDays.textContent = `${days} day${days !== 1 ? "s" : ""}`;
+
+        // ── Insurance ────────────────────────────────────────────────────
         const selIns = this.el.querySelector(".bw-ins-card.selected");
-        let insDailyRate = 0;
-        if (selIns && selIns.dataset.price) insDailyRate = parseFloat(selIns.dataset.price);
-        if (sumIns) sumIns.textContent = insDailyRate > 0 ? `+$${insDailyRate}/day` : 'Included';
+        const insDailyRate = (selIns && selIns.dataset.price)
+            ? parseFloat(selIns.dataset.price)
+            : 0;
+        if (sumIns) {
+            sumIns.textContent = insDailyRate > 0
+                ? `+$${insDailyRate}/day`
+                : "Included";
+        }
+
+        // ── Add-ons ───────────────────────────────────────────────────────
         let totalAddons = 0;
         this.el.querySelectorAll(".bw-addon.selected").forEach(add => {
             const p = parseFloat(add.dataset.price || 0);
-            if (add.dataset.type === 'per_day') totalAddons += (p * days);
+            if (add.dataset.type === "per_day") totalAddons += p * days;
             else totalAddons += p;
         });
         if (sumAddons) sumAddons.textContent = `+$${totalAddons}`;
-        let total = (dailyRate * days) + (insDailyRate * days) + totalAddons;
+
+        // ── Grand total ───────────────────────────────────────────────────
+        const total = (dailyRate * days) + (insDailyRate * days) + totalAddons;
         sumTotal.textContent = `$${total.toFixed(0)}`;
     },
     _onConfirmBooking(e) {
         const termsBox = this.el.querySelector(".termsCheck");
         if (termsBox && !termsBox.checked) {
-            alert("Please accept the terms and conditions.");
+            showAlert(this.dialog, _t("Please accept the terms and conditions."));
             return;
         }
         const btn = e.currentTarget;
@@ -633,7 +1219,9 @@ publicWidget.registry.ThemeDriveXBookingWizard = publicWidget.Widget.extend({
             driver_lname: this.el.querySelector(".driverLname")?.value || '',
             driver_email: this.el.querySelector(".driverEmail")?.value || '',
             driver_phone: this.el.querySelector(".driverPhone")?.value || '',
+            driver_dob: this.el.querySelector(".driverDob")?.value || '',
             driver_license: this.el.querySelector(".driverLicense")?.value || '',
+            license_expiry_date: this.el.querySelector(".licenseExpiryDate")?.value || '',
             insurance_id: this.el.querySelector(".bw-ins-card.selected")?.dataset.id || null,
             addon_ids: Array.from(this.el.querySelectorAll(".bw-addon.selected")).map(el => el.dataset.id)
         };
@@ -653,12 +1241,12 @@ publicWidget.registry.ThemeDriveXBookingWizard = publicWidget.Widget.extend({
                     const pseudoEvent = { currentTarget: { dataset: { nextStep: "3" } } };
                     this._onNextStep(pseudoEvent);
                 } else {
-                    alert("Booking Error: " + (data.result ? data.result.error : "Unknown error"));
+                    showAlert(this.dialog, _t("Booking Error: ") + (data.result ? data.result.error : _t("Unknown error")));
                 }
             })
             .catch(err => {
                 console.error(err);
-                alert("A network error occurred.");
+                showAlert(this.dialog, _t("A network error occurred."));
             })
             .finally(() => {
                 btn.innerHTML = originalHtml;
@@ -729,6 +1317,10 @@ publicWidget.registry.ThemeDriveXDetailBooking = publicWidget.Widget.extend({
         'change .bookReturn': '_recalc',
         'change .insurancePlan': '_recalc',
         'change .bookLocation': '_recalc',
+        // Time selects on the detail sidebar (if present) must also trigger
+        // a recalc so the sidebar total stays in sync with the backend.
+        'change .bookPickupTime': '_recalc',
+        'change .bookReturnTime': '_recalc',
     },
     start() {
         this.container = this.el;
@@ -752,44 +1344,72 @@ publicWidget.registry.ThemeDriveXDetailBooking = publicWidget.Widget.extend({
         return this._super.apply(this, arguments);
     },
     _recalc() {
-        const totalEl = this.container.querySelector('.totalVal');
-        const daysEl = this.container.querySelector('.daysVal');
-        const insLine = this.container.querySelector('.insuranceLine');
-        const insValEl = this.container.querySelector('.insuranceVal');
-        const insPlan = this.container.querySelector('.insurancePlan');
-        const pickup = this.container.querySelector('.bookPickup');
-        const ret = this.container.querySelector('.bookReturn');
-        const locSel = this.container.querySelector('.bookLocation');
-        const btn = this.container.querySelector('.booking-btn');
+        const totalEl   = this.container.querySelector('.totalVal');
+        const daysEl    = this.container.querySelector('.daysVal');
+        const insLine   = this.container.querySelector('.insuranceLine');
+        const insValEl  = this.container.querySelector('.insuranceVal');
+        const insPlan   = this.container.querySelector('.insurancePlan');
+        const pickup    = this.container.querySelector('.bookPickup');
+        const ret       = this.container.querySelector('.bookReturn');
+        const locSel    = this.container.querySelector('.bookLocation');
+        const btn       = this.container.querySelector('.booking-btn');
         if (!totalEl) return;
         const totalWidget = this.el.querySelector('.booking-total');
-        const dailyRate = parseFloat(totalWidget ? totalWidget.dataset.dailyRate : (this.el.dataset.dailyRate || 0));
+        const dailyRate = parseFloat(
+            totalWidget ? totalWidget.dataset.dailyRate
+                        : (this.el.dataset.dailyRate || 0)
+        );
         // Store the pristine href once, then always derive from it
         if (btn && !btn.dataset.originalHref) {
             btn.dataset.originalHref = btn.getAttribute('href') || '';
         }
         const originalHref = btn ? btn.dataset.originalHref : '';
-        // Days calculation from hidden inputs (set by custom DatePicker)
+
+        // ── Build full datetimes from date + optional time fields ─────────
+        // The detail sidebar uses hidden date inputs populated by the custom
+        // DatePicker; time selects are optional (.bookPickupTime /
+        // .bookReturnTime).  Fall back to 12:00 PM when absent, matching
+        // the backend default.
         let days = 1;
-        if (pickup && ret && pickup.value && ret.value) {
-            const ms = new Date(ret.value) - new Date(pickup.value);
-            if (ms > 0) days = Math.ceil(ms / 86400000);
+        const pickupDate = pickup ? pickup.value.trim() : "";
+        const returnDate = ret    ? ret.value.trim()    : "";
+
+        if (pickupDate && returnDate) {
+            const pTimeEl = this.container.querySelector('.bookPickupTime');
+            const rTimeEl = this.container.querySelector('.bookReturnTime');
+            const pickupTimeStr = (pTimeEl && pTimeEl.value)
+                ? pTimeEl.value.trim() : "12:00 PM";
+            const returnTimeStr = (rTimeEl && rTimeEl.value)
+                ? rTimeEl.value.trim() : "12:00 PM";
+
+            const pickupDt = _parseDateTimeLocal(pickupDate, pickupTimeStr);
+            const returnDt = _parseDateTimeLocal(returnDate, returnTimeStr);
+
+            if (pickupDt && returnDt && returnDt > pickupDt) {
+                // Mirror Python backend: delta.days + (1 if delta.seconds > 0 else 0)
+                const totalSeconds = (returnDt - pickupDt) / 1000;
+                const deltaDays    = Math.floor(totalSeconds / 86400);
+                const extraSeconds = totalSeconds % 86400;
+                days = Math.max(1, deltaDays + (extraSeconds > 0 ? 1 : 0));
+            }
         }
+
         if (daysEl) daysEl.textContent = `${days} day${days !== 1 ? 's' : ''}`;
+
         // Insurance price from data-price attribute on the selected option
         const selectedOpt = insPlan ? insPlan.options[insPlan.selectedIndex] : null;
-        const insPrice = selectedOpt ? parseFloat(selectedOpt.dataset.price || 0) : 0;
-        const insId = selectedOpt ? selectedOpt.value : '';
-        if (insLine) insLine.style.display = insPrice > 0 ? '' : 'none';
-        if (insValEl) insValEl.textContent = insPrice > 0 ? `+$${insPrice}/day` : 'Included';
+        const insPrice    = selectedOpt ? parseFloat(selectedOpt.dataset.price || 0) : 0;
+        const insId       = selectedOpt ? selectedOpt.value : '';
+        if (insLine)  insLine.style.display  = insPrice > 0 ? '' : 'none';
+        if (insValEl) insValEl.textContent   = insPrice > 0 ? `+$${insPrice}/day` : 'Included';
         const total = (dailyRate * days) + (insPrice * days);
         totalEl.textContent = `$${total.toFixed(0)}`;
         // Update Reserve Now button href with all selected values
         if (btn && originalHref) {
             try {
                 const url = new URL(originalHref, window.location.origin);
-                if (pickup && pickup.value) url.searchParams.set('pickup_date', pickup.value);
-                if (ret && ret.value) url.searchParams.set('return_date', ret.value);
+                if (pickupDate) url.searchParams.set('pickup_date', pickupDate);
+                if (returnDate) url.searchParams.set('return_date', returnDate);
                 if (locSel && locSel.value) url.searchParams.set('pickup_loc', locSel.value);
                 if (insId) url.searchParams.set('insurance_id', insId);
                 btn.setAttribute('href', url.pathname + url.search);
@@ -797,6 +1417,36 @@ publicWidget.registry.ThemeDriveXDetailBooking = publicWidget.Widget.extend({
         }
     }
 });
+
+// ── Helper: parse "YYYY-MM-DD" + "HH:MM AM/PM" into a local Date ────────────
+// Mirrors the backend's strptime(f"{date} {time}", '%Y-%m-%d %I:%M %p').
+// Using explicit field extraction (no Date string parsing) avoids all
+// browser/UTC quirks so the result is always a true local-time Date.
+function _parseDateTimeLocal(dateStr, timeStr) {
+    if (!dateStr || !timeStr) return null;
+    try {
+        // dateStr: "YYYY-MM-DD"
+        const dp = dateStr.split('-').map(Number);
+        if (dp.length !== 3 || dp.some(isNaN)) return null;
+        const [y, mo, d] = dp;
+
+        // timeStr: "HH:MM AM" or "HH:MM PM"  (12-hour clock, space before meridiem)
+        const tMatch = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (!tMatch) return null;
+        let h = parseInt(tMatch[1], 10);
+        const m = parseInt(tMatch[2], 10);
+        const meridiem = tMatch[3].toUpperCase();
+        // Convert 12-hour → 24-hour
+        if (meridiem === 'AM') {
+            if (h === 12) h = 0;       // 12:xx AM → 00:xx
+        } else {
+            if (h !== 12) h += 12;     // 1–11 PM  → 13–23
+        }
+        return new Date(y, mo - 1, d, h, m, 0, 0);
+    } catch (_) {
+        return null;
+    }
+}
 
 // ── Helper: fetch booked date ranges for a vehicle via JSON RPC ──────────────
 function fetchBookedRanges(vehicleId) {
@@ -931,12 +1581,21 @@ publicWidget.registry.ThemeDriveXBookingDates = publicWidget.Widget.extend({
             var bodyEl = this.el.closest('body');
             if (pTime) _selectOption(bodyEl.querySelector('.tripPickupTime'), pTime);
             if (rTime) _selectOption(bodyEl.querySelector('.tripReturnTime'), rTime);
-        } else if (vehicleId && vehicleId !== '0') {
-            // Direct visit: fetch booked ranges so unavailable days are greyed out
+        }
+        // Always fetch booked ranges — needed for Continue validation
+        if (vehicleId && vehicleId !== '0') {
+            var grid = this.el;
             fetchBookedRanges(vehicleId).then(function (ranges) {
                 if (pickupDp) pickupDp.setBookedRanges(ranges);
                 if (returnDp) returnDp.setBookedRanges(ranges);
+                // Store on grid element so wizard can read them on Continue
+                grid._bookedRanges = ranges;
+                grid._bookedRangesReady = true;
             });
+        } else {
+            // No vehicle — mark as ready with empty ranges
+            this.el._bookedRanges = [];
+            this.el._bookedRangesReady = true;
         }
         return superResult;
     }

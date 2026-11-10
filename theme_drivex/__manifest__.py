@@ -21,23 +21,16 @@
 #############################################################################
 {
     "name": "Theme DriveX",
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.0.1",
     "category": "Theme/Corporate",
     "sequence": 100,
     "summary": "A premium car rental website theme for Odoo 17.",
-    "description": """
-        Theme DriveX - Premium Car Rental Website Theme for Odoo 17.
-        Transform your car rental business with Theme DriveX, 
-        a sophisticated and feature-rich theme designed specifically 
-        for Odoo 17. This premium theme offers a complete solution for 
-        creating a stunning car rental website with seamless
-         integration with Odoo's fleet management.
-        """,
+    "description": "A premium car rental website theme for Odoo 17.",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    "depends": ["website", "fleet", "sale_management", "crm"],
+    "depends": ["website", "fleet", "sale_management", "crm", "portal"],
     "data": [
         "security/ir.model.access.csv",
         "data/fleet_rental_addon_data.xml",
@@ -45,7 +38,6 @@
         "data/fleet_rental_location_data.xml",
         "data/ir_sequence_data.xml",
         "data/mail_template_data.xml",
-        "data/website_menu_data.xml",
         "views/fleet_rental_order_views.xml",
         "views/fleet_vehicle_feature_views.xml",
         "views/fleet_vehicle_views.xml",
@@ -73,6 +65,8 @@
         "views/contact_templates.xml",
         "views/booking_templates.xml",
         "views/car_detail_templates.xml",
+        "views/portal_templates.xml",
+        "data/theme_website_menu_data.xml",
     ],
     "assets": {
         "web._assets_primary_variables": [
@@ -81,10 +75,13 @@
         "web.assets_frontend": [
             "theme_drivex/static/src/scss/theme.scss",
             "theme_drivex/static/src/js/theme.js",
+            "theme_drivex/static/src/js/header.js",
         ],
     },
-    "images": ['static/description/banner.jpg',
-               'static/description/theme_screenshot.jpg', ],
+    "images": [
+        'static/description/banner.jpg',
+        'static/description/theme_screenshot.jpg'
+    ],
     "license": "LGPL-3",
     "installable": True,
     "auto_install": False,

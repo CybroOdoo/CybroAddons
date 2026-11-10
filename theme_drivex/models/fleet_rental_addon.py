@@ -19,9 +19,6 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-"""
-This module defines the Fleet Rental Add-on model.
-"""
 from odoo import fields, models
 
 
@@ -30,9 +27,12 @@ class FleetRentalAddon(models.Model):
     _name = 'fleet.rental.addon'
     _description = 'Rental Add-on Option'
 
-    name = fields.Char(string='Add-on Name', required=True, help='Name of the add-on.')
-    description = fields.Text(string='Description', help='Description of the add-on.')
-    price = fields.Float(string='Price', required=True, default=0.0, help='Cost of the add-on.')
+    name = fields.Char(string='Add-on Name', required=True,
+                       help='Name of the add-on.')
+    description = fields.Text(string='Description',
+                              help='Description of the add-on.')
+    price = fields.Float(string='Price', required=True, default=0.0,
+                         help='Cost of the add-on.')
     charge_type = fields.Selection(
         selection=[
             ('per_day', 'Per Day'),
@@ -44,4 +44,5 @@ class FleetRentalAddon(models.Model):
         help='How the add-on is charged.'
     )
     icon = fields.Char(string='Icon Class', help='e.g., fa-baby-carriage')
-    active = fields.Boolean(string='Active', default=True, help='Is the add-on active?')
+    active = fields.Boolean(string='Active', default=True,
+                            help='Is the add-on active?')
