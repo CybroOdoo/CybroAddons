@@ -1,13 +1,12 @@
 /** @odoo-module **/
-import { NavBar } from "@web/webclient/navbar/navbar";
-import { patch } from "@web/core/utils/patch";
-import { rpc } from "@web/core/network/rpc";
-import { session } from "@web/session";
-import { renderToFragment } from "@web/core/utils/render";
-const { fuzzyLookup } = require('@web/core/utils/search');
-import { computeAppsAndMenuItems } from "@web/webclient/menus/menu_helpers";
-
-const { onMounted, useState, onPatched } = owl;
+import {NavBar} from "@web/webclient/navbar/navbar";
+import {patch} from "@web/core/utils/patch";
+import {rpc} from "@web/core/network/rpc";
+import {session} from "@web/session";
+import {renderToFragment} from "@web/core/utils/render";
+import {fuzzyLookup} from "@web/core/utils/search";
+import {computeAppsAndMenuItems} from "@web/webclient/menus/menu_helpers";
+import {onMounted, onPatched, useState} from "@odoo/owl";
 
 patch(NavBar.prototype, {
 
@@ -16,7 +15,7 @@ patch(NavBar.prototype, {
         this._search_def = null;
         this._search_timeout = null;
 
-        let { apps, menuItems } = computeAppsAndMenuItems(this.menuService.getMenuAsTree("root"));
+        let {apps, menuItems} = computeAppsAndMenuItems(this.menuService.getMenuAsTree("root"));
         this._apps = apps;
         this._searchableMenus = menuItems;
         this.state = useState({
@@ -98,32 +97,7 @@ patch(NavBar.prototype, {
             this.updateSidebarMargin();
         });
     },
-    _hideActionManagerForFullScreenMenu() {
-        const actionManager = document.querySelector(".o_action_manager");
-        if (actionManager) {
-            actionManager.style.display = "none";
-        }
-    },
 
-    _showActionManagerAfterFullScreenMenu() {
-        const actionManager = document.querySelector(".o_action_manager");
-        if (actionManager) {
-            actionManager.style.display = "";
-        }
-    },
-    _closeFullScreenMenu() {
-        const toggle = document.querySelector("a.full[data-bs-toggle='dropdown']");
-        if (!toggle) return;
-        const menu = document.querySelector('.fullscreen-menu');
-        if (menu) {
-            menu.classList.remove('show');
-        }
-        toggle.classList.remove('show');
-        toggle.setAttribute('aria-expanded', 'false');
-        // Dispatch the hidden event to trigger our cleanup
-        const event = new Event('hidden.bs.dropdown', { bubbles: true });
-        toggle.dispatchEvent(event);
-    },
     _hideNavbarMenusForFullScreenAppsMenu() {
         this._setElementsDisplay('.o_menu_sections', 'none');
         this._setElementsDisplay('.o_menu_brand', 'none');
@@ -139,17 +113,12 @@ patch(NavBar.prototype, {
         if (!toggle) {
             return;
         }
-        toggle.addEventListener("show.bs.dropdown", () => {
-            this._hideNavbarMenusForFullScreenAppsMenu();
-            this._hideActionManagerForFullScreenMenu();
-        });
+        toggle.addEventListener("show.bs.dropdown", () => this._hideNavbarMenusForFullScreenAppsMenu());
         toggle.addEventListener("hidden.bs.dropdown", () => {
             this._showNavbarMenusAfterFullScreenAppsMenu();
             this._clearSearch();
-            this._showActionManagerAfterFullScreenMenu();
         });
-    }
-    ,
+    },
 
     setupSidebarListeners() {
         const openSidebar = document.getElementById('openSidebar');
@@ -243,8 +212,8 @@ patch(NavBar.prototype, {
             if (userImgEl) {
                 userImgEl.setAttribute('src', imgUrl);
             }
-        } catch (error) {
-            console.error("Error fetching session info:", error);
+        } catch {
+            // The greeting is cosmetic, so a failed request is ignored.
         }
     },
 
@@ -356,20 +325,13 @@ patch(NavBar.prototype, {
             if (menu) {
                 this.menuService.selectMenu(menu);
                 this._clearSearch();
-                if (ev.target.closest('.fullscreen-menu')) {
-                    this._closeFullScreenMenu();
-                }
                 setTimeout(() => this._showNavbarMenusAfterFullScreenAppsMenu(), 0);
 
-                let app = { 'appId': data.menuId };
-                rpc('/theme_studio/add_recent_app', {
-                    method: 'call',
-                    args: [app]
+                                rpc('/theme_studio/add_recent_app', {
+                    args: [{ appId: data.menuId }]
                 }).then(() => {
                     this.env.bus.trigger('INFINITO:RECENT_APPS_UPDATED');
-                }).catch(err => {
-                    console.error('Failed to add recent app:', err);
-                });
+                }).catch(() => {});
             }
         }
 
@@ -578,10 +540,11 @@ const _patchEnterpriseHomeMenuCompat = () => {
                 if (app && app.id) {
                     rpc('/theme_studio/add_recent_app', {
                         method: 'call',
-                        args: [{ appId: app.id }]
+                        args: [{appId: app.id}]
                     }).then(() => {
                         this.env.bus.trigger('INFINITO:RECENT_APPS_UPDATED');
-                    }).catch(() => {});
+                    }).catch(() => {
+                    });
                 }
             } catch (e) {
                 // Never let recent-app tracking break app navigation.

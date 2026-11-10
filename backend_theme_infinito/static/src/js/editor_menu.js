@@ -30,7 +30,7 @@ export class Counter extends Component {
                                                 <div class=" t_settings info-infinito"
                                                      data-bs-toggle="popover"
                                                      data-bs-placement="right"
-                                                     data-bs-content="All internal users can edit their Advanced features for themself"
+                                                     data-bs-content="All internal users can edit their Advanced features for themselves"
                                                      title=""
                                                      data-bs-original-title="Help">
                                                     User edit
@@ -46,7 +46,7 @@ export class Counter extends Component {
                                                 <h6 class="info-infinito"
                                                     data-bs-toggle="popover"
                                                     data-bs-placement="right"
-                                                    data-bs-content="All internal users can edit their Advanced features for themself"
+                                                    data-bs-content="All internal users can edit their Advanced features for themselves"
                                                     title=""
                                                     data-bs-original-title="Help">
                                                     Loaders
@@ -54,7 +54,7 @@ export class Counter extends Component {
                                                 <div class="sub_style">
                                                 <select class="form-select infinito-form-select" id="loader" t-on-change="onLoaderChange">
                                                 <t t-foreach="state.loaders" t-as="load" t-key="load">
-                                                    <option t-att-value="load"><t t-esc="load"/></option>
+                                                    <option t-att-value="load"><t t-out="load"/></option>
                                                 </t>
                                                 </select>
                                                 </div>
@@ -524,7 +524,7 @@ export class Counter extends Component {
         }
         // Enabling Full Screen App Menu above force-disables Sidebar. If the
         // user later turns Full Screen App Menu back off without touching
-        // Sidebar themselves, restore it — otherwise both end up disabled and
+        // Sidebar themselves, restore it. Otherwise both end up disabled and
         // the navbar silently falls back to the plain, unstyled default Odoo
         // apps dropdown instead of either custom layout.
         if (session.fullScreenApp && !vals.fullScreenApp && !vals.sidebar) {
@@ -538,46 +538,12 @@ export class Counter extends Component {
             document.querySelector('#sidebarToggler').checked = false;
         }
 
-        try {
-            let result;
-            if (isUserEdit) {
-                result = await rpc('/theme_studio/set_advanced_data_user', {
-                    args: [{vals}]
-                });
-            } else {
-                result = await rpc('/theme_studio/set_advanced_data', {
-                    args: [{vals}]
-                });
-            }
-
-            if (result) {
-                // Update session
-                Object.assign(session, {
-                    userEdit: vals.userEdit,
-                    sidebar: vals.sidebar,
-                    sidebarIcon: vals.sidebarIcon,
-                    sidebarIco: vals.sidebarIcon,
-                    sidebarName: vals.sidebarName,
-                    fullscreen: vals.fullscreen,
-                    infinitoRtl: vals.infinitoRtl,
-                    sidebarCompany: vals.sidebarCompany,
-                    sidebarUser: vals.sidebarUser,
-                    recentApps: vals.recentApps,
-                    fullScreenApp: vals.fullScreenApp,
-                    infinitoBookmark: vals.infinitoBookmark,
-                    infinitoDark: vals.infinitoDark,
-                    infinitoDarkMode: vals.infinitoDarkMode,
-                    infinitoDarkStart: this.darkStart,
-                    infinitoDarkEnd: this.darkEnd,
-                    loaderClass: vals.loaderClass,
-                });
-
-                //                    alert('Settings saved!');
-                window.location.reload();
-            }
-        } catch (error) {
-            console.error('SAVE FAILED:', error);
-            alert('Failed to save: ' + (error.message || 'Unknown error'));
+        const route = isUserEdit
+            ? '/theme_studio/set_advanced_data_user'
+            : '/theme_studio/set_advanced_data';
+        const result = await rpc(route, {args: [{vals}]});
+        if (result) {
+            window.location.reload();
         }
     }
 

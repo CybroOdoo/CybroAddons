@@ -30,8 +30,8 @@ BlockUI.template = xml`
                     </t>
                 </div>
                 <div class="o_message text-center px-4">
-                    <t t-esc="state.line1"/><br/>
-                    <t t-esc="state.line2"/>
+                    <t t-out="state.line1"/><br/>
+                    <t t-out="state.line2"/>
                 </div>
             </t>
         </div>
@@ -57,7 +57,7 @@ ImportBlockUI.template = xml`
             </t>
         </div>
         <div t-if="props.message or props.blockComponent">
-            <div class="o_message text-center px-4" t-esc="props.message" />
+            <div class="o_message text-center px-4" t-out="props.message" />
             <t t-if="props.blockComponent" t-component="props.blockComponent.class" t-props="props.blockComponent.props"/>
         </div>
     </div>

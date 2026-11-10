@@ -22,7 +22,6 @@
 import json
 from odoo import http
 from odoo.http import request
-from odoo.tools import file_path
 
 class BasePwa(http.Controller):
     """
@@ -30,26 +29,17 @@ class BasePwa(http.Controller):
     """
 
     def pwa_data(self):
-        """
-        Define the data required for the PWA manifest file.
-
-        Returns:
-            dict: Dictionary containing PWA manifest data.
-        """
-        src = file_path('backend_theme_infinito/static/src/img/menu.png')
         return {
             'short_name': 'Odoo',
             'name': 'Odoo-infinito',
             'description': 'PWA provided by backend theme infinito',
-            'icons': [
-                {
-                    'src': f'{src}',
-                    'type': 'image/png',
-                    'sizes': '144x144',
-                    'purpose': 'any maskable'
-                },
-            ],
-            'start_url': 'http://cybrosys:8015/web',
+            'icons': [{
+                'src': '/backend_theme_infinito/static/src/img/menu.png',
+                'type': 'image/png',
+                'sizes': '144x144',
+                'purpose': 'any maskable',
+            }],
+            'start_url': '/web',
             'background_color': 'white',
             'display': 'standalone',
             'theme_color': 'white',

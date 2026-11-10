@@ -55,7 +55,7 @@ InfinitoRecentApps.template = xml`
                 <img t-if="app.type=='svg'" class="sidebar_img" t-attf-src="data:image/svg+xml;base64,{{app.icon}}" width="40px" height="40px"/>
                 <img  t-if="app.type=='png'" class="sidebar_img" t-attf-src="data:image/png;base64,{{app.icon}}" width="40px" height="40px"/>
               </div>
-              <span class="zoomIn" t-esc="app.name"/>
+              <span class="zoomIn" t-out="app.name"/>
             </a>
          </t>
         </div>

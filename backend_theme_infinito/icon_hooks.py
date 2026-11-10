@@ -90,9 +90,6 @@ def icons_post_init_hook(env):
     set_param('backend_theme_infinito.is_sidebar_company', 'True')
     set_param('backend_theme_infinito.is_sidebar_user', 'True')
 
-    # Remove stale ir.asset record left by the Odoo 16/17 version of this theme.
-    # That version registered dynamic_styles.css as a bundle file; Odoo 18 serves
-    # it via a controller instead, so the record must not exist.
     stale_asset = env['ir.asset'].sudo().search([
         ('path', 'like', 'backend_theme_infinito/static/src/css/dynamic_styles.css')
     ])
@@ -115,10 +112,6 @@ def icons_uninstall_hook(env):
     """
     Menu = env["ir.ui.menu"].sudo()
 
-    # Restore the `web_icon` overrides done by `views/icons.xml` first.
-    # In Odoo 18, the app grid uses `web_icon_data` attachments returned by
-    # `ir.ui.menu.load_menus()`. Restoring `web_icon` will also recompute and
-    # store `web_icon_data` via the core `write()` override.
     def _restore_web_icon(xmlid, theme_value, default_value):
         rec = env.ref(xmlid, raise_if_not_found=False)
         if rec and rec.web_icon == theme_value:

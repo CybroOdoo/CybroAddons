@@ -8,7 +8,7 @@ Backend Theme Infinito
 
 Installation
 ============
-- www.odoo.com/documentation/19.0/setup/install.html
+- www.odoo.com/documentation/18.0/setup/install.html
 - Install our custom addon
 
 License
@@ -24,7 +24,7 @@ Credits
 -------
 * 'Cybrosys Techno Solutions <https://cybrosys.com/>'__
    Author : Farseen, Musthafa , Gokul , Ajith @Cybrosys ,
-            (V18) Nubla Sherin K,(V19) Renu M
+            (V18) Nubla Sherin K,
 
 Contacts
 --------

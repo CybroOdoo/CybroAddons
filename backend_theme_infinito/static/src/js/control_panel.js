@@ -3,7 +3,7 @@ import { ControlPanel } from "@web/search/control_panel/control_panel";
 import { patch } from "@web/core/utils/patch";
 import { rpc } from "@web/core/network/rpc";
 import { session } from "@web/session";
-import { router } from "@web/core/browser/router";
+import { router, stateToUrl } from "@web/core/browser/router";
 
 const { onMounted, onPatched, useState, useRef } = owl;
 
@@ -67,7 +67,7 @@ patch(ControlPanel.prototype, {
 
     _getCurrentBookmarkUrl() {
         if (router.current) {
-            return this._normalizeBookmarkUrl(router.stateToUrl(router.current));
+            return this._normalizeBookmarkUrl(stateToUrl(router.current));
         }
         const pathname = location.pathname || '/web';
         const hash = pathname === '/web' ? location.hash : '';

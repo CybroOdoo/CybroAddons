@@ -69,8 +69,8 @@ MenuBookmark.template = xml`
                 <div class="bookmark-list">
                     <t t-foreach="menuBookmark" t-as="menu" t-key="menu_index">
                         <a t-attf-href="{{ menu.url }}" class="menu" t-att-data-index="menu_index">
-                            <span class="small"><t t-esc="menu.short_name"/></span>
-                            <span class="full" t-att-data-index="menu_index"><t t-esc="menu.name"/></span>
+                            <span class="small"><t t-out="menu.short_name"/></span>
+                            <span class="full" t-att-data-index="menu_index"><t t-out="menu.name"/></span>
                         </a>
                     </t>
                 </div>

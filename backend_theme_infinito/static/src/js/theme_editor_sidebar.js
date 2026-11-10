@@ -24,7 +24,7 @@ export class ThemeEditorSidebar extends Component {
                     <div class="button_properties">
                         <p>
                             <a class="btn btn-primary_style">
-                                <span id="elem_name"><t t-esc="state.display_name"/></span>
+                                <span id="elem_name"><t t-out="state.display_name"/></span>
                                 <i class="fa fa-plus js_add_tool" t-on-click="_OnAddStyle"/>
                             </a>
                         </p>
@@ -39,7 +39,7 @@ export class ThemeEditorSidebar extends Component {
                                                         id="presets" t-on-change="_onPresetChange">
                                                         <t t-if="state.presets">
                                                             <t t-foreach="state.presets.button" t-as="preset" t-key="preset.name">
-                                                                <option t-att-value="preset.name" t-att-style="_convertStyle(preset.style)"><t t-esc="preset.name"/></option>
+                                                                <option t-att-value="preset.name" t-att-style="_convertStyle(preset.style)"><t t-out="preset.name"/></option>
                                                             </t>
                                                         </t>
                                                 </select>
@@ -99,14 +99,14 @@ export class ThemeEditorSidebar extends Component {
 
             <t t-if="tool.type == 'select'">
                 <div class="b_slider">
-                    <h6><t t-esc="tool.displayName"/></h6>
+                    <h6><t t-out="tool.displayName"/></h6>
                     <select class="form-control"
                             t-att-name="tool.name"
                             t-att-data-alt="tool.alt"
                             t-on-change="_onClickInput">
                         <t t-foreach="tool.options" t-as="opt" t-key="opt">
                             <option t-att-value="opt">
-                                <t t-esc="opt"/>
+                                <t t-out="opt"/>
                             </option>
                         </t>
                     </select>
@@ -115,7 +115,7 @@ export class ThemeEditorSidebar extends Component {
 
             <t t-if="tool.type == 'color'">
                 <div class="bg_color">
-                    <h6><t t-esc="tool.displayName"/></h6>
+                    <h6><t t-out="tool.displayName"/></h6>
                     <input type="color"
                            t-att-name="tool.name"
                            t-att-data-alt="tool.alt"
@@ -125,7 +125,7 @@ export class ThemeEditorSidebar extends Component {
 
             <t t-if="tool.type == 'range'">
                 <div class="b_slider">
-                    <h6><t t-esc="tool.displayName"/></h6>
+                    <h6><t t-out="tool.displayName"/></h6>
                     <input type="range"
                            t-att-name="tool.name"
                            t-att-min="tool.min"
@@ -701,7 +701,7 @@ export class ThemeEditorSidebar extends Component {
                                         <div class="form-group">
                                             <select class="form-control" id="select" t-att-name="${tool.name}" aria-label="Default select example" t-att-data-alt="${tool.alt}">
                                                 <t t-foreach="${tool.options}" t-as="option" t-key="option">
-                                                    <option t-att-value="option"><t t-esc="option"/></option>
+                                                    <option t-att-value="option"><t t-out="option"/></option>
                                                 </t>
                                             </select>
                                         </div>
