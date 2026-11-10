@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template for PDF reports -->
+    <template id="report_pdf_designer">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div class="oe_structure pb-3"/>
+                    <t t-if="report_name">
+                        <h2 class="text-center fw-bold">
+                            <t t-out="report_name"/>
+                        </h2>
+                        <t t-if="today_date">
+                            <h6 class="text-center">
+                                Date:
+                                <t t-out="today_date"/>
+                            </h6>
+                        </t>
+                    </t>
+                    <t t-if="date_field_id">
+                        <t t-if="start_date">
+                            <h5 class="text-start">
+                                From:
+                                <t t-out="start_date"/>
+                            </h5>
+                        </t>
+                        <t t-if="end_date">
+                            <h5 class="text-start">
+                                To:
+                                <t t-out="end_date"/>
+                            </h5>
+                        </t>
+                    </t>
+                    <t t-if="any(child_field_data)">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>SL.No</th>
+                                    <t t-foreach="field_label" t-as="item">
+                                        <t t-if="item_value[0]=='one2many'">
+                                            <t t-if="child_field_label">
+                                                <t t-foreach="child_field_label"
+                                                   t-as="c_field">
+                                                    <th>
+                                                        <t t-out="c_field"/>
+                                                    </th>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <th>
+                                                    <t t-out="item"/>
+                                                </th>
+                                            </t>
+                                        </t>
+                                        <t t-if="not item_value[0]=='one2many'">
+                                            <th>
+                                                <t t-out="item"/>
+                                            </th>
+                                        </t>
+                                    </t>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="sl_no" t-value="1"/>
+                                <t t-foreach="table_data" t-as="rec">
+                                    <tr>
+                                        <td>
+                                            <t t-out="sl_no"/>
+                                        </td>
+                                        <t t-foreach="rec" t-as="j">
+                                            <t t-if="isinstance(j, list)">
+                                                <t t-foreach="j" t-as="i">
+                                                    <td class="text-center">
+                                                        <t t-out="i"/>
+                                                    </td>
+                                                </t>
+                                            </t>
+                                            <t t-if="not isinstance(j, list)">
+                                                <td class="text-center">
+                                                    <span t-out="j"/>
+                                                </td>
+                                            </t>
+
+                                        </t>
+                                        <t t-set="sl_no" t-value="sl_no + 1"/>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+                    <t t-else="">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <t t-if="field_label">
+                                        <th class="text-center">SL.No</th>
+                                        <t t-foreach="field_label" t-as="head">
+                                            <th>
+                                                <t t-out="head"/>
+                                            </th>
+                                        </t>
+                                    </t>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="slno" t-value="1"/>
+                                <t t-if="table_data">
+                                    <t t-foreach="table_data" t-as="record">
+                                        <tr>
+                                            <td>
+                                                <t t-out="slno"/>
+                                            </td>
+                                            <t t-foreach="record" t-as="rec">
+                                                <td>
+                                                    <span t-out="rec"/>
+                                                </td>
+                                            </t>
+                                            <t t-set="slno" t-value="slno + 1"/>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

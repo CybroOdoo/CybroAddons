@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="menu_service" model="website.menu">
+        <field name="name">Track Pre-bookings</field>
+        <field name="url">/my/prebookings</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" type="int">31</field>
+    </record>
+
+    <template id="my_booking_template" name="Website Pre-booking Reference Tracking">
+        <t t-call="portal.portal_layout">
+            <main class="container py-5">
+                <h1 class="h3 text-center mb-4">Track your booking</h1>
+                <form action="/track/prebooking" method="post"
+                      class="mx-auto mb-4" style="max-width: 32rem;">
+                    <input type="hidden" name="csrf_token"
+                           t-att-value="request.csrf_token()"/>
+                    <div class="mb-3">
+                        <label class="form-label" for="booking_email">Email</label>
+                        <input id="booking_email" class="form-control" type="email" name="email"
+                               placeholder="Email used for the booking"
+                               t-att-value="not request.env.website.is_public_user() and request.env.user.partner_id.email or ''"
+                               t-att-required="'required' if request.env.website.is_public_user() else None"/>
+                    </div>
+                    <div class="input-group mb-3">
+                        <label class="input-group-text" for="booking_reference">Booking reference</label>
+                        <input id="booking_reference" class="form-control" type="text"
+                               name="reference" required="required"
+                               placeholder="Enter your booking reference"/>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </form>
+
+                <p t-if="not_found" class="text-center text-danger">
+                    No booking was found for that reference.
+                </p>
+                <table t-if="booking" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Reference</th>
+                            <th scope="col">Product</th>
+                            <th scope="col">Booking Date</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span t-field="booking.reference"/></td>
+                            <td><span t-field="booking.product_id.name"/></td>
+                            <td><span t-field="booking.booking_date"/></td>
+                            <td><span t-out="booking_status"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </main>
+        </t>
+    </template>
+</odoo>

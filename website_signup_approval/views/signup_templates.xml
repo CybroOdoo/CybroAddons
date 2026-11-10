@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add document upload fields to signup form when approval is enabled -->
+    <template id="document_fields" inherit_id="auth_signup.fields">
+        <xpath expr="//div[hasclass('field-confirm_password')]"
+               position="after">
+            <t t-set="icp"
+               t-value="request.env['ir.config_parameter'].sudo()"/>
+            <t t-set="approval_key"
+               t-value="'website_signup_approval.auth_signup_approval'"/>
+            <t t-set="is_approval"
+               t-value="icp.get_bool(approval_key)"/>
+            <t t-if="is_approval and not token">
+                <input type="hidden"
+                       name="is_signup_approval"
+                       class="is_signup_approval"
+                       value="1"/>
+                <t t-set="doc_key"
+                   t-value="'website_signup_approval.documents_ids'"/>
+                <t t-set="get_attachments_set"
+                   t-value="icp.get_str(doc_key)"/>
+                <t t-if="get_attachments_set">
+                    <t t-set="doc_ids"
+                       t-value="json.loads(get_attachments_set)"/>
+                    <t t-set="doc_model"
+                       t-value="request.env['document.attachment'].sudo()"/>
+                    <table class="table">
+                        <t t-foreach="doc_model.browse(doc_ids)" t-as="rec">
+                            <tr>
+                                <th>
+                                    <span t-out="rec.document"
+                                          class="oe_inline"/>
+                                </th>
+                                <td>
+                                    <input type="file"
+                                           class="oe_import_file get_attach"
+                                           required="1"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </table>
+                </t>
+            </t>
+        </xpath>
+    </template>
+</odoo>

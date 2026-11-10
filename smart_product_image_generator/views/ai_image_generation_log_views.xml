@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List View -->
+    <record id="view_ai_image_generation_log_list" model="ir.ui.view">
+        <field name="name">ai.image.generation.log.list</field>
+        <field name="model">ai.image.generation.log</field>
+        <field name="arch" type="xml">
+            <list string="AI Image Generation Log"
+                  create="false"
+                  decoration-danger="status in ('failed', 'rejected')"
+                  decoration-warning="status == 'pending_approval'"
+                  decoration-success="status == 'success'">
+                <field name="create_date" string="Generated At"/>
+                <field name="product_id"/>
+                <field name="user_id"/>
+                <field name="ai_provider"/>
+                <field name="image_style"/>
+                <field name="image_size"/>
+                <field name="num_variants_requested"/>
+                <field name="enhance_mode"/>
+                <field name="status" widget="badge"/>
+                <field name="image_applied"/>
+                <button name="action_approve"
+                        string="Approve"
+                        type="object"
+                        icon="fa-check"
+                        class="btn-link text-success"
+                        groups="smart_product_image_generator.group_ai_image_manager"
+                        invisible="status != 'pending_approval'"/>
+                <button name="action_reject"
+                        string="Reject"
+                        type="object"
+                        icon="fa-times"
+                        class="btn-link text-danger"
+                        groups="smart_product_image_generator.group_ai_image_manager"
+                        invisible="status != 'pending_approval'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_ai_image_generation_log_form" model="ir.ui.view">
+        <field name="name">ai.image.generation.log.form</field>
+        <field name="model">ai.image.generation.log</field>
+        <field name="arch" type="xml">
+            <form string="AI Image Generation Log" create="false" edit="false">
+                <header>
+                    <button name="action_approve"
+                            string="Approve &amp; Apply"
+                            type="object"
+                            class="btn-primary"
+                            groups="smart_product_image_generator.group_ai_image_manager"
+                            invisible="status != 'pending_approval'"/>
+                    <button name="action_reject"
+                            string="Reject"
+                            type="object"
+                            class="btn-secondary"
+                            groups="smart_product_image_generator.group_ai_image_manager"
+                            invisible="status != 'pending_approval'"/>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="pending_approval,success"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Generation Info">
+                            <field name="product_id"/>
+                            <field name="user_id"/>
+                            <field name="create_date" string="Generated At"/>
+                            <field name="ai_provider"/>
+                            <field name="image_style"/>
+                            <field name="image_size"/>
+                            <field name="num_variants_requested"/>
+                            <field name="enhance_mode"/>
+                        </group>
+
+                        <group string="Result">
+                            <field name="status" widget="badge"/>
+                            <field name="image_applied"/>
+                            <field name="approved_by_id" invisible="not approved_by_id"/>
+                            <field name="approved_date" invisible="not approved_date"/>
+                            <field name="image_generated"
+                                   widget="image"
+                                   options="{'size': [200, 200]}"
+                                   invisible="not image_generated"/>
+                        </group>
+                    </group>
+
+                    <group string="Prompt Used" invisible="not prompt">
+                        <field name="prompt" nolabel="1" widget="text"/>
+                    </group>
+
+                    <group string="Error Details" invisible="not error_message">
+                        <field name="error_message" nolabel="1" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_ai_image_generation_log_search" model="ir.ui.view">
+        <field name="name">ai.image.generation.log.search</field>
+        <field name="model">ai.image.generation.log</field>
+        <field name="arch" type="xml">
+            <search string="AI Image Generation Log">
+                <field name="product_id"/>
+                <field name="user_id"/>
+                <field name="ai_provider"/>
+                <filter string="Pending Approval"
+                        name="pending_approval"
+                        domain="[('status', '=', 'pending_approval')]"/>
+                <filter string="Success"
+                        name="success"
+                        domain="[('status', '=', 'success')]"/>
+                <filter string="Rejected"
+                        name="rejected"
+                        domain="[('status', '=', 'rejected')]"/>
+                <filter string="Failed"
+                        name="failed"
+                        domain="[('status', '=', 'failed')]"/>
+                <separator/>
+                <group>
+                    <filter string="Status" name="group_status"
+                            context="{'group_by': 'status'}"/>
+                    <filter string="Product" name="group_product"
+                            context="{'group_by': 'product_id'}"/>
+                    <filter string="User" name="group_user"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter string="Provider" name="group_provider"
+                            context="{'group_by': 'ai_provider'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>

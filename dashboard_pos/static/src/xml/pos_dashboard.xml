@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--  Template for Pos Dashboard  -->
+    <t t-name="PosDashboard">
+        <div class="oh_dashboards">
+
+            <!-- ===== KPI TILES ===== -->
+            <div class="container-fluid o_pos_dashboard">
+                <div class="row main-section">
+
+                    <div class="col-md-4 col-sm-6 pos_order_today oh-payslip"
+                         t-on-click="this.openTodayOrders">
+                        <div class="oh-card">
+                            <div class="oh-card-body">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon">
+                                        <i class="oi" data-icon="shopping_bag"/>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-head">Today Orders</div>
+                                        <div class="stat_count">
+                                            <t t-out="this.state.today_sale"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-sm-6 pos_order oh-payslip"
+                         t-on-click="this.openAllOrders">
+                        <div class="oh-card">
+                            <div class="oh-card-body">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon">
+                                        <i class="oi" data-icon="shopping_bag"/>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-head">Total Orders</div>
+                                        <div class="stat_count">
+                                            <t t-out="this.state.total_order_count"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-sm-6 pos_total_sales oh-payslip"
+                         t-on-click="this.openAllOrders">
+                        <div class="oh-card">
+                            <div class="oh-card-body">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon">
+                                        <i class="oi" data-icon="shopping_cart"/>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-head">Total Sales</div>
+                                        <div class="stat_count">
+                                            <t t-out="this.state.total_sale"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-sm-6 pos_session oh-payslip"
+                         t-on-click="this.openSessions">
+                        <div class="oh-card">
+                            <div class="oh-card-body">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon">
+                                        <i class="oi" data-icon="bar_chart"/>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-head">Sessions</div>
+                                        <div class="stat_count">
+                                            <t t-out="this.state.total_session"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-sm-6 pos_refund_orders oh-payslip"
+                         t-on-click="this.openRefundOrders">
+                        <div class="oh-card">
+                            <div class="oh-card-body">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon">
+                                        <i class="oi" data-icon="remove_circle"/>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-head">Total Refund Orders</div>
+                                        <div class="stat_count">
+                                            <t t-out="this.state.total_refund_count"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-sm-6 pos_refund_today_orders oh-payslip"
+                         t-on-click="this.openRefundTodayOrders">
+                        <div class="oh-card">
+                            <div class="oh-card-body">
+                                <div class="stat-widget-one">
+                                    <div class="stat-icon">
+                                        <i class="oi" data-icon="remove_circle"/>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-head">Today Refund Orders</div>
+                                        <div class="stat_count">
+                                            <t t-out="this.state.today_refund_total"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /.row.main-section -->
+            </div><!-- /.container-fluid -->
+
+            <!-- ===== CHARTS ===== -->
+            <div class="o_pos_dashboard_charts col-12">
+                <div class="row">
+
+                    <!-- Sale Report bar chart -->
+                    <div class="col-md-6 o_pos_dashboard_col o_pos_dashboard_sales_graph">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <h3 class="custom-h3">Sale Report</h3>
+                                </div>
+                                <div class="card-tools">
+                                    <select class="o_pos_dashboard_period" t-on-change="this.onSalesPeriodChange">
+                                        <option value="pos_hourly_sales">Hourly</option>
+                                        <option value="pos_daily_sales">Daily</option>
+                                        <option value="pos_monthly_sales">Monthly</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <h4>Sale Details</h4>
+                            <div class="card-body mt-2">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="chart">
+                                            <canvas t-ref="this.salesCanvas" width="200" height="90"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Customers pie chart -->
+                    <div class="col-md-6 o_pos_dashboard_col top_customer_graph_view">
+                        <div class="oh-card">
+                            <div class="oh-card-body">
+                                <h4 class="o_pos_dashboard_title">Top Customers</h4>
+                            </div>
+                            <div class="o_pos_dashboard_pie">
+                                <canvas t-ref="this.customersCanvas" class="top_customer" width="100" height="80"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Products bar chart -->
+                    <div class="col-md-6 o_pos_dashboard_col selling_product_graph_view">
+                        <div class="oh-card">
+                            <div class="oh-card-body">
+                                <h4 class="o_pos_dashboard_title">Top Products</h4>
+                            </div>
+                            <div class="o_pos_dashboard_bar">
+                                <canvas t-ref="this.productsCanvas" class="top_selling_product" width="200" height="120"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Categories bar chart -->
+                    <div class="col-md-6 o_pos_dashboard_col selling_product_graph_view">
+                        <div class="oh-card">
+                            <div class="oh-card-body">
+                                <h4 class="o_pos_dashboard_title">Top Categories</h4>
+                            </div>
+                            <div class="o_pos_dashboard_bar">
+                                <canvas t-ref="this.categoriesCanvas" class="top_product_categories" width="200" height="120"/>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /.row -->
+            </div>
+
+            <!-- ===== DETAIL TABLES ===== -->
+            <div class="employee_dashboard_main">
+                <div class="row main-section">
+
+                    <!-- Sale by Salesperson -->
+                    <div class="col-md-4 col-lg-4">
+                        <div class="hr_notification">
+                            <div class="hr_notification_head">Sale by Salesperson</div>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Orders</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.top_salesperson"
+                                       t-as="salesperson"
+                                       t-key="salesperson_index">
+                                        <tr>
+                                            <td><t t-out="salesperson[0]"/></td>
+                                            <td><t t-out="salesperson[2]"/></td>
+                                            <td><t t-out="salesperson[1]"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="col-md-4 col-lg-4">
+                        <div class="hr_notification">
+                            <div class="hr_notification_head">Payment Method</div>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Method</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.payment_details"
+                                       t-as="payment_method"
+                                       t-key="payment_method_index">
+                                        <tr>
+                                            <td><t t-out="payment_method[0]"/></td>
+                                            <td><t t-out="payment_method[1]"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Session Status -->
+                    <div class="col-md-4 col-lg-4">
+                        <div class="hr_notification">
+                            <div class="hr_notification_head">Session Status</div>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Session</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.sessions"
+                                       t-as="session"
+                                       t-key="session_index">
+                                        <tr>
+                                            <td><t t-out="session['session']"/></td>
+                                            <td><t t-out="session['status']"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div><!-- /.row.main-section -->
+            </div><!-- /.employee_dashboard_main -->
+
+        </div><!-- /.oh_dashboards -->
+    </t>
+</templates>

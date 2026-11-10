@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Template for adding the pre bookings in the portal my home-->
+    <template id="portal_my_home_pre_bookings"
+              name="portal_my_home_inherit_website_pre_booking"
+              inherit_id="portal.portal_my_home">
+       <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+           <div class="o_portal_index_card order-2">
+               <a href="/my/pre_bookings" title="Pre Booking"
+                  class="d-flex gap-2 gap-md-3 py-3 pe-2 px-md-3 h-100 rounded text-decoration-none">
+                   <img src="/sale/static/src/img/bag.svg" alt=""
+                        class="o_portal_icon" width="48" height="48"/>
+                   <div class="d-flex flex-column justify-content-center">
+                       <h5 class="mb-0 d-flex align-items-center gap-2">
+                           <span>Pre Booking</span>
+                           <span class="badge rounded-pill text-bg-secondary" t-out="pre_bookings_count"/>
+                       </h5>
+                       <p class="mt-1 mb-0 opacity-75">Pre-Booked Orders.</p>
+                   </div>
+               </a>
+           </div>
+       </xpath>
+    </template>
+
+    <!-- Template for the breadcrumbs for the pre-booking-->
+    <template id="portal_my_home_menu_pre_bookings"
+              name="Website Pre-booking Portal Breadcrumbs"
+              inherit_id="portal.portal_breadcrumbs" priority="65">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'pre_booking'" class="breadcrumb-item active">
+                <span>Pre-booking</span>
+            </li>
+        </xpath>
+    </template>
+    <!-- List of pre bookings to show in the portal table-->
+    <template id="portal_my_pre_bookings" name="My Pre Bookings">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Pre Bookings</t>
+            </t>
+            <t t-if="pre_bookings" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Reference</th>
+                        <th>Product</th>
+                        <th>Booking Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <t t-foreach="pre_bookings" t-as="pre_booking">
+                    <tr>
+                        <td><span t-field="pre_booking.reference"/></td>
+                        <td><span t-field="pre_booking.product_id.name"/></td>
+                        <td><span t-field="pre_booking.booking_date"/></td>
+                        <td><span t-field="pre_booking.state"/></td>
+                    </tr>
+                </t>
+            </t>
+            <div t-else="" class="alert alert-info" role="status">
+                You have no pre-bookings yet.
+            </div>
+        </t>
+    </template>
+</odoo>
