@@ -9,3 +9,8 @@
 #### Version 18.0.1.0.1
 #### BUG FIX
 - Fixed issue of not showing the Order Selection button in Product Screen.
+
+#### 26.10.2026
+#### Version 18.0.1.0.1
+#### BUG FIX
+- Fixed issue of icon not showing.

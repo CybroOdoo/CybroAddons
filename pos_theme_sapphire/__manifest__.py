@@ -21,7 +21,7 @@
 ################################################################################
 {
     'name': 'POS Theme Sapphire',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Themes/Backend',
     'summary': 'The POS Theme Sapphire Is A Responsive And Ultimate '
                'Theme For Your Odoo V18.This Theme Will Give You '
