@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_address_extraction_wizard_form" model="ir.ui.view">
+        <field name="name">address.extraction.wizard.form</field>
+        <field name="model">address.extraction.wizard</field>
+        <field name="arch" type="xml">
+            <form string="AI Address Autofill">
+                <field name="state" invisible="1"/>
+                <field name="is_partner_readonly" invisible="1"/>
+
+                <!-- STEP 1: Address Input (Draft) -->
+                <div invisible="state != 'draft'">
+                    <group>
+                        <field name="partner_id"
+                               readonly="is_partner_readonly"
+                               options="{'no_create': True}"
+                               placeholder="Select contact to update..."/>
+                    </group>
+                    <group string="Address Input">
+                        <field name="raw_address"
+                               nolabel="1"
+                               colspan="2"
+                               rows="6"
+                               placeholder="Enter or paste address text here..."
+                               class="w-100"
+                               style="width: 100% !important; min-height: 140px; font-size: 14px;"/>
+                    </group>
+                </div>
+
+                <!-- STEP 2: Review and Confirm (Extracted) -->
+                <div invisible="state != 'extracted'">
+                    <group string="Extracted Address Components">
+                        <group>
+                            <field name="extracted_street" placeholder="Street line 1"/>
+                            <field name="extracted_street2" placeholder="Street line 2"/>
+                            <field name="extracted_city" placeholder="City / Town"/>
+                        </group>
+                        <group>
+                            <field name="extracted_country_id" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="extracted_state_id" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="extracted_zip" placeholder="ZIP / Postal Code"/>
+                            <field name="partner_id"
+                                   readonly="is_partner_readonly"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+
+                    <group invisible="not partner_id">
+                        <field name="overwrite_existing"/>
+                    </group>
+                </div>
+
+                <!-- Wizard Action Buttons -->
+                <footer>
+                    <!-- Draft state buttons -->
+                    <button name="action_extract_address"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'">
+                        <i class="oi me-1" data-icon="location_on" aria-hidden="true"/>
+                        <span>Address Autofill</span>
+                    </button>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"
+                            invisible="state != 'draft'"/>
+
+                    <!-- Extracted state buttons -->
+                    <button name="action_apply_to_contact"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'extracted' or not partner_id">
+                        <i class="oi me-1" data-icon="check" aria-hidden="true"/>
+                        <span>Apply to Contact</span>
+                    </button>
+                    <button name="action_create_contact"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'extracted' or partner_id">
+                        <i class="oi me-1" data-icon="person_add" aria-hidden="true"/>
+                        <span>Create New Contact</span>
+                    </button>
+                    <button string="Discard"
+                            class="btn-secondary"
+                            special="cancel"
+                            invisible="state != 'extracted'"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action to launch wizard directly -->
+    <record id="action_address_extraction_wizard" model="ir.actions.act_window">
+        <field name="name">AI Address Autofill</field>
+        <field name="res_model">address.extraction.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_address_extraction_wizard_form"/>
+
+    </record>
+</odoo>

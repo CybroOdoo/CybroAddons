@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.module.category" id="employee_requisition">
+        <field name="name">Employee Purchase Requisition</field>
+        <field name="description">User access level for Material Request module</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record model="res.groups.privilege" id="res_groups_privilege_emp_purchase">
+        <field name="name">Employee Purchase Requisition</field>
+        <field name="category_id" ref="employee_requisition"/>
+        <field name="description">User access level for Material Request module</field>
+    </record>
+
+    <!--User groups, from the lowest to the highest access level:
+        Requisition Users < Requisition Manager < Department Head.
+        Each group is declared before the one implying it, so that ref() can
+        resolve it on a fresh install. implied_ids uses (6, 0, [...]) instead of
+        (4, ...) so that an upgrade replaces the implications rather than only
+        adding to them, which would leave stale links in place.-->
+    <record id="employee_requisition_user" model="res.groups">
+        <field name="name">Requisition Users</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_emp_purchase"/>
+    </record>
+
+    <record id="employee_requisition_manager" model="res.groups">
+        <field name="name">Requisition Manager</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_emp_purchase"/>
+        <field name="implied_ids"
+               eval="[(6, 0, [ref('employee_purchase_requisition.employee_requisition_user'),
+                              ref('purchase.group_purchase_user')])]"/>
+    </record>
+
+    <record id="employee_requisition_head" model="res.groups">
+        <field name="name">Department Head</field>
+        <field name="sequence">30</field>
+        <field name="privilege_id" ref="res_groups_privilege_emp_purchase"/>
+        <field name="implied_ids"
+               eval="[(6, 0, [ref('employee_purchase_requisition.employee_requisition_manager')])]"/>
+    </record>
+</odoo>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Record rules / Access restrictions-->
+    <record id="requisition_user_rule" model="ir.access">
+        <field name="name">Requisition User Rule</field>
+        <field name="model_id" ref="model_employee_purchase_requisition"/>
+        <field name="group_id" ref="employee_purchase_requisition.employee_requisition_user"/>
+        <field name="operation">crud</field>
+        <field name="domain">[('confirm_id', '=', user.id)]</field>
+    </record>
+
+    <!--A manager only handles the requisitions they are responsible for; the
+        department head, being above the manager, sees them all.-->
+    <record id="requisition_manager_rule" model="ir.access">
+        <field name="name">Requisition Manager Rule</field>
+        <field name="model_id" ref="model_employee_purchase_requisition"/>
+        <field name="group_id" ref="employee_purchase_requisition.employee_requisition_manager"/>
+        <field name="operation">crud</field>
+        <field name="domain">[('user_id', '=', user.id)]</field>
+    </record>
+
+    <record id="department_head_rule" model="ir.access">
+        <field name="name">Department Head Rule</field>
+        <field name="model_id" ref="model_employee_purchase_requisition"/>
+        <field name="group_id" ref="employee_purchase_requisition.employee_requisition_head"/>
+        <field name="operation">crud</field>
+        <field name="domain">[(1, '=', 1)]</field>
+    </record>
+
+    <record id="requisition_company_rule" model="ir.access">
+        <field name="name">Purchase Requisition Company Rule</field>
+        <field name="model_id" ref="model_employee_purchase_requisition"/>
+        <field name="operation">crud</field>
+        <field name="domain">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

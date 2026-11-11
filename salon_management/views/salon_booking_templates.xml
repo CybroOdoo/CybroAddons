@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Salon booking form-->
+    <template id="salon_booking_form" name="Salon Booking">
+        <t t-call="website.layout">
+            <div class="container salon-booking-page chair_booking">
+                <div class="row salon-section-row">
+                    <!-- Working Time -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="salon-card h-100">
+                            <div class="salon-card__header">
+                                <i class="fa fa-clock-o salon-card__icon"/>
+                                <h3 class="salon-card__title">Working Time</h3>
+                            </div>
+                            <div class="salon-card__body">
+                                <table class="table salon-hours-table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Day</th>
+                                            <th>Opens</th>
+                                            <th>Closes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-if="not working_time">
+                                            <tr>
+                                                <td colspan="3" class="salon-empty-row">
+                                                    Working hours have not been configured yet.
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-foreach="working_time"
+                                           t-as="working_time_obj">
+                                            <tr>
+                                                <td>
+                                                    <span t-field="working_time_obj.name"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="working_time_obj.from_time"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="working_time_obj.to_time"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                                <t t-if="holiday">
+                                    <div class="salon-holiday-note">
+                                        <i class="fa fa-info-circle"/>
+                                        <span>
+                                            Closed on:
+                                            <t t-foreach="holiday" t-as="holiday_obj">
+                                                <span t-field="holiday_obj.name"/><t
+                                                    t-if="not holiday_obj_last">, </t>
+                                            </t>
+                                        </span>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Book Your Chair -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="salon-card h-100">
+                            <div class="salon-card__header">
+                                <i class="fa fa-calendar-check-o salon-card__icon"/>
+                                <h3 class="salon-card__title">Book Your Chair</h3>
+                            </div>
+                            <div class="salon-card__body">
+                                <form class="salon-booking-form">
+                                    <div class="mb-3">
+                                        <label class="salon-form-label" for="name">Name</label>
+                                        <input type="text" id="name" class="form-control"
+                                               required="1"
+                                               placeholder="Enter your name"/>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="salon-form-label">Services</label>
+                                        <div class="selection_service">
+                                            <t t-if="not salon_services">
+                                                <div class="salon-empty-row p-2">
+                                                    No services configured yet.
+                                                </div>
+                                            </t>
+                                            <t t-foreach="salon_services"
+                                               t-as="service">
+                                                <div class="form-check salon-service-check">
+                                                    <input type="checkbox"
+                                                           t-att-id="'service_' + str(service.id)"
+                                                           t-att-service-id="service.id"
+                                                           class="form-check-input check_box_salon"/>
+                                                    <label class="form-check-label"
+                                                           t-att-for="'service_' + str(service.id)">
+                                                        <t t-out="service.name"/>
+                                                    </label>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-sm-6 mb-3">
+                                            <label class="salon-form-label" for="date">Date</label>
+                                            <input type="date" id="date" class="form-control"
+                                                   required="1"/>
+                                        </div>
+                                        <div class="col-sm-6 mb-3">
+                                            <label class="salon-form-label" for="time">Time</label>
+                                            <input type="time" id="time" name="time"
+                                                   class="form-control"
+                                                   required="required"/>
+                                        </div>
+                                    </div>
+                                    <p class="salon-hint">
+                                        Select the date &amp; time based on chair availability.
+                                    </p>
+
+                                    <div class="mb-1">
+                                        <label class="salon-form-label" for="chair">Chair</label>
+                                        <select id="chair" class="form-select" required="True">
+                                            <option value="">-- Select a Chair --</option>
+                                            <t t-foreach="chair_details"
+                                               t-as="chair">
+                                                <option t-att-value="chair.id">
+                                                    <t t-out="chair.name"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+                                    <p class="salon-hint" id="chair_availability_hint">
+                                        Pick a date to see how busy each chair is that day.
+                                    </p>
+
+                                    <div class="mb-3">
+                                        <label class="salon-form-label" for="phone">Phone</label>
+                                        <input type="tel" id="phone" class="form-control"
+                                               required="1"
+                                               pattern="[0-9]{7,15}"
+                                               title="Phone number must contain 7 to 15 digits only"
+                                               placeholder="e.g. 9991212345"/>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="salon-form-label" for="email">E-Mail</label>
+                                        <input type="email" id="email" class="form-control"
+                                               required="1"
+                                               pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
+                                               title="Please enter a valid email address (e.g. example@gmail.com)"
+                                               placeholder="e.g. example@gmail.com"/>
+                                    </div>
+
+                                    <div id="salon_form_message" role="alert"
+                                         class="alert alert-danger d-none"/>
+                                    <button type="button" id="send_button"
+                                            class="btn btn-primary salon-submit-btn">
+                                        <i class="fa fa-paper-plane me-1"/> Send Booking Request
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Already Booked Chairs and Details -->
+                <section id="chair_details" class="salon-card mb-4">
+                    <div class="salon-card__header">
+                        <i class="fa fa-th-large salon-card__icon"/>
+                        <h3 class="salon-card__title">Already Booked Chairs and Details</h3>
+                    </div>
+                    <div class="salon-card__body">
+                        <div class="row align-items-end salon-checkdate-row">
+                            <div class="col-md-4 mb-2">
+                                <label class="salon-form-label" for="check_date">Date</label>
+                                <div class="input-group">
+                                    <input id="check_date" type="date" class="form-control"
+                                           placeholder="Select a date"/>
+                                    <button type="button" id="check_button"
+                                            class="btn btn-primary">
+                                        Check
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <span class="salon-searched-date" id="searched_date">
+                                    DATE : <t t-out="date_search"/>
+                                </span>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <t t-if="holiday">
+                                    <span class="salon-holiday-badge">
+                                        <i class="fa fa-ban"/> Holidays:
+                                        <t t-foreach="holiday" t-as="holiday_obj">
+                                            <span t-field="holiday_obj.name"/><t
+                                                t-if="not holiday_obj_last">, </t>
+                                        </t>
+                                    </span>
+                                </t>
+                            </div>
+                        </div>
+                        <hr/>
+                        <div id="booking_chair_div" class="row salon-chair-grid">
+                            <t t-set="has_active_chair" t-value="False"/>
+                            <t t-foreach="chair_details" t-as="chair_obj">
+                                <t t-if="chair_obj.active_booking_chairs">
+                                    <t t-set="has_active_chair" t-value="True"/>
+                                    <div class="col-lg-4 col-md-6 mb-3">
+                                        <div class="salon-chair-card">
+                                            <div class="salon-chair-card__name">
+                                                <i class="fa fa-user-circle-o"/>
+                                                <span t-field="chair_obj.name"/>
+                                            </div>
+                                            <div class="salon-chair-card__body">
+                                                <table class="table table-sm salon-order-table mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Order No.</th>
+                                                            <th>Start</th>
+                                                            <th>End</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-set="chair_has_orders" t-value="False"/>
+                                                        <t t-foreach="order_details"
+                                                           t-as="order_obj">
+                                                            <t t-if="order_obj.chair_id.id == chair_obj.id">
+                                                                <t t-set="chair_has_orders" t-value="True"/>
+                                                                <tr>
+                                                                    <td>
+                                                                        <span t-field="order_obj.id"/>
+                                                                    </td>
+                                                                    <td>
+                                                                        <span t-field="order_obj.start_time"
+                                                                              t-options='{"format": "HH:mm"}'/>
+                                                                    </td>
+                                                                    <td>
+                                                                        <span t-field="order_obj.end_time"
+                                                                              t-options='{"format": "HH:mm"}'/>
+                                                                    </td>
+                                                                </tr>
+                                                            </t>
+                                                        </t>
+                                                        <t t-if="not chair_has_orders">
+                                                            <tr>
+                                                                <td colspan="3" class="salon-empty-row">
+                                                                    No bookings for this date
+                                                                </td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </t>
+                            <t t-if="not has_active_chair">
+                                <div class="col-12">
+                                    <div class="salon-empty-state">
+                                        No chairs are open for booking right now. Please check
+                                        back later.
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+    <!--    Template to view thank you message after register via portal-->
+    <template id="salon_booking_thank_you" name="Thank you">
+        <t t-call="website.layout">
+            <form>
+                <center>
+                    <div>
+                        <span class="d-block fa fa-4x fa-thumbs-up mx-auto rounded-circle bg-primary"/>
+                        <br/>
+                        <h1 class="text-center">Thank You!</h1>
+                        <div class="pb16 pt16 s_hr" data-snippet="s_hr" data-name="Separator">
+                            <hr class="mx-auto border-top w-50 border-dark text-center"/>
+                        </div>
+                        <p class="lead">Your request has been successfully submitted.
+                        </p>
+                        <p class="text-muted">
+                            We've sent a confirmation e-mail with your request details.
+                            Our team will review it and follow up shortly.
+                        </p>
+                    </div>
+                </center>
+            </form>
+        </t>
+    </template>
+</odoo>

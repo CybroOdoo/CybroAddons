@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!--
+        This template inherits the `web.ListRenderer.RecordRow` template and adds
+        tooltip data attributes to the field-type td cell.
+        In Odoo 20, the td no longer has t-att-data-tooltip and gained
+        t-att-data-column-id, so we use position="attributes" to inject the
+        tooltip attributes non-destructively rather than replacing the whole element.
+    -->
+    <t t-inherit="web.ListRenderer.RecordRow" t-inherit-mode="extension">
+        <xpath expr="//td[@t-att-data-column-id='column.id' and @class='o_data_cell cursor-pointer' and not(@t-on-click)]" position="attributes">
+            <attribute name="t-att-data-tooltip-info">['many2one'].includes(this.fields[column.name].type) ? this.tolTipInfo(record, column) : this.makeTooltip(column)</attribute>
+            <attribute name="t-att-data-tooltip-template">['many2one'].includes(this.fields[column.name].type) ? 'dynamic_hover_on_related_fields.RelatedFieldTooltip' : undefined</attribute>
+            <attribute name="data-tooltip-delay">1000</attribute>
+        </xpath>
+    </t>
+</templates>
