@@ -36,6 +36,16 @@ SUPPORT_ENDPOINT_PARAM = 'cybrosys_support_client.endpoint_url'
 DEFAULT_SUPPORT_ENDPOINT = 'https://support.cybrosys.com/help/request'
 SUPPORT_TIMEOUT = (5, 20)  # (connect, read) seconds
 
+# Identifies this module to the support server, sent in every request.
+SUPPORT_API_KEY_HEADER = 'X-Cybrosys-Token'
+SUPPORT_API_KEY = '6d2fb8de84ef3569e5d6b103'
+
+# Must match the support server's limits (cybrosys_support_server).
+MAX_ATTACHMENTS = 5
+MAX_ATTACHMENT_SIZE = 3 * 1024 * 1024  # 3 MB per file
+ALLOWED_EXTENSIONS = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp',
+                      '.pdf', '.doc', '.docx')
+
 _logger = logging.getLogger(__name__)
 
 
@@ -61,7 +71,8 @@ class ClientSupport(models.TransientModel):
         string='Description',
         help='Specify your problem in detail.')
     attachment_ids = fields.Many2many('ir.attachment', string='Attachments',
-                                      help='Attach files related to your problem.')
+                                      help='Images (PNG, JPG, GIF, WEBP, BMP), PDF or Word documents, '
+                                           'up to 5 files of 3 MB each.')
     support_type = fields.Selection([
         ('functional', 'Functional Support'),
         ('technical', 'Technical Support'), ], string="Support Type",
@@ -158,11 +169,30 @@ class ClientSupport(models.TransientModel):
             return '%s://%s/track-ticket' % (parts.scheme, parts.netloc)
         return 'https://support.cybrosys.com/track-ticket'
 
+    def _check_attachments(self):
+        """Refuse attachments the support server would reject."""
+        attachments = self.attachment_ids.filtered('datas')
+        if len(attachments) > MAX_ATTACHMENTS:
+            raise ValidationError(_(
+                "You can attach at most %s files.", MAX_ATTACHMENTS))
+        for attachment in attachments:
+            name = (attachment.name or '').lower()
+            if not name.endswith(ALLOWED_EXTENSIONS):
+                raise ValidationError(_(
+                    "\"%s\" can't be sent: only images (PNG, JPG, GIF, WEBP, "
+                    "BMP), PDF and Word documents can be attached.",
+                    attachment.name))
+            if attachment.file_size > MAX_ATTACHMENT_SIZE:
+                raise ValidationError(_(
+                    "\"%s\" is larger than 3 MB. Please reduce its size.",
+                    attachment.name))
+
     def _submit_support_request(self):
         self.ensure_one()
         response = requests.post(
             self._get_support_endpoint(),
             json=self._build_payload(),
+            headers={SUPPORT_API_KEY_HEADER: SUPPORT_API_KEY},
             timeout=SUPPORT_TIMEOUT,
         )
         response.raise_for_status()
@@ -171,6 +201,7 @@ class ClientSupport(models.TransientModel):
     def confirm_button(self):
         """Submit the ticket to Cybrosys support."""
         self.ensure_one()
+        self._check_attachments()
         try:
             response_status = self._submit_support_request()
         except requests.HTTPError as error:
@@ -245,9 +276,27 @@ class ClientSupport(models.TransientModel):
                     'next': {'type': 'ir.actions.act_window_close'},
                 },
             }
-        raise ValidationError(
-            _("The ticket submission did not go through. Please try again.")
-        )
+        error_messages = {
+            'unauthorized': _(
+                "The support server rejected this request. Please update the "
+                "Cybrosys Support Assistant module to the latest version."),
+            'rate_limited': _(
+                "Too many support requests were sent recently. Please try "
+                "again later."),
+            'too_many_files': _(
+                "You can attach at most %s files.", MAX_ATTACHMENTS),
+            'file_too_large': _(
+                "One of your attachments is larger than 3 MB. Please reduce "
+                "its size."),
+            'file_type_not_allowed': _(
+                "Only images (PNG, JPG, GIF, WEBP, BMP), PDF and Word "
+                "documents can be attached."),
+            'invalid_payload': _(
+                "Please check the subject and the email address."),
+        }
+        code = response_status.get('result', {}).get('message')
+        raise ValidationError(error_messages.get(code) or _(
+            "The ticket submission did not go through. Please try again."))
 
     def whatsapp_button(self):
         """Open a WhatsApp chat with the support details."""
