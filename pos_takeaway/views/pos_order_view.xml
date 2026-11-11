@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherits pos order search view to add Dine-In and Take Away filters -->
+    <record id="view_pos_order_filter" model="ir.ui.view">
+        <field name="name">pos.order.view.search.inherit.pos.takeaway</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_order_filter"/>
+        <field name="arch" type="xml">
+            <search position="inside">
+                <filter string="Dine-In" name="dine_in"
+                        domain="[('is_takeaway', '=', False)]"/>
+                <filter string="Take Away" name="take_away"
+                        domain="[('is_takeaway', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+    <!-- Table and guests are only meaningful for Dine-In orders -->
+    <record id="view_pos_pos_form_inherit" model="ir.ui.view">
+        <field name="name">pos.order.form.view.inherit.pos.takeaway</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="pos_restaurant.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <field name="table_id" position="attributes">
+                <attribute name="invisible">is_takeaway</attribute>
+            </field>
+            <field name="customer_count" position="attributes">
+                <attribute name="invisible">is_takeaway</attribute>
+            </field>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Extends the Receipt Header to add the Dine-In or Take Away label on it.
+     If it is a Take Away order and a token was generated, the token is added
+     to the receipt. -->
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_takeaway.ReceiptHeader" t-inherit="point_of_sale.ReceiptHeader"
+       t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('pos-receipt-contact')]" position="inside">
+            <div class="pos_takeaway_order_type fw-bold mt-1">
+                <t t-if="props.order.is_takeaway">Take Away</t>
+                <t t-else="">Dine-In</t>
+            </div>
+            <div t-if="props.order.is_takeaway and props.order.takeaway_token"
+                 class="pos_takeaway_token fw-bold">
+                Token Number: <t t-out="props.order.takeaway_token"/>
+            </div>
+        </xpath>
+    </t>
+</templates>
