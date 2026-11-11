@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+################################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+from odoo import fields, models
+
+
+class IrCron(models.Model):
+    """If we enable this boolean, That records only shows in that systray"""
+    _inherit = 'ir.cron'
+
+    run_through_systray = fields.Boolean(help="Enable this and scheduled "
+                                              "action shows on systray")
+
+    def run_scheduled_actions(self):
+        """Run the scheduled action immediately from the systray.
+
+        :return: True when the job ran successfully, otherwise the
+            ``display_exception`` client action describing the error.
+        """
+        return self.method_direct_trigger()

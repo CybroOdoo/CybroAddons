@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="dodger_blue.AppIcon">
+        <img t-if="app.webIconData" t-att-src="app.webIconData" class="cybro-menuicon" alt=""/>
+        <i t-elif="app.webIcon" class="oi cybro-menuicon"
+           t-att-data-icon="app.webIcon.split(',')[0]"
+           t-att-style="'color:' + app.webIcon.split(',')[1]"/>
+        <img t-else="" src="/web/static/img/default_icon_app.png" class="cybro-menuicon" alt=""/>
+    </t>
+
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension">
+        <xpath expr="//Dropdown" position="replace">
+            <Dropdown menuClass="'cybro-main-menu'">
+                <button type="button" class="cybro-sidebar-toggle" data-hotkey="h"
+                        title="Toggle sidebar menu" aria-label="Toggle sidebar menu" data-available-offline="">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round"
+                         aria-hidden="true" focusable="false">
+                        <path d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <t t-set-slot="content">
+                    <div class="sidebar-user">
+                        <img t-att-src="'/web/image/res.users/' + this.dodgerUser.userId + '/image_128'" alt="User avatar"/>
+                        <div><span t-out="this.dodgerUser.name"/></div>
+                    </div>
+                    <div class="search-container p-3">
+                      <div class="input-group">
+                        <input type="search" class="form-control" placeholder="Search menus..."
+                               aria-label="Search menus" autocomplete="off"
+                               t-att-value="this.dodgerSearch.query" t-on-input="this.onDodgerSearchInput"/>
+                        <button type="button" class="btn btn-primary cybro-menu-search-button"
+                                aria-label="Search menus"
+                                t-on-click="(ev) => ev.currentTarget.previousElementSibling.focus()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="3" stroke-linecap="round"
+                                 aria-hidden="true" focusable="false">
+                                <circle cx="10.5" cy="10.5" r="6.5"/>
+                                <path d="m16 16 5 5"/>
+                            </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <t t-if="this.dodgerSearch.query.trim()">
+                        <DropdownItem t-foreach="this.dodgerSearchResults" t-as="result" t-key="result.id"
+                                      onSelected="() => this.selectDodgerSearchResult(result)"
+                                      attrs="{href: result.href}">
+                            <t t-out="result.parents ? result.parents + ' / ' + result.label : result.label"/>
+                        </DropdownItem>
+                        <div t-if="!this.dodgerSearchResults.length" class="px-3 pb-3 text-muted">No menus found</div>
+                    </t>
+                    <t t-else="">
+                        <DropdownItem t-foreach="apps" t-as="app" t-key="app.id"
+                                      class="{'o_app': true, 'o_disabled_offline': !this._isAvailable(app)}"
+                                      onSelected="() => this.onNavBarDropdownItemSelection(app)"
+                                      attrs="{href: this.getMenuItemHref(app), 'data-menu-xmlid': app.xmlid, 'data-section': app.id}">
+                            <t t-call="dodger_blue.AppIcon" app="app"/>
+                            <span t-out="app.name"/>
+                        </DropdownItem>
+                    </t>
+                </t>
+            </Dropdown>
+        </xpath>
+    </t>
+
+    <t t-inherit="web.NavBar" t-inherit-mode="extension">
+        <xpath expr="//nav[hasclass('o_main_navbar')]" position="after">
+            <aside t-if="!this.ui.isSmall and !this.isScopedApp" class="cybro-sidebar-qweb d-print-none" aria-label="Applications">
+                <ul class="sidebar-menus">
+                    <li t-foreach="this.menuService.getApps()" t-as="app" t-key="app.id">
+                        <a class="dropdown-item o_app" t-att-href="this.getMenuItemHref(app)"
+                           t-att-title="app.name" t-att-aria-label="app.name"
+                           t-att-data-menu-xmlid="app.xmlid" t-att-data-section="app.id"
+                           t-att-class="{'o_disabled_offline': !this._isAvailable(app)}"
+                           t-on-click.prevent="() => this.onNavBarDropdownItemSelection(app)">
+                            <t t-call="dodger_blue.AppIcon" app="app"/>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+        </xpath>
+    </t>
+    <t t-inherit="web.UserMenu" t-inherit-mode="extension">
+        <xpath expr="//Dropdown" position="attributes">
+            <attribute name="menuClass">'dodger-user-menu'</attribute>
+        </xpath>
+    </t>
+</templates>

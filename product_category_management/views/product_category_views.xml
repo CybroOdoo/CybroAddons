@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Extend the Product Category Form View -->
+    <record id="product_category_form_view" model="ir.ui.view">
+        <field name="name">product.category.form.view.inherit.product.category.management</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="after">
+                <field name="active" invisible="1"/>
+                <widget
+                        name="web_ribbon"
+                        text="Archived"
+                        bg_color="bg-danger"
+                        invisible="active"
+                />
+                <field name="image" widget="image" class="oe_avatar ml-3 mr-3"/>
+            </div>
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+
+                    <page string="Hierarchy View">
+                        <field name="category_hierarchy_html" readonly="1"/>
+                    </page>
+                </notebook>
+            </xpath>
+
+            <field name="parent_id" position="after">
+                <field name="description"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Extend the Product Category Tree View -->
+    <record id="product_category_list_view" model="ir.ui.view">
+        <field name="name">product.category.list.view.inherit.product.category.management</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_list_view"/>
+        <field name="arch" type="xml">
+            <field name="display_name" position="after">
+                <field name="product_count"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Extend the Product Category Search View -->
+    <record id="product_category_search_inherit" model="ir.ui.view">
+        <field name="name">product.category.search.inherit</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_search_view"/>
+        <field name="arch" type="xml">
+            <!-- Add Archived filter after the name field -->
+            <field name="name" position="after">
+                <filter string="Archived" name="archived" domain="[('active','=',False)]"/>
+            </field>
+        </field>
+    </record>
+</odoo>

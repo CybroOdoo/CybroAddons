@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        Extends mail.AttachmentList to inject:
+          1. A persistent bottom action bar with Download, Delete and ⋮ Options
+          2. The TUI Image Editor is built dynamically on <body> by JS (not in the card)
+             so it always has valid viewport dimensions when TUI initialises.
+        The native Odoo hover-overlay buttons (top-right) are hidden via CSS so
+        they do not overlap the thumbnail.
+    -->
+    <t name="AttachmentImageTools"
+       t-inherit="mail.AttachmentList"
+       t-inherit-mode="extension"
+       owl="1">
+
+        <!-- Remove native top download & delete buttons completely -->
+        <xpath expr="//div[hasclass('o-mail-AttachmentButtons')]" position="replace"/>
+
+        <xpath expr="//div[hasclass('o-mail-AttachmentContainer')]" position="inside">
+
+            <!-- Hidden data store — cloned by JS into the floating portal menu -->
+            <div class="am-ctx-menu--hidden" t-att-data-attachment-id="attachment.id" style="display:none;">
+                <div class="am-ctx-item am-ctx-item--edit">Edit Record</div>
+                <div class="am-ctx-item am-ctx-item--editor">Image Editor</div>
+                <div class="am-ctx-item am-ctx-item--delete">Delete</div>
+            </div>
+
+            <!--
+                ── Persistent bottom action bar ──────────────────────────────
+                Always visible at the bottom of every card (not hover-only).
+                Contains: Download  |  Delete
+            -->
+            <div t-if="!this.props.isSelecting" class="am-card-actions">
+                <!-- Download button -->
+                <button t-if="this.canDownload(attachment)"
+                        class="am-card-btn am-card-btn--download"
+                        t-on-click.stop="() => this.onClickDownload(attachment)"
+                        title="Download">
+                    <i class="oi" data-icon="download" role="img" aria-label="Download"/>
+                </button>
+
+                <!-- Delete button -->
+                <button t-if="this.showDelete(attachment)"
+                        class="am-card-btn am-card-btn--delete"
+                        t-on-click.stop="() => this.onClickUnlink(attachment, group.duplicates)"
+                        title="Delete">
+                    <i class="oi oi-filled" data-icon="delete" role="img" aria-label="Delete"/>
+                </button>
+            </div>
+
+            <!-- ⋮ More options — top-right corner of the card -->
+            <div t-if="!this.props.isSelecting" class="am-cog-btn" title="More options"
+                 t-on-click.stop="(ev) => this.onClickCogBtn(ev, attachment)">
+                <span class="am-cog-icon">⋮</span>
+            </div>
+        </xpath>
+    </t>
+</templates>

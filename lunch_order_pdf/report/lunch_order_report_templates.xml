@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--  Report template  -->
+    <template id="report_lunch_order">
+        <t t-call="web.basic_layout">
+            <t t-foreach="docs" t-as="o">
+                <div class="page">
+                    <div style="padding-bottom:20px !important;"
+                         class="oe_structure"/>
+                    <h1 class="text-center">Lunch Report</h1>
+                    <br/>
+                    <p t-if="period" class="text-center">
+                        <strong>Period:</strong>
+                        <span>
+                            <span t-out="period"/>
+                        </span>
+                    </p>
+                    <t t-if="grouped_orders">
+                        <table name="orders" class="table table-sm table-bordered" style="width: 100%; border-collapse: collapse; border: 1px solid #ddd; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                            <thead>
+                                <tr style="background-color: #875a7b; color: #ffffff; font-weight: bold; text-align: left;">
+                                    <th style="background-color: #875a7b; color: #ffffff;">Order Date</th>
+                                    <th t-if="not group_order or group_order != 'supplier_id'" style="background-color: #875a7b; color: #ffffff;">
+                                        Vendor
+                                    </th>
+                                    <th t-if="not group_order or group_order != 'product_id'" style="background-color: #875a7b; color: #ffffff;">
+                                        Product
+                                    </th>
+                                    <th style="background-color: #875a7b; color: #ffffff;">Extras</th>
+                                    <th t-if="not group_order or group_order != 'user_id'" style="background-color: #875a7b; color: #ffffff;">
+                                        User
+                                    </th>
+                                    <th style="background-color: #875a7b; color: #ffffff;">Lunch Location</th>
+                                    <th t-if="not group_order or group_order != 'company_id'" style="background-color: #875a7b; color: #ffffff;">
+                                        Company
+                                    </th>
+                                    <th style="background-color: #875a7b; color: #ffffff;">Price</th>
+                                    <th t-if="not group_order or group_order != 'state'" style="background-color: #875a7b; color: #ffffff;">
+                                        Status
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="grouped_orders"
+                                   t-as="order_list">
+                                    <t t-if="group_order">
+                                        <tr style="background-color: #f0f0f0; font-weight: bold;">
+                                            <td colspan="99">
+                                                <t t-if="group_order == 'state'">
+                                                    <span t-out="dict(order_list[1][0].fields_get(allfields=['state'])['state']['selection']).get(order_list[0], order_list[0])"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <span t-out="order_list[0]"/>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <tr t-foreach="order_list[1]"
+                                        t-as="order">
+                                        <td>
+                                            <span t-field="order.date"/>
+                                        </td>
+                                        <td t-if="not group_order or group_order != 'supplier_id'">
+                                            <span t-field="order.supplier_id.name"/>
+                                        </td>
+                                        <td t-if="not group_order or group_order != 'product_id'">
+                                            <span t-field="order.product_id.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="order.display_toppings"/>
+                                        </td>
+                                        <td t-if="not group_order or group_order != 'user_id'">
+                                            <span t-field="order.user_id.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="order.lunch_location_id.name"/>
+                                        </td>
+                                        <td t-if="not group_order or group_order != 'company_id'">
+                                            <span t-field="order.company_id.name"/>
+                                        </td>
+                                        <td>
+                                            <span t-field="order.price"/>
+                                        </td>
+                                        <td t-if="not group_order or group_order != 'state'">
+                                            <span t-field="order.state"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

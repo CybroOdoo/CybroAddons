@@ -1,0 +1,45 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#############################################################################
+{
+    'name': 'Inventory Move Mini Dashboard',
+    'version': '20.0.1.0.0',
+    'category': 'Extra Tools',
+    'summary': 'Mini Dashboard View for Stock Moves and Transfers',
+    'description': 'Module offers a user-friendly mini dashboard for '
+                   'stock moves and transfers, providing real-time data '
+                   'visualization to efficiently track inventory movement.',
+    'author': 'Cybrosys Techno Solutions',
+    'company': 'Cybrosys Techno Solutions',
+    'maintainer': 'Cybrosys Techno Solutions',
+    'website': 'https://www.cybrosys.com',
+    'depends': ['base', 'stock'],
+    'data': [
+        'views/stock_move_views.xml',
+        'views/stock_picking_views.xml'
+    ],
+    'assets': {
+        'web.assets_backend': [
+            'inventory_move_mini_dashboard/static/src/views/*.js',
+            'inventory_move_mini_dashboard/static/src/**/*.xml',
+        ]},
+    'images': ['static/description/banner.jpg'],
+    'license': 'LGPL-3',
+    'installable': True,
+    'auto_install': False,
+    'application': False,
+}

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="scheduled_action_shortcut.ScheduledActionSystray">
+        <Dropdown position="'bottom-end'" state="this.dropdown" beforeOpen.bind="this.onBeforeOpen" bottomSheet="false" menuClass="'o_scheduled_actions_dropdown shadow'">
+            <button class="o_nav_entry" title="Scheduled Actions" aria-label="Scheduled Actions">
+                <i class="oi" data-icon="calendar_today" role="img" aria-label="Scheduled Actions"/>
+            </button>
+            <t t-set-slot="content">
+                <div class="o_scheduled_actions_menu p-2" style="min-width: 320px; max-width: 420px; max-height: 400px; overflow-y: auto;">
+                    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2 px-1">
+                        <span class="fw-bold">Scheduled Actions</span>
+                        <button class="btn btn-sm btn-link p-0 text-muted" title="Refresh" t-on-click="this.onBeforeOpen">
+                            <i class="oi" data-icon="refresh"/>
+                        </button>
+                    </div>
+
+                    <div t-if="this.state.loading" class="text-center py-3 text-muted">
+                        <i class="oi oi-fw fa-spin me-1" data-icon="refresh"/> Loading...
+                    </div>
+                    <div t-elif="!this.state.actions.length" class="text-center py-3 text-muted small">
+                        No scheduled actions enabled for systray. Enable "Run Through Systray" in Scheduled Actions.
+                    </div>
+                    <div t-else="" class="list-group list-group-flush">
+                        <div t-foreach="this.state.actions" t-as="action" t-key="action.id"
+                             class="list-group-item d-flex justify-content-between align-items-center px-1 py-2 border-bottom">
+                            <div class="me-2 overflow-hidden text-start">
+                                <div class="fw-semibold text-truncate small" t-out="action.cron_name || 'Scheduled Action'"/>
+                                <small class="text-muted d-block" t-if="action.nextcall" style="font-size: 11px;">
+                                    Next: <t t-out="action.nextcall"/>
+                                </small>
+                            </div>
+                            <button class="btn btn-sm btn-primary py-0 px-2 flex-shrink-0"
+                                    t-on-click="() => this.runScheduledAction(action.id, action.cron_name)">
+                                Run
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </Dropdown>
+    </t>
+
+</templates>

@@ -1,0 +1,64 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#############################################################################
+from ast import literal_eval
+from odoo import api, fields, models
+
+
+class ResConfigSettings(models.TransientModel):
+    """Inheriting ResConfigSettings Model"""
+    _inherit = 'res.config.settings'
+
+    is_hide_filters_groupby_enabled = fields.Boolean(
+        string='Hide Filters and Group By Enabled',
+        config_parameter='hide_filters_groupby.is_hide_filters_groupby_enabled',
+        help='If set to True, it enables hiding filters and group by globally.')
+    hide_filters_groupby = fields.Selection(selection=[
+        ('global', 'Globally'), ('custom', 'Custom'), ],
+        string='Hide Filters and Group By', default='global',
+        config_parameter='hide_filters_groupby.hide_filters_groupby',
+        help='Choose the option to hide filters and group by globally or'
+             ' use custom settings.')
+    ir_model_ids = fields.Many2many(
+        'ir.model',
+        'res_config_ir_model_rel',
+        'res_config', 'model',
+        string='Models',
+        readonly=False,
+        help='Models that are affected by the '
+             'hide filters and group by settings.')
+
+    def set_values(self):
+        """this function helps to save values in the settings
+         inherited choose_product_ids field"""
+        res = super().set_values()
+        self.env['ir.config_parameter'].sudo().set_str(
+            'hide_filters_groupby.ir_model_ids',
+            str(self.ir_model_ids.ids))
+        return res
+
+    @api.model
+    def get_values(self):
+        """this function retrieve the values from the ir_config_parameters"""
+        res = super().get_values()
+        model_ids = self.env['ir.config_parameter'].sudo().get_str(
+            'hide_filters_groupby.ir_model_ids', default='')
+        res.update(
+            ir_model_ids=[
+                fields.Command.set(literal_eval(model_ids))
+            ] if model_ids else False)
+        return res
