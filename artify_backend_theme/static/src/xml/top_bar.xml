@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Cybrosys Technologies Pvt. Ltd.
+
+    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+
+    You can modify it under the terms of the GNU LESSER
+    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+-->
+<templates xml:space="preserve">
+    <!-- Loaded right after web's navbar.xml so that web_enterprise's
+         EnterpriseNavBar (a primary copy of web.NavBar) inherits it too. -->
+    <t t-inherit="web.NavBar" t-inherit-mode="extension">
+        <xpath expr="//t[@t-call='web.NavBar.AppsMenu']" position="before">
+            <button t-if="!this.ui.isSmall" type="button" class="o_artify_sidebar_toggle"
+                    t-att-title="this.sidebar.isOpen ? 'Close menu' : 'Open menu'"
+                    t-att-aria-expanded="this.sidebar.isOpen"
+                    t-on-click="this.toggleSidebar">
+                <i class="oi oi-lg" t-att-data-icon="this.sidebar.isOpen ? 'close' : 'menu'"/>
+            </button>
+        </xpath>
+        <xpath expr="//header/nav[hasclass('o_main_navbar')]" position="after">
+            <aside t-if="!this.ui.isSmall" class="o_artify_sidebar">
+                <img src="/web/binary/company_logo" class="o_artify_sidebar_logo" alt="Company Logo"/>
+                <h6 class="o_artify_sidebar_head">MENU</h6>
+                <nav>
+                    <a t-foreach="this.menuService.getApps()" t-as="app" t-key="app.id"
+                       role="menuitem" class="o_artify_sidebar_item"
+                       t-att-class="{ active: this.menuService.getCurrentApp()?.id === app.id }"
+                       t-att-href="this.getMenuItemHref(app)"
+                       t-att-data-menu-xmlid="app.xmlid"
+                       t-on-click.prevent="() => this.onClickSidebarItem(app)">
+                        <img t-if="app.webIconData" class="o_app_icon" t-att-src="app.webIconData" alt=""/>
+                        <span t-out="app.name"/>
+                    </a>
+                </nav>
+            </aside>
+        </xpath>
+    </t>
+
+    <!-- Community: the sidebar replaces the apps dropdown -->
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension">
+        <xpath expr="//Dropdown" position="replace"/>
+    </t>
+</templates>

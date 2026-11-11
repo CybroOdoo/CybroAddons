@@ -1,0 +1,83 @@
+///
+/// Apps sidebar
+///
+/// Hidden by default; `NavBarArtify.js` toggles `o_artify_sidebar_open` on
+/// <body> to show it. The sidebar spans the full viewport height, so the
+/// navbar (and on large screens the action manager) shifts to its right.
+///
+
+.o_artify_sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: $zindex-dropdown;
+    visibility: hidden;
+    transform: translateX(-100%);
+    // `visibility` flips at the end when closing, so the slide-out stays visible
+    transition: transform var(--artify-transition), visibility var(--artify-transition);
+    width: var(--artify-sidebar-width);
+    overflow-y: auto;
+    scrollbar-width: none;
+    border-right: 1px solid var(--artify-sidebar-border);
+    background: var(--artify-sidebar-bg);
+    color: var(--artify-sidebar-text);
+
+    .o_artify_sidebar_logo {
+        max-width: 150px;
+        max-height: 60px;
+        margin: 1.25rem 1.5rem 0;
+    }
+
+    .o_artify_sidebar_head {
+        margin: 1.5rem 1.5rem .75rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .o_artify_sidebar_item {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--artify-border);
+        color: inherit;
+        font-weight: 600;
+        transition: background-color var(--artify-transition), color var(--artify-transition);
+
+        &:hover,
+        &.active {
+            background: var(--artify-sidebar-bg-hover);
+            color: var(--artify-sidebar-text-hover);
+        }
+
+        .o_app_icon {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+    }
+}
+
+// Slide the navbar and content along with the sidebar
+.o_web_client .o_main_navbar,
+.o_web_client .o_action_manager {
+    transition: margin-left var(--artify-transition);
+}
+
+body.o_artify_sidebar_open {
+    .o_artify_sidebar {
+        visibility: visible;
+        transform: none;
+    }
+
+    // Keeps the toggle and systray visible beside the sidebar
+    .o_main_navbar {
+        margin-left: var(--artify-sidebar-width);
+    }
+
+    @include media-breakpoint-up(lg) {
+        .o_action_manager {
+            margin-left: var(--artify-sidebar-width);
+        }
+    }
+}
