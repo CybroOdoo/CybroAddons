@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_discuss_meeting_summary_tree" model="ir.ui.view">
+        <field name="name">discuss.meeting.summary.list</field>
+        <field name="model">discuss.meeting.summary</field>
+        <field name="arch" type="xml">
+            <list string="Meeting Summaries" decoration-muted="state in ('live', 'processing')" decoration-danger="state == 'failed'" decoration-info="state == 'draft'" decoration-success="state in ('summarized', 'posted')">
+                <field name="date"/>
+                <field name="name"/>
+                <field name="channel_id"/>
+                <field name="duration_minutes"/>
+                <field name="attendee_ids" widget="many2many_tags"/>
+                <field name="ai_provider"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('draft', 'processing')"
+                       decoration-danger="state == 'failed'"
+                       decoration-warning="state == 'summarized'"
+                       decoration-success="state == 'posted'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_discuss_meeting_summary_form" model="ir.ui.view">
+        <field name="name">discuss.meeting.summary.form</field>
+        <field name="model">discuss.meeting.summary</field>
+        <field name="arch" type="xml">
+            <form string="Meeting Summary">
+                <header>
+                    <button name="action_transcribe_and_summarize" string="Transcribe &amp; Summarize Recording" type="object" class="btn-primary" icon="fa-video-camera" invisible="not recording_file or state == 'processing'"/>
+                    <button name="action_generate_summary" string="Generate / Refresh AI Summary" type="object" class="btn-primary" icon="fa-magic" invisible="not raw_transcript"/>
+                    <button name="action_post_to_channel" string="Post Summary to Channel Chatter" type="object" class="btn-secondary" icon="fa-send" invisible="state in ('draft', 'posted', 'processing', 'failed')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="live,draft,summarized,posted"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-info" role="status" invisible="state != 'processing'">
+                        <i class="fa fa-spinner fa-spin me-1"/>
+                        The recording is being transcribed in the background. This can take a while for long
+                        recordings; reload the page to see the result.
+                    </div>
+                    <div class="alert alert-danger" role="alert" invisible="state != 'failed'">
+                        <strong>Transcription failed: </strong><field name="processing_error" class="d-inline"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Weekly Standup - Sprint 32"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="channel_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="duration_minutes"/>
+                            <field name="ai_provider"/>
+                        </group>
+                    </group>
+                    <group string="Meeting Recording (Upload Video or Audio)">
+                        <field name="recording_file" filename="recording_filename" widget="binary"/>
+                        <field name="recording_filename" invisible="1"/>
+                    </group>
+                    <group>
+                        <field name="attendee_ids" widget="many2many_tags" placeholder="Participants in this meeting..."/>
+                    </group>
+
+                    <notebook>
+                        <page string="Executive Summary" name="summary">
+                            <field name="executive_summary" widget="html" placeholder="AI-generated executive summary will appear here..."/>
+                            <group string="Key Points &amp; Decisions">
+                                <field name="key_discussion_points" placeholder="Bullet points of what was discussed..."/>
+                                <field name="decisions" placeholder="Decisions agreed upon during the call..."/>
+                            </group>
+                            <group string="Action Items &amp; Next Steps">
+                                <field name="action_items" placeholder="Assigned tasks and action items..."/>
+                            </group>
+                        </page>
+                        <page string="Raw Meeting Transcript" name="transcript">
+                            <field name="raw_transcript" widget="text" placeholder="Live transcript logged from speech recognition..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_discuss_meeting_summary_search" model="ir.ui.view">
+        <field name="name">discuss.meeting.summary.search</field>
+        <field name="model">discuss.meeting.summary</field>
+        <field name="arch" type="xml">
+            <search string="Search Meeting Summaries">
+                <field name="name"/>
+                <field name="channel_id"/>
+                <field name="attendee_ids"/>
+                <separator/>
+                <filter name="summarized" string="Summarized" domain="[('state', '=', 'summarized')]"/>
+                <filter name="posted" string="Posted" domain="[('state', '=', 'posted')]"/>
+                <separator/>
+                <filter name="group_channel" string="Channel" context="{'group_by': 'channel_id'}"/>
+                <filter name="group_date" string="Date" context="{'group_by': 'date:day'}"/>
+                <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_discuss_meeting_summary" model="ir.actions.act_window">
+        <field name="name">Meeting Summaries</field>
+        <field name="res_model">discuss.meeting.summary</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_discuss_meeting_summary_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No meeting summaries yet!
+            </p>
+            <p>
+                Meeting summaries are automatically generated during or after calls in Discuss channels.
+            </p>
+        </field>
+    </record>
+</odoo>

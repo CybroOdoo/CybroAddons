@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="meeting_transcription_summary.UploadRecordingDialog">
+        <Dialog title="dialogTitle" size="'md'">
+            <div class="p-3">
+                <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                    <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2 rounded-pill">
+                        <i class="fa fa-video-camera me-1"/>
+                        <t t-esc="props.thread.displayName || props.thread.name"/>
+                    </span>
+                    <span class="text-muted small">
+                        Upload past audio/video recordings to transcribe &amp; generate meeting summaries
+                    </span>
+                </div>
+
+                <!-- Uploading & Processing Progress Spinner -->
+                <div t-if="state.isUploading" class="text-center py-4 my-2 bg-light rounded border">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Transcribing...</span>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-1">Uploading Recording...</h6>
+                    <p class="text-muted small px-4 mb-0">
+                        Once uploaded, the recording is transcribed and summarized in the background: you can close this dialog and keep working.
+                    </p>
+                </div>
+
+                <!-- Form Fields (hidden during uploading) -->
+                <div t-if="!state.isUploading">
+                    <!-- Error Alert -->
+                    <div t-if="state.errorMessage" class="alert alert-danger d-flex align-items-start gap-2 mb-3" role="alert">
+                        <i class="fa fa-exclamation-triangle mt-1 flex-shrink-0"/>
+                        <div>
+                            <strong>Error: </strong><t t-esc="state.errorMessage"/>
+                        </div>
+                    </div>
+
+                    <!-- Success Alert -->
+                    <div t-if="state.success" class="alert alert-success d-flex align-items-center gap-2 mb-3" role="alert">
+                        <i class="fa fa-check-circle fs-5 flex-shrink-0"/>
+                        <div>
+                            <strong>Done! </strong><t t-esc="state.successMessage"/>
+                        </div>
+                    </div>
+
+                    <div t-if="!state.success">
+                        <!-- File Upload Input -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-secondary mb-1">
+                                Meeting Recording File <span class="text-danger">*</span>
+                            </label>
+                            <input
+                                type="file"
+                                class="form-control"
+                                accept="audio/*,video/*,.mp4,.webm,.mkv,.mov,.mp3,.wav,.m4a,.ogg"
+                                t-on-change="onFileChange"
+                            />
+                            <div class="form-text small">
+                                Supported formats: MP4, WebM, MKV, MOV, MP3, WAV, M4A. Max recommended size: 25MB.
+                            </div>
+                        </div>
+
+                        <!-- Meeting Title Input -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-secondary mb-1">
+                                Meeting Title
+                            </label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                placeholder="e.g. Sprint 24 Planning &amp; Review"
+                                t-model="state.title"
+                            />
+                        </div>
+
+                        <!-- Duration Input -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-secondary mb-1">
+                                Meeting Duration (Minutes)
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                class="form-control"
+                                style="max-width: 150px;"
+                                t-model="state.durationMinutes"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <t t-set-slot="footer">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <button t-if="state.summaryId" class="btn btn-outline-primary btn-sm" t-on-click="openSummaryRecord">
+                            <i class="fa fa-external-link me-1"/> View Summary Record
+                        </button>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-secondary" t-on-click="props.close" t-att-disabled="state.isUploading">
+                            <t t-if="state.success">Done</t>
+                            <t t-else="">Cancel</t>
+                        </button>
+                        <button
+                            t-if="!state.success"
+                            class="btn btn-primary"
+                            t-on-click="submitUpload"
+                            t-att-disabled="!state.file || state.isUploading"
+                        >
+                            <i class="fa fa-magic me-1"/> Transcribe &amp; Post Summary
+                        </button>
+                    </div>
+                </div>
+            </t>
+        </Dialog>
+    </t>
+</templates>

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="meeting_transcription_summary.MeetingSummaryDialog">
+        <Dialog title="'🎙️ AI Meeting Assistant: Notes &amp; Summary'" size="'lg'">
+            <div class="o-meeting-summary-modal p-2">
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-pills mb-3 border-bottom pb-2">
+                    <li class="nav-item">
+                        <button class="nav-link py-1 px-3" t-att-class="{'active fw-bold': state.activeTab === 'summary'}"
+                                t-on-click="() => this.state.activeTab = 'summary'">
+                            <i class="fa fa-magic me-1"/> AI Summary
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-1 px-3" t-att-class="{'active fw-bold': state.activeTab === 'transcript'}"
+                                t-on-click="() => this.state.activeTab = 'transcript'">
+                            <i class="fa fa-list-alt me-1"/> Meeting Transcript
+                            <span t-if="state.transcriptLines.length > 0" class="badge rounded-pill bg-secondary ms-1">
+                                <t t-esc="state.transcriptLines.length"/>
+                            </span>
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Loading State -->
+                <div t-if="state.isLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Generating Summary...</span>
+                    </div>
+                    <h5 class="fw-bold text-dark">Analyzing Meeting Transcript...</h5>
+                    <p class="text-muted small">Extracting discussion highlights, key decisions, and action items.</p>
+                </div>
+
+                <!-- Tab 1: AI Summary Content -->
+                <div t-elif="state.activeTab === 'summary'">
+                    <div t-if="!state.summaryData and !state.generatedSummaryId" class="text-center py-4 bg-light rounded-3 p-4">
+                        <i class="fa fa-file-text-o fa-3x text-muted mb-3"/>
+                        <h5 class="fw-semibold">No Summary Generated Yet</h5>
+                        <p class="text-muted small mb-3">
+                            Click <strong>"Generate AI Summary"</strong> below to analyze the spoken conversation and extract key points and action items.
+                        </p>
+                        <button class="btn btn-primary" t-on-click="generateSummary">
+                            <i class="fa fa-magic me-1"/> Generate AI Summary Now
+                        </button>
+                    </div>
+
+                    <div t-else="" class="o-summary-result p-2">
+                        <!-- Executive Summary -->
+                        <div class="card mb-3 border-0 bg-light shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title fw-bold text-primary mb-2">
+                                    <i class="fa fa-file-text me-1"/> Executive Summary
+                                </h6>
+                                <div class="text-dark" t-out="state.summaryData.executive_summary"/>
+                            </div>
+                        </div>
+
+                        <!-- Key Points & Decisions Row -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6" t-if="state.summaryData.key_discussion_points">
+                                <div class="card h-100 border-0 bg-light shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="card-title fw-bold text-dark mb-2">
+                                            <i class="fa fa-lightbulb-o text-warning me-1"/> Key Discussion Points
+                                        </h6>
+                                        <p class="card-text small text-muted white-space-pre-line" t-esc="state.summaryData.key_discussion_points"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6" t-if="state.summaryData.decisions">
+                                <div class="card h-100 border-0 bg-light shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="card-title fw-bold text-success mb-2">
+                                            <i class="fa fa-check-circle me-1"/> Decisions Made
+                                        </h6>
+                                        <p class="card-text small text-muted white-space-pre-line" t-esc="state.summaryData.decisions"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Items -->
+                        <div class="card border-0 bg-light shadow-sm mb-2" t-if="state.summaryData.action_items">
+                            <div class="card-body">
+                                <h6 class="card-title fw-bold text-danger mb-2">
+                                    <i class="fa fa-tasks me-1"/> Action Items &amp; Next Steps
+                                </h6>
+                                <p class="card-text small text-dark white-space-pre-line fw-medium" t-esc="state.summaryData.action_items"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Transcript Content -->
+                <div t-elif="state.activeTab === 'transcript'">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small">
+                            <i class="fa fa-clock-o me-1"/> Duration: <t t-esc="speechService.getDurationMinutes()"/> mins
+                        </span>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="copyTranscript">
+                            <i class="fa fa-copy me-1"/> Copy Full Transcript
+                        </button>
+                    </div>
+
+                    <div t-if="state.transcriptLines.length === 0" class="text-center py-4 text-muted bg-light rounded-2">
+                        <p t-if="state.isTranscribing" class="mb-0">Transcribing: nothing has been said yet.</p>
+                        <p t-else="" class="mb-0">Nothing recorded yet. Turn on <strong>Transcribe</strong> in the call to record the conversation for the summary.</p>
+                    </div>
+                    <div t-else="" class="p-3 bg-light rounded-2 overflow-auto" style="max-height: 380px;">
+                        <t t-foreach="state.transcriptLines" t-as="item" t-key="item.id">
+                            <div class="mb-2 pb-1 border-bottom border-light">
+                                <span class="badge bg-secondary me-1 text-white" style="font-size: 11px;">
+                                    <t t-esc="item.time"/>
+                                </span>
+                                <strong class="text-primary me-2"><t t-esc="item.speaker"/>:</strong>
+                                <span class="text-dark"><t t-esc="item.text"/></span>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <t t-set-slot="footer">
+                <button class="btn btn-outline-primary" t-on-click="generateSummary" t-att-disabled="state.isLoading">
+                    <i class="fa fa-magic me-1"/> <t t-if="state.summaryData">Refresh Summary</t><t t-else="">Generate Summary</t>
+                </button>
+                <button t-if="state.summaryData" class="btn btn-success" t-on-click="postToChannel" t-att-disabled="state.isPosted">
+                    <i class="fa fa-send me-1"/> <t t-if="state.isPosted">Posted to Chat &amp;check;</t><t t-else="">Post to Channel Chatter</t>
+                </button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">
+                    Close
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

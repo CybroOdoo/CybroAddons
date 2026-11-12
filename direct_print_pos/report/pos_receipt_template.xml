@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="pos_receipt_template" name="Direct Print POS Receipt">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+
+                <style>
+                    .receipt {
+                    width: 280px;
+                    margin: auto;
+                    font-size: 12px;
+                    font-family: monospace;
+                    }
+                    .center { text-align: center; }
+                    .row { display: flex; justify-content: space-between; }
+                    .mt { margin-top: 8px; }
+                    .mb { margin-bottom: 8px; }
+                    .line { border-top: 1px dashed #000; margin: 8px 0; }
+                    img.logo { max-height: 70px; }
+                </style>
+
+                <div class="page receipt">
+
+                    <!-- LOGO -->
+                    <t t-if="docs.company_id.logo">
+                        <div class="center mb">
+                            <img class="logo"
+                                 t-att-src="image_data_uri(docs.company_id.logo)"/>
+                        </div>
+                    </t>
+
+                    <!-- TICKET INFO -->
+                    <div class="center">
+                        Ticket
+                        <t t-out="docs.pos_reference"/>
+                    </div>
+                    <div class="center">
+                        <t t-out="docs.date_order"/>
+                    </div>
+                    <div class="center mb">
+                        Served by:
+                        <t t-out="docs.user_id.name"/>
+                    </div>
+
+                    <!-- ORDER LINES -->
+                    <t t-foreach="docs.lines" t-as="line">
+                        <div class="row">
+                            <div>
+                                <strong>
+                                    <t t-out="int(line.qty)"/>
+                                </strong>
+                                <t t-out="line.product_id.display_name"/>
+                                <div style="font-size:10px;">
+                                    <t t-out="line.price_unit"/>
+                                    / Units
+                                </div>
+                            </div>
+                            <div class="row">
+                                <t t-out="docs.company_id.currency_id.symbol"/>
+                                <t t-out="line.price_subtotal_incl"/>
+                            </div>
+                        </div>
+                        <div class="mt"/>
+                    </t>
+
+                    <div class="line"/>
+
+                    <!-- SUBTOTAL -->
+                    <div class="row">
+                        <div>Subtotal</div>
+                        <div>
+                            <t t-out="docs.company_id.currency_id.symbol"/>
+                            <t t-out="docs.currency_id.round(docs.amount_total - docs.amount_tax)"/>
+                        </div>
+                    </div>
+
+                    <!-- TAX -->
+                    <t t-if="docs._get_tax_details()">
+                        <t t-foreach="docs._get_tax_details()" t-as="tax">
+                            <div class="row">
+                                <div>
+                                    TAX
+                                    <t t-out="tax['name']"/>
+                                </div>
+                                <div>
+                                    <t t-out="docs.company_id.currency_id.symbol"/>
+                                    <t t-out="docs.currency_id.round(tax['amount'])"/>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                    <t t-elif="docs.amount_tax">
+                        <div class="row">
+                            <div>TAX</div>
+                            <div>
+                                <t t-out="docs.company_id.currency_id.symbol"/>
+                                <t t-out="docs.amount_tax"/>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- TOTAL -->
+                    <div class="row mt">
+                        <div class="row">
+                            <div>
+                                <strong>Total</strong>
+                            </div>
+                            <div>
+                                <strong>
+                                    <t t-out="docs.company_id.currency_id.symbol"/>
+                                    <t t-out="docs.amount_total"/>
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PAYMENTS -->
+                    <t t-foreach="docs.payment_ids" t-as="pay">
+                        <div class="row mt">
+                            <div>
+                                <t t-out="pay.payment_method_id.name"/>
+                            </div>
+                            <div>
+                                <t t-out="docs.company_id.currency_id.symbol"/>
+                                <t t-out="pay.amount"/>
+                            </div>
+                        </div>
+                    </t>
+
+                    <div class="line"/>
+
+                    <t t-if="docs.company_id.point_of_sale_ticket_portal_url_display_mode in ('url', 'qr_code_and_url') and docs.access_token">
+                        <div class="center mt" style="font-size:10px;">
+                            Need an invoice?
+                        </div>
+                        <div class="center" style="font-size:9px;">
+                            <t t-out="docs.get_base_url()"/>/pos/ticket
+                        </div>
+                        <div class="center" style="font-size:10px;">
+                            Code:
+                            <t t-out="docs.ticket_code"/>
+                        </div>
+                    </t>
+                    <!-- STORE NAME -->
+                    <div class="center mt">
+                        <t t-out="docs.company_id.name"/>
+                    </div>
+                    <!-- FOOTER -->
+                    <div class="center mt">
+                        Powered by Odoo
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

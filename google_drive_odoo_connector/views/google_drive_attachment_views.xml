@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Google Drive Attachment List View -->
+    <record id="google_drive_attachment_view_list" model="ir.ui.view">
+        <field name="name">google.drive.attachment.view.list</field>
+        <field name="model">google.drive.attachment</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false">
+                <field name="attachment_id"/>
+                <field name="google_file_url" groups="base.group_system"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Google Drive Attachment Form View -->
+    <record id="google_drive_attachment_view_form" model="ir.ui.view">
+        <field name="name">google.drive.attachment.view.form</field>
+        <field name="model">google.drive.attachment</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="attachment_id"/>
+                        <field name="google_file_id"
+                               groups="base.group_system"/>
+                        <field name="google_file_url"
+                               groups="base.group_system"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Google Drive Attachment Kanban View -->
+    <record id="google_drive_attachment_view_kanban" model="ir.ui.view">
+        <field name="name">google.drive.attachment.view.kanban</field>
+        <field name="model">google.drive.attachment</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" create="false" edit="false">
+                <field name="attachment_id"/>
+                <field name="state"/>
+                <field name="thumbnail_data"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex flex-column h-100">
+                            <div class="text-center mb-2">
+                                <img t-if="record.thumbnail_data.value"
+                                     t-attf-src="/web/image/google.drive.attachment/#{record.id}/thumbnail_data"
+                                     alt="Thumbnail"
+                                     style="width:100%;height:140px;object-fit:cover;border-radius:6px;"/>
+                                <i t-else=""
+                                   class="fa fa-file-o fa-4x text-muted"
+                                   title="File"/>
+                            </div>
+                            <strong>
+                                <field name="attachment_id"/>
+                            </strong>
+                            <div class="mt-2">
+                                <span t-attf-class="badge #{record.state.raw_value == 'synced' and 'bg-success'
+                                                           or record.state.raw_value == 'failed' and 'bg-danger'
+                                                           or 'bg-warning'}">
+                                    <field name="state"/>
+                                </span>
+                            </div>
+                            <div class="mt-auto pt-3 d-flex gap-2">
+                                <button name="action_preview"
+                                        type="object"
+                                        string="Preview"
+                                        class="btn btn-primary btn-sm"/>
+                                <button name="action_download_from_google"
+                                        type="object"
+                                        string="Download"
+                                        class="btn btn-secondary btn-sm"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Google Drive Attachment Window Action -->
+    <record id="action_google_drive_attachments" model="ir.actions.act_window">
+        <field name="name">Google Drive</field>
+        <field name="res_model">google.drive.attachment</field>
+        <field name="view_mode">kanban,form</field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_google_drive_attachments"
+              name="Attachments"
+              parent="menu_google_drive_root"
+              action="action_google_drive_attachments"
+              sequence="1"/>
+</odoo>

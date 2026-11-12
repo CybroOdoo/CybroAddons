@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_meeting_ai" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.meeting.ai</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="mail.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='discuss']" position="after">
+                <block title="Meeting Subtitles &amp; AI Summaries" id="meeting_ai_settings">
+                    <setting id="meeting_stt_engine_setting" string="Speech-to-Text Engine" help="Engine that turns speech into subtitles on the server">
+                        <field name="meeting_stt_engine" class="w-50"/>
+                        <div class="alert alert-warning mt-2 mb-0" role="alert" invisible="not meeting_stt_missing_package">
+                            <field name="meeting_stt_missing_package"/>
+                        </div>
+                        <div class="content-group mt-2" invisible="meeting_stt_engine != 'grok'">
+                            <div class="row mt8">
+                                <label for="meeting_xai_api_key" class="col-lg-3 o_light_label"/>
+                                <field name="meeting_xai_api_key" password="True" placeholder="xai-..." required="meeting_stt_engine == 'grok'"/>
+                            </div>
+                            <div class="text-muted mt8">
+                                Live captions and uploaded recordings are transcribed by xAI, in the cloud: meeting audio
+                                leaves this server. Uploaded recordings get speaker labels and timestamps.
+                            </div>
+                        </div>
+                        <div class="content-group mt-2" invisible="meeting_stt_engine != 'cloud_whisper'">
+                            <div class="row mt8">
+                                <label for="meeting_cloud_whisper_url" string="URL" class="col-lg-3 o_light_label"/>
+                                <field name="meeting_cloud_whisper_url" required="meeting_stt_engine == 'cloud_whisper'"/>
+                            </div>
+                            <div class="row">
+                                <label for="meeting_cloud_whisper_model" string="Model" class="col-lg-3 o_light_label"/>
+                                <field name="meeting_cloud_whisper_model" required="meeting_stt_engine == 'cloud_whisper'"/>
+                            </div>
+                            <div class="row">
+                                <label for="meeting_cloud_whisper_api_key" string="API Key" class="col-lg-3 o_light_label"/>
+                                <field name="meeting_cloud_whisper_api_key" password="True" placeholder="gsk_... / sk-..."/>
+                            </div>
+                            <div class="text-muted mt8">
+                                Live captions are transcribed at this address: meeting audio leaves this server.
+                                Uploaded recordings are still transcribed by the local Whisper model.
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="meeting_openai_fallback_setting" string="OpenAI Speech Fallback" help="When the speech engine fails on a live caption or an uploaded recording (error, busy, not installed), transcribe it with the OpenAI Whisper API instead. Meeting audio then leaves this server. Silence is never sent.">
+                        <field name="meeting_stt_openai_fallback"/>
+                        <div class="text-muted mt8" invisible="not meeting_stt_openai_fallback">
+                            Uses the OpenAI API Key set under AI Summarization Engine.
+                        </div>
+                    </setting>
+                    <setting id="meeting_keywords_setting" string="Subtitle Keywords" help="Names and terms the engines should recognize correctly. Participant names are added automatically.">
+                        <field name="meeting_subtitles_keywords" placeholder="Odoo, Cybrosys" class="w-75"/>
+                    </setting>
+                    <setting id="meeting_debug_audio_setting" string="Save Debug Audio" help="Keep the last 50 received utterances in the server temp folder to diagnose recognition problems. Stores meeting audio, so turn it off afterwards: that deletes the saved files.">
+                        <field name="meeting_save_debug_audio"/>
+                    </setting>
+                    <setting id="meeting_whisper_model_setting" string="Whisper Model" invisible="meeting_stt_engine == 'grok'" help="Local model used to transcribe speech. Bigger is more accurate but slower.">
+                        <field name="meeting_whisper_model" class="w-50"/>
+                    </setting>
+                    <setting id="meeting_stt_workers_setting" string="Speech Workers" invisible="meeting_stt_engine in ('grok', 'whistle', 'cloud_whisper')" help="How many captions Whisper transcribes at once, so people speaking together don't wait for each other. Raise it only on a server with CPU cores to spare: otherwise each caption takes longer.">
+                        <field name="meeting_stt_workers" class="w-25"/>
+                    </setting>
+                    <setting id="meeting_subtitles_lang_setting" string="Speech Recognition Language" help="Set the language people speak in the meeting. Choosing it explicitly is much more accurate than auto-detect.">
+                        <field name="meeting_subtitles_default_language" class="w-50"/>
+                        <div class="content-group mt-2" invisible="meeting_subtitles_default_language != 'auto'">
+                            <div class="text-muted">Main meeting language: assumed whenever auto-detection is unsure (short or accented phrases). Whisper engine only.</div>
+                            <field name="meeting_main_language" class="w-50"/>
+                        </div>
+                    </setting>
+                    <setting id="meeting_ai_provider_setting" string="AI Summarization Engine" help="Select which AI engine generates meeting summaries and action items">
+                        <field name="meeting_ai_provider" class="w-50"/>
+                        <div class="content-group mt-2" invisible="meeting_ai_provider != 'openai' and not meeting_stt_openai_fallback">
+                            <div class="row mt8">
+                                <label for="meeting_openai_api_key" class="col-lg-3 o_light_label"/>
+                                <field name="meeting_openai_api_key" password="True" placeholder="sk-..."/>
+                            </div>
+                        </div>
+                        <div class="content-group" invisible="meeting_ai_provider != 'openai'">
+                            <div class="row mt8">
+                                <label for="meeting_openai_model" class="col-lg-3 o_light_label"/>
+                                <field name="meeting_openai_model" placeholder="gpt-4o-mini"/>
+                            </div>
+                        </div>
+                        <div class="content-group mt-2" invisible="meeting_ai_provider != 'ollama'">
+                            <div class="row mt8">
+                                <label for="meeting_ollama_endpoint" class="col-lg-3 o_light_label"/>
+                                <field name="meeting_ollama_endpoint" placeholder="http://localhost:11434"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="meeting_ollama_model" class="col-lg-3 o_light_label"/>
+                                <field name="meeting_ollama_model" placeholder="llama3 or needle"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

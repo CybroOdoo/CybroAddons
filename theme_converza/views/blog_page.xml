@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="converza_blog" name="Converza blog"
+              inherit_id="website_blog.blog_post_short">
+
+        <xpath expr="//div[@id='o_wblog_blog_top']" position="before">
+<!-- ════════════════════ PAGE HERO ════════════════════ -->
+    <section class="page-hero" id="top">
+        <div class="wrap">
+            <nav class="breadcrumb rv show">
+                <a href="/">Home</a>
+                <span class="breadcrumb-sep">/</span>
+                <span>Blog</span>
+            </nav>
+            <h1 class="rv show d1">Marketing Intelligence<br/>You Can Use</h1>
+            <p class="hero-desc rv show d2">Practical guides, AI-powered tactics, and data-backed insights from our
+                team. Published every week, always actionable.</p>
+            <div class="page-hero-stats rv show d3">
+                <div class="ph-stat">
+                    <div class="ph-stat-num">50<span class="hl">+</span></div>
+                    <div class="ph-stat-label">Articles published</div>
+                </div>
+                <div class="ph-stat">
+                    <div class="ph-stat-num">6</div>
+                    <div class="ph-stat-label">Topic categories</div>
+                </div>
+                <div class="ph-stat">
+                    <div class="ph-stat-num">1<span class="hl">×</span></div>
+                    <div class="ph-stat-label">New article per week</div>
+                </div>
+                <div class="ph-stat">
+                    <div class="ph-stat-num">12K<span class="hl">+</span></div>
+                    <div class="ph-stat-label">Newsletter subscribers</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════ FEATURED ARTICLE ════════════════════ -->
+    <section class="sec sec-white">
+        <div class="wrap">
+            <div class="sec-intro rv">
+                <span class="badge badge-blue">Featured</span>
+                <h2>Latest from the team</h2>
+            </div>
+
+            <t t-if="posts">
+                <t t-set="featured_post" t-value="posts[0]"/>
+                <article class="blog-featured rv">
+                    <div class="blog-featured-img">
+                        <t t-set="bg_url" t-value="featured_post.cover_properties and 'url(' in featured_post.cover_properties and featured_post.cover_properties.split('url(')[1].split(')')[0].replace('&quot;', '').replace('\'', '') or '/theme_converza/static/src/img/blog-ai-marketing.jpg'"/>
+                        <img t-att-src="bg_url" t-att-alt="featured_post.name" loading="lazy" style="width:100%;height:100%;object-fit:cover" />
+                    </div>
+                    <div class="blog-featured-body">
+                        <div class="blog-meta">
+                            <span class="blog-cat bc-ai"><t t-esc="featured_post.blog_id.name"/></span>
+                            <span class="blog-date" style="margin-left:10px"><t t-esc="featured_post.post_date" t-options="{'widget': 'date'}"/></span>
+                            <div class="blog-dot"></div>
+                            <span class="blog-read"><t t-esc="featured_post.author_name"/></span>
+                        </div>
+                        <h2><a t-att-href="featured_post.website_url"><t t-esc="featured_post.name"/></a></h2>
+                        <p><t t-esc="featured_post.subtitle"/></p>
+                        <a class="btn btn-primary" t-att-href="featured_post.website_url" style="width:fit-content">
+                            <i class="fa fa-arrow-right"/>
+                            Read Article
+                        </a>
+                    </div>
+                </article>
+            </t>
+        </div>
+    </section>
+
+    <!-- ════════════════════ ALL ARTICLES ════════════════════ -->
+    <section class="sec sec-alt" style="padding-top:0">
+        <div class="wrap">
+            <div class="sec-intro rv">
+                <span class="badge badge-teal">All Articles</span>
+                <h2>Browse the archive</h2>
+            </div>
+
+            <div class="filter-bar rv">
+                <button class="filter-btn active" data-filter="all">All Topics</button>
+                <t t-set="all_blogs" t-value="request.env['blog.blog'].sudo().search([])"/>
+                <t t-foreach="all_blogs" t-as="bg">
+                    <button class="filter-btn" t-att-data-filter="bg.id"><t t-esc="bg.name"/></button>
+                </t>
+            </div>
+
+            <div class="blog-grid">
+                <t t-if="len(posts) > 1">
+                    <t t-foreach="posts[1:]" t-as="post">
+                        <article class="blog-card rv d1" t-att-data-category="post.blog_id.id">
+                            <div class="blog-img">
+                                <t t-set="bg_url" t-value="post.cover_properties and 'url(' in post.cover_properties and post.cover_properties.split('url(')[1].split(')')[0].replace('&quot;', '').replace('\'', '') or '/theme_converza/static/src/img/blog-ai-marketing.jpg'"/>
+                                <img class="blog-img-inner" t-att-src="bg_url" t-att-alt="post.name" loading="lazy" style="width:100%;height:100%;object-fit:cover" />
+                                <span class="blog-cat bc-ai"><t t-esc="post.blog_id.name"/></span>
+                            </div>
+                            <div class="blog-body">
+                                <div class="blog-meta">
+                                    <span class="blog-date"><t t-esc="post.post_date" t-options="{'widget': 'date'}"/></span>
+                                    <div class="blog-dot"></div>
+                                    <span class="blog-read"><t t-esc="post.author_name"/></span>
+                                </div>
+                                <h3><a t-att-href="post.website_url"><t t-esc="post.name"/></a></h3>
+                                <p><t t-esc="post.subtitle"/></p>
+                                <a class="blog-link" t-att-href="post.website_url">Read article</a>
+                            </div>
+                        </article>
+                    </t>
+                </t>
+            </div>
+
+            <!-- Newsletter CTA -->
+            <div class="nl-cta-box rv">
+                <span class="badge badge-white" style="margin-bottom:16px">Weekly Newsletter</span>
+                <h3>Get insights like these in your inbox</h3>
+                <p>Join 12,000+ marketers who get our weekly breakdown of what's working right now no fluff, no
+                    filler.</p>
+                <t t-set="mailing_list" t-value="request.env['mailing.list'].sudo().search([('is_public', '=', True)], limit=1)"/>
+                <div class="s_newsletter_subscribe_form s_newsletter_list js_subscribe" data-vxml="001" t-att-data-list-id="mailing_list.id if mailing_list else 1" data-name="Newsletter Form">
+                    <div class="js_subscribed_wrap d-none">
+                        <p class="h4-fs text-center text-success" style="margin-top: 1rem;"><i class="fa fa-check-circle-o" role="img"/> Thanks for registering!</p>
+                    </div>
+                    <div class="js_subscribe_wrap">
+                        <div class="nl-cta-row">
+                            <input class="nl-cta-input js_subscribe_value" type="email" name="email" placeholder="your@email.com" required="required" />
+                            <a role="button" href="#" class="btn btn-teal js_subscribe_btn">Subscribe Free</a>
+                        </div>
+                        <style>
+                            .nl-cta-row .btn-teal:hover { 
+                                color: #ffffff !important; 
+                                background-color: #01b0a8 !important; 
+                            }
+                        </style>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════ POPULAR TOPICS ════════════════════ -->
+    <section class="sec sec-white">
+        <div class="wrap">
+            <div class="sec-intro rv">
+                <span class="badge badge-purple">Topics</span>
+                <h2>Explore by channel</h2>
+                <p>Every article is built around a specific channel or tactic deep dives, not surface-level summaries.
+                </p>
+            </div>
+            <div class="svc-bento">
+                <div class="svc-card rv d1">
+                    <div class="svc-icon-wrap ic-blue"><i class="fa fa-search"/></div>
+                    <h3>SEO</h3>
+                    <p class="svc-desc">Technical SEO, content strategy, link building, local SEO, and the AI-search
+                        factors reshaping organic discovery.</p>
+                    <div class="svc-tags">
+                        <span class="svc-tag">12 Articles</span>
+                        <span class="svc-tag">Updated Weekly</span>
+                    </div>
+                </div>
+                <div class="svc-card rv d2">
+                    <div class="svc-icon-wrap ic-orange"><i class="fa fa-line-chart"/></div>
+                    <h3>PPC Advertising</h3>
+                    <p class="svc-desc">Google Ads, Meta campaigns, LinkedIn, bidding strategies, and ROAS optimization
+                        for every funnel stage.</p>
+                    <div class="svc-tags">
+                        <span class="svc-tag">9 Articles</span>
+                        <span class="svc-tag">Updated Monthly</span>
+                    </div>
+                </div>
+                <div class="svc-card featured rv d3">
+                    <div class="svc-icon-wrap ic-purple"><i class="fa fa-microchip"/></div>
+                    <h3>AI Marketing</h3>
+                    <p class="svc-desc">How to use AI tools for creative, bidding, personalization, and campaign
+                        management without losing strategic control.</p>
+                    <div class="svc-tags">
+                        <span class="svc-tag">8 Articles</span>
+                        <span class="svc-tag">Hot Topic</span>
+                    </div>
+                </div>
+                <div class="svc-card rv d1">
+                    <div class="svc-icon-wrap ic-pink"><i class="fa fa-envelope"/></div>
+                    <h3>Email Marketing</h3>
+                    <p class="svc-desc">Automation flows, segmentation strategies, deliverability tips, and campaign
+                        frameworks that compound revenue over time.</p>
+                    <div class="svc-tags">
+                        <span class="svc-tag">10 Articles</span>
+                        <span class="svc-tag">Updated Monthly</span>
+                    </div>
+                </div>
+                <div class="svc-card rv d2">
+                    <div class="svc-icon-wrap ic-teal"><i class="fa fa-pencil"/></div>
+                    <h3>Content Marketing</h3>
+                    <p class="svc-desc">SEO-led content strategies, thought leadership playbooks, and distribution
+                        tactics that turn content into qualified pipeline.</p>
+                    <div class="svc-tags">
+                        <span class="svc-tag">11 Articles</span>
+                        <span class="svc-tag">Updated Weekly</span>
+                    </div>
+                </div>
+                <div class="svc-card rv d3">
+                    <div class="svc-icon-wrap ic-green"><i class="fa fa-bolt"/></div>
+                    <h3>CRO</h3>
+                    <p class="svc-desc">A/B testing frameworks, heatmap analysis, landing page teardowns, and the tests
+                        that consistently lift conversion rates.</p>
+                    <div class="svc-tags">
+                        <span class="svc-tag">7 Articles</span>
+                        <span class="svc-tag">Updated Monthly</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════ CTA ════════════════════ -->
+    <section class="sec sec-dark">
+        <div class="wrap" style="text-align:center">
+            <span class="badge badge-white rv" style="margin-bottom:20px">Work With Us</span>
+            <h2 class="rv d1" style="color:white;font-size:clamp(1.8rem,4vw,3rem);max-width:600px;margin:0 auto 16px">
+                Want us to implement this for your business?</h2>
+            <p class="rv d2"
+                style="color:rgba(255,255,255,.6);max-width:500px;margin:0 auto 36px;font-size:1.05rem">Reading about
+                what works is one thing. Having a team execute it for you is another. Get a free audit and let's build
+                your growth plan.</p>
+            <div class="rv d3" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+                <a class="btn btn-teal" href="/contactus">
+                    <i class="fa fa-arrow-right"/>
+                    Get Free Strategy Audit
+                </a>
+                <a class="btn btn-ghost-white" href="/services">Our Services</a>
+            </div>
+        </div>
+    </section>
+        
+            <!-- DROP ZONE FOR SNIPPETS -->
+            <div class="oe_structure oe_empty"></div>
+        </xpath>
+
+        <!-- Hide default elements instead of replacing to avoid xpath errors in other theme views -->
+        <xpath expr="//div[@id='o_wblog_blog_top']" position="attributes">
+            <attribute name="class" add="d-none" separator=" "/>
+        </xpath>
+        <xpath expr="//t[@t-call='website_blog.blogs_nav']" position="replace"/>
+        <xpath expr="//section[@id='o_wblog_index_content']" position="attributes">
+            <attribute name="style" add="display:none !important;" separator=" "/>
+        </xpath>
+</template>
+</odoo>
