@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Odoo 20 Accounting for Community : Financial Report, PDC, Assets, Bank Reconciliation, Lock Dates',
-    'version': '20.0.2.1.0',
+    'version': '20.0.2.2.0',
     'category': 'Accounting',
     'live_test_url': 'https://kit.easyinstance.com/web/login?redirect=/odoo/accounting',
     'summary': """Odoo20 Accounting, Accounting Kit, Accounting for community, odoo accounting, accounting reports for community, community accounting, odoo20 account reports, odoo20, accounting""",
@@ -58,7 +58,6 @@
         'data/multiple_invoice_data.xml',
         'data/recurring_entry_cron.xml',
         'data/account_asset_cron.xml',
-        'data/currency_cron.xml',
         'data/account_pdc_data.xml',
         'views/reports_config_view.xml',
         'views/accounting_menu.xml',

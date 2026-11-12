@@ -15,5 +15,4 @@
 #### ADD
 -Enhanced bank reconciliation with quick actions, smart matching, and multi-invoice reconciliation.
 -Updated German translations to improve language support and localization.
--Added automated Currency Exchange Rate synchronization supporting 5 global providers and 36 Central Banks.
 -19+ New Languages

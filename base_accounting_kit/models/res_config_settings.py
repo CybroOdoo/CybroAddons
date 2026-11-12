@@ -44,26 +44,6 @@ class ResConfigSettings(models.TransientModel):
     fx_reval_loss_account_id = fields.Many2one(
         related='company_id.fx_reval_loss_account_id', readonly=False)
 
-    currency_provider = fields.Selection(
-        related='company_id.currency_provider', readonly=False)
-    currency_central_bank = fields.Selection(
-        related='company_id.currency_central_bank', readonly=False)
-    currency_rate_interval = fields.Selection(
-        related='company_id.currency_rate_interval', readonly=False)
-    currency_api_key = fields.Char(
-        related='company_id.currency_api_key', readonly=False)
-    currency_last_sync_date = fields.Datetime(
-        related='company_id.currency_last_sync_date', readonly=True)
-    currency_next_sync_date = fields.Date(
-        related='company_id.currency_next_sync_date', readonly=False)
-    currency_max_change = fields.Float(
-        related='company_id.currency_max_change', readonly=False)
-
-    def action_sync_currency_rates_now(self):
-        """Action button in Settings to fetch currency rates immediately."""
-        self.ensure_one()
-        return self.company_id.action_update_currency_rates()
-
     @api.model
     def get_values(self):
         """Retrieve the values for configuration settings including the
