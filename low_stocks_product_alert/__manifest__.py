@@ -18,7 +18,7 @@
 {
     'name': "Product Low Stock Alert",
     'version': '20.0.1.0.0',
-    "category": 'Warehouse,Point of Sale',
+    'category': 'Point of Sale',
     'summary': """Product Low Stock Alert Display in Point of Sale and 
     Product Views""",
     'description': """Module adds functionality to display product stock 
@@ -43,10 +43,16 @@
             'low_stocks_product_alert/static/src/js/product_card.js',
             'low_stocks_product_alert/static/src/xml/product_item_template.xml',
         ],
+        'web.assets_unit_tests': [
+            'low_stocks_product_alert/static/tests/unit/**/*',
+        ],
+        'web.assets_tests': [
+            'low_stocks_product_alert/static/tests/tours/**/*',
+        ],
     },
     'images': ['static/description/banner.jpg'],
     'license': "LGPL-3",
     'installable': True,
-    'application': False,
     'auto_install': False,
+    'application': False,
 }

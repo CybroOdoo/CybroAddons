@@ -26,13 +26,13 @@ class IrAttachment(models.Model):
     attach_to = fields.Selection([('project', 'Project'),
                                   ('task', 'Task')],
                                  required=True, string="Attach To",
-                                 help="if Project, file attached to Project."
-                                      " Otherwise to task.", default='project')
+                                 help="If Project, file attached to Project."
+                                      " Otherwise to Task.", default='project')
     project_id = fields.Many2one('project.project',
                                  string='Project',
-                                 help="This indicates the Project")
+                                 help="This indicates the Project.")
     task_id = fields.Many2one('project.task',
-                              string='Task', help="This indicates the Task")
+                              string='Task', help="This indicates the Task.")
 
     def _auto_init(self):
         res = super()._auto_init()

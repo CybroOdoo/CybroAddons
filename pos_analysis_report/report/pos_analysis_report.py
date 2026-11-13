@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-################################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -14,12 +13,12 @@
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-################################################################################
-from odoo import api, models
+#############################################################################
+from datetime import datetime, time
+
+import pytz
+
+from odoo import api, fields, models
 
 
 class PosAnalysisReport(models.AbstractModel):
@@ -39,42 +38,61 @@ class PosAnalysisReport(models.AbstractModel):
          :param data: report data
          :return: data and recodsets to be used in the report template
         """
-        query = """SELECT 
-                    pos_session.name AS session, 
-                    pos_order.name AS Order_Ref,
-                    pos_order.pos_reference AS receipt_ref,
-                    pos_order.date_order AS order_date,
-                    CASE WHEN res_partner.id IS NULL THEN NULL ELSE 
-                    res_partner.name END AS customer,
-                    pos_order.amount_paid AS sub_total,
-                    pos_order.amount_tax AS tax
-                FROM 
-                    pos_session 
-                INNER JOIN 
-                    pos_order ON pos_session.id = pos_order.session_id
-                LEFT JOIN 
-                    res_partner ON pos_order.partner_id = res_partner.id"""
-        where_clause = []
-        params = []
-        if data['from_date'] and data['to_date']:
-            where_clause.append("pos_order.date_order BETWEEN %s AND %s")
-            params.extend([data['from_date'], data['to_date']])
-        if data['pos_session_id']:
-            where_clause.append("pos_session.id = %s")
-            params.append(data['pos_session_id'])
-        if data['partner_id']:
-            where_clause.append("res_partner.id = %s")
-            params.append(data['partner_id'])
-        if where_clause:
-            where_clause_str = " WHERE " + " AND ".join(where_clause)
-            query += where_clause_str
-        self.env.cr.execute(query, tuple(params))
-        pos_orders = self.env.cr.dictfetchall()
+        domain = []
+        try:
+            user_tz = pytz.timezone(self.env.user.tz or 'UTC')
+        except pytz.UnknownTimeZoneError:
+            user_tz = pytz.utc
+
+        if data.get('from_date') and data.get('to_date'):
+            from_dt = user_tz.localize(datetime.combine(
+                fields.Date.to_date(data['from_date']), time.min
+            )).astimezone(pytz.utc).replace(tzinfo=None)
+            to_dt = user_tz.localize(datetime.combine(
+                fields.Date.to_date(data['to_date']), time.max
+            )).astimezone(pytz.utc).replace(tzinfo=None)
+            domain.extend([('date_order', '>=', from_dt),
+                           ('date_order', '<=', to_dt)])
+        elif data.get('from_date'):
+            from_dt = user_tz.localize(datetime.combine(
+                fields.Date.to_date(data['from_date']), time.min
+            )).astimezone(pytz.utc).replace(tzinfo=None)
+            domain.append(('date_order', '>=', from_dt))
+        elif data.get('to_date'):
+            to_dt = user_tz.localize(datetime.combine(
+                fields.Date.to_date(data['to_date']), time.max
+            )).astimezone(pytz.utc).replace(tzinfo=None)
+            domain.append(('date_order', '<=', to_dt))
+        if data.get('pos_session_id'):
+            domain.append(('session_id', '=', data['pos_session_id']))
+        if data.get('partner_id'):
+            domain.append(('partner_id', '=', data['partner_id']))
+
+        orders = self.env['pos.order'].search(domain)
+        pos_orders = []
+        for order in orders:
+            pos_orders.append({
+                'session': order.session_id.name,
+                'order_ref': order.name,
+                'receipt_ref': order.pos_reference,
+                'order_date': order.date_order,
+                'customer': order.partner_id.name if order.partner_id else None,
+                'sub_total': round(order.amount_total - order.amount_tax, 2),
+                'tax': order.amount_tax,
+            })
         grant_total = sum(pos_order.get('sub_total', 0)
                           for pos_order in pos_orders)
+        partner_name = False
+        if data.get('partner_id'):
+            partner = self.env['res.partner'].browse(data['partner_id'])
+            partner_name = partner.name
         return {
             'doc_ids': docids,
             'data': data,
+            'from_date': data.get('from_date'),
+            'to_date': data.get('to_date'),
+            'partner_id': data.get('partner_id'),
+            'partner_name': partner_name,
             'result': pos_orders,
-            'grant_tot': grant_total
+            'grant_tot': grant_total,
         }

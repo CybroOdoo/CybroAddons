@@ -19,9 +19,11 @@ from odoo import fields, models
 
 
 class StockMove(models.Model):
-    """inheriting the stock_move for updating the done qty """
+    """Inherit stock.move to add product selection field for done quantity auto fill."""
     _inherit = 'stock.move'
 
-    product_select = fields.Boolean(string="Select",
-                                    help="Select products from order line",
-                                    copy=False)
+    product_select = fields.Boolean(
+        string="Select",
+        help="Select products to fill or unfill done quantity",
+        copy=False,
+    )

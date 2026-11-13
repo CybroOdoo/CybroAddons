@@ -15,39 +15,52 @@
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class StockPicking(models.Model):
-    """inheriting the stock_move for updating the done quantity"""
+    """Inherit stock.picking to provide automated done quantity filling
+    and line selection."""
     _inherit = 'stock.picking'
 
-    select_all_toggle = fields.Boolean(string="All", default=False,
-                                       help="Can select all the lines",
-                                       copy=False)
+    select_all_toggle = fields.Boolean(
+        string="All",
+        compute='_compute_select_all_toggle',
+        help="Technical field indicating if all move lines are selected",
+        copy=False,
+    )
+
+    @api.depends('move_ids.product_select')
+    def _compute_select_all_toggle(self):
+        """Compute whether all move lines are selected."""
+        for picking in self:
+            picking.select_all_toggle = bool(picking.move_ids) and all(
+                move.product_select for move in picking.move_ids
+            )
 
     def action_select_all(self):
-        """select the product from order line"""
-        self.select_all_toggle = True
-        for rec in self.move_ids:
-            rec.product_select = True
+        """Select all product lines in the transfer."""
+        for picking in self:
+            picking.move_ids.write({'product_select': True})
 
     def action_unselect_all(self):
-        """select the product from order line"""
-        self.select_all_toggle = False
-        for rec in self.move_ids:
-            rec.product_select = False
+        """Unselect all product lines in the transfer."""
+        for picking in self:
+            picking.move_ids.write({'product_select': False})
 
     def action_fill_done_qty(self):
-        """search for the corresponding sale order
-            write the product quantity in to the done quantity"""
-        for pick in self.move_ids:
-            if pick.product_select and pick.forecast_availability > 0:
-                pick.write({'quantity': pick.product_uom_qty})
+        """Set the done quantity for selected stock moves based on availability."""
+        for picking in self:
+            for move in picking.move_ids.filtered(lambda m: m.product_select):
+                if move.picking_code == 'incoming':
+                    move.write({'quantity': move.product_uom_qty})
+                elif move.forecast_availability > 0:
+                    move.write({
+                        'quantity': min(move.product_uom_qty, move.forecast_availability)
+                    })
 
     def action_unfill_done_qty(self):
-        """search for the corresponding sale order
-        un fill the product quantity in to the done quantity"""
-        self.move_ids.filtered(
-            lambda pick: pick.product_select).sudo().write(
-            {'quantity': '0'})
+        """Reset the done quantity to 0 for selected stock moves."""
+        for picking in self:
+            selected_moves = picking.move_ids.filtered(lambda m: m.product_select)
+            selected_moves.write({'quantity': 0.0})

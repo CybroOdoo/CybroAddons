@@ -20,24 +20,22 @@
     'version': '20.0.1.0.0',
     'category': 'Warehouse',
     'summary': 'Add Done quantity automatically for the transfer of '
-               'the products',
-    'description': 'This module helps to add the done quantities of all the '
-                   'products while the transfer of products.This feature is '
-                   'available while the delivery of products, receiving the '
-                   'products and returning the products. Also we can unfill '
-                   'the done quantity of the selected products while the '
-                   'transfer.',
+               'products',
+    'description': """This module helps to add the done quantities of all the
+products during the transfer of products. This feature is available while
+delivering products, receiving products, and returning products. Also, we can
+unfill the done quantity of the selected products during the transfer.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['base', 'stock'],
+    'depends': ['stock'],
     'data': [
         'views/stock_picking_views.xml',
     ],
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
     'installable': True,
-    'application': False,
     'auto_install': False,
+    'application': False,
 }

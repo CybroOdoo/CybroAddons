@@ -15,6 +15,7 @@
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
 #############################################################################
+from . import product_low_stock_mixin
 from . import product_product
 from . import product_template
 from . import res_config_settings

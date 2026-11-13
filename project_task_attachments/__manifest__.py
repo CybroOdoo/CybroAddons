@@ -19,11 +19,11 @@
     'name': "Project And Task Attachments",
     'version': '20.0.1.0.0',
     'category': 'Project',
-    'summary': 'Helps to view all documents attached to Projects/Tasks',
-    'description': """Project and Task Attachments module allows user to view 
-    all the documents attached to projects and tasks. There is a separate
+    'summary': 'View and manage all documents attached to Projects and Tasks',
+    'description': """Project and Task Attachments module allows users to view 
+    all documents attached to projects and tasks. There is a separate
     menu for viewing project documents and task documents. It is also 
-    possible to attach new documents to project/task from the Documents menu.""",
+    possible to attach new documents to projects and tasks from the Documents menu.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

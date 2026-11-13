@@ -13,7 +13,7 @@
 |license| |odoo| |maintainer|
 
 POS Analysis Report
-================
+===================
 Users can generate POS reports based on specific POS sessions
 
 Key Features

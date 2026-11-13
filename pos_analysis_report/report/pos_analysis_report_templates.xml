@@ -5,88 +5,82 @@
         <t t-call="web.html_container">
             <t t-call="web.external_layout">
                 <div class="row mt-4 mb-4" id="information">
-                    <div t-if="to_date" class="col-auto col-3 mw-100 mb-2">
+                    <div t-if="from_date or (data and data.get('from_date'))" class="col-auto col-3 mw-100 mb-2">
                         <strong>Reporting From:</strong>
-                        <t t-out="from_date"/>
+                        <t t-out="from_date or (data and data.get('from_date'))"/>
                     </div>
-                    <div t-if="to_date" class="col-auto col-3 mw-100 mb-2">
+                    <div t-if="to_date or (data and data.get('to_date'))" class="col-auto col-3 mw-100 mb-2">
                         <strong>Reporting To:</strong>
-                        <t t-out="to_date"/>
+                        <t t-out="to_date or (data and data.get('to_date'))"/>
                     </div>
                 </div>
-                <center>
+                <div class="text-center">
                     <h1>
                         <strong>POS Analysis Report</strong>
                     </h1>
-                </center>
+                </div>
                 <table class="table table-bordered mt32">
                     <thead>
                         <tr>
-                            <th name="sl_no" class="text-left">
+                            <th name="sl_no" class="text-start">
                                 <span>Sl.No</span>
                             </th>
                             <th name="session"
-                                class="text-left">
+                                class="text-start">
                                 <span>Session</span>
                             </th>
-                            <th name="order_ref" class="text-left">
+                            <th name="order_ref" class="text-start">
                                 <span>Order Ref</span>
                             </th>
-                            <th name="rec_ref" class="text-left">
+                            <th name="rec_ref" class="text-start">
                                 <span>Receipt Ref</span>
                             </th>
-                            <th name="order_date" class="text-left">
+                            <th name="order_date" class="text-start">
                                 <span>Order Date</span>
                             </th>
-                            <t t-if="partner_id">
-                                <th name="cust" class="text-left">
-                                    <span>Customer</span>
-                                </th>
-                            </t>
-                            <th name="taxes" class="text-left">
+                            <th name="cust" class="text-start">
+                                <span>Customer</span>
+                            </th>
+                            <th name="taxes" class="text-start">
                                 <span>Taxes</span>
                             </th>
-                            <th name="subtotal" class="text-left">
+                            <th name="subtotal" class="text-start">
                                 <span>Subtotal</span>
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr style="border: none;">
-                            <t t-set="i" t-value="1"/>
-                            <t t-foreach="result"
-                               t-as="result">
-                                <tr>
-                                    <td>
-                                        <span t-out="i"/>
-                                    </td>
-                                    <td>
-                                        <span t-out="result['session']"/>
-                                    </td>
-                                    <td>
-                                        <span t-out="result['order_ref']"/>
-                                    </td>
-                                    <td>
-                                        <span t-out="result['receipt_ref']"/>
-                                    </td>
-                                    <td>
-                                        <span t-out="result['order_date']"/>
-                                    </td>
-                                    <t t-if="partner_id">
-                                        <td>
-                                            <span t-out="result['customer']"/>
-                                        </td>
-                                    </t>
-                                    <td>
-                                        <span t-out="result['tax']"/>
-                                    </td>
-                                    <td>
-                                        <span t-out="'%.2f'% result['sub_total']"/>
-                                    </td>
-                                </tr>
-                                <t t-set="i" t-value="i+1"/>
-                            </t>
-                        </tr>
+                        <t t-set="i" t-value="1"/>
+                        <t t-foreach="result"
+                           t-as="line">
+                            <tr>
+                                <td>
+                                    <span t-out="i"/>
+                                </td>
+                                <td>
+                                    <span t-out="line['session']"/>
+                                </td>
+                                <td>
+                                    <span t-out="line['order_ref']"/>
+                                </td>
+                                <td>
+                                    <span t-out="line['receipt_ref']"/>
+                                </td>
+                                <td>
+                                    <span t-out="line['order_date']"/>
+                                </td>
+                                <td>
+                                    <span t-out="line['customer'] or ''"/>
+                                </td>
+                                <td>
+                                    <span t-out="line['tax']"/>
+                                </td>
+                                <td>
+                                    <span t-out="'%.2f'% line['sub_total']"/>
+                                </td>
+                            </tr>
+                            <t t-set="i" t-value="i+1"/>
+                        </t>
                     </tbody>
                 </table>
                 <div class="row justify-content-end">

@@ -6,23 +6,28 @@ import { patch } from "@web/core/utils/patch";
 
 patch(ProductCard.prototype, {
     setup() {
-        super.setup();
-        this.pos = usePos();
+        if (super.setup) {
+            super.setup(...arguments);
+        }
+        try {
+            this.pos = usePos();
+        } catch (_) {
+            this.pos = null;
+        }
     },
 
     get displayStockAlert() {
-        if (!this.props.product) {
+        const product = this.props?.product;
+        if (!product) {
             return false;
         }
-        if (this.props.product.alert_state !== undefined && this.props.product.alert_state !== null) {
-            return Boolean(this.props.product.alert_state);
+        if (product.alert_state !== undefined && product.alert_state !== null) {
+            return Boolean(product.alert_state);
         }
-        if (this.props.product.alert_tag !== undefined && this.props.product.alert_tag !== false && this.props.product.alert_tag !== null && this.props.product.alert_tag !== "") {
+        if (product.alert_tag !== undefined && product.alert_tag !== false && product.alert_tag !== null && product.alert_tag !== "") {
             return true;
         }
-        const qty = this.productStockQty;
-        const limit = this.pos?.config?.min_low_stock_alert ?? 50;
-        return typeof qty === "number" && qty <= limit;
+        return false;
     },
 
     get displayStock() {
@@ -33,21 +38,23 @@ patch(ProductCard.prototype, {
     },
 
     get productStockQty() {
-        if (!this.props.product) {
+        const product = this.props?.product;
+        if (!product) {
             return 0;
         }
-        if (this.props.product.alert_tag !== undefined && this.props.product.alert_tag !== false && this.props.product.alert_tag !== null && this.props.product.alert_tag !== "") {
-            const parsedTag = parseFloat(this.props.product.alert_tag);
+        if (product.alert_tag !== undefined && product.alert_tag !== false && product.alert_tag !== null && product.alert_tag !== "") {
+            const parsedTag = parseFloat(product.alert_tag);
             if (!isNaN(parsedTag)) {
                 return parsedTag % 1 === 0 ? Math.round(parsedTag) : parsedTag;
             }
         }
         let qty = null;
-        if (this.pos && typeof this.pos.getProductStockQty === "function") {
-            qty = this.pos.getProductStockQty(this.props.product);
+        const pos = this.pos || this.env?.services?.pos;
+        if (pos && typeof pos.getProductStockQty === "function") {
+            qty = pos.getProductStockQty(product);
         }
         if (qty === null || qty === undefined || qty === false) {
-            qty = this.props.product.qty_available ?? 0;
+            qty = product.qty_available ?? 0;
         }
         if (typeof qty === "string") {
             const parsed = parseFloat(qty);
