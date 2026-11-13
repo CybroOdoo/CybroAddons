@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Salon-specific settings exposed in the Point of Sale configuration wizard. -->
+<odoo>
+    <record id="res_config_settings_view_form_inherit_pos_salon" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.pos.salon</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Salon POS Option -->
+            <xpath expr="//setting[@id='is_restaurant']" position="after">
+                <setting string="Is Salon" id="is_salon"
+                         invisible="pos_module_pos_restaurant">
+                    <field name="pos_is_salon" readonly="pos_has_active_session"/>
+                </setting>
+            </xpath>
+
+            <!-- Salon and Spa Section -->
+            <xpath expr="//setting[@id='is_salon']" position="after">
+                <div class="row" invisible="not pos_is_salon">
+                    <setting string="Spa Management">
+                        <field name="pos_is_spa"/>
+                    </setting>
+
+                    <setting string="Take Review">
+                        <field name="pos_take_review"/>
+                        <div class="text-muted">Email the customer a review link when a booking is completed.</div>
+                    </setting>
+
+                    <setting string="Apply Commission">
+                        <field name="pos_apply_commission"/>
+                        <div class="text-muted">Commission works only for bookings that have a specialist.</div>
+                        <div class="content-group" invisible="not pos_apply_commission">
+                            <div class="row mt-2">
+                                <label for="pos_commission_type" class="col-lg-4 o_light_label"/>
+                                <field name="pos_commission_type"/>
+                            </div>
+                            <div class="row mt-2">
+                                <label for="pos_commission_percent" class="col-lg-4 o_light_label"/>
+                                <field name="pos_commission_percent"/>
+                            </div>
+                        </div>
+                    </setting>
+
+                    <setting string="Show Appointments">
+                        <field name="pos_show_appointments"/>
+                    </setting>
+
+                    <setting string="Show All Appointments" invisible="not pos_show_appointments">
+                        <field name="pos_show_all_appointments"/>
+                    </setting>
+
+                    <setting string="Seats" help="Total number of seats. 0 means no limit.">
+                        <field name="pos_salon_seats"/>
+                    </setting>
+
+                    <setting string="Specialist">
+                        <field name="pos_specialist_ids" widget="many2many_tags"/>
+                        <div class="text-muted">Pick which specialists appear at booking time.</div>
+                    </setting>
+
+                    <setting string="Show Amenities">
+                        <field name="pos_amenities_ids" widget="many2many_tags"/>
+                        <div class="text-muted">Pick which amenities appear at booking time.</div>
+                    </setting>
+                </div>
+            </xpath>
+
+            <!-- Hide Restaurant & Presets when Salon POS is active -->
+            <xpath expr="//setting[@id='is_restaurant']" position="attributes">
+                <attribute name="invisible">pos_is_salon</attribute>
+            </xpath>
+            <xpath expr="//setting[field[@name='pos_use_presets']]" position="attributes">
+                <attribute name="invisible">pos_is_salon</attribute>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

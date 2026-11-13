@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="pos_salon.SalonCustomerField">
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Customer: <span class="text-danger">*</span></label>
+            <div class="input-group">
+                <input type="text" class="form-control" readonly="readonly"
+                       placeholder="Select customer"
+                       t-att-value="props.state.customerName" t-on-click="selectCustomer"/>
+                <button t-if="props.state.partnerId" type="button" class="btn btn-outline-secondary"
+                        t-on-click="clearCustomer" title="Clear"><i class="fa fa-times"/></button>
+                <button type="button" class="btn btn-outline-primary" t-on-click="selectCustomer">
+                    <i class="fa fa-search"/></button>
+                <button type="button" class="btn btn-success" t-on-click="createCustomer">
+                    <i class="fa fa-plus me-1"/>New</button>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Phone Number: <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" placeholder="Enter phone number"
+                   t-att-disabled="!props.state.partnerId"
+                   t-att-readonly="props.state.partnerHadPhone"
+                   t-model="props.state.customerPhone"/>
+            <div t-if="props.state.partnerId and !props.state.customerPhone.trim()"
+                 class="alert alert-warning py-2 mt-2 mb-0">
+                <i class="fa fa-exclamation-triangle me-1"/>
+                This customer has no phone number. Please fill in the phone number.
+            </div>
+        </div>
+        <div class="mb-3" t-if="props.state.customerEmail">
+            <label class="form-label fw-semibold">Email:</label>
+            <input type="text" class="form-control" readonly="readonly" t-att-value="props.state.customerEmail"/>
+        </div>
+    </t>
+
+    <t t-name="pos_salon.SalonNewCustomerDialog">
+        <Dialog title="'New Customer'" size="'md'">
+            <div class="p-2">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Customer Name: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" placeholder="Enter customer name" t-model="state.name"/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Phone Number: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" placeholder="Enter phone number" t-model="state.phone"/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Email:</label>
+                    <input type="email" class="form-control" placeholder="Enter email" t-model="state.email"/>
+                </div>
+                <div t-if="state.error" class="alert alert-danger py-2 mb-0"><t t-out="state.error"/></div>
+            </div>
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-secondary" t-on-click="props.close">Cancel</button>
+                <button type="button" class="btn btn-success" t-att-disabled="state.saving" t-on-click="save">
+                    <i class="fa fa-check me-1"/>Create</button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Template for appointments currently in progress. -->
+<templates xml:space="preserve">
+    <t t-name="pos_salon.RunningAppointmentsScreen">
+        <div class="running-screen h-100 d-flex flex-column bg-light">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center p-3 bg-white border-bottom shadow-sm">
+                <button class="btn btn-light" t-on-click="back">
+                    <i class="fa fa-arrow-left me-2"/> Back
+                </button>
+                <h3 class="m-0 text-primary fw-bold">
+                    <i class="fa fa-play-circle me-2"/> Running Appointments
+                </h3>
+                <button class="btn btn-primary" t-on-click="refresh">
+                    <i class="fa fa-refresh me-2"/> Refresh
+                </button>
+            </div>
+
+            <t t-if="state.loading">
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+                    <div class="spinner-border text-primary" role="status"/>
+                </div>
+            </t>
+
+            <t t-if="!state.loading and state.error">
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center text-danger">
+                    <p><t t-out="state.error"/></p>
+                </div>
+            </t>
+
+            <t t-if="!state.loading and !state.error and state.appointments.length === 0">
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center text-muted">
+                    <p>No running appointments right now.</p>
+                </div>
+            </t>
+
+            <t t-if="!state.loading and !state.error and state.appointments.length > 0">
+                <div class="flex-grow-1 overflow-auto p-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Phone</th>
+                                        <th>Service</th>
+                                        <th>Time Slot</th>
+                                         <th>Arrival</th>
+                                        <th>Amount</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.appointments" t-as="appt" t-key="appt.id">
+                                        <tr>
+                                            <td><t t-out="appt.customer_name"/></td>
+                                            <td><t t-out="appt.customer_phone"/></td>
+                                            <td>
+                                                <t t-out="appt.service_name"/>
+                                                <div t-if="appt.specialist_name" class="text-muted small"><i class="fa fa-user me-1"/><t t-out="appt.specialist_name"/></div>
+                                                <div t-if="appt.amenity_names" class="text-muted small"><i class="fa fa-plus-circle me-1"/><t t-out="appt.amenity_names"/></div>
+                                            </td>
+                                            <td class="text-nowrap fw-semibold"><t t-out="appt.time_period"/></td>
+                                            <td class="text-nowrap">
+                                                <span t-if="appt.checked_in" class="badge text-bg-success">
+                                                    <t t-if="appt.slot === 'Walk-in'">Walk-in in service</t>
+                                                    <t t-else="">Arrived</t>
+                                                </span>
+                                                <t t-else="">
+                                                    <span class="badge text-bg-warning">Not arrived</span>
+                                                    <div t-if="lateMinutes(appt) > 0" class="small text-danger">Late by <t t-out="lateMinutes(appt)"/> min</div>
+                                                </t>
+                                            </td>
+                                            <td class="text-nowrap">
+                                                <div class="fw-semibold" t-out="actions.formatAmount(appt.amount_payable)"/>
+                                                <span t-attf-class="badge {{appt.payment_state === 'paid' ? 'text-bg-success' : appt.payment_state === 'partial' ? 'text-bg-warning' : 'text-bg-danger'}}"
+                                                      t-out="actions.paymentLabel(appt.payment_state)"/>
+                                            </td>
+                                            <td class="text-nowrap">
+                                                <button t-if="!appt.checked_in and actions.canComplete(appt)" class="btn btn-sm btn-primary me-1"
+                                                        t-on-click="() => actions.markArrived(appt)">
+                                                    <i class="fa fa-user-check me-1"/>Arrived
+                                                </button>
+                                                <button t-if="appt.checked_in and actions.canComplete(appt)" class="btn btn-sm btn-success me-1"
+                                                        t-on-click="() => actions.completeBooking(appt)">
+                                                    <i class="fa fa-check me-1"/>Complete
+                                                </button>
+                                                <button t-if="actions.canCancel(appt)" class="btn btn-sm btn-outline-danger"
+                                                        t-on-click="() => actions.cancelBooking(appt)">Cancel</button>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

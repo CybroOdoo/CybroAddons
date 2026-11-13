@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="pos_salon.SalonBookingSummary">
+        <div class="salon-booking-summary">
+            <!-- CUSTOMER -->
+            <div class="d-flex align-items-center p-3 mb-3 rounded bg-light">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+                     style="width: 46px; height: 46px;">
+                    <i class="fa fa-user"/>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold fs-5" t-out="props.customerName"/>
+                    <div class="text-muted" t-if="props.customerPhone">
+                        <i class="fa fa-phone me-1"/><t t-out="props.customerPhone"/>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div t-if="props.dateLabel" class="small">
+                        <i class="fa fa-calendar me-1 text-muted"/><t t-out="props.dateLabel"/>
+                    </div>
+                    <div t-if="props.specialistName" class="small">
+                        <i class="fa fa-user-circle me-1 text-muted"/>Specialist:
+                        <strong><t t-out="props.specialistName"/></strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SERVICES -->
+            <table class="table table-sm align-middle mb-3">
+                <thead>
+                    <tr class="text-muted small text-uppercase">
+                        <th>Service</th>
+                        <th t-if="props.showTime" class="text-nowrap">Time</th>
+                        <th class="text-center text-nowrap">Duration</th>
+                        <th class="text-end">Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="props.lines" t-as="line" t-key="line_index">
+                        <tr>
+                            <td>
+                                <div class="fw-semibold" t-out="line.name"/>
+                                <div class="small text-muted" t-if="line.category" t-out="line.category"/>
+                            </td>
+                            <td t-if="props.showTime" class="text-nowrap" t-out="line.time"/>
+                            <td class="text-center text-nowrap" t-out="line.duration"/>
+                            <td class="text-end text-nowrap">
+                                <span t-if="line.paid" class="badge text-bg-success">Already paid</span>
+                                <t t-else="" t-out="formatAmount(line.price)"/>
+                            </td>
+                        </tr>
+                    </t>
+                    <t t-foreach="props.amenities || []" t-as="amenity" t-key="amenity.id">
+                        <tr class="text-muted">
+                            <td>
+                                <div><i class="fa fa-plus-circle me-1"/><t t-out="amenity.name"/></div>
+                                <div class="small">Amenity</div>
+                            </td>
+                            <td t-if="props.showTime"/>
+                            <td/>
+                            <td class="text-end text-nowrap" t-out="formatAmount(amenity.price)"/>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+
+            <!-- TOTAL -->
+            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                <span class="fw-bold fs-5">Total</span>
+                <span class="fw-bold fs-4 text-success" t-out="formatAmount(props.total)"/>
+            </div>
+        </div>
+    </t>
+</templates>

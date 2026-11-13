@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Salon service selection and appointment booking templates. -->
+<templates xml:space="preserve">
+    <t t-name="pos_salon.BookAppointmentScreen">
+        <div class="book-appointment-screen h-100 d-flex flex-column">
+            <!-- HEADER -->
+            <div class="screen-header d-flex align-items-center justify-content-between p-3 border-bottom bg-white shadow-sm">
+                <button class="btn btn-light" t-on-click="back">
+                    <i class="fa fa-arrow-left me-2"/> Back
+                </button>
+                <h3 class="m-0 text-primary fw-bold">Select Services</h3>
+                <div class="d-flex gap-2">
+                    <button t-attf-class="btn btn-sm {{state.bookingType === 'walkin' ? 'btn-success' : 'btn-outline-success'}}"
+                            t-on-click="() => this.selectBookingType('walkin')">
+                        <i class="fa fa-user-plus me-1"/> Walk-in
+                    </button>
+                    <button t-attf-class="btn btn-sm {{state.bookingType === 'new' ? 'btn-primary' : 'btn-outline-primary'}}"
+                            t-on-click="() => this.selectBookingType('new')">
+                        <i class="fa fa-calendar-plus me-1"/> New Booking
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="d-flex flex-grow-1 overflow-hidden bg-light">
+                <div class="services-section flex-grow-1 overflow-auto p-4" style="flex: 0 0 68%;">
+                    <div t-if="state.partnerId" class="card border-0 shadow-sm mb-3">
+                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <div>
+                                    <i class="fa fa-user text-primary me-2"/>
+                                    <strong><t t-outout="state.customerName"/></strong>
+                                    <span class="text-muted ms-2"><t t-outout="state.customerPhone"/></span>
+                                </div>
+                                <div t-if="state.specialistId or state.selectedAmenities.length" class="small text-muted mt-1">
+                                    <span t-if="state.specialistId" class="me-3">
+                                        <i class="fa fa-user-circle me-1"/>Specialist: <t t-outout="specialistName"/>
+                                    </span>
+                                    <span t-if="state.selectedAmenities.length">
+                                        <i class="fa fa-plus-circle me-1"/>Amenities: <t t-outout="amenityNames"/>
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary" t-on-click="changeCustomer">
+                                <i class="fa fa-exchange me-1"/>Change
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <t t-foreach="visibleCategories" t-as="category" t-key="category.id">
+                            <div class="col-12 col-md-6 col-xl-4">
+                                <!-- Category Card -->
+                                <div class="main-category-card card border-0 shadow-sm h-100"
+                                     t-on-click="() => this.openServiceWizard(category)"
+                                     style="cursor: pointer;">
+                                    <div class="card-body p-4 text-center">
+                                        <div class="category-icon-large mb-3"
+                                             t-attf-style="background: linear-gradient(135deg, {{category.color}}22 0%, {{category.color}}44 100%);">
+                                            <span class="icon-text" t-out="category.icon"/>
+                                        </div>
+                                        <h5 class="category-name mb-2" t-out="category.name"/>
+                                        <p class="text-muted small mb-3" t-out="category.description"/>
+                                        <div class="d-flex justify-content-center align-items-center text-primary">
+                                            <span class="small fw-semibold">
+                                                <t t-out="getTotalServicesCount(category)"/> Services Available
+                                            </span>
+                                            <i class="fa fa-arrow-right ms-2"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Selected Services Summary (32%) -->
+                <div class="summary-section border-start bg-white" style="flex: 0 0 32%;">
+                    <div class="h-100 d-flex flex-column">
+                        <!-- Summary Header -->
+                        <div class="summary-header p-4 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h4 class="mb-1 fw-bold text-dark">Your Selection</h4>
+                                    <small class="text-muted">
+                                        <t t-out="state.selectedServices.length + ' ' + (state.selectedServices.length === 1 ? 'service' : 'services') + ' selected'"/>
+                                    </small>
+                                </div>
+                                <div class="selection-badge">
+                                    <span class="badge bg-primary rounded-pill px-3 py-2 fs-6"
+                                          t-out="state.selectedServices.length"/>
+                                </div>
+                            </div>
+                            <button t-if="state.selectedServices.length > 0"
+                                    class="btn btn-outline-danger btn-sm w-100"
+                                    t-on-click="clearAllServices">
+                                <i class="fa fa-trash-o me-2"/> Clear All
+                            </button>
+                        </div>
+
+                        <!-- Selected Services Cards -->
+                        <div class="selected-services-body flex-grow-1 overflow-auto p-3">
+                            <t t-if="state.selectedServices.length > 0">
+                                <t t-foreach="state.selectedServices" t-as="selectedService" t-key="selectedService_index">
+                                    <div class="selected-service-item mb-3">
+                                        <div class="service-mini-card card border-0 shadow-sm">
+                                            <div class="card-body p-3">
+                                                <div class="d-flex align-items-start mb-2">
+                                                    <div class="service-icon-small me-2"
+                                                         t-attf-style="background: {{selectedService.color}}22;">
+                                                        <span t-out="selectedService.icon"/>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="service-category-badge mb-1">
+                                                            <span class="badge bg-light text-primary small">
+                                                                <t t-out="selectedService.category"/>
+                                                            </span>
+                                                        </div>
+                                                        <h6 class="mb-1 service-mini-title" t-out="selectedService.serviceName"/>
+                                                        <div class="d-flex gap-2 text-muted small">
+                                                            <span><i class="fa fa-clock-o me-1"/><t t-out="selectedService.duration"/></span>
+                                                            <span><t t-out="formatAmount(servicePrice(selectedService))"/></span>
+                                                        </div>
+                                                        <div t-if="selectedService.reschedule" class="small fw-semibold text-success mt-1">
+                                                            <i class="fa fa-refresh me-1"/>Reschedule
+                                                            <t t-if="selectedService.reschedule.paid"> - already paid</t>
+                                                        </div>
+                                                    </div>
+                                                    <button class="btn btn-sm btn-light remove-btn"
+                                                            t-on-click="() => this.removeService(selectedService_index)">
+                                                        <i class="fa fa-times text-danger"/>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+
+                                <!-- Total Summary -->
+                                <div class="total-summary-card card border-0 bg-light mt-3">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted">Total Duration:</span>
+                                            <strong><t t-out="getTotalDuration()"/> min</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-muted">Estimated Total:</span>
+                                            <strong class="text-primary fs-5"><t t-out="formatAmount(getTotalPrice())"/></strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <!-- Empty State -->
+                            <t t-if="state.selectedServices.length === 0">
+                                <div class="empty-state-card text-center py-5">
+                                    <div class="empty-icon mb-3">
+                                        <i class="fa fa-shopping-basket text-muted" style="font-size: 4rem; opacity: 0.3;"/>
+                                    </div>
+                                    <h5 class="text-muted mb-2">No Services Selected</h5>
+                                    <p class="text-muted small mb-0">
+                                        Click on any category to browse services
+                                    </p>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- ✅ WALK-IN / NEW BOOKING POPUP -->
+                        <div t-if="state.showBookingPopup" class="wizard-overlay">
+                            <div class="wizard-modal text-center position-relative">
+                                <button class="btn-close position-absolute top-0 end-0 m-3"
+                                        aria-label="Close"
+                                        t-on-click="back"/>
+                                <div class="wizard-header border-0">
+                                    <h3 class="fw-bold text-primary mb-3">Choose Booking Type</h3>
+                                </div>
+                                <div class="wizard-body py-4">
+                                    <p class="text-muted mb-4">Please select how you want to proceed.</p>
+                                    <div class="d-flex justify-content-center gap-3">
+                                        <button class="btn btn-outline-success btn-lg px-4 py-3"
+                                                t-on-click="() => this.selectBookingType('walkin')">
+                                            <i class="fa fa-user me-2"/> Walk-In
+                                        </button>
+                                        <button class="btn btn-primary btn-lg px-4 py-3"
+                                                t-on-click="() => this.selectBookingType('new')">
+                                            <i class="fa fa-calendar-plus me-2"/> New Booking
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Footer -->
+                        <div class="summary-footer p-3 border-top bg-light">
+                            <button t-if="state.bookingType === 'new' and state.selectedServices.length > 0"
+                                    class="btn btn-success btn-lg w-100 fw-bold shadow-sm"
+                                    t-on-click="viewAvailableSlots">
+                                <i class="fa fa-calendar-check-o me-2"/>
+                                View Available Slots
+                            </button>
+                            <button t-elif="state.bookingType === 'walkin' and state.selectedServices.length > 0"
+                                class="btn btn-success btn-lg w-100 fw-bold shadow-sm"
+                                t-on-click="startWalkin">
+                                <i class="fa fa-calendar-check-o me-2"/>
+                                Confirm Walk-in
+                            </button>
+                            <button t-else=""
+                                    class="btn btn-secondary btn-lg w-100"
+                                    disabled="">
+                                <i class="fa fa-calendar-check-o me-2"/>
+                                Select Services First
+                            </button>
+                        </div>
+                        <t t-if="state.showCustomerPopup">
+                            <div class="modal-backdrop fade show"/>
+                            <div class="modal fade show d-block" tabindex="-1" role="dialog">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Customer Details</h5>
+                                            <button type="button" class="btn-close"
+                                                    t-on-click="() => { state.showCustomerPopup = false; }"
+                                                    aria-label="Close"/>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="wizard-body p-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Customer:</label>
+                                                    <div><strong><t t-out="state.customerName"/></strong>
+                                                        <span class="text-muted ms-2"><t t-out="state.customerPhone"/></span></div>
+                                                </div>
+                                                <div class="mb-3" t-if="state.specialists.length">
+                                                    <label class="form-label fw-semibold">Specialist:</label>
+                                                    <select class="form-select" t-model="state.specialistId">
+                                                        <option value="">-- Select specialist --</option>
+                                                        <t t-foreach="state.specialists" t-as="specialist" t-key="specialist.id">
+                                                            <option t-att-value="specialist.id"><t t-out="specialist.name"/></option>
+                                                        </t>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3" t-if="state.amenities.length">
+                                                    <label class="form-label fw-semibold">Amenities:</label>
+                                                    <t t-foreach="state.amenities" t-as="amenity" t-key="amenity.id">
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input"
+                                                                   t-att-id="'amenity_' + amenity.id"
+                                                                   t-att-checked="state.selectedAmenities.includes(amenity.id)"
+                                                                   t-on-change="() => this.toggleAmenity(amenity.id)"/>
+                                                            <label class="form-check-label" t-att-for="'amenity_' + amenity.id">
+                                                                <t t-out="amenity.name"/> (<t t-out="formatAmount(amenity.price)"/>)
+                                                            </label>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                    t-on-click="() => { state.showCustomerPopup = false; }">
+                                                Cancel
+                                            </button>
+                                            <button type="button" class="btn btn-success"
+                                                    t-on-click="confirmBooking">
+                                                <i class="fa fa-check me-2"/>
+                                                Confirm Booking
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WALK-IN SEAT CONFLICT POPUP -->
+            <t t-if="state.showPlanPopup and state.walkinPlan">
+                <div class="modal-backdrop fade show"/>
+                <div class="modal fade show d-block" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fa fa-exclamation-triangle text-warning me-2"/>
+                                    No free seat from <t t-out="state.walkinPlan.start"/>
+                                </h5>
+                                <button type="button" class="btn-close" t-on-click="closePlanPopup" aria-label="Close"/>
+                            </div>
+                            <div class="modal-body p-4">
+                                <t t-if="state.rescheduleRow">
+                                    <h6 class="mb-3">
+                                        Move <t t-out="state.rescheduleRow.customer_name"/>
+                                        (now <t t-out="state.rescheduleRow.start"/>) to:
+                                    </h6>
+                                    <div t-if="!state.rescheduleOptions.length" class="text-muted">
+                                        No free time left today for this booking.
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        <button t-foreach="state.rescheduleOptions" t-as="opt" t-key="opt"
+                                                class="btn btn-outline-primary"
+                                                t-on-click="() => this.rescheduleTo(opt)">
+                                            <t t-out="opt"/>
+                                        </button>
+                                    </div>
+                                    <button class="btn btn-secondary btn-sm"
+                                            t-on-click="() => { state.rescheduleRow = null; }">Back</button>
+                                </t>
+                                <t t-else="">
+                                    <h6 class="mb-2">Customers holding the seats</h6>
+                                    <table class="table table-sm align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Seat</th>
+                                                <th>Customer</th>
+                                                <th>Services</th>
+                                                <th>Time</th>
+                                                <th>Status</th>
+                                                <th/>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="state.walkinPlan.conflicts" t-as="row" t-key="row.id">
+                                                <td><t t-out="row.seat_no or '-'"/></td>
+                                                <td>
+                                                    <div t-out="row.customer_name"/>
+                                                    <small class="text-muted"><i class="fa fa-phone me-1"/><t t-out="row.customer_phone"/></small>
+                                                </td>
+                                                <td t-out="row.service_name"/>
+                                                <td><t t-out="row.start"/> - <t t-out="row.end"/></td>
+                                                <td>
+                                                    <span t-if="row.checked_in" class="badge text-bg-success">
+                                                        <t t-if="row.is_walkin">Walk-in in service</t>
+                                                        <t t-else="">Arrived</t>
+                                                    </span>
+                                                    <t t-else="">
+                                                        <span class="badge text-bg-warning">Not arrived</span>
+                                                        <div class="small text-danger" t-out="lateText(row)"/>
+                                                    </t>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-if="row.can_reschedule">
+                                                        <button class="btn btn-sm btn-outline-success me-1"
+                                                                t-on-click="() => this.markArrived(row)">Arrived</button>
+                                                        <button class="btn btn-sm btn-outline-primary"
+                                                                t-on-click="() => this.openReschedule(row)">Reschedule</button>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <h6 class="mt-4 mb-2">Or the walk-in customer waits. Next free time:</h6>
+                                    <div t-if="!state.walkinPlan.free_starts.length" class="text-muted">
+                                        No free time left today for this service.
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button t-foreach="state.walkinPlan.free_starts" t-as="opt" t-key="opt"
+                                                class="btn btn-outline-success"
+                                                t-on-click="() => this.pickWalkinTime(opt)">
+                                            <t t-out="opt"/>
+                                        </button>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" t-on-click="closePlanPopup">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- WALK-IN CONFIRMATION POPUP -->
+            <t t-if="state.showCustomerPopup">
+                <div class="modal-backdrop fade show"/>
+                <div class="modal fade show d-block" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fa fa-check-circle text-success me-2"/>Confirm Walk-in
+                                </h5>
+                                <button type="button" class="btn-close"
+                                        t-on-click="() => { state.showCustomerPopup = false; }"
+                                        aria-label="Close"/>
+                            </div>
+                            <div class="modal-body p-4">
+                                <SalonBookingSummary
+                                    customerName="state.customerName"
+                                    customerPhone="state.customerPhone"
+                                    specialistName="specialistName"
+                                    dateLabel="'Walk-in - ' + walkinRange"
+                                    lines="summaryLines"
+                                    amenities="selectedAmenityList"
+                                    total="grandTotal"/>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                        t-on-click="() => { state.showCustomerPopup = false; }">
+                                    Cancel
+                                </button>
+                                <button type="button" class="btn btn-success"
+                                        t-on-click="confirmBooking">
+                                    <i class="fa fa-check me-2"/>
+                                    Confirm Booking
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!--CUSTOMER FIRST POPUP -->
+            <t t-if="state.showCustomerFirstPopup">
+                <div class="modal-backdrop fade show"/>
+                <div class="modal fade show d-block" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="fa fa-user me-2"/>Select Customer</h5>
+                            </div>
+                            <div class="modal-body">
+                                <div class="p-2">
+                                    <SalonCustomerField state="state"/>
+                                </div>
+                                <div class="px-2 mb-3" t-if="state.specialists.length">
+                                    <label class="form-label fw-semibold">Specialist:</label>
+                                    <select class="form-select" t-model="state.specialistId">
+                                        <option value="">No preference (any available)</option>
+                                        <t t-foreach="state.specialists" t-as="specialist" t-key="specialist.id">
+                                            <option t-att-value="specialist.id"><t t-out="specialist.name"/></option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="px-2" t-if="state.amenities.length">
+                                    <label class="form-label fw-semibold">Amenities:</label>
+                                    <t t-foreach="state.amenities" t-as="amenity" t-key="amenity.id">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input"
+                                                   t-att-id="'amenity_' + amenity.id"
+                                                   t-att-checked="state.selectedAmenities.includes(amenity.id)"
+                                                   t-on-change="() => this.toggleAmenity(amenity.id)"/>
+                                            <label class="form-check-label" t-att-for="'amenity_' + amenity.id">
+                                                <t t-out="amenity.name"/> (<t t-out="formatAmount(amenity.price)"/>)
+                                            </label>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" t-on-click="back">Back</button>
+                                <button type="button" class="btn btn-success" t-on-click="confirmCustomer">
+                                    <i class="fa fa-arrow-right me-2"/>Continue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- SERVICE WIZARD MODAL -->
+            <div t-if="state.showWizard" class="wizard-overlay">
+                <div class="wizard-modal">
+                    <!-- Wizard Header -->
+                    <div class="wizard-header">
+                        <button class="btn btn-light btn-sm" t-on-click="closeWizard">
+                            <i class="fa fa-arrow-left me-2"/> Back to Categories
+                        </button>
+                        <div class="text-center flex-grow-1">
+                            <h3 class="mb-1">
+                                <span class="wizard-icon" t-out="state.currentCategory.icon"/>
+                                <t t-out="state.currentCategory.name"/>
+                            </h3>
+                            <p class="text-muted small mb-0" t-out="state.currentCategory.description"/>
+                        </div>
+                        <button class="btn btn-light btn-sm" t-on-click="closeWizard">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </div>
+
+                    <!-- Wizard Body - Sub Services Grid with Headings -->
+                    <div class="wizard-body">
+                        <t t-foreach="state.currentCategoryServices" t-as="serviceGroup" t-key="serviceGroup_index">
+                            <div class="service-group-section mb-4">
+                                <h5 class="service-group-heading text-primary fw-bold mb-3 pb-2 border-bottom">
+                                    <i class="fa fa-tag me-2"/>
+                                    <t t-out="serviceGroup.heading"/>
+                                </h5>
+                                <div class="row g-3">
+                                    <t t-foreach="serviceGroup.services" t-as="service" t-key="service.id">
+                                        <div class="col-12 col-md-6 col-lg-4">
+                                            <div class="sub-service-card"
+                                                 t-on-click="() => this.onServiceClick(service)"
+                                                 t-attf-class="{{isSubServiceSelected(service.id) ? 'sub-service-card-selected' : ''}}">
+                                                <div class="sub-service-content">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <h6 class="sub-service-name mb-0" t-out="service.name"/>
+                                                        <div class="sub-service-check">
+                                                            <i t-attf-class="fa {{isSubServiceSelected(service.id) ? 'fa-check-circle text-success' : 'fa-circle-o text-muted'}}"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="sub-service-details">
+                                                        <span class="detail-item">
+                                                            <i class="fa fa-clock-o me-1"/>
+                                                            <t t-out="service.duration"/>
+                                                        </span>
+                                                        <span class="detail-item">
+                                                            <t t-out="formatAmount(servicePrice(service))"/>
+                                                        </span>
+                                                    </div>
+                                                    <div t-if="getBookedInfo(service)" class="small fw-bold text-danger mt-2">
+                                                        <i class="fa fa-calendar-times-o me-1"/>
+                                                        <t t-out="bookedLabel(service)"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- Wizard Footer -->
+                    <div class="wizard-footer">
+                        <button class="btn btn-outline-secondary" t-on-click="closeWizard">
+                            Cancel
+                        </button>
+                        <button class="btn btn-primary btn-lg" t-on-click="closeWizard">
+                            <i class="fa fa-check me-2"/>
+                            Done - Continue Selection
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

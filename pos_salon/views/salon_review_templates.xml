@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="review_layout" name="Salon Review Layout">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title>Rate your visit</title>
+                <style>
+                    body{font-family:Arial,sans-serif;background:#f4f4f6;margin:0;padding:24px;}
+                    .sr-card{max-width:460px;margin:40px auto;background:#fff;border-radius:12px;
+                             padding:28px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+                    .sr-muted{color:#777;font-size:14px;}
+                    .sr-error{color:#c0392b;}
+                    .sr-stars{display:flex;flex-direction:row-reverse;justify-content:center;margin:18px 0;}
+                    .sr-stars input{display:none;}
+                    .sr-stars label{font-size:46px;color:#ccc;cursor:pointer;padding:0 4px;}
+                    .sr-stars input:checked ~ label,
+                    .sr-stars label:hover,
+                    .sr-stars label:hover ~ label{color:#f5a623;}
+                    textarea{width:100%;box-sizing:border-box;border:1px solid #ccc;border-radius:8px;padding:10px;font-size:14px;}
+                    button{margin-top:14px;background:#875a7b;color:#fff;border:0;border-radius:8px;
+                           padding:12px 32px;font-size:16px;cursor:pointer;}
+                </style>
+            </t>
+            <div class="sr-card"><t t-out="0"/></div>
+        </t>
+    </template>
+
+    <template id="review_page" name="Salon Review Page">
+        <t t-call="pos_salon.review_layout">
+            <t t-if="booking.review_date">
+                <h2>Thank you!</h2>
+                <p style="font-size:34px;color:#f5a623;" t-out="booking.rating_stars"/>
+                <p class="sr-muted">Your review has been saved.</p>
+            </t>
+            <t t-else="">
+                <h2>How was your visit?</h2>
+                <p class="sr-muted">
+                    <t t-out="booking.service_name"/> | <t t-out="booking.date"/>
+                    <t t-if="booking.specialist_id"> | <t t-out="booking.specialist_id.name"/></t>
+                </p>
+                <p t-if="error" class="sr-error">Please choose a star rating.</p>
+                <form method="post" t-attf-action="/salon/review/#{token}/submit">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div class="sr-stars">
+                        <t t-foreach="[5, 4, 3, 2, 1]" t-as="n">
+                            <input type="radio" name="rating" t-att-id="'s%s' % n" t-att-value="n"
+                                   t-att-checked="'checked' if rating == n else None"/>
+                            <label t-att-for="'s%s' % n">&#9733;</label>
+                        </t>
+                    </div>
+                    <textarea name="note" rows="4" placeholder="Tell us more (optional)"/>
+                    <button type="submit">Submit review</button>
+                </form>
+            </t>
+        </t>
+    </template>
+
+    <template id="review_invalid" name="Salon Review Invalid">
+        <t t-call="pos_salon.review_layout">
+            <h2>Link not valid</h2>
+            <p class="sr-muted">This review link is invalid or has expired.</p>
+        </t>
+    </template>
+</odoo>

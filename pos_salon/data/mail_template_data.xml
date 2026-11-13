@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_template_salon_review" model="mail.template">
+        <field name="name">Salon: Review Request</field>
+        <field name="model_id" ref="model_salon_booking"/>
+        <field name="subject">Thank you for visiting {{ object.config_id.name }}!</field>
+        <field name="email_from">{{ object.config_id.company_id.partner_id.email_formatted or user.email_formatted }}</field>
+        <field name="email_to">{{ object.customer_email }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+            <div style="font-family:Arial,sans-serif;font-size:14px;color:#333;max-width:520px;margin:auto;">
+                <p>Hello <t t-out="object.customer_name or ''"/>,</p>
+                <p>Thank you for choosing <b><t t-out="object.config_id.name"/></b>. It was a pleasure to have you with us, and we hope you enjoyed your visit.</p>
+                <p>Your feedback helps us improve our service. Please take a moment to rate your experience and share your review with us.</p>
+                <p style="text-align:center;font-size:22px;">
+                    <t t-foreach="[1, 2, 3, 4, 5]" t-as="n">
+                        <a t-att-href="'%s?rating=%s' % (object.review_url, n)"
+                           style="text-decoration:none;color:#f5a623;padding:0 6px;">&#9733;</a>
+                    </t>
+                </p>
+                <p style="text-align:center;margin:24px 0;">
+                    <a t-att-href="object.review_url"
+                       style="background:#875a7b;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;display:inline-block;">Rate your visit</a>
+                </p>
+            </div>
+        </field>
+    </record>
+</odoo>

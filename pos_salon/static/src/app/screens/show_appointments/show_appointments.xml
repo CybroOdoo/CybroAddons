@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Template for confirmed appointments on the current day. -->
+<templates xml:space="preserve">
+    <t t-name="pos_salon.ShowAppointmentsScreen">
+        <div class="show-appointments-screen h-100 d-flex flex-column bg-light">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center p-3 bg-white border-bottom shadow-sm">
+                <button class="btn btn-light" t-on-click="back">
+                    <i class="fa fa-arrow-left me-2"/> Back
+                </button>
+                <h3 class="m-0 text-primary fw-bold">
+                    <i class="fa fa-calendar-check me-2"/>
+                    Confirmed Appointments
+                </h3>
+                <button class="btn btn-primary" t-on-click="refresh">
+                    <i class="fa fa-refresh me-2"/> Refresh
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <t t-if="state.loading">
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted">Loading appointments...</p>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Error State -->
+            <t t-if="!state.loading and state.error">
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+                    <div class="text-center p-4">
+                        <i class="fa fa-exclamation-triangle text-warning" style="font-size: 3rem;"/>
+                        <h4 class="mt-3 text-danger">Error Loading Appointments</h4>
+                        <p class="text-muted mb-3"><t t-out="state.error"/></p>
+                        <button class="btn btn-primary" t-on-click="refresh">
+                            <i class="fa fa-refresh me-2"/> Try Again
+                        </button>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Empty State -->
+            <t t-if="!state.loading and !state.error and state.appointments.length === 0">
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+                    <div class="text-center p-4">
+                        <i class="fa fa-calendar-o text-muted" style="font-size: 4rem; opacity: 0.3;"/>
+                        <h4 class="mt-3 text-muted">No Confirmed Appointments</h4>
+                        <p class="text-muted">Create a new booking to see it here</p>
+                        <button class="btn btn-primary mt-3" t-on-click="() => pos.router.navigate('BookAppointmentScreen')">
+                            <i class="fa fa-plus me-2"/> Book New Appointment
+                        </button>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Table with Data -->
+            <t t-if="!state.loading and !state.error and state.appointments.length > 0">
+                <div class="flex-grow-1 overflow-auto p-4">
+                    <!-- Summary Card -->
+                    <div class="card mb-3 border-0 shadow-sm">
+                        <div class="card-body bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0 text-white">Today's Appointments</h5>
+                                    <p class="mb-0 small opacity-75 text-white">Confirmed bookings for today</p>
+                                </div>
+                                <div class="display-4 fw-bold">
+                                    <t t-out="state.appointments.length"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appointments Table -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="py-3 px-4">
+                                                <i class="fa fa-hashtag me-2"/>ID
+                                            </th>
+                                            <th class="py-3 px-4">
+                                                <i class="fa fa-user me-2"/>Customer Name
+                                            </th>
+                                            <th class="py-3 px-4">
+                                                <i class="fa fa-phone me-2"/>Phone
+                                            </th>
+                                            <th class="py-3 px-4">
+                                                <i class="fa fa-calendar me-2"/>Date
+                                            </th>
+                                            <th class="py-3 px-4">
+                                                <i class="fa fa-clock-o me-2"/>Slot
+                                            </th>
+                                            <th class="py-3 px-4">
+                                                <i class="fa fa-scissors me-2"/>Service
+                                            </th>
+                                            <th class="py-3 px-4"><i class="fa fa-money me-2"/>Amount</th>
+                                            <th class="py-3 px-4">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="state.appointments" t-as="appt" t-key="appt.id">
+                                            <tr class="appointment-row">
+                                                <td class="py-3 px-4 fw-semibold text-primary">
+                                                    #<t t-out="appt.id"/>
+                                                </td>
+                                                <td class="py-3 px-4">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-circle me-2 bg-primary text-white d-flex align-items-center justify-content-center rounded-circle"
+                                                             style="width: 36px; height: 36px; font-size: 14px;">
+                                                            <t t-out="appt.customer_name ? appt.customer_name[0].toUpperCase() : '?'"/>
+                                                        </div>
+                                                        <strong><t t-out="appt.customer_name"/></strong>
+                                                    </div>
+                                                </td>
+                                                <td class="py-3 px-4">
+                                                    <i class="fa fa-phone text-success me-2"/>
+                                                    <t t-out="appt.customer_phone"/>
+                                                </td>
+                                                <td class="py-3 px-4">
+                                                    <span class="badge bg-light text-dark px-3 py-2">
+                                                        <t t-out="formatDate(appt.date)"/>
+                                                    </span>
+                                                </td>
+                                                <td class="py-3 px-4">
+                                                    <span t-attf-class="badge px-3 py-2 {{formatSlot(appt.slot) === 'Walk-in' ? 'bg-warning' : 'bg-info'}}">
+                                                        <t t-out="formatSlot(appt.slot)"/>
+                                                    </span>
+                                                    <div t-if="appt.time_period and (appt.slot || '').trim() === 'Walk-in'" class="small fw-semibold mt-1">
+                                                        <i class="fa fa-clock-o me-1"/><t t-out="appt.time_period"/>
+                                                    </div>
+                                                </td>
+                                                <td class="py-3 px-4">
+                                                    <div class="service-text text-muted small">
+                                                        <t t-out="appt.service_name || '-'"/>
+                                                    </div>
+                                                    <div t-if="appt.specialist_name" class="text-muted small"><i class="fa fa-user me-1"/><t t-out="appt.specialist_name"/></div>
+                                                    <div t-if="appt.amenity_names" class="text-muted small"><i class="fa fa-plus-circle me-1"/><t t-out="appt.amenity_names"/></div>
+                                                </td>
+                                                <td class="py-3 px-4 text-nowrap">
+                                                    <div class="fw-semibold" t-out="actions.formatAmount(appt.amount_payable)"/>
+                                                    <span t-attf-class="badge {{appt.payment_state === 'paid' ? 'text-bg-success' : appt.payment_state === 'partial' ? 'text-bg-warning' : 'text-bg-danger'}}"
+                                                          t-out="actions.paymentLabel(appt.payment_state)"/>
+                                                    <div t-if="appt.state === 'done'" class="text-muted small">Service completed</div>
+                                                </td>
+                                                <td class="py-3 px-4 text-nowrap">
+                                                    <button t-if="actions.canPay(appt)" class="btn btn-sm btn-primary me-1"
+                                                            t-on-click="() => actions.payBooking(appt)">
+                                                        <i class="fa fa-credit-card me-1"/>Pay <t t-out="actions.formatAmount(appt.amount_due)"/>
+                                                    </button>
+                                                    <button t-if="actions.canComplete(appt)" class="btn btn-sm btn-success me-1"
+                                                            t-on-click="() => actions.completeBooking(appt)">
+                                                        <i class="fa fa-check me-1"/>Complete
+                                                    </button>
+                                                    <button t-if="actions.canCancel(appt)" class="btn btn-sm btn-outline-danger"
+                                                            t-on-click="() => actions.cancelBooking(appt)">Cancel</button>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+            <SalonCommissionPopup actions="actions"/>
+        </div>
+    </t>
+</templates>

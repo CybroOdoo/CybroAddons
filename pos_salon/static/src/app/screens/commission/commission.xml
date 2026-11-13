@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Template for the specialist commission screen. -->
+<templates xml:space="preserve">
+    <t t-name="pos_salon.CommissionScreen">
+        <div class="commission-screen h-100 d-flex flex-column bg-light">
+            <div class="d-flex justify-content-between align-items-center p-3 bg-white border-bottom shadow-sm">
+                <button class="btn btn-light" t-on-click="back">
+                    <i class="fa fa-arrow-left me-2"/> Back
+                </button>
+                <h3 class="m-0 text-primary fw-bold"><i class="fa fa-money me-2"/> Commission</h3>
+                <div class="btn-group">
+                    <button t-attf-class="btn {{state.scope === 'today' ? 'btn-primary' : 'btn-outline-primary'}}"
+                            t-on-click="() => this.setScope('today')">Today</button>
+                    <button t-attf-class="btn {{state.scope === 'all' ? 'btn-primary' : 'btn-outline-primary'}}"
+                            t-on-click="() => this.setScope('all')">All</button>
+                </div>
+            </div>
+
+            <div class="flex-grow-1 overflow-auto p-3">
+                <t t-if="state.loading">
+                    <div class="text-center p-5 text-muted">Loading commission...</div>
+                </t>
+                <t t-elif="state.error">
+                    <div class="alert alert-danger"><t t-out="state.error"/></div>
+                </t>
+                <t t-elif="!state.allowed">
+                    <div class="alert alert-warning"><t t-out="state.message"/></div>
+                </t>
+                <t t-else="">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header fw-bold">Commission by specialist</div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="px-4">Specialist</th>
+                                        <th>Bookings</th>
+                                        <th>Booking Amount</th>
+                                        <th>Commission</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.totals" t-as="item" t-key="item.specialist">
+                                        <tr>
+                                            <td class="px-4"><strong><t t-out="item.specialist"/></strong></td>
+                                            <td><t t-out="item.count"/></td>
+                                            <td><t t-out="formatMoney(item.amount)"/></td>
+                                            <td class="fw-bold text-success"><t t-out="formatMoney(item.commission)"/></td>
+                                        </tr>
+                                    </t>
+                                    <tr t-if="!state.totals.length">
+                                        <td colspan="4" class="text-center text-muted p-4">No commission found.</td>
+                                    </tr>
+                                    <tr t-if="state.totals.length" class="table-light">
+                                        <td class="px-4 fw-bold">Total</td>
+                                        <td/>
+                                        <td class="fw-bold"><t t-outout="formatMoney(state.grandAmount)"/></td>
+                                        <td class="fw-bold text-success"><t t-outout="formatMoney(state.grandCommission)"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm">
+                        <div class="card-header fw-bold">Completed bookings</div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="px-4">ID</th>
+                                        <th>Date</th>
+                                        <th>Customer</th>
+                                        <th>Service</th>
+                                        <th>Specialist</th>
+                                        <th>Amount</th>
+                                        <th>Commission</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.rows" t-as="row" t-key="row.id">
+                                        <tr>
+                                            <td class="px-4 fw-semibold text-primary">#<t t-out="row.id"/></td>
+                                            <td><t t-out="formatDate(row.date)"/></td>
+                                            <td><t t-out="row.customer_name"/></td>
+                                            <td><t t-out="row.service_name"/></td>
+                                            <td><t t-out="row.specialist"/></td>
+                                            <td><t t-out="formatMoney(row.amount_total)"/></td>
+                                            <td class="fw-bold text-success"><t t-out="formatMoney(row.commission_amount)"/></td>
+                                        </tr>
+                                    </t>
+                                    <tr t-if="!state.rows.length">
+                                        <td colspan="7" class="text-center text-muted p-4">No completed bookings.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

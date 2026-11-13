@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Date, slot, and customer details templates for scheduled bookings. -->
+<templates xml:space="preserve">
+    <t t-name="pos_salon.SlotBookingScreen">
+        <div class="slot-booking-screen h-100 d-flex flex-column bg-light">
+            <!-- HEADER -->
+            <div class="d-flex justify-content-between align-items-center p-3 border-bottom bg-white shadow-sm">
+                <button class="btn btn-light" t-on-click="back">
+                    <i class="fa fa-arrow-left me-2"/> Back
+                </button>
+                <h3 class="m-0 text-primary fw-bold">Select Slots</h3>
+                <button class="btn btn-success"
+                        t-att-disabled="!allSlotsSelected"
+                        t-on-click="confirmBooking">
+                    <i class="fa fa-check me-2"/> Confirm
+                </button>
+            </div>
+
+            <!-- DATE SELECTOR -->
+            <div class="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                    <label class="form-label fw-semibold me-3">Select Date:</label>
+                    <input type="date"
+                           t-att-value="state.selectedDate"
+                           t-on-change="changeDate"
+                           class="form-control d-inline-block w-auto"/>
+                </div>
+                <div t-if="specialistName" class="text-muted">
+                    <i class="fa fa-user-circle me-1"/>Specialist:
+                    <strong class="text-dark"><t t-out="specialistName"/></strong>
+                </div>
+            </div>
+
+            <!-- BODY -->
+            <div class="flex-grow-1 overflow-auto p-4">
+                <t t-foreach="state.selectedServices" t-as="service" t-key="service.serviceId">
+                    <div class="card mb-4 shadow-sm border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="m-0 text-white">
+                                <t t-out="service.serviceName"/>
+                                (<t t-out="service.duration"/>)
+                                <span t-if="service.reschedule" class="badge bg-warning text-dark ms-2">
+                                    Reschedule<t t-if="service.reschedule.paid"> - already paid</t>
+                                </span>
+                            </h5>
+                        </div>
+                        <div class="card-body bg-white">
+                            <div class="row g-2">
+                                <t t-foreach="allSlots" t-as="slot" t-key="slot">
+                                    <div t-if="!isSlotUnavailable(service, slot)" class="col-6 col-md-4 col-lg-3">
+                                        <button t-attf-class="btn w-100 mb-2
+                                            {{isSlotBooked(slot) ? 'btn-secondary disabled' :
+                                              isSlotSelected(service.serviceId, slot) ? 'btn-success' :
+                                              'btn-outline-primary'}}"
+                                            t-on-click="() => this.selectSlot(service.serviceId, slot)">
+                                            <t t-out="slot"/>
+                                        </button>
+                                    </div>
+                                </t>
+                            </div>
+                            <div t-if="!hasFreeSlot(service)" class="text-muted">
+                                No free time on this date for this service.
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="p-3 border-top bg-white d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Date:</strong> <t t-out="state.selectedDate"/>
+                </div>
+                <div>
+                    <strong>Total Price:</strong> <t t-out="formatAmount(state.totalPrice)"/>
+                </div>
+            </div>
+
+            <!-- BOOKING CONFIRMATION POPUP -->
+            <t t-if="state.showCustomerPopup">
+                <div class="modal-backdrop fade show"/>
+                <div class="modal fade show d-block" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fa fa-check-circle text-success me-2"/>Confirm Booking
+                                </h5>
+                                <button type="button" class="btn-close"
+                                        t-on-click="closeCustomerPopup"
+                                        aria-label="Close"/>
+                            </div>
+                            <div class="modal-body p-4">
+                                <SalonBookingSummary
+                                    customerName="state.customerName"
+                                    customerPhone="state.customerPhone"
+                                    specialistName="specialistName"
+                                    dateLabel="state.selectedDate"
+                                    showTime="true"
+                                    lines="summaryLines"
+                                    amenities="selectedAmenityList"
+                                    total="grandTotal"/>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary"
+                                        t-on-click="closeCustomerPopup">
+                                    Cancel
+                                </button>
+                                <button type="button" class="btn btn-success"
+                                        t-on-click="saveCustomerInfo">
+                                    <i class="fa fa-check me-2"/> Confirm Booking
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- THANK YOU POPUP -->
+            <t t-if="state.showThankYouPopup">
+                <div class="modal-backdrop fade show"/>
+                <div class="modal fade show d-block" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header border-bottom">
+                                <h5 class="modal-title fw-semibold">
+                                    <i class="fa fa-check-circle text-success me-2"/>
+                                    Thank You
+                                </h5>
+                                <button type="button" class="btn-close"
+                                        t-on-click="closeThankYouAndNavigate"
+                                        aria-label="Close"/>
+                            </div>
+                            <div class="modal-body p-4">
+                                <p class="mb-0">Slot booked successfully</p>
+                            </div>
+                            <div class="modal-footer border-top">
+                                <button type="button" class="btn btn-primary"
+                                        t-on-click="closeThankYouAndNavigate">
+                                    Ok
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>
