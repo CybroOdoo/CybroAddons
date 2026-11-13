@@ -1,0 +1,54 @@
+.. image:: https://img.shields.io/badge/license-AGPL--3-blue.svg
+    :target: https://www.gnu.org/licenses/agpl-3.0-standalone.html
+    :alt: License: AGPL-3
+
+Project Task Timer
+==================
+This module helps you to track time sheet in project automatically.
+
+Configuration
+=============
+No additional configuration required
+
+Company
+-------
+* `Cybrosys Techno Solutions <https://cybrosys.com/>`__
+
+License
+-------
+GNU Affero General Public License v3.0 (AGPL v3)
+(http://www.gnu.org/licenses/agpl-3.0-standalone.html)
+
+Credits
+-------
+Developer: (v10)Jesni Banu, Contact: odoo@cybrosys.com
+           (v11)Kavya Raveendran, Contact: odoo@cybrosys.com
+           (v12)Kavya Raveendran, Contact: odoo@cybrosys.com
+           (v13)Sreejith sasidharan, Contact: odoo@cybrosys.com
+           (v14)Minhaj T, Contact: odoo@cybrosys.com
+           (v15)Minhaj T, Contact: odoo@cybrosys.com
+           (v16)Athira P S , Contact: odoo@cybrosys.com
+           (v17) Ranjith R, Contact: odoo@cybrosys.com
+
+Contacts
+--------
+* Mail Contact : odoo@cybrosys.com
+* Website : https://cybrosys.com
+
+Bug Tracker
+-----------
+Bugs are tracked on GitHub Issues. In case of trouble, please check there if
+your issue has already been reported.
+
+Maintainer
+==========
+.. image:: https://cybrosys.com/images/logo.png
+   :target: https://cybrosys.com
+
+This module is maintained by Cybrosys Technologies.
+
+For support and more information, please visit `Our Website <https://cybrosys.com/>`__
+
+Further information
+===================
+HTML Description: `<static/description/index.html>`__
