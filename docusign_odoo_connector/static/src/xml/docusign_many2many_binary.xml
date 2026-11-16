@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="docusign_odoo_connector.DocusignMany2ManyBinaryField">
+        <Many2XBinary
+            name="this.props.name"
+            readonly="this.props.readonly"
+            record="this.props.record"
+            className="this.props.className"
+            multiUpload="true"
+            numberOfFiles="this.props.numberOfFiles"
+            acceptedFileExtensions="this.props.acceptedFileExtensions"
+            files="this.files"
+            onFileUploaded.bind="this.onFileUploaded"
+            onFileRemove.bind="this.onFileRemove"
+            onConfigureDocument.bind="this.onConfigureDocument"
+        />
+    </t>
+
+    <t t-name="docusign_odoo_connector.DocusignMany2XBinary">
+        <div t-attf-class="oe_fileupload {{this.props.className ? this.props.className : ''}}" aria-atomic="true">
+            <div class="o_attachments">
+                <t t-foreach="this.props.files" t-as="file" t-key="file_index">
+                   <t t-call="docusign_odoo_connector.DocusignMany2XBinary.attachment_preview"/>
+                </t>
+            </div>
+            <div t-if="!this.props.readonly &amp;&amp; (!this.props.numberOfFiles or this.props.files.length &lt; this.props.numberOfFiles)"
+                 class="oe_add">
+                <FileInput
+                    acceptedFileExtensions="this.props.acceptedFileExtensions"
+                    multiUpload="this.props.multiUpload"
+                    onUpload.bind="this.props.onFileUploaded"
+                    resModel="this.props.record.resModel"
+                    resId="this.props.record.resId or 0"
+                >
+                    <button class="btn btn-secondary o_attach" data-tooltip="Attach">
+                        <span class="oi" data-icon="attach_file" aria-label="Attach"/> <t t-out="this.uploadText"/>
+                    </button>
+                </FileInput>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="docusign_odoo_connector.DocusignMany2XBinary.attachment_preview">
+        <t t-set="editable" t-value="!this.props.readonly"/>
+        <t t-set="isClickable" t-value="this.isWizardApplicable &amp;&amp; !this.props.readonly"/>
+        <div t-attf-class="o_attachment o_attachment_many2many #{ editable ? 'o_attachment_editable' : '' }"
+             t-att-title="isClickable ? 'Click to configure fields for ' + file.name : file.name"
+             t-on-click="() => this.onCardClick(file.id)"
+             t-att-style="isClickable ? 'cursor: pointer;' : ''">
+            <div class="o_attachment_wrap">
+                <t t-set="ext" t-value="this.getExtension(file)"/>
+                <t t-set="url" t-value="this.getUrl(file.id)"/>
+                <div class="o_image_box float-start" t-att-data-tooltip="isClickable ? 'Configure fields for ' + file.name : 'Download ' + file.name">
+                    <t t-if="isClickable">
+                        <img t-if="this.isImage(file)" class="o_preview_image o_hover object-fit-cover rounded align-baseline"
+                            t-attf-src="/web/image/{{ file.id }}" onerror="this.src = '/web/static/img/mimetypes/image.svg'"/>
+                        <span t-else="" class="o_image o_preview_image o_hover" t-att-data-mimetype="file.mimetype" t-att-data-ext="ext" role="img"/>
+                    </t>
+                    <a t-else="" t-att-href="url" aria-label="Download" download="">
+                        <img t-if="this.isImage(file)" class="o_preview_image o_hover object-fit-cover rounded align-baseline"
+                            t-attf-src="/web/image/{{ file.id }}" onerror="this.src = '/web/static/img/mimetypes/image.svg'"/>
+                        <span t-else="" class="o_image o_preview_image o_hover" t-att-data-mimetype="file.mimetype" t-att-data-ext="ext" role="img"/>
+                    </a>
+                </div>
+
+                <div class="caption">
+                    <t t-if="isClickable">
+                        <span class="ml4 text-truncate d-inline-block" style="max-width: 140px;" t-att-title="file.name"><t t-out='file.name'/></span>
+                    </t>
+                    <a t-else="" class="ml4 text-truncate d-inline-block" style="max-width: 140px;" t-att-data-tooltip="'Download ' + file.name" t-att-href="url" download=""><t t-out='file.name'/></a>
+                </div>
+                <div class="caption small">
+                    <span class="ml4 small text-uppercase"><b><t t-out='ext'/></b></span>
+                    <div t-if="editable" class="progress o_attachment_progress_bar">
+                        <div class="progress-bar progress-bar-striped active" style="width: 100%">Uploading</div>
+                    </div>
+                </div>
+
+                <div class="o_attachment_uploaded"><i class="oi text-success" data-icon="check" role="img" aria-label="Uploaded" title="Uploaded"/></div>
+                <div t-if="editable" class="o_attachment_delete" t-on-click.stop="() => this.props.onFileRemove(file.id)"><span role="img" aria-label="Delete" title="Delete">×</span></div>
+            </div>
+        </div>
+    </t>
+
+</templates>

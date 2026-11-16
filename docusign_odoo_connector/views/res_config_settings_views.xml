@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit res.config.settings form view to add DocuSign app section -->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.docusign</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="70"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="DocuSign" string="DocuSign" name="docusign_odoo_connector">
+                    <block title="DocuSign Setup" id="docusign_credentials_settings">
+                        <setting id="docusign_credentials_setting" string="DocuSign Credentials" help="Configure DocuSign API credentials to integrate with Odoo.">
+                            <div class="content-group">
+                                <div class="mt16 row">
+                                    <label for="docusign_environment" string="Environment" class="col-3 col-lg-3 o_light_label"/>
+                                    <field name="docusign_environment" class="col-8 col-lg-8"/>
+                                </div>
+                                <div class="mt8 row">
+                                    <label for="docusign_integrator_key" string="Integrator Key" class="col-3 col-lg-3 o_light_label"/>
+                                    <field name="docusign_integrator_key" class="col-8 col-lg-8" placeholder="e.g. 5d7e48b8-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+                                </div>
+                                <div class="mt8 row">
+                                    <label for="docusign_user_id_data" string="User ID" class="col-3 col-lg-3 o_light_label"/>
+                                    <field name="docusign_user_id_data" class="col-8 col-lg-8" placeholder="e.g. 7f9a12c3-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+                                </div>
+                                <div class="mt8 row">
+                                    <label for="docusign_account_id_data" string="Account ID" class="col-3 col-lg-3 o_light_label"/>
+                                    <field name="docusign_account_id_data" class="col-8 col-lg-8" placeholder="e.g. 12345678"/>
+                                </div>
+                                <div class="mt8 row">
+                                    <label for="docusign_webhook_secret" string="Connect HMAC Secret" class="col-3 col-lg-3 o_light_label"/>
+                                    <field name="docusign_webhook_secret" class="col-8 col-lg-8" password="True" placeholder="DocuSign Connect Secret Key"/>
+                                </div>
+                                <div class="mt8 row">
+                                    <label for="docusign_private_key_ids" string="RSA KeyPair" class="col-3 col-lg-3 o_light_label"/>
+                                    <field name="docusign_private_key_ids" widget="many2many_binary" class="col-8 col-lg-8"/>
+                                </div>
+                                <div class="mt16">
+                                    <button name="action_test_credentials" type="object" string="Test Credentials" class="btn-primary me-2"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Automated Signing Reminders" id="docusign_reminder_settings">
+                        <setting id="docusign_reminder_setting" string="Signing Reminder" help="Configure how many days before document expiry to send automated reminder emails to pending signers.">
+                            <div class="content-group">
+                                <div class="mt16 row">
+                                    <label for="docusign_reminder_days" string="Reminder Days" class="col-3 col-lg-3 o_light_label"/>
+                                    <div class="col-8 col-lg-8 d-flex align-items-center">
+                                        <field name="docusign_reminder_days" class="oe_inline text-center" style="width: 70px;"/>
+                                        <span class="ms-2 text-muted">days before expiry</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action to open DocuSign tab in General Settings -->
+    <record id="action_docusign_configuration" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module' : 'docusign_odoo_connector', 'bin_size': False}</field>
+    </record>
+
+    <!-- Configuration Menu & Settings Menuitem -->
+    <menuitem id="docusign_menu_configuration"
+              name="Configuration"
+              parent="main_docusign_menu_root"
+              sequence="100"/>
+
+    <menuitem id="docusign_menu_settings"
+              name="Settings"
+              parent="docusign_menu_configuration"
+              action="action_docusign_configuration"
+              sequence="10"/>
+</odoo>

@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Docusign Odoo Connector</title>
+    <!-- Google Fonts: Plus Jakarta Sans (Captions/Headings) & Inter (Text) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700&display=swap"
+            rel="stylesheet"/>
+    <!-- Bootstrap 5.0.2 CSS (used only to power the tab navigation) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <!--
+      NOTE: Everything that CAN be an inline style lives directly on the tag.
+      This block only holds what is impossible to write as an inline style="":
+        1) The @media rule for stacking columns on mobile.
+        2) Small overrides so Bootstrap's tab classes match the pill look.
+      Both are presentation-only. Every pane renders correctly with this whole
+      block removed — nothing here is load-bearing.
+    -->
+    <style>
+
+        /* Active tab pill. Must be !important: the pills carry their resting look
+           as inline styles (so it survives the Apps-list sanitizer, which drops
+           this whole block), and an inline style outranks a stylesheet rule.
+           On apps.odoo.com Bootstrap moves .active as you click and this repaints
+           the pill; in the Apps list the block is gone, every pill renders in its
+           resting state, and the anchors act as jump links. */
+        #cybrosys-acc-kit .nav-link.active {
+            background-color: #b12126 !important;
+            border-color: #b12126 !important;
+            color: #ffffff !important;
+            box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28) !important;
+        }
+
+        @media screen and (max-width: 768px) {
+
+            #cybrosys-acc-kit .mob-stack,
+            #cybrosys-acc-kit .mob-stack > tbody,
+            #cybrosys-acc-kit .mob-stack > tbody > tr,
+            #cybrosys-acc-kit .mob-stack > tbody > tr > td {
+                display: block !important;
+                width: 100% !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            #cybrosys-acc-kit .mob-space {
+                padding-bottom: 20px !important;
+            }
+
+            #cybrosys-acc-kit .mob-text-center {
+                text-align: center !important;
+            }
+        }
+    </style>
+</head>
+
+<body style="margin:0; padding:0;">
+
+<div id="cybrosys-acc-kit"
+     style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background-color:#fafafa; color:#1e293b; margin:0; padding:0; line-height:1.6; -webkit-font-smoothing:antialiased;">
+    <div class="main-container"
+         style="width:100%; max-width:1240px; margin:0 auto; padding:24px 20px 60px; box-sizing:border-box;">
+
+        <!-- 1. HEADER BAR — logo left, capability rail right on two labelled rows:
+             editions above, deployment targets below. A supported item carries a
+             tick; an unsupported one carries a cross, a dashed edge, a struck
+             label and an explicit tag, so it never reads as supported. -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0"
+               style="background-color: #ffffff; border: 1px solid #f1ecee; border-radius: 12px; margin-bottom: 28px;">
+            <tr>
+                <td style="padding: 16px 22px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" class="mob-stack">
+                        <tr>
+
+                            <!-- Brand -->
+                            <td width="24%" valign="middle" class="mob-space mob-text-center">
+                                <a href="https://www.cybrosys.com" target="_blank" rel="noopener"
+                                   style="text-decoration: none;">
+                                    <img src="https://apps.odoocdn.com/apps/assets/17.0/theme_boec/images/Cybrosys.png?fcdde35"
+                                         alt="Cybrosys Technologies"
+                                         style="height: 40px; max-width: 100%; border: 0; vertical-align: middle;" />
+                                </a>
+                            </td>
+
+                            <!-- Capability rail -->
+                            <td align="right" valign="middle" class="mob-text-center"
+                                style="padding-left: 26px;">
+                                <table cellpadding="0" cellspacing="0" border="0" style="display: inline-table;">
+                            <tr>
+                                <td align="right" valign="middle"
+                                    style="padding: 0 0 7px; padding-right: 16px; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #f6f2f3; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: #94a3b8; white-space: nowrap;">
+                                    Edition
+                                </td>
+                                <td valign="middle" style="padding: 0 0 7px; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #f6f2f3; white-space: nowrap;">
+                                    <span
+                                        style="display: inline-block; background-color: #fdf3f4; border: 1px solid #f3e0e2; color: #0f172a; border-radius: 20px; padding: 6px 14px; margin-right: 7px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700;">
+                                        <img src="./assets/icons/ic-6db19ab6-b12126.png" alt="" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 6px;" />
+                                        <span style="vertical-align: middle;">Community</span>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right" valign="middle"
+                                    style="padding: 7px 0; padding-right: 16px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: #94a3b8; white-space: nowrap;">
+                                    Deploys on
+                                </td>
+                                <td valign="middle" style="padding: 7px 0; white-space: nowrap;">
+                                    <span
+                                        style="display: inline-block; background-color: #fdf3f4; border: 1px solid #f3e0e2; color: #0f172a; border-radius: 20px; padding: 6px 14px; margin-right: 7px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700;">
+                                        <img src="./assets/icons/ic-6db19ab6-b12126.png" alt="" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 6px;" />
+                                        <span style="vertical-align: middle;">Odoo.sh</span>
+                                    </span>
+                                    <span
+                                        style="display: inline-block; background-color: #fdf3f4; border: 1px solid #f3e0e2; color: #0f172a; border-radius: 20px; padding: 6px 14px; margin-right: 7px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700;">
+                                        <img src="./assets/icons/ic-6db19ab6-b12126.png" alt="" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 6px;" />
+                                        <span style="vertical-align: middle;">On-Premise</span>
+                                    </span>
+                                    <span
+                                        style="display: inline-block; background-color: #f4f5f7; border: 1px dashed #c9d0d8; color: #7c848f; border-radius: 20px; padding: 6px 12px 6px 14px; margin-right: 7px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700;">
+                                        <img src="./assets/icons/ic-588e724f-7c848f.png" alt="" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 6px;" />
+                                        <span style="vertical-align: middle; text-decoration: line-through;">Online</span>
+                                        <span
+                                            style="vertical-align: middle; margin-left: 7px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #ffffff; background-color: #9aa2ad; border-radius: 10px; padding: 2px 7px;">Not&nbsp;supported</span>
+                                    </span>
+                                </td>
+                            </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <!-- 2. MINIMAL HERO SECTION (TABLE LAYOUT) -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0"
+               style="border-collapse: separate;background-color: #ffffff; background-repeat: no-repeat; background-position: top center; background-size: cover; border: 1px solid #b221261f; border-radius: 16px; margin-bottom: 28px;">
+            <tr>
+                <td align="center" style="padding: 56px 28px 48px;">
+                    <!-- Hero Title (Plus Jakarta Sans) -->
+                    <h1
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 40px; font-weight: 900; color: #0f172a; line-height: 1.18; letter-spacing: -0.8px; margin: 0 auto 16px; max-width: 820px;">
+                        Docusign
+                 <span style="color: #b12126;">Odoo Connector</span>
+                    </h1>
+
+                    <!-- Hero Subtitle (Inter text font) -->
+                    <p
+                            style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; color: #666; line-height: 1.65; max-width: 780px; margin: 0 auto 30px; font-weight: 400; text-align: center;">
+                        This module seamlessly integrates DocuSign with Odoo, allowing users to send sales orders and documents to recipients for electronic signature and automatically retrieve signed documents.
+                    </p>
+
+                    <!-- Contact Action Buttons (Plus Jakarta Sans Font) -->
+                    <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 24px;">
+                        <tr>
+                            <!-- Email Button (Primary #b12126) -->
+                            <td style="padding: 0 6px;">
+                                <a href="mailto:odoo@cybrosys.com"
+                                   class="d-flex align-items-center justify-content-center gap-1" target="_blank"
+                                   rel="noopener"
+                                   style="width: 160px;text-align: center;    text-decoration: unset;font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; display: inline-block; background-color: #b12126; color: #ffffff; padding: 10px 26px; border-radius: 30px; font-size: 14px; font-weight: 700; border: 1px solid #b221261f;">
+                                    <img src="./assets/icons/ic-0b4c1767-ffffff.png" alt="" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;" />
+                                    <span style="vertical-align: middle;">Email Us</span>
+                                </a>
+                            </td>
+                            <!-- WhatsApp Button (ONLY Exception in WhatsApp Green #25d366) -->
+                            <td style="padding: 0 6px;">
+                                <a href="https://wa.me/919074270811"
+                                   class="d-flex align-items-center justify-content-center gap-1" target="_blank"
+                                   rel="noopener"
+                                   style="width: 160px;text-align: center;    text-decoration: unset;font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; display: inline-block;  color: #b12126; padding: 10px 26px; border-radius: 30px; font-size: 14px; font-weight: 700; border: 1px solid #b221261f;">
+                                    <img src="./assets/icons/ic-f466c5f2-b12126.png" alt="" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;" />
+                                    <span style="vertical-align: middle;">Whatsapp</span>
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Minimal Bullet Checklist (Inter font) -->
+                    <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                        <tr>
+                            <td
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0 12px; font-size: 13px; font-weight: 600; color: #666;">
+                                <img src="./assets/icons/ic-8a7643e9-b12126.png" alt="" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;" />
+                                JWT RSA Authentication
+                            </td>
+                            <td
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0 12px; font-size: 13px; font-weight: 600; color: #666;">
+                                <img src="./assets/icons/ic-8a7643e9-b12126.png" alt="" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;" />
+                                Interactive Field Editor
+                            </td>
+                            <td
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0 12px; font-size: 13px; font-weight: 600; color: #666;">
+                                <img src="./assets/icons/ic-8a7643e9-b12126.png" alt="" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;" />
+                                Mandatory &amp; Custom Criteria
+                            </td>
+                            <td
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 0 12px; font-size: 13px; font-weight: 600; color: #666;">
+                                <img src="./assets/icons/ic-8a7643e9-b12126.png" alt="" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;" />
+                                Real-Time Webhooks &amp; Sync
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+
+        <div style="text-align: center; margin-bottom: 20px; margin-top: 40px;">
+            <h3
+                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 26px; font-weight: 800; color: #0f172a; margin: 0;">
+                KEY <span style="color: #b12126;">HIGHLIGHTS</span>
+            </h3>
+        </div>
+
+        <!-- HIGHLIGHTS GRID — reusable template block: 2 rows x 3 tiles.
+             Card styling sits on the <td> so all three tiles in a row share one
+             height with no percentage-height hack; padding is on an inner <div>
+             so the mobile rule cannot flatten it.
+             PER MODULE, EDIT ONLY: the icon <path>, the <h3> title, and the <p>
+             body of each tile. No CSS, ids or classes need to change. -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 16px;"
+               class="mob-stack">
+            <tr>
+
+                <td width="32%" valign="top" class="mob-space"
+                    style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                    <div style="padding: 24px 22px; min-height: 196px;">
+
+                        <!-- ICON CHIP — swap only the <path> below per module. The chip centres
+                             the glyph with text-align + line-height, so no flexbox is needed. -->
+                        <div
+                                style="width: 48px; height: 48px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); color: #ffffff; text-align: center; line-height: 48px; margin-bottom: 16px;">
+                            <img src="./assets/icons/ic-f8f27dd0-ffffff.png" alt="" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;" />
+                        </div>
+
+                        <h3
+                                style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.35; margin: 0;">
+                            Secure JWT Authentication
+                        </h3>
+                        <div style="border-top: 1px solid #f6eaea; margin-top: 14px; padding-top: 14px;">
+                            <p
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.7; margin: 0;">
+                                Connect Odoo with DocuSign using Integration Key, User ID, Account ID, and RSA private
+                                key pairs with multi-company credential support.
+                            </p>
+                        </div>
+                    </div>
+                </td>
+
+                <td width="2%" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+
+                <td width="32%" valign="top" class="mob-space"
+                    style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                    <div style="padding: 24px 22px; min-height: 196px;">
+
+                        <!-- ICON CHIP — swap only the <path> below per module. The chip centres
+                             the glyph with text-align + line-height, so no flexbox is needed. -->
+                        <div
+                                style="width: 48px; height: 48px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); color: #ffffff; text-align: center; line-height: 48px; margin-bottom: 16px;">
+                            <img src="./assets/icons/ic-f8f27dd0-ffffff.png" alt="" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;" />
+                        </div>
+
+                        <h3
+                                style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.35; margin: 0;">
+                            Interactive PDF Field Editor
+                        </h3>
+                        <div style="border-top: 1px solid #f6eaea; margin-top: 14px; padding-top: 14px;">
+                            <p
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.7; margin: 0;">
+                                Double-click directly on PDF pages inside Odoo to place Signature, FullName, Email,
+                                Company, Text, and Date fields per recipient.
+                            </p>
+                        </div>
+                    </div>
+                </td>
+
+                <td width="2%" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+
+                <td width="32%" valign="top" class="mob-space"
+                    style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                    <div style="padding: 24px 22px; min-height: 196px;">
+
+                        <!-- ICON CHIP — swap only the <path> below per module. The chip centres
+                             the glyph with text-align + line-height, so no flexbox is needed. -->
+                        <div
+                                style="width: 48px; height: 48px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); color: #ffffff; text-align: center; line-height: 48px; margin-bottom: 16px;">
+                            <img src="./assets/icons/ic-f8f27dd0-ffffff.png" alt="" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;" />
+                        </div>
+
+                        <h3
+                                style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.35; margin: 0;">
+                            Mandatory &amp; Custom Criteria
+                        </h3>
+                        <div style="border-top: 1px solid #f6eaea; margin-top: 14px; padding-top: 14px;">
+                            <p
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.7; margin: 0;">
+                                Send the same document bundle to all selected contacts in Mandatory mode, or assign
+                                specific documents per customer in Custom mode.
+                            </p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- gutter -->
+            <tr>
+                <td colspan="5" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+            </tr>
+
+            <tr>
+
+                <td width="32%" valign="top" class="mob-space"
+                    style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                    <div style="padding: 24px 22px; min-height: 196px;">
+
+                        <!-- ICON CHIP — swap only the <path> below per module. The chip centres
+                             the glyph with text-align + line-height, so no flexbox is needed. -->
+                        <div
+                                style="width: 48px; height: 48px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); color: #ffffff; text-align: center; line-height: 48px; margin-bottom: 16px;">
+                            <img src="./assets/icons/ic-f8f27dd0-ffffff.png" alt="" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;" />
+                        </div>
+
+                        <h3
+                                style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.35; margin: 0;">
+                            Sales Order Integration
+                        </h3>
+                        <div style="border-top: 1px solid #f6eaea; margin-top: 14px; padding-top: 14px;">
+                            <p
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.7; margin: 0;">
+                                Send agreements for signature directly from the Sales Order form and track envelope
+                                statuses and signed attachments in one place.
+                            </p>
+                        </div>
+                    </div>
+                </td>
+
+                <td width="2%" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+
+                <td width="32%" valign="top" class="mob-space"
+                    style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                    <div style="padding: 24px 22px; min-height: 196px;">
+
+                        <!-- ICON CHIP — swap only the <path> below per module. The chip centres
+                             the glyph with text-align + line-height, so no flexbox is needed. -->
+                        <div
+                                style="width: 48px; height: 48px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); color: #ffffff; text-align: center; line-height: 48px; margin-bottom: 16px;">
+                            <img src="./assets/icons/ic-f8f27dd0-ffffff.png" alt="" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;" />
+                        </div>
+
+                        <h3
+                                style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.35; margin: 0;">
+                            Real-Time Webhooks &amp; Sync
+                        </h3>
+                        <div style="border-top: 1px solid #f6eaea; margin-top: 14px; padding-top: 14px;">
+                            <p
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.7; margin: 0;">
+                                Receive instant DocuSign Connect webhook notifications and automatic background status
+                                syncs for Partially Signed and Fully Signed states.
+                            </p>
+                        </div>
+                    </div>
+                </td>
+
+                <td width="2%" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+
+                <td width="32%" valign="top" class="mob-space"
+                    style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                    <div style="padding: 24px 22px; min-height: 196px;">
+
+                        <!-- ICON CHIP — swap only the <path> below per module. The chip centres
+                             the glyph with text-align + line-height, so no flexbox is needed. -->
+                        <div
+                                style="width: 48px; height: 48px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); color: #ffffff; text-align: center; line-height: 48px; margin-bottom: 16px;">
+                            <img src="./assets/icons/ic-f8f27dd0-ffffff.png" alt="" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;" />
+                        </div>
+
+                        <h3
+                                style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.35; margin: 0;">
+                            Expiry Reminders &amp; Signed PDFs
+                        </h3>
+                        <div style="border-top: 1px solid #f6eaea; margin-top: 14px; padding-top: 14px;">
+                            <p
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.7; margin: 0;">
+                                Set request expiry dates with automated reminder emails for pending signers and
+                                automatically download completed signed PDFs into Odoo.
+                            </p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- 7. TAB STRIP — anchors, not form controls. The sanitizer removes a
+             form control along with its label text, but keeps an anchor. On apps.odoo.com Bootstrap
+             turns these into real tabs; in the Odoo Apps list, where the script
+             and stylesheet are stripped and every pane renders stacked, the same
+             anchors still show and jump to their section. Pill styling is inline
+             so it survives either way. The "nav" class is required: Bootstrap's
+             tab plugin walks closest(".nav, .list-group") to find the sibling
+             tabs, and silently throws without it. -->
+        <div id="cakTabs" class="nav" role="tablist"
+             style="text-align: center; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+            <a href="#cak-pane-2" id="cak-tab-2-btn" class="nav-link active" data-bs-toggle="tab" data-bs-target="#cak-pane-2"
+               role="tab" aria-controls="cak-pane-2" aria-selected="true"
+               style="display: inline-block; text-decoration: none; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; border-radius: 30px; padding: 10px 24px; margin: 4px 3px; background-color: #ffffff; border: 1px solid #f1dcdf; color: #5b6472;">Screenshots</a>
+            <a href="#cak-pane-3" id="cak-tab-3-btn" class="nav-link" data-bs-toggle="tab" data-bs-target="#cak-pane-3"
+               role="tab" aria-controls="cak-pane-3" aria-selected="false"
+               style="display: inline-block; text-decoration: none; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; border-radius: 30px; padding: 10px 24px; margin: 4px 3px; background-color: #ffffff; border: 1px solid #f1dcdf; color: #5b6472;">Feature Matrix</a>
+            <a href="#cak-pane-1" id="cak-tab-1-btn" class="nav-link" data-bs-toggle="tab" data-bs-target="#cak-pane-1"
+               role="tab" aria-controls="cak-pane-1" aria-selected="false"
+               style="display: inline-block; text-decoration: none; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; border-radius: 30px; padding: 10px 24px; margin: 4px 3px; background-color: #ffffff; border: 1px solid #f1dcdf; color: #5b6472;">Frequent Questions</a>
+            <a href="#cak-pane-4" id="cak-tab-4-btn" class="nav-link" data-bs-toggle="tab" data-bs-target="#cak-pane-4"
+               role="tab" aria-controls="cak-pane-4" aria-selected="false"
+               style="display: inline-block; text-decoration: none; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; border-radius: 30px; padding: 10px 24px; margin: 4px 3px; background-color: #ffffff; border: 1px solid #f1dcdf; color: #5b6472;">Release Notes</a>
+        </div>
+
+        <!-- Tab Content Box -->
+        <div class="tab-content" id="cakTabsContent"
+             style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 12px; margin-bottom: 48px; padding: 28px 24px; box-sizing:border-box;">
+
+            <!-- TAB PANE: SCREENSHOTS -->
+            <div id="cak-pane-2" class="tab-pane fade show active" role="tabpanel" aria-labelledby="cak-tab-2-btn">
+                    <!-- Screenshot Item 1: Developer Account -->
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                           Open the DocuSign Developer account and navigate to Apps and Keys. If this is your first time,
+                        click on the  <span style="color: #b12126;">‘Add App and Integration Key’ button.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 42px;">
+                        
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/img_1.png" alt="DocuSign Developer Account - Apps and Keys"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                    <!-- Screenshot Item 2: Create App -->
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            Enter a name and click on  <span style="color: #b12126;">‘Create App’.</span>
+                        </h3>
+
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 42px;">
+                       
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/img_2.png" alt="DocuSign Create App"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                    <!-- Screenshot Item 3: Integration Key -->
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            Afterwards this window will appear from
+                        there  <span style="color: #b12126;">you can get the Integration Key.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+                        
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/img_3.png" alt="DocuSign Integration Key"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            Scroll down and, under Service
+                        Integration, click on the ‘Generate RSA’ button to <span style="color: #b12126;">create new keys. </span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/img_4.png" alt="DocuSign Generate RSA Keys"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            The public and private key pair will be
+                            generated. <span style="color: #b12126;">Copy both keys and save them securely.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/img_5.png" alt="DocuSign RSA Key Pair"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            Add your Live URL as the <span style="color: #b12126;">Redirect URL and
+                        save.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/img_7.png" alt="DocuSign Redirect URL Configuration"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            For the first time, we need to grant
+                        access to the application. Please replace YOUR_INTEGRATION_KEY and YOUR_REDIRECT_URI with your
+                        own Integration Key and Redirect URL,  <span style="color: #b12126;">then use the following link:</span>
+                        </h3>
+                    </div>
+                <p
+                            style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; color: #666; line-height: 1.65; max-width: 780px; margin: 0 auto 30px; font-weight: 400; word-break: break-all; text-align: center;">
+                      https://account-d.docusign.com/oauth/auth?response_type=code&scope=signature%20impersonation&client_id=YOUR_INTEGRATION_KEY&redirect_uri=YOUR_REDIRECT_URI
+                    </p>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/img_8.png" alt="DocuSign Grant Application Consent"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                           Open the DocuSign module in Odoo, create
+                        a new credential, and  <span style="color: #b12126;">save it with the Integration Key, User ID, and Account ID. Then attach the
+                        RSA key pair.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign.png" alt="Odoo DocuSign Credentials Configuration"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                           Open a Sales Order and click on the Send
+                        <span style="color: #b12126;">Document button.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign1.png" alt="Send Document from Sales Order"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            Add a reference and attach the document
+                         <span style="color: #b12126;">to be signed.</span>
+                        </h3>
+                    </div>
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign2.png" alt="Attach Document and Reference in Sales Order"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                           Double-click on the place where the
+                        signature is required, select the signature from the dropdown, and<span style="color: #b12126;"> click Send Document.</span>
+                        </h3>
+                    </div>
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign3.png" alt="Place Signature Fields and Send Document"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            The customer receives an email to review
+                        and <span style="color: #b12126;">sign the document.</span>
+                        </h3>
+                    </div>
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign4.png" alt="Customer Email Notification for Signing"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            Once they click the Review Document
+                        button,<span style="color: #b12126;"> they can view the document and sign it.</span>
+                        </h3>
+                    </div>
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign5.png" alt="DocuSign Document Review and Sign Interface"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            In the Sales Order, under the DocuSign
+                        tab, you can see the status of the document. To update the status, choose the credentials from
+                        the <span style="color: #b12126;">dropdown and click Update Status.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign6.png" alt="Sales Order DocuSign Tab and Status Tracking"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            Once the status is complete, you can retrieve
+                            the <span style="color: #b12126;">signed document.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign7.png" alt="Retrieve Signed Document in Sales Order"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            The completed signed document is <span style="color: #b12126;">shown
+                        below.</span>
+                        </h3>
+                    </div>
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign8.png" alt="Completed Signed Document Preview"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                           Create a new document request by clicking the <span style="color: #b12126;">New button.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign9.png" alt="Create New Document Request"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                           If the document criteria is set to Mandatory, all documents will be sent to all selected <span style="color: #b12126;">customers.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign10.png" alt="Mandatory Document Criteria"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            You can choose which documents to send to each customer by selecting Custom <span style="color: #b12126;">document criteria.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign11.png" alt="Custom Document Criteria Configuration"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            The status changes to Document Sent when clicking the <span style="color: #b12126;">Send Document button.</span>
+                        </h3>
+                    </div>
+
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign12.png" alt="Document Request Sent Status"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            The status becomes Partially Signed if <span style="color: #b12126;">at least one customer has signed the document.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign13.png" alt="Partially Signed Document Request Status"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            The status becomes Fully Signed once <span style="color: #b12126;">all customers have signed the document.</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign14.png" alt="Fully Signed Document Request Status"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            List <span style="color: #b12126;">view</span>
+                        </h3>
+                    </div>
+
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign15.png" alt="Document Requests List View"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            Smart button in each customer's <span style="color: #b12126;">form view</span>
+                        </h3>
+                    </div>
+
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign16.png" alt="Customer Form View Smart Button for Document Requests"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+
+                <div style="text-align: center; margin-bottom: 16px;">
+                        <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+                            List view of <span style="color: #b12126;">records</span>
+                        </h3>
+                    </div>
+
+                    <div
+                        style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 14px; overflow: hidden; margin-bottom: 12px;">
+
+                        <div style="padding: 0;">
+                            <img src="./assets/screenshots/sign17.png" alt="Customer Document Requests Records List View"
+                                style="width: 100%; display: block;" />
+                        </div>
+                    </div>
+            </div>
+
+
+            
+
+<!-- TAB PANE: FEATURE MATRIX -->
+            <div id="cak-pane-3" class="tab-pane fade" role="tabpanel" aria-labelledby="cak-tab-3-btn">
+
+                <!-- Pane heading -->
+                <div style="text-align: center; margin-bottom: 26px;">
+                    <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 12px 0 0;">
+                        DETAILED <span style="color: #b12126;">FEATURES</span>
+                    </h3>
+                </div>
+
+                <!-- Feature grid: card styling lives on the <td> so both cards in a
+                     row share one height, with padding on an inner <div> so the
+                     mobile stacking rule cannot flatten it. -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" class="mob-stack">
+
+                    <!-- ROW 1 -->
+                    <tr>
+                        <td width="48%" valign="top" class="mob-space"
+                            style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                            <div style="padding: 22px 20px;">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td width="58" valign="top" style="padding-right: 14px;">
+                                            <div
+                                                    style="width: 44px; height: 44px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); text-align: center;">
+                                                    <span
+                                                            style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 800; color: #ffffff; line-height: 44px;">01</span>
+                                            </div>
+                                        </td>
+                                        <td valign="top">
+                                            <div
+                                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35; margin-bottom: 6px;">
+                                                DocuSign JWT Authentication
+                                            </div>
+                                            <div
+                                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.6;">
+                                                Configure OAuth 2.0 JWT Grant credentials with Integration Key, User ID, Account ID, and RSA key pairs for secure API communication.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+
+                        <td width="4%" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+
+                        <td width="48%" valign="top"
+                            style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                            <div style="padding: 22px 20px;">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td width="58" valign="top" style="padding-right: 14px;">
+                                            <div
+                                                    style="width: 44px; height: 44px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); text-align: center;">
+                                                    <span
+                                                            style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 800; color: #ffffff; line-height: 44px;">02</span>
+                                            </div>
+                                        </td>
+                                        <td valign="top">
+                                            <div
+                                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35; margin-bottom: 6px;">
+                                                Interactive PDF Field Placement
+                                            </div>
+                                            <div
+                                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.6;">
+                                                Visual in-Odoo PDF editor allowing users to place Signature, Full Name, Email, Company, Text, and Date fields directly on document pages.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- gutter -->
+                    <tr>
+                        <td colspan="3" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+                    </tr>
+
+                    <!-- ROW 2 -->
+                    <tr>
+                        <td width="48%" valign="top" class="mob-space"
+                            style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                            <div style="padding: 22px 20px;">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td width="58" valign="top" style="padding-right: 14px;">
+                                            <div
+                                                    style="width: 44px; height: 44px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); text-align: center;">
+                                                    <span
+                                                            style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 800; color: #ffffff; line-height: 44px;">03</span>
+                                            </div>
+                                        </td>
+                                        <td valign="top">
+                                            <div
+                                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35; margin-bottom: 6px;">
+                                                Mandatory &amp; Custom Criteria
+                                            </div>
+                                            <div
+                                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.6;">
+                                                Distribute the same document bundle to all signers in Mandatory mode, or assign specific documents to individual recipients in Custom mode.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+
+                        <td width="4%" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+
+                        <td width="48%" valign="top"
+                            style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                            <div style="padding: 22px 20px;">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td width="58" valign="top" style="padding-right: 14px;">
+                                            <div
+                                                    style="width: 44px; height: 44px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); text-align: center;">
+                                                    <span
+                                                            style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 800; color: #ffffff; line-height: 44px;">04</span>
+                                            </div>
+                                        </td>
+                                        <td valign="top">
+                                            <div
+                                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35; margin-bottom: 6px;">
+                                                Sales Order E-Signature Integration
+                                            </div>
+                                            <div
+                                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.6;">
+                                                Initiate signature requests straight from Sales Orders with real-time envelope status tracking and one-click manual status updates.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- gutter -->
+                    <tr>
+                        <td colspan="3" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+                    </tr>
+
+                    <!-- ROW 3 -->
+                    <tr>
+                        <td width="48%" valign="top" class="mob-space"
+                            style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                            <div style="padding: 22px 20px;">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td width="58" valign="top" style="padding-right: 14px;">
+                                            <div
+                                                    style="width: 44px; height: 44px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); text-align: center;">
+                                                    <span
+                                                            style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 800; color: #ffffff; line-height: 44px;">05</span>
+                                            </div>
+                                        </td>
+                                        <td valign="top">
+                                            <div
+                                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35; margin-bottom: 6px;">
+                                                Real-Time Webhooks &amp; Sync
+                                            </div>
+                                            <div
+                                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.6;">
+                                                Capture instant envelope state changes via DocuSign Connect webhooks, backed by scheduled cron jobs for continuous background sync.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+
+                        <td width="4%" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+
+                        <td width="48%" valign="top"
+                            style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                            <div style="padding: 22px 20px;">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td width="58" valign="top" style="padding-right: 14px;">
+                                            <div
+                                                    style="width: 44px; height: 44px; border-radius: 12px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); text-align: center;">
+                                                    <span
+                                                            style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 800; color: #ffffff; line-height: 44px;">06</span>
+                                            </div>
+                                        </td>
+                                        <td valign="top">
+                                            <div
+                                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35; margin-bottom: 6px;">
+                                                Signed PDF Archiving &amp; Audit Trail
+                                            </div>
+                                            <div
+                                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.6;">
+                                                Automatically download and attach fully executed PDFs to Odoo records upon completion, with direct request history on customer smart buttons.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            
+
+<!-- TAB PANE: FREQUENT QUESTIONS (static Q&A — no inputs, no stylesheet dependency) -->
+            <div id="cak-pane-1" class="tab-pane fade" role="tabpanel" aria-labelledby="cak-tab-1-btn">
+
+                <!-- Pane heading -->
+                <div style="text-align: center; margin-bottom: 26px;">
+                    <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 12px 0 0;">
+                        Answers Before You <span style="color: #b12126;">Install</span>
+                    </h3>
+                </div>
+
+                <!-- Q&A cards. Card styling sits on the <td>; padding on an inner
+                     <div> so the mobile rule cannot flatten it. Every answer is
+                     always visible — nothing here depends on CSS state. -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+
+                    <!-- Q1 -->
+                    <tr>
+                        <td valign="top"
+                            style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                            <div style="padding: 22px 22px;">
+
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td width="52" valign="top" style="padding-right: 14px;">
+                                            <div
+                                                    style="width: 38px; height: 38px; border-radius: 10px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); text-align: center;">
+                                                    <span
+                                                            style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 800; color: #ffffff; line-height: 38px;">Q</span>
+                                            </div>
+                                        </td>
+                                        <td valign="top">
+                                            <div
+                                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.5; padding-top: 7px;">
+                                                What DocuSign credentials are required to connect with Odoo?
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <div style="border-top: 1px solid #f6eaea; margin-top: 16px; padding-top: 16px;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td width="52" valign="top" style="padding-right: 14px;">
+                                                <div
+                                                        style="width: 36px; height: 36px; border-radius: 10px; background-color: #fdf2f2; border: 1px solid #f3e4e5; text-align: center;">
+                                                        <span
+                                                                style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 800; color: #b12126; line-height: 36px;">A</span>
+                                                </div>
+                                            </td>
+                                            <td valign="top">
+                                                <div
+                                                        style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.75;">
+                                                    You need your DocuSign <strong style="color: #0f172a; font-weight: 600;">Integration Key</strong>,
+                                                    <strong style="color: #0f172a; font-weight: 600;">User ID</strong>,
+                                                    <strong style="color: #0f172a; font-weight: 600;">Account ID</strong>, and an
+                                                    <strong style="color: #0f172a; font-weight: 600;">RSA Private Key</strong> generated in your
+                                                    DocuSign Apps and Keys settings, along with the <code style="color: #b12126;">docusign-esign</code>
+                                                    Python package and one-time JWT consent approval.
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- gutter -->
+                    <tr>
+                        <td style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+                    </tr>
+
+                    <!-- Q2 -->
+                    <tr>
+                        <td valign="top"
+                            style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                            <div style="padding: 22px 22px;">
+
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td width="52" valign="top" style="padding-right: 14px;">
+                                            <div
+                                                    style="width: 38px; height: 38px; border-radius: 10px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); text-align: center;">
+                                                    <span
+                                                            style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 800; color: #ffffff; line-height: 38px;">Q</span>
+                                            </div>
+                                        </td>
+                                        <td valign="top">
+                                            <div
+                                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.5; padding-top: 7px;">
+                                                How are documents and signature fields configured before sending?
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <div style="border-top: 1px solid #f6eaea; margin-top: 16px; padding-top: 16px;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td width="52" valign="top" style="padding-right: 14px;">
+                                                <div
+                                                        style="width: 36px; height: 36px; border-radius: 10px; background-color: #fdf2f2; border: 1px solid #f3e4e5; text-align: center;">
+                                                        <span
+                                                                style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 800; color: #b12126; line-height: 36px;">A</span>
+                                                </div>
+                                            </td>
+                                            <td valign="top">
+                                                <div
+                                                        style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.75;">
+                                                    You can attach documents in a Document Request (using either
+                                                    <strong style="color: #0f172a; font-weight: 600;">Mandatory</strong>
+                                                    or <strong style="color: #0f172a; font-weight: 600;">Custom</strong>
+                                                    criteria) or from a Sales Order, then double-click directly on the
+                                                    PDF preview to place Signature, FullName, Email, Company, Text, or
+                                                    Date fields for each recipient.
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- gutter -->
+                    <tr>
+                        <td style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+                    </tr>
+
+                    <!-- Q3 -->
+                    <tr>
+                        <td valign="top"
+                            style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                            <div style="padding: 22px 22px;">
+
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td width="52" valign="top" style="padding-right: 14px;">
+                                            <div
+                                                    style="width: 38px; height: 38px; border-radius: 10px; background-color: #b12126; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28); text-align: center;">
+                                                    <span
+                                                            style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 800; color: #ffffff; line-height: 38px;">Q</span>
+                                            </div>
+                                        </td>
+                                        <td valign="top">
+                                            <div
+                                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.5; padding-top: 7px;">
+                                                How does Odoo track signing status and retrieve signed documents?
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <div style="border-top: 1px solid #f6eaea; margin-top: 16px; padding-top: 16px;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td width="52" valign="top" style="padding-right: 14px;">
+                                                <div
+                                                        style="width: 36px; height: 36px; border-radius: 10px; background-color: #fdf2f2; border: 1px solid #f3e4e5; text-align: center;">
+                                                        <span
+                                                                style="display: inline-block; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 800; color: #b12126; line-height: 36px;">A</span>
+                                                </div>
+                                            </td>
+                                            <td valign="top">
+                                                <div
+                                                        style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.75;">
+                                                    Odoo tracks envelope statuses automatically via DocuSign Connect
+                                                    webhooks, scheduled background cron jobs, and manual status updates.
+                                                    Once all recipients sign, the request moves to
+                                                    <strong style="color: #0f172a; font-weight: 600;">Fully Signed</strong>
+                                                    and the signed PDF is automatically downloaded and attached in Odoo.
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            
+
+<!-- TAB PANE: RELEASES (static cards — no inputs, no svg, no stylesheet dependency) -->
+            <div id="cak-pane-4" class="tab-pane fade" role="tabpanel" aria-labelledby="cak-tab-4-btn">
+
+                <!-- Pane heading -->
+                <div style="text-align: center; margin-bottom: 26px;">
+                    <h3
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin: 0;">
+                        Changelog &amp; <span style="color: #b12126;">Version History</span>
+                    </h3>
+                    <div
+                            style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.6; margin-top: 8px;">
+                        Initial release for Odoo 20. Future fixes and compatibility updates will be listed here.
+                    </div>
+                    <div style="margin-top: 14px;">
+                            <span
+                                    style="display: inline-block; background-color: #b12126; color: #ffffff; border-radius: 20px; padding: 7px 16px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; box-shadow: 0 8px 18px rgba(177, 33, 38, 0.28);">
+                                Current: v20.0.1.0.0
+                            </span>
+                    </div>
+                </div>
+
+                <!--
+                  RELEASE GRID — three tiles per row.
+                  TO ADD THE NEXT RELEASE: copy one "RELEASE TILE" <td> block below
+                  (together with the 2% spacer <td> that follows it) into the slot
+                  marked "NEXT RELEASE GOES HERE", then edit four things inside it:
+                    1. the badge text   (Release / Update / Fix / Latest)
+                    2. the version      (v20.0.1.0.x)
+                    3. the date         (Month Year)
+                    4. the description  (one sentence)
+                  Delete one filler <td> each time so the row still totals 100%.
+                  Nothing else needs to change — no CSS, no ids, no classes.
+                -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" class="mob-stack">
+                    <tr>
+
+                        <!-- ===== RELEASE TILE ===== -->
+                        <td width="32%" valign="top" class="mob-space"
+                            style="background-color: #ffffff; border: 1px solid #f3e4e5; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.10);">
+                            <div style="padding: 26px 24px; min-height: 248px;">
+                                <div style="margin-bottom: 16px;">
+                                        <span
+                                                style="display: inline-block; background-color: #b12126; color: #ffffff; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 10px; font-weight: 700; padding: 4px 11px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em;">
+                                            Release
+                                        </span>
+                                </div>
+                                <div
+                                        style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.15;">
+                                    v20.0.1.0.0
+                                </div>
+                                <div
+                                        style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color: #94a3b8; margin-top: 6px;">
+                                    Sep 2026
+                                </div>
+                                <div style="border-top: 1px solid #f6eaea; margin-top: 18px; padding-top: 18px;">
+                                    <div
+                                            style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #64748b; line-height: 1.75;">
+                                        Initial release for Odoo 20.
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <!-- ===== END RELEASE TILE ===== -->
+
+                        <td width="2%" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+
+                        <!-- NEXT RELEASE GOES HERE (paste a RELEASE TILE <td> + spacer <td>) -->
+
+                        <!-- filler: keeps the single tile at 32% instead of stretching -->
+                        <td width="32%" valign="top">&nbsp;</td>
+                        <td width="2%" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+                        <td width="32%" valign="top">&nbsp;</td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- 8. MINIMAL SERVICES GRID -->
+        <div style="text-align: center; margin-bottom: 24px;">
+            <h2
+                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 26px; font-weight: 800; color: #0f172a; margin: 0;">
+                Certified Odoo Implementation &amp; <span style="color: #b12126;"> Support</span>
+            </h2>
+        </div>
+
+        <!-- Services Row 1 -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 12px;"
+               class="mob-stack">
+            <tr>
+                <td width="25%" style="padding-right: 8px;" class="mob-space">
+                    <div
+                            style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div
+                                style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img src="./assets/icons/ic-e7da58c3-b12126.png" alt="" style="width: 25px; height: 25px; display: inline-block; vertical-align: middle;" />
+                        </div>
+                        <div
+                                style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Customization
+                        </div>
+                    </div>
+                </td>
+
+                <td width="25%" style="padding-left:4px; padding-right:4px;" class="mob-space">
+                    <div
+                            style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div
+                                style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+
+                            <img src="./assets/icons/ic-afc882f6-b12126.png" alt="" style="width: 28px; height: 28px; display: inline-block; vertical-align: middle;" />
+
+
+                        </div>
+                        <div
+                                style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Implementation
+                        </div>
+                    </div>
+                </td>
+
+                <td width="25%" style="padding-left:4px; padding-right:4px;" class="mob-space">
+                    <div
+                            style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div
+                                style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img src="./assets/icons/ic-8432255a-b12126.png" alt="" style="width: 28px; height: 28px; display: inline-block; vertical-align: middle;" />
+                        </div>
+                        <div
+                                style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Support
+                        </div>
+                    </div>
+                </td>
+
+                <td width="25%" style="padding-left:8px;">
+                    <div
+                            style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div
+                                style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img src="./assets/icons/ic-8d47220c-b12126.png" alt="" style="width: 26px; height: 26px; display: inline-block; vertical-align: middle;" />
+                        </div>
+                        <div
+                                style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Migration
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Services Row 2 -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:48px;"
+               class="mob-stack">
+            <tr>
+                <td width="25%" style="padding-right:8px;" class="mob-space">
+                    <div
+                            style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div
+                                style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img src="./assets/icons/ic-910f2a2f-b12126.png" alt="" style="width: 28px; height: 28px; display: inline-block; vertical-align: middle;" />
+                        </div>
+                        <div
+                                style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Integration
+                        </div>
+                    </div>
+                </td>
+
+                <td width="25%" style="padding-left:4px; padding-right:4px;" class="mob-space">
+                    <div
+                            style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div
+                                style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+
+                            <img src="./assets/icons/ic-71169eb4-b12126.png" alt="" style="width: 23px; height: 23px; display: inline-block; vertical-align: middle;" />
+
+                        </div>
+                        <div
+                                style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Consultancy
+                        </div>
+                    </div>
+                </td>
+
+                <td width="25%" style="padding-left:4px; padding-right:4px;" class="mob-space">
+                    <div
+                            style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div
+                                style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img src="./assets/icons/ic-dbc8ec1a-b12126.png" alt="" style="width: 25px; height: 25px; display: inline-block; vertical-align: middle;" />
+                        </div>
+                        <div
+                                style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Odoo Licensing
+                        </div>
+                    </div>
+                </td>
+
+                <td width="25%" style="padding-left:8px;">
+                    <div
+                            style="border:1px solid #b221261f; border-radius:10px; background-color:#ffffff; padding:20px 14px; text-align:center; box-sizing:border-box;">
+                        <div
+                                style="background-color:#fdf2f2; color:#b12126; border:1px solid #b221261f; display:inline-flex; align-items:center; justify-content:center; width:56px; height:50px; margin:0 auto 14px; border-radius:6px; box-sizing:border-box; line-height:0;">
+                            <img src="./assets/icons/ic-f2398ec8-b12126.png" alt="" style="width: 25px; height: 25px; display: inline-block; vertical-align: middle;" />
+                        </div>
+                        <div
+                                style="font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:14px; font-weight:700; color:#0f172a;">
+                            Hire Developer
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+            <!-- 9. RELATED MODULES — kanban cards in the brand red.
+                 Every colour is a solid fill or a solid border: no gradients. -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 14px;">
+                <tr>
+                    <td valign="bottom">
+                        <h2
+                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 26px; font-weight: 800; color: #0f172a; margin: 0;">
+                            Related <span style="color: #b12126;">Modules</span>
+                        </h2>
+                    </td>
+                    <td align="right" valign="bottom">
+                        <a href="https://apps.odoo.com/apps/modules/browse?search=cybrosys" target="_blank"
+                            rel="noopener"
+                            style="text-decoration: none; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12.5px; font-weight: 600; color: #5b6472; white-space: nowrap;">All
+                            Cybrosys apps &nbsp;&rarr;</a>
+                    </td>
+                </tr>
+            </table>
+
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 48px;"
+                class="mob-stack">
+                <tr>
+
+                    <!-- KANBAN CARD — edit href, icon <path>, name and note -->
+                    <td width="32%" valign="top" class="mob-space"
+                        style="background-color: #ffffff; border: 1px solid #f1dcdf; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.13);">
+                        <a href="https://apps.odoo.com/apps/modules/20.0/auto_database_backup" target="_blank" rel="noopener" style="display: block; text-decoration: none;">
+
+                            <!-- name zone -->
+                            <div
+                                style="background-color: #fdf3f4; border-top-left-radius: 11px; border-top-right-radius: 11px; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #f6e4e6; padding: 20px 20px 18px;">
+                                <div
+                                    style="width: 40px; height: 40px; border-radius: 11px; background-color: #b12126; box-shadow: 0 7px 16px rgba(177, 33, 38, 0.32); text-align: center; line-height: 40px; margin-bottom: 15px;">
+                                    <img src="./assets/icons/ic-c9b30746-ffffff.png" alt="" style="width: 21px; height: 21px; display: inline-block; vertical-align: middle;" />
+                                </div>
+                                <div
+                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 19px; font-weight: 800; color: #0f172a; line-height: 1.28; letter-spacing: -0.3px;">
+                                    Automatic Database Backup
+                                </div>
+                                <div
+                                    style="width: 34px; height: 3px; background-color: #b12126; border-radius: 2px; margin-top: 13px;">
+                                </div>
+                            </div>
+
+                            <!-- note + action -->
+                            <div style="padding: 18px 20px 20px; min-height: 124px;">
+                                <div
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #5b6472; line-height: 1.7;">
+                                    Schedule automatic database backups to local storage, remote servers, and the cloud in Odoo 20 — complete with history, alerts, one-click manual backups, and multi-database support.
+                                </div>
+                                <div
+                                    style="border-top-width: 1px; border-top-style: solid; border-top-color: #f6e4e6; margin-top: 16px; padding-top: 14px;">
+                                    <span
+                                        style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b12126;">Explore
+                                        &nbsp;&rarr;</span>
+                                </div>
+                            </div>
+                        </a>
+                    </td>
+                    <td width="2%" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+                    <!-- KANBAN CARD — edit href, icon <path>, name and note -->
+                    <td width="32%" valign="top" class="mob-space"
+                        style="background-color: #ffffff; border: 1px solid #f1dcdf; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.13);">
+                        <a href="https://apps.odoo.com/apps/modules/20.0/odoo_mcp_manager" target="_blank" rel="noopener" style="display: block; text-decoration: none;">
+
+                            <!-- name zone -->
+                            <div
+                                style="background-color: #fdf3f4; border-top-left-radius: 11px; border-top-right-radius: 11px; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #f6e4e6; padding: 20px 20px 18px;">
+                                <div
+                                    style="width: 40px; height: 40px; border-radius: 11px; background-color: #b12126; box-shadow: 0 7px 16px rgba(177, 33, 38, 0.32); text-align: center; line-height: 40px; margin-bottom: 15px;">
+                                    <img src="./assets/icons/ic-c9b30746-ffffff.png" alt="" style="width: 21px; height: 21px; display: inline-block; vertical-align: middle;" />
+                                </div>
+                                <div
+                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 19px; font-weight: 800; color: #0f172a; line-height: 1.28; letter-spacing: -0.3px;">
+                                    Odoo MCP Server
+                                </div>
+                                <div
+                                    style="width: 34px; height: 3px; background-color: #b12126; border-radius: 2px; margin-top: 13px;">
+                                </div>
+                            </div>
+
+                            <!-- note + action -->
+                            <div style="padding: 18px 20px 20px; min-height: 124px;">
+                                <div
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #5b6472; line-height: 1.7;">
+                                    Connect AI assistants (Claude, Cursor, Codex) and chat bots (Telegram, WhatsApp, Discord, Web) to your Odoo data through a single, secure Model Context Protocol gateway.
+                                </div>
+                                <div
+                                    style="border-top-width: 1px; border-top-style: solid; border-top-color: #f6e4e6; margin-top: 16px; padding-top: 14px;">
+                                    <span
+                                        style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b12126;">Explore
+                                        &nbsp;&rarr;</span>
+                                </div>
+                            </div>
+                        </a>
+                    </td>
+                    <td width="2%" style="font-size: 0; line-height: 18px; height: 18px;">&nbsp;</td>
+                    <!-- KANBAN CARD — edit href, icon <path>, name and note -->
+                    <td width="32%" valign="top" class="mob-space"
+                        style="background-color: #ffffff; border: 1px solid #f1dcdf; border-top: 3px solid #b12126; border-radius: 14px; box-shadow: 0 10px 26px rgba(177, 33, 38, 0.13);">
+                        <a href="https://apps.odoo.com/apps/modules/20.0/hide_menu_user" target="_blank" rel="noopener" style="display: block; text-decoration: none;">
+
+                            <!-- name zone -->
+                            <div
+                                style="background-color: #fdf3f4; border-top-left-radius: 11px; border-top-right-radius: 11px; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #f6e4e6; padding: 20px 20px 18px;">
+                                <div
+                                    style="width: 40px; height: 40px; border-radius: 11px; background-color: #b12126; box-shadow: 0 7px 16px rgba(177, 33, 38, 0.32); text-align: center; line-height: 40px; margin-bottom: 15px;">
+                                    <img src="./assets/icons/ic-c9b30746-ffffff.png" alt="" style="width: 21px; height: 21px; display: inline-block; vertical-align: middle;" />
+                                </div>
+                                <div
+                                    style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 19px; font-weight: 800; color: #0f172a; line-height: 1.28; letter-spacing: -0.3px;">
+                                    Hide Any Menu User & Group Wise
+                                </div>
+                                <div
+                                    style="width: 34px; height: 3px; background-color: #b12126; border-radius: 2px; margin-top: 13px;">
+                                </div>
+                            </div>
+
+                            <!-- note + action -->
+                            <div style="padding: 18px 20px 20px; min-height: 124px;">
+                                <div
+                                    style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #5b6472; line-height: 1.7;">
+                                    Hide or restrict any menu item on a per-user or per-group basis in Odoo 20 — so each user only sees the parts of the system that are relevant to them.
+                                </div>
+                                <div
+                                    style="border-top-width: 1px; border-top-style: solid; border-top-color: #f6e4e6; margin-top: 16px; padding-top: 14px;">
+                                    <span
+                                        style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b12126;">Explore
+                                        &nbsp;&rarr;</span>
+                                </div>
+                            </div>
+                        </a>
+                    </td>
+                </tr>
+            </table>
+
+        <!-- 10. MINIMAL SUPPORT & GUARANTEE FOOTER -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0"
+               style="background-color: #ffffff; border: 1px solid #b221261f; border-radius: 16px; margin-bottom: 20px;">
+            <tr>
+                <td style="padding: 44px 32px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" class="mob-stack">
+                        <tr>
+                            <td width="68%" valign="middle" style="padding-right: 24px;" class="mob-space">
+                                <h3
+                                        style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 26px; font-weight: 800; color: #0f172a; margin-top:0; margin-bottom: 8px;">
+                                    Need Customization or <span style="color: #b12126;">Migration Assistance?</span>
+                                </h3>
+                                <p
+                                        style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; color: #666; line-height: 1.6; margin-top:0; margin-bottom: 22px; max-width: 600px;">
+                                    Our certified team of 150+ Odoo professionals is ready to assist with
+                                    deployment,
+                                    custom localization modules, and chart of accounts migrations.
+                                </p>
+                                <table cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td style="padding-right: 10px;">
+                                            <a href="mailto:odoo@cybrosys.com" target="_blank" rel="noopener"
+                                               style="    text-decoration: unset;font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; display: inline-block; background-color: #b12126; color: #ffffff; padding: 11px 22px; border-radius: 30px; font-size: 13px; font-weight: 700;">
+                                                <img src="./assets/icons/ic-0b4c1767-ffffff.png" alt="" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-right: 6px;" />
+                                                Get Support
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="https://wa.me/919074270811" target="_blank" rel="noopener"
+                                               style="    text-decoration: unset; text-align: center;font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; display: inline-block;  color: #b12126; padding: 10px 26px; border-radius: 30px; font-size: 14px; font-weight: 700; border: 1px solid #b221261f;">
+                                                <img src="./assets/icons/ic-f466c5f2-b12126.png" alt="" style="width: 24px; height: 24px; display: inline-block; vertical-align: middle;" />
+                                                WhatsApp
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+
+                            <td width="32%" valign="middle" align="center">
+                                <div
+                                        style="background-color: #fdf2f2; border: 1px solid #b221261f; border-radius: 12px; padding: 24px 20px; text-align: center; max-width: 280px; box-sizing:border-box;">
+                                    <div
+                                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 36px; font-weight: 900; color: #b12126; line-height: 1;">
+                                        100%
+                                    </div>
+                                    <div
+                                            style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 6px;">
+                                        Bug Fix Commitment
+                                    </div>
+                                    <div
+                                            style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color: #666; margin-top: 6px; line-height: 1.5;">
+                                        Guaranteed fixes for any issue reported during the support window.
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+</div>
+
+<!-- Bootstrap 5.0.2 JS bundle (required so data-bs-toggle="tab" actually switches panes) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

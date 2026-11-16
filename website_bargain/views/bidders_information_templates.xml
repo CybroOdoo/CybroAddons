@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="bidders_information" name="Website bidders">
+        <!-- Template extending website.layout -->
+        <t t-call="website.layout">
+            <div id="wrap" class="o_portal_wrap">
+                <div class="container mv64">
+                    <!-- Bootstrap table to show bidders information -->
+                    <div class="table-responsive border rounded border-top-0 ">
+                        <!-- Title of the table -->
+                        <h2 class="text-center">Bid for
+                            <t t-out="product_id.name"/>
+                        </h2>
+                        <!-- Table headers -->
+                        <t t-set="is_manager"
+                           t-value="request.env.user.has_group('base.group_system') or (auction and auction.auction_manager_id == request.env.user)"/>
+                        <table id="bidder_information">
+                            <thead>
+                                <tr class="active">
+                                    <th class="text-center">Name</th>
+                                    <th class="text-center">Bid Amount</th>
+                                    <th class="text-center">Bid Status</th>
+                                    <t t-if="is_manager">
+                                        <th class="text-center">Phone</th>
+                                        <th class="text-center">Email</th>
+                                    </t>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Looping over the bidders_information to show the bid details -->
+                                <t t-foreach="bidders_information"
+                                   t-as="bidders">
+                                    <tr>
+                                        <!-- Bidder's name -->
+                                        <td class="text-center"
+                                            t-out="bidders.bidder_id.name"/>
+                                        <!-- Bid amount -->
+                                        <td class="text-center"
+                                            t-out="bidders.bid_offer"/>
+                                        <!-- Bid status -->
+                                        <td class="text-center"
+                                            t-out="bidders.status"/>
+                                        <!-- Bidder's contact info: only visible to auction manager/admin -->
+                                        <t t-if="is_manager">
+                                            <td class="text-center"
+                                                t-out="bidders.bidder_id.phone"/>
+                                            <td class="text-center"
+                                                t-out="bidders.bidder_id.email"/>
+                                        </t>
+                                        <!-- Checking if the bidder is the current user or manager and status is 'Bid Placed' -->
+                                        <td class="text-center">
+                                            <t t-set="partner"
+                                               t-value="request.env.user.partner_id"/>
+                                            <t t-if="(bidders.status=='Bid Placed') and (partner==bidders.bidder_id or is_manager)">
+                                                <a t-attf-href="/bid/cancel/{{ slug(bidders) }}"
+                                                   class="btn btn-sm btn-outline-danger">
+                                                    Cancel Bid
+                                                </a>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

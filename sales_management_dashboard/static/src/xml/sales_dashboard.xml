@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sales_management_dashboard.SalesDashboardTemplate">
+        <div class="o_sales_dashboard p-4 o_sales_dashboard_style_1">
+            <h2 class="mb-4 fw-bold text-center text-primary o_sales_dashboard_style_2">
+                📊 Sales Dashboard
+            </h2>
+
+            <div class="flex items-center gap-2 mb-4 o_sales_dashboard_style_3">
+                <label class="font-semibold">Global Filter:</label>
+
+                <select id="global_filter"
+                        t-att-value="this.state.filters.global_filter"
+                        t-on-change="this.onChangeGlobalFilter"
+                        class="border rounded p-1 o_sales_dashboard_style_4">
+                    <option value="select_period">Select Period</option>
+                    <option value="this_week">This Week</option>
+                    <option value="this_month">This Month</option>
+                    <option value="this_year">This Year</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+
+                <input type="date"
+                       t-if="this.state.filters.global_filter === 'custom'"
+                       t-on-change="this.onChangeCustomFrom"
+                       class="border rounded p-1"/>
+
+                <input type="date"
+                       t-if="this.state.filters.global_filter === 'custom'"
+                       t-on-change="this.onChangeCustomTo"
+                       class="border rounded p-1"/>
+
+                <div class="flex items-center gap-2 o_sales_dashboard_style_5">
+                    <label class="font-semibold">Limit:</label>
+
+                    <select id="global_limit"
+                            t-att-value="this.state.filters.limit"
+                            t-on-change="this.onChangeGlobalLimit"
+                            class="border rounded p-1 o_sales_dashboard_style_4">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                        <option value="25">25</option>
+                        <option value="30">30</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- First Row: Main Sales Tiles -->
+            <div class="row justify-content-center my-4">
+                <!-- Sale Orders -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative o_sales_dashboard_style_6"
+                         role="button"
+                         t-on-click="this.viewOrders">
+                        <div class="icon-box position-absolute o_sales_dashboard_style_7">
+                            <i data-icon="shopping_cart"
+                               class="oi oi-filled o_sales_dashboard_style_8"/>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Sale Orders</h3>
+                            <div class="fw-bold o_sales_dashboard_style_9">
+                                <t t-out="this.state.data.sales_info.sale_orders"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quotations -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative o_sales_dashboard_style_10"
+                         role="button"
+                         t-on-click="this.viewQuotations">
+                        <div class="icon-box position-absolute o_sales_dashboard_style_7">
+                            <i data-icon="description"
+                               class="oi oi-filled o_sales_dashboard_style_8"/>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Quotations</h3>
+                            <div class="fw-bold o_sales_dashboard_style_9">
+                                <t t-out="this.state.data.sales_info.quotation"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders to Invoice -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative o_sales_dashboard_style_11"
+                         role="button"
+                         t-on-click="this.viewToInvoiceOrders">
+                        <div class="icon-box position-absolute o_sales_dashboard_style_7">
+                            <i data-icon="credit_card"
+                               class="oi oi-filled o_sales_dashboard_style_8"/>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Orders to Invoice</h3>
+                            <div class="fw-bold o_sales_dashboard_style_9">
+                                <t t-out="this.state.data.sales_info.orders_to_invoice"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fully Invoiced -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative o_sales_dashboard_style_12"
+                         role="button"
+                         t-on-click="this.viewFullyInvoicedOrders">
+                        <div class="icon-box position-absolute o_sales_dashboard_style_7">
+                            <i data-icon="check_circle"
+                               class="oi oi-filled o_sales_dashboard_style_8"/>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Fully Invoiced</h3>
+                            <div class="fw-bold o_sales_dashboard_style_9">
+                                <t t-out="this.state.data.sales_info.orders_fully_invoiced"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Row: Sales Summary -->
+            <div class="row justify-content-center my-4">
+                <!-- Order Conversion Rate -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative o_sales_dashboard_style_11">
+                        <div class="icon-box position-absolute o_sales_dashboard_style_7">
+                            <i data-icon="chevron_right"
+                               class="oi oi-filled o_sales_dashboard_style_8"/>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Order Conversion Rate</h3>
+                            <div class="fw-bold o_sales_dashboard_style_9">
+                                <t t-out="this.state.data.sales_info.conversion_rate"/>
+                                %
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Revenue MTD -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative o_sales_dashboard_style_12">
+                        <div class="icon-box position-absolute o_sales_dashboard_style_7">
+                            <i data-icon="payments"
+                               class="oi oi-filled o_sales_dashboard_style_8"/>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Total Revenue MTD</h3>
+                            <div class="fw-bold o_sales_dashboard_style_9">
+                                <t t-out="this.state.data.sales_info.total_revenue_mtd"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Revenue YTD -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative o_sales_dashboard_style_6">
+                        <div class="icon-box position-absolute o_sales_dashboard_style_7">
+                            <i data-icon="payments"
+                               class="oi oi-filled o_sales_dashboard_style_8"/>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Total Revenue YTD</h3>
+                            <div class="fw-bold o_sales_dashboard_style_9">
+                                <t t-out="this.state.data.sales_info.total_revenue_ytd"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Average Order Value -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border rounded-4 text-center shadow-sm position-relative o_sales_dashboard_style_10">
+                        <div class="icon-box position-absolute o_sales_dashboard_style_7">
+                            <i data-icon="payments"
+                               class="oi oi-filled o_sales_dashboard_style_8"/>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center mt-2">
+                            <h3 class="mb-2 fw-bold">Average Order Value</h3>
+                            <div class="fw-bold o_sales_dashboard_style_9">
+                                <t t-out="this.state.data.sales_info.avg_order_value"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Sales by Team and Salesperson -->
+            <div class="row mb-4">
+                <!-- Sales by Team -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white fw-bold">
+                            Sales by Team
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="this.state.filters.global_filter == 'select_period'">
+                                <select class="form-select w-auto o_sales_dashboard_style_4"
+                                        t-on-change="this.onChangeTeamFilter"
+                                        t-att-value="this.state.filters.team_filter">
+                                    <option value="this_week">This Week</option>
+                                    <option value="this_month">This Month</option>
+                                    <option value="this_year">This Year</option>
+                                </select>
+                            </t>
+                        </div>
+
+                        <div class="card-body">
+                            <canvas id="salesByTeamChart"
+                                    class="o_sales_dashboard_style_13"/>
+
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Team</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.data.sales_by_team || []"
+                                       t-as="team"
+                                       t-key="team.id">
+                                        <tr class="clickable-row"
+                                            t-on-click="() => this.goToRecord('crm.team', team.id)">
+                                            <td t-out="team.name"/>
+                                            <td class="text-end fw-bold"
+                                                t-out="team.amount"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sales by Person -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-info text-white fw-bold">
+                            Sales by Person
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="this.state.filters.global_filter == 'select_period'">
+                                <select class="form-select w-auto o_sales_dashboard_style_4"
+                                        t-on-change="this.onChangePersonFilter"
+                                        t-att-value="this.state.filters.person_filter">
+                                    <option value="this_week">This Week</option>
+                                    <option value="this_month">This Month</option>
+                                    <option value="this_year">This Year</option>
+                                </select>
+                            </t>
+                        </div>
+
+                        <div class="card-body">
+                            <canvas id="salesByPersonChart"
+                                    class="o_sales_dashboard_style_13"/>
+
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Salesperson</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.data.sales_by_person || []"
+                                       t-as="person"
+                                       t-key="person.id">
+                                        <tr class="clickable-row"
+                                            t-on-click="() => this.goToRecord('res.users', person.id)">
+                                            <td t-out="person.name"/>
+                                            <td class="text-end fw-bold"
+                                                t-out="person.amount"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 4: Top and Lowest Selling Products -->
+            <div class="row mb-4">
+                <!-- Top Products -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-success text-white fw-bold">
+                            Top Selling Products
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex gap-2">
+                                <t t-if="this.state.filters.global_filter == 'select_period'">
+                                    <select class="form-select form-select-sm w-auto o_sales_dashboard_style_4"
+                                            t-on-change="this.onChangeProductFilter"
+                                            t-att-value="this.state.filters.product_filter">
+                                        <option value="this_week">This Week</option>
+                                        <option value="this_month">This Month</option>
+                                        <option value="this_year">This Year</option>
+                                    </select>
+                                </t>
+
+                                <select class="form-select form-select-sm w-auto o_sales_dashboard_style_4"
+                                        t-on-change="this.onChangeProductCategory">
+                                    <option value="">All Categories</option>
+                                    <t t-foreach="this.state.data.product_categories || []"
+                                       t-as="cat"
+                                       t-key="cat.id">
+                                        <option t-att-value="cat.id"
+                                                t-out="cat.name"/>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <canvas id="topProductsChart"
+                                    height="200"
+                                    class="o_sales_dashboard_style_14"/>
+
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th class="text-end">Quantity Sold</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.data.top_products || []"
+                                       t-as="prod"
+                                       t-key="prod.id">
+                                        <tr class="clickable-row"
+                                            t-on-click="() => this.goToRecord('product.product', prod.id)">
+                                            <td t-out="prod.name"/>
+                                            <td class="text-end fw-bold"
+                                                t-out="prod.qty"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lowest Products -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-danger text-white fw-bold">
+                            Least Selling Products
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex gap-2">
+                                <t t-if="this.state.filters.global_filter == 'select_period'">
+                                    <select class="form-select form-select-sm w-auto o_sales_dashboard_style_4"
+                                            t-on-change="this.onChangeLowProductFilter"
+                                            t-att-value="this.state.filters.low_product_filter">
+                                        <option value="this_week">This Week</option>
+                                        <option value="this_month">This Month</option>
+                                        <option value="this_year">This Year</option>
+                                    </select>
+                                </t>
+
+                                <select class="form-select form-select-sm w-auto o_sales_dashboard_style_4"
+                                        t-on-change="this.onChangeLowProductCategory">
+                                    <option value="">All Categories</option>
+                                    <t t-foreach="this.state.data.product_categories || []"
+                                       t-as="cat"
+                                       t-key="cat.id">
+                                        <option t-att-value="cat.id"
+                                                t-out="cat.name"/>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <canvas id="lowestProductsChart"
+                                    height="200"
+                                    class="o_sales_dashboard_style_14"/>
+
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th class="text-end">Quantity Sold</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.data.lowest_products || []"
+                                       t-as="prod"
+                                       t-key="prod.id">
+                                        <tr class="clickable-row"
+                                            t-on-click="() => this.goToRecord('product.product', prod.id)">
+                                            <td t-out="prod.name"/>
+                                            <td class="text-end fw-bold"
+                                                t-out="prod.qty"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Row 5: Top Customers -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-warning text-white fw-bold">
+                            Top Customers
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="this.state.filters.global_filter == 'select_period'">
+                                <select class="form-select w-auto o_sales_dashboard_style_4"
+                                        t-on-change="this.onChangeCustomerFilter"
+                                        t-att-value="this.state.filters.customer_filter">
+                                    <option value="this_week">This Week</option>
+                                    <option value="this_month">This Month</option>
+                                    <option value="this_year">This Year</option>
+                                </select>
+                            </t>
+                        </div>
+
+                        <div class="card-body">
+                            <table class="table table-bordered table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.data.top_customers || []"
+                                       t-as="cust"
+                                       t-key="cust.id">
+                                        <tr class="clickable-row"
+                                            t-on-click="() => this.goToRecord('res.partner', cust.id)">
+                                            <td t-out="cust.name"/>
+                                            <td class="text-end fw-bold"
+                                                t-out="cust.amount"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 6: Order and Invoice Status -->
+            <div class="row mb-4">
+                <!-- Order Status -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-black fw-bold">
+                            Order Status
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="this.state.filters.global_filter == 'select_period'">
+                                <select class="form-select w-auto o_sales_dashboard_style_4"
+                                        t-on-change="this.onChangeOrderFilter"
+                                        t-att-value="this.state.filters.order_filter">
+                                    <option value="this_week">This Week</option>
+                                    <option value="this_month">This Month</option>
+                                    <option value="this_year">This Year</option>
+                                </select>
+                            </t>
+                        </div>
+
+                        <div class="card-body">
+                            <canvas id="orderStatusChart"
+                                    class="o_sales_dashboard_style_13"/>
+
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Status</th>
+                                        <th class="text-end">Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.data.order_status || []"
+                                       t-as="order"
+                                       t-key="order.status">
+                                        <tr>
+                                            <td t-out="order.status"/>
+                                            <td class="text-end fw-bold"
+                                                t-out="order.count"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Invoice Status -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-dark text-white fw-bold">
+                            Invoice Status
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="this.state.filters.global_filter == 'select_period'">
+                                <select class="form-select w-auto o_sales_dashboard_style_4"
+                                        t-on-change="this.onChangeInvoiceFilter"
+                                        t-att-value="this.state.filters.invoice_filter">
+                                    <option value="this_week">This Week</option>
+                                    <option value="this_month">This Month</option>
+                                    <option value="this_year">This Year</option>
+                                </select>
+                            </t>
+                        </div>
+
+                        <div class="card-body">
+                            <canvas id="invoiceStatusChart"
+                                    class="o_sales_dashboard_style_13"/>
+
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Status</th>
+                                        <th class="text-end">Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.data.invoice_status || []"
+                                       t-as="inv"
+                                       t-key="inv.status">
+                                        <tr>
+                                            <td t-out="inv.status"/>
+                                            <td class="text-end fw-bold"
+                                                t-out="inv.count"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 7: Overdue Customers and New vs Returning Customers -->
+            <div class="row mb-4">
+                <!-- Overdue Customers -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-danger text-white fw-bold">
+                            Overdue Customers
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="this.state.filters.global_filter == 'select_period'">
+                                <select class="form-select w-auto o_sales_dashboard_style_4"
+                                        t-on-change="this.onChangeOverdueFilter"
+                                        t-att-value="this.state.filters.team_filter">
+                                    <option value="this_week">This Week</option>
+                                    <option value="this_month">This Month</option>
+                                    <option value="this_year">This Year</option>
+                                </select>
+                            </t>
+                        </div>
+
+                        <div class="card-body">
+                            <canvas id="overdueCustomersChart"
+                                    class="o_sales_dashboard_style_13"/>
+
+                            <table class="table table-bordered table-sm table-hover mt-3">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.data.overdue_customers || []"
+                                       t-as="cust"
+                                       t-key="cust.id">
+                                        <tr class="clickable-row"
+                                            t-on-click="() => this.goToRecord('res.partner', cust.id)">
+                                            <td t-out="cust.name"/>
+                                            <td class="text-end fw-bold"
+                                                t-out="cust.amount"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New vs Returning Customers -->
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-success text-white fw-bold">
+                            New vs Returning Customers
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <t t-if="this.state.filters.global_filter == 'select_period'">
+                                <select class="form-select w-auto o_sales_dashboard_style_4"
+                                        t-on-change="this.onChangeNvRFilter"
+                                        t-att-value="this.state.filters.team_filter">
+                                    <option value="this_week">This Week</option>
+                                    <option value="this_month">This Month</option>
+                                    <option value="this_year">This Year</option>
+                                </select>
+                            </t>
+                        </div>
+
+                        <div class="card-body">
+                            <canvas id="newVsReturningChart"
+                                    class="o_sales_dashboard_style_13"/>
+
+                            <t t-set="customerData"
+                               t-value="this.state.data.new_vs_returning"/>
+
+                            <div t-if="customerData and customerData.details">
+                                <h5 class="mt-3">New Customers</h5>
+
+                                <table class="table table-bordered table-sm table-hover mt-2">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Customer</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="customerData.details.new"
+                                            t-as="cust"
+                                            t-key="cust_index">
+                                            <td class="clickable-row"
+                                                t-on-click="() => this.goToRecord('res.partner', cust.id)"
+                                                t-out="cust.name"/>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <!-- Returning Customers -->
+                                <h5 class="mt-3">Returning Customers</h5>
+
+                                <table class="table table-bordered table-sm table-hover mt-2">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Customer</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="customerData.details.returning"
+                                            t-as="cust"
+                                            t-key="cust_index">
+                                            <td class="clickable-row"
+                                                t-on-click="() => this.goToRecord('res.partner', cust.id)"
+                                                t-out="cust.name"/>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

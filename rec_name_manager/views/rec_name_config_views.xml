@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List View -->
+    <record id="view_rec_name_config_list" model="ir.ui.view">
+        <field name="name">rec.name.config.list</field>
+        <field name="model">rec.name.config</field>
+        <field name="arch" type="xml">
+            <list string="Rec Name Configurations" editable="top">
+                <field name="model_id" options="{'no_create': True}"/>
+                <field name="model_name" optional="hide"/>
+                <field name="field_id" options="{'no_create': True}"/>
+                <field name="field_name" optional="hide"/>
+                <field name="field_ttype" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_rec_name_config_form" model="ir.ui.view">
+        <field name="name">rec.name.config.form</field>
+        <field name="model">rec.name.config</field>
+        <field name="arch" type="xml">
+            <form string="Rec Name Configuration">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived"
+                            bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="model_id" string="Model"/>
+                        <h1>
+                            <field name="model_id"
+                                   options="{'no_create': True}"
+                                   placeholder="Select a model..."/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Configuration">
+                            <field name="model_name"/>
+                            <field name="field_id"
+                                   options="{'no_create': True}"
+                                   placeholder="Select a field..."/>
+                            <field name="field_name"/>
+                            <field name="field_ttype"/>
+                        </group>
+                        <group string="How It Works">
+                            <div colspan="2" class="text-muted">
+                                <p>
+                                    Once saved, every place in Odoo that shows the name of a
+                                    record from this model, including breadcrumbs, form titles
+                                    and <strong>many2one fields</strong>, will display the value
+                                    of the chosen field instead of the default name. Searching a
+                                    many2one dropdown also matches the chosen field.
+                                </p>
+                                <p>
+                                    <strong>Note:</strong> If you select a <em>Many2one</em> field
+                                    (e.g. Customer), the related record's name will be shown.
+                                </p>
+                                <p>
+                                    Fields restricted to specific user groups cannot be
+                                    selected, because the display name is visible to every
+                                    user.
+                                </p>
+                                <p>
+                                    Archive the configuration to revert to the model's
+                                    default display name at any time. Records whose chosen
+                                    field is empty keep their default name.
+                                </p>
+                            </div>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_rec_name_config_search" model="ir.ui.view">
+        <field name="name">rec.name.config.search</field>
+        <field name="model">rec.name.config</field>
+        <field name="arch" type="xml">
+            <search string="Search Configurations">
+                <field name="model_id" string="Model"/>
+                <field name="field_id" string="Display Field"/>
+                <filter name="inactive" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_rec_name_config" model="ir.actions.act_window">
+        <field name="name">Record Display Name Manager</field>
+        <field name="res_model">rec.name.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No configurations yet!
+            </p>
+            <p>
+                Create a configuration to control which field is used as the
+                display name for any installed model — no code required.
+            </p>
+        </field>
+    </record>
+
+</odoo>

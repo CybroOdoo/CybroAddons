@@ -1,0 +1,550 @@
+///
+/// Blueberry Backend Theme
+///
+/// All runtime colors and sizes are exposed as CSS custom properties on
+/// :root (prefixed `--bb-`). To re-skin the theme, override them in a small
+/// stylesheet, e.g. `:root { --bb-primary: #0f9d58; }`. Compile time brand
+/// colors (Bootstrap $primary & co) live in primary_variables.scss.
+///
+
+// Keep this URL free of ";" - Odoo hoists @import rules to the top of the
+// bundle and splits them on ";", which would break the whole stylesheet.
+@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600&display=swap');
+
+// ============================================================================
+// Design tokens
+// ============================================================================
+:root {
+    // Brand
+    --bb-primary: #{$bb-primary};
+    --bb-primary-rgb: #{red($bb-primary)}, #{green($bb-primary)}, #{blue($bb-primary)};
+    --bb-primary-dark: #{$bb-primary-dark};
+    --bb-accent: #{$bb-accent};
+    --bb-gradient: linear-gradient(135deg, var(--bb-accent) 0%, var(--bb-primary) 100%);
+    --bb-primary-soft: rgba(var(--bb-primary-rgb), .08);
+    --bb-primary-soft-strong: rgba(var(--bb-primary-rgb), .14);
+
+    // Surfaces
+    --bb-body-bg: #f4f5fb;
+    --bb-surface: var(--bs-body-bg, #ffffff);
+    --bb-border: rgba(31, 36, 48, .08);
+    --bb-text: #1f2430;
+    --bb-text-muted: #6b7280;
+
+    // Sidebar
+    --bb-sidebar-width: 280px;
+    --bb-sidebar-bg: #{$bb-sidebar-bg};
+    --bb-sidebar-text: rgba(255, 255, 255, .72);
+    --bb-sidebar-text-hover: #ffffff;
+    --bb-sidebar-item-hover: rgba(255, 255, 255, .06);
+    --bb-sidebar-item-active: rgba(var(--bb-primary-rgb), .35);
+    --bb-sidebar-input-bg: rgba(255, 255, 255, .08);
+
+    // Shape & depth
+    --bb-radius-sm: 6px;
+    --bb-radius: 10px;
+    --bb-radius-pill: 999px;
+    --bb-shadow-sm: 0 1px 2px rgba(31, 36, 48, .06);
+    --bb-shadow: 0 2px 10px rgba(31, 36, 48, .06), 0 1px 2px rgba(31, 36, 48, .04);
+    --bb-shadow-hover: 0 8px 24px rgba(var(--bb-primary-rgb), .14);
+    --bb-transition: .2s ease;
+
+    // Typography
+    --bb-font-heading: 'Poppins', var(--bs-font-sans-serif, sans-serif);
+}
+
+// ============================================================================
+// Base
+// ============================================================================
+.o_web_client {
+    background-color: var(--bb-body-bg);
+
+    ::selection {
+        background: var(--bb-primary-soft-strong);
+    }
+
+    // Thin, unobtrusive scrollbars
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(31, 36, 48, .25) transparent;
+    }
+
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: var(--bb-radius-pill);
+        background-color: rgba(31, 36, 48, .2);
+
+        &:hover {
+            background-color: rgba(var(--bb-primary-rgb), .5);
+        }
+    }
+}
+
+.o_loading_indicator {
+    background-color: var(--bb-primary);
+    color: #ffffff;
+    border-radius: 0 0 0 var(--bb-radius-sm);
+}
+
+// ============================================================================
+// Top navbar
+// ============================================================================
+.o_main_navbar {
+    border-bottom: 1px solid var(--bb-border);
+    box-shadow: var(--bb-shadow-sm);
+
+    .o_menu_brand {
+        font-family: var(--bb-font-heading);
+        font-weight: 600;
+        color: var(--bb-text);
+    }
+
+    .o_menu_systray .badge {
+        border-radius: var(--bb-radius-pill);
+    }
+}
+
+// Sidebar toggle (replaces the home menu dropdown)
+.o_navbar_apps_menu .bb_sidebar_toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 36px;
+    margin: 0 .5rem 0 .75rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--bb-radius-sm);
+    background: transparent;
+    color: var(--bb-primary);
+    font-size: 1.15rem;
+    transition: background-color var(--bb-transition), color var(--bb-transition);
+
+    &:hover,
+    &:focus-visible,
+    &.active {
+        background-color: var(--bb-primary-soft-strong);
+        color: var(--bb-primary-dark);
+    }
+}
+
+// ============================================================================
+// Apps sidebar
+// ============================================================================
+.bb_sidebar_panel {
+    position: fixed;
+    top: $o-navbar-height; // --o-navbar-height is only set on .o_main_navbar
+    bottom: 0;
+    left: 0;
+    z-index: 1040;
+    display: flex;
+    flex-direction: column;
+    width: var(--bb-sidebar-width);
+    background: var(--bb-sidebar-bg);
+    color: var(--bb-sidebar-text);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, .12);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform .25s ease, visibility 0s linear .25s;
+
+    &.bb_open {
+        transform: translateX(0);
+        visibility: visible;
+        transition: transform .25s ease, visibility 0s;
+    }
+
+    .bb_sidebar_search {
+        flex: 0 0 auto;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .bb_sidebar_search_field {
+        position: relative;
+
+        > .oi {
+            position: absolute;
+            top: 50%;
+            left: .9rem;
+            transform: translateY(-50%);
+            color: var(--bb-sidebar-text);
+            pointer-events: none;
+        }
+
+        input {
+            width: 100%;
+            height: 40px;
+            padding: 0 .9rem 0 2.4rem;
+            border: 1px solid transparent;
+            border-radius: var(--bb-radius-pill);
+            background: var(--bb-sidebar-input-bg);
+            color: var(--bb-sidebar-text-hover);
+            font-size: .9rem;
+            outline: none;
+            transition: border-color var(--bb-transition), background-color var(--bb-transition);
+
+            &::placeholder {
+                color: var(--bb-sidebar-text);
+                opacity: .7;
+            }
+
+            &:focus {
+                border-color: var(--bb-primary);
+                background: rgba(255, 255, 255, .12);
+            }
+
+            &::-webkit-search-cancel-button {
+                filter: invert(1);
+            }
+        }
+    }
+
+    .bb_sidebar_body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: .5rem .75rem 1.5rem;
+        scrollbar-color: rgba(255, 255, 255, .2) transparent;
+
+        &::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, .15);
+        }
+    }
+
+    .bb_sidebar_list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .bb_sidebar_item {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        padding: .55rem .75rem;
+        margin-bottom: 2px;
+        border-radius: var(--bb-radius-sm);
+        color: var(--bb-sidebar-text);
+        font-size: .9rem;
+        line-height: 1.3;
+        text-decoration: none;
+        transition: background-color var(--bb-transition), color var(--bb-transition);
+
+        &:hover,
+        &:focus-visible {
+            background: var(--bb-sidebar-item-hover);
+            color: var(--bb-sidebar-text-hover);
+            outline: none;
+        }
+
+        &.active {
+            background: var(--bb-sidebar-item-active);
+            color: var(--bb-sidebar-text-hover);
+            font-weight: 500;
+        }
+    }
+
+    .bb_app_icon {
+        flex: 0 0 auto;
+        width: 34px;
+        height: 34px;
+        border-radius: var(--bb-radius-sm);
+        object-fit: cover;
+    }
+
+    .bb_app_icon_font {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .bb_result_path {
+        display: block;
+        font-size: .75rem;
+        opacity: .6;
+    }
+
+    .bb_sidebar_empty {
+        padding: 1.5rem .75rem;
+        text-align: center;
+        font-size: .85rem;
+        opacity: .6;
+    }
+}
+
+// Push the action manager instead of covering it on large screens
+.o_web_client > .o_action_manager {
+    transition: margin-left .25s ease;
+}
+
+@include media-breakpoint-up(lg) {
+    .o_web_client.bb_sidebar_opened > .o_action_manager {
+        margin-left: var(--bb-sidebar-width);
+    }
+}
+
+// ============================================================================
+// Buttons
+// ============================================================================
+.o_web_client .btn {
+    border-radius: var(--bb-radius-sm);
+    transition: background-color var(--bb-transition), border-color var(--bb-transition),
+                color var(--bb-transition), box-shadow var(--bb-transition);
+
+    &.btn-primary:not(:disabled):not(.disabled) {
+        box-shadow: 0 2px 6px rgba(var(--bb-primary-rgb), .25);
+
+        &:hover {
+            box-shadow: 0 4px 12px rgba(var(--bb-primary-rgb), .3);
+        }
+    }
+}
+
+// ============================================================================
+// Control panel & search
+// ============================================================================
+.o_control_panel {
+    background-color: var(--bb-surface);
+    border-bottom: 1px solid var(--bb-border);
+
+    .o_breadcrumb {
+        font-family: var(--bb-font-heading);
+
+        .active {
+            font-weight: 600;
+            color: var(--bb-text);
+        }
+    }
+
+    .o_cp_switch_buttons .btn.active {
+        background-color: var(--bb-primary-soft-strong);
+        color: var(--bb-primary);
+    }
+}
+
+.o_searchview {
+    border-radius: var(--bb-radius-sm);
+    transition: border-color var(--bb-transition), box-shadow var(--bb-transition);
+
+    &:focus-within {
+        border-color: var(--bb-primary);
+        box-shadow: 0 0 0 3px var(--bb-primary-soft);
+    }
+
+    .o_searchview_facet {
+        border-radius: var(--bb-radius-pill);
+        overflow: hidden;
+
+        .o_searchview_facet_label {
+            background-color: var(--bb-primary);
+            color: #ffffff;
+        }
+    }
+}
+
+// ============================================================================
+// Form view
+// ============================================================================
+.o_form_view {
+    .o_form_sheet_bg {
+        background-color: var(--bb-body-bg);
+    }
+
+    .o_form_sheet {
+        border: 1px solid var(--bb-border);
+        border-radius: var(--bb-radius);
+        box-shadow: var(--bb-shadow);
+    }
+
+    .o_form_label {
+        color: var(--bb-text);
+        font-weight: 500;
+    }
+
+    .o_horizontal_separator,
+    .o_group .o_horizontal_separator {
+        color: var(--bb-primary);
+        font-family: var(--bb-font-heading);
+        font-weight: 600;
+        letter-spacing: .02em;
+    }
+
+    .oe_title h1 {
+        font-family: var(--bb-font-heading);
+    }
+
+    .o_form_statusbar {
+        background-color: var(--bb-surface);
+        border-bottom: 1px solid var(--bb-border);
+    }
+}
+
+.o_field_widget .o_input,
+.o_field_widget input.o_input,
+.o_field_widget textarea.o_input {
+    transition: border-color var(--bb-transition);
+
+    &:focus {
+        border-color: var(--bb-primary);
+    }
+}
+
+// Smart buttons
+.o-form-buttonbox .oe_stat_button {
+    transition: background-color var(--bb-transition);
+
+    .o_button_icon {
+        color: var(--bb-primary);
+    }
+
+    &:hover {
+        background-color: var(--bb-primary-soft);
+    }
+}
+
+// Status bar
+.o_statusbar_status .o_arrow_button_current {
+    font-weight: 600;
+}
+
+// Notebook tabs
+.o_notebook .nav-tabs {
+    border-bottom-color: var(--bb-border);
+
+    .nav-link {
+        border: 0;
+        border-bottom: 2px solid transparent;
+        color: var(--bb-text-muted);
+        font-weight: 500;
+        transition: color var(--bb-transition), border-color var(--bb-transition);
+
+        &:hover {
+            color: var(--bb-primary);
+            border-bottom-color: var(--bb-primary-soft-strong);
+        }
+
+        &.active {
+            background-color: transparent;
+            color: var(--bb-primary);
+            border-bottom-color: var(--bb-primary);
+        }
+    }
+}
+
+// ============================================================================
+// List view
+// ============================================================================
+.o_list_renderer .o_list_table {
+    thead th {
+        color: var(--bb-text-muted);
+        font-size: .8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    tbody > tr.o_data_row:hover > td {
+        background-color: var(--bb-primary-soft);
+    }
+
+    tbody > tr.o_data_row.o_data_row_selected > td {
+        background-color: var(--bb-primary-soft-strong);
+    }
+}
+
+// ============================================================================
+// Kanban view
+// ============================================================================
+.o_kanban_renderer .o_kanban_record {
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    box-shadow: var(--bb-shadow-sm);
+    transition: box-shadow var(--bb-transition), transform var(--bb-transition), border-color var(--bb-transition);
+
+    &:hover {
+        border-color: rgba(var(--bb-primary-rgb), .25);
+        box-shadow: var(--bb-shadow-hover);
+    }
+}
+
+.o_kanban_renderer .o_kanban_group .o_kanban_header_title {
+    font-family: var(--bb-font-heading);
+}
+
+// ============================================================================
+// Dropdowns & popovers
+// ============================================================================
+.o-dropdown--menu.dropdown-menu {
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    box-shadow: 0 10px 30px rgba(31, 36, 48, .12);
+
+    .dropdown-item {
+        border-radius: var(--bb-radius-sm);
+        transition: background-color var(--bb-transition), color var(--bb-transition);
+
+        &:hover,
+        &:focus,
+        &.focus {
+            background-color: var(--bb-primary-soft);
+            color: var(--bb-primary-dark);
+        }
+
+        &.active,
+        &.selected {
+            background-color: var(--bb-primary-soft-strong);
+            color: var(--bb-primary-dark);
+        }
+    }
+}
+
+// ============================================================================
+// Dialogs
+// ============================================================================
+.o_dialog .modal-content {
+    border: 0;
+    border-radius: var(--bb-radius);
+    box-shadow: 0 20px 50px rgba(31, 36, 48, .2);
+
+    .modal-header {
+        border-bottom-color: var(--bb-border);
+
+        .modal-title {
+            font-family: var(--bb-font-heading);
+            font-weight: 600;
+        }
+    }
+
+    .modal-footer {
+        border-top-color: var(--bb-border);
+    }
+}
+
+// ============================================================================
+// Misc
+// ============================================================================
+.o_onboarding_container .o_onboarding {
+    background-image: var(--bb-gradient);
+}
+
+.progress-bar,
+.o_progressbar .o_progress .o_progressbar_complete {
+    background-color: var(--bb-primary);
+}
+
+.form-check-input:checked {
+    background-color: var(--bb-primary);
+    border-color: var(--bb-primary);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 3px var(--bb-primary-soft-strong);
+}

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Redesigned Booked Orders Screen -->
+    <t t-name="pos_book_order.BookedOrdersScreen">
+        <div class="booked-orders-screen screen">
+
+            <!-- Header Section -->
+            <div class="screen-header">
+                <div class="header-left">
+                    <div class="button back" t-on-click="() => this.back()" t-if="!this.props.new_order">
+                        <i class="fa fa-arrow-left"/> Back
+                    </div>
+                    <div class="button new-order" t-if="this.props.new_order" t-on-click="() => this.orderDone()">
+                        <i class="fa fa-plus-circle"/> New Order
+                    </div>
+                </div>
+                <div class="header-right d-flex align-items-center gap-3">
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm" t-att-class="this.state.filter === 'draft' ? 'btn-primary' : 'btn-outline-secondary'" t-on-click="() => this.setFilter('draft')">
+                            Pending
+                        </button>
+                        <button class="btn btn-sm" t-att-class="this.state.filter === 'confirmed' ? 'btn-primary' : 'btn-outline-secondary'" t-on-click="() => this.setFilter('confirmed')">
+                            Confirmed
+                        </button>
+                        <button class="btn btn-sm" t-att-class="this.state.filter === 'all' ? 'btn-primary' : 'btn-outline-secondary'" t-on-click="() => this.setFilter('all')">
+                            All
+                        </button>
+                    </div>
+                    <h2><i class="fa fa-clipboard-list"/> Booked Orders</h2>
+                </div>
+            </div>
+
+            <!-- Orders List -->
+            <div class="orders-container">
+                <t t-foreach="this.orders" t-as="order" t-key="order.id">
+                    <div class="order-card">
+                        <div class="order-card-header d-flex align-items-center">
+                            <span class="order-ref"><i class="fa fa-hashtag"/> <t t-esc="order.name"/></span>
+                            <span t-if="order.state === 'confirmed'" class="badge bg-success ms-2">Confirmed</span>
+                            <span t-else="" class="badge bg-warning text-dark ms-2">Pending</span>
+                            <span class="order-total ms-auto">$<t t-esc="order.total"/></span>
+                        </div>
+                        <div class="order-card-body">
+                            <div class="order-row">
+                                <span class="label"><i class="fa fa-user"/> Customer:</span>
+                                <span class="value"><t t-esc="order.partner_name"/></span>
+                            </div>
+                            <div class="order-row">
+                                <span class="label"><i class="fa fa-phone"/> Contact:</span>
+                                <span class="value"><t t-esc="order.phone"/></span>
+                            </div>
+                            <div class="order-row">
+                                <span class="label"><i class="fa fa-calendar"/> Order Date:</span>
+                                <span class="value"><t t-esc="order.date"/></span>
+                            </div>
+                            <div class="order-row" t-if="order.pickup">
+                                <span class="label"><i class="fa fa-box"/> Pickup:</span>
+                                <span class="value"><t t-esc="order.pickup"/></span>
+                            </div>
+                            <div class="order-row" t-if="order.deliver">
+                                <span class="label"><i class="fa fa-truck"/> Delivery:</span>
+                                <span class="value"><t t-esc="order.deliver"/></span>
+                            </div>
+                            <div class="order-row" t-if="order.address">
+                                <span class="label"><i class="fa fa-map-marker"/> Address:</span>
+                                <span class="value"><t t-esc="order.address"/></span>
+                            </div>
+                        </div>
+                        <div class="order-card-footer">
+                            <button t-if="order.state === 'draft'" class="btn-confirm" t-on-click="() => this._Confirm(order)">
+                                <i class="fa fa-check-circle"/> Confirm
+                            </button>
+                            <span t-else="" class="text-success fw-bold py-1">
+                                <i class="fa fa-check"/> Confirmed
+                            </span>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Empty State -->
+                <t t-if="this.orders.length == 0">
+                    <div class="empty-order-list">
+                        <i class="fa fa-shopping-cart"/>
+                        <h2>No booked orders found</h2>
+                        <p>New orders will appear here.</p>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

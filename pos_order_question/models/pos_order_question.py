@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#############################################################################
+from odoo import api, fields, models
+from odoo.exceptions import ValidationError
+
+
+class PosOrderQuestion(models.Model):
+    """Class for the model pos_order_question."""
+    _name = "pos.order.question"
+    _inherit = ['pos.load.mixin']
+    _description = "PosOrder Question"
+
+    name = fields.Char(string="Question", help='Questions for the products.')
+    product_tmpl_id = fields.Many2one('product.template', string='Product',
+                                      help='product template of the question.')
+
+    @api.constrains('name')
+    def _check_name(self):
+        """Function to prevent saving empty questions."""
+        for rec in self:
+            if not rec.name:
+                raise ValidationError(
+                    self.env._('Question cannot be empty.'))

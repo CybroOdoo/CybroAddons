@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- List view of docusign.document.request -->
+    <record id="docusign_document_request_view_list" model="ir.ui.view">
+        <field name="name">docusign.document.request.view.list</field>
+        <field name="model">docusign.document.request</field>
+        <field name="arch" type="xml">
+            <list string="Document Requests">
+                <field name="name" string="Document Request Number"/>
+                <field name="partner_ids" widget="many2many_tags"/>
+                <field name="selection_type"/>
+                <field name="expiry_date"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-primary="state == 'sent'"
+                       decoration-warning="state == 'partially_signed'"
+                       decoration-success="state == 'fully_signed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view of docusign.document.request -->
+    <record id="docusign_document_request_view_form" model="ir.ui.view">
+        <field name="name">docusign.document.request.view.form</field>
+        <field name="model">docusign.document.request</field>
+        <field name="arch" type="xml">
+            <form string="Document Request">
+                <header>
+                    <button name="action_send_document" type="object" string="Send Document"
+                            class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_send_reminder" type="object" string="Send Reminder"
+                            class="btn-secondary" invisible="state not in ['sent', 'partially_signed']"/>
+                    <button name="action_draft" type="object" string="Reset to Draft"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,partially_signed,fully_signed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_ids" widget="many2many_tags" readonly="state != 'draft'"/>
+                            <field name="expiry_date" readonly="state != 'draft'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                            <field name="credentials_id" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="selection_type" widget="radio" readonly="state != 'draft'"/>
+                            <field name="document_ids" widget="docusign_many2many_binary" readonly="state != 'draft'"
+                                   invisible="selection_type == 'custom'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Custom Assignment" invisible="selection_type != 'custom'">
+                            <field name="custom_line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="partner_id" domain="[('id', 'in', parent.partner_ids)]"/>
+                                    <field name="document_ids" widget="docusign_many2many_binary"/>
+                                    <field name="remarks" placeholder="Add remarks..."/>
+                                </list>
+                                <form>
+                                    <group>
+                                        <field name="partner_id" domain="[('id', 'in', parent.partner_ids)]"/>
+                                        <field name="document_ids" widget="docusign_many2many_binary"/>
+                                        <field name="remarks" placeholder="Add remarks..."/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Docusign" name="docusign_details">
+                            <field name="docusign_line_ids" readonly="1">
+                                <list>
+                                    <field name="partner_id" string="Contact"/>
+                                    <field name="document" string="Reference"/>
+                                    <field name="send_to" string="Send To"/>
+                                    <field name="status" string="Status"/>
+                                    <field name="signed_document" string="Signed Document" filename="document"/>
+                                    <field name="envelope_id" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view of docusign.document.request -->
+    <record id="docusign_document_request_view_search" model="ir.ui.view">
+        <field name="name">docusign.document.request.view.search</field>
+        <field name="model">docusign.document.request</field>
+        <field name="arch" type="xml">
+            <search string="Search Document Requests">
+                <field name="name" string="Document Request Number"/>
+                <field name="partner_ids"/>
+                <field name="company_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Document Sent" name="sent" domain="[('state', '=', 'sent')]"/>
+                <filter string="Partially Signed" name="partially_signed" domain="[('state', '=', 'partially_signed')]"/>
+                <filter string="Fully Signed" name="fully_signed" domain="[('state', '=', 'fully_signed')]"/>
+                <group>
+                    <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Document Criteria" name="group_by_selection_type" context="{'group_by': 'selection_type'}"/>
+                    <filter string="Company" name="group_by_company" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action for docusign.document.request -->
+    <record id="action_docusign_document_request" model="ir.actions.act_window">
+        <field name="name">Document Requests</field>
+        <field name="res_model">docusign.document.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="docusign_document_request_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new document request
+            </p>
+            <p>
+                Send documents to customers for signature via DocuSign, track signing progress, and automate reminders.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu item placed before Docusign Setup (sequence 10 vs 20) -->
+    <menuitem name="Document Requests"
+              id="docusign_document_request_menu"
+              parent="main_docusign_menu_root"
+              action="action_docusign_document_request"
+              sequence="10"/>
+</odoo>

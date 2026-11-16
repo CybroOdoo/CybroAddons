@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="web.NavBar" t-inherit-mode="extension">
+        <xpath expr="//nav[hasclass('o_main_navbar')]" position="after">
+            <!-- Apps sidebar with menu search -->
+            <aside t-if="!this.ui.isSmall"
+                   class="bb_sidebar_panel"
+                   t-att-class="{ 'bb_open': this.sidebarState.isOpen }"
+                   t-att-aria-hidden="this.sidebarState.isOpen ? 'false' : 'true'">
+                <div class="bb_sidebar_search">
+                    <div class="bb_sidebar_search_field">
+                        <i class="oi" data-icon="search" aria-hidden="true"/>
+                        <input type="search"
+                               autocomplete="off"
+                               placeholder="Search menus..."
+                               aria-label="Search menus"
+                               t-ref="this.searchInputRef"
+                               t-on-input="this.onSidebarSearchInput"
+                               t-on-keydown="this.onSidebarSearchKeydown"/>
+                    </div>
+                </div>
+                <div class="bb_sidebar_body">
+                    <!-- Search results -->
+                    <t t-if="this.sidebarState.query">
+                        <ul class="bb_sidebar_list">
+                            <li t-foreach="this.sidebarState.results" t-as="result" t-key="result.id">
+                                <a class="bb_sidebar_item"
+                                   t-att-href="result.href"
+                                   t-on-click="(ev) => this.onSidebarMenuClick(ev, result.id)">
+                                    <span>
+                                        <span t-if="result.parents" class="bb_result_path" t-out="result.parents"/>
+                                        <t t-out="result.label"/>
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+                        <div t-if="!this.sidebarState.results.length" class="bb_sidebar_empty">
+                            No menu found
+                        </div>
+                    </t>
+                    <!-- Apps -->
+                    <ul t-else="" class="bb_sidebar_list">
+                        <li t-foreach="this.menuService.getApps()" t-as="app" t-key="app.id">
+                            <a role="menuitem"
+                               class="bb_sidebar_item"
+                               t-att-class="{ 'active': this.menuService.getCurrentApp() === app }"
+                               t-att-href="this.getMenuItemHref(app)"
+                               t-att-data-menu-xmlid="app.xmlid"
+                               t-on-click="(ev) => this.onSidebarMenuClick(ev, app.id)">
+                                <img t-if="app.webIconData" class="bb_app_icon"
+                                     t-att-src="app.webIconData" t-att-alt="app.name"/>
+                                <span t-elif="app.webIcon" class="bb_app_icon bb_app_icon_font"
+                                      t-att-style="'color:' + app.webIcon.split(',')[1] + ';background-color:' + app.webIcon.split(',')[2]">
+                                    <i class="oi" t-att-data-icon="app.webIcon.split(',')[0]"/>
+                                </span>
+                                <span t-out="app.name"/>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+        </xpath>
+    </t>
+
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension">
+        <xpath expr="//Dropdown" position="replace">
+            <button type="button"
+                    class="bb_sidebar_toggle"
+                    t-att-class="{ 'active': this.sidebarState.isOpen }"
+                    data-hotkey="h"
+                    title="Apps"
+                    aria-label="Toggle apps sidebar"
+                    t-on-click="this.toggleSidebar">
+                <i class="oi" data-icon="menu" aria-hidden="true"/>
+            </button>
+        </xpath>
+    </t>
+</templates>

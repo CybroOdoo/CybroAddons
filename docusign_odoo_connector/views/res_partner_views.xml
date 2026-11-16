@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit res.partner form to display signed DocuSign documents in a smart tab and smart button -->
+    <record id="view_partner_form_inherit_docusign" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.docusign</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Smart Button in button_box -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_signed_documents" type="object"
+                        class="oe_stat_button" icon="edit" icon_class="oi-filled">
+                    <field name="signed_document_count" widget="statinfo" string="Signed Docs"/>
+                </button>
+            </xpath>
+
+            <!-- Smart Tab / Page in notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Signed Documents" name="signed_documents">
+                    <field name="signed_docusign_line_ids" readonly="1">
+                        <list string="Signed Documents">
+                            <field name="document" string="Document"/>
+                            <field name="send_to" string="Send To"/>
+                            <field name="status" string="Status" widget="badge" decoration-success="status == 'completed'"/>
+                            <field name="signed_document" string="Signed Document" filename="document"/>
+                            <field name="request_id" string="Document Request Number" optional="show"/>
+                            <field name="docusign_id" string="Sale Order" optional="hide"/>
+                            <field name="envelope_id" optional="hide"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Standalone list view for docusign.lines -->
+    <record id="docusign_lines_view_list" model="ir.ui.view">
+        <field name="name">docusign.lines.view.list</field>
+        <field name="model">docusign.lines</field>
+        <field name="arch" type="xml">
+            <list string="DocuSign Documents" create="false" edit="false">
+                <field name="partner_id" string="Customer"/>
+                <field name="document" string="Document"/>
+                <field name="send_to" string="Send To"/>
+                <field name="status" string="Status" widget="badge" decoration-success="status == 'completed'"/>
+                <field name="signed_document" string="Signed Document" filename="document"/>
+                <field name="request_id" string="Document Request Number" optional="show"/>
+                <field name="docusign_id" string="Sale Order" optional="hide"/>
+                <field name="envelope_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Standalone form view for docusign.lines -->
+    <record id="docusign_lines_view_form" model="ir.ui.view">
+        <field name="name">docusign.lines.view.form</field>
+        <field name="model">docusign.lines</field>
+        <field name="arch" type="xml">
+            <form string="DocuSign Document" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="document"/>
+                            <field name="send_to"/>
+                            <field name="status"/>
+                        </group>
+                        <group>
+                            <field name="request_id" invisible="not request_id"/>
+                            <field name="docusign_id" invisible="not docusign_id"/>
+                            <field name="envelope_id"/>
+                            <field name="signed_document" filename="document"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

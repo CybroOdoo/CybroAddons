@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Placeholder filled by the product_arrivals interaction -->
+    <template id="arrival_product" name="Product Arrivals">
+        <section class="new_arrivals">
+            <div class="container o_not_editable voltro_dynamic_placeholder">Loading new arrivals...</div>
+        </section>
+    </template>
+
+    <!-- Content returned by /theme_voltro/product_arrivals -->
+    <template id="arrival_product_show" name="Product Arrivals Content">
+        <div class="wrapper">
+            <div class="container">
+                <div class="section_left_heading w-100">
+                    <div class="ft_wrapp">
+                        <h3 class="pb-2">New Arrivals</h3>
+                        <p>
+                            Experience cutting-edge technology and seamless performance
+                            with our latest gadgets, designed to elevate your everyday life.
+                        </p>
+                    </div>
+                    <div class="right_btn_wrapp">
+                        <a href="/shop" class="btn btn-secondary">All Products</a>
+                    </div>
+                </div>
+                <div class="new_arrivals_content">
+                    <div class="splide new_arrivals_carousel">
+                        <div class="splide__track">
+                            <ul class="splide__list">
+                                <li t-foreach="products" t-as="product" class="splide__slide">
+                                    <div class="voltro_product_card">
+                                        <a t-att-href="product.website_url" class="block">
+                                            <t t-set="category_name"
+                                               t-value="product.public_categ_ids[:1].name or product.categ_id.name"/>
+                                            <div t-if="category_name" class="type" t-out="category_name"/>
+                                            <h6 t-out="product.name"/>
+                                            <div class="fix_height">
+                                                <div class="img_wrapper">
+                                                    <img t-att-src="'/web/image/product.template/%s/image_512' % product.id"
+                                                         t-att-alt="product.name"
+                                                         class="h-100"/>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        <div class="card_bottom">
+                                            <div class="price_icons">
+                                                <span t-out="product.list_price"
+                                                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                <div class="icons">
+                                                    <t t-set="variant" t-value="product.product_variant_id"/>
+                                                    <button t-if="variant"
+                                                            type="button"
+                                                            class="btn btn-link voltro_icon_link o_add_wishlist"
+                                                            title="Add to Wishlist"
+                                                            aria-label="Add to Wishlist"
+                                                            t-att-disabled="variant.id in wishlist_product_ids"
+                                                            t-att-data-product-template-id="product.id"
+                                                            t-att-data-product-id="variant.id">
+                                                        <img src="/theme_voltro/static/src/images/product_card/heart (1).svg"
+                                                             alt="Favorite"
+                                                             class="voltro_icon_img"/>
+                                                    </button>
+                                                    <a t-att-href="product.website_url" title="View" aria-label="View">
+                                                        <img src="/theme_voltro/static/src/images/product_card/view (1).svg"
+                                                             alt="View"/>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>

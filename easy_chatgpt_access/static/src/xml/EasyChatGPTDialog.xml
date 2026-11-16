@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="easy_chatgpt_access.EasyChatGPTDialog">
+        <Dialog size="'lg'" title.translate="ChatGPT Assistant">
+
+            <!-- Chat messages area -->
+            <div class="o-easy-chatgpt-messages" t-ref="this.messagesContainerRef">
+
+                <!-- Welcome state -->
+                <t t-if="!this.state.messages.length">
+                    <div class="o-easy-chatgpt-welcome">
+                        <img class="welcome-bot-avatar"
+                             t-att-src="this.botAvatarUrl"
+                             alt="ChatGPT Assistant"/>
+                        <p>Hi! I'm your ChatGPT Assistant. How can I help you today?</p>
+                    </div>
+                </t>
+
+                <!-- Message list -->
+                <t t-foreach="this.state.messages" t-as="message" t-key="message.id">
+                    <div t-att-class="'o-chatgpt-message-row ' + (message.author === 'user' ? 'user-row' : 'bot-row')">
+
+                        <!-- Avatar -->
+                        <div t-att-class="'o-chatgpt-avatar-wrap ' + (message.author === 'user' ? 'user-avatar-wrap' : 'bot-avatar-wrap')">
+                            <img t-att-class="'o-chatgpt-avatar ' + (message.author === 'user' ? 'user-avatar' : 'bot-avatar')"
+                                 t-att-src="message.author === 'user' ? this.userAvatarUrl : this.botAvatarUrl"
+                                 t-att-alt="message.author === 'user' ? 'You' : 'ChatGPT'"
+                                 t-att-data-fallback="message.author === 'user' ? 'fa-user' : 'fa-robot'"
+                                 t-on-error="this.onAvatarError"/>
+                        </div>
+
+                        <!-- Bubble wrapper -->
+                        <div class="o-chatgpt-bubble-wrap">
+                            <div t-att-class="'o-chatgpt-sender-label ' + (message.author === 'user' ? 'text-end' : '')">
+                                <t t-if="message.author === 'user'">You</t>
+                                <t t-else="">ChatGPT</t>
+                            </div>
+                            <div t-att-class="'o-chatgpt-bubble ' + (message.author === 'user' ? 'user-bubble' : (message.isError ? 'error-bubble' : 'bot-bubble'))">
+                                <t t-if="message.author === 'assistant'">
+                                    <t t-out="this.formatContent(message.text)"/>
+                                    <div>
+                                        <button class="o-chatgpt-copy-btn"
+                                                t-att-data-message-id="message.id"
+                                                t-on-click="this.copyMessage">
+                                            <i class="oi oi-sm me-1" data-icon="content_copy"/> Copy
+                                        </button>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="message.text"/>
+                                </t>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+
+                <!-- Typing indicator -->
+                <t t-if="this.state.isGenerating">
+                    <div class="o-chatgpt-message-row bot-row">
+                        <img class="o-chatgpt-avatar bot-avatar"
+                             t-att-src="this.botAvatarUrl"
+                             alt="ChatGPT"/>
+                        <div class="o-chatgpt-typing">
+                            <span/><span/><span/>
+                        </div>
+                    </div>
+                </t>
+
+            </div>
+
+            <!-- Input area -->
+            <div class="o-easy-chatgpt-input-area">
+                <textarea rows="2"
+                          placeholder="Type your message… (Enter to send, Shift+Enter for new line)"
+                          t-model.proxy="this.state.prompt"
+                          t-on-keydown="this.onKeydown"/>
+                <button class="o-easy-chatgpt-send-btn"
+                        t-on-click="this.onGenerate"
+                        t-att-disabled="this.state.isGenerating || !this.state.prompt.trim()">
+                    <i class="oi oi-filled" data-icon="send"/>
+                </button>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-success"
+                        t-on-click="this._confirm"
+                        t-if="this.state.messages.length and !this.state.messages[this.state.messages.length-1].isError and this.props.systray.insert">
+                    <i class="oi oi-sm me-1" data-icon="check"/> Insert Last Response
+                </button>
+                <button class="btn btn-secondary" t-on-click="this._cancel">Close</button>
+            </t>
+
+        </Dialog>
+    </t>
+</templates>

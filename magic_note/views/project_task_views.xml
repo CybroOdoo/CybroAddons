@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <!--
+        Inherited kanban view for project.task in the To-do module.
+
+        This customization adds dynamic background colors to
+        To-do cards based on configured note color intervals.
+    -->
+    <record id="project_task_view_todo_kanban" model="ir.ui.view">
+        <field name="name">project.task.view.kanban.inherit.magic.note</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project_todo.project_task_view_todo_kanban"/>
+        <field name="arch" type="xml">
+            <!-- Add note_color field dependency -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="note_color"/>
+            </xpath>
+
+            <!-- Apply dynamic note_color background without replacing the card -->
+            <xpath expr="//t[@t-name='card']/div[field[@name='name']]" position="attributes">
+                <attribute name="t-attf-style">background-color: #{record.note_color.raw_value};</attribute>
+            </xpath>
+            <xpath expr="//t[@t-name='card']/div[hasclass('pt-2')]" position="attributes">
+                <attribute name="t-attf-style">background-color: #{record.note_color.raw_value};</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
