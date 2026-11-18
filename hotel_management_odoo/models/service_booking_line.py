@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, tools
+from odoo import api, fields, models
+from odoo.api import ormcache
 
 
 class ServiceBookingLine(models.Model):
@@ -27,7 +28,7 @@ class ServiceBookingLine(models.Model):
     _name = "service.booking.line"
     _description = "Hotel service Line"
 
-    @tools.ormcache()
+    @ormcache()
     def _get_default_uom_id(self):
         """Returns default product uom unit"""
         return self.env.ref('uom.product_uom_unit')
@@ -45,7 +46,7 @@ class ServiceBookingLine(models.Model):
     uom_id = fields.Many2one('uom.uom', readonly=True,
                              string="Unit of Measure",
                              help="This will set the unit of measure used",
-                             default=_get_default_uom_id)
+                             default=lambda self: self._get_default_uom_id())
     price_unit = fields.Float(string='Price', related='service_id.unit_price',
                               digits='Product Price',
                               help="The price of the selected service.")
@@ -91,8 +92,7 @@ class ServiceBookingLine(models.Model):
             line.price_total = base_line['tax_details']['total_included_currency']
             line.price_tax = line.price_total - line.price_subtotal
             if self.env.context.get('import_file',
-                                    False) and not self.env.user. \
-                    user_has_groups('account.group_account_manager'):
+                                    False) and not self.env.user.has_group('account.group_account_manager'):
                 line.tax_ids.invalidate_recordset(
                     ['invoice_repartition_line_ids'])
 

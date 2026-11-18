@@ -26,11 +26,12 @@ from odoo.exceptions import ValidationError
 class MaintenanceRequest(models.Model):
     """Model that handles the maintenance requests"""
 
+    _name = 'maintenance.request'
     _inherit = ['maintenance.request', 'mail.thread', 'mail.activity.mixin']
     _rec_name = 'sequence'
     _description = "Maintenance Request"
 
-    is_hotel = fields.Boolean(string="Is Hotel Maintenance", default=False,help='is hotel')
+    is_hotel = fields.Boolean(string="Is Hotel Maintenance", default=False, help='is hotel')
 
     sequence = fields.Char(readonly=True, string="Sequence", copy=False,
                            default='New', help='Sequence number for'
@@ -114,28 +115,24 @@ class MaintenanceRequest(models.Model):
     def action_assign_team(self):
         """Button action for changing the state to team_leader_approve"""
         if self.type == 'room' and not self.room_maintenance_ids:
-            raise ValidationError(("Please choose the Room"))
+            raise ValidationError(self.env._("Please choose the Room"))
         if self.type == 'vehicle' and not self.vehicle_maintenance_id:
-            raise ValidationError(("Please choose the Vehicle"))
+            raise ValidationError(self.env._("Please choose the Vehicle"))
         if self.type == 'hotel' and not self.hotel_maintenance:
-            raise ValidationError(
-                ("Please enter the Hotel Maintenance details"))
+            raise ValidationError(self.env._("Please enter the Hotel Maintenance details"))
         if self.type == 'cleaning' and not self.cleaning_maintenance:
-            raise ValidationError(
-                ("Please enter the Cleaning Maintenance details"))
+            raise ValidationError(self.env._("Please enter the Cleaning Maintenance details"))
         if self.team_id:
             self.state = 'team_leader_approve'
         else:
-            raise ValidationError(
-                ("Please assign a Team"))
+            raise ValidationError(self.env._("Please assign a Team"))
 
     def action_assign_user(self):
         """Button action for changing the state to pending"""
         if self.assigned_user_id:
             self.state = 'pending'
         else:
-            raise ValidationError(
-                ("Please assign a User"))
+            raise ValidationError(self.env._("Please assign a User"))
 
     def action_start(self):
         """Button action for changing the state to ongoing"""
@@ -146,21 +143,21 @@ class MaintenanceRequest(models.Model):
         if self.support_reason:
             self.state = 'support'
         else:
-            raise ValidationError('Please enter the reason')
+            raise ValidationError(self.env._('Please enter the reason'))
 
     def action_complete(self):
         """Button action for changing the state to verify"""
         if self.remarks:
             self.state = 'verify'
         else:
-            raise ValidationError('Please Add remark')
+            raise ValidationError(self.env._('Please Add remark'))
 
     def action_assign_support(self):
         """Button action for changing the state to ongoing"""
         if self.support_team_ids:
             self.state = 'ongoing'
         else:
-            raise ValidationError('Please choose support')
+            raise ValidationError(self.env._('Please choose support'))
 
     def action_verify(self):
         """Button action for changing the state to done"""

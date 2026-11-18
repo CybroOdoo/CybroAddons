@@ -14,12 +14,8 @@
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -90,19 +86,19 @@ class CleaningRequest(models.Model):
     @api.onchange('team_id')
     def _onchange_team_id(self):
         """Function for updating the domain partner ids"""
-        self.update(
-            {'domain_partner_ids': self.team_id.member_ids.ids})
+        for record in self:
+            record.domain_partner_ids = record.team_id.member_ids
 
     def action_assign_cleaning(self):
         """Button action for updating the state to assign"""
         if not self.assigned_id:
-            raise ValidationError(_('Please select an Assigned To person before assigning.'))
+            raise ValidationError(self.env._('Please select an Assigned To person before assigning.'))
         if self.cleaning_type == 'room' and not self.room_id:
-            raise ValidationError(_('Please choose a Room.'))
+            raise ValidationError(self.env._('Please choose a Room.'))
         if self.cleaning_type == 'hotel' and not self.hotel:
-            raise ValidationError(_('Please enter the Hotel.'))
+            raise ValidationError(self.env._('Please enter the Hotel.'))
         if self.cleaning_type == 'vehicle' and not self.vehicle_id:
-            raise ValidationError(_('Please choose a Vehicle.'))
+            raise ValidationError(self.env._('Please choose a Vehicle.'))
 
         self.update({'state': 'assign'})
 
@@ -119,14 +115,14 @@ class CleaningRequest(models.Model):
         if self.support_reason:
             self.write({'state': 'support'})
         else:
-            raise ValidationError(_('Please enter the reason'))
+            raise ValidationError(self.env._('Please enter the reason'))
 
     def action_assign_assign_support(self):
         """Button action for updating the state to ongoing"""
         if self.support_team_ids:
             self.write({'state': 'ongoing'})
         else:
-            raise ValidationError(_('Please choose a support'))
+            raise ValidationError(self.env._('Please choose a support'))
 
     def action_maintain_request(self):
         """Button action for creating the maintenance request"""

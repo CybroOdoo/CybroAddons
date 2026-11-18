@@ -14,10 +14,6 @@
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
 #############################################################################
 from odoo import api, fields, models
 
@@ -97,8 +93,7 @@ class EventBookingLine(models.Model):
             line.price_total = base_line['tax_details']['total_included_currency']
             line.price_tax = line.price_total - line.price_subtotal
             if self.env.context.get('import_file',
-                                    False) and not self.env.user. \
-                    user_has_groups('account.group_account_manager'):
+                                    False) and not self.env.user.has_group('account.group_account_manager'):
                 line.tax_ids.invalidate_recordset(
                     ['invoice_repartition_line_ids'])
 

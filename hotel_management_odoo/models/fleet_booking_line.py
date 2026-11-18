@@ -14,12 +14,9 @@
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
 #############################################################################
-from odoo import api, fields, models, tools
+from odoo import api, fields, models
+from odoo.api import ormcache
 
 
 class FleetBookingLine(models.Model):
@@ -28,7 +25,7 @@ class FleetBookingLine(models.Model):
     _description = "Hotel Fleet Line"
     _rec_name = 'fleet_id'
 
-    @tools.ormcache()
+    @ormcache()
     def _get_default_uom_id(self):
         """Method for getting the default uom id"""
         return self.env.ref('uom.product_uom_km')
@@ -47,9 +44,10 @@ class FleetBookingLine(models.Model):
                                 "the product")
     uom_id = fields.Many2one('uom.uom', readonly=True,
                              string="Unit of Measure",
-                             default=_get_default_uom_id, help="This will set "
-                                                               "the unit of"
-                                                               " measure used")
+                             default=lambda self: self._get_default_uom_id(),
+                             help="This will set "
+                                  "the unit of"
+                                  " measure used")
     price_unit = fields.Float(string='Rent/KM',
                               related='fleet_id.price_per_km',
                               digits='Product Price',
@@ -92,8 +90,7 @@ class FleetBookingLine(models.Model):
             line.price_total = base_line['tax_details']['total_included_currency']
             line.price_tax = line.price_total - line.price_subtotal
             if self.env.context.get('import_file',
-                                    False) and not self.env.user. \
-                    user_has_groups('account.group_account_manager'):
+                                    False) and not self.env.user.has_group('account.group_account_manager'):
                 line.tax_ids.invalidate_recordset(
                     ['invoice_repartition_line_ids'])
 

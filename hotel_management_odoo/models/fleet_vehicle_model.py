@@ -19,14 +19,15 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models, tools
+from odoo import fields, models
+from odoo.api import ormcache
 
 
 class FleetVehicleModel(models.Model):
     """Inherits Fleet Model for Booking vehicles for hotel Customers"""
     _inherit = 'fleet.vehicle.model'
 
-    @tools.ormcache()
+    @ormcache()
     def _set_default_uom_id(self):
         """Method for getting the default uom id"""
         return self.env.ref('uom.product_uom_km')
@@ -36,4 +37,5 @@ class FleetVehicleModel(models.Model):
     uom_id = fields.Many2one('uom.uom',
                              string='Reference Uom',
                              help="UOM of the product",
-                             default=_set_default_uom_id, required=True)
+                             default=lambda self: self._set_default_uom_id(),
+                             required=True)

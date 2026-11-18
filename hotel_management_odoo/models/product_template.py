@@ -19,18 +19,21 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, tools,_
+from odoo import api, fields, models
+from odoo.api import ormcache
 from odoo.exceptions import ValidationError
+
+
 class ProductTemplate(models.Model):
     _inherit = "product.template"
     _description = "Product Template"
 
-    @tools.ormcache()
+    @ormcache()
     def _get_default_uom_id(self):
         """Method for getting the default uom id"""
         return self.env.ref('uom.product_uom_unit')
 
-    is_room = fields.Boolean(string="Room",help="is room")
+    is_room = fields.Boolean(string="Room", help="is room")
     status = fields.Selection([("available", "Available"),
                                ("reserved", "Reserved"),
                                ("occupied", "Occupied")],
@@ -59,7 +62,7 @@ class ProductTemplate(models.Model):
                                  tracking=True,
                                  default="single")
     num_person = fields.Integer(string='Number Of Persons',
-                                required=True,
+                                required=True, default=1,
                                 help="Automatically chooses the No. of Persons",
                                 tracking=True)
 
@@ -68,7 +71,7 @@ class ProductTemplate(models.Model):
         """Check capacity function"""
         for room in self:
             if room.num_person <= 0:
-                raise ValidationError(_("Room capacity must be more than 0"))
+                raise ValidationError(self.env._("Room capacity must be more than 0"))
 
     @api.onchange("room_type")
     def _onchange_room_type(self):
@@ -94,6 +97,4 @@ class ProductTemplate(models.Model):
         """Room products cannot be storable"""
         for record in self:
             if record.is_room and record.is_storable:
-                raise ValidationError(_("Room products cannot be storable. Please disable 'Track Inventory'."))
-
-
+                raise ValidationError(self.env._("Room products cannot be storable. Please disable 'Track Inventory'."))

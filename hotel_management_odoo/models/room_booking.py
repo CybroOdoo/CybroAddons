@@ -51,10 +51,9 @@ class RoomBooking(models.Model):
     is_checkin = fields.Boolean(default=False, string="Is Checkin",
                                 help="sets to True if the room is occupied")
     maintenance_request_sent = fields.Boolean(default=False,
-                                              string="Maintenance Request sent"
-                                                     "or Not",
+                                              string="Maintenance Request Sent",
                                               help="sets to True if the "
-                                                   "maintenance request send "
+                                                   "maintenance request is sent "
                                                    "once")
     checkin_date = fields.Datetime(string="Check In",
                                    help="Date of Checkin",
@@ -149,6 +148,7 @@ class RoomBooking(models.Model):
                                    string="Pricelist",
                                    compute='_compute_pricelist_id',
                                    store=True, readonly=False,
+                                   precompute=True,
                                    required=True,
                                    tracking=1,
                                    help="If you change the pricelist,"
@@ -178,57 +178,57 @@ class RoomBooking(models.Model):
                                    tracking=4)
     amount_untaxed_room = fields.Monetary(string="Room Untaxed",
                                           help="Untaxed Amount for Room",
-                                          compute='_compute_amount_untaxed',
+                                          compute='_compute_amount_untaxed', store=True,
                                           tracking=5)
     amount_untaxed_food = fields.Monetary(string="Food Untaxed",
                                           help="Untaxed Amount for Food",
-                                          compute='_compute_amount_untaxed',
+                                          compute='_compute_amount_untaxed', store=True,
                                           tracking=5)
     amount_untaxed_event = fields.Monetary(string="Event Untaxed",
                                            help="Untaxed Amount for Event",
-                                           compute='_compute_amount_untaxed',
+                                           compute='_compute_amount_untaxed', store=True,
                                            tracking=5)
     amount_untaxed_service = fields.Monetary(
         string="Service Untaxed", help="Untaxed Amount for Service",
-        compute='_compute_amount_untaxed', tracking=5)
+        compute='_compute_amount_untaxed', store=True, tracking=5)
     amount_untaxed_fleet = fields.Monetary(string="Amount Untaxed",
                                            help="Untaxed amount for Fleet",
-                                           compute='_compute_amount_untaxed',
+                                           compute='_compute_amount_untaxed', store=True,
                                            tracking=5)
-    amount_taxed_room = fields.Monetary(string="Rom Tax", help="Tax for Room",
-                                        compute='_compute_amount_untaxed',
+    amount_taxed_room = fields.Monetary(string="Room Tax", help="Tax for Room",
+                                        compute='_compute_amount_untaxed', store=True,
                                         tracking=5)
     amount_taxed_food = fields.Monetary(string="Food Tax", help="Tax for Food",
-                                        compute='_compute_amount_untaxed',
+                                        compute='_compute_amount_untaxed', store=True,
                                         tracking=5)
     amount_taxed_event = fields.Monetary(string="Event Tax",
                                          help="Tax for Event",
-                                         compute='_compute_amount_untaxed',
+                                         compute='_compute_amount_untaxed', store=True,
                                          tracking=5)
     amount_taxed_service = fields.Monetary(string="Service Tax",
-                                           compute='_compute_amount_untaxed',
+                                           compute='_compute_amount_untaxed', store=True,
                                            help="Tax for Service", tracking=5)
     amount_taxed_fleet = fields.Monetary(string="Fleet Tax",
-                                         compute='_compute_amount_untaxed',
+                                         compute='_compute_amount_untaxed', store=True,
                                          help="Tax for Fleet", tracking=5)
     amount_total_room = fields.Monetary(string="Total Amount for Room",
-                                        compute='_compute_amount_untaxed',
+                                        compute='_compute_amount_untaxed', store=True,
                                         help="This is the Total Amount for "
                                              "Room", tracking=5)
     amount_total_food = fields.Monetary(string="Total Amount for Food",
-                                        compute='_compute_amount_untaxed',
+                                        compute='_compute_amount_untaxed', store=True,
                                         help="This is the Total Amount for "
                                              "Food", tracking=5)
     amount_total_event = fields.Monetary(string="Total Amount for Event",
-                                         compute='_compute_amount_untaxed',
+                                         compute='_compute_amount_untaxed', store=True,
                                          help="This is the Total Amount for "
                                               "Event", tracking=5)
     amount_total_service = fields.Monetary(string="Total Amount for Service",
-                                           compute='_compute_amount_untaxed',
+                                           compute='_compute_amount_untaxed', store=True,
                                            help="This is the Total Amount for "
                                                 "Service", tracking=5)
     amount_total_fleet = fields.Monetary(string="Total Amount for Fleet",
-                                         compute='_compute_amount_untaxed',
+                                         compute='_compute_amount_untaxed', store=True,
                                          help="This is the Total Amount for "
                                               "Fleet", tracking=5)
     has_pos_orders = fields.Boolean(compute='_compute_has_pos_orders', string='Has POS Orders',
@@ -236,8 +236,36 @@ class RoomBooking(models.Model):
 
     def _compute_has_pos_orders(self):
         """Compute POS order availability."""
+        pos_data = self.env['pos.order'].sudo()._read_group(
+            [('booking_id', 'in', self.ids)], ['booking_id'], ['__count'])
+        counts = {booking.id: count for booking, count in pos_data}
         for rec in self:
-            rec.has_pos_orders = False
+            rec.has_pos_orders = bool(counts.get(rec.id))
+
+    def get_bill_summary_lines(self):
+        """Return the rows of the combined bill: the folio total followed by
+        one row per POS order linked to this booking."""
+        self.ensure_one()
+        folio_total = sum(
+            sum(lines.mapped('price_total'))
+            for lines in (self.room_line_ids, self.food_order_line_ids,
+                          self.service_line_ids, self.vehicle_line_ids,
+                          self.event_line_ids))
+        lines = [{
+            'reference': self.name,
+            'order_no': self.name,
+            'date': self.date_order,
+            'total': folio_total,
+        }]
+        for pos_order in self.env['pos.order'].sudo().search(
+                [('booking_id', '=', self.id)]):
+            lines.append({
+                'reference': pos_order.name,
+                'order_no': pos_order.pos_reference or pos_order.name,
+                'date': pos_order.date_order,
+                'total': pos_order.amount_total,
+            })
+        return lines
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -264,13 +292,27 @@ class RoomBooking(models.Model):
 
     @api.depends('partner_id')
     def _compute_pricelist_id(self):
-        """Computes PriceList"""
-        for order in self:
-            if not order.partner_id:
-                order.pricelist_id = False
+        """Computes PriceList. Falls back to the first usable pricelist of
+        the company and creates a default one when none exists, because the
+        pricelist is required on the booking."""
+        for booking in self:
+            if not booking.partner_id:
+                booking.pricelist_id = False
                 continue
-            order = order.with_company(order.company_id)
-            order.pricelist_id = order.partner_id.property_product_pricelist
+            company = booking.company_id or self.env.company
+            pricelist = booking.partner_id.with_company(
+                company).property_product_pricelist
+            if not pricelist:
+                Pricelist = self.env['product.pricelist'].sudo()
+                pricelist = Pricelist.search(
+                    [('company_id', 'in', (False, company.id))], limit=1)
+                if not pricelist:
+                    pricelist = Pricelist.create({
+                        'name': self.env._("Default"),
+                        'currency_id': company.currency_id.id,
+                        'company_id': company.id,
+                    })
+            booking.pricelist_id = pricelist
 
     @api.depends('room_line_ids.price_subtotal', 'room_line_ids.price_tax',
                  'room_line_ids.price_total',
@@ -291,6 +333,7 @@ class RoomBooking(models.Model):
             # Map existing invoice lines by name, price, and type to avoid double invoicing
             account_move_lines = self.env['account.move.line'].search([
                 ('ref', '=', record.name),
+                ('parent_state', '!=', 'cancel'),
                 ('display_type', '!=', 'payment_term')
             ])
             invoiced_map = {}
@@ -422,13 +465,9 @@ class RoomBooking(models.Model):
             ids = set()
             for line in record.room_line_ids:
                 if line.room_id.id in ids:
-                    raise ValidationError(
-                        (
-                            """Room Entry Duplicates Found!, """
-                            """You Cannot Book "%s" Room More Than Once!"""
-                        )
-                        % line.room_id.name
-                    )
+                    raise ValidationError(self.env._(
+                        'Room Entry Duplicates Found! You cannot book '
+                        '"%s" room more than once!', line.room_id.name))
                 ids.add(line.room_id.id)
 
     def create_list(self, line_ids):
@@ -483,7 +522,7 @@ class RoomBooking(models.Model):
                     room.room_id.is_room_avail = False
                 record.write({"state": "reserved"})
             else:
-                raise ValidationError(("Please Enter Room Details"))
+                raise ValidationError(self.env._("Please enter room details"))
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -535,16 +574,38 @@ class RoomBooking(models.Model):
                     'next': {'type': 'ir.actions.act_window_close'},
                 }
             }
-        raise ValidationError(("Please Enter Room Details"))
+        raise ValidationError(self.env._("Please enter room details"))
+
+    def _check_fully_paid(self):
+        """Raise unless every billed item is invoiced and every invoice of
+        the booking is fully paid. Booking can be set as done only after
+        this passes."""
+        self.ensure_one()
+        if self._compute_amount_untaxed():
+            raise ValidationError(self.env._(
+                "Some items of this booking are not invoiced yet. "
+                "Create the invoice and register the payment before "
+                "setting the booking as done."))
+        invoices = self.env['account.move'].search([
+            ('ref', '=', self.name),
+            ('move_type', '=', 'out_invoice'),
+            ('state', '!=', 'cancel'),
+        ])
+        if not invoices:
+            raise ValidationError(self.env._(
+                "No invoice found for this booking. Create the invoice and "
+                "register the payment before setting the booking as done."))
+        unpaid = invoices.filtered(
+            lambda m: m.payment_state not in ('paid', 'in_payment'))
+        if unpaid:
+            names = ', '.join(unpaid.mapped(lambda m: m.name or 'Draft'))
+            raise ValidationError(self.env._(
+                'Your invoice (%s) is due for payment.', names))
 
     def action_done(self):
         """Button action_confirm function"""
         for record in self:
-            moves = self.env['account.move'].search([('ref', '=', record.name)])
-            unpaid_moves = moves.filtered(lambda m: m.payment_state == 'not_paid')
-            if unpaid_moves:
-                invoice_names = ', '.join(unpaid_moves.mapped(lambda m: m.name or 'Draft'))
-                raise ValidationError(('Your Invoice (%s) is Due for Payment.') % invoice_names)
+            record._check_fully_paid()
             record.write({"state": "done"})
             record.is_checkin = False
         return {
@@ -572,11 +633,12 @@ class RoomBooking(models.Model):
         """Method for creating invoice"""
         self.ensure_one()
         if not self.room_line_ids:
-            raise ValidationError(("Please Enter Room Details"))
+            raise ValidationError(self.env._("Please enter room details"))
         booking_list = self._compute_amount_untaxed(True)
         if not booking_list:
-            raise ValidationError((
-                                      "No new items to invoice. All items appear to be already invoiced (e.g. via POS or separate invoice)."))
+            raise ValidationError(self.env._(
+                "No new items to invoice. All items appear to be already "
+                "invoiced (e.g. via POS or separate invoice)."))
 
         account_move = self.env["account.move"].create([{
             'move_type': 'out_invoice',
@@ -612,7 +674,6 @@ class RoomBooking(models.Model):
             'type': 'ir.actions.act_window',
             'name': 'Invoices',
             'view_mode': 'list,form',
-            'view_type': 'list,form',
             'res_model': 'account.move',
             'domain': [('ref', '=', self.name)],
             'context': "{'create': False}"
@@ -624,7 +685,7 @@ class RoomBooking(models.Model):
         """
         for record in self:
             if not record.room_line_ids:
-                raise ValidationError(("Please Enter Room Details"))
+                raise ValidationError(self.env._("Please enter room details"))
             else:
                 for room in record.room_line_ids:
                     room.room_id.write({

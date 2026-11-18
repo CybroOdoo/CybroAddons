@@ -1,7 +1,7 @@
 /** @odoo-module */
 import { registry } from '@web/core/registry';
 import { useService } from "@web/core/utils/hooks";
-import { Component, onWillStart, onMounted } from "@odoo/owl";
+import { Component, onWillStart } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 
 const today = new Date();
@@ -36,15 +36,10 @@ export class CustomDashBoard extends Component {
         this.pending_payment = '$ 0';
 
         onWillStart(this.onWillStart.bind(this));
-        onMounted(this.onMounted.bind(this));
     }
 
     async onWillStart() {
         await this.fetch_data();
-    }
-
-    async onMounted() {
-        // Reserved for post-render logic
     }
 
     async fetch_data() {

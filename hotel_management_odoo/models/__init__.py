@@ -14,10 +14,6 @@
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
 #############################################################################
 from . import account_move
 from . import account_move_line
@@ -32,6 +28,7 @@ from . import hotel_floor
 from . import hotel_service
 from . import maintenance_request
 from . import maintenance_team
+from . import pos_order
 from . import room_booking
 from . import room_booking_line
 from . import service_booking_line

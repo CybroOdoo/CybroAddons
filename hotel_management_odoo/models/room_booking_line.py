@@ -19,9 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from openpyxl.worksheet import related
-
-from odoo import api, fields, models, tools
+from odoo import api, fields, models
+from odoo.api import ormcache
 from odoo.exceptions import ValidationError
 
 
@@ -31,7 +30,7 @@ class RoomBookingLine(models.Model):
     _description = "Hotel Folio Line"
     _rec_name = 'room_id'
 
-    @tools.ormcache()
+    @ormcache()
     def _set_default_uom_id(self):
         return self.env.ref('uom.product_uom_day')
 
@@ -54,7 +53,7 @@ class RoomBookingLine(models.Model):
                            help="The quantity converted into the UoM used by "
                                 "the product", readonly=True)
     uom_id = fields.Many2one('uom.uom',
-                             default=_set_default_uom_id,
+                             default=lambda self: self._set_default_uom_id(),
                              string="Unit of Measure",
                              help="This will set the unit of measure used",
                              readonly=True)
@@ -68,11 +67,9 @@ class RoomBookingLine(models.Model):
                                compute='_compute_tax_ids', store=True,
                                readonly=False, precompute=True,
                                string='Taxes',
-                               help="Default taxes used when selling the room."
-                               , domain=[('type_tax_use', '=', 'sale')])
+                               help="Default taxes used when selling the room.", domain=[('type_tax_use', '=', 'sale')])
     currency_id = fields.Many2one(string='Currency',
-                                  related='booking_id.pricelist_id.currency_id'
-                                  , help='The currency used')
+                                  related='booking_id.pricelist_id.currency_id', help='The currency used')
     price_subtotal = fields.Float(string="Subtotal",
                                   compute='_compute_price_subtotal',
                                   help="Total Price excluding Tax",
@@ -98,7 +95,6 @@ class RoomBookingLine(models.Model):
                                  required=True, index=True,
                                  default=lambda self: self.env.company)
 
-
     @api.depends('room_id', 'booking_id.pricelist_id', 'uom_qty')
     def _compute_price_unit(self):
         """Compute the rent using the booking's pricelist, falling back to
@@ -120,16 +116,16 @@ class RoomBookingLine(models.Model):
         and update the qty of hotel service line
         -----------------------------------------------------------------
         @param self: object pointer"""
-        if self.checkout_date < self.checkin_date:
+        if (self.checkin_date and self.checkout_date
+                and self.checkout_date < self.checkin_date):
             raise ValidationError(
-                _("Checkout must be greater or equal checkin date"))
+                self.env._("Checkout must be greater or equal checkin date"))
         if self.checkin_date and self.checkout_date:
             diffdate = self.checkout_date - self.checkin_date
             qty = diffdate.days
-            if diffdate.total_seconds() > 0:
-                qty = qty + 1
+            if diffdate.seconds:
+                qty += 1
             self.uom_qty = qty
-
 
     @api.depends('uom_qty', 'price_unit', 'tax_ids')
     def _compute_price_subtotal(self):
@@ -142,8 +138,7 @@ class RoomBookingLine(models.Model):
             line.price_total = base_line['tax_details']['total_included_currency']
             line.price_tax = line.price_total - line.price_subtotal
             if self.env.context.get('import_file',
-                                    False) and not self.env.user. \
-                    user_has_groups('account.group_account_manager'):
+                                    False) and not self.env.user.has_group('account.group_account_manager'):
                 line.tax_ids.invalidate_recordset(
                     ['invoice_repartition_line_ids'])
 

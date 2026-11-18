@@ -21,6 +21,7 @@
 #############################################################################
 from odoo import api, fields, models
 
+
 class ComputeBillWizard(models.TransientModel):
     """
         Wizard model used to generate and manage billing details
@@ -33,18 +34,20 @@ class ComputeBillWizard(models.TransientModel):
     booking_id = fields.Many2one('room.booking', string='Booking', required=True)
     partner_id = fields.Many2one('res.partner', related='booking_id.partner_id', string='Customer')
     currency_id = fields.Many2one('res.currency', related='booking_id.currency_id')
-    
+
     # Folio Lines (Room, Food, Service, Fleet, Event)
     room_line_ids = fields.Many2many('room.booking.line', string='Room Lines', compute='_compute_folio_lines')
     food_line_ids = fields.Many2many('food.booking.line', string='Food Lines', compute='_compute_folio_lines')
     service_line_ids = fields.Many2many('service.booking.line', string='Service Lines', compute='_compute_folio_lines')
     fleet_line_ids = fields.Many2many('fleet.booking.line', string='Fleet Lines', compute='_compute_folio_lines')
     event_line_ids = fields.Many2many('event.booking.line', string='Event Lines', compute='_compute_folio_lines')
-    
-    pos_order_ids = fields.Many2many('pos.order', string='POS Orders', compute='_compute_orders', store=True, readonly=False)
+
+    pos_order_ids = fields.Many2many(
+        'pos.order', string='POS Orders', compute='_compute_orders',
+        store=True, readonly=False)
     bill_type = fields.Selection([
         ('combined', 'Combined Bill'),
-        ('isolate', 'Isolate Bill')
+        ('isolate', 'Isolated Bill')
     ], string='Print Bill', default='combined', required=True)
 
     @api.depends('booking_id')
@@ -61,7 +64,11 @@ class ComputeBillWizard(models.TransientModel):
                 wizard.fleet_line_ids = wizard.booking_id.vehicle_line_ids
                 wizard.event_line_ids = wizard.booking_id.event_line_ids
             else:
-                wizard.room_line_ids = wizard.food_line_ids = wizard.service_line_ids = wizard.fleet_line_ids = wizard.event_line_ids = False
+                wizard.room_line_ids = False
+                wizard.food_line_ids = False
+                wizard.service_line_ids = False
+                wizard.fleet_line_ids = False
+                wizard.event_line_ids = False
 
     @api.depends('booking_id')
     def _compute_orders(self):
@@ -71,7 +78,7 @@ class ComputeBillWizard(models.TransientModel):
             """
         for wizard in self:
             if wizard.booking_id and 'booking_id' in self.env['pos.order']._fields:
-                pos_orders = self.env['pos.order'].search([
+                pos_orders = self.env['pos.order'].sudo().search([
                     ('booking_id', '=', wizard.booking_id.id)
                 ])
                 wizard.pos_order_ids = pos_orders

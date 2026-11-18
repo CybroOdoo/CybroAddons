@@ -75,7 +75,7 @@ class RoomBookingWizard(models.TransientModel):
         if self.checkin and self.checkout:
             if self.checkin > self.checkout:
                 raise ValidationError(
-                    ("Check-in date should be less than Check-out date")
+                    self.env._("Check-in date should be less than Check-out date")
                 )
         if self.checkin:
             domain.append(

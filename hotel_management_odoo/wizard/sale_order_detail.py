@@ -41,8 +41,8 @@ class SaleOrderWizard(models.TransientModel):
     checkout = fields.Date(help="Choose the Checkout Date", string="Check Out")
     state_draft = fields.Boolean(string="Draft")
     state_reserved = fields.Boolean(string="Reserved")
-    state_check_in = fields.Boolean(string="Check In")
-    state_check_out = fields.Boolean(string="Check Out")
+    state_check_in = fields.Boolean(string="Checked In")
+    state_check_out = fields.Boolean(string="Checked Out")
     state_done = fields.Boolean(string="Done")
     state_cancel = fields.Boolean(string="Cancelled")
 
@@ -76,8 +76,8 @@ class SaleOrderWizard(models.TransientModel):
         domain = []
         if self.checkin and self.checkout:
             if self.checkin > self.checkout:
-                raise ValidationError((
-                    'Check-in date should be less than Check-out date'))
+                raise ValidationError(
+                    self.env._('Check-in date should be less than Check-out date'))
         if self.checkin:
             domain.append(('checkin_date', '>=', self.checkin), )
         if self.checkout:

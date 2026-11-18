@@ -23,16 +23,18 @@
     'name': 'Hotel Management',
     'version': '20.0.1.0.0',
     'category': 'Industries',
-    'summary': """A complete Hotel Management System that cover all areas of 
-     Hotel services""" ,
-    'description': """The module helps you to manage rooms, amenities, 
-     services, food, events and vehicles. End Users can book rooms and reserve 
+    'summary': """A complete Hotel Management System that covers all areas of
+     hotel services""",
+    'description': """The module helps you to manage rooms, amenities,
+     services, food, events and vehicles. End Users can book rooms and reserve
      foods from hotel.""",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['account', 'event', 'fleet', 'lunch', 'maintenance', 'point_of_sale'],
+    'depends': ['account', 'event', 'event_sale', 'fleet', 'lunch', 'mail',
+                'maintenance', 'point_of_sale', 'product', 'uom'],
+    'external_dependencies': {'python': ['xlsxwriter']},
     'data': [
         'security/hotel_management_odoo_groups.xml',
         'security/hotel_management_odoo_security.xml',

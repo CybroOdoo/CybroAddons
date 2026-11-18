@@ -19,30 +19,38 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class MaintenanceTeam(models.Model):
     """Model that handles the maintenance team """
     _inherit = "maintenance.team"
-    _description = "Maintenance Team"
 
     is_hotel = fields.Boolean(string="Is Hotel Maintenance", default=False)
-
-    name = fields.Char(string='Maintenance Team',
-                       help='Name of the maintenance team')
     user_id = fields.Many2one('res.users', string='Team Leader',
-                              help="Leader of Team",
-                              domain=lambda self: [
-                                  ('group_ids', 'in', self.env.ref(
-                                      'hotel_management_odoo.'
-                                      'maintenance_team_group_'
-                                      'leader').id)])
-    member_ids = fields.Many2many('res.users',
-                                  string='Members',
-                                  help="Members of the Team",
-                                  domain=lambda self: [
-                                      ('group_ids', 'in', self.env.ref(
-                                          'hotel_management_odoo.'
-                                          'maintenance_'
-                                          'team_group_user').id)])
+                              help="Leader of Team")
+    domain_leader_ids = fields.Many2many(
+        'res.users', string="Allowed Team Leaders",
+        compute='_compute_domain_user_ids',
+        help="Users allowed to lead a hotel maintenance team")
+    domain_member_ids = fields.Many2many(
+        'res.users', string="Allowed Members",
+        compute='_compute_domain_user_ids',
+        help="Users allowed to be members of a hotel maintenance team")
+
+    @api.depends('is_hotel')
+    def _compute_domain_user_ids(self):
+        """Compute the users selectable as leader or member. The hotel
+        groups are only applied through the hotel views, so the standard
+        Maintenance team fields keep their original behaviour."""
+        leader_group = self.env.ref(
+            'hotel_management_odoo.maintenance_team_group_leader')
+        member_group = self.env.ref(
+            'hotel_management_odoo.maintenance_team_group_user')
+        leaders = self.env['res.users'].search(
+            [('group_ids', 'in', leader_group.ids)])
+        members = self.env['res.users'].search(
+            [('group_ids', 'in', member_group.ids)])
+        for team in self:
+            team.domain_leader_ids = leaders
+            team.domain_member_ids = members

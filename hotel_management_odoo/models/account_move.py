@@ -14,10 +14,6 @@
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
 #############################################################################
 from odoo import fields, models
 
@@ -30,5 +26,4 @@ class AccountMove(models.Model):
 
     hotel_booking_id = fields.Many2one('room.booking',
                                        string="Booking Reference",
-                                       readonly=True, help="Choose the Booking"
-                                                           "Reference")
+                                       readonly=True, help="Choose the Booking Reference")

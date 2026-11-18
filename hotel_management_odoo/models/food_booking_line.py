@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, tools
+from odoo import api, fields, models
+from odoo.api import ormcache
 
 
 class FoodBookingLine(models.Model):
@@ -28,7 +29,7 @@ class FoodBookingLine(models.Model):
     _description = "Hotel Food Line"
     _rec_name = 'food_id'
 
-    @tools.ormcache()
+    @ormcache()
     def _get_default_uom_id(self):
         """Method for getting the default uom id"""
         return self.env.ref('uom.product_uom_unit')
@@ -46,9 +47,10 @@ class FoodBookingLine(models.Model):
                                 "the product")
     uom_id = fields.Many2one('uom.uom', readonly=True,
                              string="Unit of Measure",
-                             default=_get_default_uom_id, help="This will set "
-                                                               "the unit of"
-                                                               " measure used")
+                             default=lambda self: self._get_default_uom_id(),
+                             help="This will set "
+                                  "the unit of"
+                                  " measure used")
     price_unit = fields.Float(related='food_id.price', string='Price',
                               digits='Product Price',
                               help="The price of the selected food item.")
@@ -59,8 +61,7 @@ class FoodBookingLine(models.Model):
                                help="Default taxes used when selling the food"
                                     " products.",
                                domain=[('type_tax_use', '=', 'sale')])
-    currency_id = fields.Many2one(related='booking_id.pricelist_id.currency_id'
-                                  , string="Currency",
+    currency_id = fields.Many2one(related='booking_id.pricelist_id.currency_id', string="Currency",
                                   help='The currency used')
     price_subtotal = fields.Float(string="Subtotal",
                                   compute='_compute_price_subtotal',
@@ -90,8 +91,7 @@ class FoodBookingLine(models.Model):
             line.price_total = base_line['tax_details']['total_included_currency']
             line.price_tax = line.price_total - line.price_subtotal
             if self.env.context.get('import_file',
-                                    False) and not self.env.user. \
-                    user_has_groups('account.group_account_manager'):
+                                    False) and not self.env.user.has_group('account.group_account_manager'):
                 line.tax_ids.invalidate_recordset(
                     ['invoice_repartition_line_ids'])
 
