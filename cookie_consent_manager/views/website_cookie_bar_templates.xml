@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Inherits website cookie template -->
+    <template id="cookies_bar_template" inherit_id="website.cookies_bar" name="Cookies Bar Template">
+        <xpath expr="//div[@id='website_cookies_bar']" position="replace">
+            <t t-set="user_selected" t-value="request.env['ir.config_parameter'].sudo().get_str('cookie_consent_manager.cookie_template_id')"/>
+            <t t-set="cookie_template" t-value="request.env['cookie.information'].sudo().browse(int(user_selected)) if user_selected and user_selected.isdigit() else False"/>
+            <t t-set="cookie_template_id" t-value="cookie_template if cookie_template and cookie_template.exists() else False"/>
+            <div id="website_cookies_bar"
+                 t-if="website.cookies_bar"
+                 class="s_popup o_snippet_invisible d-none o_no_save"
+                 data-name="Cookies Bar" data-vcss="001" data-invisible="1"
+                 t-att-data-cookie-policy-url="website.cookie_policy_id.sudo().url or '/cookie-policy'">
+                <t t-if="cookie_template_id">
+                    <t t-set="is_top" t-value="cookie_template_id.is_change_pop_up_position and cookie_template_id.is_change_pop_up_position_top"/>
+                    <t t-set="pos" t-value="cookie_template_id.pop_up_position_top if is_top else (cookie_template_id.pop_up_position_bottom if cookie_template_id.is_change_pop_up_position else 'bottom_center')"/>
+                    <div t-attf-class="modal #{'s_popup_top' if is_top else 's_popup_bottom'} s_popup_no_backdrop o_cookies_discrete"
+                         data-show-after="500"
+                         data-display="afterDelay"
+                         data-consents-duration="999"
+                         data-bs-focus="false"
+                         data-bs-backdrop="false"
+                         data-bs-keyboard="false"
+                         tabindex="-1"
+                         role="dialog"
+                         aria-label="Cookie bar">
+                        <div class="modal-dialog d-flex s_popup_size_full">
+                            <t t-if="pos in ('top_left', 'bottom_left')">
+                                <t t-set="content_style" t-value="'max-width: 900px; width: 100%; margin-left: 0; margin-right: auto;'"/>
+                            </t>
+                            <t t-elif="pos in ('top_right', 'bottom_right')">
+                                <t t-set="content_style" t-value="'max-width: 900px; width: 100%; margin-left: auto; margin-right: 0;'"/>
+                            </t>
+                            <t t-elif="pos in ('full_top_container', 'full_bottom_container')">
+                                <t t-set="content_style" t-value="'width: 100%;'"/>
+                            </t>
+                            <t t-else="">
+                                <t t-set="content_style" t-value="'max-width: 900px; width: 100%; margin: 0 auto;'"/>
+                            </t>
+                            <div class="modal-content oe_structure" t-att-style="content_style">
+                                <section class="o_colored_level o_cc o_cc1 py-3"
+                                         t-att-style="'background-color: %s !important; min-height: 100px;' % cookie_template_id._get_color(cookie_template_id.cookie_color)">
+                                    <div class="container">
+                                        <div class="row text-center mb-2">
+                                            <p class="mb-0">
+                                                <span class="pe-1">
+                                                    <t t-out="cookie_template_id.pop_up_text or 'We use cookies to provide you a better user experience on this website.'"/>
+                                                </span>
+                                                <a href="/cookie-policy"
+                                                   class="o_cookies_bar_text_policy btn btn-link btn-sm px-0">
+                                                    <t t-out="cookie_template_id.cookie_policy_btn or 'Cookie Policy'"/>
+                                                </a>
+                                            </p>
+                                        </div>
+                                        <div class="row">
+                                            <div class="btn-group justify-content-center" role="group">
+                                                <a href="#"
+                                                   id="cookies-consent-essential"
+                                                   role="button"
+                                                   class="js_close_popup btn btn-outline-primary rounded-circle btn-sm px-2">
+                                                    Only essentials
+                                                </a>
+                                                <a href="#"
+                                                   id="cookies-consent-all"
+                                                   role="button"
+                                                   class="js_close_popup btn btn-outline-primary rounded-circle btn-sm">
+                                                    <t t-out="cookie_template_id.accept_btn_txt or 'Accept'"/>
+                                                </a>
+                                                <a href="#"
+                                                   data-bs-dismiss="modal"
+                                                   role="button"
+                                                   class="js_close_popup btn btn-outline-primary rounded-circle btn-sm">
+                                                    <t t-out="cookie_template_id.reject_btn_txt or 'Reject'"/>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="modal s_popup_bottom s_popup_no_backdrop o_cookies_discrete"
+                         data-show-after="500"
+                         data-display="afterDelay"
+                         data-consents-duration="999"
+                         data-bs-focus="false"
+                         data-bs-backdrop="false"
+                         data-bs-keyboard="false"
+                         tabindex="-1"
+                         role="dialog"
+                         aria-label="Cookie bar">
+                        <div class="modal-dialog d-flex s_popup_size_full">
+                            <div class="modal-content oe_structure">
+                                <section class="o_colored_level o_cc o_cc1 pe-5 oe_unremovable">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-lg-8 pt16">
+                                                <p>
+                                                    <span>We use cookies to provide you a better user experience on this website.</span>
+                                                    <a href="/website/cookie-policy" class="o_cookies_bar_text_policy small o_translate_inline">Cookie Policy</a>
+                                                </p>
+                                            </div>
+                                            <div class="col-lg-4 text-end pt16 pb16 oe_unremovable">
+                                                <a href="#" id="cookies-consent-essential" role="button" data-name="Refuse optional cookies"
+                                                   class="js_close_popup btn btn-outline-primary rounded-circle btn-sm px-2 mb-2 oe_unremovable">Only essentials</a>
+                                                <a href="#" id="cookies-consent-all" role="button" data-name="Accept all cookies"
+                                                   class="js_close_popup btn btn-outline-primary rounded-circle btn-sm mb-2 oe_unremovable">I agree</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="s_popup_close o_cookies_bar_close border-0 p-0 o_we_no_overlay o_not_editable shadow-none" aria-label="Close">×</button>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </template>
+</odoo>

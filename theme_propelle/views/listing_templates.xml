@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Buy and Rent pages: the published listings with their filters, the details
+    dialog, and the editable sections below them.
+-->
+<odoo>
+    <!-- Card of a listing. -->
+    <template id="listing_card" name="Propelle Listing Card">
+        <article class="pp-pcard pp-reveal"
+                 t-att-data-id="listing.id"
+                 t-att-data-type="listing.property_type"
+                 t-att-data-status="listing.listing_type"
+                 t-att-data-location="listing.city_id.name"
+                 t-att-data-price="int(listing.price)"
+                 t-att-data-beds="listing.bedrooms"
+                 t-att-data-area="listing.area"
+                 t-att-data-furnished="is_rent and ('furnished' if listing.is_furnished else 'unfurnished')"
+                 t-att-data-full="'/web/image/propelle.property/%s/image_1920' % listing.id">
+            <div class="pp-pcard__media">
+                <img t-attf-src="/web/image/propelle.property/#{listing.id}/image_1024" t-att-alt="listing.image_alt or listing.name" loading="lazy"/>
+                <div class="pp-pcard__tags">
+                    <span class="pp-tag" t-out="listing.tag"/>
+                    <span t-if="not is_rent" class="pp-tag pp-tag--dark">For sale</span>
+                    <span t-elif="listing.is_furnished" class="pp-tag">Furnished</span>
+                </div>
+                <button class="pp-fav-btn" type="button" aria-pressed="false" t-attf-aria-label="Save #{listing.name} to favourites">
+                    <i class="pp-icon pp-icon--off pp-i-heart" role="img" aria-hidden="true"/>
+                    <i class="pp-icon pp-icon--on pp-i-heart-fill" role="img" aria-hidden="true"/>
+                </button>
+            </div>
+            <div class="pp-pcard__body">
+                <p class="pp-pcard__price"><t t-out="listing.price_label"/><span t-if="is_rent"> / month</span></p>
+                <h3 class="pp-pcard__title" t-out="listing.name"/>
+                <p class="pp-pcard__loc"><i class="pp-icon pp-icon--sm pp-i-pin" role="img" aria-hidden="true"/> <t t-out="listing.location"/></p>
+                <ul class="pp-pcard__specs">
+                    <li t-if="listing.bedrooms"><i class="pp-icon pp-icon--sm pp-i-bed" role="img" aria-hidden="true"/> <t t-out="listing.bedrooms"/> <t t-if="listing.bedrooms == 1">bed</t><t t-else="">beds</t></li>
+                    <li t-else=""><i class="pp-icon pp-icon--sm pp-i-doc" role="img" aria-hidden="true"/> Open plan</li>
+                    <li><i class="pp-icon pp-icon--sm pp-i-bath" role="img" aria-hidden="true"/> <t t-out="listing.bathrooms"/> <t t-if="listing.bathrooms == 1">bath</t><t t-else="">baths</t></li>
+                    <li><i class="pp-icon pp-icon--sm pp-i-area" role="img" aria-hidden="true"/> <t t-out="'{:,}'.format(listing.area)"/> sq ft</li>
+                </ul>
+                <div class="pp-pcard__actions">
+                    <button type="button" class="pp-text-link pp-pcard__more pp-js-details">View details <i class="pp-icon pp-icon--sm pp-i-arrow" role="img" aria-hidden="true"/></button>
+                    <a class="pp-btn pp-btn--dark pp-btn--sm" t-attf-href="/booking?type=#{listing.listing_type}&amp;home=#{listing.id}">Book viewing</a>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <!-- Title, filters, results and details dialog shared by both pages. -->
+    <template id="listing_content" name="Propelle Listing Content">
+        <t t-set="is_rent" t-value="listing_type == 'rent'"/>
+        <t t-set="pp_base_url" t-value="'/rent' if is_rent else '/buy'"/>
+        <t t-set="pp_crumb" t-value="env._('Rent') if is_rent else env._('Buy')"/>
+        <t t-set="pp_title" t-value="env._('Homes for rent') if is_rent else env._('Homes for sale')"/>
+        <t t-set="pp_lead" t-value="env._('Apartments, houses and furnished homes on 12-month and shorter leases. Every rental has been checked by one of our agents.') if is_rent else env._('Villas, apartments, family homes and offices across our six offices. Every listing has been visited by one of our agents.')"/>
+        <t t-set="pp_filter_label" t-value="env._('Filter homes for rent') if is_rent else env._('Filter homes for sale')"/>
+        <t t-set="pp_one" t-value="env._('home for rent') if is_rent else env._('home for sale')"/>
+        <t t-set="pp_many" t-value="env._('homes for rent') if is_rent else env._('homes for sale')"/>
+        <section class="pp-s pp-hero-plain" aria-labelledby="page-title">
+            <div class="pp-container pp-hero-plain__grid">
+                <div>
+                    <nav class="pp-breadcrumb pp-breadcrumb--dark" aria-label="Breadcrumb">
+                        <ol>
+                            <li><a href="/">Home</a></li>
+                            <li aria-current="page" t-out="pp_crumb"/>
+                        </ol>
+                    </nav>
+                    <h1 class="pp-hero-plain__title" id="page-title" t-out="pp_title"/>
+                    <p class="pp-hero-plain__lead" t-out="pp_lead"/>
+                </div>
+                <dl class="pp-hero-plain__stats">
+                    <div t-foreach="stats" t-as="stat"><dt t-out="stat[0]"/><dd t-out="stat[1]"/></div>
+                </dl>
+            </div>
+        </section>
+
+        <section class="pp-s pp-section pp-section--tight pp-listings" id="listings"
+                 t-att-data-one="pp_one" t-att-data-many="pp_many">
+            <div class="pp-container">
+                <form class="pp-toolbar" id="listing-filters" method="get" t-att-action="pp_base_url" t-att-aria-label="pp_filter_label" data-listing-filters="">
+                    <div class="pp-toolbar__field">
+                        <label for="f-location">Location</label>
+                        <select id="f-location" name="location">
+                            <option value="all">All locations</option>
+                            <option t-foreach="cities" t-as="city" t-att-value="city['value']" t-att-selected="'selected' if filters['location'] == city['value'] else None" t-out="city['label']"/>
+                        </select>
+                    </div>
+                    <div class="pp-toolbar__field">
+                        <label for="f-type">Property type</label>
+                        <select id="f-type" name="type">
+                            <option value="all">Any type</option>
+                            <option t-foreach="property_types" t-as="ptype" t-att-value="ptype['value']" t-att-selected="'selected' if filters['type'] == ptype['value'] else None" t-out="ptype['label']"/>
+                        </select>
+                    </div>
+                    <div t-if="not is_rent" class="pp-toolbar__field">
+                        <label for="f-min">Min price</label>
+                        <select id="f-min" name="min">
+                            <option value="0">No min</option>
+                            <option t-foreach="budgets" t-as="budget" t-att-value="budget['value']" t-att-selected="'selected' if filters['min'] == budget['value'] else None" t-out="budget['label']"/>
+                        </select>
+                    </div>
+                    <div class="pp-toolbar__field">
+                        <label for="f-max"><t t-if="is_rent">Max rent</t><t t-else="">Max price</t></label>
+                        <select id="f-max" name="max">
+                            <option value="0">No max</option>
+                            <option t-foreach="budgets" t-as="budget" t-att-value="budget['value']" t-att-selected="'selected' if filters['max'] == budget['value'] else None" t-out="budget['label']"/>
+                        </select>
+                    </div>
+                    <div class="pp-toolbar__field">
+                        <label for="f-beds">Bedrooms</label>
+                        <select id="f-beds" name="beds">
+                            <option value="0">Any</option>
+                            <option t-foreach="[1, 2, 3, 4] if is_rent else [2, 3, 4, 5]" t-as="beds" t-att-value="beds" t-att-selected="'selected' if filters['beds'] == beds else None"><t t-out="beds"/>+</option>
+                        </select>
+                    </div>
+                    <div t-if="is_rent" class="pp-toolbar__field">
+                        <label for="f-furnished">Furnishing</label>
+                        <select id="f-furnished" name="furnished">
+                            <option value="all">Any</option>
+                            <option value="furnished" t-att-selected="'selected' if filters['furnished'] == 'furnished' else None">Furnished</option>
+                            <option value="unfurnished" t-att-selected="'selected' if filters['furnished'] == 'unfurnished' else None">Unfurnished</option>
+                        </select>
+                    </div>
+                    <a t-att-href="pp_base_url" class="pp-btn pp-btn--outline pp-btn--sm pp-toolbar__reset">Reset</a>
+                    <noscript><button type="submit" class="pp-btn pp-btn--dark pp-btn--sm">Apply</button></noscript>
+                </form>
+
+                <div class="pp-results-bar">
+                    <p t-attf-class="pp-listings__count #{'pp-results-count' if is_rent else ''}" aria-live="polite"><t t-out="total"/> <t t-out="pp_one if total == 1 else pp_many"/></p>
+                    <div class="pp-results-bar__sort">
+                        <label for="f-sort">Sort by</label>
+                        <select id="f-sort" name="sort" form="listing-filters">
+                            <option value="newest" t-att-selected="'selected' if sort == 'newest' else None">Newest</option>
+                            <option value="price-asc" t-att-selected="'selected' if sort == 'price-asc' else None"><t t-if="is_rent">Rent, low to high</t><t t-else="">Price, low to high</t></option>
+                            <option value="price-desc" t-att-selected="'selected' if sort == 'price-desc' else None"><t t-if="is_rent">Rent, high to low</t><t t-else="">Price, high to low</t></option>
+                            <option value="size" t-att-selected="'selected' if sort == 'size' else None">Largest first</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div t-if="total" t-attf-class="pp-pgrid pp-listings__grid #{'pp-pgrid--list' if is_rent else ''}">
+                    <t t-foreach="listings" t-as="listing">
+                        <t t-call="theme_propelle.listing_card"/>
+                    </t>
+                </div>
+
+                <nav t-if="pager['page_count'] &gt; 1" class="pp-pager" aria-label="Pages of listings">
+                    <t t-call="website.pager"/>
+                </nav>
+
+                <div t-if="not total" class="pp-empty-state pp-listings__empty">
+                    <h3><t t-if="is_rent">No rentals match those filters</t><t t-else="">No homes match those filters</t></h3>
+                    <p t-if="is_rent">Try a higher budget or fewer bedrooms. New rentals come up most weeks.</p>
+                    <p t-else="">Try a wider price range or fewer bedrooms. New homes are listed every week.</p>
+                    <a t-att-href="pp_base_url" class="pp-btn pp-btn--outline pp-listings__reset">Reset filters</a>
+                </div>
+            </div>
+
+            <dialog class="pp-modal" aria-labelledby="modal-title">
+                <button class="pp-modal__close" type="button" aria-label="Close details" data-close="">
+                    <i class="pp-icon pp-icon--sm pp-i-close" role="img" aria-hidden="true"/>
+                </button>
+                <div class="pp-modal__media"><img class="pp-modal__img" alt=""/></div>
+                <div class="pp-modal__body">
+                    <p class="pp-modal__type"/>
+                    <h3 class="pp-modal__title" id="modal-title"/>
+                    <p class="pp-pcard__loc pp-modal__loc"/>
+                    <p class="pp-modal__price"/>
+                    <ul class="pp-pcard__specs pp-modal__specs"/>
+                    <p class="pp-modal__desc">Ask for a viewing and we'll send you the floor plan and find a time that works for you.</p>
+                    <a href="/booking" class="pp-btn pp-btn--dark pp-btn--block pp-modal__enquire">Request a viewing</a>
+                </div>
+            </dialog>
+        </section>
+    </template>
+
+    <template id="buy_page" name="Propelle Buy">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Homes for Sale</t>
+            <t t-set="pageName" t-valuef="propelle_buy"/>
+            <div id="wrap">
+                <t t-call="theme_propelle.listing_content"/>
+                <div class="oe_structure" id="oe_structure_propelle_buy">
+                    <section class="pp-s s_propelle_steps pp-section pp-section--tint" id="process" data-name="Process Steps" data-snippet="s_propelle_steps">
+                      <div class="pp-container">
+                        <div class="pp-head">
+                          <p class="pp-eyebrow">Buying with Propelle</p>
+                          <h2 class="pp-title">How it works</h2>
+                          <p>Most purchases take eight to twelve weeks from first viewing to keys. Here's what happens along the way.</p>
+                        </div>
+                        <ol class="pp-steps pp-steps--line">
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">1</span>
+                            <h3>Talk to an agent</h3>
+                            <p>Tell us your budget, areas and must-haves. We'll send a short list and book viewings.</p>
+                          </li>
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">2</span>
+                            <h3>Get pre-approved</h3>
+                            <p>A mortgage pre-approval shows sellers you're ready. We can introduce you to local lenders.</p>
+                          </li>
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">3</span>
+                            <h3>Make an offer</h3>
+                            <p>We'll pull recent sales nearby so your offer is based on real numbers, then negotiate for you.</p>
+                          </li>
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">4</span>
+                            <h3>Close</h3>
+                            <p>Inspection, appraisal and paperwork. Your agent keeps everyone on schedule until you get the keys.</p>
+                          </li>
+                        </ol>
+                      </div>
+                    </section>
+                    <section class="pp-s s_propelle_mortgage pp-section" id="calculator" data-name="Mortgage Calculator" data-snippet="s_propelle_mortgage">
+                      <div class="pp-container pp-calc">
+                        <div class="pp-calc__intro">
+                          <p class="pp-eyebrow">Mortgage calculator</p>
+                          <h2 class="pp-title">Estimate your monthly payment</h2>
+                          <p class="pp-lead">Change the numbers to see roughly what a mortgage would cost each month.</p>
+                          <p class="pp-calc__note">This is an estimate of principal and interest only. It doesn't include property tax, insurance or HOA fees. Speak to a lender for an exact quote.</p>
+                        </div>
+                        <form class="pp-calc__form" id="mortgage-form" aria-label="Mortgage calculator">
+                          <div class="pp-form-row">
+                            <div class="pp-field">
+                              <label for="m-price">Home price ($)</label>
+                              <input id="m-price" type="number" min="0" step="1000" value="1250000" inputmode="numeric"/>
+                            </div>
+                            <div class="pp-field">
+                              <label for="m-down">Down payment (%)</label>
+                              <input id="m-down" type="number" min="0" max="100" step="1" value="20" inputmode="decimal"/>
+                            </div>
+                          </div>
+                          <div class="pp-form-row">
+                            <div class="pp-field">
+                              <label for="m-rate">Interest rate (%)</label>
+                              <input id="m-rate" type="number" min="0" max="20" step="0.05" value="6.5" inputmode="decimal"/>
+                            </div>
+                            <div class="pp-field">
+                              <label for="m-term">Loan term</label>
+                              <select id="m-term">
+                                <option value="30">30 years</option>
+                                <option value="20">20 years</option>
+                                <option value="15">15 years</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="pp-calc__result" aria-live="polite">
+                            <p class="pp-calc__label">Estimated monthly payment</p>
+                            <p class="pp-calc__monthly" id="m-monthly">$0</p>
+                            <dl class="pp-calc__breakdown">
+                              <div><dt>Loan amount</dt><dd id="m-loan">$0</dd></div>
+                              <div><dt>Down payment</dt><dd id="m-downpay">$0</dd></div>
+                              <div><dt>Total interest</dt><dd id="m-interest">$0</dd></div>
+                            </dl>
+                          </div>
+                        </form>
+                      </div>
+                    </section>
+                    <section class="pp-s s_propelle_faq pp-section pp-section--tint" id="faq" data-name="FAQ Accordion" data-snippet="s_propelle_faq">
+                      <div class="pp-container pp-faq-wrap">
+                        <div class="pp-head">
+                          <p class="pp-eyebrow">Questions</p>
+                          <h2 class="pp-title">Buying FAQs</h2>
+                          <p>Can't find what you need? <a class="pp-text-link" href="/contactus">Ask an agent</a></p>
+                        </div>
+                        <div class="pp-faq">
+                          <details>
+                            <summary>Do I pay Propelle anything as a buyer?</summary>
+                            <p>In most sales the seller pays the agents' commission. If you ask us to find a home that isn't listed, we'll agree a buyer's fee with you in writing before we start.</p>
+                          </details>
+                          <details>
+                            <summary>How much deposit do I need?</summary>
+                            <p>Lenders usually ask for 10 to 20 percent of the price, and more for jumbo loans or second homes. You'll also need an earnest money deposit, typically 1 to 3 percent, when your offer is accepted.</p>
+                          </details>
+                          <details>
+                            <summary>Can I view homes by video?</summary>
+                            <p>Yes. Your agent can walk you through any home on a video call and answer questions as you go. Plenty of our clients buy before visiting in person.</p>
+                          </details>
+                          <details>
+                            <summary>How long does closing take?</summary>
+                            <p>Usually 30 to 45 days after your offer is accepted with a mortgage, or as little as two weeks if you're paying cash.</p>
+                          </details>
+                          <details>
+                            <summary>Do you help with buying from overseas?</summary>
+                            <p>We do. We work with lenders and attorneys who handle international buyers, and we can manage most of the process remotely.</p>
+                          </details>
+                        </div>
+                      </div>
+                    </section>
+                    <section class="pp-s s_propelle_alert pp-section" data-name="Listing Alerts" data-snippet="s_propelle_alert">
+                      <div class="pp-container">
+                        <div class="pp-alert-band pp-reveal">
+                          <div class="pp-alert-band__text">
+                            <h2>Get new listings by email</h2>
+                            <p>Pick a city and we'll email you when a new home comes on the market there, usually once or twice a week.</p>
+                          </div>
+                          <form class="pp-alert-form" id="alert-form" novalidate="">
+                            <div class="pp-alert-form__city">
+                              <label for="a-city" class="pp-visually-hidden">City</label>
+                              <select id="a-city" name="city" data-pp-options="cities" data-pp-all="0"><option value="Malibu">Malibu, CA</option><option value="Miami">Miami, FL</option><option value="New York">New York, NY</option><option value="Austin">Austin, TX</option><option value="Aspen">Aspen, CO</option><option value="San Francisco">San Francisco, CA</option></select>
+                            </div>
+                            <label for="a-email" class="pp-visually-hidden">Email address</label>
+                            <input id="a-email" name="email" type="email" placeholder="Email address" autocomplete="email" required=""/>
+                            <button type="submit" class="pp-btn pp-btn--gold">Create alert</button>
+                          </form>
+                          <p class="pp-form-status pp-form-status--light" id="alert-status" role="status"/>
+                        </div>
+                      </div>
+                    </section>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="rent_page" name="Propelle Rent">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Homes for Rent</t>
+            <t t-set="pageName" t-valuef="propelle_rent"/>
+            <div id="wrap">
+                <t t-call="theme_propelle.listing_content"/>
+                <div class="oe_structure" id="oe_structure_propelle_rent">
+                    <section class="pp-s s_propelle_steps_dark pp-section pp-section--dark" id="process" data-name="Process Steps Dark" data-snippet="s_propelle_steps_dark">
+                      <div class="pp-container">
+                        <div class="pp-head">
+                          <p class="pp-eyebrow">Renting with Propelle</p>
+                          <h2 class="pp-title">How it works</h2>
+                          <p>Most tenants move in two to three weeks after their first viewing.</p>
+                        </div>
+                        <ol class="pp-steps">
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">1</span>
+                            <h3>View</h3>
+                            <p>Book a viewing in person or by video. Your agent can line up several homes on the same day.</p>
+                          </li>
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">2</span>
+                            <h3>Apply</h3>
+                            <p>Send your application with ID and proof of income. We'll pass it to the landlord the same day.</p>
+                          </li>
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">3</span>
+                            <h3>Sign the lease</h3>
+                            <p>Review and sign online, then pay the first month's rent and the security deposit.</p>
+                          </li>
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">4</span>
+                            <h3>Move in</h3>
+                            <p>We walk through the home with you, record its condition and hand over the keys.</p>
+                          </li>
+                        </ol>
+                      </div>
+                    </section>
+                    <section class="pp-s s_propelle_rent_calc pp-section" id="calculator" data-name="Rent Calculator" data-snippet="s_propelle_rent_calc">
+                      <div class="pp-container pp-calc">
+                        <div class="pp-calc__intro">
+                          <p class="pp-eyebrow">Rent calculator</p>
+                          <h2 class="pp-title">How much rent can you afford?</h2>
+                          <p class="pp-lead">A common guide is to spend no more than 30 percent of your gross income on rent.</p>
+                          <h3 class="pp-calc__subhead">Documents you'll need to apply</h3>
+                          <ul class="pp-checklist">
+                            <li>Photo ID for each adult on the lease</li>
+                            <li>Last two pay stubs or an employment letter</li>
+                            <li>Recent bank statements</li>
+                            <li>References from previous landlords, if you have them</li>
+                          </ul>
+                        </div>
+                        <form class="pp-calc__form" id="rent-calc" aria-label="Rent affordability calculator">
+                          <div class="pp-form-row">
+                            <div class="pp-field">
+                              <label for="rc-income">Annual household income ($)</label>
+                              <input id="rc-income" type="number" min="0" step="1000" value="180000" inputmode="numeric"/>
+                            </div>
+                            <div class="pp-field">
+                              <label for="rc-debts">Monthly debt payments ($)</label>
+                              <input id="rc-debts" type="number" min="0" step="50" value="500" inputmode="numeric"/>
+                            </div>
+                          </div>
+                          <div class="pp-field">
+                            <label for="rc-share">Share of income for rent</label>
+                            <select id="rc-share">
+                              <option value="25">25% (comfortable)</option>
+                              <option value="30" selected="selected">30% (typical)</option>
+                              <option value="35">35% (stretch)</option>
+                            </select>
+                          </div>
+                          <div class="pp-calc__result" aria-live="polite">
+                            <p class="pp-calc__label">Suggested maximum rent</p>
+                            <p class="pp-calc__monthly" id="rc-max">$0</p>
+                            <dl class="pp-calc__breakdown pp-calc__breakdown--two">
+                              <div><dt>Income landlords usually ask for (40× rent)</dt><dd id="rc-income-needed">$0</dd></div>
+                              <div><dt>Move-in cost (first month + deposit)</dt><dd id="rc-deposit">$0</dd></div>
+                            </dl>
+                          </div>
+                          <p class="pp-calc__note">A rough guide only. Landlords set their own income and deposit requirements.</p>
+                        </form>
+                      </div>
+                    </section>
+                    <section class="pp-s s_propelle_faq_grid pp-section pp-section--tint" id="faq" data-name="FAQ Grid" data-snippet="s_propelle_faq_grid">
+                      <div class="pp-container">
+                        <div class="pp-head pp-head--split">
+                          <div><p class="pp-eyebrow">Questions</p>
+                          <h2 class="pp-title">Renting FAQs</h2></div>
+                          <p>Can't find what you need? <a class="pp-text-link" href="/contactus">Ask an agent</a></p>
+                        </div>
+                        <dl class="pp-faq-grid">
+                          <div class="pp-reveal"><dt>Do I pay a fee to Propelle as a tenant?</dt><dd>No. Our fee is paid by the landlord. You pay the rent, the security deposit and, for some buildings, an application fee set by the building.</dd></div>
+                          <div class="pp-reveal"><dt>How much is the security deposit?</dt><dd>Usually one month's rent, sometimes two for furnished homes. It's held separately and returned after you move out, minus any agreed deductions.</dd></div>
+                          <div class="pp-reveal"><dt>Can I rent for less than a year?</dt><dd>Many of our furnished homes are available for one to six months. Unfurnished homes are normally let on 12-month leases.</dd></div>
+                          <div class="pp-reveal"><dt>Are pets allowed?</dt><dd>It depends on the landlord. About half our rentals accept pets, sometimes with an extra deposit. Ask your agent and we'll filter the list for you.</dd></div>
+                          <div class="pp-reveal"><dt>What if I don't meet the income requirement?</dt><dd>You can usually add a guarantor, or offer extra months of rent up front. We'll tell you what each landlord will accept before you apply.</dd></div>
+                        </dl>
+                      </div>
+                    </section>
+                    <section class="pp-s s_propelle_split_cta pp-section" data-name="Photo Call to Action" data-snippet="s_propelle_split_cta">
+                      <div class="pp-container">
+                        <div class="pp-split-cta pp-reveal">
+                          <img src="/theme_propelle/static/src/img/content/1600210492486-724fe5c67fb0.jpg" alt="Furnished living room with a leather sofa and plants" loading="lazy"/>
+                          <div class="pp-split-cta__body">
+                            <p class="pp-eyebrow">For landlords</p>
+                            <h2 class="pp-title">Have a home to rent out?</h2>
+                            <p>We find tenants, run the checks and can manage the property after they move in. Letting only, or full management from 8% of the monthly rent.</p>
+                            <div class="pp-cta__buttons">
+                              <a href="/contactus" class="pp-btn pp-btn--dark">Talk to an Expert</a>
+                              <a href="/sell#valuation" class="pp-btn pp-btn--outline">List Your Property</a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

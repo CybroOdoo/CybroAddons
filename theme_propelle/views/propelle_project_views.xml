@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Backend views of the development projects.
+-->
+<odoo>
+    <record id="propelle_project_view_list" model="ir.ui.view">
+        <field name="name">propelle.project.view.list</field>
+        <field name="model">propelle.project</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="location"/>
+                <field name="state" widget="badge" decoration-success="state == 'selling'" decoration-info="state == 'soon'"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="price_from"/>
+                <field name="units_label" optional="show"/>
+                <field name="completion_label" optional="show"/>
+                <field name="is_featured" widget="boolean_toggle"/>
+                <field name="is_published" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="propelle_project_view_form" model="ir.ui.view">
+        <field name="name">propelle.project.view.form</field>
+        <field name="model">propelle.project</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_toggle_published" type="object" class="oe_stat_button" icon="fa-globe">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text text-success" invisible="not is_published">Published</span>
+                                <span class="o_stat_text text-danger" invisible="is_published">Unpublished</span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'image_256'}"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Aurelia Bay"/></h1>
+                    </div>
+                    <group>
+                        <group string="Project">
+                            <field name="location"/>
+                            <field name="units_label" placeholder="e.g. 86 apartments"/>
+                            <field name="completion_label" placeholder="e.g. Completion 2026"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="price_from"/>
+                        </group>
+                        <group string="Website">
+                            <field name="availability_label" placeholder="e.g. 9 units left"/>
+                            <field name="availability_style"/>
+                            <field name="is_featured"/>
+                            <field name="city_id" invisible="state != 'completed'"/>
+                            <field name="image_alt"/>
+                            <field name="is_published" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1" colspan="2"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="propelle_project_view_search" model="ir.ui.view">
+        <field name="name">propelle.project.view.search</field>
+        <field name="model">propelle.project</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="location"/>
+                <filter name="filter_featured" string="Featured" domain="[('is_featured', '=', True)]"/>
+                <filter name="filter_published" string="Published" domain="[('is_published', '=', True)]"/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="propelle_project_action" model="ir.actions.act_window">
+        <field name="name">Projects</field>
+        <field name="res_model">propelle.project</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add your first development</p>
+            <p>Published projects are shown on the Projects page of the website.</p>
+        </field>
+    </record>
+
+    <menuitem id="propelle_project_menu" name="Projects" parent="propelle_property_menu_root" action="propelle_project_action" sequence="20"/>
+</odoo>

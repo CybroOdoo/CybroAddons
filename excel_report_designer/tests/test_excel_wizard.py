@@ -1,0 +1,55 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
+#    Author: Cybrosys Techno Solutions (<https://www.cybrosys.com>)
+#
+#    This program is free software: you can modify it under the terms of the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful, but
+#    WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
+
+from odoo.tests import common
+import json
+
+class TestExcelWizard(common.TransactionCase):
+
+    def setUp(self):
+        super().setUp()
+        self.model_res_partner = self.env['ir.model'].search([('model', '=', 'res.partner')], limit=1)
+        self.field_name = self.env['ir.model.fields'].search([('model_id', '=', self.model_res_partner.id), ('name', '=', 'name')], limit=1)
+        
+        self.report = self.env['report.excel'].create({
+            'name': 'Partner Test Report',
+            'model_id': self.model_res_partner.id,
+            'fields_ids': [(6, 0, [self.field_name.id])],
+        })
+        
+        self.partner = self.env['res.partner'].create({'name': 'Wizard Test Partner'})
+
+    def test_01_wizard_print(self):
+        """Test the wizard print action"""
+        wizard = self.env['excel.report.wizards'].with_context(
+            excel=self.report.id,
+            active_ids=[self.partner.id],
+            active_model='res.partner'
+        ).create({})
+        
+        action = wizard.print_excel_report()
+        self.assertEqual(action['type'], 'ir.actions.report')
+        self.assertEqual(action['report_type'], 'xlsx')
+        
+        options = json.loads(action['data']['options'])
+        self.assertEqual(options['report_name'], self.report.name)
+        self.assertIn(self.partner.id, options['active_model_id'])

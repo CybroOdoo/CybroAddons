@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Product grid tile: add a quick-view button -->
+    <template id="products_c_quick_view" inherit_id="website_sale.shop_product_buttons" name="Quick View Button">
+        <xpath expr="//div[hasclass('o_wsale_product_action_row')]" position="inside">
+            <a href="#" role="button"
+               class="btn btn-light c-product-quick-view-action text-dark d-inline-flex align-items-center justify-content-center"
+               aria-label="Quick View" title="Quick View"
+               t-att-data-product-id="product.id">
+                <i class="oi oi-fw" data-icon="visibility"/>
+            </a>
+        </xpath>
+    </template>
+
+    <!-- Product quick view modal template -->
+    <template id="c_product_quick_view" name="Product Quick View Modal">
+        <div class="modal fade" id="c_product_quick_view_modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"/>
+                    </div>
+                    <div class="modal-body oe_website_sale pt-0">
+                        <div class="row align-items-center">
+                            <div class="col-md-6 col-12 text-center mb-3 mb-md-0">
+                                <span t-field="product.image_1920"
+                                      t-options="{'widget': 'image', 'preview_image': 'image_1024', 'class': 'img img-fluid rounded product-detail-image', 'alt': product.name}"/>
+                            </div>
+                            <div class="col-md-6 col-12">
+                                <h2 class="h4 mb-2" t-field="product.name"/>
+                                <form action="/shop/cart/update" method="POST" class="js_add_cart_variants">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <div class="js_product js_main_product mb-3">
+                                        <div class="product_price mb-2">
+                                            <t t-if="combination_info" t-call="website_sale.product_price"/>
+                                            <t t-else="">
+                                                <span t-field="product.list_price"
+                                                      t-options="{'widget': 'monetary', 'display_currency': product.currency_id}"/>
+                                            </t>
+                                        </div>
+                                        <t t-placeholder="select">
+                                            <input type="hidden" class="product_id" name="product_id" t-att-value="product_variant_id"/>
+                                            <input type="hidden" class="product_template_id" name="product_template_id" t-att-value="product.id"/>
+                                            <t t-call="website_sale.variants">
+                                                <t t-set="ul_class" t-valuef="flex-column"/>
+                                                <t t-set="parent_combination" t-value="None"/>
+                                            </t>
+                                        </t>
+                                        <p class="css_not_available_msg alert alert-warning d-none">This combination does not exist.</p>
+                                    </div>
+                                </form>
+                                <div t-if="product.description_ecommerce" class="text-muted small mt-2">
+                                    <p t-field="product.description_ecommerce"/>
+                                </div>
+                                <div class="mt-3">
+                                    <a t-att-href="product.website_url" class="btn btn-outline-primary btn-sm">
+                                        View Product Details <i class="fa fa-arrow-right ms-1"/>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>

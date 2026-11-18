@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Projects page: the showcase of the featured developments, the list of the
+    published projects with its status filter, the register interest form and
+    the editable sections around them.
+-->
+<odoo>
+    <template id="project_card" name="Propelle Project Card">
+        <article class="pp-dev pp-reveal" t-att-data-project-status="project.state">
+            <div class="pp-dev__media">
+                <img t-attf-src="/web/image/propelle.project/#{project.id}/image_1024" t-att-alt="project.image_alt or project.name" loading="lazy"/>
+                <span t-attf-class="pp-availability pp-availability--#{project.availability_style}" t-out="project.availability"/>
+            </div>
+            <div class="pp-dev__body">
+                <h3 t-out="project.name"/>
+                <p class="pp-dev__loc" t-out="project.location"/>
+                <p class="pp-dev__desc" t-out="project.description"/>
+                <div class="pp-dev__meta"><span>From <strong t-out="project.price_label"/></span><span t-if="project.units_label" t-out="project.units_label"/><span t-if="project.completion_label" t-out="project.completion_label"/></div>
+                <a t-if="project.state == 'completed'" t-attf-href="/buy#{'?location=%s' % quote_plus(project.city_id.name) if project.city_id else ''}" class="pp-text-link">See homes for sale nearby <i class="pp-icon pp-icon--sm pp-i-arrow" role="img" aria-hidden="true"/></a>
+                <button t-else="" type="button" class="pp-text-link" t-att-data-register="project.name">Register interest <i class="pp-icon pp-icon--sm pp-i-arrow" role="img" aria-hidden="true"/></button>
+            </div>
+        </article>
+    </template>
+
+    <template id="projects_page" name="Propelle Projects">
+        <t t-call="website.layout">
+            <t t-set="additional_title">New Developments</t>
+            <t t-set="pageName" t-valuef="propelle_projects"/>
+            <div id="wrap">
+                <section class="pp-s pp-pj-hero" aria-labelledby="page-title">
+                    <div class="pp-container pp-pj-hero__grid">
+                        <div class="pp-pj-hero__text">
+                            <nav class="pp-breadcrumb pp-breadcrumb--dark" aria-label="Breadcrumb">
+                                <ol>
+                                    <li><a href="/">Home</a></li>
+                                    <li aria-current="page">Projects</li>
+                                </ol>
+                            </nav>
+                            <h1 class="pp-pj-hero__title" id="page-title">New developments</h1>
+                            <p class="pp-pj-hero__lead">New-build homes and apartments we sell for developers, from off-plan launches to the last few units.</p>
+                            <div class="pp-hero-plain__ctas">
+                                <a href="#all-projects" class="pp-btn pp-btn--dark">See All Projects</a>
+                                <a href="#register" class="pp-btn pp-btn--outline">Register Interest</a>
+                            </div>
+                            <dl class="pp-pj-hero__facts">
+                                <div t-foreach="facts" t-as="fact"><dd t-out="fact[0]"/><dt t-out="fact[1]"/></div>
+                            </dl>
+                        </div>
+
+                        <div t-if="featured" class="pp-pj-show" data-showcase="">
+                            <t t-set="first" t-value="featured[0]"/>
+                            <div class="pp-pj-show__main">
+                                <img t-foreach="featured" t-as="project"
+                                     t-attf-src="/web/image/propelle.project/#{project.id}/image_1920"
+                                     t-att-alt="project.image_alt or project.name"
+                                     t-att-data-show-img="project_index"
+                                     t-att-class="'pp-is-hidden-img' if project_index else None"/>
+                                <div class="pp-pj-show__card" aria-live="polite">
+                                    <span t-attf-class="pp-availability pp-availability--#{first.availability_style}" data-show-status="" t-out="first.availability"/>
+                                    <h2 class="pp-pj-show__name" data-show-name="" t-out="first.name"/>
+                                    <p class="pp-pj-show__loc"><i class="pp-icon pp-icon--sm pp-i-pin" role="img" aria-hidden="true"/> <span data-show-loc="" t-out="first.location"/></p>
+                                    <div class="pp-pj-show__meta"><span>From <strong data-show-from="" t-out="first.price_label"/></span><span data-show-units="" t-out="first.units_label"/><span data-show-done="" t-out="first.completion_label"/></div>
+                                </div>
+                            </div>
+                            <div class="pp-pj-show__thumbs" role="group" aria-label="Featured projects">
+                                <button t-foreach="featured" t-as="project" type="button"
+                                        t-attf-class="pp-pj-thumb #{'' if project_index else 'pp-is-active'}"
+                                        t-att-aria-pressed="'false' if project_index else 'true'"
+                                        t-att-data-show="project_index"
+                                        t-att-data-name="project.name"
+                                        t-att-data-loc="project.location"
+                                        t-att-data-status="project.availability"
+                                        t-att-data-status-class="project.availability_style"
+                                        t-att-data-from="project.price_label"
+                                        t-att-data-units="project.units_label or ''"
+                                        t-att-data-done="project.completion_label or ''">
+                                    <img t-attf-src="/web/image/propelle.project/#{project.id}/image_256" alt=""/>
+                                    <span t-out="project.name"/>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="pp-s pp-section pp-section--tight pp-projects" id="all-projects">
+                    <div class="pp-container">
+                        <div class="pp-head pp-head--split">
+                            <div>
+                                <p class="pp-eyebrow">Projects</p>
+                                <h2 class="pp-title">Current and upcoming projects</h2>
+                            </div>
+                            <div class="pp-filters" role="group" aria-label="Filter projects by status" data-project-filters="">
+                                <button type="button" class="pp-filter-btn pp-is-active" data-project-filter="all" aria-pressed="true">All</button>
+                                <button type="button" class="pp-filter-btn" data-project-filter="selling" aria-pressed="false">Now selling</button>
+                                <button type="button" class="pp-filter-btn" data-project-filter="soon" aria-pressed="false">Coming soon</button>
+                                <button type="button" class="pp-filter-btn" data-project-filter="completed" aria-pressed="false">Completed</button>
+                            </div>
+                        </div>
+                        <p class="pp-results-count pp-project-count" aria-live="polite"><t t-out="len(projects)"/> <t t-if="len(projects) == 1">project</t><t t-else="">projects</t></p>
+                        <div class="pp-project-rows">
+                            <t t-foreach="projects" t-as="project">
+                                <t t-call="theme_propelle.project_card"/>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="oe_structure" id="oe_structure_propelle_projects_1">
+                    <section class="pp-s s_propelle_spotlight pp-section pp-section--tint" id="spotlight" data-name="Project Spotlight" data-snippet="s_propelle_spotlight">
+                      <div class="pp-container pp-spotlight">
+                        <div class="pp-spotlight__media pp-reveal">
+                          <img class="pp-spotlight__main" src="/theme_propelle/static/src/img/content/1600573472550-8090b5e0745e.jpg" alt="Show home at The Serrano Estates: glass walls opening onto the pool" loading="lazy"/>
+                          <img class="pp-spotlight__inset" src="/theme_propelle/static/src/img/content/1503174971373-b1f69850bded.jpg" alt="Open-plan living room with floor-to-ceiling glass" loading="lazy"/>
+                        </div>
+                        <div class="pp-spotlight__content pp-reveal">
+                          <p class="pp-eyebrow">Project spotlight</p>
+                          <h2 class="pp-title">The Serrano Estates</h2>
+                          <p class="pp-spotlight__loc">Bel Air, Los Angeles · Completion summer 2026</p>
+                          <p>Twelve detached homes on a gated hillside above Stone Canyon. Each home has its own pool, a two-car garage and views across the canyon. Construction started in 2024 and the first four homes are already framed.</p>
+                          <ul class="pp-spotlight__facts">
+                            <li><strong>Architect</strong><span>Hollis &amp; Grant</span></li>
+                            <li><strong>Deposit</strong><span>10% on contract</span></li>
+                            <li><strong>Homes left</strong><span>9 of 12</span></li>
+                          </ul>
+                          <div class="pp-table-wrap">
+                            <table class="pp-unit-table">
+                              <caption class="pp-visually-hidden">Home types and prices at The Serrano Estates</caption>
+                              <thead>
+                                <tr><th scope="col">Home type</th><th scope="col">Beds</th><th scope="col">Size</th><th scope="col">From</th><th scope="col">Available</th></tr>
+                              </thead>
+                              <tbody>
+                                <tr><th scope="row">Residence A</th><td>4</td><td>4,200 sq ft</td><td>$4,800,000</td><td>4</td></tr>
+                                <tr><th scope="row">Residence B</th><td>5</td><td>5,600 sq ft</td><td>$6,400,000</td><td>3</td></tr>
+                                <tr><th scope="row">Residence C</th><td>6</td><td>7,300 sq ft</td><td>$8,900,000</td><td>2</td></tr>
+                              </tbody>
+                            </table>
+                          </div>
+                          <button type="button" class="pp-btn pp-btn--dark" data-register="The Serrano Estates">Request the brochure</button>
+                        </div>
+                      </div>
+                    </section>
+                    <section class="pp-s s_propelle_steps_vertical pp-section" id="off-plan" data-name="Process Timeline" data-snippet="s_propelle_steps_vertical">
+                      <div class="pp-container">
+                        <div class="pp-head">
+                          <p class="pp-eyebrow">Buying off-plan</p>
+                          <h2 class="pp-title">How buying a new-build works</h2>
+                          <p>Buying before a building is finished can mean a better price and first choice of homes. Here's what to expect.</p>
+                        </div>
+                        <ol class="pp-steps pp-steps--vertical">
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">1</span>
+                            <h3>Reserve</h3>
+                            <p>Choose a home and pay a refundable reservation fee to take it off the market for 30 days.</p>
+                          </li>
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">2</span>
+                            <h3>Sign and pay the deposit</h3>
+                            <p>Your attorney reviews the contract. Deposits are usually 10 to 20 percent, held in escrow.</p>
+                          </li>
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">3</span>
+                            <h3>Follow the build</h3>
+                            <p>We send progress photos every quarter and arrange site visits at key stages.</p>
+                          </li>
+                          <li class="pp-step pp-reveal">
+                            <span class="pp-step__num">4</span>
+                            <h3>Inspect and complete</h3>
+                            <p>Walk through the finished home, sign off any snags, then pay the balance and collect the keys.</p>
+                          </li>
+                        </ol>
+                      </div>
+                    </section>
+                </div>
+
+                <section class="pp-s pp-section pp-section--tint" id="register">
+                    <div class="pp-container pp-contact">
+                        <div class="pp-contact__info">
+                            <p class="pp-eyebrow">Register interest</p>
+                            <h2 class="pp-title">Get the brochure and price list</h2>
+                            <p class="pp-lead">Registered buyers hear about new releases and price changes before they're advertised.</p>
+                            <ul class="pp-checklist">
+                                <li>Floor plans, specifications and current prices</li>
+                                <li>Early access to new phases and launches</li>
+                                <li>A call from the agent handling the project</li>
+                            </ul>
+                        </div>
+
+                        <section class="s_website_form pp-form-section" data-vcss="001" data-snippet="s_website_form" data-name="Form">
+                            <form action="/website/form/" method="post" enctype="multipart/form-data" class="o_mark_optional pp-contact-form pp-register-form" data-mark="(optional)" data-model_name="crm.lead" data-success-mode="message" data-pre-fill="true">
+                                <div class="s_website_form_rows pp-form-rows">
+                                    <div class="s_website_form_field pp-field s_website_form_required" data-type="char" data-name="Field">
+                                        <label class="s_website_form_label" for="pp_register_name"><span class="s_website_form_label_content">Name</span></label>
+                                        <input id="pp_register_name" type="text" class="form-control s_website_form_input" name="contact_name" required="" autocomplete="name" data-fill-with="name"/>
+                                    </div>
+                                    <div class="s_website_form_field pp-field s_website_form_required" data-type="email" data-name="Field">
+                                        <label class="s_website_form_label" for="pp_register_email"><span class="s_website_form_label_content">Email</span></label>
+                                        <input id="pp_register_email" type="email" class="form-control s_website_form_input" name="email_from" required="" autocomplete="email" data-fill-with="email"/>
+                                    </div>
+                                    <div class="s_website_form_field pp-field s_website_form_model_required" data-type="char" data-name="Field">
+                                        <label class="s_website_form_label" for="pp_register_project"><span class="s_website_form_label_content">Project</span></label>
+                                        <select id="pp_register_project" class="form-select s_website_form_input pp-register-project" name="name" required="">
+                                            <option t-foreach="open_projects" t-as="project" t-attf-value="Brochure request: #{project.name}" t-att-data-project="project.name"><t t-out="project.name"/>, <t t-out="project.city_name"/></option>
+                                        </select>
+                                    </div>
+                                    <div class="s_website_form_field pp-field s_website_form_custom" data-type="char" data-name="Field">
+                                        <label class="s_website_form_label" for="pp_register_size"><span class="s_website_form_label_content">Home size</span></label>
+                                        <select id="pp_register_size" class="form-select s_website_form_input" name="Home size">
+                                            <option value="Any size">Any size</option>
+                                            <option value="1 to 2 bedrooms">1 to 2 bedrooms</option>
+                                            <option value="3 bedrooms">3 bedrooms</option>
+                                            <option value="4 or more bedrooms">4 or more bedrooms</option>
+                                        </select>
+                                    </div>
+                                    <div class="s_website_form_field pp-field pp-field--full" data-type="tel" data-name="Field">
+                                        <label class="s_website_form_label" for="pp_register_phone"><span class="s_website_form_label_content">Phone</span><span class="s_website_form_mark pp-field__optional"> (optional)</span></label>
+                                        <input id="pp_register_phone" type="tel" class="form-control s_website_form_input" name="phone" autocomplete="tel" data-fill-with="phone"/>
+                                    </div>
+                                    <div class="s_website_form_submit pp-field--full" data-name="Submit Button">
+                                        <div class="s_website_form_label"/>
+                                        <a href="#" role="button" class="btn btn-primary s_website_form_send pp-btn pp-btn--dark">Register interest</a>
+                                        <span id="s_website_form_result"/>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="s_website_form_end_message d-none">
+                                <div class="pp-contact-form pp-form-done">
+                                    <h3>Thanks, you're registered.</h3>
+                                    <p>We'll email the brochure and the price list, and the agent handling the project will be in touch.</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <div class="oe_structure" id="oe_structure_propelle_projects_2">
+                    <section class="pp-s s_propelle_band pp-section" data-name="Text Band" data-snippet="s_propelle_band">
+                      <div class="pp-container pp-band">
+                        <div>
+                          <p class="pp-eyebrow">For developers</p>
+                          <h2 class="pp-title">Building something new?</h2>
+                        </div>
+                        <div>
+                          <p>We advise on pricing and unit mix, and run launches, sales suites and buyer marketing from planning through to the final sale.</p>
+                          <div class="pp-cta__buttons">
+                            <a href="/contactus" class="pp-btn pp-btn--gold">Talk to Our Team</a>
+                            <a href="/about#offices" class="pp-btn pp-btn--outline">Find an Office</a>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

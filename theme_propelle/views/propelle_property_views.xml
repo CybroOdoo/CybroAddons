@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Backend views of the property listings, and the Real Estate menu.
+-->
+<odoo>
+    <record id="propelle_property_view_list" model="ir.ui.view">
+        <field name="name">propelle.property.view.list</field>
+        <field name="model">propelle.property</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="listing_type"/>
+                <field name="property_type"/>
+                <field name="city_id"/>
+                <field name="neighbourhood" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="price"/>
+                <field name="bedrooms" optional="show"/>
+                <field name="bathrooms" optional="hide"/>
+                <field name="area" optional="show"/>
+                <field name="date_listed" optional="hide"/>
+                <field name="is_published" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="propelle_property_view_form" model="ir.ui.view">
+        <field name="name">propelle.property.view.form</field>
+        <field name="model">propelle.property</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_toggle_published" type="object" class="oe_stat_button" icon="fa-globe">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text text-success" invisible="not is_published">Published</span>
+                                <span class="o_stat_text text-danger" invisible="is_published">Unpublished</span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'image_256'}"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Carbon Beach House"/></h1>
+                    </div>
+                    <group>
+                        <group string="Listing">
+                            <field name="listing_type" widget="radio" options="{'horizontal': true}"/>
+                            <field name="property_type"/>
+                            <field name="type_label" placeholder="e.g. Penthouse"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="price"/>
+                            <field name="is_furnished" invisible="listing_type != 'rent'"/>
+                            <field name="date_listed"/>
+                        </group>
+                        <group string="Property">
+                            <field name="city_id"/>
+                            <field name="neighbourhood"/>
+                            <field name="bedrooms"/>
+                            <field name="bathrooms"/>
+                            <field name="area"/>
+                            <field name="image_alt"/>
+                            <field name="is_published" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="propelle_property_view_kanban" model="ir.ui.view">
+        <field name="name">propelle.property.view.kanban</field>
+        <field name="model">propelle.property</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card" class="flex-row">
+                        <aside>
+                            <field name="image_256" widget="image" options="{'img_class': 'object-fit-cover'}" alt="Property"/>
+                        </aside>
+                        <main class="ps-2">
+                            <field name="name" class="fw-bold fs-5"/>
+                            <field name="location"/>
+                            <field name="price" widget="monetary"/>
+                            <footer>
+                                <field name="listing_type" widget="badge"/>
+                                <field name="tag" class="ms-auto"/>
+                            </footer>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="propelle_property_view_search" model="ir.ui.view">
+        <field name="name">propelle.property.view.search</field>
+        <field name="model">propelle.property</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="city_id"/>
+                <field name="neighbourhood"/>
+                <filter name="filter_sale" string="For Sale" domain="[('listing_type', '=', 'sale')]"/>
+                <filter name="filter_rent" string="For Rent" domain="[('listing_type', '=', 'rent')]"/>
+                <separator/>
+                <filter name="filter_published" string="Published" domain="[('is_published', '=', True)]"/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_listing_type" string="Sale or Rent" context="{'group_by': 'listing_type'}"/>
+                    <filter name="group_property_type" string="Kind of Property" context="{'group_by': 'property_type'}"/>
+                    <filter name="group_city" string="Property City" context="{'group_by': 'city_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="propelle_property_action" model="ir.actions.act_window">
+        <field name="name">Properties</field>
+        <field name="res_model">propelle.property</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">List your first property</p>
+            <p>Published listings are shown on the Buy and Rent pages of the website.</p>
+        </field>
+    </record>
+
+    <menuitem id="propelle_property_menu_root" name="Real Estate" parent="website.menu_website_global_configuration" sequence="55"/>
+    <menuitem id="propelle_property_menu" name="Properties" parent="propelle_property_menu_root" action="propelle_property_action" sequence="10"/>
+</odoo>

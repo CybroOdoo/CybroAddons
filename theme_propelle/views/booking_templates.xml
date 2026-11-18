@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Booking page of the Propelle theme: four steps to book a viewing of a
+    listing or a valuation visit, sent to the sales team as a lead.
+-->
+<odoo>
+    <template id="booking_page" name="Propelle Booking">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Book a Viewing</t>
+            <t t-set="pageName" t-valuef="propelle_booking"/>
+            <div id="wrap" class="pp-booking">
+                <section class="pp-s pp-hero-plain pp-bk-hero" aria-labelledby="page-title">
+                  <div class="pp-container">
+                    <nav class="pp-breadcrumb pp-breadcrumb--dark" aria-label="Breadcrumb">
+                      <ol>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/buy" data-bk-crumb="">Buy</a></li>
+                        <li aria-current="page" data-bk-crumb-current="">Book a viewing</li>
+                      </ol>
+                    </nav>
+                    <h1 class="pp-hero-plain__title" id="page-title" data-bk-title="">Book a viewing</h1>
+                    <p class="pp-hero-plain__lead" data-bk-lead="">Choose a home, pick a time that suits you and we'll have an agent meet you there.</p>
+                    <ol class="pp-bk-steps" aria-label="Booking steps">
+                      <li class="pp-is-current" data-step-tab="1"><span>1</span><em data-step1-label="">Home</em></li>
+                      <li data-step-tab="2"><span>2</span><em>Date and time</em></li>
+                      <li data-step-tab="3"><span>3</span><em>Your details</em></li>
+                      <li data-step-tab="4"><span>4</span><em>Confirm</em></li>
+                    </ol>
+                  </div>
+                </section>
+                <section class="pp-s pp-section pp-section--tight" id="booking">
+                  <div class="pp-container pp-bk-layout">
+                    <form class="pp-bk-panel" id="booking-form" novalidate="" t-att-data-listings="json.dumps(listing_data)" t-att-data-days="json.dumps(days)">
+                      <div class="pp-bk-notice" id="bk-notice" hidden="">
+                        <p id="bk-notice-text"/>
+                        <div class="pp-bk-notice__actions">
+                          <button type="button" class="pp-btn pp-btn--dark pp-btn--sm" id="bk-resume">Resume</button>
+                          <button type="button" class="pp-text-link" id="bk-discard">Start over</button>
+                        </div>
+                      </div>
+
+                      <!-- Step 1: viewing -->
+                      <fieldset class="pp-bk-step" data-step="1" data-mode="view">
+                        <legend class="pp-bk-step__title">Which home would you like to see?</legend>
+                        <div class="pp-seg pp-bk-seg" role="radiogroup" aria-label="Buy or rent">
+                          <button type="button" class="pp-seg__btn pp-is-active" role="radio" aria-checked="true" data-bk-status="sale">To buy</button>
+                          <button type="button" class="pp-seg__btn" role="radio" aria-checked="false" data-bk-status="rent">To rent</button>
+                        </div>
+                        <div class="pp-bk-search">
+                          <i class="pp-icon pp-icon--sm pp-i-search" role="img" aria-hidden="true"/>
+                          <input type="search" id="bk-home-search" placeholder="Search by name or area" aria-label="Search homes" autocomplete="off"/>
+                        </div>
+                        <div class="pp-bk-homes" id="bk-homes" role="radiogroup" aria-label="Homes"/>
+                        <p class="pp-field__error" id="bk-home-error" aria-live="polite"/>
+                      </fieldset>
+
+                      <!-- Step 1: valuation -->
+                      <fieldset class="pp-bk-step" data-step="1" data-mode="sell" hidden="">
+                        <legend class="pp-bk-step__title">Tell us about your property</legend>
+                        <div class="pp-field">
+                          <label for="bk-address">Property address</label>
+                          <input id="bk-address" name="address" type="text" autocomplete="street-address"/>
+                          <span class="pp-field__error" aria-live="polite"/>
+                        </div>
+                        <div class="pp-form-row">
+                          <div class="pp-field">
+                            <label for="bk-city">City</label>
+                            <select id="bk-city" name="city"><option t-foreach="cities" t-as="city" t-att-value="city['value']" t-out="city['label']"/></select>
+                          </div>
+                          <div class="pp-field">
+                            <label for="bk-ptype">Property type</label>
+                            <select id="bk-ptype" name="ptype"><option value="House">House</option><option value="Apartment">Apartment</option><option value="Villa">Villa</option><option value="Commercial">Commercial</option><option value="Land">Land</option></select>
+                          </div>
+                        </div>
+                        <div class="pp-field">
+                          <label for="bk-beds">Bedrooms</label>
+                          <select id="bk-beds" name="beds"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 or more</option><option value="0">Not applicable</option></select>
+                        </div>
+                      </fieldset>
+
+                      <!-- Step 2 -->
+                      <fieldset class="pp-bk-step" data-step="2" hidden="">
+                        <legend class="pp-bk-step__title">When suits you?</legend>
+                        <div class="pp-bk-kind" data-kind-wrap="">
+                          <p class="pp-bk-label">How would you like to view it?</p>
+                          <div class="pp-bk-options">
+                            <label class="pp-bk-option"><input type="radio" name="kind" value="In person" checked="checked"/><span><i class="pp-icon pp-i-house-line" role="img" aria-hidden="true"/><strong>In person</strong><small>Meet an agent at the home</small></span></label>
+                            <label class="pp-bk-option"><input type="radio" name="kind" value="Video call"/><span><i class="pp-icon pp-i-video" role="img" aria-hidden="true"/><strong>Video call</strong><small>A live walkthrough from anywhere</small></span></label>
+                          </div>
+                        </div>
+                        <p class="pp-bk-label">Choose a day</p>
+                        <div class="pp-bk-days" id="bk-days" role="radiogroup" aria-label="Day"/>
+                        <p class="pp-bk-label">Choose a time <span class="pp-bk-label__hint" id="bk-time-hint"/></p>
+                        <div class="pp-bk-times" id="bk-times" role="radiogroup" aria-label="Time"/>
+                        <p class="pp-field__error" id="bk-slot-error" aria-live="polite"/>
+                      </fieldset>
+
+                      <!-- Step 3 -->
+                      <fieldset class="pp-bk-step" data-step="3" hidden="">
+                        <legend class="pp-bk-step__title">Your details</legend>
+                        <div class="pp-form-row">
+                          <div class="pp-field">
+                            <label for="bk-name">Full name</label>
+                            <input id="bk-name" name="name" type="text" autocomplete="name"/>
+                            <span class="pp-field__error" aria-live="polite"/>
+                          </div>
+                          <div class="pp-field">
+                            <label for="bk-email">Email</label>
+                            <input id="bk-email" name="email" type="email" autocomplete="email"/>
+                            <span class="pp-field__error" aria-live="polite"/>
+                          </div>
+                        </div>
+                        <div class="pp-field">
+                          <label for="bk-phone">Phone</label>
+                          <input id="bk-phone" name="phone" type="tel" autocomplete="tel"/>
+                          <span class="pp-field__error" aria-live="polite"/>
+                        </div>
+                        <div class="pp-field">
+                          <label for="bk-notes">Anything we should know? <span class="pp-field__optional">(optional)</span></label>
+                          <textarea id="bk-notes" name="notes" rows="3" placeholder="e.g. we have a dog, or we're relocating from London"/>
+                        </div>
+                      </fieldset>
+
+                      <!-- Step 4 -->
+                      <fieldset class="pp-bk-step" data-step="4" hidden="">
+                        <legend class="pp-bk-step__title">Check and confirm</legend>
+                        <dl class="pp-bk-review" id="bk-review"/>
+                        <label class="pp-bk-consent"><input type="checkbox" id="bk-consent"/> <span>I'm happy for Propelle to contact me about this booking.</span></label>
+                        <p class="pp-field__error" id="bk-consent-error" aria-live="polite"/>
+                      </fieldset>
+
+                      <!-- Done -->
+                      <div class="pp-bk-done" id="bk-done" hidden="" tabindex="-1">
+                        <span class="pp-bk-done__icon"><i class="pp-icon pp-i-check-circle" role="img" aria-hidden="true"/></span>
+                        <h2>Request received</h2>
+                        <p class="pp-bk-done__ref">Reference <strong id="bk-ref"/></p>
+                        <p id="bk-done-text"/>
+                        <ol class="pp-bk-next-steps">
+                          <li><strong>Today</strong>Your request reaches our sales team.</li>
+                          <li><strong>The day before</strong>An agent calls to confirm the time and share parking or access details.</li>
+                          <li><strong>On the day</strong><span id="bk-done-day">Meet your agent at the home.</span></li>
+                        </ol>
+                        <div class="pp-cta__buttons">
+                          <a class="pp-btn pp-btn--dark" href="/buy" id="bk-done-back">Back to listings</a>
+                          <a class="pp-btn pp-btn--outline" href="/booking">Make another booking</a>
+                        </div>
+                      </div>
+
+                      <div class="pp-bk-nav" id="bk-nav">
+                        <button type="button" class="pp-btn pp-btn--outline" id="bk-back" hidden=""><i class="pp-icon pp-icon--sm pp-i-arrow-left" role="img" aria-hidden="true"/> Back</button>
+                        <button type="button" class="pp-btn pp-btn--dark" id="bk-next">Continue <i class="pp-icon pp-icon--sm pp-i-arrow" role="img" aria-hidden="true"/></button>
+                      </div>
+                    </form>
+
+                    <aside class="pp-bk-summary" aria-label="Booking summary">
+                      <h2 class="pp-bk-summary__title">Your booking</h2>
+                      <div class="pp-bk-summary__home" id="bk-sum-home"><p class="pp-bk-summary__empty">No home selected yet</p></div>
+                      <dl class="pp-bk-summary__list">
+                        <div><dt><i class="pp-icon pp-icon--sm pp-i-calendar-blank" role="img" aria-hidden="true"/> Date</dt><dd id="bk-sum-date">Not chosen</dd></div>
+                        <div><dt><i class="pp-icon pp-icon--sm pp-i-clock" role="img" aria-hidden="true"/> Time</dt><dd id="bk-sum-time">Not chosen</dd></div>
+                        <div data-sum-kind=""><dt><i class="pp-icon pp-icon--sm pp-i-house-line" role="img" aria-hidden="true"/> Viewing</dt><dd id="bk-sum-kind">In person</dd></div>
+                        <div><dt><i class="pp-icon pp-icon--sm pp-i-user" role="img" aria-hidden="true"/> Name</dt><dd id="bk-sum-name">Not given</dd></div>
+                      </dl>
+                      <p class="pp-bk-summary__note">Free and no obligation. An agent will confirm the time with you.</p>
+                    </aside>
+                  </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_pos_config_form_multi_currency" model="ir.ui.view">
+        <field name="name">pos.config.form.multi.currency</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <!--
+                Odoo 19 pos.config form uses <setting> blocks with id attributes.
+                We anchor after 'other_devices' which is a stable setting id.
+                If 'other_devices' doesn't exist in your build, change the anchor
+                to any other known setting id (check via debug mode > Edit View).
+            -->
+            <xpath expr="//setting[@id='other_devices']" position="after">
+
+                <setting id="pos_multi_currency_setting"
+                         string="Multi Currency Conversion"
+                         help="Allow cashiers to accept payments in multiple currencies.">
+                    <field name="pos_multi_currency_enabled"
+                           widget="boolean_toggle"/>
+                    <div class="content-group mt8"
+                         invisible="not pos_multi_currency_enabled">
+                        <div class="row mt8">
+                            <label string="Enable Conversion Display"
+                                   for="pos_multi_currency_conversion"
+                                   class="col-lg-4 o_light_label"/>
+                            <field name="pos_multi_currency_conversion"
+                                   widget="boolean_toggle"
+                                   class="col-lg-8"/>
+                        </div>
+                        <div class="row mt8">
+                            <label string="Allowed Currencies"
+                                   for="pos_allowed_currency_ids"
+                                   class="col-lg-12 o_light_label"/>
+                            <field name="pos_allowed_currency_ids"
+                                   widget="many2many_tags"
+                                   class="col-lg-12"/>
+                        </div>
+                    </div>
+                </setting>
+
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
