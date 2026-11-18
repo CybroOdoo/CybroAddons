@@ -59,6 +59,9 @@ class TestCustomerSoHistory(TransactionCase):
         self.assertEqual(history.name, self.confirmed_order.name)
         self.assertEqual(history.product_id, self.product)
         self.assertEqual(history.product_uom_qty, 3.0)
+        self.assertEqual(
+            history.product_uom_id,
+            self.confirmed_order.order_line.product_uom_id)
         self.assertEqual(history.price_unit, 40.0)
         self.assertEqual(
             history.price_subtotal,
@@ -96,6 +99,7 @@ class TestCustomerSoHistory(TransactionCase):
         line = target.order_line
         self.assertEqual(line.product_id, self.product)
         self.assertEqual(line.product_uom_qty, 3.0)
+        self.assertEqual(line.product_uom_id, history_line.product_uom_id)
         self.assertEqual(line.price_unit, 40.0)
 
     def test_action_add_does_not_change_original_order(self):
@@ -110,3 +114,39 @@ class TestCustomerSoHistory(TransactionCase):
         history_line.action_add()
         self.assertEqual(len(self.confirmed_order.order_line), 1)
         self.assertEqual(self.confirmed_order.order_line.product_uom_qty, 3.0)
+
+    def test_history_preserves_custom_uom_on_add(self):
+        """A history line with a non-base UoM retains its UoM when added."""
+        partner = self.env['res.partner'].create({'name': 'Dozen Customer'})
+        uom_dozen = self.env.ref('uom.product_uom_dozen')
+        confirmed_order = self.env['sale.order'].create({
+            'partner_id': partner.id,
+            'order_line': [(0, 0, {
+                'product_id': self.product.id,
+                'product_uom_qty': 5.0,
+                'product_uom_id': uom_dozen.id,
+                'price_unit': 120.0,
+            })],
+        })
+        confirmed_order.action_confirm()
+
+        # Verify history loads the custom UoM
+        new_order = self.env['sale.order'].new({'partner_id': partner.id})
+        new_order._onchange_partner_id_order_history()
+        history = new_order.order_details_ids
+        self.assertEqual(len(history), 1)
+        self.assertEqual(history.product_uom_id, uom_dozen)
+        self.assertEqual(history.uom_id, uom_dozen)
+        self.assertEqual(history.product_uom_qty, 5.0)
+        self.assertEqual(history.price_unit, 120.0)
+
+        # Verify action_add copies the custom UoM to the sale order line
+        target = self.env['sale.order'].create({'partner_id': partner.id})
+        history.order_id = target
+        history.action_add()
+        self.assertEqual(len(target.order_line), 1)
+        line = target.order_line
+        self.assertEqual(line.product_id, self.product)
+        self.assertEqual(line.product_uom_id, uom_dozen)
+        self.assertEqual(line.product_uom_qty, 5.0)
+        self.assertEqual(line.price_unit, 120.0)

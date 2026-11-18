@@ -26,7 +26,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['sale'],
+    'depends': ['sale_management'],
     'data': [
         'security/ir.access.csv',
         'views/sale_order_inherit.xml',

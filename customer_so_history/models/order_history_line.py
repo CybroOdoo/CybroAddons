@@ -15,7 +15,7 @@
 #    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class OrderHistoryLine(models.Model):
@@ -34,6 +34,15 @@ class OrderHistoryLine(models.Model):
         help="Product included in the past order.")
     product_uom_qty = fields.Float(
         string='Quantity', help="Quantity ordered in the past order.")
+    product_uom_id = fields.Many2one(
+        'uom.uom', string='Unit of Measure',
+        compute='_compute_product_uom_id',
+        store=True, readonly=False, precompute=True,
+        help="Unit of measure of the ordered product.")
+    uom_id = fields.Many2one(
+        'uom.uom', string='Unit of Measure',
+        related='product_uom_id', readonly=False,
+        help="Unit of measure of the ordered product.")
     price_unit = fields.Float(
         string='Unit Price', help="Unit price of the ordered product.")
     tax_id = fields.Many2many(
@@ -46,13 +55,23 @@ class OrderHistoryLine(models.Model):
     price_subtotal = fields.Float(
         string='Subtotal', help="Subtotal of the past order line.")
 
+    @api.depends('product_id')
+    def _compute_product_uom_id(self):
+        for line in self:
+            if not line.product_uom_id:
+                line.product_uom_id = line.product_id.uom_id
+
     def action_add(self):
         """Add a new sale order line using the selected history line."""
         self.ensure_one()
-        self.env['sale.order.line'].create({
+        vals = {
             'order_id': self.order_id.id,
             'product_id': self.product_id.id,
             'product_uom_qty': self.product_uom_qty,
             'price_unit': self.price_unit,
             'tax_ids': [fields.Command.set(self.tax_id.ids)],
-        })
+        }
+        uom = self.product_uom_id or self.uom_id or self.product_id.uom_id
+        if uom:
+            vals['product_uom_id'] = uom.id
+        return self.env['sale.order.line'].create(vals)

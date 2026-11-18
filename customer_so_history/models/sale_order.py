@@ -42,6 +42,7 @@ class SaleOrder(models.Model):
                 'name': line.order_id.name,
                 'product_id': line.product_id.id,
                 'product_uom_qty': line.product_uom_qty,
+                'product_uom_id': line.product_uom_id.id,
                 'price_unit': line.price_unit,
                 'tax_id': [fields.Command.set(line.tax_ids.ids)],
                 'price_subtotal': line.price_subtotal,
