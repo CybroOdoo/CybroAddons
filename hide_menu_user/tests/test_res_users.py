@@ -16,9 +16,11 @@
 #
 #############################################################################
 from odoo import Command
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged('post_install', '-at_install')
 class TestResUsers(TransactionCase):
     """Test the per-user hidden-menu synchronisation on res.users."""
 

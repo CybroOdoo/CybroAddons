@@ -16,9 +16,10 @@
 #
 #############################################################################
 from odoo import Command
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
-
+@tagged('post_install', '-at_install')
 class TestIrUiMenu(TransactionCase):
     """Test menu filtering for restricted users on ir.ui.menu."""
 
