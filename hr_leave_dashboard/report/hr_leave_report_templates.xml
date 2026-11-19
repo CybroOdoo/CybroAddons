@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Template for the hr leave report.
+            Odoo 20 server-side QWeb no longer supports t-esc (it is silently
+            ignored), so values are printed with t-out. -->
+    <template id="hr_leave_report">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-set="period_labels" t-value="{
+                    'today': 'Absentees Today',
+                    'this_week': 'Absentees This Week',
+                    'this_month': 'Absentees This Month',
+                    'this_year': 'Absentees This Year',
+                }"/>
+                <div class="page">
+                    <div class="text-center mb-4">
+                        <h2 class="mb-1">Leave Report</h2>
+                        <h5 class="text-muted" t-out="period_labels.get(duration, 'Absentees Today')"/>
+                    </div>
+                    <table class="table table-sm o_main_table">
+                        <thead>
+                            <tr>
+                                <th class="text-start">Employee ID</th>
+                                <th class="text-start">Employee Name</th>
+                                <th class="text-start">Leave Type</th>
+                                <th class="text-end">Allocated Balance</th>
+                                <th class="text-end">Taken Leaves</th>
+                                <th class="text-end">Remaining Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="filtered_list" t-as="leave_data">
+                                <td t-out="leave_data['emp_id']"/>
+                                <td t-out="leave_data['emp_name']"/>
+                                <td t-out="leave_data['leave_type']"/>
+                                <td class="text-end"
+                                    t-out="leave_data['allocated_days']"
+                                    t-options="{'widget': 'float', 'precision': 2}"/>
+                                <td class="text-end"
+                                    t-out="leave_data['taken_days']"
+                                    t-options="{'widget': 'float', 'precision': 2}"/>
+                                <td class="text-end"
+                                    t-out="leave_data['balance_days']"
+                                    t-options="{'widget': 'float', 'precision': 2}"/>
+                            </tr>
+                            <tr t-if="not filtered_list">
+                                <td colspan="6" class="text-center text-muted fst-italic">
+                                    No absentees for this period.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

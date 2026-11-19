@@ -1,0 +1,46 @@
+# -*- coding: utf-8 -*-
+#############################################################################
+#
+#    Cybrosys Technologies Pvt. Ltd.
+#
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
+#
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
+#
+#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
+#    (LGPL v3) along with this program.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+"""Theme load hook of the Aquere theme."""
+# The parent method comes from the registry, and the placeholder helper is a
+# private method of the Aquere theme itself.
+# pylint: disable=no-member,abstract-method,protected-access
+
+from odoo import models
+
+
+class IrModuleModule(models.Model):
+    """Resolve the Aquere placeholders each time the theme is loaded."""
+    _inherit = 'ir.module.module'
+
+    def _theme_load(self, website):
+        """Replace the placeholders of the Aquere views after a theme load.
+
+        A theme update copies the theme views on the website again without
+        calling the post copy hook, so the placeholders of the views it
+        rewrites would stay unresolved.
+
+        :param website: the website the themes are loaded on.
+        """
+        result = super()._theme_load(website)
+        if 'theme_aquere' in self.mapped('name'):
+            self.env['theme.utils'].with_context(
+                website_id=website.id)._aquere_resolve_placeholders(website)
+        return result

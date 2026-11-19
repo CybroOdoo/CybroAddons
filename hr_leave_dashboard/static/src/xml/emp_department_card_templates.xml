@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+<!--    This template renders a department card that displays the current shift,-->
+    <!--    upcoming holidays, and a list of employees on leave. -->
+    <!--    It takes in various props such as department ID, employee count, and absentees.-->
+    <div t-name="hr_leave_dashboard.EmpDepartmentCard"
+         class="o_timeoff_card o_hr_leave_dashboard_card o_hld_department_card text-start">
+        <t t-set="department_id" t-value="this.props.department_id"/>
+        <t t-set="absentees" t-value="this.props.absentees or []"/>
+        <t t-set="shift" t-value="this.props.current_shift"/>
+        <t t-set="upcoming_holidays" t-value="this.props.upcoming_holidays or []"/>
+
+        <div class="o_hld_card_header">
+            <span class="o_hld_eyebrow">Department</span>
+            <span class="o_hld_title text-truncate" t-att-title="department_id">
+                <t t-out="department_id or 'No department'"/>
+            </span>
+            <span t-if="shift" class="o_hld_shift">
+                <i class="fa fa-clock-o me-1"/>
+                <t t-out="shift"/>
+            </span>
+        </div>
+
+        <div class="o_hld_section">
+            <div class="o_hld_section_header">
+                <span><i class="fa fa-user-times me-1 text-danger"/>On Leave Today</span>
+                <span class="badge rounded-pill text-bg-danger" t-out="absentees.length"/>
+            </div>
+            <ul t-if="absentees.length" class="list-unstyled mb-0 o_hld_people">
+                <li t-foreach="absentees" t-as="child" t-key="child.employee_id"
+                    class="d-flex align-items-center gap-2">
+                    <img class="rounded-circle o_hld_avatar"
+                         t-att-src="'/web/image/hr.employee.public/' + child.employee_id + '/avatar_128'"
+                         t-att-alt="child.name"/>
+                    <span class="text-truncate" t-out="child.name"/>
+                </li>
+            </ul>
+            <div t-else="" class="o_hld_empty">Everyone is in today</div>
+        </div>
+
+        <div class="o_hld_section o_hld_section_fill">
+            <div class="o_hld_section_header">
+                <span><i class="fa fa-calendar me-1 text-success"/>Upcoming Holidays</span>
+                <span class="badge rounded-pill text-bg-success" t-out="upcoming_holidays.length"/>
+            </div>
+            <ul t-if="upcoming_holidays.length" class="list-unstyled mb-0 o_hld_holidays">
+                <li t-foreach="upcoming_holidays" t-as="holiday" t-key="holiday.id"
+                    class="d-flex align-items-center gap-2">
+                    <t t-set="parts" t-value="this.dateParts(holiday.date_from)"/>
+                    <t t-set="span" t-value="this.spanDays(holiday)"/>
+                    <div class="o_hld_date_leaf">
+                        <span class="o_hld_date_month" t-out="parts.month"/>
+                        <span class="o_hld_date_day" t-out="parts.day"/>
+                    </div>
+                    <div class="d-flex flex-column overflow-hidden">
+                        <span class="fw-semibold text-truncate" t-att-title="holiday.name"
+                              t-out="holiday.name"/>
+                        <small class="text-muted">
+                            <t t-out="parts.weekday"/>
+                            <t t-if="span"> · <t t-out="span"/> days</t>
+                        </small>
+                    </div>
+                </li>
+            </ul>
+            <div t-else="" class="o_hld_empty">No upcoming holidays</div>
+        </div>
+    </div>
+</templates>

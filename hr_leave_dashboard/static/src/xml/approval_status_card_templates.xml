@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+<!--    Component for displaying approval status of employee leave requests. -->
+    <!--    It includes conditional rendering of approval status based on the -->
+    <!--    user role and a dropdown menu and button for generating a PDF report.-->
+    <div t-name="hr_leave_dashboard.ApprovalStatusCard"
+         class="o_timeoff_card o_hr_leave_dashboard_card o_hld_approval_card text-start">
+        <t t-set="approval_status_count"
+           t-value="this.props.approval_status_count or {}"/>
+        <t t-set="children" t-value="this.props.children or []"/>
+
+        <div class="o_hld_card_header">
+            <span class="o_hld_eyebrow">Approval Status</span>
+            <span class="o_hld_title">
+                <t t-if="this.manager">My Team</t>
+                <t t-else="">My Requests</t>
+            </span>
+        </div>
+
+        <t t-if="!this.manager">
+            <div class="o_hld_stats">
+                <div class="o_hld_stat o_hld_stat_success">
+                    <span class="o_hld_stat_value" t-out="approval_status_count.validate_count or 0"/>
+                    <span class="o_hld_stat_label">Approved</span>
+                </div>
+                <div class="o_hld_stat o_hld_stat_warning">
+                    <span class="o_hld_stat_value" t-out="approval_status_count.confirm_count or 0"/>
+                    <span class="o_hld_stat_label">To Approve</span>
+                </div>
+                <div class="o_hld_stat o_hld_stat_danger">
+                    <span class="o_hld_stat_value" t-out="approval_status_count.refuse_count or 0"/>
+                    <span class="o_hld_stat_label">Refused</span>
+                </div>
+            </div>
+        </t>
+        <t t-else="">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                <select class="form-select form-select-sm o_hld_period"
+                        aria-label="Period"
+                        t-on-change="(ev) => this.onPeriodChange(ev.target.value)">
+                    <option value="today" t-att-selected="this.state.select == 'today'">Today</option>
+                    <option value="this_week" t-att-selected="this.state.select == 'this_week'">This Week</option>
+                    <option value="this_month" t-att-selected="this.state.select == 'this_month'">This Month</option>
+                    <option value="this_year" t-att-selected="this.state.select == 'this_year'">This Year</option>
+                </select>
+                <button t-on-click="() => this.printPdfReport()" type="button"
+                        class="btn btn-sm btn-primary text-nowrap">
+                    <i class="fa fa-print me-1"/>Print PDF
+                </button>
+            </div>
+            <div class="o_hld_table_wrap">
+                <table class="table table-sm table-hover align-middle mb-0 o_hld_table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th class="text-center">Approved</th>
+                            <th class="text-center">To Approve</th>
+                            <th class="text-center">Refused</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="children" t-as="child" t-key="child.id">
+                            <t t-set="counts" t-value="this.countsFor(child)"/>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img class="rounded-circle o_hld_avatar"
+                                         t-att-src="'/web/image/hr.employee.public/' + child.id + '/avatar_128'"
+                                         t-att-alt="child.name"/>
+                                    <span class="text-truncate" t-out="child.name"/>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span t-attf-class="o_hld_count {{ counts.validate_count ? 'text-bg-success' : 'o_hld_count_zero' }}"
+                                      t-out="counts.validate_count or 0"/>
+                            </td>
+                            <td class="text-center">
+                                <span t-attf-class="o_hld_count {{ counts.confirm_count ? 'text-bg-warning' : 'o_hld_count_zero' }}"
+                                      t-out="counts.confirm_count or 0"/>
+                            </td>
+                            <td class="text-center">
+                                <span t-attf-class="o_hld_count {{ counts.refuse_count ? 'text-bg-danger' : 'o_hld_count_zero' }}"
+                                      t-out="counts.refuse_count or 0"/>
+                            </td>
+                        </tr>
+                        <tr t-if="!children.length">
+                            <td colspan="4" class="o_hld_empty text-center">No team members</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </div>
+</templates>
