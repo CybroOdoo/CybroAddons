@@ -19,6 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
+from werkzeug.exceptions import NotFound
+
 from odoo.addons.portal.controllers.portal import CustomerPortal
 from odoo import http
 from odoo.http import request
@@ -52,11 +54,13 @@ class PortalLegalCase(CustomerPortal):
             "legal_case_management.portal_my_legal_case_requests",
             values)
 
-    @http.route(['/my/cases/<int:case_id>'], type='http', auth="public",
+    @http.route(['/my/cases/<int:case_id>'], type='http', auth="user",
                 website=True)
     def portal_my_details_detail(self, case_id):
         """ Returns the Portal details"""
         case_record = request.env['case.registration'].sudo().browse(case_id)
+        if not case_record.exists() or case_record.client_id != request.env.user.partner_id:
+            raise NotFound()
         evidences = request.env['legal.evidence'].sudo().search(
             [('client_id', '=', case_record.client_id.id),
              ('case_id', '=', case_record.id)])
