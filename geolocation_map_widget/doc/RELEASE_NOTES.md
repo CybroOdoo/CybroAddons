@@ -2,7 +2,10 @@
 
 #### 09.11.2026
 #### Version 20.0.1.0.0
-#### ADD
+##### ADD
+- Initial commit for Geolocation Map Widget
 
-- Initial release of Geolocation Map Widget.
-- Geolocation map widget that allows users to retrieve address from selected map location
+#### 19.11.2026
+#### Version 20.0.1.0.0
+##### ADD
+- Updation for Geolocation Map Widget
