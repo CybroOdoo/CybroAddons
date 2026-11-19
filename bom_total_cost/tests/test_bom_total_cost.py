@@ -99,20 +99,20 @@ class TestBomTotalCost(TransactionCase):
         self.assertEqual(bom.bom_cost, 60.0)
 
     def test_02_multiple_units_bom_cost(self):
-        """Test BOM cost when output quantity is greater than 1 (batch production)."""
+        """Test BOM cost when output quantity is greater than 1 (as in index screenshot b2)."""
         bom = self.env['mrp.bom'].create({
             'product_tmpl_id': self.finished_product.product_tmpl_id.id,
-            'product_qty': 5.0,
+            'product_qty': 2.0,
             'type': 'normal',
             'bom_line_ids': [
                 Command.create({
                     'product_id': self.component_table_top.id,
-                    'product_qty': 5.0,
+                    'product_qty': 1.0,
                     'uom_id': self.uom_unit.id,
                 }),
                 Command.create({
                     'product_id': self.component_table_leg.id,
-                    'product_qty': 20.0,
+                    'product_qty': 4.0,
                     'uom_id': self.uom_unit.id,
                 }),
             ],
@@ -125,15 +125,15 @@ class TestBomTotalCost(TransactionCase):
             lambda l: l.product_id == self.component_table_leg
         )
 
-        # 5 tops * $40 = $200; 20 legs * $5 = $100
-        self.assertEqual(top_line.cost, 200.0)
-        self.assertEqual(leg_line.cost, 100.0)
+        # 1 top * $40 = $40; 4 legs * $5 = $20 -> Cost per unit = $60
+        self.assertEqual(top_line.cost, 40.0)
+        self.assertEqual(leg_line.cost, 20.0)
 
-        # Total cost for the 5-table batch = $300.0
-        self.assertEqual(bom.total_bom_cost, 300.0)
-
-        # Cost per unit = $300.0 / 5 = $60.0
+        # Cost per unit stays $60.0
         self.assertEqual(bom.bom_cost, 60.0)
+
+        # Total cost for the 2-table batch = $60.0 * 2.0 = $120.0
+        self.assertEqual(bom.total_bom_cost, 120.0)
 
     def test_03_uom_conversion(self):
         """Test component costing when line UoM differs from product default UoM."""
@@ -211,28 +211,30 @@ class TestBomTotalCost(TransactionCase):
         self.assertEqual(bom.bom_cost, 50.0)
 
     def test_06_bom_qty_change(self):
-        """Test modifying BOM product_qty updates the unit cost."""
+        """Test modifying BOM product_qty updates total cost while unit cost remains constant."""
         bom = self.env['mrp.bom'].create({
             'product_tmpl_id': self.finished_product.product_tmpl_id.id,
-            'product_qty': 2.0,
+            'product_qty': 1.0,
             'type': 'normal',
             'bom_line_ids': [
                 Command.create({
                     'product_id': self.component_table_top.id,
-                    'product_qty': 2.0,
+                    'product_qty': 1.0,
                     'uom_id': self.uom_unit.id,
                 }),
             ],
         })
 
-        # 2 tops @ $40 = $80 total. Unit cost = $80 / 2 = $40
-        self.assertEqual(bom.total_bom_cost, 80.0)
+        # 1 top @ $40 = $40. For qty = 1.0: Cost per unit = $40, Total cost = $40
         self.assertEqual(bom.bom_cost, 40.0)
+        self.assertEqual(bom.total_bom_cost, 40.0)
 
-        # Change BOM quantity to 4.0
-        bom.write({'product_qty': 4.0})
-        self.assertEqual(bom.total_bom_cost, 80.0)
-        self.assertEqual(bom.bom_cost, 20.0)
+        # Change BOM quantity to 3.0 (as shown in index screenshot b2)
+        bom.write({'product_qty': 3.0})
+        # Cost per unit MUST NOT change
+        self.assertEqual(bom.bom_cost, 40.0, "Cost per unit must remain constant when quantity changes")
+        # Total cost MUST update to 40.0 * 3.0 = 120.0
+        self.assertEqual(bom.total_bom_cost, 120.0, "Total BOM cost must update when BOM quantity is changed")
 
     def test_07_multi_company_currency_fallback(self):
         """Test currency computation fallback when company_id is False."""
@@ -261,8 +263,9 @@ class TestBomTotalCost(TransactionCase):
         bom_form.product_qty = 2.0
         with bom_form.bom_line_ids.new() as line_form:
             line_form.product_id = self.component_table_top
-            line_form.product_qty = 2.0
+            line_form.product_qty = 1.0
         bom = bom_form.save()
 
-        self.assertEqual(bom.total_bom_cost, 80.0)
+        # 1 top @ $40: unit cost is $40.0, total cost for qty 2.0 is $80.0
         self.assertEqual(bom.bom_cost, 40.0)
+        self.assertEqual(bom.total_bom_cost, 80.0)
