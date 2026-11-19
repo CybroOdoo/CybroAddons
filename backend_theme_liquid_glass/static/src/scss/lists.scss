@@ -1,3 +1,7 @@
+// ==========================================
+// List Views & Data Tables Glass Styling
+// ==========================================
+
 .list-group-item-action {
     @include transparent-bg;
     @include text-white-color;
@@ -7,7 +11,7 @@
 
     &:hover,
     &.active {
-        background: $hover-bg !important;
+        background: rgba(255, 255, 255, 0.08) !important;
         border-radius: $radius-sm;
         @include text-white-color;
     }
@@ -17,41 +21,292 @@
     background: transparent !important;
 }
 
+// Main List Renderer (standalone list views)
 .o_list_renderer {
-    padding: 10px;
-    background: $glass-bg-light !important;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(15px) saturate(140%);
+    -webkit-backdrop-filter: blur(15px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: $radius-sm;
     margin: 3px;
+    color: $text-white;
 
-    .o_many2many_avatar_user_cell{
+    .o_many2many_avatar_user_cell {
         .o_tag_badge_text {
             color: $text-white !important;
         }
-     }
+    }
 }
 
-.o_list_table {
+// Embedded x2many list views inside form views (e.g. Invoice Lines, Order Lines)
+// Seamless and transparent to avoid cloudy / milky double-backgrounds on form sheets
+.o_field_x2many .o_list_renderer,
+.o_form_sheet .o_field_x2many .o_list_renderer,
+.o_notebook .o_list_renderer {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    overflow: visible;
+}
+
+// List Table (standalone, embedded, section-and-note)
+.o_list_table,
+table.o_section_and_note_list_view,
+.o_list_renderer table {
+    // Override all Bootstrap and Odoo table custom properties with soft, subtle glass values
+    --table-bg: transparent !important;
+    --bs-table-bg: transparent !important;
+    --bs-table-accent-bg: transparent !important;
+    --bs-table-color: #{$text-white} !important;
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.12) !important;
+    --bs-table-hover-color: #{$text-white} !important;
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.02) !important;
+    --bs-table-striped-color: #{$text-white} !important;
+    --bs-table-border-color: rgba(255, 255, 255, 0.08) !important;
+    --ListRenderer-thead-bg-color: transparent !important;
+    --ListRenderer-thead-color: #{$text-white} !important;
+    --ListRenderer-thead-border-end-color: rgba(255, 255, 255, 0.08) !important;
+    --ListRenderer-bottom-border-color: rgba(255, 255, 255, 0.08) !important;
+    --o-SectionAndNote-border-color: rgba(255, 255, 255, 0.08) !important;
+    background-color: transparent !important;
+    color: $text-white !important;
+
+    // Header styling - subtle, low-opacity dark translucent bar
     thead {
-        border-bottom: 2px solid $glass-border !important;
-        @include glass-effect($glass-bg-light, $blur-medium);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        backdrop-filter: blur(15px) saturate(140%) !important;
+        -webkit-backdrop-filter: blur(15px) saturate(140%) !important;
+        border-radius: $radius-sm;
 
         &:hover {
-            background: $hover-bg !important;
+            background: rgba(255, 255, 255, 0.07) !important;
+        }
+
+        th {
+            background: transparent !important;
+            background-color: transparent !important;
+            color: $text-white !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-top: none !important;
+            box-shadow: none !important;
+            padding: 8px 12px;
+            font-weight: 600;
+
+            a, span, i, .oi, .fa {
+                color: $text-white !important;
+            }
+
+            .o_list_sortable_icon {
+                color: rgba(255, 255, 255, 0.7) !important;
+            }
         }
     }
 
+    // Body rows & cells
     tbody {
         tr {
-            border-bottom: 1px solid $glass-border !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            background-color: transparent !important;
+            color: $text-white !important;
+            transition: $transition-base;
 
-            &:hover {
-                background: $glass-bg-light !important;
-                border-radius: $radius-sm !important;
+            &.o_data_row {
+                cursor: pointer;
+
+                &:hover {
+                    background-color: rgba(255, 255, 255, 0.12) !important;
+                    --bs-table-bg-state: rgba(255, 255, 255, 0.12);
+
+                    > td,
+                    > th,
+                    > .o_data_cell {
+                        background-color: rgba(255, 255, 255, 0.12) !important;
+                    }
+                }
+            }
+
+            // Selected row state
+            &.o_data_row:has(.o_list_record_selector input:checked),
+            &.o_data_row.o_data_row_selected,
+            &.o_selected_row {
+                background-color: rgba(6, 190, 160, 0.15) !important;
+                --bs-table-bg-state: rgba(6, 190, 160, 0.15);
+
+                > td,
+                > th {
+                    background-color: rgba(6, 190, 160, 0.15) !important;
+                }
+
+                &:hover {
+                    background-color: rgba(6, 190, 160, 0.22) !important;
+                    --bs-table-bg-state: rgba(6, 190, 160, 0.22);
+
+                    > td,
+                    > th {
+                        background-color: rgba(6, 190, 160, 0.22) !important;
+                    }
+                }
+            }
+
+            td {
+                background-color: transparent !important;
+                color: $text-white !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+                box-shadow: none !important;
+                padding: 10px 12px;
+
+                a, span, div, p {
+                    color: $text-white;
+                }
+
+                // Soften decoration info / cyan numbers
+                &.text-info,
+                .text-info {
+                    color: #38bdf8 !important;
+                }
+
+                .o_input {
+                    background: transparent !important;
+                    color: $text-white !important;
+                    border: 1px solid transparent;
+
+                    &:focus {
+                        border-bottom: 1px solid $primary-color !important;
+                    }
+                }
+            }
+
+            // Odoo empty filler rows - completely transparent with NO horizontal lines
+            &.d-print-none {
+                &, &:hover {
+                    background-color: transparent !important;
+
+                    td {
+                        background-color: transparent !important;
+                        box-shadow: none !important;
+                        border-bottom: none !important;
+                        border-top: none !important;
+                    }
+                }
             }
         }
 
-        td {
-            padding: 12px;
+        // Section rows (Invoice lines, Quotations)
+        .o_is_line_section {
+            background: rgba(255, 255, 255, 0.05) !important;
+            font-weight: 600;
+
+            td {
+                background-color: transparent !important;
+                color: $text-white !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            }
+        }
+
+        // Note rows
+        .o_is_line_note {
+            background: rgba(255, 255, 255, 0.02) !important;
+            font-style: italic;
+
+            td {
+                background-color: transparent !important;
+                color: rgba(255, 255, 255, 0.75) !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            }
+        }
+
+        // "Add a line / Add a section / Add a note" row
+        .o_field_x2many_list_row_add {
+            &, &:hover {
+                background: transparent !important;
+                background-color: transparent !important;
+
+                td {
+                    background: transparent !important;
+                    background-color: transparent !important;
+                    border-bottom: none !important;
+                    padding: 8px 12px !important;
+
+                    a {
+                        color: rgba(6, 190, 160, 0.9) !important;
+                        font-weight: 500;
+                        margin-right: 15px;
+                        text-decoration: none;
+
+                        &:hover {
+                            color: #ffffff !important;
+                            text-decoration: underline;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Footer aggregates row
+    tfoot {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+
+        tr, td {
+            background: transparent !important;
+            background-color: transparent !important;
+            color: $text-white !important;
+            box-shadow: none !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            font-weight: 600;
+        }
+    }
+}
+
+// Optional columns dropdown toggle (gear / slider icon in table header)
+.o_optional_columns_dropdown_toggle {
+    color: rgba(255, 255, 255, 0.8) !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+
+    &:hover {
+        color: $primary-color !important;
+    }
+}
+
+// Row drag handles
+.o_handle_cell {
+    .o_row_handle {
+        color: rgba(255, 255, 255, 0.45) !important;
+        &:hover {
+            color: $text-white !important;
+        }
+    }
+}
+
+// Row trash / remove button
+.o_list_record_remove {
+    button, .fa-trash, .fa-trash-o {
+        color: rgba(255, 255, 255, 0.45) !important;
+        &:hover {
+            color: #ff6b6b !important;
+        }
+    }
+}
+
+// Checkboxes in list records
+.o_list_record_selector {
+    .form-check-input {
+        background-color: transparent;
+        border-color: rgba(255, 255, 255, 0.25);
+
+        &:checked {
+            background-color: $primary-color;
+            border-color: $primary-color;
         }
     }
 }
@@ -61,9 +316,15 @@
 }
 
 .table-info {
-    --table-hover-bg: transparent !important;
-    --table-striped-bg: #{$hover-bg} !important;
+    --table-striped-bg: rgba(255, 255, 255, 0.06) !important;
     @include text-white-color;
+}
+
+// Hover effect for data rows in list views
+.o_list_renderer .o_list_table tbody tr.o_data_row:hover > td,
+.o_list_renderer .o_list_table tbody tr.o_data_row:hover > th,
+.table-hover > tbody > tr.o_data_row:hover > * {
+    background-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 .o_input:focus,

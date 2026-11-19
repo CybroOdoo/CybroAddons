@@ -1,8 +1,11 @@
 ## Module <backend_theme_liquid_glass>
 
-#### 16.10.2026
+#### 24.09.2026
 #### Version 20.0.1.0.0
-#### ADD
+##### ADD
+- Initial commit for Liquid Glass Backend Theme
 
-- Initial release of Liquid Glass Backend Theme.
-- Modern glassmorphism backend theme for Odoo
+#### 10.11.2026
+#### Version 20.0.1.1.0
+##### UPDT
+- Updated the styles.
