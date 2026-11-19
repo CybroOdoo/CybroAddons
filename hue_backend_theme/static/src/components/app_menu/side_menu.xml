@@ -1,0 +1,111 @@
+<templates id="template" xml:space="preserve">
+    <!--  Navbar  -->
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o_navbar_apps_menu')]" position="replace">
+            <li class="dropdown d-flex justify-content-center align-items-center">
+                <a class="full" data-bs-toggle="dropdown" data-display="static"
+                   href="#">
+                    <i class="oi" data-icon="apps" aria-hidden="true"
+                       style="font-size: 18px !important; color: white; margin-top: 3px; margin-right: 10px;"/>
+                </a>
+                <div class="dropdown-menu fullscreen-menu" role="menu"
+                     t-on-click="(ev) => this.onAppMenuBackgroundClick(ev)">
+                        <div class="search-container form-row align-items-center m-auto mb-5 col-12" t-att-class="{'has-results': this.searchState.hasResults}">
+                            <div class="search-input col-md-10 ml-auto mr-auto mb-5"
+                                 t-on-input="this._searchMenusSchedule">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">
+                                            <i class="oi" data-icon="search" aria-hidden="true"/>
+                                        </div>
+                                    </div>
+                                    <input type="search" t-ref="this.searchInputRef"
+                                           autocomplete="off"
+                                           placeholder="Search menus..."
+                                           class="form-control"/>
+                                </div>
+                            </div>
+
+                            <div class="search-results col-md-12 ml-auto mr-auto mt8"
+                                 t-att-class="{'o_hidden': !this.searchState.showResults}">
+                                <t t-foreach="this.searchState.searchResults" t-as="result" t-key="result.id">
+                                    <div class="search_icons">
+                                        <a t-att-data-tooltip-info="result.name" t-att-style="this.webIconData(result)"
+                                           class="o-menu-search-result dropdown-item col-12 ml-auto mr-auto"
+                                           t-att-href="this.getMenuUrl(result.actionID, result.id)"
+                                           t-on-click="this.onSearchResultClick"
+                                           t-out="result.name"/>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <button class="fullscreen-close" type="button"
+                                    t-on-click.stop="this.closeAppMenu">
+                                <i class="oi oi-fw" data-icon="arrow_back_ios_new" aria-hidden="true"/>
+                            </button>
+                        </div>
+                        <div t-if="!this.searchState.hasResults" class="nav-container">
+                            <div class="app-menu">
+                                <t t-foreach="this.menuService.getApps()" t-as="app"
+                                   t-key="app.id">
+                                    <a role="menuitem"
+                                       t-attf-href="#menu_id={{app.id}}"
+                                       class="dropdown-item o_app mt0"
+                                       t-att-data-menu-id="app.menuID"
+                                       t-att-data-menu-xmlid="app.xmlid"
+                                       t-on-click="() => this.onNavBarDropdownItemSelection(app)"
+                                       t-att-data-action-id="app.actionID">
+                                        <img t-if="app.webIconData"
+                                             t-att-title="app.name"
+                                             style="width: 70px !important;height: 70px !important;border-radius: 10px !important;margin: 5px 5px 5px 5px;"
+                                             t-attf-src="{{app.webIconData}}"/>
+                                        <b class="a_app_menu_title"><t t-out="app.name"/></b>
+                                    </a>
+                                </t>
+                            </div>
+                        </div>
+                </div>
+            </li>
+        </xpath>
+        <!-- Remove the original t-else spacer paired with the replaced t-if. -->
+        <xpath expr="//div[@t-else]" position="replace"/>
+    </t>
+    <!--  Sidebar  -->
+    <t t-inherit="web.NavBar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//nav[hasclass('o_main_navbar')]" position="after">
+                <div class="sidebar_panel" id="sidebar_panel">
+                    <div class="sidebar">
+                        <ul class="sidebar_menu">
+                            <div class="o_menu_systray" role="menu">
+                                <t t-foreach="this.systrayItems" t-as="item" t-key="item.key">
+                                    <t t-if="item.key=='web.user_menu' || item.key=='UserMenu'">
+                                        <t t-component="item.Component" t-props="item.props"/>
+                                    </t>
+                                </t>
+                            </div>
+                            <t t-foreach="this.menuService.getApps()" t-as="app"
+                               t-key="app.id">
+                                <li>
+                                    <a role="menuitem"
+                                       class="nav-link"
+                                       t-att-data-id="app.id"
+                                       t-attf-href="#menu_id={{app.id}}"
+                                       t-att-data-menu-xmlid="app.xmlid"
+                                       t-att-data-section="app.id"
+                                       t-on-click="() => this.onAppClick(app)">
+                                        <img class="sidebar_img"
+                                         t-if="app.webIconData"
+                                         t-att-title="app.name"
+                                         t-attf-src="{{app.webIconData}}"/>
+                                        <b class="a_app_menu_title">
+                                        <t t-out="app.name"/>
+                                    </b>
+                                    </a>
+                                </li>
+                            </t>
+                        </ul>
+                    </div>
+                </div>
+        </xpath>
+    </t>
+</templates>

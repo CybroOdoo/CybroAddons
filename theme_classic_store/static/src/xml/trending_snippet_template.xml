@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t t-name="theme_classic_store.s_classic_store_trending_snippet">
+        <section class="trending_section">
+            <div class="container">
+                <!--
+                    Standard Bootstrap carousel. Odoo's `.carousel` interaction expects
+                    the indicators to be <button> elements carrying `aria-selected`.
+                    A single slide does not need controls nor autoplay.
+                -->
+                <div t-att-id="carouselId"
+                     class="carousel slide classic_store_trending_carousel"
+                     t-att-data-bs-ride="slides.length &gt; 1 ? 'carousel' : 'false'"
+                     data-bs-interval="5000"
+                     data-bs-pause="hover">
+
+                    <div t-if="slides.length &gt; 1" class="carousel-indicators">
+                        <t t-foreach="slides" t-as="slide" t-key="slide_index">
+                            <button type="button"
+                                    role="tab"
+                                    t-att-class="slide_first ? 'active' : ''"
+                                    t-att-data-bs-target="'#' + carouselId"
+                                    t-att-data-bs-slide-to="slide_index"
+                                    t-att-aria-current="slide_first ? 'true' : false"
+                                    t-att-aria-selected="slide_first ? 'true' : 'false'"
+                                    t-att-aria-label="'Slide ' + (slide_index + 1)"/>
+                        </t>
+                    </div>
+
+                    <div class="carousel-inner">
+                        <t t-foreach="slides" t-as="slide" t-key="slide_index">
+                            <div t-att-class="'carousel-item' + (slide_first ? ' active' : '')">
+                                <div class="row g-4 justify-content-center">
+                                    <t t-foreach="slide" t-as="product" t-key="product.id">
+                                        <div t-att-class="columnClass">
+                                            <div class="item h-100">
+                                                <div class="card text-center p-3 h-100">
+                                                    <img
+                                                        t-attf-src="/web/image/product.template/#{product.id}/image_512"
+                                                        t-att-alt="product.name"
+                                                        loading="lazy"
+                                                        class="img-fluid mb-2"/>
+
+                                                    <h6>
+                                                        <t t-out="product.name"/>
+                                                    </h6>
+
+                                                    <span class="fw-bold">
+                                                        ₹ <t t-out="product.list_price"/>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <t t-if="slides.length &gt; 1">
+                        <button class="carousel-control-prev" type="button"
+                                t-att-data-bs-target="'#' + carouselId"
+                                data-bs-slide="prev">
+                            <i class="oi" data-icon="chevron_left" role="img"/>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button"
+                                t-att-data-bs-target="'#' + carouselId"
+                                data-bs-slide="next">
+                            <i class="oi" data-icon="chevron_right" role="img"/>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </t>
+</templates>
