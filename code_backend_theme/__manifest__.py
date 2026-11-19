@@ -19,7 +19,7 @@
     "name": "Code Backend Theme",
     'version': '20.0.1.0.0',
     "category": "Themes/Backend",
-    "summary": "Code Backend Theme is an attractive theme for backend",
+    "summary": "An attractive and modern backend theme for Odoo 20",
     "description": """Minimalist and elegant theme for Odoo backend""",
     "author": "Cybrosys Techno Solutions",
     "company": "Cybrosys Techno Solutions",
@@ -51,9 +51,6 @@
         "static/description/theme_screenshot.jpg",
     ],
     "license": "LGPL-3",
-    "installable": True,
-    "auto_install": False,
-    "application": False,
     "pre_init_hook": "test_pre_init_hook",
     "post_init_hook": "test_post_init_hook",
 }
