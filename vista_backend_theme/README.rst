@@ -15,21 +15,23 @@
 Vista Backend Theme
 ===================
 
-* Vista Backend Theme module for Odoo 19 community editions
+Vista Backend Theme module for Odoo 20 community editions
 
 Key Features
 ------------
 
-* List the detailed features one by one
+* Minimal, Colorful Login Screen.
+* Colourful UI elements.
+* Truly Responsive Layout.
+* Custom Date Picker.
 
 Installation
 ------------
-* No external dependencies
+No external dependencies
 
 Configuration
 -------------
-* www.odoo.com/documentation/20.0/developer/tutorials/setup_guide.html
-* Install our custom addon
+No additional configuration is required.
 
 Company
 -------
@@ -49,7 +51,6 @@ Maintainer
 ==========
 .. image:: https://cybrosys.com/images/logo.png
    :target: https://cybrosys.com
-
 
 This module is maintained by Cybrosys Technologies.
 
