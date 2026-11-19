@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Website warranty claim form of the logged-in customer -->
+    <template id="warranty_claim_page" name="Warranty Claim">
+        <t t-call="website.layout">
+            <div id="wrap" class="o_warranty_claim">
+                <div class="container py-5">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <h2 class="mb-4">Warranty Claim Request</h2>
+                            <div t-if="error" class="alert alert-danger"
+                                 role="alert" t-out="error"/>
+                            <div t-if="not sale_orders" class="alert alert-info"
+                                 role="alert">
+                                You have no confirmed orders with a warranty
+                                product.
+                            </div>
+                            <form t-else="" action="/warranty/claim/submit"
+                                  method="post">
+                                <input type="hidden" name="csrf_token"
+                                       t-att-value="request.csrf_token()"/>
+                                <div class="mb-3">
+                                    <label class="form-label">Customer</label>
+                                    <input type="text" class="form-control"
+                                           t-att-value="customer.name"
+                                           readonly="readonly"/>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"
+                                           for="sale_order_id">Sale Order *</label>
+                                    <select id="sale_order_id"
+                                            name="sale_order_id"
+                                            class="form-select"
+                                            required="required">
+                                        <option value="">Select a sale order</option>
+                                        <t t-foreach="sale_orders"
+                                           t-as="sale_order">
+                                            <option t-att-value="sale_order.id"
+                                                    t-att-selected="str(sale_order.id) == values.get('sale_order_id')"
+                                                    t-out="sale_order.name"/>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"
+                                           for="product_id">Product *</label>
+                                    <select id="product_id" name="product_id"
+                                            class="form-select"
+                                            required="required"
+                                            disabled="disabled">
+                                        <option value="">Select a product</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"
+                                           for="description">Description</label>
+                                    <textarea id="description"
+                                              name="description"
+                                              class="form-control" rows="4"><t t-out="values.get('description') or ''"/></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    Submit
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    <!-- Confirmation page shown after a claim is submitted -->
+    <template id="claim_thanks_view" name="Warranty Claim Submitted">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container py-5 text-center">
+                    <span class="fa fa-check-circle fa-4x text-success"/>
+                    <h1 class="mt-3">Thank You!</h1>
+                    <p class="lead">
+                        Your warranty claim has been submitted successfully.
+                    </p>
+                    <a href="/my/claims" class="btn btn-primary">
+                        View My Claims
+                    </a>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

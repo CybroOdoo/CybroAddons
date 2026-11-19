@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Warranty claim form view -->
+    <record id="warranty_claim_view_form" model="ir.ui.view">
+        <field name="name">warranty.claim.view.form</field>
+        <field name="model">warranty.claim</field>
+        <field name="arch" type="xml">
+            <form string="Warranty Claim">
+                <header>
+                    <button name="change_status_approved" string="Approve"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="change_status_rejected" string="Reject"
+                            type="object"
+                            invisible="state != 'draft'"/>
+                    <button name="action_reset_to_draft"
+                            string="Reset to Draft" type="object"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,approved,rejected"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="customer_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="sale_order_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="product_id"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="product_expiry_date"/>
+                            <field name="user_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="description"
+                           placeholder="Describe the issue..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Warranty claim list view -->
+    <record id="warranty_claim_view_list" model="ir.ui.view">
+        <field name="name">warranty.claim.view.list</field>
+        <field name="model">warranty.claim</field>
+        <field name="arch" type="xml">
+            <list string="Warranty Claims">
+                <field name="customer_id"/>
+                <field name="sale_order_id"/>
+                <field name="product_id"/>
+                <field name="product_expiry_date"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'approved'"
+                       decoration-danger="state == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+    <!-- Warranty claim search view -->
+    <record id="warranty_claim_view_search" model="ir.ui.view">
+        <field name="name">warranty.claim.view.search</field>
+        <field name="model">warranty.claim</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="customer_id"/>
+                <field name="sale_order_id"/>
+                <field name="product_id"/>
+                <filter name="filter_draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_approved" string="Approved"
+                        domain="[('state', '=', 'approved')]"/>
+                <filter name="filter_rejected" string="Rejected"
+                        domain="[('state', '=', 'rejected')]"/>
+                <group>
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Warranty claim action -->
+    <record id="warranty_claim_action" model="ir.actions.act_window">
+        <field name="name">Warranty Claims</field>
+        <field name="res_model">warranty.claim</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <!-- Warranty claim menu under Sales > Orders -->
+    <menuitem id="menu_sale_order_warranty_claim"
+              name="Warranty Claims"
+              parent="sale.sale_order_menu"
+              action="warranty_claim_action"
+              sequence="99"/>
+</odoo>
