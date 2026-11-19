@@ -4,7 +4,7 @@ import { useService } from "@web/core/utils/hooks";
 import { download } from "@web/core/network/download";
 const actionRegistry = registry.category("actions");
 const today = luxon.DateTime.now();
-let monthNamesShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const monthNamesShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export class TrialBalance extends Component {
     static template = 'trl_b_template_new';
@@ -72,13 +72,15 @@ export class TrialBalance extends Component {
             self.end_date().value = endOfMonth.getFullYear() + '-' + String(endOfMonth.getMonth() + 1).padStart(2, '0') + '-' + String(endOfMonth.getDate()).padStart(2, '0');
             self.state.date_viewed.push(monthNamesShort[today.getMonth()] + '  ' + today.getFullYear())
             self.state.journals = self.state.data[1]['journal_ids']
-            self.state.accounts = self.state.data[0]
-            $.each(self.state.data, function (index, value) {
-                self.state.journals = value.journal_ids
-            })
+            self.state.accounts = self.state.data[0];
+            for (const value of self.state.data) {
+                if (value && value.journal_ids) {
+                    self.state.journals = value.journal_ids;
+                }
+            }
         }
         catch (el) {
-            window.location.href;
+            // ignore
         }
     }
     async applyFilter(val, ev, is_delete) {

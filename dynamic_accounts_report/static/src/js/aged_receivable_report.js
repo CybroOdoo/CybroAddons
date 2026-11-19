@@ -1,9 +1,7 @@
-/** @odoo-module */
 import { Component, signal, proxy } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { download } from "@web/core/network/download";
-import { formatFloat } from "@web/core/utils/numbers";
 const actionRegistry = registry.category("actions");
 const today = luxon.DateTime.now();
 
@@ -83,13 +81,6 @@ export class AgedReceivable extends Component {
             this.state.diff3_sum = diff3Sum;
             this.state.diff4_sum = diff4Sum;
             this.state.diff5_sum = diff5Sum;
-            this.state.total_debit_display = formatFloat(TotalDebit, { digits: [0, 2] });
-            this.state.diff0_sum_display = formatFloat(diff0Sum, { digits: [0, 2] });
-            this.state.diff1_sum_display = formatFloat(diff1Sum, { digits: [0, 2] });
-            this.state.diff2_sum_display = formatFloat(diff2Sum, { digits: [0, 2] });
-            this.state.diff3_sum_display = formatFloat(diff3Sum, { digits: [0, 2] });
-            this.state.diff4_sum_display = formatFloat(diff4Sum, { digits: [0, 2] });
-            this.state.diff5_sum_display = formatFloat(diff5Sum, { digits: [0, 2] });
         } catch (el) {
             console.error(el);
         }
@@ -152,19 +143,12 @@ export class AgedReceivable extends Component {
         var action_title = this.props?.action?.display_name || "Aged Receivable";
         let totals = {
             'diff0_sum': this.state.diff0_sum,
-            'diff0_sum_display': this.state.diff0_sum_display,
             'diff1_sum': this.state.diff1_sum,
-            'diff1_sum_display': this.state.diff1_sum_display,
             'diff2_sum': this.state.diff2_sum,
-            'diff2_sum_display': this.state.diff2_sum_display,
             'diff3_sum': this.state.diff3_sum,
-            'diff3_sum_display': this.state.diff3_sum_display,
             'diff4_sum': this.state.diff4_sum,
-            'diff4_sum_display': this.state.diff4_sum_display,
             'diff5_sum': this.state.diff5_sum,
-            'diff5_sum_display': this.state.diff5_sum_display,
             'total_debit': this.state.total_debit,
-            'total_debit_display': this.state.total_debit_display,
             'currency': this.state.currency,
         };
         return this.action.doAction({
@@ -296,5 +280,4 @@ export class AgedReceivable extends Component {
         return [];
     }
 }
-
 actionRegistry.add("age_r", AgedReceivable);

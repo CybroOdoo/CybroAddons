@@ -17,8 +17,8 @@
 #############################################################################
 import io
 import json
-import datetime
 import logging
+from dateutil.relativedelta import relativedelta
 import xlsxwriter
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
@@ -36,7 +36,7 @@ class ProfitLossReport(models.TransientModel):
 
     company_id = fields.Many2one('res.company', required=True,
                                  default=lambda self: self.env.company,
-                                 help='Select the company to which this'
+                                 help='Select the company to which this '
                                       'record belongs.')
     journal_ids = fields.Many2many('account.journal',
                                    string='Journals', required=True,
@@ -56,11 +56,11 @@ class ProfitLossReport(models.TransientModel):
     date_to = fields.Date(string="End date", help="Specify the end date.")
 
     @api.model_create_multi
-    def create(self, vals):
+    def create(self, vals_list):
         """Create one or more records of ProfitLossReport.
-        :param vals: A dictionary or a list of dictionaries containing the field values for the records to be created.
-        :return: A recordset of the created ProfitLossReport records."""
-        return super(ProfitLossReport, self).create({})
+        :param vals_list: A list of dicts with field values.
+        :return: A recordset of the created records."""
+        return super().create(vals_list)
 
     @api.model
     def view_report(self, option, comparison, comparison_type):
@@ -94,13 +94,12 @@ class ProfitLossReport(models.TransientModel):
         if comparison:
             for count in range(0, int(comparison) + 1):
                 if comparison_type == "month":
+                    month_date = current_date - relativedelta(months=count)
+                    month_start, month_end = get_month(month_date)
                     account_move_lines = self.env['account.move.line'].search(
-                        [(
-                            'parent_state', 'in', target_move),
-                            ('date', '>=', (current_date - datetime.timedelta(
-                                days=30 * count)).strftime('%Y-%m-01')),
-                            ('date', '<=', (current_date - datetime.timedelta(
-                                days=30 * count)).strftime('%Y-%m-12'))])
+                        [('parent_state', 'in', target_move),
+                         ('date', '>=', month_start.strftime('%Y-%m-%d')),
+                         ('date', '<=', month_end.strftime('%Y-%m-%d'))])
                 elif comparison_type == "year":
                     account_move_lines = self.env['account.move.line'].search(
                         [(
@@ -112,19 +111,38 @@ class ProfitLossReport(models.TransientModel):
                          for rec in account_move_lines if
                          rec.analytic_distribution]
                 if financial_report_id.analytic_ids:
-                    account_move_lines = account_move_lines.filtered(lambda
-                                                                         rec: rec.id in [
-                        lst['id'] for lst in lists if lst['value'] and any(
-                            i in financial_report_id.analytic_ids.mapped('id')
-                            for i in lst['value'])])
-                account_move_lines = account_move_lines.filtered(lambda
-                                                                     a: not financial_report_id.journal_ids or a.journal_id in financial_report_id.journal_ids)
-                account_move_lines = account_move_lines.filtered(lambda
-                                                                     a: not financial_report_id.account_ids or a.account_id in financial_report_id.account_ids)
-                account_move_lines = account_move_lines.filtered(lambda
-                                                                     a: not financial_report_id.date_from or a.date >= financial_report_id.date_from)
-                account_move_lines = account_move_lines.filtered(lambda
-                                                                     a: not financial_report_id.date_to or a.date <= financial_report_id.date_to)
+                    analytic_ids_set = set(
+                        financial_report_id.analytic_ids.mapped('id')
+                    )
+                    valid_move_ids = {
+                        lst['id'] for lst in lists
+                        if lst['value'] and any(
+                            i in analytic_ids_set for i in lst['value']
+                        )
+                    }
+                    account_move_lines = account_move_lines.filtered(
+                        lambda rec: rec.id in valid_move_ids
+                    )
+                if financial_report_id.journal_ids:
+                    account_move_lines = account_move_lines.filtered(
+                        lambda a: (
+                            a.journal_id in financial_report_id.journal_ids
+                        )
+                    )
+                if financial_report_id.account_ids:
+                    account_move_lines = account_move_lines.filtered(
+                        lambda a: (
+                            a.account_id in financial_report_id.account_ids
+                        )
+                    )
+                if financial_report_id.date_from:
+                    account_move_lines = account_move_lines.filtered(
+                        lambda a: a.date >= financial_report_id.date_from
+                    )
+                if financial_report_id.date_to:
+                    account_move_lines = account_move_lines.filtered(
+                        lambda a: a.date <= financial_report_id.date_to
+                    )
                 account_entries = {}
                 for account_type in account_types.values():
                     account_entries[account_type] = self._get_entries(
@@ -208,20 +226,38 @@ class ProfitLossReport(models.TransientModel):
                      for rec in account_move_lines if
                      rec.analytic_distribution]
             if financial_report_id.analytic_ids:
+                analytic_ids_set = set(
+                    financial_report_id.analytic_ids.mapped('id')
+                )
+                valid_move_ids = {
+                    lst['id'] for lst in lists
+                    if lst['value'] and any(
+                        i in analytic_ids_set for i in lst['value']
+                    )
+                }
                 account_move_lines = account_move_lines.filtered(
-                    lambda rec: rec.id in [lst['id'] for lst in lists if
-                                           lst['value'] and any(
-                                               i in financial_report_id.analytic_ids.mapped(
-                                                   'id') for i in
-                                               lst['value'])])
-            account_move_lines = account_move_lines.filtered(lambda
-                                                                 a: not financial_report_id.journal_ids or a.journal_id in financial_report_id.journal_ids)
-            account_move_lines = account_move_lines.filtered(lambda
-                                                                 a: not financial_report_id.account_ids or a.account_id in financial_report_id.account_ids)
-            account_move_lines = account_move_lines.filtered(lambda
-                                                                 a: not financial_report_id.date_from or a.date >= financial_report_id.date_from)
-            account_move_lines = account_move_lines.filtered(lambda
-                                                                 a: not financial_report_id.date_to or a.date <= financial_report_id.date_to)
+                    lambda rec: rec.id in valid_move_ids
+                )
+            if financial_report_id.journal_ids:
+                account_move_lines = account_move_lines.filtered(
+                    lambda a: (
+                        a.journal_id in financial_report_id.journal_ids
+                    )
+                )
+            if financial_report_id.account_ids:
+                account_move_lines = account_move_lines.filtered(
+                    lambda a: (
+                        a.account_id in financial_report_id.account_ids
+                    )
+                )
+            if financial_report_id.date_from:
+                account_move_lines = account_move_lines.filtered(
+                    lambda a: a.date >= financial_report_id.date_from
+                )
+            if financial_report_id.date_to:
+                account_move_lines = account_move_lines.filtered(
+                    lambda a: a.date <= financial_report_id.date_to
+                )
             account_entries = {}
             for account_type in account_types.values():
                 account_entries[account_type] = self._get_entries(
@@ -312,47 +348,13 @@ class ProfitLossReport(models.TransientModel):
                 })
         return entries, "{:,.2f}".format(total)
 
-    # def _get_entries(self, account_move_lines, account_ids, account_type):
-    #     """
-    #         Get the entries for the specified account type.
-    #         :param account_move_lines: The account move lines to filter.
-    #         :param account_ids: The account IDs to filter.
-    #         :param account_type: The account type.
-    #         :return: A tuple containing the entries and the total amount.
-    #         """
-    #     entries = []
-    #     total = 0
-    #     for account in account_ids:
-    #         filtered_lines = account_move_lines.filtered(
-    #             lambda line: line.account_id == account)
-    #         if filtered_lines:
-    #             if account_type in ['income', 'income_other',
-    #                                 'liability_payable', 'liability_current',
-    #                                 'liability_non_current', 'equity',
-    #                                 'equity_unaffected']:
-    #                 amount = -(sum(filtered_lines.mapped('debit')) - sum(
-    #                     filtered_lines.mapped('credit')))
-    #             else:
-    #                 amount = sum(filtered_lines.mapped('debit')) - sum(
-    #                     filtered_lines.mapped('credit'))
-    #             entries.append({
-    #                 'name': "{} - {}".format(account.code, account.name),
-    #                 'amount': "{:,.2f}".format(amount),
-    #             })
-    #             total += amount
-    #         else:
-    #             entries.append({
-    #                 'name': "{} - {}".format(account.code, account.name),
-    #                 'amount': "{:,.2f}".format(0),
-    #             })
-    #     return entries, "{:,.2f}".format(total)
-
     def filter(self, vals):
         """
             Update the filter criteria based on the provided values.
             :param vals: A dictionary containing the filter values to update.
             :return: The updated record.
             """
+        self.ensure_one()
         filter = []
         today = fields.Date.today()
         if vals == 'month':
@@ -525,10 +527,16 @@ class ProfitLossReport(models.TransientModel):
         current_row = 0
 
         # Report Title
-        sheet.merge_range(current_row, 0, current_row, 5, report_name, sub_heading)
+        sheet.merge_range(
+            current_row, 0, current_row, 5, report_name, sub_heading
+        )
         current_row += 1
         if data:
-            if report_action == 'dynamic_accounts_report.action_dynamic_profit_and_loss':
+            is_profit_loss = (
+                report_action ==
+                'dynamic_accounts_report.action_dynamic_profit_and_loss'
+            )
+            if is_profit_loss:
 
                 # --- FILTERS TABLE BELOW REPORT NAME ---
                 # Filter table headers
@@ -544,7 +552,9 @@ class ProfitLossReport(models.TransientModel):
                 # Date Range
                 date_range = ''
                 if data.get('date_from') and data.get('date_to'):
-                    date_range = f"{data.get('date_from')} – {data.get('date_to')}"
+                    date_range = (
+                        f"{data.get('date_from')} – {data.get('date_to')}"
+                    )
                 elif data.get('date_range'):
                     date_range = data.get('date_range')
                 else:
@@ -552,23 +562,32 @@ class ProfitLossReport(models.TransientModel):
                 sheet.write(current_row, 0, date_range, filter_text)
 
                 # Comparison
-                comparison = data.get('comparison', '-') if data.get('comparison') else '-'
+                comparison = data.get('comparison', '-') or '-'
                 sheet.write(current_row, 1, comparison, filter_text)
 
                 # Account
                 account_ids = data.get('account_ids')
-                account_text = ', '.join(map(str, account_ids)) if account_ids else 'All'
-                sheet.write(current_row, 2, account_text,filter_text)
+                account_text = (
+                    ', '.join(map(str, account_ids))
+                    if account_ids else 'All'
+                )
+                sheet.write(current_row, 2, account_text, filter_text)
 
                 # Journal
                 journal_ids = data.get('journal_ids')
-                journal_text = ', '.join(map(str, journal_ids)) if journal_ids else 'All'
-                sheet.write(current_row, 3, journal_text,filter_text)
+                journal_text = (
+                    ', '.join(map(str, journal_ids))
+                    if journal_ids else 'All'
+                )
+                sheet.write(current_row, 3, journal_text, filter_text)
 
                 # Analytic Account
                 analytic_ids = data.get('analytic_ids')
-                analytic_text = ', '.join(map(str, analytic_ids)) if analytic_ids else 'All'
-                sheet.write(current_row, 4, analytic_text,filter_text)
+                analytic_text = (
+                    ', '.join(map(str, analytic_ids))
+                    if analytic_ids else 'All'
+                )
+                sheet.write(current_row, 4, analytic_text, filter_text)
 
                 # Target move
                 target_text = data.get('target', 'All') if data.get('target') else 'All'
@@ -1217,13 +1236,19 @@ class ReportProfitLoss(models.AbstractModel):
         if not year and isinstance(report_data, dict):
             year = report_data.get('year')
 
-        report_name = data.get('report_name') or (isinstance(report_data, dict) and report_data.get('title')) or 'Profit and Loss'
+        report_name = (
+            data.get('report_name')
+            or (isinstance(report_data, dict) and report_data.get('title'))
+            or 'Profit and Loss'
+        )
 
         if not datas or not year:
             wizard = self.env['dynamic.balance.sheet.report'].create({})
             comp = data.get('comparison', False)
             comp_type = data.get('comparison_type', None)
-            res_data, filters, datas = wizard.view_report(wizard.id, comp, comp_type)
+            res_data, _filters, datas = wizard.view_report(
+                wizard.id, comp, comp_type
+            )
             year = [fields.Date.today().year]
             report_data = res_data
 
@@ -1254,13 +1279,19 @@ class ReportBalanceSheet(models.AbstractModel):
         if not year and isinstance(report_data, dict):
             year = report_data.get('year')
 
-        report_name = data.get('report_name') or (isinstance(report_data, dict) and report_data.get('title')) or 'Balance Sheet'
+        report_name = (
+            data.get('report_name')
+            or (isinstance(report_data, dict) and report_data.get('title'))
+            or 'Balance Sheet'
+        )
 
         if not datas or not year:
             wizard = self.env['dynamic.balance.sheet.report'].create({})
             comp = data.get('comparison', False)
             comp_type = data.get('comparison_type', None)
-            res_data, filters, datas = wizard.view_report(wizard.id, comp, comp_type)
+            res_data, _filters, datas = wizard.view_report(
+                wizard.id, comp, comp_type
+            )
             year = [fields.Date.today().year]
             report_data = res_data
 

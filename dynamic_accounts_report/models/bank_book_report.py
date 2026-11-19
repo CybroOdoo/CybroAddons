@@ -25,16 +25,16 @@ from odoo import api, fields, models
 
 
 class BankBookReport(models.TransientModel):
-    """For creating Bank Book report"""
+    """For creating Bank Book report."""
     _name = 'bank.book.report'
     _description = 'Account Bank Book Report'
 
     @api.model
     def view_report(self):
         """
-        This method retrieves and returns the necessary data for the partner
-        ledger report.It fetches account move lines, grouped by accounts, and
-        calculates total debit and credit amounts.The resulting data includes
+        This method retrieves and returns the necessary data for the bank book
+        report. It fetches account move lines, grouped by accounts, and
+        calculates total debit and credit amounts. The resulting data includes
         move lines for each account and the total debit and credit amounts for
         each account.
         """
@@ -45,18 +45,26 @@ class BankBookReport(models.TransientModel):
         account_move_lines = self.env['account.move.line'].search(
             [('parent_state', '=', 'posted'),
              ('journal_id', 'in', journals.ids)])
-        accounts = account_move_lines.mapped('account_id').read(
-            ['display_name', 'name'])
+        bank_accounts = journals.default_account_id | self.env[
+            'account.account'].search(
+            [('account_type', 'in', ['asset_cash', 'liability_credit_card'])])
+        if account_move_lines:
+            bank_accounts |= account_move_lines.mapped('account_id')
+        accounts = bank_accounts.read(['display_name', 'name'])
+        currency_id = self.env.company.currency_id.symbol
+        data['currency'] = currency_id
         for account in accounts:
             move_lines = account_move_lines.filtered(
                 lambda x: x.account_id.id == account['id'])
+            if not move_lines:
+                continue
             move_line_data = move_lines.read(
                 ['date', 'journal_id', 'partner_id', 'move_name', 'debit',
                  'move_id',
                  'credit', 'name', 'ref'])
-            data[move_lines.mapped('account_id').display_name] = move_line_data
-            currency_id = self.env.company.currency_id.symbol
-            move_lines_total[move_lines.mapped('account_id').display_name] = {
+            account_name = account.get('display_name') or account.get('name')
+            data[account_name] = move_line_data
+            move_lines_total[account_name] = {
                 'total_debit': round(sum(move_lines.mapped('debit')), 2),
                 'total_credit': round(sum(move_lines.mapped('credit')), 2),
                 'currency_id': currency_id}
@@ -65,7 +73,12 @@ class BankBookReport(models.TransientModel):
         return data
 
     @api.model
-    def get_filter_values(self, partner_id, data_range, account_list, options):
+    def get_filter_values(self, partner_id=None, data_range=None,
+                          account_list=None, options=None):
+        if isinstance(account_list, dict) and (
+            options is None or isinstance(options, list)
+        ):
+            account_list, options = options, account_list
         """
         Retrieve filtered data for the partner ledger report.
         Args:
@@ -94,84 +107,97 @@ class BankBookReport(models.TransientModel):
         previous_quarter_start = quarter_start - relativedelta(months=3)
         previous_quarter_end = quarter_start - relativedelta(days=1)
         journals = self.env['account.journal'].search([('type', '=', 'bank')])
-        option_domain = ['posted']
-        if options is not None:
-            if 'draft' in options:
-                option_domain = ['posted', 'draft']
+        if options and options.get('draft'):
+            option_domain = ['posted', 'draft']
+        else:
+            option_domain = ['posted']
+        domain = [('parent_state', 'in', option_domain),
+                  ('journal_id', 'in', journals.ids)]
         if partner_id:
-            domain = [('parent_state', 'in', option_domain),
-                      ('journal_id', 'in', journals.ids),
-                      ('partner_id', 'in', partner_id), ]
-        else:
-            domain = [('parent_state', 'in', option_domain),
-                      ('journal_id', 'in', journals.ids), ]
+            domain.append(('partner_id', 'in', partner_id))
         if account_list:
-            domain += ('account_id', 'in', account_list),
+            resolved_account_ids = []
+            for a in account_list:
+                if isinstance(a, int):
+                    resolved_account_ids.append(a)
+                elif isinstance(a, str):
+                    if a.isdigit():
+                        resolved_account_ids.append(int(a))
+                    else:
+                        acc = self.env['account.account'].search(
+                            [('name', '=', a)], limit=1)
+                        if acc:
+                            resolved_account_ids.append(acc.id)
+            if resolved_account_ids:
+                domain.append(('account_id', 'in', resolved_account_ids))
+            else:
+                domain.append(('account_id', 'in', []))
         if data_range:
-            if data_range == 'month':
-                account_move_lines = self.env['account.move.line'].search(
-                    domain).filtered(
-                    lambda x: x.date.month == fields.Date.today().month)
-            elif data_range == 'year':
-                account_move_lines = self.env['account.move.line'].search(
-                    domain).filtered(
-                    lambda x: x.date.year == fields.Date.today().year)
-            elif data_range == 'quarter':
-                domain += ('date', '>=', quarter_start), (
-                    'date', '<=', quarter_end)
-                account_move_lines = self.env['account.move.line'].search(
-                    domain)
-            elif data_range == 'last-month':
-                account_move_lines = self.env['account.move.line'].search(
-                    domain).filtered(
-                    lambda x: x.date.month == fields.Date.today().month - 1)
-            elif data_range == 'last-year':
-                account_move_lines = self.env['account.move.line'].search(
-                    domain).filtered(
-                    lambda x: x.date.year == fields.Date.today().year - 1)
-            elif data_range == 'last-quarter':
-                domain += ('date', '>=', previous_quarter_start), (
-                    'date', '<=', previous_quarter_end)
-                account_move_lines = self.env['account.move.line'].search(
-                    domain)
-            elif 'start_date' in data_range and 'end_date' in data_range:
-                start_date = datetime.strptime(data_range['start_date'],
-                                               '%Y-%m-%d').date()
-                end_date = datetime.strptime(data_range['end_date'],
-                                             '%Y-%m-%d').date()
-                domain += ('date', '>=', start_date), ('date', '<=', end_date),
-                account_move_lines = self.env['account.move.line'].search(
-                    domain)
-            elif 'start_date' in data_range:
-                start_date = datetime.strptime(data_range['start_date'],
-                                               '%Y-%m-%d').date()
-                domain.append(('date', '>=', start_date))
-                account_move_lines = self.env['account.move.line'].search(
-                    domain)
-            elif 'end_date' in data_range:
-                end_date = datetime.strptime(data_range['end_date'],
-                                             '%Y-%m-%d').date()
-                domain.append(('date', '<=', end_date))
-                account_move_lines = self.env['account.move.line'].search(
-                    domain)
-        else:
-            account_move_lines = self.env['account.move.line'].search(domain)
-        accounts = account_move_lines.mapped('account_id').read(
-            ['display_name'])
+            if isinstance(data_range, str):
+                if data_range == 'month':
+                    month_start, month_end = date_utils.get_month(today)
+                    domain += [('date', '>=', month_start),
+                               ('date', '<=', month_end)]
+                elif data_range == 'year':
+                    year_start, year_end = date_utils.get_fiscal_year(today)
+                    domain += [('date', '>=', year_start),
+                               ('date', '<=', year_end)]
+                elif data_range == 'quarter':
+                    domain += [('date', '>=', quarter_start),
+                               ('date', '<=', quarter_end)]
+                elif data_range == 'last-month':
+                    last_month_start, last_month_end = date_utils.get_month(
+                        today - relativedelta(months=1))
+                    domain += [('date', '>=', last_month_start),
+                               ('date', '<=', last_month_end)]
+                elif data_range == 'last-year':
+                    last_year_start, last_year_end = date_utils.get_fiscal_year(
+                        today - relativedelta(years=1))
+                    domain += [('date', '>=', last_year_start),
+                               ('date', '<=', last_year_end)]
+                elif data_range == 'last-quarter':
+                    domain += [('date', '>=', previous_quarter_start),
+                               ('date', '<=', previous_quarter_end)]
+            elif isinstance(data_range, dict):
+                start = data_range.get('start_date')
+                end = data_range.get('end_date')
+                if start and end:
+                    start_date = datetime.strptime(start, '%Y-%m-%d').date()
+                    end_date = datetime.strptime(end, '%Y-%m-%d').date()
+                    domain += [('date', '>=', start_date),
+                               ('date', '<=', end_date)]
+                elif start:
+                    start_date = datetime.strptime(start, '%Y-%m-%d').date()
+                    domain += [('date', '>=', start_date)]
+                elif end:
+                    end_date = datetime.strptime(end, '%Y-%m-%d').date()
+                    domain += [('date', '<=', end_date)]
+        account_move_lines = self.env['account.move.line'].search(domain)
+        bank_accounts = journals.default_account_id | self.env[
+            'account.account'].search(
+            [('account_type', 'in', ['asset_cash', 'liability_credit_card'])])
+        if account_move_lines:
+            bank_accounts |= account_move_lines.mapped('account_id')
+        accounts = bank_accounts.read(['display_name', 'name'])
+        currency_id = self.env.company.currency_id.symbol
+        data['currency'] = currency_id
         for account in accounts:
             move_lines = account_move_lines.filtered(
                 lambda x: x.account_id.id == account['id'])
+            if not move_lines:
+                continue
             move_line_data = move_lines.read(
                 ['date', 'journal_id', 'partner_id', 'move_name', 'debit',
                  'move_id',
                  'credit', 'name', 'ref'])
-            data[move_lines.mapped('account_id').display_name] = move_line_data
-            currency_id = self.env.company.currency_id.symbol
-            move_lines_total[move_lines.mapped('account_id').display_name] = {
+            account_name = account.get('display_name') or account.get('name')
+            data[account_name] = move_line_data
+            move_lines_total[account_name] = {
                 'total_debit': round(sum(move_lines.mapped('debit')), 2),
                 'total_credit': round(sum(move_lines.mapped('credit')), 2),
                 'currency_id': currency_id}
         data['move_lines_total'] = move_lines_total
+        data['accounts'] = accounts
         return data
 
     @api.model

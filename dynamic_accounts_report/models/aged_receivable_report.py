@@ -17,13 +17,12 @@
 #############################################################################
 import io
 import json
-
 import xlsxwriter
 from odoo import models, fields, api
 
 
 class AgeReceivableReport(models.TransientModel):
-    """For creating Age Receivable report"""
+    """For creating Age Receivable report."""
     _name = 'age.receivable.report'
     _description = 'Aged Receivable Report'
 
@@ -55,7 +54,8 @@ class AgeReceivableReport(models.TransientModel):
 
         # Define a helper function to format numbers with thousand separators
         def format_number(value):
-            return "{:,.2f}".format(value)  # Adds thousand separator and 2 decimal places
+            """Format number with thousand separators and 2 decimal places."""
+            return "{:,.2f}".format(value)
 
         for partner_id in partner_ids:
             move_line_ids = paid.filtered(
@@ -95,20 +95,45 @@ class AgeReceivableReport(models.TransientModel):
             move_line_list[partner_id.name] = move_line_data
             partner_total[partner_id.name] = {
                 'debit_sum': sum(val['raw_debit'] for val in move_line_data),
-                'diff0_sum': round(sum(val['raw_diff0'] for val in move_line_data), 2),
-                'diff1_sum': round(sum(val['raw_diff1'] for val in move_line_data), 2),
-                'diff2_sum': round(sum(val['raw_diff2'] for val in move_line_data), 2),
-                'diff3_sum': round(sum(val['raw_diff3'] for val in move_line_data), 2),
-                'diff4_sum': round(sum(val['raw_diff4'] for val in move_line_data), 2),
-                'diff5_sum': round(sum(val['raw_diff5'] for val in move_line_data), 2),
-                # Format the summary fields for display
-                'debit_sum_display': format_number(sum(val['raw_debit'] for val in move_line_data)),
-                'diff0_sum_display': format_number(round(sum(val['raw_diff0'] for val in move_line_data), 2)),
-                'diff1_sum_display': format_number(round(sum(val['raw_diff1'] for val in move_line_data), 2)),
-                'diff2_sum_display': format_number(round(sum(val['raw_diff2'] for val in move_line_data), 2)),
-                'diff3_sum_display': format_number(round(sum(val['raw_diff3'] for val in move_line_data), 2)),
-                'diff4_sum_display': format_number(round(sum(val['raw_diff4'] for val in move_line_data), 2)),
-                'diff5_sum_display': format_number(round(sum(val['raw_diff5'] for val in move_line_data), 2)),
+                'diff0_sum': round(
+                    sum(val['raw_diff0'] for val in move_line_data), 2
+                ),
+                'diff1_sum': round(
+                    sum(val['raw_diff1'] for val in move_line_data), 2
+                ),
+                'diff2_sum': round(
+                    sum(val['raw_diff2'] for val in move_line_data), 2
+                ),
+                'diff3_sum': round(
+                    sum(val['raw_diff3'] for val in move_line_data), 2
+                ),
+                'diff4_sum': round(
+                    sum(val['raw_diff4'] for val in move_line_data), 2
+                ),
+                'diff5_sum': round(
+                    sum(val['raw_diff5'] for val in move_line_data), 2
+                ),
+                'debit_sum_display': format_number(
+                    sum(val['raw_debit'] for val in move_line_data)
+                ),
+                'diff0_sum_display': format_number(
+                    round(sum(val['raw_diff0'] for val in move_line_data), 2)
+                ),
+                'diff1_sum_display': format_number(
+                    round(sum(val['raw_diff1'] for val in move_line_data), 2)
+                ),
+                'diff2_sum_display': format_number(
+                    round(sum(val['raw_diff2'] for val in move_line_data), 2)
+                ),
+                'diff3_sum_display': format_number(
+                    round(sum(val['raw_diff3'] for val in move_line_data), 2)
+                ),
+                'diff4_sum_display': format_number(
+                    round(sum(val['raw_diff4'] for val in move_line_data), 2)
+                ),
+                'diff5_sum_display': format_number(
+                    round(sum(val['raw_diff5'] for val in move_line_data), 2)
+                ),
                 'currency_id': currency_id,
                 'partner_id': partner_id.id
             }
@@ -116,7 +141,7 @@ class AgeReceivableReport(models.TransientModel):
         return move_line_list
 
     @api.model
-    def get_filter_values(self, date, partner):
+    def get_filter_values(self, date=None, partner=None):
         """
          Retrieve move line data categorized by partner and debit difference.
 
@@ -156,15 +181,14 @@ class AgeReceivableReport(models.TransientModel):
                 ['name', 'move_name', 'date', 'amount_currency', 'account_id',
                  'date_maturity', 'currency_id', 'debit', 'move_id'])
             for val in move_line_data:
-                diffrence = 0
-                if val['date_maturity']:
-                    diffrence = (today - val['date_maturity']).days
-                val['diff0'] = val['debit'] if diffrence <= 0 else 0.0
-                val['diff1'] = val['debit'] if 0 < diffrence <= 30 else 0.0
-                val['diff2'] = val['debit'] if 30 < diffrence <= 60 else 0.0
-                val['diff3'] = val['debit'] if 60 < diffrence <= 90 else 0.0
-                val['diff4'] = val['debit'] if 90 < diffrence <= 120 else 0.0
-                val['diff5'] = val['debit'] if diffrence > 120 else 0.0
+                maturity_date = val['date_maturity'] or val['date']
+                difference = (today - maturity_date).days if maturity_date else 0
+                val['diff0'] = val['debit'] if difference <= 0 else 0.0
+                val['diff1'] = val['debit'] if 0 < difference <= 30 else 0.0
+                val['diff2'] = val['debit'] if 30 < difference <= 60 else 0.0
+                val['diff3'] = val['debit'] if 60 < difference <= 90 else 0.0
+                val['diff4'] = val['debit'] if 90 < difference <= 120 else 0.0
+                val['diff5'] = val['debit'] if difference > 120 else 0.0
             move_line_list[partner_id.name] = move_line_data
             partner_total[partner_id.name] = {
                 'debit_sum': sum(val['debit'] for val in move_line_data),
@@ -228,13 +252,16 @@ class AgeReceivableReport(models.TransientModel):
         txt_name = workbook.add_format({'font_size': '10px', 'border': 1})
         txt_name.set_indent(2)
         # Define a number format with thousand separator
-        num_format = workbook.add_format({'font_size': '10px', 'border': 1, 'num_format': '#,##0.00'})
+        num_format = workbook.add_format({
+            'font_size': '10px', 'border': 1, 'num_format': '#,##0.00'
+        })
         num_format.set_indent(2)
         # Define a number format for totals with thousand separator
-        total_num_format = workbook.add_format(
-            {'align': 'center', 'bold': True, 'font_size': '10px',
-             'border': 1, 'bg_color': '#D3D3D3',
-             'border_color': 'black', 'num_format': '#,##0.00'})
+        total_num_format = workbook.add_format({
+            'align': 'center', 'bold': True, 'font_size': '10px',
+            'border': 1, 'bg_color': '#D3D3D3',
+            'border_color': 'black', 'num_format': '#,##0.00'
+        })
         sheet.set_column(0, 0, 30)
         sheet.set_column(1, 1, 20)
         sheet.set_column(2, 2, 15)

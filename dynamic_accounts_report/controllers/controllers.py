@@ -16,46 +16,72 @@
 #
 #############################################################################
 import json
+from werkzeug.exceptions import BadRequest, Forbidden
 from odoo import http
+from odoo.http import request
 from odoo.http.dispatcher import serialize_exception
-from odoo.http import  request
 from odoo.http.stream import content_disposition
 from odoo.tools import html_escape
 
+ALLOWED_MODELS = {
+    'account.general.ledger',
+    'account.trial.balance',
+    'cash.book.report',
+    'bank.book.report',
+    'dynamic.balance.sheet.report',
+    'account.partner.ledger',
+    'age.payable.report',
+    'age.receivable.report',
+    'tax.report',
+}
+
 
 class XLSXReportController(http.Controller):
-    @http.route('/dynamic_account/xlsx_report', type='http', auth='user', methods=['POST'],
-                csrf=False)
-    def get_report_xlsx(self, model, data, output_format, report_name, report_action, options=None):
+    @http.route(
+        '/dynamic_account/xlsx_report',
+        type='http',
+        auth='user',
+        methods=['POST'],
+    )
+    def get_report_xlsx(
+        self, model, data, output_format, report_name, report_action,
+        options=None
+    ):
         """Generate an XLSX report based on the provided data and return it as
         a response.
             Args:
                 model (str): The name of the model on which the report is based.
                 data (str): The data required for generating the report.
-                output_format (str): The desired output format for the report
-                (e.g., 'xlsx').
-                report_name (str): The name to be given to the generated report
-                file.
+                output_format (str): Desired output format (e.g., 'xlsx').
+                report_name (str): Name of the generated report file.
+                report_action (str): The XML ID of the calling action.
+                options (dict, optional): Additional filter options.
             Returns:
-                Response: The generated report file as a response.
-            Raises:
-                Exception: If an error occurs during report generation.
-            """
-        uid = request.session.uid
-        report_obj = request.env[model].with_user(uid)
+                Response: The generated report file response.
+        """
+        if model not in ALLOWED_MODELS:
+            raise Forbidden("Unauthorized model access")
+
+        report_obj = request.env[model]
         token = 'dummy-because-api-expects-one'
         try:
-            if output_format == 'xlsx':
-                response = request.make_response(
-                    None,
-                    headers=[
-                        ('Content-Type', 'application/vnd.ms-excel'),
-                        ('Content-Disposition',
-                         content_disposition(report_name + '.xlsx'))
-                    ]
+            if output_format != 'xlsx':
+                raise BadRequest(
+                    f"Unsupported output format: {output_format}"
                 )
-                report_obj.get_xlsx_report(data, response, report_name,
-                                           report_action)
+            response = request.make_response(
+                None,
+                headers=[
+                    ('Content-Type',
+                     'application/vnd.openxmlformats-'
+                     'officedocument.spreadsheetml.sheet'),
+                    ('Content-Disposition',
+                     content_disposition(report_name + '.xlsx'))
+                ]
+            )
+            report_obj.get_xlsx_report(
+                data, response, report_name, report_action
+            )
             response.set_cookie('fileToken', token)
             return response
         except Exception as e:

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates>
     <!-- Template for cash book report -->
-    <t t-name="csh_b_template_new" owl="1">
+    <t t-name="csh_b_template_new">
         <div class="container">
             <div class="fin_report">
                 <div class="filter_view_gl  pt-3 pb-5"
@@ -30,7 +30,8 @@
                         <div class="d-flex justify-content-end">
                             <div class="time_range" style="">
                                 <a type="button" class="dropdown-toggle"
-                                   data-bs-toggle="dropdown">
+                                   data-bs-toggle="dropdown"
+                                   data-bs-auto-close="outside">
                                     <span class="oi oi-fw" data-icon="calendar_today" title="Dates"
                                           role="img"
                                           aria-label="Dates"/>
@@ -38,19 +39,19 @@
                                 </a>
                                 <div class="dropdown-menu" role="menu">
                                     <div class="list-group">
-                                        <button class="report-filter-button"
+                                        <button t-att-class="{'report-filter-button': true, 'selected-filter': this.state.date_range === 'month'}"
                                                 t-att-data-value="'month'"
                                                 type="button"
                                                 t-on-click="this.applyFilter">
                                             This Month
                                         </button>
-                                        <button class="report-filter-button"
+                                        <button t-att-class="{'report-filter-button': true, 'selected-filter': this.state.date_range === 'quarter'}"
                                                 t-att-data-value="'quarter'"
                                                 type="button"
                                                 t-on-click="this.applyFilter">
                                             This Quarter
                                         </button>
-                                        <button class="report-filter-button"
+                                        <button t-att-class="{'report-filter-button': true, 'selected-filter': this.state.date_range === 'year'}"
                                                 t-att-data-value="'year'"
                                                 type="button"
                                                 t-on-click="this.applyFilter">
@@ -58,19 +59,19 @@
                                         </button>
                                         <div role="separator"
                                              class="dropdown-divider"/>
-                                        <button class="report-filter-button"
+                                        <button t-att-class="{'report-filter-button': true, 'selected-filter': this.state.date_range === 'last-month'}"
                                                 t-att-data-value="'last-month'"
                                                 type="button"
                                                 t-on-click="this.applyFilter">
                                             Last month
                                         </button>
-                                        <button class="report-filter-button"
+                                        <button t-att-class="{'report-filter-button': true, 'selected-filter': this.state.date_range === 'last-quarter'}"
                                                 t-att-data-value="'last-quarter'"
                                                 type="button"
                                                 t-on-click="this.applyFilter">
                                             Last quarter
                                         </button>
-                                        <button class="report-filter-button"
+                                        <button t-att-class="{'report-filter-button': true, 'selected-filter': this.state.date_range === 'last-year'}"
                                                 t-att-data-value="'last-year'"
                                                 type="button"
                                                 t-on-click="this.applyFilter">
@@ -107,11 +108,12 @@
                             </div>
                             <div class="journal" style="">
                                 <a type="button" class="dropdown-toggle"
-                                   data-bs-toggle="dropdown">
+                                   data-bs-toggle="dropdown"
+                                   data-bs-auto-close="outside">
                                     <span class="oi oi-fw" data-icon="book" title="Accounts"
                                           role="img"/>
                                     Accounts
-                                    <t t-if="this.state.selected_account_list">:
+                                    <t t-if="this.state.selected_account_list &amp;&amp; this.state.selected_account_list.length &gt; 0">:
                                         <t t-foreach="this.state.selected_account_list"
                                            t-as="account_key"
                                            t-key="account_key_index">
@@ -134,7 +136,7 @@
                                             <t t-foreach="this.state.accounts"
                                                t-as="account"
                                                t-key="account.id">
-                                                <button class="report-filter-button"
+                                                <button t-att-class="{'report-filter-button': true, 'selected-filter': this.state.selected_account_list &amp;&amp; this.state.selected_account_list.includes(account.id)}"
                                                         t-att-data-value="'account'"
                                                         t-att-data-id="account.id"
                                                         type="button"
@@ -148,7 +150,8 @@
                             </div>
                             <div class="option" style="">
                                 <a type="button" class="dropdown-toggle"
-                                   data-bs-toggle="dropdown">
+                                   data-bs-toggle="dropdown"
+                                   data-bs-auto-close="outside">
                                     <span class="oi oi-fw" data-icon="settings" title="Accounts"
                                           role="img"
                                           aria-label="Dates"/>
@@ -156,7 +159,7 @@
                                 </a>
                                 <div class="dropdown-menu" role="menu">
                                     <div class="list-group">
-                                        <button class="report-filter-button"
+                                        <button t-att-class="{'report-filter-button': true, 'selected-filter': this.state.options &amp;&amp; this.state.options.draft}"
                                                 t-att-data-value="'draft'"
                                                 type="button"
                                                 t-on-click="this.applyFilter">
@@ -188,15 +191,15 @@
                                             <th>Reference</th>
                                             <th>Move</th>
                                             <th>Entry label</th>
-                                            <th class="text-right"
+                                            <th class="text-end"
                                                 style="padding-right:6px;">
                                                 Debit
                                             </th>
-                                            <th class="text-right"
+                                            <th class="text-end"
                                                 style="padding-right:6px;">
                                                 Credit
                                             </th>
-                                            <th class="text-right"
+                                            <th class="text-end"
                                                 style="padding-right:6px;">
                                                 Balance
                                             </th>
@@ -345,16 +348,16 @@
                                                 Total
                                             </th>
                                             <th class="o_heading">
-                                                <t t-out="this.state.currency"/>
-                                                <t t-out="this.state.total_debit"/>
+                                                <t t-if="this.state.currency"><t t-out="this.state.currency"/> </t>
+                                                <t t-out="this.state.total_debit_display || '0.00'"/>
                                             </th>
                                             <th class="o_heading">
-                                                <t t-out="this.state.currency"/>
-                                                <t t-out="this.state.total_credit"/>
+                                                <t t-if="this.state.currency"><t t-out="this.state.currency"/> </t>
+                                                <t t-out="this.state.total_credit_display || '0.00'"/>
                                             </th>
                                             <th class="o_heading">
-                                                <t t-out="this.state.currency"/>
-                                                <t t-out="(this.state.total_debit - this.state.total_credit).toFixed(2)"/>
+                                                <t t-if="this.state.currency"><t t-out="this.state.currency"/> </t>
+                                                <t t-out="((this.state.total_debit || 0) - (this.state.total_credit || 0)).toFixed(2)"/>
                                             </th>
                                             <th/>
                                         </tr>
