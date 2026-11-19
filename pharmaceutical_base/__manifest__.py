@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Pharmaceutical ERP',
-    'version': '19.0.2.0.0',
+    'version': '19.0.2.1.1',
     'category': 'Manufacturing',
     'summary': 'Make medicines and manage their quality, all in one place.',
     'description': """Core pharmaceutical manufacturing and quality management.""",
@@ -65,7 +65,13 @@
     ],
     'assets': {
         'web._assets_primary_variables': [
+            ('before', 'web/static/src/scss/primary_variables.scss',
+             'pharmaceutical_base/static/src/scss/semantic_colors.scss'),
             'pharmaceutical_base/static/src/scss/primary_variables.scss',
+        ],
+        'web.dark_mode_variables': [
+            ('before', 'pharmaceutical_base/static/src/scss/semantic_colors.scss',
+             'pharmaceutical_base/static/src/scss/semantic_colors.dark.scss'),
         ],
         'web.assets_backend': [
             'pharmaceutical_base/static/src/scss/backend_theme.scss',
@@ -82,6 +88,10 @@
             'pharmaceutical_base/static/src/xml/home_menus.xml',
             'pharmaceutical_base/static/src/views/widgets/premium_learn_more.js',
             'pharmaceutical_base/static/src/views/widgets/premium_learn_more.xml',
+        ],
+        # The graph view lives in the lazy backend bundle, so its palette patch does too.
+        'web.assets_backend_lazy': [
+            'pharmaceutical_base/static/src/js/graph_palette.js',
         ],
         'web.assets_web_dark': [
             'pharmaceutical_base/static/src/scss/backend_theme.dark.scss',

@@ -150,6 +150,7 @@ class MrpBom(models.Model):
                 'formula_status': 'approved',
                 'approved_by': self.env.user.id,
                 'approval_date': fields.Date.today(),
+
             })
 
     def action_obsolete_formula(self):

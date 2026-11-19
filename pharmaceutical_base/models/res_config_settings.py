@@ -20,7 +20,7 @@
 #
 #############################################################################
 from odoo import fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 
 class ResConfigSettings(models.TransientModel):
@@ -90,6 +90,32 @@ class ResConfigSettings(models.TransientModel):
         string='Device Capture',
         help='Installs the paid Device Capture add-on.',
     )
+    pharma_device_capture_found = fields.Boolean(
+        compute='_compute_pharma_premium_found',
+        help='Specifies whether the Device Capture module is on this server.',
+    )
+
+    def _compute_pharma_premium_found(self):
+        """Offer a premium toggle only once its module is on the server."""
+        Feature = self.env['pharma.premium.feature']
+        for rec in self:
+            rec.pharma_device_capture_found = Feature._pharma_feature_on_server('device_capture')
+
+    def execute(self):
+        """Install a premium add-on switched on here only when its module is
+        in the addons path, listing it first if Update Apps List was not run."""
+        if self.env.is_admin():
+            for feature in self.env['pharma.premium.feature'].sudo().search([]):
+                field_name = f'module_{feature.module_name}'
+                if field_name not in self._fields or not self[field_name] or feature.is_installed:
+                    continue
+                if feature.module_state != 'available':
+                    raise UserError(self.env._(
+                        'The %(name)s module (%(module)s) is not on this server. '
+                        'Purchase it on the Odoo Apps store and add it to the '
+                        'addons path first.', name=feature.name, module=feature.module_name))
+                feature._list_module()
+        return super().execute()
 
     def set_values(self):
         """Block an out-of-range score while its module toggle is enabled, then save."""

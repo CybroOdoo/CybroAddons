@@ -3,7 +3,7 @@
 import { NavBar } from "@web/webclient/navbar/navbar";
 import { computeAppsAndMenuItems } from "@web/webclient/menus/menu_helpers";
 import { useBus, useService } from "@web/core/utils/hooks";
-import { useRef, useState, onMounted, useEffect } from "@odoo/owl";
+import { useRef, useState, onMounted, onPatched, useEffect } from "@odoo/owl";
 import { patch } from "@web/core/utils/patch";
 import { sidebarState } from "@pharmaceutical_base/js/sidebar";
 
@@ -54,7 +54,65 @@ patch(NavBar.prototype, {
         onMounted(() => {
             this.applySidebarState();
             this.applyNavbarBrand();
+            this.applyActiveSection();
         });
+
+        // Keep the gold line under the section of whatever action is open:
+        // after every action change and after every navbar re-render (a
+        // re-render rebuilds the section elements' class attribute).
+        useBus(this.env.bus, "ACTION_MANAGER:UI-UPDATED", () => this.applyActiveSection());
+        onPatched(() => this.applyActiveSection());
+    },
+
+    onNavBarDropdownItemSelection(menu) {
+        // Remember the clicked section as a fallback for actions that are
+        // not linked to any menu (e.g. a wizard opened from a section).
+        const section = menu && this._findTopSection(menu.id, "id");
+        if (section) {
+            this._lastSectionId = section.id;
+        }
+        return super.onNavBarDropdownItemSelection(menu);
+    },
+
+    /**
+     * Top-level section of the current app whose subtree holds a menu with
+     * `key` equal to `value` (key is "actionID" or "id").
+     */
+    _findTopSection(value, key) {
+        if (!value) {
+            return undefined;
+        }
+        const contains = (menu) =>
+            menu[key] === value || (menu.childrenTree || []).some(contains);
+        return this.currentAppSections.find(contains);
+    },
+
+    /**
+     * Mark the navbar section that holds the current action with
+     * .o_pharma_section_active (styled as the gold underline in
+     * backend_theme.scss). Odoo itself does not track the active section,
+     * so it is derived from the action that is on screen.
+     */
+    applyActiveSection() {
+        const sectionsEl = this.root.el?.querySelector(".o_menu_sections");
+        if (!sectionsEl) {
+            return;
+        }
+        const actionId = this.actionService.currentController?.action?.id;
+        const section =
+            this._findTopSection(actionId, "actionID") ||
+            this.currentAppSections.find((s) => s.id === this._lastSectionId);
+        sectionsEl.querySelectorAll(".o_pharma_section_active").forEach((el) => {
+            el.classList.remove("o_pharma_section_active");
+        });
+        if (!section) {
+            return;
+        }
+        // Plain sections render as <a data-section>, dropdown sections as
+        // <button><span data-section>; underline the clickable element.
+        const marker = sectionsEl.querySelector(`[data-section="${section.id}"]`);
+        const target = marker?.closest(".o_nav_entry, .dropdown-toggle, button") || marker;
+        target?.classList.add("o_pharma_section_active");
     },
 
     /**

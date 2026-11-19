@@ -24,6 +24,7 @@ from unittest.mock import patch
 from odoo.exceptions import UserError, ValidationError
 from odoo.tests import tagged
 
+from odoo.addons.base.models.res_config import ResConfigSettings
 from odoo.addons.pharmaceutical_base.models.pharma_measured_value_mixin import device_capture
 from odoo.addons.pharmaceutical_base.models.pharma_value_source import PharmaValueSource
 
@@ -71,6 +72,56 @@ class TestPremiumFeature(PharmaTestCommon):
             self.missing.with_user(self.operator).action_install()
         with self.assertRaises(UserError):
             self.missing.with_user(self.admin).action_install()
+
+    def test_module_in_addons_path(self):
+        """A module added to the addons path but not listed counts as on the
+        server, and is listed before it is installed."""
+        self.assertFalse(self.env['pharma.premium.feature']._pharma_feature_on_server('ghost'))
+        Feature = type(self.missing)
+        with patch.object(Feature, '_is_in_addons_path', return_value=True), \
+                patch.object(type(self.env['ir.module.module']), 'update_list') as update_list:
+            self.missing.invalidate_recordset(['module_state', 'is_installed'])
+            self.assertEqual(self.missing.module_state, 'available')
+            self.assertTrue(self.env['pharma.premium.feature']._pharma_feature_on_server('ghost'))
+            self.missing._list_module()
+            update_list.assert_called_once()
+
+    def test_listed_module_without_folder(self):
+        """A module still listed after its folder was removed is not on the server."""
+        self.env['ir.module.module'].create({'name': 'pharma_no_such_module', 'state': 'uninstalled'})
+        self.missing.invalidate_recordset(['module_state', 'is_installed'])
+        self.assertFalse(self.missing._is_in_addons_path())
+        self.assertEqual(self.missing.module_state, 'not_available')
+        self.assertFalse(self.env['pharma.premium.feature']._pharma_feature_on_server('ghost'))
+        with self.assertRaises(UserError):
+            self.missing.with_user(self.admin).action_install()
+        base = self.env['pharma.premium.feature'].create(
+            {'name': 'Base', 'code': 'base_disk', 'module_name': 'pharmaceutical_base'})
+        self.assertTrue(base._is_in_addons_path())
+        bad = self.env['pharma.premium.feature'].create(
+            {'name': 'Bad', 'code': 'bad_name', 'module_name': '../pharmaceutical_base'})
+        self.assertFalse(bad._is_in_addons_path())
+
+    def test_settings_toggle_found(self):
+        """The Device Capture toggle is offered only when its module is on the server."""
+        settings = self.env['res.config.settings'].create({})
+        self.assertEqual(settings.pharma_device_capture_found,
+                         self.feature.module_state != 'not_available')
+        settings.module_pharma_device_capture = True
+        Feature = type(self.feature)
+        with patch.object(Feature, '_is_in_addons_path', return_value=True), \
+                patch.object(Feature, '_list_module') as list_module, \
+                patch.object(ResConfigSettings, 'execute') as core_execute:
+            self.feature.invalidate_recordset(['module_state', 'is_installed'])
+            settings.execute()
+            self.assertTrue(list_module.called)
+            core_execute.assert_called_once()
+        with patch.object(Feature, '_is_in_addons_path', return_value=False), \
+                patch.object(ResConfigSettings, 'execute') as core_execute:
+            self.feature.invalidate_recordset(['module_state', 'is_installed'])
+            with self.assertRaises(UserError):
+                settings.execute()
+            core_execute.assert_not_called()
 
 
 @tagged('post_install', '-at_install')

@@ -297,8 +297,10 @@ export class PharmaDashboard extends Component {
         if (order.length > 0) {
             const keys = order.slice(-30);
             this.state.chartLabels = keys.map((k) => k.split(" ")[0]);
-            this.state.chartData = keys.map((k) => relMap[k] || 0);
-            this.state.chartWip = keys.map((k) => wipMap[k] || 0);
+            // null (not 0) for empty buckets: Chart.js draws a 0 with rounded
+            // corners as a small pill, which reads as a count of about one.
+            this.state.chartData = keys.map((k) => relMap[k] || null);
+            this.state.chartWip = keys.map((k) => wipMap[k] || null);
         } else {
             this.state.chartLabels = ["No Data"];
             this.state.chartData = [0];
@@ -314,6 +316,16 @@ export class PharmaDashboard extends Component {
             this.chartInstance.destroy();
         }
 
+        // Colours come from the dashboard's --pd-* properties, so the chart
+        // follows light / dark mode with the rest of the board.
+        const css = getComputedStyle(this.chartRef.el);
+        const cssVar = (name, fallback) => css.getPropertyValue(name).trim() || fallback;
+        const released = cssVar("--pd-chart-released", "#0b4650");
+        const inProcess = cssVar("--pd-gold", "#e6a23c");
+        const ink = cssVar("--pd-ink", "#13292d");
+        const muted = cssVar("--pd-muted", "#56696c");
+        const gridline = cssVar("--pd-gridline", "#e3eceb");
+
         this.chartInstance = new Chart(ctx, {
             type: "bar",
             data: {
@@ -322,7 +334,7 @@ export class PharmaDashboard extends Component {
                     {
                         label: "Released",
                         data: this.state.chartData,
-                        backgroundColor: "#5295f8",
+                        backgroundColor: released,
                         borderRadius: 4,
                         borderSkipped: false,
                         maxBarThickness: 26,
@@ -330,7 +342,7 @@ export class PharmaDashboard extends Component {
                     {
                         label: "In process",
                         data: this.state.chartWip,
-                        backgroundColor: "#93c5fd",
+                        backgroundColor: inProcess,
                         borderRadius: 4,
                         borderSkipped: false,
                         maxBarThickness: 26,
@@ -346,16 +358,17 @@ export class PharmaDashboard extends Component {
                         position: "bottom",
                         align: "start",
                         labels: {
-                            boxWidth: 10,
-                            boxHeight: 10,
+                            boxWidth: 11,
+                            boxHeight: 11,
                             usePointStyle: true,
                             pointStyle: "rectRounded",
-                            color: "#1f2937",
-                            font: {size: 11, weight: "bold"},
+                            padding: 16,
+                            color: ink,
+                            font: {size: 13, weight: "500"},
                         },
                     },
                     tooltip: {
-                        backgroundColor: "#5295f8",
+                        backgroundColor: "#072b33",
                         titleColor: "#ffffff",
                         bodyColor: "#ffffff",
                         padding: 10,
@@ -366,12 +379,14 @@ export class PharmaDashboard extends Component {
                     y: {
                         beginAtZero: true,
                         suggestedMax: 10,
-                        grid: {color: "rgba(82, 149, 248, 0.12)"},
-                        ticks: {color: "#6b7280", precision: 0},
+                        grid: {color: gridline},
+                        border: {display: false},
+                        ticks: {color: muted, precision: 0, font: {size: 11}},
                     },
                     x: {
                         grid: {display: false},
-                        ticks: {color: "#6b7280", maxRotation: 0, autoSkip: true, maxTicksLimit: 12},
+                        border: {display: false},
+                        ticks: {color: muted, maxRotation: 0, autoSkip: true, maxTicksLimit: 12, font: {size: 12}},
                     }
                 }
             }
@@ -418,8 +433,8 @@ export class PharmaDashboard extends Component {
                 datasets: [{
                     data: empty ? [1] : values,
                     backgroundColor: empty
-                        ? ["#e5e7eb"]
-                        : ["#5295f8", "#93c5fd", "#60a5fa", "#cbd5e1"],
+                        ? ["#e3eceb"]
+                        : ["#0b4650", "#2a7f86", "#e6a23c", "#b42318"],
                     borderWidth: 0,
                     hoverOffset: 4,
                 }]
@@ -436,7 +451,7 @@ export class PharmaDashboard extends Component {
                         enabled: !empty,
                         position: "pharmaOutside",
                         caretPadding: 6,
-                        backgroundColor: "#16283F",
+                        backgroundColor: "#072b33",
                         bodyColor: "#ffffff",
                         padding: 10,
                         cornerRadius: 8,

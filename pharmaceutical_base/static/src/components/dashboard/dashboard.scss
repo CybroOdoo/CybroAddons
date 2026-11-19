@@ -1,1100 +1,926 @@
 // ==========================================================================
-// Pharmaceutical ERP — Quality Dashboard (Accent Theming System)
-// Primary Accent (Highlights/Important): #ba7dfc (Accent Pink/Purple)
-// Secondary Accent (Info/Greetings/Icons): #5295f8 (Accent Blue)
-// Background: #FFFFFF (Clean White)
-// Borders / Neutral: #e5e7eb / #9ca3af
+// Pharmaceutical ERP — Quality Dashboard ("petrol & gold" theme)
+// Layout and sizes follow the approved dashboard design: a main area
+// (release card + KPI row, then batches/expiring + QC schedule) beside a
+// full-height Quality Overview column, with Recent Batches underneath.
 // ==========================================================================
 
+// Every colour is a CSS custom property so dark mode can swap the whole
+// palette in one place (see backend_theme.dark.scss). The SCSS names below
+// only point at those properties.
+$pd-hero: var(--pd-hero);               // release card fill
+$pd-hero-600: var(--pd-hero-600);       // badge tile / progress track on the hero
+$pd-primary: var(--pd-primary);         // petrol fills: icon tiles, active pill, today
+$pd-primary-text: var(--pd-primary-text); // petrol used as text (links, chips)
+$pd-hover-border: var(--pd-hover-border); // hover border on tiles and cards
+$pd-strong: var(--pd-strong);           // KPI values
+$pd-aqua: var(--pd-aqua);
+$pd-gold: var(--pd-gold);
+$pd-gold-light: var(--pd-gold-light);
+$pd-gold-dark: var(--pd-gold-dark);
+$pd-gold-tint: var(--pd-gold-tint);
+$pd-teal-tint: var(--pd-teal-tint);
+$pd-danger: var(--pd-danger);
+$pd-danger-tint: var(--pd-danger-tint);
+$pd-on-dark: var(--pd-on-dark);
+$pd-ink: var(--pd-ink);
+$pd-muted: var(--pd-muted);
+$pd-border: var(--pd-border);
+$pd-soft: var(--pd-soft);               // inner tiles
+$pd-page: var(--pd-page);               // board background
+$pd-surface: var(--pd-surface);         // cards
+
+// One column grid for the whole board so every card edge lines up.
+$pd-left-col: 303px;
+$pd-right-col: 300px;
+$pd-gap: 20px;
+
 .pharma-dashboard-wrapper {
-    background-color: #f3f4f6;
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    padding: 16px 24px 40px;
+    // Light palette (dark mode overrides these in backend_theme.dark.scss).
+    --pd-hero: #0b4650;
+    --pd-hero-600: #1d5f69;
+    --pd-primary: #0b4650;
+    --pd-primary-text: #0b4650;
+    --pd-hover-border: #0b4650;
+    --pd-strong: #072b33;
+    --pd-aqua: #2a7f86;
+    --pd-gold: #e6a23c;
+    --pd-gold-light: #f5c66b;
+    --pd-gold-dark: #8a5a0b;
+    --pd-gold-tint: #fbf0dc;
+    --pd-teal-tint: #ddefec;
+    --pd-danger: #b42318;
+    --pd-danger-tint: #fdecea;
+    --pd-on-dark: #cfe3e1;
+    --pd-ink: #13292d;
+    --pd-muted: #56696c;
+    --pd-border: #dce7e6;
+    --pd-gridline: #e3eceb;
+    --pd-chart-released: #0b4650; // read by dashboard.js for the chart
+    --pd-soft: #f4f7f7;
+    --pd-page: #f4f7f7;
+    --pd-surface: #ffffff;
+
+    background-color: $pd-page;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 24px 28px 40px;
     height: 100%;
     min-height: 100%;
     overflow-y: auto !important;
-    color: #1f2937;
+    color: $pd-ink;
 
-    // ---- Sub-Navigation & Header Bar ----
+    // ---- Header: greeting + period ----
     .dash-top-nav {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: transparent;
-        border-radius: 0;
-        padding: 0 0 16px 0;
-        margin-bottom: 8px;
-        box-shadow: none;
+        gap: 16px;
+        margin-bottom: 20px;
 
-        .user-greeting-header {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
+        .greeting-title {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.4px;
+            color: $pd-ink;
 
-            .greeting-title {
-                margin: 0;
-                font-size: 22px;
-                font-weight: 800;
-                color: #5295f8;
-                line-height: 1.2;
-                letter-spacing: -0.3px;
-
-                .user-name-text {
-                    color: #1f2937;
-                }
+            .greeting-text {
+                color: $pd-aqua;
             }
 
-            .greeting-subtitle {
-                margin: 0;
-                font-size: 12px;
-                color: #6b7280;
-                font-weight: 500;
+            .user-name-text {
+                color: $pd-ink;
+                margin-left: 0.28em;
             }
         }
 
-        .nav-user-actions {
+        .date-filter-pill {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 6px;
+            background: $pd-surface;
+            border: 1px solid $pd-border;
+            border-radius: 999px;
+            padding: 6px 18px;
 
-            .btn-create-batch-pill {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                background: #5295f8;
-                color: #FFFFFF;
-                border: none;
-                border-radius: 999px;
-                padding: 7px 16px;
-                font-size: 12.5px;
+            .date-sep {
                 font-weight: 700;
-                box-shadow: 0 4px 12px rgba(82, 149, 248, 0.35);
-                cursor: pointer;
-                transition: all 0.2s ease;
+                color: $pd-primary-text;
+            }
 
-                .plus-icon {
-                    font-size: 14px;
-                    font-weight: 800;
+            .date-input {
+                border: none;
+                background: transparent;
+                color: $pd-primary-text;
+                font-weight: 600;
+                font-size: 15px;
+                outline: none;
+                cursor: pointer;
+                width: 128px;
+                padding: 0 2px;
+
+                // Recolour the native calendar glyph to petrol.
+                &::-webkit-calendar-picker-indicator {
+                    cursor: pointer;
+                    margin-left: 4px;
+                    filter: invert(20%) sepia(38%) saturate(1500%) hue-rotate(150deg) brightness(88%) contrast(97%);
+                }
+            }
+        }
+    }
+
+    // ---- Shared card chrome ----
+    .card-box {
+        background: $pd-surface;
+        border: 1px solid $pd-border;
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        min-width: 0;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 14px;
+        padding: 0;
+        background: transparent;
+        border: none;
+
+        .card-header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 17px;
+            font-weight: 700;
+            color: $pd-ink;
+            white-space: nowrap;
+        }
+
+        .header-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            flex: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: $pd-primary;
+
+            i {
+                // !important: the theme paints every content .fa petrol with !important
+                color: #ffffff !important;
+                font-size: 15px;
+            }
+        }
+
+        .header-link {
+            font-size: 15px;
+            font-weight: 700;
+            color: $pd-primary-text;
+
+            i {
+                color: inherit !important;
+            }
+            cursor: pointer;
+            white-space: nowrap;
+
+            &:hover {
+                color: $pd-aqua;
+            }
+        }
+
+        .header-nav-arrows {
+            display: flex;
+            gap: 8px;
+
+            .arrow-btn {
+                width: 32px;
+                height: 32px;
+                border-radius: 9px;
+                border: 1px solid $pd-border;
+                background: $pd-surface;
+                color: $pd-primary-text;
+                font-size: 16px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: background 0.15s ease;
+
+                i {
+                    color: $pd-primary-text !important;
                 }
 
                 &:hover {
-                    background: #3b82f6;
-                    box-shadow: 0 6px 16px rgba(82, 149, 248, 0.45);
-                    transform: translateY(-1px);
-                }
-            }
-
-            .date-filter-pill {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: #FFFFFF;
-                padding: 5px 14px;
-                border-radius: 20px;
-                font-size: 12px;
-                color: #5295f8;
-                border: 1px solid #e2e8f0;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-                gap: 4px;
-
-                .date-sep {
-                    margin: 0 4px;
-                    font-weight: 800;
-                    color: #5295f8;
-                }
-
-                .date-input {
-                    border: none;
-                    background: transparent;
-                    color: #5295f8;
-                    font-weight: 700;
-                    font-size: 12px;
-                    outline: none;
-                    cursor: pointer;
-                    width: 110px;
-                    padding: 0 2px;
-
-                    &::-webkit-calendar-picker-indicator {
-                        cursor: pointer;
-                        margin-left: 2px;
-                        padding: 0;
-                        filter: invert(42%) sepia(85%) saturate(1832%) hue-rotate(200deg) brightness(101%) contrast(97%);
-                    }
+                    background: $pd-soft;
+                    border-color: $pd-hover-border;
                 }
             }
         }
     }
 
-    // ---- Main Layout Grid ----
+    // ---- Grid ----
     .dash-main-grid {
-        background: transparent;
-        border-radius: 0;
-        padding: 0;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: $pd-gap;
+    }
 
-        .card-box {
-            background: #FFFFFF;
-            border-radius: 20px;
-            border: 1px solid #e5e7eb;
-            padding: 18px 20px;
+    .top-columns-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) $pd-right-col;
+        gap: $pd-gap;
+        align-items: stretch;
+    }
+
+    .dash-main-area {
+        display: flex;
+        flex-direction: column;
+        gap: $pd-gap;
+        min-width: 0;
+    }
+
+    // Both rows share the same left column width and gap, so the release
+    // card lines up with Batches and the KPI row with the QC schedule.
+    .dash-top-row,
+    .dash-mid-row {
+        display: grid;
+        grid-template-columns: $pd-left-col minmax(0, 1fr);
+        gap: $pd-gap;
+    }
+
+    .dash-mid-row {
+        flex: 1;
+    }
+
+    .col-stack {
+        display: flex;
+        flex-direction: column;
+        gap: $pd-gap;
+        min-width: 0;
+    }
+
+    // ---- Hero: today's releases ----
+    .hero-release-card {
+        background: $pd-hero;
+        border-radius: 16px;
+        // Compact spacing so the card's content fits the 146px row height;
+        // anything taller would stretch the KPI tiles beside it.
+        padding: 13px 18px 14px;
+        min-height: 146px;
+        border: 2px solid transparent;
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+
+        // Gold ring on hover only, no shadow.
+        &:hover {
+            transform: translateY(-2px);
+            border-color: $pd-gold;
+        }
+
+        .hero-badge {
             display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
 
-            .card-header {
-                display: flex;
+            .badge-icon {
+                width: 22px;
+                height: 22px;
+                border-radius: 7px;
+                background: $pd-hero-600;
+                display: inline-flex;
                 align-items: center;
-                justify-content: space-between;
-                margin-bottom: 14px;
+                justify-content: center;
 
-                .card-header-title {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    font-size: 14px;
-                    font-weight: 700;
-                    color: #1f2937;
-
-                    .header-icon {
-                        width: 32px;
-                        height: 32px;
-                        border-radius: 9px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 16px;
-                        font-weight: 700;
-                        background: #5295f8 !important;
-                        color: #ffffff !important;
-
-                        i, .fa, span {
-                            color: #ffffff !important;
-                            font-size: 15px;
-                            display: inline-block;
-                        }
-
-                        &.icon-blue,
-                        &.icon-pink {
-                            background: #5295f8 !important;
-                            color: #ffffff !important;
-
-                            i, .fa, span {
-                                color: #ffffff !important;
-                                font-size: 15px;
-                                display: inline-block;
-                            }
-                        }
-                    }
-                }
-
-                .header-action,
-                .header-link {
-                    font-size: 12px;
-                    font-weight: 800;
-                    color: #5295f8;
-                    cursor: pointer;
-                    text-decoration: none;
-
-                    &:hover {
-                        text-decoration: underline;
-                    }
-                }
-
-                .header-nav-arrows {
-                    display: flex;
-                    gap: 4px;
-                    color: #6b7280;
-                    font-size: 11px;
-
-                    .arrow-btn {
-                        width: 26px;
-                        height: 26px;
-                        border-radius: 8px;
-                        background: #f3f4f6;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        cursor: pointer;
-
-                        &:hover {
-                            background: #e5e7eb;
-                            color: #5295f8;
-                        }
-                    }
-                }
-            }
-
-            // Standalone Expiring Batches Card
-            &.expiring-batches-card {
-                .expiring-pills-row {
-                    display: flex;
-                    gap: 8px;
-
-                    .exp-pill {
-                        flex: 1;
-                        padding: 10px 8px;
-                        border-radius: 12px;
-                        text-align: center;
-                        cursor: pointer;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        transition: all 0.2s ease;
-
-                        .exp-pill-label {
-                            font-size: 11px;
-                            font-weight: 700;
-                        }
-
-                        .exp-pill-val {
-                            font-size: 18px;
-                            font-weight: 800;
-                            line-height: 1.1;
-                            margin-top: 2px;
-                        }
-
-                        &.exp-today {
-                            background: #FFF1F2;
-                            border: 1px solid #FECDD3;
-
-                            .exp-pill-label,
-                            .exp-pill-val {
-                                color: #E11D48;
-                            }
-                        }
-
-                        &.exp-30 {
-                            background: #FFFBEB;
-                            border: 1px solid #FDE68A;
-
-                            .exp-pill-label,
-                            .exp-pill-val {
-                                color: #D97706;
-                            }
-                        }
-
-                        &.exp-60 {
-                            background: #F0F9FF;
-                            border: 1px solid #BAE6FD;
-
-                            .exp-pill-label,
-                            .exp-pill-val {
-                                color: #0284C7;
-                            }
-                        }
-
-                        &:hover {
-                            transform: translateY(-2px);
-                            box-shadow: 0 4px 12px rgba(82, 149, 248, 0.15);
-                        }
-                    }
+                i {
+                    font-size: 9px;
+                    color: $pd-gold !important;
                 }
             }
         }
 
-        // ---- Top 3 Columns Grid ----
-        .top-columns-grid {
-            display: grid;
-            grid-template-columns: 300px 1fr 340px;
-            gap: 16px;
-            align-items: stretch; // Align all 3 top columns equal height
+        // Count on the left, status text right-aligned on the right,
+        // both resting on the same bottom line above the progress bar.
+        .hero-mid {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 4px 12px;
+            margin-top: 2px;
+        }
 
-            @media (max-width: 1200px) {
-                grid-template-columns: 1fr;
+        .hero-count-group {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+
+            .hero-count {
+                font-size: 36px;
+                font-weight: 600;
+                line-height: 1;
+                color: #ffffff;
             }
 
-            .col-stack {
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
+            .hero-total {
+                font-size: 18px;
+                font-weight: 400;
+                color: $pd-on-dark;
+            }
+        }
+
+        .hero-info {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-left: auto;
+            text-align: right;
+            line-height: 1.2;
+
+            .hero-subtext {
+                font-size: 14px;
+                font-weight: 700;
+                color: $pd-gold-light;
+            }
+
+            .hero-rate {
+                font-size: 13px;
+                color: $pd-on-dark;
+            }
+        }
+
+        .hero-progress-track {
+            margin-top: 8px;
+            height: 8px;
+            border-radius: 99px;
+            background: $pd-hero-600;
+            overflow: hidden;
+
+            .hero-progress-bar {
                 height: 100%;
+                border-radius: 99px;
+                background: $pd-gold;
+            }
+        }
+    }
+
+    // ---- KPI tiles ----
+    .qms-metrics-row {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .qms-kpi-card {
+        padding: 14px 16px 16px;
+        min-height: 146px;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+
+        // Petrol border on hover only, no shadow.
+        &:hover {
+            transform: translateY(-2px);
+            border-color: $pd-hover-border;
+        }
+
+        .kpi-header-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .kpi-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            flex: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background: $pd-teal-tint;
+            color: $pd-primary-text;
+
+            i {
+                color: inherit !important;
             }
 
-            // Hero Release Card
-            .hero-release-card {
-                background: #5295f8;
-                border-radius: 20px;
-                padding: 14px 18px;
-                color: #FFFFFF;
+            &.kpi-icon-gold {
+                background: $pd-gold-tint;
+                color: $pd-gold-dark;
+            }
+        }
+
+        .kpi-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: $pd-ink;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            line-height: 1.3;
+            text-align: right;
+            min-width: 0;
+            overflow-wrap: break-word;
+            padding-top: 8px;
+        }
+
+        .kpi-footer-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .kpi-value {
+            font-size: 34px;
+            font-weight: 600;
+            line-height: 1;
+            color: $pd-strong;
+        }
+
+        .kpi-subtext {
+            font-size: 12.5px;
+            font-weight: 400;
+            line-height: 1.3;
+            color: $pd-muted;
+        }
+    }
+
+    // ---- Batches chart ----
+    .batch-output-chart-card {
+        flex: 1;
+
+        .chart-filter-pills {
+            display: flex;
+            gap: 2px;
+            background: $pd-soft;
+            padding: 3px;
+            border-radius: 10px;
+
+            .filter-pill {
+                font-size: 13px;
+                font-weight: 500;
+                color: $pd-muted;
+                padding: 4px 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: color 0.15s ease, background 0.15s ease;
+
+                &:hover {
+                    color: $pd-primary-text;
+                }
+
+                &.active {
+                    background: $pd-primary;
+                    color: #ffffff;
+                    font-weight: 600;
+                }
+            }
+        }
+
+        .chart-canvas-wrapper {
+            position: relative;
+            flex: 1;
+            min-height: 180px;
+        }
+    }
+
+    // ---- Expiring batches ----
+    .expiring-batches-card {
+        .expiring-pills-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .exp-pill {
+            border-radius: 12px;
+            padding: 12px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: transform 0.2s ease, border-color 0.15s ease;
+
+            &:hover {
+                transform: translateY(-2px);
+                border-color: $pd-hover-border;
+            }
+
+            .exp-pill-label {
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .exp-pill-val {
+                font-size: 22px;
+                font-weight: 600;
+                line-height: 1.15;
+                margin-top: 2px;
+            }
+
+            &.exp-today {
+                background: $pd-danger-tint;
+                color: $pd-danger;
+            }
+
+            &.exp-30 {
+                background: $pd-gold-tint;
+                color: $pd-gold-dark;
+            }
+
+            &.exp-60 {
+                background: $pd-teal-tint;
+                color: $pd-primary-text;
+            }
+        }
+    }
+
+    // ---- QC schedule ----
+    .qc-schedule-card {
+        .card-header {
+            margin-bottom: 16px;
+        }
+
+        .calendar-days-row {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            margin-bottom: 18px;
+
+            .day-col {
                 display: flex;
                 flex-direction: column;
-                justify-content: space-between;
-                height: 125px;
-                box-shadow: 0 8px 20px rgba(82, 149, 248, 0.3);
-                cursor: pointer;
-                border: 2px solid transparent;
-                transition: all 0.25s ease;
+                align-items: center;
+                gap: 8px;
+            }
 
-                .hero-top {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
+            .dow {
+                font-size: 13px;
+                font-weight: 500;
+                color: $pd-muted;
+            }
 
-                    .hero-badge {
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        font-size: 12px;
-                        font-weight: 800;
-                        color: #FFFFFF;
+            .num {
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 15px;
+                font-weight: 700;
+                color: $pd-ink;
+                transition: background 0.15s ease;
 
-                        .badge-icon {
-                            width: 24px;
-                            height: 24px;
-                            border-radius: 6px;
-                            background: rgba(255, 255, 255, 0.25);
-                            display: inline-flex;
-                            align-items: center;
-                            justify-content: center;
-                            line-height: 1;
-                            flex-shrink: 0;
-                            color: #FFFFFF;
-
-                            i, .fa {
-                                font-size: 10px;
-                                color: #FFFFFF !important;
-                                line-height: 1;
-                                margin: 0;
-                                padding: 0;
-                                display: block;
-                            }
-                        }
-                    }
-
-                    .hero-more {
-                        color: #FFFFFF;
-                        letter-spacing: 1px;
-                    }
-                }
-
-                .hero-mid {
-                    display: flex;
-                    align-items: flex-end;
-                    justify-content: space-between;
-
-                    .hero-count-group {
-                        display: flex;
-                        align-items: baseline;
-                        gap: 4px;
-
-                        .hero-count {
-                            font-size: 38px;
-                            font-weight: 800;
-                            line-height: 1;
-                            color: #FFFFFF;
-                        }
-
-                        .hero-total {
-                            font-size: 18px;
-                            font-weight: 600;
-                            color: #FFFFFF;
-                        }
-                    }
-
-                    .hero-info {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: flex-end;
-                        line-height: 1.3;
-
-                        .hero-subtext {
-                            font-size: 12px;
-                            font-weight: 700;
-                            color: #FFFFFF;
-                        }
-
-                        .hero-rate {
-                            font-size: 11px;
-                            color: #FFFFFF;
-                        }
-                    }
-                }
-
-                .hero-progress-track {
-                    height: 10px;
-                    border-radius: 99px;
-                    background: rgba(255, 255, 255, 0.3);
-                    overflow: hidden;
-
-                    .hero-progress-bar {
-                        height: 100%;
-                        border-radius: 99px;
-                        background: #FFFFFF;
-                    }
+                &.today {
+                    background: $pd-primary;
+                    color: #ffffff;
                 }
             }
 
-            // Batch Production Output Chart Card
-            .batch-output-chart-card {
+            .day-col:not(.active):hover .num {
+                background: $pd-soft;
+            }
+        }
+
+        .schedule-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            flex: 1;
+            justify-content: space-between;
+        }
+
+        .schedule-item-card {
+            background: $pd-soft;
+            border: 1px solid transparent;
+            border-radius: 14px;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            transition: border-color 0.15s ease;
+
+            &:hover {
+                border-color: $pd-hover-border;
+            }
+
+            .sched-time {
+                font-size: 12.5px;
+                font-weight: 500;
+                color: $pd-muted;
+            }
+
+            .sched-body {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+
+            .sched-icon {
+                width: 22px;
+                flex: none;
+                display: inline-flex;
+                justify-content: center;
+                font-size: 20px;
+                color: $pd-aqua;
+
+                i {
+                    color: inherit !important;
+                }
+            }
+
+            .sched-details {
                 flex: 1;
                 display: flex;
                 flex-direction: column;
-                justify-content: space-between;
+                min-width: 0;
 
-                .chart-filter-pills {
-                    display: flex;
-                    gap: 4px;
-                    background: #f3f4f6;
-                    padding: 3px;
-                    border-radius: 8px;
-
-                    .filter-pill {
-                        font-size: 11px;
-                        font-weight: 700;
-                        color: #6b7280;
-                        padding: 3px 8px;
-                        border-radius: 6px;
-                        cursor: pointer;
-                        transition: all 0.2s ease;
-
-                        &:hover {
-                            color: #5295f8;
-                        }
-
-                        &.active {
-                            background: #FFFFFF;
-                            color: #5295f8;
-                            font-weight: 800;
-                            box-shadow: 0 2px 6px rgba(82, 149, 248, 0.15);
-                        }
-                    }
+                .sched-title {
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: $pd-ink;
+                    line-height: 1.25;
                 }
 
-                .chart-canvas-wrapper {
-                    flex: 1;
-                    min-height: 180px;
-                    display: flex;
-                    align-items: center;
+                .sched-sub {
+                    font-size: 12.5px;
+                    color: $pd-muted;
                 }
             }
 
-            // Center Column: KPI Metrics Grid + QC Schedule Card
-            .center-col-stack {
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-                height: 100%;
+            .sched-chip {
+                font-size: 12.5px;
+                font-weight: 600;
+                padding: 4px 11px;
+                border-radius: 999px;
+                white-space: nowrap;
 
-                .qms-metrics-row {
-                    display: grid;
-                    // 150px is the narrowest a tile can get before its title and
-                    // subtext start colliding; below that the media queries at
-                    // the end of this file take over and drop the column count.
-                    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                    gap: 10px;
-
-                    .qms-kpi-card {
-                        min-width: 0; // never let a long title blow out its grid track
-                        padding: 13px 14px;
-                        border-radius: 16px;
-                        cursor: pointer;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: space-between;
-                        height: 125px;
-                        transition: all 0.25s ease;
-
-                        // White like every other card on the board. The hover
-                        // rule below forces a transparent border, so a soft
-                        // shadow is what lifts the tile off the grey page.
-                        background: #FFFFFF;
-                        box-shadow: 0 2px 6px rgba(26, 27, 29, 0.06);
-
-                        .kpi-header-row {
-                            display: flex;
-                            flex-direction: row;
-                            justify-content: space-between;
-                            align-items: center;
-                            width: 100%;
-
-                            .kpi-icon {
-                                margin-right: 10px;
-                            }
-                        }
-
-                        .kpi-icon {
-                            width: 24px;
-                            height: 24px;
-                            border-radius: 0;
-                            font-size: 18px;
-                            background: transparent !important;
-                            color: #5295f8 !important;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            flex-shrink: 0;
-                            transition: transform 0.2s ease;
-
-                            i, .fa {
-                                color: #5295f8 !important;
-                                font-size: 18px;
-                            }
-                        }
-
-                        .kpi-title {
-                            font-size: 11px;
-                            font-weight: 800;
-                            color: #111827;
-                            text-transform: uppercase;
-                            letter-spacing: -0.2px;
-                            // Wrap rather than spill out of the tile: "Open
-                            // Deviations" / "Open QC Tests" do not fit on one
-                            // line once the grid narrows.
-                            min-width: 0;
-                            text-align: right;
-                            overflow-wrap: break-word;
-                        }
-
-                        .kpi-footer-row {
-                            display: flex;
-                            flex-direction: column;
-                            gap: 2px;
-                            width: 100%;
-                        }
-
-                        .kpi-value {
-                            font-size: 26px;
-                            font-weight: 800;
-                            color: #111827;
-                            line-height: 1;
-                        }
-
-                        .kpi-subtext {
-                            font-size: 10px;
-                            font-weight: 600;
-                            color: #374151;
-                            line-height: 1.2;
-                            margin-top: 2px;
-                        }
-
-                        &:hover {
-                            transform: translateY(-3px);
-                            box-shadow: 0 6px 18px rgba(82, 149, 248, 0.25);
-
-                            .kpi-icon {
-                                transform: scale(1.1);
-                            }
-                        }
-                    }
+                &.chip-gold {
+                    background: $pd-gold-tint;
+                    color: $pd-gold-dark;
                 }
 
-                .qc-schedule-card {
-                    flex: 1;
-                    height: auto;
+                &.chip-teal {
+                    background: $pd-teal-tint;
+                    color: $pd-primary-text;
                 }
             }
-
-            // QC Schedule Card
-            .qc-schedule-card {
-                display: flex;
-                flex-direction: column;
-
-                .calendar-days-row {
-                    display: grid;
-                    grid-template-columns: repeat(7, 1fr);
-                    gap: 4px;
-                    margin-bottom: 16px;
-
-                    .day-col {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        gap: 4px;
-
-                        .dow {
-                            font-size: 11px;
-                            font-weight: 700;
-                            color: #6b7280;
-                        }
-
-                        .num {
-                            width: 28px;
-                            height: 28px;
-                            border-radius: 99px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-size: 12px;
-                            font-weight: 700;
-                            color: #1f2937;
-
-                            &.off {
-                                color: #d1d5db;
-                            }
-
-                            &.today {
-                                background: #5295f8;
-                                color: #FFFFFF;
-                                font-weight: 800;
-                            }
-                        }
-                    }
-                }
-
-                .schedule-items-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 10px;
-                    flex: 1;
-
-                    .schedule-item-card {
-                        background: #f9fafb;
-                        border-radius: 14px;
-                        padding: 11px 14px;
-                        display: flex;
-                        flex-direction: column;
-                        gap: 6px;
-                        cursor: pointer;
-                        transition: background 0.2s ease;
-
-                        &:hover {
-                            background: #f3f4f6;
-                        }
-
-                        .sched-time {
-                            font-size: 11px;
-                            color: #6b7280;
-                            font-weight: 600;
-                        }
-
-                        .sched-body {
-                            display: flex;
-                            align-items: center;
-                            gap: 12px;
-
-                            .sched-icon {
-                                width: 32px;
-                                height: 32px;
-                                border-radius: 0;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                font-size: 20px;
-                                background: transparent !important;
-                                color: #5295f8 !important;
-
-                                &.icon-blue,
-                                &.icon-light {
-                                    background: transparent !important;
-                                    color: #5295f8 !important;
-                                }
-
-                                i, .fa {
-                                    color: #5295f8 !important;
-                                    font-size: 20px;
-                                }
-                            }
-
-                            .sched-details {
-                                flex: 1;
-                                display: flex;
-                                flex-direction: column;
-
-                                .sched-title {
-                                    font-size: 13.5px;
-                                    font-weight: 700;
-                                    color: #1f2937;
-                                }
-
-                                .sched-sub {
-                                    font-size: 11px;
-                                    color: #6b7280;
-                                }
-                            }
-
-                            .sched-chip {
-                                font-size: 10px;
-                                font-weight: 700;
-                                padding: 3px 9px;
-                                border-radius: 20px;
-
-                                &.chip-blue,
-                                &.chip-light {
-                                    background: #eff6ff;
-                                    color: #5295f8;
-                                }
-                            }
-                        }
-
-                        &.expiring-breakdown-card {
-                            border: 1px solid #e5e7eb;
-                            background: #ffffff;
-                        }
-
-                        .exp-pill {
-                            border: 1px solid #e5e7eb;
-                            transition: border-color 0.2s ease, background-color 0.2s ease;
-
-                            &:hover {
-                                background-color: #f9fafb !important;
-                                border-color: #93c5fd !important;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Quality Overview / Alerts Card
-            .quality-alerts-card {
-                height: 100%;
-                display: flex;
-                flex-direction: column;
-
-                .alerts-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 10px;
-                    flex: 1;
-                    justify-content: space-between;
-
-                    .alert-item {
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                        background: #f9fafb;
-                        border-radius: 14px;
-                        padding: 12px 14px;
-                        flex: 1;
-                        cursor: pointer;
-                        transition: all 0.2s ease;
-
-                        &:hover {
-                            background: #f3f4f6;
-                        }
-
-                        &.alert-critical,
-                        &.alert-quarantine,
-                        &.alert-info-blue {
-                            background: #f9fafb;
-
-                            .alert-icon {
-                                background: transparent !important;
-                                color: #5295f8 !important;
-                            }
-                        }
-
-                        .alert-icon {
-                            width: 32px;
-                            height: 32px;
-                            border-radius: 0;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-size: 20px;
-                            background: transparent !important;
-                            color: #5295f8 !important;
-
-                            i, .fa {
-                                color: #5295f8 !important;
-                                font-size: 20px;
-                            }
-                        }
-
-                        .alert-info {
-                            flex: 1;
-                            display: flex;
-                            flex-direction: column;
-
-                            .alert-title {
-                                font-size: 13px;
-                                font-weight: 700;
-                                color: #1f2937;
-                            }
-
-                            .alert-sub {
-                                font-size: 11px;
-                                color: #6b7280;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // ---- Bottom Timeline Schedule Block ----
-        .timeline-schedule-block {
-            .timeline-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 16px;
-                flex-wrap: wrap;
-                gap: 12px;
-
-                .timeline-date-selector {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-
-                    .arrow-btn {
-                        width: 24px;
-                        height: 24px;
-                        border-radius: 8px;
-                        background: #f3f4f6;
-                        color: #6b7280;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 11px;
-                        cursor: pointer;
-                    }
-
-                    .current-date-display {
-                        font-size: 14px;
-                        font-weight: 700;
-                        color: #1f2937;
-
-                        .highlight-date {
-                            color: #6b7280;
-                            font-weight: 600;
-                        }
-                    }
-                }
-
-                .timeline-legend {
-                    display: flex;
-                    align-items: center;
-                    gap: 14px;
-
-                    .legend-pill {
-                        display: flex;
-                        align-items: center;
-                        gap: 6px;
-                        font-size: 11.5px;
-                        font-weight: 700;
-                        color: #6b7280;
-                        cursor: pointer;
-
-                        .legend-dot {
-                            width: 8px;
-                            height: 8px;
-                            border-radius: 50%;
-
-                            &.dot-blue,
-                            &.dot-sky,
-                            &.dot-pink {
-                                background: #5295f8;
-                            }
-                        }
-                    }
-                }
-            }
-
-            .gantt-container {
-                position: relative;
-                padding-bottom: 24px;
-
-                .gantt-grid-lines {
-                    position: absolute;
-                    left: 0;
-                    right: 0;
-                    top: 0;
-                    bottom: 24px;
-                    display: flex;
-                    justify-content: space-between;
-
-                    .grid-line {
-                        width: 1px;
-                        background: #e5e7eb;
-                    }
-                }
-
-                .gantt-items-layer {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 10px;
-                    position: relative;
-                    z-index: 1;
-                    padding: 10px 0;
-
-                    .gantt-empty {
-                        font-size: 12px;
-                        color: #6b7280;
-                        text-align: center;
-                        padding: 20px 0;
-                    }
-
-                    .gantt-item-wrapper {
-                        cursor: pointer;
-
-                        .gantt-card {
-                            display: flex;
-                            align-items: center;
-                            gap: 10px;
-                            background: #FFFFFF;
-                            border: 1px solid #e5e7eb;
-                            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-                            border-radius: 12px;
-                            padding: 8px 12px;
-                            width: max-content;
-                            min-width: 240px;
-                            max-width: 320px;
-                            transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-                            &:hover {
-                                transform: translateY(-2px);
-                                box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
-                            }
-
-                            .gantt-icon {
-                                width: 30px;
-                                height: 30px;
-                                border-radius: 99px;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                font-size: 12px;
-
-                                &.icon-released,
-                                &.icon-quarantine,
-                                &.icon-rejected,
-                                &.icon-approved,
-                                &.icon-pending {
-                                    background: #5295f8;
-                                    color: #FFFFFF;
-                                }
-                            }
-
-                            .gantt-details {
-                                flex: 1;
-                                display: flex;
-                                flex-direction: column;
-
-                                .gantt-name {
-                                    font-size: 12px;
-                                    font-weight: 700;
-                                    color: #1f2937;
-                                }
-
-                                .gantt-sub {
-                                    font-size: 10.5px;
-                                    color: #6b7280;
-                                }
-                            }
-
-                            .gantt-chip {
-                                font-size: 10px;
-                                font-weight: 700;
-                                padding: 3px 8px;
-                                border-radius: 20px;
-                                background: #eff6ff;
-                                color: #5295f8;
-                            }
-                        }
-                    }
-                }
-
-                .gantt-hours-row {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-top: 10px;
-                    border-top: 1px solid #e5e7eb;
-                    padding-top: 8px;
-
-                    .hour-marker {
-                        font-family: 'IBM Plex Mono', monospace;
-                        font-size: 10.5px;
-                        color: #9ca3af;
-
-                        &.active {
-                            color: #1f2937;
-                            font-weight: 700;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Small Card Tiles Light Blue Border Hover Effect
-        .qms-kpi-card,
-        .schedule-item-card:not(.expiring-breakdown-card),
-        .alert-item,
-        .exp-pill {
-            border: 2px solid transparent !important;
-            transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
-
-            &:hover {
-                border-color: #93c5fd !important;
-                box-shadow: 0 4px 14px rgba(82, 149, 248, 0.2) !important;
-            }
-        }
-
-        .expiring-breakdown-card {
-            border: none !important;
-            box-shadow: none !important;
-
-            &:hover {
-                border: none !important;
-                box-shadow: none !important;
-            }
-        }
-
-        // Status Pill Overrides - Unified Soft Blue Accent
-        .status-pill {
-            background: #eff6ff !important;
-            color: #5295f8 !important;
-            font-weight: 700 !important;
         }
     }
 
-    // ======================================================================
-    // Small screens
-    // The three top columns already stack at 1200px (see .top-columns-grid);
-    // what is left is keeping the header row and the KPI tiles readable once
-    // the board is only a few hundred pixels wide.
-    // ======================================================================
-    @media (max-width: 767.98px) {
-        padding: 12px 12px 32px;
+    // ---- Quality overview ----
+    .quality-alerts-card {
+        padding: 20px 20px 20px;
 
-        .dash-top-nav {
-            flex-wrap: wrap;
-            gap: 12px;
+        .card-header {
+            margin-bottom: 18px;
 
-            .user-greeting-header .greeting-title {
+            .card-header-title {
                 font-size: 18px;
             }
 
-            .nav-user-actions {
-                width: 100%;
-
-                .date-filter-pill {
-                    width: 100%;
-                    justify-content: space-between;
-
-                    .date-input {
-                        flex: 1;
-                        width: auto;
-                        min-width: 0;
-                    }
-                }
+            .header-icon {
+                width: 34px;
+                height: 34px;
             }
         }
 
-        .dash-main-grid {
+        .alerts-list {
+            display: flex;
+            flex-direction: column;
             gap: 14px;
+            flex: 1;
+        }
 
-            .card-box {
-                padding: 14px;
+        .alert-item {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: $pd-soft;
+            border: 1px solid transparent;
+            border-radius: 14px;
+            padding: 14px 18px;
+            cursor: pointer;
+            transition: border-color 0.15s ease;
+
+            &:hover {
+                border-color: $pd-hover-border;
             }
 
-            .top-columns-grid .center-col-stack .qms-metrics-row {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+            .alert-icon {
+                width: 34px;
+                height: 34px;
+                flex: none;
+                border-radius: 10px;
+                background: $pd-surface;
+                box-shadow: 0 1px 2px rgba(7, 43, 51, 0.06);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 15px;
+                color: $pd-primary-text;
+
+                i {
+                    color: inherit !important;
+                }
+            }
+
+            .alert-info {
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+
+                .alert-title {
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: $pd-ink;
+                    line-height: 1.25;
+                }
+
+                .alert-sub {
+                    font-size: 12.5px;
+                    color: $pd-muted;
+                }
             }
         }
     }
 
-    // Below this the tiles cannot hold a title and a value side by side.
-    @media (max-width: 420px) {
-        .dash-main-grid .top-columns-grid .center-col-stack .qms-metrics-row {
-            grid-template-columns: 1fr;
+    // ---- Recent batches ----
+    .recent-batches-table-card {
+        padding: 20px 20px 18px;
+
+        .card-header {
+            margin-bottom: 18px;
         }
 
-        .dash-main-grid .top-columns-grid .qms-kpi-card {
-            height: auto;
-            min-height: 96px;
+        .recent-batches-table {
+            width: 100%;
+            margin: 0;
+            font-size: 15px;
+            --bs-table-bg: transparent;
+            --bs-table-hover-bg: #{$pd-soft};
+
+            th {
+                padding: 10px 12px;
+                font-size: 13px;
+                font-weight: 500;
+                color: $pd-muted;
+                background: transparent;
+                border-bottom: 1.5px solid $pd-border;
+                text-transform: none;
+            }
+
+            td {
+                padding: 13px 12px;
+                border-bottom: 1px solid $pd-border;
+                vertical-align: middle;
+                background: transparent;
+            }
+
+            tbody tr {
+                cursor: pointer;
+                transition: background 0.15s ease;
+
+                &:hover td {
+                    background: $pd-soft;
+                }
+            }
+
+            .batch-name {
+                font-weight: 700;
+                color: $pd-primary-text;
+            }
+
+            .batch-product {
+                color: $pd-ink;
+            }
+
+            .batch-date {
+                color: $pd-muted;
+            }
+
+            .empty-row {
+                text-align: center;
+                color: $pd-muted;
+                padding: 18px;
+            }
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12.5px;
+            font-weight: 600;
+            background: $pd-teal-tint;
+            color: $pd-primary-text;
+
+            &.status-quarantine,
+            &.status-on_hold {
+                background: $pd-gold-tint;
+                color: $pd-gold-dark;
+            }
+
+            &.status-rejected,
+            &.status-recalled {
+                background: $pd-danger-tint;
+                color: $pd-danger;
+            }
+
+            &.status-released {
+                background: $pd-primary;
+                color: #ffffff;
+            }
+        }
+    }
+
+    // ======================================================================
+    // Narrower screens
+    // ======================================================================
+    @media (max-width: 1399.98px) {
+        .top-columns-grid {
+            grid-template-columns: minmax(0, 1fr) 270px;
+        }
+
+        .dash-top-row,
+        .dash-mid-row {
+            grid-template-columns: 270px minmax(0, 1fr);
+        }
+    }
+
+    @media (max-width: 1199.98px) {
+        .top-columns-grid,
+        .dash-top-row,
+        .dash-mid-row {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .qms-metrics-row {
+            grid-auto-flow: row;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        padding: 14px 12px 32px;
+
+        .dash-top-nav {
+            flex-wrap: wrap;
+
+            .greeting-title {
+                font-size: 21px;
+            }
+
+            .nav-user-actions,
+            .date-filter-pill {
+                width: 100%;
+            }
+
+            .date-filter-pill {
+                justify-content: space-between;
+
+                .date-input {
+                    flex: 1;
+                    width: auto;
+                    min-width: 0;
+                    font-size: 13px;
+                }
+            }
+        }
+
+        .card-box {
+            padding: 14px;
+        }
+
+        .qms-kpi-card,
+        .hero-release-card {
+            min-height: 140px;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .qms-metrics-row {
+            grid-template-columns: minmax(0, 1fr);
         }
     }
 }

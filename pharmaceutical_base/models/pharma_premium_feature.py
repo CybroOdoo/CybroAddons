@@ -19,8 +19,12 @@
 #    If not, see <https://www.gnu.org/licenses/>.
 #
 #############################################################################
+import os
+
+import odoo.addons
 from odoo import api, fields, models
 from odoo.exceptions import UserError
+from odoo.modules.module import MANIFEST_NAMES, MODULE_NAME_RE
 
 
 class PharmaPremiumFeature(models.Model):
@@ -97,14 +101,40 @@ class PharmaPremiumFeature(models.Model):
         return self.env['ir.module.module'].sudo().search(
             [('name', '=', self.module_name)], limit=1)
 
+    def _is_in_addons_path(self):
+        """Whether the add-on's module folder is in the addons path now.
+
+        The disk is read on every call: Odoo keeps a module's record after
+        its folder is removed, and caches manifests until the server restarts.
+        """
+        self.ensure_one()
+        if not MODULE_NAME_RE.match(self.module_name or ''):
+            return False
+        return any(
+            os.path.isfile(os.path.join(path, self.module_name, manifest))
+            for path in odoo.addons.__path__
+            for manifest in MANIFEST_NAMES
+        )
+
+    def _list_module(self):
+        """The add-on's module, listing it first when its folder was added
+        to the addons path but Update Apps List was not run."""
+        self.ensure_one()
+        module = self._get_module()
+        if module.state in (False, 'uninstallable') and self._is_in_addons_path():
+            self.env['ir.module.module'].sudo().update_list()
+            module = self._get_module()
+        return module
+
     @api.depends('module_name')
     def _compute_module_state(self):
-        """Read the add-on's state from the module list."""
+        """Read the add-on's state from the module list, counting it as
+        available only while its folder is in the addons path."""
         for rec in self:
             module = rec._get_module()
             if module.state == 'installed':
                 rec.module_state = 'installed'
-            elif module and module.state not in ('uninstallable', 'to remove'):
+            elif module.state != 'to remove' and rec._is_in_addons_path():
                 rec.module_state = 'available'
             else:
                 rec.module_state = 'not_available'
@@ -115,6 +145,12 @@ class PharmaPremiumFeature(models.Model):
         """Whether the add-on of the feature ``code`` is installed."""
         feature = self.sudo().search([('code', '=', code)], limit=1)
         return bool(feature) and feature.is_installed
+
+    @api.model
+    def _pharma_feature_on_server(self, code):
+        """Whether the module of the feature ``code`` is on this server."""
+        feature = self.sudo().search([('code', '=', code)], limit=1)
+        return bool(feature) and feature.module_state != 'not_available'
 
     def action_open_dialog(self):
         """Open the feature's description as a dialog."""
@@ -155,9 +191,8 @@ class PharmaPremiumFeature(models.Model):
         self.ensure_one()
         if not self.env.user.has_group('base.group_system'):
             raise UserError(self.env._('Only an administrator can install %s.', self.name))
-        module = self._get_module()
         if self.module_state != 'available':
             raise UserError(self.env._('The %(name)s module (%(module)s) is not on this server. '
                 'Purchase it on the Odoo Apps store and add it to the addons '
                 'path first.', name=self.name, module=self.module_name))
-        return module.button_immediate_install()
+        return self._list_module().button_immediate_install()
