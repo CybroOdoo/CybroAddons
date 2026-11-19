@@ -162,9 +162,10 @@ class TestFleetCompleteReport(common.TransactionCase):
         wizard._onchange_end_date()
         self.assertEqual(wizard.end_date, wizard.start_date, "end_date < start_date resets to start_date.")
 
-        wizard.end_date = self.today + timedelta(days=15)
+        future_date = self.today + timedelta(days=15)
+        wizard.end_date = future_date
         wizard._onchange_end_date()
-        self.assertEqual(wizard.end_date, self.today, "Future end_date resets to today.")
+        self.assertEqual(wizard.end_date, future_date, "Future end_date is allowed.")
 
     def test_05_onchange_state_ids_filters_vehicles(self):
         """Verify selecting state_ids filters existing vehicle_ids."""
