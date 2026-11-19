@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Outpatient prescription report action -->
+    <record id="action_report_patient_prescription" model="ir.actions.report">
+        <field name="name">Patient Prescription</field>
+        <field name="model">hospital.outpatient</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">base_hospital_management.patient_prescription_report</field>
+        <field name="binding_model_id" ref="model_hospital_outpatient"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!-- Inpatient prescription report action -->
+    <record id="action_report_inpatient_prescription" model="ir.actions.report">
+        <field name="name">Inpatient Prescription</field>
+        <field name="model">hospital.inpatient</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">base_hospital_management.patient_prescription_report</field>
+        <field name="binding_model_id" ref="model_hospital_inpatient"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!--    Patient prescription report template-->
+    <template id="patient_prescription_report">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <center>
+                    <h1>Doctor Prescription</h1>
+                </center>
+                <div>
+                    <strong>Date :</strong>
+                    <span t-out="date or (docs and (getattr(docs[0], 'op_date', False) or getattr(docs[0], 'hosp_date', False)))"/>
+                </div>
+                <div>
+                    <strong>Patient's Name :</strong>
+                    <span t-out="patient_name or (docs and docs[0].patient_id.name)"/>
+                </div>
+                <div>
+                    <strong>Doctor :</strong>
+                    <span t-out="doctor_name or (docs and (getattr(docs[0], 'doctor_id', False) and getattr(docs[0].doctor_id, 'doctor_id', False) and docs[0].doctor_id.doctor_id.name or getattr(docs[0], 'attending_doctor_id', False) and docs[0].attending_doctor_id.name))"/>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr style="text-align:left">
+                            <th>SL.No</th>
+                            <th>Medicine</th>
+                            <th>Intake</th>
+                            <th>Time</th>
+                            <th>Quantity</th>
+                            <th>Before/ After Food</th>
+                        </tr>
+                    </thead>
+                    <t t-set="i" t-value="0"/>
+                    <tbody>
+                        <t t-if="datas">
+                            <tr t-foreach="datas" t-as="line">
+                                <td>
+                                    <t t-set="i" t-value="i + 1"/>
+                                    <span t-out="i"/>
+                                </td>
+                                <td>
+                                    <span t-out="line['medicine']"/>
+                                </td>
+                                <td>
+                                    <span t-out="line['intake']"/>
+                                </td>
+                                <td>
+                                    <span t-out="line['time']"/>
+                                </td>
+                                <td>
+                                    <span t-out="line['quantity']"/>
+                                </td>
+                                <td>
+                                    <span t-out="line['note']"/>
+                                </td>
+                            </tr>
+                        </t>
+                        <t t-elif="docs">
+                            <tr t-foreach="docs[0].prescription_ids" t-as="line">
+                                <td>
+                                    <t t-set="i" t-value="i + 1"/>
+                                    <span t-out="i"/>
+                                </td>
+                                <td>
+                                    <span t-out="line.medicine_id.name"/>
+                                </td>
+                                <td>
+                                    <span t-out="line.no_intakes"/>
+                                </td>
+                                <td>
+                                    <span t-out="line.time.capitalize() if line.time else ''"/>
+                                </td>
+                                <td>
+                                    <span t-out="line.quantity"/>
+                                </td>
+                                <td>
+                                    <span t-out="line.note.capitalize() if line.note else ''"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </t>
+        </t>
+    </template>
+     <!--Report paper format-->
+    <record id="paperformat_patient" model="report.paperformat">
+        <field name="name">Patient Card Paperformat</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">140</field>
+        <field name="page_width">210</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">5</field>
+        <field name="margin_bottom">5</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+    <!--        Patient card report action-->
+    <record id="action_report_patient_card" model="ir.actions.report">
+        <field name="name">Patient Card</field>
+        <field name="model">res.partner</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">base_hospital_management.patient_card_report</field>
+        <field name="binding_model_id" ref="model_res_partner"/>
+        <field name="paperformat_id"
+               ref="base_hospital_management.paperformat_patient"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!--    Patient card template-->
+    <template id="patient_card_report">
+        <t t-call="web.html_container">
+            <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 10px; text-align: center;">
+                <div style="display: inline-block; white-space: nowrap;">
+                    <!-- Front Side Card -->
+                    <div style="width: 360px; height: 230px; border: 2px solid #222; border-radius: 8px; overflow: hidden; position: relative; box-sizing: border-box; background: #ffffff; display: inline-block; vertical-align: top; text-align: left; margin-right: 15px; white-space: normal;">
+                        <!-- Red Header -->
+                        <div style="background-color: #d9534f; color: #ffffff; padding: 6px 12px; font-size: 18px; font-weight: bold; text-align: center; letter-spacing: 1px;">
+                            Patient Card
+                        </div>
+                        <div style="padding: 10px; position: relative;">
+                            <div style="font-size: 16px; font-weight: bold; color: #111; margin-bottom: 2px;">
+                                <t t-out="name"/>
+                            </div>
+                            <div style="font-size: 13px; font-weight: bold; color: #444; margin-bottom: 8px;">
+                                Code: <t t-out="code"/>
+                            </div>
+                            <table style="width: 65%; font-size: 12px; border-collapse: collapse; line-height: 1.5;">
+                                <tr t-if="gender">
+                                    <td style="padding-right: 5px;"><b>Gender:</b></td>
+                                    <td><t t-out="gender"/></td>
+                                </tr>
+                                <tr t-if="age">
+                                    <td style="padding-right: 5px;"><b>Age:</b></td>
+                                    <td><t t-out="age"/></td>
+                                </tr>
+                                <tr t-if="dob">
+                                    <td style="padding-right: 5px;"><b>DOB:</b></td>
+                                    <td><t t-out="dob"/></td>
+                                </tr>
+                                <tr t-if="blood">
+                                    <td style="padding-right: 5px;"><b>Blood:</b></td>
+                                    <td><t t-out="blood"/></td>
+                                </tr>
+                                <tr t-if="phone">
+                                    <td style="padding-right: 5px;"><b>Phone:</b></td>
+                                    <td><t t-out="phone"/></td>
+                                </tr>
+                            </table>
+                            <!-- Patient Photo -->
+                            <div style="position: absolute; right: 10px; top: 10px; width: 100px; height: 120px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f9f9f9;">
+                                <t t-if="image and image.get('image_1920')">
+                                    <img t-attf-src="data:image/png;base64,{{image['image_1920']}}"
+                                         style="max-height: 120px; max-width: 100px; object-fit: cover;"/>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Back Side Card -->
+                    <div style="width: 360px; height: 230px; border: 2px solid #222; border-radius: 8px; overflow: hidden; position: relative; box-sizing: border-box; background: #ffffff; display: inline-block; vertical-align: top; text-align: left; padding: 12px; white-space: normal;">
+                        <div style="font-size: 12px; line-height: 1.4;">
+                            <div style="margin-bottom: 10px;">
+                                <b style="color: #d9534f; font-size: 13px;">Address:</b><br/>
+                                <t t-if="street"><t t-out="street"/><br/></t>
+                                <t t-if="street2"><t t-out="street2"/><br/></t>
+                                <t t-if="city or state"><t t-out="city"/> <t t-out="state"/><br/></t>
+                                <t t-if="country"><t t-out="country"/><br/></t>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <b style="color: #333; font-size: 13px;"><t t-out="company_name"/></b><br/>
+                                <t t-if="company_street"><t t-out="company_street"/><br/></t>
+                                <t t-if="company_city or company_state or company_zip">
+                                    <t t-out="company_city"/> <t t-out="company_state"/> <t t-out="company_zip"/><br/>
+                                </t>
+                            </div>
+                        </div>
+                        <!-- Barcode -->
+                        <div style="position: absolute; right: 12px; bottom: 10px; text-align: center;">
+                            <t t-if="barcode and barcode.get('barcode_png')">
+                                <img style="max-height: 50px; max-width: 140px;"
+                                     t-attf-src="data:image/png;base64,{{barcode['barcode_png']}}"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

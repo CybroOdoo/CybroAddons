@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Patient lab test report action-->
+    <record id="action_report_patient_lab_tests" model="ir.actions.report">
+        <field name="name">Patient Lab Tests</field>
+        <field name="model">patient.lab.test</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">base_hospital_management.report_patient_lab_tests</field>
+        <field name="binding_model_id" ref="model_patient_lab_test"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!--    Patient lab test report template-->
+    <template id="report_patient_lab_tests">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <center>
+                    <h1>Lab Tests</h1>
+                </center>
+                <div>
+                    <strong>Date :</strong>
+                    <span t-out="date or (docs and docs[:1].date)"/>
+                </div>
+                <div>
+                    <strong>Patient's Name :</strong>
+                    <span t-out="patient_name or (docs and docs[:1].patient_id.name)"/>
+                </div>
+                <div>
+                    <strong>Doctor Name :</strong>
+                    <span t-out="doctor_name or (docs and docs[:1].sudo().test_id.doctor_id.name)"/>
+                </div>
+                <table class="table table-striped">
+                    <tr>
+                        <th>Test</th>
+                        <th>Normal</th>
+                        <th>Unit</th>
+                        <th>Result</th>
+                        <th>Price Including Tax</th>
+                    </tr>
+                    <t t-if="datas">
+                        <tr t-foreach="datas" t-as="line" style="text-align:center">
+                            <td>
+                                <span t-out="line['name']"/>
+                            </td>
+                            <td>
+                                <span t-out="line['normal']"/>
+                            </td>
+                            <td>
+                                <span t-out="line['uom_id']"/>
+                            </td>
+                            <td>
+                                <span t-out="line['result']"/>
+                            </td>
+                            <td>
+                                <t t-out="line['currency']"/>
+                                <span t-out="line['cost']"/>
+                            </td>
+                        </tr>
+                    </t>
+                    <t t-elif="docs">
+                        <tr t-foreach="docs[:1].result_ids" t-as="line" style="text-align:center">
+                            <td>
+                                <span t-out="line.test_id.name"/>
+                            </td>
+                            <td>
+                                <span t-out="line.normal"/>
+                            </td>
+                            <td>
+                                <span t-out="line.uom_id.name"/>
+                            </td>
+                            <td>
+                                <span t-out="line.result"/>
+                            </td>
+                            <td>
+                                <t t-out="docs[:1].currency_id.symbol"/>
+                                <span t-out="line.price"/>
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+            </t>
+        </t>
+    </template>
+</odoo>
