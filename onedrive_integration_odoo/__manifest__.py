@@ -21,7 +21,7 @@
 ###############################################################################
 {
     'name': "Onedrive Integration",
-    'version': "19.0.1.0.0",
+    'version': "19.0.1.0.1",
     'category': "Productivity",
     'summary': """Upload and download files in Onedrive using odoo """,
     'description': """This module was developed to upload files to Onedrive as 

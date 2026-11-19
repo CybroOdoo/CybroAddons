@@ -22,16 +22,15 @@
 from odoo import SUPERUSER_ID, api
 
 
-def uninstall_hook(cr, registry):
+def uninstall_hook(env):
     """
     Delete System Parameters
     """
-    env = api.Environment(cr, SUPERUSER_ID, {})
     env['ir.config_parameter'].sudo().search(
-        [('key', '=', 'onedrive_integration_odoo.client_id')]).unlink()
-    env['ir.config_parameter'].sudo().search(
-        [('key', '=', 'onedrive_integration_odoo.client_secret')]).unlink()
-    env['ir.config_parameter'].sudo().search(
-        [('key', '=', 'onedrive_integration_odoo.folder_id')]).unlink()
-    env['ir.config_parameter'].sudo().search(
-        [('key', '=', 'onedrive_integration_odoo.onedrive_button')]).unlink()
+        [('key', 'in', [
+            'onedrive_integration_odoo.client_id',
+            'onedrive_integration_odoo.client_secret',
+            'onedrive_integration_odoo.folder_id',
+            'onedrive_integration_odoo.onedrive_button',
+        ])]
+    ).unlink()
