@@ -3,6 +3,14 @@
 #### 09.11.2026
 #### Version 20.0.1.0.0
 #### ADD
+- Initial commit for Odoo Zoom Meet Integration
 
-- Initial release of Odoo Zoom Meet Integration.
-- Integrates Odoo Calendar module with Zoom.
+#### 10.11.2026
+#### Version 20.0.1.0.1
+#### UPDT
+- Updated the index page
+
+#### 10.11.2026
+#### Version 20.0.1.0.2
+#### UPDT
+- Fixed the issues for controllers

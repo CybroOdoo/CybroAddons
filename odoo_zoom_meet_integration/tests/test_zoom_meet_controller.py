@@ -1,28 +1,23 @@
 # -*- coding: utf-8 -*-
-#################################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2026-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
-#    Author: Cybrosys Techno Solutions (<https://www.cybrosys.com>)
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
-#    This program is free software: you can modify it under the terms of the
-#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
-#    This program is distributed in the hope that it will be useful, but
-#    WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#    This program is distributed in the hope it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
-#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
-#    (AGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-################################################################################
-
+#############################################################################
 from unittest.mock import MagicMock, patch
 
-from odoo.addons.odoo_zoom_meet_integration.controller.odoo_zoom_meet_integration import (
+from odoo.addons.odoo_zoom_meet_integration.controllers.odoo_zoom_meet_integration import (
     ZoomMeetAuth,
 )
 from odoo.exceptions import UserError
@@ -44,7 +39,7 @@ class TestZoomMeetController(common.TransactionCase):
         })
         cls.controller = ZoomMeetAuth()
 
-    @patch('odoo.addons.odoo_zoom_meet_integration.controller.odoo_zoom_meet_integration.requests.post')
+    @patch('odoo.addons.odoo_zoom_meet_integration.controllers.odoo_zoom_meet_integration.requests.post')
     def test_01_get_auth_code_success(self, mock_post):
         """Test controller exchange of auth code for access token successfully updates company."""
         mock_response = MagicMock()
@@ -61,10 +56,10 @@ class TestZoomMeetController(common.TransactionCase):
         mock_request.env = self.env
 
         with patch(
-            'odoo.addons.odoo_zoom_meet_integration.controller.odoo_zoom_meet_integration.request',
+            'odoo.addons.odoo_zoom_meet_integration.controllers.odoo_zoom_meet_integration.request',
             mock_request,
         ), patch(
-            'odoo.addons.odoo_zoom_meet_integration.controller.odoo_zoom_meet_integration.http.request',
+            'odoo.addons.odoo_zoom_meet_integration.controllers.odoo_zoom_meet_integration.http.request',
             mock_request,
         ):
             result = self.controller.get_auth_code(code='test_oauth_code_1234')
@@ -76,7 +71,7 @@ class TestZoomMeetController(common.TransactionCase):
         self.assertEqual(self.company.zoom_company_refresh_token, 'new_ctrl_refresh_token_xyz')
         self.assertTrue(self.company.zoom_company_access_token_expiry)
 
-    @patch('odoo.addons.odoo_zoom_meet_integration.controller.odoo_zoom_meet_integration.requests.post')
+    @patch('odoo.addons.odoo_zoom_meet_integration.controllers.odoo_zoom_meet_integration.requests.post')
     def test_02_get_auth_code_failure(self, mock_post):
         """Test controller raises UserError when token endpoint returns invalid response."""
         mock_response = MagicMock()
@@ -91,10 +86,10 @@ class TestZoomMeetController(common.TransactionCase):
         mock_request.env = self.env
 
         with patch(
-            'odoo.addons.odoo_zoom_meet_integration.controller.odoo_zoom_meet_integration.request',
+            'odoo.addons.odoo_zoom_meet_integration.controllers.odoo_zoom_meet_integration.request',
             mock_request,
         ), patch(
-            'odoo.addons.odoo_zoom_meet_integration.controller.odoo_zoom_meet_integration.http.request',
+            'odoo.addons.odoo_zoom_meet_integration.controllers.odoo_zoom_meet_integration.http.request',
             mock_request,
         ):
             with self.assertRaises(UserError) as cm:
@@ -109,10 +104,10 @@ class TestZoomMeetController(common.TransactionCase):
         mock_request.env = self.env
 
         with patch(
-            'odoo.addons.odoo_zoom_meet_integration.controller.odoo_zoom_meet_integration.request',
+            'odoo.addons.odoo_zoom_meet_integration.controllers.odoo_zoom_meet_integration.request',
             mock_request,
         ), patch(
-            'odoo.addons.odoo_zoom_meet_integration.controller.odoo_zoom_meet_integration.http.request',
+            'odoo.addons.odoo_zoom_meet_integration.controllers.odoo_zoom_meet_integration.http.request',
             mock_request,
         ):
             result = self.controller.get_auth_code()
@@ -140,7 +135,7 @@ class TestZoomMeetControllerHttp(common.HttpCase):
         response = self.url_open('/zoom_meet_authentication')
         self.assertEqual(response.status_code, 200)
 
-    @patch('odoo.addons.odoo_zoom_meet_integration.controller.odoo_zoom_meet_integration.requests.post')
+    @patch('odoo.addons.odoo_zoom_meet_integration.controllers.odoo_zoom_meet_integration.requests.post')
     def test_05_http_endpoint_with_code_success(self, mock_post):
         """GET /zoom_meet_authentication with code returns success message."""
         mock_response = MagicMock()
