@@ -31,8 +31,6 @@ export class StopWatch extends Component {
     input = signal.ref();
 
     setup() {
-        console.group("[StopWatch] setup()");
-
         const initialValue = this.props.record?.data?.[this.props.name] || 0;
         const isLive = Boolean(this.props.record?.data?.is_live_capture);
 

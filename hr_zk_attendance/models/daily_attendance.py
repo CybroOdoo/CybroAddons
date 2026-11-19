@@ -49,7 +49,7 @@ class DailyAttendance(models.Model):
 
     def init(self):
         """Retrieve the data for attendance report"""
-        tools.drop_view_if_exists(self._cr, 'daily_attendance')
+        tools.drop_view_if_exists(self.env.cr, 'daily_attendance')
         query = """
             CREATE OR REPLACE VIEW daily_attendance AS (
                 SELECT
@@ -65,4 +65,4 @@ class DailyAttendance(models.Model):
                 ORDER BY punching_time DESC
             )
         """
-        self._cr.execute(query)
+        self.env.cr.execute(query)

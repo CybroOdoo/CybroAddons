@@ -48,7 +48,7 @@ class ZkUserManagement(models.TransientModel):
                 record.employee_ids = False
 
     def action_confirm_user_management(self):
-        """Function to works according to the selected option"""
+        """Function to work according to the selected option"""
         if self.manage_users:
             if self.manage_users == 'get_users':
                 self.env['biometric.device.details'].browse(int(self.env.context.get('active_id'))).get_all_users()

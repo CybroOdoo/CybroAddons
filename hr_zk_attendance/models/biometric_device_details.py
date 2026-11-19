@@ -26,7 +26,7 @@ from odoo.modules.registry import Registry
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
-live_capture_thread = None
+_live_capture_threads = {}
 _logger = logging.getLogger(__name__)
 try:
     from zk import const, ZK
@@ -126,10 +126,9 @@ class BiometricDeviceDetails(models.Model):
 
         except Exception as error:
             _logger.exception("ZK connection error: %s", error)
-
-            raise ValidationError(f'{error}')
+            raise ValidationError(str(error))
     def action_clear_attendance(self):
-        """Methode to clear record from the zk.machine.attendance model and
+        """Method to clear record from the zk.machine.attendance model and
         from the device"""
         for info in self:
             try:
@@ -151,8 +150,9 @@ class BiometricDeviceDetails(models.Model):
                         # Clearing data in the device
                         conn.clear_attendance()
                         # Clearing data from attendance log
-                        self._cr.execute(
-                            """delete from zk_machine_attendance""")
+                        self.env['zk.machine.attendance'].search([
+                            ('company_id', '=', info.company_id.id)
+                        ]).unlink()
                         # Get current time in user's timezone
                         user_tz = pytz.timezone(self.env.user.tz or 'UTC')
                         current_time_utc = fields.Datetime.now()
@@ -174,7 +174,7 @@ class BiometricDeviceDetails(models.Model):
                         _('Unable to connect to Attendance Device. Please use '
                           'Test Connection button to verify.'))
             except Exception as error:
-                raise ValidationError(f'{error}')
+                raise ValidationError(str(error))
 
     def action_download_attendance(self):
         """Function to download attendance records from the device"""
@@ -210,7 +210,7 @@ class BiometricDeviceDetails(models.Model):
                         employee = self.env['hr.employee'].search([
                             ('device_id_num', '=', use.user_id),
                             ('company_id', '=', self.env.company.id)
-                        ], limit=1)  # FIX: limit=1 avoids "Expected singleton"
+                        ], limit=1)
 
                         if employee:
                             employee.write({'device_id': self.id})
@@ -250,13 +250,13 @@ class BiometricDeviceDetails(models.Model):
                             get_user_id = self.env['hr.employee'].search([
                                 ('device_id_num', '=', each.user_id),
                                 ('company_id', '=', self.env.company.id)
-                            ], limit=1)  # FIX: limit=1 avoids "Expected singleton"
+                            ], limit=1)
 
                             if get_user_id:
-                                # Validate Punch Type (Fixes the '255' error)
+                                # Validate punch type
                                 punch_val = str(each.punch)
                                 if punch_val not in valid_punch_types:
-                                    _logger.warning(f"Device sent invalid punch type {punch_val}. Defaulting to '0'")
+                                    _logger.warning("Device sent invalid punch type %s. Defaulting to '0'", punch_val)
                                     punch_val = '0'
 
                                 # Check for duplicates
@@ -294,10 +294,6 @@ class BiometricDeviceDetails(models.Model):
                                     elif punch_val == '1':  # Check-out
                                         if open_attendance:
                                             open_attendance.write({'check_out': atten_time_str})
-                                        else:
-                                            # Optional: If checkout found without checkin,
-                                            # create a record with checkin=checkout or ignore
-                                            pass
                             else:
                                 # Logic to create employee if not found
                                 new_emp = self.env['hr.employee'].create({
@@ -321,7 +317,7 @@ class BiometricDeviceDetails(models.Model):
                     conn.enable_device()
                     conn.disconnect()
                 except Exception as e:
-                    _logger.error(f"Error during download: {str(e)}")
+                    _logger.error("Error during download: %s", str(e))
                     conn.enable_device()
                     conn.disconnect()
                     raise UserError(_("Communication error: %s") % str(e))
@@ -369,34 +365,42 @@ class BiometricDeviceDetails(models.Model):
             zk_port = info.port_number
             password = info.device_password
             try:
-                self.is_live_capture = True
-                self.action_set_timezone()
-                instance = ZKBioAttendance(machine_ip, zk_port, password, info)
-                global live_capture_thread
-                live_capture_thread = instance
-                live_capture_thread.start()
-                self.live_capture_start_time = fields.Datetime.now()
-                return {
-                    'type': 'ir.actions.client',
-                    'tag': 'reload',
-                }
+                zk = ZK(machine_ip, port=zk_port, timeout=30,
+                        password=password, force_udp=False,
+                        ommit_ping=info.ommit_ping)
             except NameError:
                 raise UserError(_(
                     "Please install it with 'pip3 install pyzk'."))
 
-    def action_stop_live_capture(self):
-        """Function to stop Live capture"""
-        try:
-            self.is_live_capture = False
-            if live_capture_thread:
-                live_capture_thread.stop()
+            conn = self.device_connect(zk)
+            if not conn:
+                raise UserError(_(
+                    "Unable to connect to Attendance Device. Please use "
+                    "Test Connection button to verify."))
+            conn.disconnect()
+
+            info.is_live_capture = True
+            info.action_set_timezone()
+            instance = ZKBioAttendance(machine_ip, zk_port, password, info)
+            _live_capture_threads[info.id] = instance
+            instance.start()
+            info.live_capture_start_time = fields.Datetime.now()
             return {
                 'type': 'ir.actions.client',
                 'tag': 'reload',
             }
-        except NameError:
-            raise UserError(_(
-                "Please install it with 'pip3 install pyzk'."))
+
+    def action_stop_live_capture(self):
+        """Function to stop Live capture"""
+        for info in self:
+            info.is_live_capture = False
+            thread = _live_capture_threads.pop(info.id, None)
+            if thread:
+                thread.stop()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
     def action_set_timezone(self):
         """Function to set user's timezone to device"""
@@ -414,7 +418,7 @@ class BiometricDeviceDetails(models.Model):
                       "with 'pip3 install pyzk'."))
             conn = self.device_connect(zk)
             if conn:
-                # ⭐ Use device timezone instead of user timezone
+                # Use device timezone instead of user timezone
                 device_tz = info.device_timezone or 'UTC'
                 device_timezone_time = pytz.utc.localize(fields.Datetime.now())
                 device_timezone_time = device_timezone_time.astimezone(
@@ -500,7 +504,7 @@ class BiometricDeviceDetails(models.Model):
                     conn.set_user(candidate_uid, employee.name, privilege,
                                   password, group_id, str(candidate_uid), card)
                 except Exception as e:
-                    _logger.info(e)
+                    _logger.info("%s", e)
                     raise ValidationError(
                         _(" Here is the user information:\n"
                           "uid: %s\n"
@@ -558,6 +562,8 @@ class BiometricDeviceDetails(models.Model):
                 })
                 employee.fingerprint_ids.unlink()
                 if employee_user_selection == 'both_device':
+                    self.env['zk.machine.attendance'].search([
+                        ('employee_id', '=', employee.id)]).unlink()
                     employee.unlink()
                 # Get current time in user's timezone
                 user_tz = pytz.timezone(self.env.user.tz or 'UTC')
@@ -566,7 +572,7 @@ class BiometricDeviceDetails(models.Model):
                     current_time_utc).astimezone(user_tz)
                 formatted_time = current_time_local.strftime(
                     '%Y-%m-%d %H:%M:%S %Z')
-                message = (f'New User {employee.name} Created on '
+                message = (f'User {employee_name} Deleted on '
                            f'{formatted_time} by {self.env.user.name}')
                 self.message_post(body=message)
             else:
@@ -612,8 +618,10 @@ class BiometricDeviceDetails(models.Model):
                             }
                         }
                 else:
-                    raise UserError(_(
-                        "Please Check the Connection"))
+                    conn.enable_device()
+                    raise UserError(_("User not found on the biometric device."))
+            else:
+                raise UserError(_("Please Check the Connection"))
 
     def get_device_information(self):
         """Gets device Information"""
@@ -657,8 +665,9 @@ class ZKBioAttendance(Thread):
         self.record = record
         self.env = record.env
         self.stop_event = threading.Event()
+        self.conn = None
 
-        _logger.info(f"Initializing live capture thread for {machine_ip}")
+        _logger.info("Initializing live capture thread for %s", machine_ip)
 
         zk_device = ZK(
             machine_ip,
@@ -672,13 +681,16 @@ class ZKBioAttendance(Thread):
         if conn:
             self.conn = conn
             conn.disable_device()
-            _logger.info(f"Live capture connected to {machine_ip}")
+            _logger.info("Live capture connected to %s", machine_ip)
         else:
-            raise UserError(_("Unable to connect to device"))
+            _logger.error(
+                "Unable to connect to device %s for live capture", machine_ip)
 
     def run(self):
         """Function to run the Thread - continuously monitors for new attendance"""
-        _logger.info(f"Live capture thread started for {self.machine_ip}")
+        if not self.conn:
+            return
+        _logger.info("Live capture thread started for %s", self.machine_ip)
 
         while not self.stop_event.is_set():
             try:
@@ -688,27 +700,29 @@ class ZKBioAttendance(Thread):
                             break
 
                         if attendance:
+                            user_id = (attendance.user_id if hasattr(
+                                attendance, 'user_id') else 'Unknown')
                             _logger.info(
-                                f"Live event detected: User {attendance.user_id if hasattr(attendance, 'user_id') else 'Unknown'}")
+                                "Live event detected: User %s", user_id)
                             self._data_live_capture()
 
                 time.sleep(2)
 
             except Exception as e:
-                _logger.error(f"Live capture error: {str(e)}")
+                _logger.error("Live capture error: %s", str(e))
                 time.sleep(5)
 
-        _logger.info(f"Live capture thread stopped for {self.machine_ip}")
+        _logger.info("Live capture thread stopped for %s", self.machine_ip)
 
     def stop(self):
         """Stops the live capture and stops the thread"""
-        _logger.info(f"Stopping live capture for {self.machine_ip}")
+        _logger.info("Stopping live capture for %s", self.machine_ip)
         if self.conn:
             self.conn.end_live_capture = True
             try:
                 self.conn.enable_device()
                 self.conn.disconnect()
-            except:
+            except Exception:
                 pass
         self.stop_event.set()
 
@@ -722,9 +736,9 @@ class ZKBioAttendance(Thread):
                 if self.conn.get_attendance():
                     _logger.info("Downloading attendance from device...")
                     self.record.with_env(new_env).action_download_attendance()
-                    _logger.info("✓ Live capture download completed")
+                    _logger.info("Live capture download completed")
 
                 new_cr.commit()
             except Exception as e:
-                _logger.error(f"Error in live capture download: {str(e)}")
+                _logger.error("Error in live capture download: %s", str(e))
                 new_cr.rollback()

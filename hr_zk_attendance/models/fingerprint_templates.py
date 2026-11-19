@@ -24,7 +24,8 @@ class FingerprintTemplates(models.Model):
     _description = 'Finger Print Templates for Employee'
 
     employee_id = fields.Many2one('hr.employee', string='Employee',
-                                  help='Name of the Employee')
+                                  help='Name of the Employee',
+                                  ondelete='cascade')
     finger_id = fields.Char(string='Finger Id',
                             help='The Number that refers the Finger')
     filename = fields.Char(string='Finger File Name',

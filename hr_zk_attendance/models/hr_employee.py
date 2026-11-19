@@ -32,7 +32,7 @@ class HrEmployee(models.Model):
                                            'an employee')
 
     def action_biometric_device(self):
-        """Server Action for Biometric Device which open a wizard with
+        """Server Action for Biometric Device which opens a wizard with
         several options"""
         return {
             'type': 'ir.actions.act_window',

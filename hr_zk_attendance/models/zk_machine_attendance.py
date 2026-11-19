@@ -25,7 +25,7 @@ class ZkMachineAttendance(models.Model):
     _order = 'punching_time desc'
 
     employee_id = fields.Many2one('hr.employee', string='Employee',
-                                  required=True)
+                                  required=True, ondelete='cascade')
     device_id_num = fields.Char(string='Biometric Device ID')
     punch_type = fields.Selection([
         ('0', 'Check In'),
