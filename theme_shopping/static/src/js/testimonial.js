@@ -1,5 +1,6 @@
 import { registry } from '@web/core/registry';
 import { rpc } from '@web/core/network/rpc';
+import { _t } from '@web/core/l10n/translation';
 import { ShoppingCarousel } from '@theme_shopping/js/carousel';
 
 class Testimonial extends ShoppingCarousel {
@@ -67,7 +68,7 @@ class Testimonial extends ShoppingCarousel {
         const testimonial = input.value.trim();
 
         if (!testimonial) {
-            this.services.notification.add('Please enter your testimonial.', {
+            this.services.notification.add(_t('Please enter your testimonial.'), {
                 type: 'warning',
             });
             return;
@@ -81,7 +82,7 @@ class Testimonial extends ShoppingCarousel {
             );
 
             if (result?.status !== 'success') {
-                this.services.notification.add('Failed to submit testimonial.', {
+                this.services.notification.add(_t('Failed to submit testimonial.'), {
                     type: 'danger',
                 });
                 return;
@@ -97,13 +98,12 @@ class Testimonial extends ShoppingCarousel {
 
             this.setupCarousel(this.el.querySelector('#testimonial_carousel'), true);
 
-            this.services.notification.add('Thank you for your testimonial!', {
+            this.services.notification.add(_t('Thank you for your testimonial!'), {
                 type: 'success',
             });
         } catch (error) {
-            console.error('Error submitting testimonial:', error);
             this.services.notification.add(
-                'An error occurred while submitting your testimonial.',
+                _t('An error occurred while submitting your testimonial.'),
                 { type: 'danger' }
             );
         } finally {
