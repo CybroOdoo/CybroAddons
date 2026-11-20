@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="web.WebClient" t-inherit="web.WebClient" t-inherit-mode="extension">
+    <xpath expr="//NavBar" position="after">
+      <MinimalSidebar/>
+    </xpath>
+  </t>
+
+  <t t-name="minimal_backend_theme.SidebarMenu">
+    <li t-if="menu.childrenTree.length" class="o_minimal_sidebar_group" t-att-class="{ 'o_folded': this.isFolded(menu) }">
+      <button type="button" class="o_minimal_sidebar_group_toggle d-flex align-items-center w-100"
+              t-att-aria-expanded="this.isFolded(menu) ? 'false' : 'true'"
+              t-att-data-menu-xmlid="menu.xmlid"
+              t-on-click="() => this.toggleGroup(menu)">
+        <span class="flex-grow-1 text-truncate text-start" t-out="menu.name"/>
+        <!-- A glyph per state rather than a rotation: Odoo mirrors the
+             "right" arrow itself in right-to-left languages. -->
+        <i class="oi o_minimal_sidebar_chevron" t-att-data-icon="this.isFolded(menu) ? 'keyboard_arrow_right' : 'keyboard_arrow_down'" aria-hidden="true"/>
+      </button>
+      <ul t-if="!this.isFolded(menu)" class="list-unstyled m-0">
+        <t t-foreach="menu.childrenTree" t-as="child" t-key="child.id">
+          <t t-call="minimal_backend_theme.SidebarMenu" menu="child"/>
+        </t>
+      </ul>
+    </li>
+    <li t-else="">
+      <t t-call="minimal_backend_theme.SidebarItem"/>
+    </li>
+  </t>
+
+  <!-- A menu link, with its pin star (shown on hover, kept when pinned). -->
+  <t t-name="minimal_backend_theme.SidebarItem">
+    <a class="o_minimal_sidebar_item d-flex align-items-center gap-2" t-att-href="this.href(menu)"
+       t-att-class="{ 'active': this.isActive(menu) }"
+       t-att-aria-current="this.isActive(menu) ? 'page' : false"
+       t-att-data-menu-xmlid="menu.xmlid"
+       t-att-title="menu.name"
+       t-on-click="(ev) => this.onMenuClick(ev, menu)">
+      <img t-if="withAppIcon and this.appIconOf(menu)" class="o_minimal_sidebar_item_icon" t-att-src="this.appIconOf(menu)" alt=""/>
+      <span class="flex-grow-1 text-truncate" t-out="menu.name"/>
+      <span class="o_minimal_sidebar_pin" role="button" tabindex="-1"
+            t-att-class="{ 'o_pinned': this.isPinned(menu) }"
+            t-att-title="this.pinLabel(menu)" t-att-aria-label="this.pinLabel(menu)"
+            t-att-aria-pressed="this.isPinned(menu) ? 'true' : 'false'"
+            t-on-click="(ev) => this.togglePin(ev, menu)">
+        <i class="oi" data-icon="star" t-att-class="{ 'oi-filled': this.isPinned(menu) }" aria-hidden="true"/>
+      </span>
+    </a>
+  </t>
+
+  <t t-name="minimal_backend_theme.Sidebar">
+    <t t-set="sections" t-value="this.sections"/>
+    <nav t-if="sections.length" class="o_minimal_sidebar d-print-none" aria-label="App menu"
+         t-att-class="{ 'o_collapsed': this.isCollapsed, 'o_drawer_open': this.state.isDrawer and this.state.drawerOpen }">
+      <div class="o_minimal_sidebar_header d-flex align-items-center gap-2">
+        <!-- In the collapsed rail, the app icon also expands the sidebar. -->
+        <button t-if="this.isCollapsed" type="button" class="o_minimal_sidebar_app_button btn p-0 border-0"
+                t-att-title="this.currentApp.name" t-on-click="() => this.toggleCollapsed()">
+          <img t-if="this.currentApp.webIconData" class="o_minimal_sidebar_app_icon" t-att-src="this.currentApp.webIconData" alt=""/>
+          <span t-else="" class="o_minimal_sidebar_app_initial" t-out="this.currentApp.name.charAt(0)"/>
+        </button>
+        <div t-else="" class="o_minimal_sidebar_app d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+          <img t-if="this.currentApp.webIconData" class="o_minimal_sidebar_app_icon" t-att-src="this.currentApp.webIconData" alt=""/>
+          <span class="text-truncate" t-out="this.currentApp.name"/>
+        </div>
+        <button type="button" class="o_minimal_sidebar_toggle btn btn-link d-flex align-items-center p-1"
+                t-att-title="this.toggleLabel"
+                t-att-aria-label="this.toggleLabel"
+                t-att-aria-expanded="this.isCollapsed ? 'false' : 'true'"
+                t-on-click="() => this.toggleCollapsed()">
+          <i class="oi" t-att-data-icon="this.isCollapsed ? 'left_panel_open' : 'left_panel_close'" aria-hidden="true"/>
+        </button>
+      </div>
+      <t t-set="pinnedMenus" t-value="this.pinnedMenus"/>
+      <div t-if="!this.isCollapsed and pinnedMenus.length" class="o_minimal_sidebar_pinned">
+        <div class="o_minimal_sidebar_pinned_title">Pinned</div>
+        <ul class="list-unstyled m-0">
+          <li t-foreach="pinnedMenus" t-as="menu" t-key="menu.id">
+            <t t-call="minimal_backend_theme.SidebarItem">
+              <t t-set="withAppIcon" t-value="true"/>
+            </t>
+          </li>
+        </ul>
+      </div>
+      <ul t-if="!this.isCollapsed" class="list-unstyled m-0">
+        <t t-foreach="sections" t-as="menu" t-key="menu.id">
+          <t t-call="minimal_backend_theme.SidebarMenu" menu="menu"/>
+        </t>
+      </ul>
+    </nav>
+    <!-- Tablets: the open drawer covers the page; tapping beside it closes it. -->
+    <div t-if="sections.length and this.state.isDrawer and this.state.drawerOpen"
+         class="o_minimal_sidebar_backdrop d-print-none" aria-hidden="true"
+         t-on-click="() => this.state.drawerOpen = false"/>
+  </t>
+
+</templates>
