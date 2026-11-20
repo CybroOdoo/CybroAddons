@@ -71,8 +71,6 @@ class VehicleDetail(models.TransientModel):
         if self.start_date and self.end_date and \
                 self.start_date > self.end_date:
             self.end_date = self.start_date
-        if self.end_date and self.end_date > fields.Date.context_today(self):
-            self.end_date = fields.Date.context_today(self)
 
     @api.onchange('state_ids')
     def _onchange_state_ids(self):

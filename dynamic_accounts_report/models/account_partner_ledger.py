@@ -25,7 +25,7 @@ from odoo.tools import date_utils
 
 
 class AccountPartnerLedger(models.TransientModel):
-    """For creating Partner Ledger report"""
+    """For creating Partner Ledger report."""
     _name = 'account.partner.ledger'
     _description = 'Partner Ledger Report'
 
@@ -43,11 +43,14 @@ class AccountPartnerLedger(models.TransientModel):
         :return: A dictionary containing the partner data for the report.
         :rtype: dict
         """
-        fiscal_year = self.env['res.company'].search([]).mapped('account_opening_date')[0].strftime('%Y-%m-%d')
-        fiscal_year_start = datetime.strptime(fiscal_year,
-                                              '%Y-%m-%d').date()
+        opening_date = (
+            self.env.company.account_opening_date
+            or fields.Date.today().replace(month=1, day=1)
+        )
+        fiscal_year_start = opening_date
         partner_dict = {}
         partner_totals = {}
+        partner_dict['partner_totals'] = partner_totals
         move_line_ids = self.env['account.move.line'].search(
             [('account_type', 'in',
               ['liability_payable', 'asset_receivable']),
@@ -90,11 +93,11 @@ class AccountPartnerLedger(models.TransientModel):
                 'initial_debit': total_debit_balance,
                 'initial_credit': total_credit_balance,
             }
-            partner_dict['partner_totals'] = partner_totals
         return partner_dict
 
     @api.model
-    def get_filter_values(self, partner_id, data_range, account, options):
+    def get_filter_values(self, partner_id=None, data_range=None,
+                          account=None, options=None):
         """
         Retrieve filtered partner-related data for generating a report.
 
@@ -192,13 +195,18 @@ class AccountPartnerLedger(models.TransientModel):
                          ('parent_state', 'in', option_domain),
                          ('invoice_date', '<', date_start)])
                 elif data_range == 'last-month':
+                    last_month = today - relativedelta(months=1)
+                    date_start = last_month.replace(day=1)
                     move_line_ids = self.env['account.move.line'].search(
                         [('partner_id', '=', partners), (
                             'account_type', 'in',
                             account_type_domain),
                          ('parent_state', 'in', option_domain)]).filtered(
-                        lambda x: x.date.month == fields.Date.today().month - 1)
-                    date_start = fields.Date.today().replace(day=1,month=fields.Date.today().month - 1)
+                        lambda x: (
+                            x.date.year == last_month.year
+                            and x.date.month == last_month.month
+                        )
+                    )
                     balance_move_line_ids = self.env[
                         'account.move.line'].search(
                         [('partner_id', '=', partners), (
@@ -207,13 +215,14 @@ class AccountPartnerLedger(models.TransientModel):
                          ('parent_state', 'in', option_domain),
                          ('invoice_date', '<', date_start)])
                 elif data_range == 'last-year':
+                    last_year = today - relativedelta(years=1)
+                    date_start = last_year.replace(month=1, day=1)
                     move_line_ids = self.env['account.move.line'].search(
                         [('partner_id', '=', partners), (
                             'account_type', 'in',
                             account_type_domain),
                          ('parent_state', 'in', option_domain)]).filtered(
-                        lambda x: x.date.year == fields.Date.today().year - 1)
-                    date_start = fields.Date.today().replace(day=1,month=1,)
+                        lambda x: x.date.year == last_year.year)
                     balance_move_line_ids = self.env[
                         'account.move.line'].search(
                         [('partner_id', '=', partners), (
@@ -357,22 +366,38 @@ class AccountPartnerLedger(models.TransientModel):
         data = json.loads(data)
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-        start_date = data['filters']['start_date'] if data['filters']['start_date'] else ''
-        end_date = data['filters']['end_date'] if data['filters']['end_date'] else ''
+        start_date = (
+            data['filters']['start_date']
+            if data['filters']['start_date'] else ''
+        )
+        end_date = (
+            data['filters']['end_date']
+            if data['filters']['end_date'] else ''
+        )
         sheet = workbook.add_worksheet()
 
         # Define formats
-        head = workbook.add_format({'font_size': 15, 'align': 'center', 'bold': True})
-        head_highlight = workbook.add_format({'font_size': 10, 'align': 'center', 'bold': True})
-        sub_heading = workbook.add_format(
-            {'align': 'center', 'bold': True, 'font_size': '10px', 'border': 1, 'bg_color': '#D3D3D3',
-             'border_color': 'black'})
-        filter_head = workbook.add_format(
-            {'align': 'center', 'bold': True, 'font_size': '10px', 'border': 1, 'bg_color': '#D3D3D3',
-             'border_color': 'black'})
-        filter_body = workbook.add_format({'align': 'center', 'bold': True, 'font_size': '10px'})
-        side_heading_sub = workbook.add_format(
-            {'align': 'left', 'bold': True, 'font_size': '10px', 'border': 1, 'border_color': 'black'})
+        head = workbook.add_format({
+            'font_size': 15, 'align': 'center', 'bold': True
+        })
+        head_highlight = workbook.add_format({
+            'font_size': 10, 'align': 'center', 'bold': True
+        })
+        sub_heading = workbook.add_format({
+            'align': 'center', 'bold': True, 'font_size': '10px',
+            'border': 1, 'bg_color': '#D3D3D3', 'border_color': 'black'
+        })
+        filter_head = workbook.add_format({
+            'align': 'center', 'bold': True, 'font_size': '10px',
+            'border': 1, 'bg_color': '#D3D3D3', 'border_color': 'black'
+        })
+        filter_body = workbook.add_format({
+            'align': 'center', 'bold': True, 'font_size': '10px'
+        })
+        side_heading_sub = workbook.add_format({
+            'align': 'left', 'bold': True, 'font_size': '10px',
+            'border': 1, 'border_color': 'black'
+        })
         side_heading_sub.set_indent(1)
         txt_name = workbook.add_format({'font_size': '10px', 'border': 1})
         txt_name.set_indent(2)
@@ -392,10 +417,15 @@ class AccountPartnerLedger(models.TransientModel):
         sheet.write('B6:B4', 'Options', filter_head)
 
         if start_date or end_date:
-            sheet.merge_range('C3:G3', f"{start_date} to {end_date}", filter_body)
+            sheet.merge_range(
+                'C3:G3', f"{start_date} to {end_date}", filter_body
+            )
 
         if data['filters']['partner']:
-            display_names = [partner.get('display_name', 'undefined') for partner in data['filters']['partner']]
+            display_names = [
+                partner.get('display_name', 'undefined')
+                for partner in data['filters']['partner']
+            ]
             display_names_str = ', '.join(display_names)
             sheet.merge_range('C4:G4', display_names_str, filter_body)
 
@@ -416,7 +446,10 @@ class AccountPartnerLedger(models.TransientModel):
             return "{:,.2f}".format(float(value))
 
         # Process partner data
-        if data and report_action == 'dynamic_accounts_report.action_partner_ledger':
+        if (
+            data and
+            report_action == 'dynamic_accounts_report.action_partner_ledger'
+        ):
             sheet.write(8, col, ' ', sub_heading)
             sheet.write(8, col + 1, 'JNRL', sub_heading)
             sheet.write(8, col + 2, 'Account', sub_heading)
@@ -432,9 +465,14 @@ class AccountPartnerLedger(models.TransientModel):
             for partner in partners:
                 row += 1
                 # Format partner totals
-                total_debit = data['total'][partner]['total_debit'] if data['total'] and partner in data['total'] else 0
-                total_credit = data['total'][partner]['total_credit'] if data['total'] and partner in data[
-                    'total'] else 0
+                total_debit = (
+                    data['total'][partner]['total_debit']
+                    if data['total'] and partner in data['total'] else 0
+                )
+                total_credit = (
+                    data['total'][partner]['total_credit']
+                    if data['total'] and partner in data['total'] else 0
+                )
                 balance = total_debit - total_credit
 
                 sheet.write(row, col, partner, txt_name)
@@ -442,28 +480,57 @@ class AccountPartnerLedger(models.TransientModel):
                 sheet.write(row, col + 2, ' ', txt_name)
                 sheet.merge_range(row, col + 3, row, col + 4, ' ', txt_name)
                 sheet.merge_range(row, col + 5, row, col + 6, ' ', txt_name)
-                sheet.merge_range(row, col + 7, row, col + 8, format_number(total_debit), txt_name)
-                sheet.merge_range(row, col + 9, row, col + 10, format_number(total_credit), txt_name)
-                sheet.merge_range(row, col + 11, row, col + 12, format_number(balance), txt_name)
+                sheet.merge_range(
+                    row, col + 7, row, col + 8,
+                    format_number(total_debit), txt_name
+                )
+                sheet.merge_range(
+                    row, col + 9, row, col + 10,
+                    format_number(total_credit), txt_name
+                )
+                sheet.merge_range(
+                    row, col + 11, row, col + 12,
+                    format_number(balance), txt_name
+                )
 
                 # Handle initial balance
-                initial_balance = data['total'][partner]['initial_balance'] if data['total'] and partner in data[
-                    'total'] else 0
+                initial_balance = (
+                    data['total'][partner]['initial_balance']
+                    if data['total'] and partner in data['total'] else 0
+                )
                 if initial_balance != 0:
                     row += 1
-                    initial_debit = data['total'][partner]['initial_debit'] if data['total'] and partner in data[
-                        'total'] else 0
-                    initial_credit = data['total'][partner]['initial_credit'] if data['total'] and partner in data[
-                        'total'] else 0
+                    initial_debit = (
+                        data['total'][partner]['initial_debit']
+                        if data['total'] and partner in data['total'] else 0
+                    )
+                    initial_credit = (
+                        data['total'][partner]['initial_credit']
+                        if data['total'] and partner in data['total'] else 0
+                    )
 
                     sheet.write(row, col, '', txt_name)
                     sheet.write(row, col + 1, ' ', txt_name)
                     sheet.write(row, col + 2, ' ', txt_name)
-                    sheet.merge_range(row, col + 3, row, col + 4, 'Initial Balance', head_highlight)
-                    sheet.merge_range(row, col + 5, row, col + 6, ' ', txt_name)
-                    sheet.merge_range(row, col + 7, row, col + 8, format_number(initial_debit), txt_name)
-                    sheet.merge_range(row, col + 9, row, col + 10, format_number(initial_credit), txt_name)
-                    sheet.merge_range(row, col + 11, row, col + 12, format_number(initial_balance), txt_name)
+                    sheet.merge_range(
+                        row, col + 3, row, col + 4,
+                        'Initial Balance', head_highlight
+                    )
+                    sheet.merge_range(
+                        row, col + 5, row, col + 6, ' ', txt_name
+                    )
+                    sheet.merge_range(
+                        row, col + 7, row, col + 8,
+                        format_number(initial_debit), txt_name
+                    )
+                    sheet.merge_range(
+                        row, col + 9, row, col + 10,
+                        format_number(initial_credit), txt_name
+                    )
+                    sheet.merge_range(
+                        row, col + 11, row, col + 12,
+                        format_number(initial_balance), txt_name
+                    )
 
                 # Process move lines for the partner
                 for rec in data['data'][partner]:
@@ -471,25 +538,53 @@ class AccountPartnerLedger(models.TransientModel):
                     sheet.write(row, col, rec[0]['date'], txt_name)
                     sheet.write(row, col + 1, rec[0]['jrnl'], txt_name)
                     sheet.write(row, col + 2, rec[0]['code'], txt_name)
-                    sheet.merge_range(row, col + 3, row, col + 4, rec[0]['move_name'], txt_name)
-                    sheet.merge_range(row, col + 5, row, col + 6, rec[0]['date_maturity'] or '', txt_name)
-                    sheet.merge_range(row, col + 7, row, col + 8, format_number(rec[0]['debit']), txt_name)
-                    sheet.merge_range(row, col + 9, row, col + 10, format_number(rec[0]['credit']), txt_name)
-                    sheet.merge_range(row, col + 11, row, col + 12, ' ', txt_name)
+                    sheet.merge_range(
+                        row, col + 3, row, col + 4, rec[0]['move_name'], txt_name
+                    )
+                    sheet.merge_range(
+                        row, col + 5, row, col + 6,
+                        rec[0]['date_maturity'] or '', txt_name
+                    )
+                    sheet.merge_range(
+                        row, col + 7, row, col + 8,
+                        format_number(rec[0]['debit']), txt_name
+                    )
+                    sheet.merge_range(
+                        row, col + 9, row, col + 10,
+                        format_number(rec[0]['credit']), txt_name
+                    )
+                    sheet.merge_range(
+                        row, col + 11, row, col + 12, ' ', txt_name
+                    )
 
             # Grand totals
             row += 1
             # Ensure grand_total values are numbers
-            grand_total_debit = data['grand_total']['total_debit'] if data['grand_total'] and data['grand_total'][
-                'total_debit'] is not None else 0
-            grand_total_credit = data['grand_total']['total_credit'] if data['grand_total'] and data['grand_total'][
-                'total_credit'] is not None else 0
+            grand_total_debit = (
+                data['grand_total']['total_debit']
+                if data['grand_total'] and
+                data['grand_total']['total_debit'] is not None else 0
+            )
+            grand_total_credit = (
+                data['grand_total']['total_credit']
+                if data['grand_total'] and
+                data['grand_total']['total_credit'] is not None else 0
+            )
             grand_balance = grand_total_debit - grand_total_credit
 
             sheet.merge_range(row, col, row, col + 6, 'Total', filter_head)
-            sheet.merge_range(row, col + 7, row, col + 8, format_number(grand_total_debit), filter_head)
-            sheet.merge_range(row, col + 9, row, col + 10, format_number(grand_total_credit), filter_head)
-            sheet.merge_range(row, col + 11, row, col + 12, format_number(grand_balance), filter_head)
+            sheet.merge_range(
+                row, col + 7, row, col + 8,
+                format_number(grand_total_debit), filter_head
+            )
+            sheet.merge_range(
+                row, col + 9, row, col + 10,
+                format_number(grand_total_credit), filter_head
+            )
+            sheet.merge_range(
+                row, col + 11, row, col + 12,
+                format_number(grand_balance), filter_head
+            )
 
         workbook.close()
         output.seek(0)

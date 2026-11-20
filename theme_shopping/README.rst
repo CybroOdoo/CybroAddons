@@ -17,14 +17,13 @@
 
 Theme Shopping
 ==============
-Theme Shopping module provide attractive and unique front end theme mainly
-suitable for eCommerce website
+The Theme Shopping module provides an attractive, customizable storefront
+designed for eCommerce websites.
 
 
 Key Features
 ------------
 
-* Fast loading times.
 * Responsive design.
 * Testimonial Snippet.
 * Product Offer Snippet.
@@ -38,18 +37,18 @@ No external dependencies.
 
 Configuration
 =============
-Top Deal product Flow:
+Top Deal product configuration:
     - Enabling and Managing 'Top Deal' for a Product:
-      * Navigate to: Products -> Top Deal
+      * Navigate to: Website -> eCommerce -> Products -> General Information
       * Enable the 'Top Deal' boolean field for the desired product
 
     - Setting Deal Details
       * Once enabled, new fields appear under Products -> General Information:
         - Offer Price
-        - Planned Date
+        - From Date and End Date
       * Set the offer price
       * Select the time period for the event
-      * Click the 'Apply' button to confirm  the date
+      * Click the 'Apply' button to apply the deal period
 
     - Deal Visibility and Duration
       * The product is added to the Top Deal carousel for the specified period
@@ -59,15 +58,16 @@ Top Deal product Flow:
       * The Top Deal offer price is shown
       * The original price is displayed with a strikethrough
 
-Winter Collections :
+Winter Collection:
     Adding Products to the Winter Collection:
         - Navigate to: Products -> General Information -> Category
         - Under the "Category" section, select "Winter Collection" from the product category options.
         - Add the desired products to this category.
         - These products will be available in the Winter Collection snippets.
 Testimonial Snippet:
-    -Only admin allowed users can submit their testimonials.
-    -All submited testimonials will be  displayed for all users.
+    - Only users in the testimonial or website designer group can submit testimonials.
+    - Submitted testimonials are displayed publicly on the website.
+
 
 Company
 -------
@@ -75,7 +75,7 @@ Company
 
 License
 -------
-Lesser General Public License, Version 3 (LGPL v3).
+GNU Lesser General Public License, Version 3 (LGPL v3).
 (http://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 
 Contacts

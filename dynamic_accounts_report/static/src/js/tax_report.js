@@ -1,11 +1,10 @@
-/** @odoo-module */
 import { Component, signal, proxy } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { download } from "@web/core/network/download";
 const actionRegistry = registry.category("actions");
 const today = luxon.DateTime.now();
-let monthNamesShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const monthNamesShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export class TaxReport extends Component {
     static template = 'tax_r_template_new';
@@ -174,6 +173,13 @@ export class TaxReport extends Component {
             endYear !== undefined && endMonth !== undefined && endDay !== undefined) {
             filters['start_date'] = `${startYear}-${startMonth < 10 ? '0' : ''}${startMonth}-${startDay < 10 ? '0' : ''}${startDay}`;
             filters['end_date'] = `${endYear}-${endMonth < 10 ? '0' : ''}${endMonth}-${endDay < 10 ? '0' : ''}${endDay}`;
+        } else if (typeof this.state.date_range === 'object' && this.state.date_range !== null) {
+            if (this.state.date_range.start_date) {
+                filters['start_date'] = this.state.date_range.start_date;
+            }
+            if (this.state.date_range.end_date) {
+                filters['end_date'] = this.state.date_range.end_date;
+            }
         }
         return filters;
     }
@@ -220,38 +226,50 @@ export class TaxReport extends Component {
         this.state.filter_applied = true;
 
         if (val && val.target) {
-            const dataVal = val.target.getAttribute("data-value");
-            if (val.target.name === 'start_date') {
+            const target = val.target.closest("button, input") || val.target;
+            const dataVal = target.getAttribute("data-value");
+            if (target.name === 'start_date') {
+                const prev = (typeof this.state.date_range === 'object' && this.state.date_range !== null)
+                    ? this.state.date_range
+                    : {};
                 this.state.date_range = {
-                    ...this.state.date_range,
-                    start_date: val.target.value
+                    ...prev,
+                    start_date: target.value
                 };
-            } else if (val.target.name === 'end_date') {
+            } else if (target.name === 'end_date') {
+                const prev = (typeof this.state.date_range === 'object' && this.state.date_range !== null)
+                    ? this.state.date_range
+                    : {};
                 this.state.date_range = {
-                    ...this.state.date_range,
-                    end_date: val.target.value
+                    ...prev,
+                    end_date: target.value
                 };
             } else if (['month', 'year', 'quarter', 'last-month', 'last-year', 'last-quarter'].includes(dataVal)) {
                 this.state.date_range = dataVal;
+                if (this.date_from() && this.date_from().value) {
+                    this.date_from().value = '';
+                }
+                if (this.date_to() && this.date_to().value) {
+                    this.date_to().value = '';
+                }
             } else if (dataVal === 'draft') {
-                if (val.target.classList.contains("selected-filter")) {
+                if (this.state.options && this.state.options.draft) {
                     const { draft, ...updatedAccount } = this.state.options || {};
-                    this.state.options = updatedAccount;
-                    val.target.classList.remove("selected-filter");
+                    this.state.options = Object.keys(updatedAccount).length > 0 ? updatedAccount : null;
                 } else {
                     this.state.options = {
                         ...(this.state.options || {}),
                         'draft': true
                     };
-                    val.target.classList.add("selected-filter");
                 }
-            } else if (dataVal === 'tax') {
-                this.state.report_type = { 'tax': true };
-            } else if (dataVal === 'account') {
+            } else if (dataVal === 'global') {
+                this.state.report_type = null;
+            } else if (dataVal === 'account tax' || dataVal === 'account') {
                 this.state.report_type = { 'account': true };
+            } else if (dataVal === 'tax account' || dataVal === 'tax') {
+                this.state.report_type = { 'tax': true };
             }
         }
-
 
         let computedDates = this.filter();
         let filtered_data = await this.orm.call("tax.report", "get_filter_values", [
@@ -266,15 +284,52 @@ export class TaxReport extends Component {
         if (this.state.data) {
             this.state.sale_total = this.state.data.sale_total;
             this.state.purchase_total = this.state.data.purchase_total;
+            if (this.state.apply_comparison && filtered_data.dynamic_date_num && Object.keys(filtered_data.dynamic_date_num).length > 0) {
+                const dates = [];
+                if (this.state.comparison_number) {
+                    for (let i = this.state.comparison_number; i >= 1; i--) {
+                        if (filtered_data.dynamic_date_num[`dynamic_date_num${i}`]) {
+                            dates.push(filtered_data.dynamic_date_num[`dynamic_date_num${i}`]);
+                        }
+                    }
+                }
+                if (filtered_data.dynamic_date_num['dynamic_date_num0']) {
+                    dates.push(filtered_data.dynamic_date_num['dynamic_date_num0']);
+                }
+                this.state.date_viewed = dates;
+            } else if (!this.state.apply_comparison) {
+                if (computedDates.start_date && computedDates.end_date) {
+                    this.state.date_viewed = [
+                        `${this.formatDate(computedDates.start_date)} - ${this.formatDate(computedDates.end_date)}`
+                    ];
+                } else {
+                    const todayDate = new Date();
+                    const start_month = monthNamesShort[todayDate.getMonth()];
+                    this.state.date_viewed = [`${start_month} ${todayDate.getFullYear()}`];
+                }
+            }
+        }
+    }
+
+    onPeriodChange(ev) {
+        if (this.period_year()) {
+            this.period_year().value = ev.target.value;
+        }
+    }
+
+    onPeriodYearChange(ev) {
+        const periodEl = this.periods() || this.period();
+        if (periodEl) {
+            periodEl.value = ev.target.value;
         }
     }
 
     applyComparisonPeriod(ev) {
         this.state.apply_comparison = true;
         this.state.comparison_type = 'month';
-        const periodEl = this.period();
-        if (periodEl) {
-            this.state.comparison_number = periodEl.value;
+        const periodEl = this.periods() || this.period();
+        if (periodEl && periodEl.value) {
+            this.state.comparison_number = parseInt(periodEl.value, 10);
         }
         this.applyFilter(null, ev);
     }
@@ -282,6 +337,10 @@ export class TaxReport extends Component {
     applyComparisonYear(ev) {
         this.state.apply_comparison = true;
         this.state.comparison_type = 'year';
+        const periodYearEl = this.period_year();
+        if (periodYearEl && periodYearEl.value) {
+            this.state.comparison_number = parseInt(periodYearEl.value, 10);
+        }
         this.applyFilter(null, ev);
     }
 
@@ -289,8 +348,15 @@ export class TaxReport extends Component {
         this.state.apply_comparison = false;
         this.state.comparison_type = null;
         this.state.comparison_number = null;
-        const lastIndex = this.state.date_viewed.length - 1;
-        this.state.date_viewed.splice(0, lastIndex);
+        if (this.periods()) {
+            this.periods().value = '';
+        }
+        if (this.period()) {
+            this.period().value = '';
+        }
+        if (this.period_year()) {
+            this.period_year().value = '';
+        }
         this.applyFilter(null, ev);
     }
 

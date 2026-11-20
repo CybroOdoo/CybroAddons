@@ -85,7 +85,7 @@ class ThemeData(models.TransientModel):
 
     @api.model
     def _get_current_theme(self):
-        """The active theme is the one whose palette asset is active."""
+        """Th	Orthodontiste active theme is the one whose palette asset is active."""
         for theme, xmlid in THEME_ASSETS.items():
             asset = self.env.ref(xmlid, raise_if_not_found=False)
             if asset and asset.sudo().active:

@@ -17,19 +17,19 @@
 #############################################################################
 {
     'name': 'Liquid Glass Backend Theme',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.1.0',
     'category': 'Themes/Backend',
     'summary': 'Modern glassmorphism backend theme for Odoo',
     'description': """
-        Liquid Glass Backend Theme
-        A modern, elegant glassmorphism design for Odoo backend
-    """,
+                    Liquid Glass Backend Theme
+                    A modern, elegant glassmorphism design for Odoo backend
+                """,
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
     'license': 'LGPL-3',
-    'depends': ['web', 'base'],
+    'depends': ['web'],
     'assets': {
         'web.assets_backend': [
             'backend_theme_liquid_glass/static/src/scss/variables.scss',
@@ -40,8 +40,6 @@
             'backend_theme_liquid_glass/static/src/scss/kanban.scss',
             'backend_theme_liquid_glass/static/src/scss/modals.scss',
             'backend_theme_liquid_glass/static/src/scss/navbar.scss',
-            'backend_theme_liquid_glass/static/src/js/navbar_sidebar.js',
-            'backend_theme_liquid_glass/static/src/xml/apps_sidebar.xml',
         ],
         'web.assets_backend_lazy': [
             'backend_theme_liquid_glass/static/src/js/canvas_text.js',
@@ -49,9 +47,10 @@
     },
     'images': [
         'static/description/banner.jpg',
-        'static/description/theme_screenshot.jpg', 
+        'static/description/theme_screenshot.jpg',
+        'static/description/icon.png'
     ],
     'installable': True,
-    'application': False,
-    'auto_install': False,
 }
+
+

@@ -22,7 +22,7 @@ from odoo import api, fields, models
 
 
 class AgePayableReport(models.TransientModel):
-    """For creating Age Payable report"""
+    """For creating Age Payable report."""
     _name = 'age.payable.report'
     _description = 'Aged Payable Report'
 
@@ -53,13 +53,14 @@ class AgePayableReport(models.TransientModel):
                 ['name', 'move_name', 'date', 'amount_currency', 'account_id',
                  'date_maturity', 'currency_id', 'credit', 'move_id'])
             for val in move_line_data:
-                diffrence = (today - val['date_maturity']).days
-                val['diff0'] = val['credit'] if diffrence <= 0 else 0.0
-                val['diff1'] = val['credit'] if 0 < diffrence <= 30 else 0.0
-                val['diff2'] = val['credit'] if 30 < diffrence <= 60 else 0.0
-                val['diff3'] = val['credit'] if 60 < diffrence <= 90 else 0.0
-                val['diff4'] = val['credit'] if 90 < diffrence <= 120 else 0.0
-                val['diff5'] = val['credit'] if diffrence > 120 else 0.0
+                maturity_date = val['date_maturity'] or val['date']
+                difference = (today - maturity_date).days if maturity_date else 0
+                val['diff0'] = val['credit'] if difference <= 0 else 0.0
+                val['diff1'] = val['credit'] if 0 < difference <= 30 else 0.0
+                val['diff2'] = val['credit'] if 30 < difference <= 60 else 0.0
+                val['diff3'] = val['credit'] if 60 < difference <= 90 else 0.0
+                val['diff4'] = val['credit'] if 90 < difference <= 120 else 0.0
+                val['diff5'] = val['credit'] if difference > 120 else 0.0
             move_line_list[partner_id.name] = move_line_data
             partner_total[partner_id.name] = {
                 'credit_sum': sum(val['credit'] for val in move_line_data),
@@ -82,7 +83,7 @@ class AgePayableReport(models.TransientModel):
         return move_line_list
 
     @api.model
-    def get_filter_values(self, date, partner):
+    def get_filter_values(self, date=None, partner=None):
         """
         Retrieve filtered move line data based on date and partner(s).
         Parameters:
@@ -120,13 +121,14 @@ class AgePayableReport(models.TransientModel):
                 ['name', 'move_name', 'date', 'amount_currency', 'account_id',
                  'date_maturity', 'currency_id', 'credit', 'move_id'])
             for val in move_line_data:
-                diffrence = (today - val['date_maturity']).days
-                val['diff0'] = val['credit'] if diffrence <= 0 else 0.0
-                val['diff1'] = val['credit'] if 0 < diffrence <= 30 else 0.0
-                val['diff2'] = val['credit'] if 30 < diffrence <= 60 else 0.0
-                val['diff3'] = val['credit'] if 60 < diffrence <= 90 else 0.0
-                val['diff4'] = val['credit'] if 90 < diffrence <= 120 else 0.0
-                val['diff5'] = val['credit'] if diffrence > 120 else 0.0
+                maturity_date = val['date_maturity'] or val['date']
+                difference = (today - maturity_date).days if maturity_date else 0
+                val['diff0'] = val['credit'] if difference <= 0 else 0.0
+                val['diff1'] = val['credit'] if 0 < difference <= 30 else 0.0
+                val['diff2'] = val['credit'] if 30 < difference <= 60 else 0.0
+                val['diff3'] = val['credit'] if 60 < difference <= 90 else 0.0
+                val['diff4'] = val['credit'] if 90 < difference <= 120 else 0.0
+                val['diff5'] = val['credit'] if difference > 120 else 0.0
             move_line_list[partner_id.name] = move_line_data
             partner_total[partner_id.name] = {
                 'credit_sum': sum(val['credit'] for val in move_line_data),
@@ -251,7 +253,8 @@ class AgePayableReport(models.TransientModel):
                                 txt_name)
                     for rec in data['data'][move_line]:
                         row += 1
-                        sheet.write(row, col, rec['move_name'] + (rec['name'] or ""), txt_name)
+                        move_label = rec['move_name'] + (rec['name'] or "")
+                        sheet.write(row, col, move_label, txt_name)
                         sheet.write(row, col + 1, rec['date'],
                                     txt_name)
                         sheet.write(row, col + 2, rec['amount_currency'],

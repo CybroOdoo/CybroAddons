@@ -16,11 +16,13 @@
 #
 #############################################################################
 from odoo import Command
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged('post_install', '-at_install')
 class TestHideMenuFeatures(TransactionCase):
-    """Test the Phase 3 features: group restriction, cascade and copy wizard."""
+    """Test cases for menu restriction features: group restriction, cascade, and copy wizard."""
 
     @classmethod
     def setUpClass(cls):

@@ -77,8 +77,9 @@ class TaxReport(models.TransientModel):
         }
 
     @api.model
-    def get_filter_values(self, start_date, end_date, comparison_number,
-                          comparison_type, options, report_type):
+    def get_filter_values(self, start_date=None, end_date=None,
+                          comparison_number=None, comparison_type=None,
+                          options=None, report_type=None, **kwargs):
         """
            Get filtered tax values based on various criteria.
 
@@ -94,22 +95,29 @@ class TaxReport(models.TransientModel):
         sale = []
         purchase = []
         dynamic_date_num = {}
-        if options == {}:
-            options = None
-        if options is None:
-            option_domain = ['posted']
-        elif 'draft' in options:
+        if options and options.get('draft'):
             option_domain = ['posted', 'draft']
+        else:
+            option_domain = ['posted']
         tax_ids = self.env['account.move.line'].search([]).mapped(
             'tax_ids')
-        start_date_first = \
-            get_fiscal_year(datetime.strptime(start_date, "%Y-%m-%d").date())[
-                0] if comparison_type == 'year' else datetime.strptime(
-                start_date, "%Y-%m-%d").date()
-        end_date_first = \
-            get_fiscal_year(datetime.strptime(end_date, "%Y-%m-%d").date())[
-                1] if comparison_type == 'year' else datetime.strptime(
-                end_date, "%Y-%m-%d").date()
+        today = fields.Date.today()
+        if not start_date:
+            start_date = get_month(today)[0]
+        elif isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+        if not end_date:
+            end_date = get_month(today)[1]
+        elif isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+        start_date_first = (
+            get_fiscal_year(start_date)[0]
+            if comparison_type == 'year' else start_date
+        )
+        end_date_first = (
+            get_fiscal_year(end_date)[1]
+            if comparison_type == 'year' else end_date
+        )
         if report_type is not None and 'account' in report_type:
             start_date = start_date_first
             end_date = end_date_first
@@ -126,10 +134,16 @@ class TaxReport(models.TransientModel):
                             if comparison_type == 'year':
                                 start_date = start_date_first
                                 end_date = end_date_first
+                                dynamic_date_num[
+                                    f"dynamic_date_num{0}"] = str(
+                                    start_date_first.year)
                                 for i in range(1, int(comparison_number) + 1):
                                     com_start_date = subtract(start_date,
                                                               years=i)
                                     com_end_date = subtract(end_date, years=i)
+                                    dynamic_date_num[
+                                        f"dynamic_date_num{i}"] = str(
+                                        com_start_date.year)
                                     tax_id = self.env[
                                         'account.move.line'].search(
                                         [('tax_ids', '=', tax.id),
@@ -144,7 +158,9 @@ class TaxReport(models.TransientModel):
                                     tax_credit_sums = sum(
                                         record['credit'] for record in tax_id)
                                     dynamic_total_net_sum[
-                                        f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                        f"dynamic_total_net_sum{i}"] = (
+                                        tax_debit_sums + tax_credit_sums
+                                    )
                                     dynamic_total_tax_sum[
                                         f"dynamic_total_tax_sum{i}"] = \
                                         dynamic_total_net_sum[
@@ -172,7 +188,9 @@ class TaxReport(models.TransientModel):
                                     tax_credit_sums = sum(
                                         record['credit'] for record in tax_id)
                                     dynamic_total_net_sum[
-                                        f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                        f"dynamic_total_net_sum{i}"] = (
+                                        tax_debit_sums + tax_credit_sums
+                                    )
                                     dynamic_total_tax_sum[
                                         f"dynamic_total_tax_sum{i}"] = \
                                         dynamic_total_net_sum[
@@ -207,7 +225,9 @@ class TaxReport(models.TransientModel):
                                     tax_credit_sums = sum(
                                         record['credit'] for record in tax_id)
                                     dynamic_total_net_sum[
-                                        f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                        f"dynamic_total_net_sum{i}"] = (
+                                        tax_debit_sums + tax_credit_sums
+                                    )
                                     dynamic_total_tax_sum[
                                         f"dynamic_total_tax_sum{i}"] = \
                                         dynamic_total_net_sum[
@@ -296,10 +316,16 @@ class TaxReport(models.TransientModel):
                         if comparison_type == 'year':
                             start_date = start_date_first
                             end_date = end_date_first
+                            dynamic_date_num[
+                                f"dynamic_date_num{0}"] = str(
+                                start_date_first.year)
                             for i in range(1, int(comparison_number) + 1):
                                 com_start_date = subtract(start_date,
                                                           years=i)
                                 com_end_date = subtract(end_date, years=i)
+                                dynamic_date_num[
+                                    f"dynamic_date_num{i}"] = str(
+                                    com_start_date.year)
                                 tax_id = self.env[
                                     'account.move.line'].search(
                                     [('tax_ids', '=', tax.id),
@@ -314,7 +340,9 @@ class TaxReport(models.TransientModel):
                                 tax_credit_sums = sum(
                                     record['credit'] for record in tax_id)
                                 dynamic_total_net_sum[
-                                    f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                    f"dynamic_total_net_sum{i}"] = (
+                                    tax_debit_sums + tax_credit_sums
+                                )
                                 dynamic_total_tax_sum[
                                     f"dynamic_total_tax_sum{i}"] = \
                                     dynamic_total_net_sum[
@@ -341,7 +369,9 @@ class TaxReport(models.TransientModel):
                                 tax_credit_sums = sum(
                                     record['credit'] for record in tax_id)
                                 dynamic_total_net_sum[
-                                    f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                    f"dynamic_total_net_sum{i}"] = (
+                                    tax_debit_sums + tax_credit_sums
+                                )
                                 dynamic_total_tax_sum[
                                     f"dynamic_total_tax_sum{i}"] = \
                                     dynamic_total_net_sum[
@@ -375,7 +405,9 @@ class TaxReport(models.TransientModel):
                                 tax_credit_sums = sum(
                                     record['credit'] for record in tax_id)
                                 dynamic_total_net_sum[
-                                    f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                    f"dynamic_total_net_sum{i}"] = (
+                                    tax_debit_sums + tax_credit_sums
+                                )
                                 dynamic_total_tax_sum[
                                     f"dynamic_total_tax_sum{i}"] = \
                                     dynamic_total_net_sum[
@@ -457,10 +489,16 @@ class TaxReport(models.TransientModel):
                     if comparison_type == 'year':
                         start_date = start_date_first
                         end_date = end_date_first
+                        dynamic_date_num[
+                            f"dynamic_date_num{0}"] = str(
+                            start_date_first.year)
                         for i in range(1, int(comparison_number) + 1):
                             com_start_date = subtract(start_date,
                                                       years=i)
                             com_end_date = subtract(end_date, years=i)
+                            dynamic_date_num[
+                                f"dynamic_date_num{i}"] = str(
+                                com_start_date.year)
                             tax_id = self.env[
                                 'account.move.line'].search(
                                 [('tax_ids', '=', tax.id),
@@ -473,7 +511,9 @@ class TaxReport(models.TransientModel):
                             tax_credit_sums = sum(
                                 record['credit'] for record in tax_id)
                             dynamic_total_net_sum[
-                                f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                f"dynamic_total_net_sum{i}"] = (
+                                tax_debit_sums + tax_credit_sums
+                            )
                             dynamic_total_tax_sum[
                                 f"dynamic_total_tax_sum{i}"] = \
                                 dynamic_total_net_sum[
@@ -498,7 +538,9 @@ class TaxReport(models.TransientModel):
                             tax_credit_sums = sum(
                                 record['credit'] for record in tax_id)
                             dynamic_total_net_sum[
-                                f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                f"dynamic_total_net_sum{i}"] = (
+                                tax_debit_sums + tax_credit_sums
+                            )
                             dynamic_total_tax_sum[
                                 f"dynamic_total_tax_sum{i}"] = \
                                 dynamic_total_net_sum[
@@ -530,7 +572,9 @@ class TaxReport(models.TransientModel):
                             tax_credit_sums = sum(
                                 record['credit'] for record in tax_id)
                             dynamic_total_net_sum[
-                                f"dynamic_total_net_sum{i}"] = tax_debit_sums + tax_credit_sums
+                                f"dynamic_total_net_sum{i}"] = (
+                                tax_debit_sums + tax_credit_sums
+                            )
                             dynamic_total_tax_sum[
                                 f"dynamic_total_tax_sum{i}"] = \
                                 dynamic_total_net_sum[
@@ -652,7 +696,7 @@ class TaxReport(models.TransientModel):
         prev_account = None
         prev_tax = None
         sheet.write(6, col, '', sub_heading)
-        for date in data['date_viewed']:
+        for _date in data['date_viewed']:
             sheet.write(6, col + j, 'NET', sub_heading)
             sheet.write(6, col + j + 1, 'TAX', sub_heading)
             j += 2

@@ -1,9 +1,6 @@
-/** @odoo-module **/
-
 import { Component, signal, proxy } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { BlockUI } from "@web/core/ui/block_ui";
 import { download } from "@web/core/network/download";
 
 const actionRegistry = registry.category("actions");

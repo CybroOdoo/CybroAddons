@@ -16,8 +16,8 @@
 |license| |odoo| |edition| |maintainer|
 
 Liquid Glass Backend Theme
-====================
-* Liquid Glass Backend Theme module for Odoo 20 community edition
+==========================
+* Liquid Glass Backend Theme module for Odoo 20 Community Edition
 
 Key Features
 ------------

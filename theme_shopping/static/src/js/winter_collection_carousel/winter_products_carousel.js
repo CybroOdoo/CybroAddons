@@ -20,7 +20,7 @@ export class WinterProduct extends ShoppingCarousel {
     }
 
     start() {
-        this.setupCarousel(this.el.querySelector('#product'));
+        this.setupCarousel(this.el.querySelector('.st-dynamic-product-carousel'));
     }
 
     async addToCart(ev) {

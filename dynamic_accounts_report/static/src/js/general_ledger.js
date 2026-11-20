@@ -1,4 +1,3 @@
-/** @odoo-module */
 import { Component, signal, proxy } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
@@ -39,9 +38,10 @@ export class GeneralLedger extends Component {
             account_list: null,
             account_total_list: null,
             date_range: null,
+            date_range_title: null,
             options: null,
             method: {
-                'accural': true
+                'accrual': true
             },
         });
         this.load_data(this.initial_render = true);
@@ -58,60 +58,128 @@ export class GeneralLedger extends Component {
         });
     }
 
-    async load_data() {
+    _processData(data) {
         let account_list = [];
-        let account_totals = '';
+        let account_totals = {};
         let totalDebitSum = 0;
         let totalCreditSum = 0;
-        let currency;
+        let currency = this.state.currency || '';
+
+        if (data) {
+            Object.entries(data).forEach(([key, value]) => {
+                if (key !== 'account_totals' && key !== 'journal_ids' && key !== 'analytic_ids' && key !== 'currency') {
+                    account_list.push(key);
+                    if (Array.isArray(value)) {
+                        value.forEach(entry => {
+                            if (entry && entry[0]) {
+                                entry[0].debit_display = this.formatNumberWithSeparators(entry[0].debit || 0);
+                                entry[0].credit_display = this.formatNumberWithSeparators(entry[0].credit || 0);
+                            }
+                        });
+                    }
+                } else if (key === 'journal_ids') {
+                    this.state.journals = value;
+                } else if (key === 'analytic_ids') {
+                    this.state.analytics = value;
+                } else if (key === 'currency') {
+                    currency = value;
+                } else if (key === 'account_totals') {
+                    account_totals = value || {};
+                }
+            });
+        }
+        if (account_totals) {
+            Object.values(account_totals).forEach(account => {
+                if (account.currency_id) {
+                    currency = account.currency_id;
+                }
+                totalDebitSum += account.total_debit || 0;
+                totalCreditSum += account.total_credit || 0;
+                account.total_debit_display = this.formatNumberWithSeparators(account.total_debit || 0);
+                account.total_credit_display = this.formatNumberWithSeparators(account.total_credit || 0);
+                account.balance_display = this.formatNumberWithSeparators((account.total_debit || 0) - (account.total_credit || 0));
+            });
+        }
+        this.state.account = account_list;
+        this.state.account_list = account_list;
+        this.state.account_data = data;
+        this.state.account_total = account_totals;
+        this.state.account_total_list = account_totals;
+        this.state.currency = currency;
+        this.state.total_debit = Math.round(totalDebitSum * 100) / 100;
+        this.state.total_debit_display = this.formatNumberWithSeparators(totalDebitSum);
+        this.state.total_credit = Math.round(totalCreditSum * 100) / 100;
+        this.state.total_credit_display = this.formatNumberWithSeparators(totalCreditSum);
+    }
+
+    async load_data() {
         var action_title = this.props?.action?.display_name || "General Ledger";
         try {
-            this.state.account_data = await this.orm.call("account.general.ledger", "view_report", [[this.wizard_id], action_title]);
-            const dataArray = this.state.account_data;
-            if (dataArray) {
-                Object.entries(dataArray).forEach(([key, value]) => {
-                    if (key !== 'account_totals' && key !== 'journal_ids' && key !== 'analytic_ids') {
-                        account_list.push(key);
-                        if (Array.isArray(value)) {
-                            value.forEach(entry => {
-                                if (entry && entry[0]) {
-                                    entry[0].debit_display = this.formatNumberWithSeparators(entry[0].debit || 0);
-                                    entry[0].credit_display = this.formatNumberWithSeparators(entry[0].credit || 0);
-                                }
-                            });
-                        }
-                    } else if (key === 'journal_ids') {
-                        this.state.journals = value;
-                    } else if (key === 'analytic_ids') {
-                        this.state.analytics = value;
-                    } else {
-                        account_totals = value;
-                    }
-                });
-            }
-            if (account_totals) {
-                Object.values(account_totals).forEach(account => {
-                    currency = account.currency_id;
-                    totalDebitSum += account.total_debit || 0;
-                    totalCreditSum += account.total_credit || 0;
-                    account.total_debit_display = this.formatNumberWithSeparators(account.total_debit || 0);
-                    account.total_credit_display = this.formatNumberWithSeparators(account.total_credit || 0);
-                    account.balance_display = this.formatNumberWithSeparators(account.total_debit - account.total_credit || 0);
-                });
-            }
-            this.state.account = account_list;
-            this.state.account_list = account_list;
-            this.state.account_total_list = account_totals;
-            this.state.account_total = account_totals;
-            this.state.currency = currency;
-            this.state.total_debit = totalDebitSum;
-            this.state.total_debit_display = this.formatNumberWithSeparators(totalDebitSum);
-            this.state.total_credit = totalCreditSum;
-            this.state.total_credit_display = this.formatNumberWithSeparators(totalCreditSum);
+            const data = await this.orm.call("account.general.ledger", "view_report", [[this.wizard_id], action_title]);
+            this._processData(data);
             this.state.title = action_title;
         } catch (el) {
             console.error(el);
         }
+    }
+
+    filter() {
+        const journalNames = (this.state.selected_journal_list || []).map(id => {
+            const j = (this.state.journals || []).find(item => item.id === id);
+            return j ? j.name : id;
+        });
+        const analyticNames = (this.state.selected_analytic_list || []).map(id => {
+            const a = (this.state.analytics || []).find(item => item.id === id);
+            return a ? a.name : id;
+        });
+        let filters = {
+            'journal': journalNames,
+            'analytic': analyticNames,
+            'options': this.state.options,
+            'start_date': null,
+            'end_date': null,
+        };
+        if (this.state.date_range) {
+            if (typeof this.state.date_range === 'object' && this.state.date_range !== null) {
+                filters['start_date'] = this.state.date_range.start_date || null;
+                filters['end_date'] = this.state.date_range.end_date || null;
+                return filters;
+            }
+            let startDate, endDate;
+            const today = new Date();
+            if (this.state.date_range === 'year') {
+                startDate = new Date(today.getFullYear(), 0, 1);
+                endDate = new Date(today.getFullYear(), 11, 31);
+            } else if (this.state.date_range === 'quarter') {
+                const currentQuarter = Math.floor(today.getMonth() / 3);
+                startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
+                endDate = new Date(today.getFullYear(), (currentQuarter + 1) * 3, 0);
+            } else if (this.state.date_range === 'month') {
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            } else if (this.state.date_range === 'last-month') {
+                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+            } else if (this.state.date_range === 'last-year') {
+                startDate = new Date(today.getFullYear() - 1, 0, 1);
+                endDate = new Date(today.getFullYear() - 1, 11, 31);
+            } else if (this.state.date_range === 'last-quarter') {
+                const lastQuarter = Math.floor((today.getMonth() - 3) / 3);
+                startDate = new Date(today.getFullYear(), lastQuarter * 3, 1);
+                endDate = new Date(today.getFullYear(), (lastQuarter + 1) * 3, 0);
+            }
+            if (startDate && endDate) {
+                const sY = startDate.getFullYear();
+                const sM = String(startDate.getMonth() + 1).padStart(2, '0');
+                const sD = String(startDate.getDate()).padStart(2, '0');
+                const eY = endDate.getFullYear();
+                const eM = String(endDate.getMonth() + 1).padStart(2, '0');
+                const eD = String(endDate.getDate()).padStart(2, '0');
+                filters['start_date'] = `${sY}-${sM}-${sD}`;
+                filters['end_date'] = `${eY}-${eM}-${eD}`;
+            }
+        }
+        return filters;
     }
 
     async printPdf(ev) {
@@ -142,58 +210,6 @@ export class GeneralLedger extends Component {
             },
             'display_name': action_title,
         });
-    }
-
-    filter() {
-        let startDate, endDate;
-        let startYear, startMonth, startDay, endYear, endMonth, endDay;
-        if (this.state.date_range) {
-            const today = new Date();
-            if (this.state.date_range === 'year') {
-                startDate = new Date(today.getFullYear(), 0, 1);
-                endDate = new Date(today.getFullYear(), 11, 31);
-            } else if (this.state.date_range === 'quarter') {
-                const currentQuarter = Math.floor(today.getMonth() / 3);
-                startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
-                endDate = new Date(today.getFullYear(), (currentQuarter + 1) * 3, 0);
-            } else if (this.state.date_range === 'month') {
-                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            } else if (this.state.date_range === 'last-month') {
-                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
-            } else if (this.state.date_range === 'last-year') {
-                startDate = new Date(today.getFullYear() - 1, 0, 1);
-                endDate = new Date(today.getFullYear() - 1, 11, 31);
-            } else if (this.state.date_range === 'last-quarter') {
-                const lastQuarter = Math.floor((today.getMonth() - 3) / 3);
-                startDate = new Date(today.getFullYear(), lastQuarter * 3, 1);
-                endDate = new Date(today.getFullYear(), (lastQuarter + 1) * 3, 0);
-            }
-            if (startDate) {
-                startYear = startDate.getFullYear();
-                startMonth = startDate.getMonth() + 1;
-                startDay = startDate.getDate();
-            }
-            if (endDate) {
-                endYear = endDate.getFullYear();
-                endMonth = endDate.getMonth() + 1;
-                endDay = endDate.getDate();
-            }
-        }
-        let filters = {
-            'journal': this.state.selected_journal_list,
-            'analytic': this.state.selected_analytic_list,
-            'options': this.state.options,
-            'start_date': null,
-            'end_date': null,
-        };
-        if (startYear !== undefined && startMonth !== undefined && startDay !== undefined &&
-            endYear !== undefined && endMonth !== undefined && endDay !== undefined) {
-            filters['start_date'] = `${startYear}-${startMonth < 10 ? '0' : ''}${startMonth}-${startDay < 10 ? '0' : ''}${startDay}`;
-            filters['end_date'] = `${endYear}-${endMonth < 10 ? '0' : ''}${endMonth}-${endDay < 10 ? '0' : ''}${endDay}`;
-        }
-        return filters;
     }
 
     async print_xlsx() {
@@ -239,6 +255,7 @@ export class GeneralLedger extends Component {
             target: "current",
         });
     }
+
     gotoJournalItem(ev) {
         const accountId = ev.target.getAttribute("data-id") || ev.target.dataset.id;
         return this.action.doAction({
@@ -268,72 +285,88 @@ export class GeneralLedger extends Component {
     }
 
     async applyFilter(val, ev, is_delete = false) {
-        let account_list = [];
-        let account_totals = '';
-        this.state.account = null;
-        this.state.account_data = null;
-        this.state.account_total = null;
         this.state.filter_applied = true;
-        let totalDebitSum = 0;
-        let totalCreditSum = 0;
-        if (ev) {
-            if (ev.input && ev.input.attributes?.placeholder?.value == 'Journals' && !is_delete) {
-                this.state.selected_journal_list.push(val[0].display_name);
-            } else if (ev.input && ev.input.attributes?.placeholder?.value == 'Analytic' && !is_delete) {
-                this.state.selected_analytic_list.push(val[0].display_name);
-            } else if (is_delete && is_delete == 'journal') {
-                let index = this.state.selected_journal_list.indexOf(val);
-                this.state.selected_journal_list.splice(index, 1);
-            } else if (is_delete && is_delete == 'analytic') {
-                let index = this.state.selected_analytic_list.indexOf(val);
-                this.state.selected_analytic_list.splice(index, 1);
-            }
-        } else if (val && val.target) {
-            const dataVal = val.target.getAttribute("data-value");
-            if (val.target.name === 'start_date') {
-                this.state.date_range = {
-                    ...this.state.date_range,
-                    start_date: val.target.value
-                };
-            } else if (val.target.name === 'end_date') {
-                this.state.date_range = {
-                    ...this.state.date_range,
-                    end_date: val.target.value
-                };
+        const target = val && val.target ? (val.target.closest("button, input") || val.target) : null;
+        if (target) {
+            const dataVal = target.getAttribute("data-value");
+            if (target.name === 'start_date' || target.name === 'end_date') {
+                const currentDates = (typeof this.state.date_range === 'object' && this.state.date_range !== null)
+                    ? { ...this.state.date_range }
+                    : {};
+                if (target.value) {
+                    currentDates[target.name] = target.value;
+                } else {
+                    delete currentDates[target.name];
+                }
+                if (Object.keys(currentDates).length > 0) {
+                    this.state.date_range = currentDates;
+                    const s = currentDates.start_date || '';
+                    const e = currentDates.end_date || '';
+                    this.state.date_range_title = (s && e) ? `${s} to ${e}` : (s ? `From ${s}` : `To ${e}`);
+                } else {
+                    this.state.date_range = null;
+                    this.state.date_range_title = null;
+                }
             } else if (['month', 'year', 'quarter', 'last-month', 'last-year', 'last-quarter'].includes(dataVal)) {
-                this.state.date_range = dataVal;
+                if (this.state.date_range === dataVal) {
+                    this.state.date_range = null;
+                    this.state.date_range_title = null;
+                } else {
+                    this.state.date_range = dataVal;
+                    this.state.date_range_title = target.innerText.trim();
+                    const startInput = document.getElementById("start_date");
+                    const endInput = document.getElementById("end_date");
+                    if (startInput) startInput.value = "";
+                    if (endInput) endInput.value = "";
+                }
+            } else if (dataVal === 'journal') {
+                const journalId = parseInt(target.getAttribute("data-id"), 10);
+                if (!this.state.selected_journal_list.includes(journalId)) {
+                    this.state.selected_journal_list = [...this.state.selected_journal_list, journalId];
+                } else {
+                    this.state.selected_journal_list = this.state.selected_journal_list.filter(id => id !== journalId);
+                }
+            } else if (dataVal === 'analytic') {
+                const analyticId = parseInt(target.getAttribute("data-id"), 10);
+                if (!this.state.selected_analytic_list.includes(analyticId)) {
+                    this.state.selected_analytic_list = [...this.state.selected_analytic_list, analyticId];
+                } else {
+                    this.state.selected_analytic_list = this.state.selected_analytic_list.filter(id => id !== analyticId);
+                }
             } else if (dataVal === 'draft') {
-                if (val.target.classList.contains("selected-filter")) {
-                    const { draft, ...updatedAccount } = this.state.options || {};
-                    this.state.options = updatedAccount;
-                    val.target.classList.remove("selected-filter");
+                if (this.state.options && this.state.options.draft) {
+                    const { draft, ...updatedOptions } = this.state.options;
+                    this.state.options = Object.keys(updatedOptions).length ? updatedOptions : null;
                 } else {
                     this.state.options = {
                         ...(this.state.options || {}),
                         'draft': true
                     };
-                    val.target.classList.add("selected-filter");
+                }
+            } else if (dataVal === 'cash-basis') {
+                if (this.state.method && this.state.method.cash) {
+                    const { cash, ...updatedMethod } = this.state.method;
+                    this.state.method = Object.keys(updatedMethod).length ? updatedMethod : { 'accrual': true };
+                } else {
+                    this.state.method = {
+                        ...(this.state.method || {}),
+                        'cash': true
+                    };
                 }
             }
         }
-        let filtered_data = await this.orm.call("account.general.ledger", "get_filter_values", [this.state.selected_journal_list, this.state.date_range, this.state.options, this.state.selected_analytic_list]);
-        for (let index in filtered_data) {
-            const value = filtered_data[index];
-            if (index !== 'account_totals' && index !== 'journal_ids' && index !== 'analytic_ids') {
-                account_list.push(index);
-            } else if (index === 'account_totals') {
-                account_totals = value;
-                Object.values(account_totals).forEach(account_list => {
-                    totalDebitSum += account_list.total_debit || 0;
-                    totalCreditSum += account_list.total_credit || 0;
-                });
-}
-        }
-        this.state.account = account_list;
-        this.state.account_data = filtered_data;
-        this.state.account_total = account_totals;
-        this.state.total_debit = totalDebitSum;
-        this.state.total_credit = totalCreditSum;
+        let filtered_data = await this.orm.call(
+            "account.general.ledger",
+            "get_filter_values",
+            [
+                this.state.selected_journal_list,
+                this.state.date_range,
+                this.state.options,
+                this.state.selected_analytic_list,
+                this.state.method
+            ]
+        );
+        this._processData(filtered_data);
         const unfoldBtn = this.unfoldButton();
         if (unfoldBtn && unfoldBtn.classList.contains("selected-filter")) {
             unfoldBtn.classList.remove("selected-filter");

@@ -26,8 +26,9 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    "depends": ['web', 'mail'],
+    "depends": ['web'],
     "data": [
+        'security/ir.access.csv',
         'views/assets_views.xml',
         'views/login_templates.xml',
         'views/theme_data_views.xml',
@@ -57,7 +58,4 @@
     'license': 'LGPL-3',
     'post_init_hook': 'post_init_hook',
     'uninstall_hook': 'uninstall_hook',
-    'installable': True,
-    'auto_install': False,
-    'application': False
 }

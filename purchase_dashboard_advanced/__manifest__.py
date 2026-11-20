@@ -21,11 +21,10 @@
 ################################################################################
 {
     'name': "Advanced Purchase Dashboard",
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Purchases',
     'summary': 'The Purchase Dashboard provides a detailed overview of your '
                'purchases in a single screen',
-    'description': 'A longer description of what this module does.',
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
@@ -45,7 +44,4 @@
     },
     'images': ['static/description/banner.jpg'],
     'license': "LGPL-3",
-    'installable': True,
-    'auto_install': False,
-    'application': False,
 }

@@ -1,5 +1,5 @@
 .. |license| image:: https://img.shields.io/badge/license-LGPL--3-blue.svg
-    :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.htmla
     :alt: License: LGPL-3
 
 .. |odoo| image:: https://img.shields.io/badge/Odoo-20.0-875A7B.svg
@@ -14,9 +14,11 @@
 
 Code Backend Theme
 ==================
-* Code Backend Theme module for Odoo 20 community editions.
-This is a Minimalist
-and Elegant Backend Theme for Odoo 20. This theme will change your Old Experience to a New Experience with Odoo.
+* Code Backend Theme module for Odoo 20 Community Editions.
+
+This is a minimalist and elegant backend theme for Odoo 20.
+It transforms the traditional Odoo backend interface into a
+modern and user-friendly experience.
 
 Key Features
 ------------

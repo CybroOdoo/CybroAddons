@@ -6,8 +6,6 @@
     :target: https://www.odoo.com
     :alt: Odoo 20.0
 
-
-
 .. |maintainer| image:: https://img.shields.io/badge/maintainer-Cybrosys-875A7B.svg
     :target: https://cybrosys.com
     :alt: Maintainer: Cybrosys Techno Solutions
@@ -17,7 +15,7 @@
 Odoo20 Dynamic Accounting Reports
 ================
 
-* Dynamic financial reports for Odoo 20 community editions
+* Dynamic financial reports for Odoo 20 Community Edition.
 
 Key Features
 ------------

@@ -26,7 +26,7 @@ from odoo.tools.date_utils import get_month, get_fiscal_year, \
 
 
 class AccountTrialBalance(models.TransientModel):
-    """For creating Trial Balance report"""
+    """For creating Trial Balance report."""
     _name = 'account.trial.balance'
     _description = 'Trial Balance Report'
 
@@ -89,9 +89,10 @@ class AccountTrialBalance(models.TransientModel):
         return move_line_list, journal
 
     @api.model
-    def get_filter_values(self, start_date, end_date, comparison_number,
-                          comparison_type, journal_list, analytic, options,
-                          method):
+    def get_filter_values(self, start_date=None, end_date=None,
+                          comparison_number=None, comparison_type=None,
+                          journal_list=None, analytic=None, options=None,
+                          method=None):
         """
         Retrieves and calculates filtered values for generating a financial
         report.
@@ -130,10 +131,11 @@ class AccountTrialBalance(models.TransientModel):
             get_fiscal_year(datetime.strptime(start_date, "%Y-%m-%d").date())[
                 0] if comparison_type == 'year' else datetime.strptime(
                 start_date, "%Y-%m-%d").date()
-        end_date_first = \
-            get_fiscal_year(datetime.strptime(end_date, "%Y-%m-%d").date())[
-                1] if comparison_type == 'year' else datetime.strptime(end_date,
-                                                                       "%Y-%m-%d").date()
+        end_date_first = (
+            get_fiscal_year(datetime.strptime(end_date, "%Y-%m-%d").date())[1]
+            if comparison_type == 'year'
+            else datetime.strptime(end_date, "%Y-%m-%d").date()
+        )
         for account_id in account_ids:
             start_date = start_date_first
             end_date = end_date_first
@@ -183,8 +185,10 @@ class AccountTrialBalance(models.TransientModel):
                             domain.append(
                                 ('analytic_line_ids', 'in', analytic))
                         if method is not None and 'cash' in method:
-                            domain.append(('journal_id', 'in',
-                                           self.env.company.tax_cash_basis_journal_id.ids))
+                            cash_jids = (
+                                self.env.company.tax_cash_basis_journal_id.ids
+                            )
+                            domain.append(('journal_id', 'in', cash_jids))
                         move_lines = self.env['account.move.line'].search(
                             domain)
                         dynamic_total_debit[
@@ -212,8 +216,10 @@ class AccountTrialBalance(models.TransientModel):
                             domain.append(
                                 ('analytic_line_ids', 'in', analytic))
                         if method is not None and 'cash' in method:
-                            domain.append(('journal_id', 'in',
-                                           self.env.company.tax_cash_basis_journal_id.ids), )
+                            cash_jids = (
+                                self.env.company.tax_cash_basis_journal_id.ids
+                            )
+                            domain.append(('journal_id', 'in', cash_jids))
                         move_lines = self.env['account.move.line'].search(
                             domain)
                         dynamic_date_num[
@@ -245,8 +251,10 @@ class AccountTrialBalance(models.TransientModel):
                             domain.append(
                                 ('analytic_line_ids', 'in', analytic))
                         if method is not None and 'cash' in method:
-                            domain.append(('journal_id', 'in',
-                                           self.env.company.tax_cash_basis_journal_id.ids))
+                            cash_jids = (
+                                self.env.company.tax_cash_basis_journal_id.ids
+                            )
+                            domain.append(('journal_id', 'in', cash_jids))
                         move_lines = self.env['account.move.line'].search(domain)
                         dynamic_date_num[
                             f"dynamic_date_num{i}"] = 'Q' + ' ' + str(
@@ -376,9 +384,11 @@ class AccountTrialBalance(models.TransientModel):
             sheet.merge_range('C3:G3', f"{start_date} to {end_date}",
                               filter_body)
         if data['filters']['comparison_number_range']:
-            sheet.merge_range('C4:G4',
-                              f"{data['filters']['comparison_type']} : {data['filters']['comparison_number_range']}",
-                              filter_body)
+            comp_label = (
+                f"{data['filters']['comparison_type']} : "
+                f"{data['filters']['comparison_number_range']}"
+            )
+            sheet.merge_range('C4:G4', comp_label, filter_body)
         if data['filters']['journal']:
             display_names = [journal for
                              journal in data['filters']['journal']]
@@ -410,7 +420,7 @@ class AccountTrialBalance(models.TransientModel):
             dynamic_dates = data['data'][0][0].get('dynamic_date_num', {})
 
         if data.get('apply_comparison') and dynamic_dates:
-            for key, display in dynamic_dates.items():
+            for _key, display in dynamic_dates.items():
                 sheet.merge_range(9, col + i, 9, col + i + 1, display, sub_heading)
                 sheet.write(10, col + i, 'Debit', sub_heading)
                 sheet.write(10, col + i + 1, 'Credit', sub_heading)

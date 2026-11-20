@@ -26,12 +26,12 @@ from odoo.tools import date_utils
 
 
 class AccountGeneralLedger(models.TransientModel):
-    """For creating General Ledger report"""
+    """For creating General Ledger report."""
     _name = 'account.general.ledger'
     _description = 'General Ledger Report'
 
     @api.model
-    def view_report(self, option, tag):
+    def view_report(self, option=None, tag=None):
         """
         Retrieve partner ledger report data based on options and tags.
 
@@ -49,11 +49,14 @@ class AccountGeneralLedger(models.TransientModel):
         move_line_ids = self.env['account.move.line'].search(
             [('parent_state', '=', 'posted')])
         account_ids = move_line_ids.mapped('account_id')
+        currency_id = self.env.company.currency_id.symbol
+        account_dict['currency'] = currency_id
         account_dict['journal_ids'] = self.env['account.journal'].search_read(
             [], ['name'])
         account_dict['analytic_ids'] = self.env[
             'account.analytic.account'].search_read(
             [], ['name'])
+        account_dict['account_totals'] = account_totals
         for account in account_ids:
             move_line_id = move_line_ids.filtered(
                 lambda x: x.account_id == account)
@@ -65,18 +68,17 @@ class AccountGeneralLedger(models.TransientModel):
                      'analytic_line_ids'])
                 move_line_list.append(move_line_data)
             account_dict[account.display_name] = move_line_list
-            currency_id = self.env.company.currency_id.symbol
             account_totals[account.display_name] = {
                 'total_debit': round(sum(move_line_id.mapped('debit')), 2),
                 'total_credit': round(sum(move_line_id.mapped('credit')), 2),
                 'currency_id': currency_id,
                 'account_id': account.id}
-            account_dict['account_totals'] = account_totals
+        account_dict['account_totals'] = account_totals
         return account_dict
 
     @api.model
-    def get_filter_values(self, journal_id, date_range, options, analytic,
-                          method):
+    def get_filter_values(self, journal_id=None, date_range=None,
+                          options=None, analytic=None, method=None):
         """
         Retrieve filtered values for the partner ledger report.
 
@@ -101,71 +103,102 @@ class AccountGeneralLedger(models.TransientModel):
         """
         account_dict = {}
         account_totals = {}
+        currency_id = self.env.company.currency_id.symbol
+        account_dict['currency'] = currency_id
         today = fields.Date.today()
         quarter_start, quarter_end = date_utils.get_quarter(today)
         previous_quarter_start = quarter_start - relativedelta(months=3)
         previous_quarter_end = quarter_start - relativedelta(days=1)
-        if options == {}:
-            options = None
-        if options is None:
-            option_domain = ['posted']
-        elif 'draft' in options:
+        if options and options.get('draft'):
             option_domain = ['posted', 'draft']
-        domain = [('journal_id', 'in', journal_id),
-                  ('parent_state', 'in', option_domain), ] if journal_id else [
-            ('parent_state', 'in', option_domain), ]
-        if method == {}:
-            method = None
-        if method is not None and 'cash' in method:
-            domain += [('journal_id', 'in',
-                        self.env.company.tax_cash_basis_journal_id.ids), ]
+        else:
+            option_domain = ['posted']
+        domain = [('parent_state', 'in', option_domain)]
+        if journal_id:
+            resolved_journal_ids = []
+            for j in journal_id:
+                if isinstance(j, int):
+                    resolved_journal_ids.append(j)
+                elif isinstance(j, str):
+                    if j.isdigit():
+                        resolved_journal_ids.append(int(j))
+                    else:
+                        journal_rec = self.env['account.journal'].search(
+                            [('name', '=', j)], limit=1)
+                        if journal_rec:
+                            resolved_journal_ids.append(journal_rec.id)
+            if resolved_journal_ids:
+                domain.append(('journal_id', 'in', resolved_journal_ids))
+            else:
+                domain.append(('journal_id', 'in', []))
+        if method and method.get('cash'):
+            cash_journal = self.env.company.tax_cash_basis_journal_id
+            if cash_journal:
+                domain.append(('journal_id', 'in', cash_journal.ids))
         if analytic:
-            analytic_line = self.env['account.analytic.line'].search(
-                [('account_id', 'in', analytic)]).mapped('id')
-            domain += [('analytic_line_ids', 'in', analytic_line)]
+            resolved_analytic_ids = []
+            for a in analytic:
+                if isinstance(a, int):
+                    resolved_analytic_ids.append(a)
+                elif isinstance(a, str):
+                    if a.isdigit():
+                        resolved_analytic_ids.append(int(a))
+                    else:
+                        rec = self.env['account.analytic.account'].search(
+                            [('name', '=', a)], limit=1)
+                        if rec:
+                            resolved_analytic_ids.append(rec.id)
+            if resolved_analytic_ids:
+                analytic_line = self.env['account.analytic.line'].search(
+                    [('account_id', 'in', resolved_analytic_ids)]).mapped('id')
+                domain.append(('analytic_line_ids', 'in', analytic_line))
+            else:
+                domain.append(('analytic_line_ids', 'in', []))
         if date_range:
-            if date_range == 'month':
-                domain += [('date', '>=', today.replace(day=1)),
-                           ('date', '<=', today)]
-            elif date_range == 'year':
-                domain += [('date', '>=', today.replace(month=1, day=1)),
-                           ('date', '<=', today)]
-            elif date_range == 'quarter':
-                domain += [('date', '>=', quarter_start),
-                           ('date', '<=', quarter_end)]
-            elif date_range == 'last-month':
-                last_month_start = today.replace(day=1) - relativedelta(
-                    months=1)
-                last_month_end = last_month_start + relativedelta(
-                    day=calendar.monthrange(last_month_start.year,
-                                            last_month_start.month)[
-                        1])
-                domain += [('date', '>=', last_month_start),
-                           ('date', '<=', last_month_end)]
-            elif date_range == 'last-year':
-                last_year_start = today.replace(month=1,
-                                                day=1) - relativedelta(years=1)
-                last_year_end = last_year_start.replace(month=12, day=31)
-                domain += [('date', '>=', last_year_start),
-                           ('date', '<=', last_year_end)]
-            elif date_range == 'last-quarter':
-                domain += [('date', '>=', previous_quarter_start),
-                           ('date', '<=', previous_quarter_end)]
-            elif 'start_date' in date_range and 'end_date' in date_range:
-                start_date = datetime.strptime(date_range['start_date'],
-                                               '%Y-%m-%d').date()
-                end_date = datetime.strptime(date_range['end_date'],
-                                             '%Y-%m-%d').date()
-                domain += [('date', '>=', start_date),
-                           ('date', '<=', end_date)]
-            elif 'start_date' in date_range:
-                start_date = datetime.strptime(date_range['start_date'],
-                                               '%Y-%m-%d').date()
-                domain += [('date', '>=', start_date)]
-            elif 'end_date' in date_range:
-                end_date = datetime.strptime(date_range['end_date'],
-                                             '%Y-%m-%d').date()
-                domain += [('date', '<=', end_date)]
+            if isinstance(date_range, str):
+                if date_range == 'month':
+                    month_start, month_end = date_utils.get_month(today)
+                    domain += [('date', '>=', month_start),
+                               ('date', '<=', month_end)]
+                elif date_range == 'year':
+                    year_start, year_end = date_utils.get_fiscal_year(today)
+                    domain += [('date', '>=', year_start),
+                               ('date', '<=', year_end)]
+                elif date_range == 'quarter':
+                    domain += [('date', '>=', quarter_start),
+                               ('date', '<=', quarter_end)]
+                elif date_range == 'last-month':
+                    last_month_start = today.replace(day=1) - relativedelta(
+                        months=1)
+                    last_month_end = last_month_start + relativedelta(
+                        day=calendar.monthrange(last_month_start.year,
+                                                last_month_start.month)[1])
+                    domain += [('date', '>=', last_month_start),
+                               ('date', '<=', last_month_end)]
+                elif date_range == 'last-year':
+                    last_year_start = today.replace(month=1,
+                                                    day=1) - relativedelta(
+                        years=1)
+                    last_year_end = last_year_start.replace(month=12, day=31)
+                    domain += [('date', '>=', last_year_start),
+                               ('date', '<=', last_year_end)]
+                elif date_range == 'last-quarter':
+                    domain += [('date', '>=', previous_quarter_start),
+                               ('date', '<=', previous_quarter_end)]
+            elif isinstance(date_range, dict):
+                start = date_range.get('start_date')
+                end = date_range.get('end_date')
+                if start and end:
+                    start_date = datetime.strptime(start, '%Y-%m-%d').date()
+                    end_date = datetime.strptime(end, '%Y-%m-%d').date()
+                    domain += [('date', '>=', start_date),
+                               ('date', '<=', end_date)]
+                elif start:
+                    start_date = datetime.strptime(start, '%Y-%m-%d').date()
+                    domain += [('date', '>=', start_date)]
+                elif end:
+                    end_date = datetime.strptime(end, '%Y-%m-%d').date()
+                    domain += [('date', '<=', end_date)]
         move_line_ids = self.env['account.move.line'].search(domain)
         account_ids = move_line_ids.mapped('account_id')
         account_dict['journal_ids'] = self.env['account.journal'].search_read(
@@ -173,6 +206,7 @@ class AccountGeneralLedger(models.TransientModel):
         account_dict['analytic_ids'] = self.env[
             'account.analytic.account'].search_read(
             [], ['name'])
+        account_dict['account_totals'] = account_totals
         for account in account_ids:
             move_line_id = move_line_ids.filtered(
                 lambda x: x.account_id == account)
@@ -184,13 +218,12 @@ class AccountGeneralLedger(models.TransientModel):
                      'analytic_line_ids'])
                 move_line_list.append(move_line_data)
             account_dict[account.display_name] = move_line_list
-            currency_id = self.env.company.currency_id.symbol
             account_totals[account.display_name] = {
                 'total_debit': round(sum(move_line_id.mapped('debit')), 2),
                 'total_credit': round(sum(move_line_id.mapped('credit')), 2),
                 'currency_id': currency_id,
                 'account_id': account.id}
-            account_dict['account_totals'] = account_totals
+        account_dict['account_totals'] = account_totals
         return account_dict
 
     @api.model
@@ -248,17 +281,29 @@ class AccountGeneralLedger(models.TransientModel):
         if start_date or end_date:
             sheet.merge_range('C3:G3', f"{start_date} to {end_date}",
                               filter_body)
-        if data['filters']['journal']:
-            display_names = [journal for
-                             journal in data['filters']['journal']]
-            display_names_str = ', '.join(display_names)
+        if data.get('filters', {}).get('journal'):
+            journal_names = []
+            for j in data['filters']['journal']:
+                if isinstance(j, int) or (isinstance(j, str) and j.isdigit()):
+                    rec = self.env['account.journal'].browse(int(j))
+                    if rec.exists():
+                        journal_names.append(rec.name)
+                else:
+                    journal_names.append(str(j))
+            display_names_str = ', '.join(journal_names)
             sheet.merge_range('C4:G4', display_names_str, filter_body)
-        if data['filters']['analytic']:
-            display_names = [analytic for
-                             analytic in data['filters']['analytic']]
-            account_keys_str = ', '.join(display_names)
+        if data.get('filters', {}).get('analytic'):
+            analytic_names = []
+            for a in data['filters']['analytic']:
+                if isinstance(a, int) or (isinstance(a, str) and a.isdigit()):
+                    rec = self.env['account.analytic.account'].browse(int(a))
+                    if rec.exists():
+                        analytic_names.append(rec.name)
+                else:
+                    analytic_names.append(str(a))
+            account_keys_str = ', '.join(analytic_names)
             sheet.merge_range('C5:G5', account_keys_str, filter_body)
-        if data['filters']['options']:
+        if data.get('filters', {}).get('options'):
             option_keys = list(data['filters']['options'].keys())
             option_keys_str = ', '.join(option_keys)
             sheet.merge_range('C6:G6', option_keys_str, filter_body)
@@ -277,18 +322,22 @@ class AccountGeneralLedger(models.TransientModel):
                         row += 1
                         sheet.write(row, col, account, txt_name)
                         sheet.write(row, col + 1, ' ', txt_name)
-                        sheet.merge_range(row, col + 2, row, col + 4, ' ', txt_name)
+                        sheet.merge_range(row, col + 2, row, col + 4, ' ',
+                                          txt_name)
                         sheet.merge_range(row, col + 5, row, col + 6, ' ',
                                           txt_name)
-                        sheet.merge_range(row, col + 7, row, col + 8,
-                                          data['total'][account]['total_debit_display'],
-                                          txt_name)
-                        sheet.merge_range(row, col + 9, row, col + 10,
-                                          data['total'][account]['total_credit_display'],
-                                          txt_name)
-                        sheet.merge_range(row, col + 11, row, col + 12,
-                                          data['total'][account]['balance_display'],
-                                          txt_name)
+                        sheet.merge_range(
+                            row, col + 7, row, col + 8,
+                            data['total'][account]['total_debit_display'],
+                            txt_name)
+                        sheet.merge_range(
+                            row, col + 9, row, col + 10,
+                            data['total'][account]['total_credit_display'],
+                            txt_name)
+                        sheet.merge_range(
+                            row, col + 11, row, col + 12,
+                            data['total'][account]['balance_display'],
+                            txt_name)
                         for rec in data['account_data'][account]:
                             row += 1
                             partner = rec[0]['partner_id']

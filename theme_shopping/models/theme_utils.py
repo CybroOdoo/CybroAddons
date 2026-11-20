@@ -1,25 +1,19 @@
-# -*- coding: utf-8 -*-
-#################################################################################
+#############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2026-TODAY Cybrosys Technologies (<https://www.cybrosys.com>).
-#    Author: Cybrosys Techno Solutions (<https://www.cybrosys.com>)
+#    Copyright (C) 2026-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Author: Cybrosys Techno Solutions(<https://www.cybrosys.com>)
 #
-#    This program is free software: you can modify it under the terms of the
-#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
+#    You can modify it under the terms of the GNU LESSER
+#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
 #
-#    This program is distributed in the hope that it will be useful, but
-#    WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#    GNU AFFERO GENERAL PUBLIC LICENSE (AGPL v3) for more details.
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
 #
-#    You should have received a copy of the GNU AFFERO GENERAL PUBLIC LICENSE
-#    (AGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-################################################################################
-
+#############################################################################
 from odoo import api, models
 
 
@@ -29,7 +23,7 @@ class ThemeUtils(models.AbstractModel):
 
     @api.model
     def _theme_shopping_post_copy(self, mod):
-        """ Enable and disable templates when using coffee shop theme """
+        """Enable the shop options used by Theme Shopping."""
         self.enable_view("website_sale.products_categories")
         self.enable_view("website_sale.product_comment")
         self.enable_view("website_sale.option_collapse_products_categories")

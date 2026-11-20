@@ -2,6 +2,57 @@
     background: url("/theme_liquid_glass/static/src/img/bg-img.svg") no-repeat center center fixed;
     background-size: cover;
     color: $text-white;
+
+    label,
+    .o_form_label,
+    .o_field_widget,
+    .text-muted,
+    .o_animated_number,
+    h1, h2, h3, h4, h5,
+    th, td {
+        color: $text-white;
+    }
+
+    a {
+        color: $text-white;
+        &:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+    }
+
+    // Transparent background and CSS variables for backend data tables
+    table:not(.odoo-editor-editable table):not(.note-editable table) {
+        @include transparent-bg;
+        thead, tbody, tfoot, tr, th, td {
+            @include transparent-bg;
+        }
+    }
+
+    .table:not(.odoo-editor-editable table):not(.note-editable table),
+    .o_table,
+    .o_list_table {
+        --table-bg: transparent !important;
+        --bs-table-bg: transparent !important;
+        --bs-table-accent-bg: transparent !important;
+        --bs-table-color: #{$text-white} !important;
+        --bs-table-hover-bg: rgba(255, 255, 255, 0.12) !important;
+        --bs-table-hover-color: #{$text-white} !important;
+        --bs-table-striped-bg: rgba(255, 255, 255, 0.02) !important;
+        --bs-table-striped-color: #{$text-white} !important;
+        --bs-table-border-color: rgba(255, 255, 255, 0.08) !important;
+        --ListRenderer-thead-bg-color: transparent !important;
+        --ListRenderer-thead-color: #{$text-white} !important;
+        --ListRenderer-thead-border-end-color: rgba(255, 255, 255, 0.08) !important;
+        --ListRenderer-bottom-border-color: rgba(255, 255, 255, 0.08) !important;
+        background-color: transparent !important;
+        color: $text-white !important;
+    }
+
+    // Hover effect for data rows across all list views
+    .table-hover > tbody > tr.o_data_row:hover > *,
+    .o_list_table tbody tr.o_data_row:hover > * {
+        background-color: rgba(255, 255, 255, 0.12) !important;
+    }
 }
 
 .o_action_manager,
@@ -9,47 +60,101 @@
     @include transparent-bg;
 }
 
-body,
-.o_web_client,
-label,
-.o_form_label,
-.o_field_widget,
-.text-muted,
-.o_animated_number,
-h1, h2, h3, h4, h5,
-span, div, p {
-    @include text-white-color;
-}
-
-a {
-    color: $text-white;
-    &:hover {
-        color: rgba(255, 255, 255, 0.8);
-    }
-}
-
-table {
-    @include transparent-bg;
-    thead, tbody, tfoot, tr, th, td {
-        @include transparent-bg;
-    }
-}
-
 * {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
 
-.o_searchview,
-.o_searchview_dropdown_toggler {
-    background: $glass-bg-light !important;
-    @include glass-border;
-    border-radius: $radius-md;
+// Searchbar & Search View
+.o_cp_searchview {
+    @include glass-effect($glass-bg-light, $blur-medium);
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: $radius-pill !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transition: $transition-base;
+    overflow: hidden;
+
+    &:hover {
+        border-color: rgba(255, 255, 255, 0.6) !important;
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    &:focus-within,
+    &:has(.o_searchview_dropdown_toggler.show) {
+        border-color: $primary-color !important;
+        box-shadow: 0 0 0 1px $primary-color, 0 0 14px rgba(6, 190, 160, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    }
+
+    // Children inside .o_cp_searchview must not render independent borders or rounded corners
+    .o_searchview,
+    &.input-group > .o_searchview,
+    .o_searchview.form-control,
+    .o_searchview:focus,
+    .o_searchview:focus-within {
+        background: transparent !important;
+        background-color: transparent !important;
+        backdrop-filter: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+
+    .o_searchview_dropdown_toggler,
+    &.input-group > .o_searchview_dropdown_toggler,
+    .o_searchview_dropdown_toggler.btn,
+    .o_searchview_dropdown_toggler:focus,
+    .o_searchview_dropdown_toggler:active,
+    .o_searchview:focus-within + .o_searchview_dropdown_toggler {
+        background: transparent !important;
+        background-color: transparent !important;
+        backdrop-filter: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+        color: $text-white !important;
+
+        &:hover,
+        &.show {
+            background: rgba(255, 255, 255, 0.12) !important;
+            color: $text-white !important;
+        }
+    }
+}
+
+// Standalone search view (when not part of .o_cp_searchview)
+.o_searchview:not(.o_cp_searchview *) {
+    @include glass-effect($glass-bg-light, $blur-medium);
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: $radius-pill !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transition: $transition-base;
+
+    &:hover {
+        border-color: rgba(255, 255, 255, 0.6) !important;
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    &:focus-within {
+        border-color: $primary-color !important;
+        box-shadow: 0 0 0 1px $primary-color, 0 0 14px rgba(6, 190, 160, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    }
+}
+
+.o_searchview {
+    button {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
 
     .o_searchview_input_container {
         .o_searchview_facet {
             @include glass-effect($hover-bg, $blur-light);
             @include text-white-color;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: $radius-sm;
 
             &:hover {
                 @include transparent-bg;
@@ -58,6 +163,14 @@ table {
 
         .o_searchview_input {
             @include text-white-color;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+
+            &::placeholder {
+                color: $text-muted !important;
+            }
         }
     }
 }
@@ -104,28 +217,26 @@ table {
     }
 }
 
-// ==========================================
-// Replace 3-dots (more_vert / more_horiz) with Gear/Settings icon in all places
-// ==========================================
-.oi[data-icon="more_vert"]:before,
-.oi[data-icon="more_horiz"]:before,
-.oi[data-icon="dots_vertical"]:before,
-.oi[data-icon="dots_horizontal"]:before,
-.oi.oi-more-vert:before,
-.oi.oi-more-horiz:before,
-[data-icon="more_vert"]:before,
-[data-icon="more_horiz"]:before {
-    content: "settings" !important;
-}
-
-.fa-ellipsis-v:before,
-.fa-ellipsis-h:before {
-    content: "\f013" !important;
-}
-
 .o_cp_action_menus {
     div .o-dropdown {
         color: $text-white !important;
+    }
+
+    // Replace 3-dots with Gear/Settings icon strictly in breadcrumb action menu
+    .oi[data-icon="more_vert"]:before,
+    .oi[data-icon="more_horiz"]:before,
+    .oi[data-icon="dots_vertical"]:before,
+    .oi[data-icon="dots_horizontal"]:before,
+    .oi.oi-more-vert:before,
+    .oi.oi-more-horiz:before,
+    [data-icon="more_vert"]:before,
+    [data-icon="more_horiz"]:before {
+        content: "settings" !important;
+    }
+
+    .fa-ellipsis-v:before,
+    .fa-ellipsis-h:before {
+        content: "\f013" !important;
     }
 
     .btn,
@@ -662,11 +773,6 @@ input[type="radio"]:checked {
 //     <div class="o-mail-MessagingMenu-container w-100 h-100">
 //       <nav class="o-mail-MessagingMenu-navbar">              ← tab nav (left)
 //       <div class="o-mail-MessagingMenu">                    ← main panel (right)
-//
-// Odoo mail SCSS sets:
-//   .o-mail-MessagingMenu         { background-color: $o-view-background-color; }
-//   .o-mail-MessagingMenu-navbar  { background-color: $o-webclient-background-color; }
-//
 // Strategy:
 //   - Use DOUBLE-CLASS selectors (specificity 0,2,0) to beat Odoo's single-class rules
 //   - Use near-opaque dark bg (0.97 alpha) so white list-view behind doesn't bleed through
@@ -763,8 +869,6 @@ input[type="radio"]:checked {
 }
 
 // DiscussSearch bar — fix white background
-// Odoo sets this via CSS custom property with !important:
-//   background-color: var(--mail-DiscussSearch-inputBgColor, $o-view-background-color) !important
 // Strategy: override the CSS variable at a higher level, AND use double-class for higher specificity
 .o-mail-MessagingMenu.d-flex,
 .o-mail-MessagingMenu-container.d-flex {
@@ -1045,7 +1149,7 @@ a.text-primary:hover,
 
 .alert-info {
     background: $glass-bg-light !important;
-    border-left: $glass-border;
+    border-left: 3px solid $primary-color !important;
     border-radius: 14px;
     color: $text-white;
 }
@@ -1179,7 +1283,7 @@ select.date_filter_values,
 }
 
 .card {
-    --card-bg: $glass-bg-light !important;
+    --card-bg: #{$glass-bg-light} !important;
 }
 
 .o-mail-NavigableList {
@@ -1253,13 +1357,6 @@ tr.bg-light,
     backdrop-filter: none !important;
 }
 
-// .rounded-circle {
-//     padding: 5px;
-// }
-//
-// .o-mail-ImStatus {
-//     padding: 0px !important;
-// }
 
 .o_priority_star.fa-star-o,
 a.o_todo_done_button,

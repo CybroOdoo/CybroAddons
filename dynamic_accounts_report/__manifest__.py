@@ -16,19 +16,19 @@
 #
 #############################################################################
 {
-    'name': 'Odoo20 Dynamic Accounting Reports',
+    'name': 'Dynamic Accounting Reports',
     'version': '20.0.1.0.0',
-    'category': 'Accounting',
-    'summary': "Odoo 19 Accounting Financial Reports,Dynamic Accounting Reports, Dynamic Financial Reports,Dynamic Report Odoo18, Odoo18,Financial Reports, Odoo18 Accounting,Accounting, Odoo Apps",
-    'description': "This module creates dynamic Accounting General Ledger, Trial"
-                   "Balance, Balance Sheet, Profit and Loss, Cash Book, Partner"
-                   "Ledger, Aged Payable, Aged Receivable, Bank book and Tax"
-                   "Reports in Odoo 19 community edition, Reporting, Odoo18 Accounting, odoo18 reporting, odoo18, odoo18 accounts reports",
+    'category': 'Accounting/Accounting',
+    'summary': "Dynamic Accounting Reports, Financial Reports in Odoo 20.",
+    'description': "This module creates dynamic Accounting General Ledger, "
+                   "Trial Balance, Balance Sheet, Profit and Loss, Cash Book, "
+                   "Partner Ledger, Aged Payable, Aged Receivable, Bank Book "
+                   "and Tax Reports in Odoo 20 Community Edition.",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['base_accounting_kit'],
+    'depends': ['account', 'base_accounting_kit'],
     'data': [
         'security/ir.access.csv',
         'views/accounting_report_views.xml',
@@ -36,12 +36,12 @@
         'report/general_ledger_templates.xml',
         'report/financial_report_template.xml',
         'report/partner_ledger_templates.xml',
-        'report/financial_reports_views.xml',
         'report/balance_sheet_report_templates.xml',
         'report/bank_book_templates.xml',
         'report/aged_payable_templates.xml',
         'report/aged_receivable_templates.xml',
         'report/tax_report_templates.xml',
+        'report/financial_reports_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

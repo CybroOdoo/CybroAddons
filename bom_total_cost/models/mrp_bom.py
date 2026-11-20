@@ -57,8 +57,8 @@ class MrpBom(models.Model):
 
     @api.depends('bom_line_ids.cost', 'product_qty')
     def _compute_bom_cost(self):
-        """Compute total BOM raw material cost and cost per finished unit."""
+        """Compute cost per unit and total BOM cost based on output quantity."""
         for bom in self:
-            total_cost = sum(bom.bom_line_ids.mapped('cost'))
-            bom.total_bom_cost = total_cost
-            bom.bom_cost = total_cost / bom.product_qty if bom.product_qty else 0.0
+            unit_cost = sum(bom.bom_line_ids.mapped('cost'))
+            bom.bom_cost = unit_cost
+            bom.total_bom_cost = unit_cost * bom.product_qty

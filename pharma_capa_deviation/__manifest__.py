@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Pharmaceutical ERP — CAPA & Deviations',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Manufacturing',
     'summary': 'Quality Deviation and Corrective & Preventive Action (CAPA) '
                'management for the Pharmaceutical ERP suite.',
@@ -52,7 +52,4 @@
     'uninstall_hook': 'uninstall_hook',
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
 }

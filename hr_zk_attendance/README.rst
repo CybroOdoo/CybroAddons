@@ -15,27 +15,27 @@
 |license| |odoo|  |maintainer|
 
 HR Biometric Device Integration
-================
+===============================
 
-* This Cybrosys's module integrates Odoo attendance with biometric device attendance.
+* This Cybrosys module integrates Odoo attendance with biometric device attendance.
 
 Key Features
 ------------
 
-* Real-time Data Fetching from Biometric Device to Odoo .
+* Real-time Data Fetching from Biometric Device to Odoo.
 * You can schedule attendance downloads by configuring the time in the settings.
-* You can create, update, and delete users from the biometric device, managing them through Odoo employees
+* You can create, update, and delete users from the biometric device, managing them through Odoo employees.
 * We can restart the device and also clear attendance log in a single click.
 
 Installation
 ------------
 
-* sudo pip install zklib
+* pip3 install pyzk
 
 Configuration
 -------------
-- This integration is  applicable for the the ZK Devices.
-- zklib you can install zklib library using "sudo pip install zklib"
+- This integration is applicable for ZK Devices.
+- You can install the pyzk library using "pip3 install pyzk".
 
 Company
 -------
