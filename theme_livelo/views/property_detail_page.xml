@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="property_detail_page" name="Property Detail Page">
+    <t t-call="website.layout">
+            <t t-set="title">Property Detail</t>
+
+            <!-- Custom Styles -->
+            <t t-set="head">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+                <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+            </t>
+
+            <div id="wrap">
+                <div class="oe_structure" id="oe_structure_theme_livelo_product_detail_1"/>
+
+                <!-- ===================== BREADCRUMB ===================== -->
+                <div class="container pt-4">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 py-2 px-0 bg-transparent align-items-center">
+                            <li class="breadcrumb-item">
+                                <a href="/" class="text-decoration-none text-muted">
+                                    <i class="fa fa-home me-1"/>Home
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="/shop" class="text-decoration-none text-muted">Properties</a>
+                            </li>
+                            <li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">
+                                <t t-esc="product.name"/>
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+
+                <!-- ===================== NAVBAR ===================== -->
+                <section class="section-navbar-header w-100 d-none">
+                </section>
+
+                <!-- ===================== PROPERTY HEADING ===================== -->
+                <section class="properties-management-details-heading mt-2 float-start w-100">
+                <div class="container">
+                    <div class="row align-items-center">
+
+                        <!-- Title -->
+                        <div class="col-lg-8">
+                            <h2 class="hr-prop-details-heading mb-0">
+                                <b t-field="product.name">Lakeview Haven, Lake Tahoe</b>
+                            </h2>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="col-lg-4 text-end d-flex align-items-center justify-content-end">
+                            <h3 class="hr-prop-details-heading mb-0">
+                                <b>$<t t-esc="'{:,}'.format(int(product.list_price))"/></b> <span class="fs-5 text-muted">/month</span>
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div class="row mt-5">
+                        <!-- Features -->
+                        <div class="col-lg-6 col-md-6">
+                            <h4 class="fw-bold mb-3">Features</h4>
+                            <div class="d-flex align-items-center gap-4">
+                                <div class="d-flex align-items-center">
+                                    <img src="/theme_livelo/static/src/images/icon-bed.png" class="me-2" alt="Beds" style="width: 20px;"/>
+                                    <span class="text-muted">Beds: <b class="text-dark"><t t-esc="product.bed or 3"/></b></span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <img src="/theme_livelo/static/src/images/icon-baths.png" class="me-2" alt="Baths" style="width: 20px;"/>
+                                    <span class="text-muted">Baths: <b class="text-dark"><t t-esc="product.bath or 2"/></b></span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <img src="/theme_livelo/static/src/images/icon-sqft.png" class="me-2" alt="Sqft" style="width: 20px;"/>
+                                    <span class="text-muted">Sqft: <b class="text-dark"><t t-esc="product.squarefeet or 1150"/></b></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="col-lg-6 col-md-6 text-lg-start">
+                            <h4 class="fw-bold mb-3">Location</h4>
+                            <div class="d-flex align-items-center">
+                                <img src="/theme_livelo/static/src/images/location-img-recomment.png" class="me-2" alt="Location" style="width: 18px;"/>
+                                <span style="color:#A1A3A5; font-size: 1.1rem;">
+                                    <t t-esc="product.location or '145 Brooklyn Ave, California, New York'"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gallery Images -->
+                    <div class="row mt-5">
+                        <!-- Combine main image and extra images (excluding videos) into one list for looping -->
+                        <t t-foreach="[product] + [img for img in product.product_template_image_ids if not img.video_url]" t-as="img_item">
+                            <div class="col-lg-4 col-md-4 mb-4">
+                                <div class="rounded-4 overflow-hidden shadow-sm shadow-hover">
+                                    <t t-if="img_item._name == 'product.template'">
+                                        <img t-att-src="'/web/image/product.template/%s/image_1920' % img_item.id" t-att-alt="product.name" class="w-100" style="object-fit: cover; aspect-ratio: 1/1;"/>
+                                    </t>
+                                    <t t-else="">
+                                        <img t-att-src="'/web/image/product.image/%s/image_1920' % img_item.id" class="w-100" style="object-fit: cover; aspect-ratio: 1/1;"/>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </section>
+            <!-- end: properties-management-details-heading -->
+
+
+            <!-- ===================== DETAILS + SIDEBAR ===================== -->
+            <section class="float-start mt-5 pb-5 mb-5 w-100 properties-management-details">
+                <div class="container">
+                    <div class="row">
+
+                        <!-- LEFT COLUMN -->
+                        <div class="col-lg-8">
+
+                            <!-- Description -->
+                            <div class="property-description-wrapper w-100 float-start mb-3">
+                                <h4 class="fw-bold mb-3">Description</h4>
+                                <div class="property-description-content" id="propertyDescriptionContent">
+                                    <t t-if="product.description_sale">
+                                        <div t-field="product.description_sale" class="text-muted lh-base"/>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="text-muted lh-base">
+                                            <p class="mb-2">Located in a prime neighborhood, this stunning property offers a perfect blend of luxury, comfort, and modern convenience. Featuring high ceilings, large panoramic windows, premium hardwood flooring, and an abundance of natural light throughout all living spaces.</p>
+                                            <p class="mb-2">The state-of-the-art gourmet kitchen comes equipped with stainless steel appliances, custom cabinetry, quartz countertops, and a spacious center island ideal for entertaining. The master suite serves as a peaceful retreat complete with a walk-in closet and an ensuite spa-inspired bathroom featuring a soaking tub and rainfall shower.</p>
+                                            <p class="mb-0">Outdoors, enjoy a beautifully landscaped garden, private patio, and serene views. Positioned within minutes of top-rated schools, shopping centers, fine dining, public transit, and major highways, providing an exceptional quality of life.</p>
+                                        </div>
+                                    </t>
+                                </div>
+                                <a href="javascript:void(0);" id="btnToggleDescription" class="pt-2 d-none">
+                                    View More <i class="fa fa-chevron-down ms-1" id="iconToggleDescription"/>
+                                </a>
+                            </div>
+                            <hr style="border-bottom:1px solid #F2F2F2; float:left; width:100%;"/>
+
+                            <!-- Overview -->
+                            <div class="container-overview float-start w-100">
+                                <p class="overview-properties-mangment">Overview</p>
+                                <div class="row">
+
+                                    <div class="col-lg-3 col-md-6 col-sm-6 mt-3">
+                                        <div class="overview-box float-start p-3">
+                                            <img src="/theme_livelo/static/src/images/img-over-view-id.png" alt="ID"/>
+                                        </div>
+                                        <div class="overview-content">
+                                            <p class="mb-0">ID</p>
+                                            <span t-esc="product.id or 2297"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-6 col-sm-6 mt-3">
+                                        <div class="overview-box float-start p-3">
+                                            <img src="/theme_livelo/static/src/images/img-over-view-house.png" alt="Type"/>
+                                        </div>
+                                        <div class="overview-content">
+                                            <p class="mb-0">Type</p>
+                                            <span><t t-esc="dict(product._fields['property_type'].selection).get(product.property_type, 'House') if product.property_type else 'House'"/></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-6 col-sm-6 mt-3">
+                                        <div class="overview-box float-start p-3">
+                                            <img src="/theme_livelo/static/src/images/img-over-view-garages.png" alt="Garages"/>
+                                        </div>
+                                        <div class="overview-content">
+                                            <p class="mb-0">Garages</p>
+                                            <span><t t-esc="product.garages or 1"/></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-6 col-sm-6 mt-3">
+                                        <div class="overview-box float-start p-3">
+                                            <img src="/theme_livelo/static/src/images/img-over-view-bedrooms.png" alt="Bedrooms"/>
+                                        </div>
+                                        <div class="overview-content">
+                                            <p class="mb-0">Bedrooms</p>
+                                            <span><t t-esc="product.bed or 0"/> Rooms</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-6 col-sm-6 mt-3">
+                                        <div class="overview-box float-start p-3">
+                                            <img src="/theme_livelo/static/src/images/img-over-view-bathroom.png" alt="Bathrooms"/>
+                                        </div>
+                                        <div class="overview-content">
+                                            <p class="mb-0">Bathrooms</p>
+                                            <span><t t-esc="product.bath or 0"/> Rooms</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-6 col-sm-6 mt-3">
+                                        <div class="overview-box float-start p-3">
+                                            <img src="/theme_livelo/static/src/images/img-over-view-land-size.png" alt="Land Size"/>
+                                        </div>
+                                        <div class="overview-content">
+                                            <p class="mb-0">Land Size</p>
+                                            <span><t t-esc="product.land_size or product.squarefeet or 0"/> sqft</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-6 col-sm-6 mt-3">
+                                        <div class="overview-box float-start p-3">
+                                            <img src="/theme_livelo/static/src/images/img-over-view-year-built.png" alt="Year Built"/>
+                                        </div>
+                                        <div class="overview-content">
+                                            <p class="mb-0">Year Built</p>
+                                            <span><t t-esc="product.year_built or 2024"/></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-md-6 col-sm-6 mt-3">
+                                        <div class="overview-box float-start p-3">
+                                            <img src="/theme_livelo/static/src/images/img-over-view-sqft.png" alt="Size"/>
+                                        </div>
+                                        <div class="overview-content">
+                                            <p class="mb-0">Size</p>
+                                            <span><t t-esc="product.squarefeet or 0"/> Sqft</span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <hr style="border-bottom:1px solid #F2F2F2; float:left; width:100%; margin-top:34px;"/>
+
+                            <!-- Video -->
+                            <t t-set="video_item" t-value="product.product_template_image_ids.filtered(lambda i: i.video_url)[:1]"/>
+                            <t t-if="video_item">
+                                <div class="video-properties-details float-start w-100">
+                                    <h4 class="mt-4"><b>Video</b></h4>
+                                    <div class="ratio ratio-16x9 mt-4 w-100 overflow-hidden rounded-4 shadow-sm">
+                                        <t t-out="video_item.embed_code"/>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="video-properties-details float-start w-100">
+                                    <h4 class="mt-4"><b>Video</b></h4>
+                                    <img class="mt-4 w-100" src="/theme_livelo/static/src/images/properties-management-video-image.png" alt="Property Video"/>
+                                </div>
+                            </t>
+
+                            <!-- Property Details Table -->
+                            <div class="property-details float-start mt-5 w-100">
+                                <h4 class="mt-4"><b>Property Details</b></h4>
+                                <div class="w-50 float-start mt-3">
+                                    <table class="w-100 float-start tbl-property-details">
+                                        <tr>
+                                            <td class="w-50">ID :</td>
+                                            <td class="w-50">#<t t-esc="product.id"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="w-50">Price :</td>
+                                            <td class="w-50">$<t t-esc="'{:,}'.format(int(product.list_price)) if product.list_price else 0"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="w-50">Size :</td>
+                                            <td class="w-50"><t t-esc="product.squarefeet or 0"/> sqft</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="w-50">Rooms :</td>
+                                            <td class="w-50"><t t-esc="product.bed or 0"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="w-50">Baths :</td>
+                                            <td class="w-50"><t t-esc="product.bath or 0"/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="w-50 float-start mt-3">
+                                    <table class="w-100 float-start tbl-property-details">
+                                        <tr>
+                                            <td class="w-50">Beds :</td>
+                                            <td class="w-50"><t t-esc="product.bed or 0"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="w-50">Year built :</td>
+                                            <td class="w-50"><t t-esc="product.year_built or 2024"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="w-50">Type :</td>
+                                            <td class="w-50"><t t-esc="dict(product._fields['property_type'].selection).get(product.property_type, 'N/A') if product.property_type else 'N/A'"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="w-50">Status :</td>
+                                            <td class="w-50"><t t-esc="dict(product._fields['listing_type'].selection).get(product.listing_type, 'For Sale') if product.listing_type else 'For Sale'"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="w-50">Garage :</td>
+                                            <td class="w-50"><t t-esc="product.garages or 0"/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <hr style="border-bottom:1px solid #F2F2F2; float:left; width:100%;"/>
+
+                            <!-- Amenities -->
+                            <div class="w-100 float-start">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <h4 class="mt-4 mb-3"><b>Amenities and Features</b></h4>
+                                    </div>
+                                    <t t-if="product.amenity_ids">
+                                        <t t-foreach="product.amenity_ids" t-as="amenity">
+                                            <div class="col-lg-4 col-md-4 col-6 mb-2 d-flex align-items-center">
+                                                <i class="fa fa-check-circle text-primary me-2"/>
+                                                <span><t t-esc="amenity.name"/></span>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="col-lg-12">
+                                            <p class="text-muted small">No specific amenities listed for this property.</p>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <div class="oe_structure" id="oe_structure_theme_livelo_product_detail_left"/>
+
+                        </div>
+                        <!-- end: col-lg-8 -->
+
+
+                        <!-- RIGHT SIDEBAR: Contact Sellers -->
+                        <div class="col-lg-4">
+                            <div class="container-contact-sellers w-100 float-start">
+                                <h4><b>Contact Sellers</b></h4>
+                                <div class="float-start w-100 mt-4">
+
+                                    <div class="admin-contact-sellers">
+                                        <t t-if="product.salesperson_id">
+                                            <img class="w-100 rounded-circle" t-att-src="'/web/image/res.users/%s/avatar_128' % product.salesperson_id.id" alt="Agent"/>
+                                        </t>
+                                        <t t-else="">
+                                            <img class="w-100" src="/theme_livelo/static/src/images/admin.png" alt="Agent"/>
+                                        </t>
+                                    </div>
+
+                                    <div class="admin-details-coltact-sellers float-start ms-3">
+                                        <t t-if="product.salesperson_id">
+                                            <h5><b t-field="product.salesperson_id.name"/></h5>
+                                            <p class="mb-0" t-if="product.salesperson_id.phone"><t t-esc="product.salesperson_id.phone"/></p>
+                                            <p class="mb-0" t-elif="product.salesperson_id.mobile"><t t-esc="product.salesperson_id.mobile"/></p>
+                                            <p class="mb-0" t-else="">1-333-345-6868</p>
+                                            <p class="mb-0" t-field="product.salesperson_id.email"/>
+                                        </t>
+                                        <t t-else="">
+                                            <h5><b>Shara Conner</b></h5>
+                                            <p class="mb-0">1-333-345-6868</p>
+                                            <p class="mb-0">user@gmail.com</p>
+                                        </t>
+                                    </div>
+
+                                    <!-- Contact Form -->
+                                    <form class="contact-sellers-form" method="post" action="/property/contact">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <input type="hidden" name="product_id" t-att-value="product.id"/>
+
+                                        <div class="mb-3 float-start w-100 mt-3">
+                                            <input type="text" name="contact_name" class="form-control" placeholder="Name" required="required"/>
+                                        </div>
+                                        <div class="mb-3 float-start w-100 mt-3">
+                                            <input type="tel" name="mobile" class="form-control" placeholder="Mobile Number"/>
+                                        </div>
+                                        <div class="mb-3 float-start w-100 mt-3">
+                                            <input type="email" name="email" class="form-control" placeholder="Email ID" required="required"/>
+                                        </div>
+                                        <div class="mb-3 float-start w-100 mt-3">
+                                            <textarea name="message" class="form-control" placeholder="Message" rows="4"/>
+                                        </div>
+                                        <div class="float-start w-100 mt-2">
+                                            <button type="submit" class="btn btn-primary w-100">Send Message</button>
+                                        </div>
+                                    </form>
+
+                                </div>
+                            </div>
+
+                            <div class="oe_structure" id="oe_structure_theme_livelo_product_detail_right"/>
+
+                        </div>
+                        <!-- end: col-lg-4 -->
+
+                    </div>
+                </div>
+            </section>
+            <!-- end: properties-management-details -->
+
+
+            <!-- ===================== FOOTER ===================== -->
+            <section class="section-footer float-start w-100 d-none">
+            </section>
+
+            <!-- Scripts -->
+            <t t-set="foot">
+                <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"/>
+                <script>
+                    (function () {
+                        function initDescriptionToggle() {
+                            var content = document.getElementById('propertyDescriptionContent');
+                            var btn = document.getElementById('btnToggleDescription');
+                            var icon = document.getElementById('iconToggleDescription');
+                            if (!content || !btn) return;
+
+                            var fullHeight = content.offsetHeight || content.scrollHeight;
+
+                            if (fullHeight &gt; 95) {
+                                content.classList.add('collapsed-description');
+                                btn.classList.remove('d-none');
+
+                                btn.onclick = function (e) {
+                                    if (e) e.preventDefault();
+                                    if (content.classList.contains('collapsed-description')) {
+                                        content.classList.remove('collapsed-description');
+                                        if (btn.childNodes[0]) btn.childNodes[0].nodeValue = 'View Less ';
+                                        if (icon) {
+                                            icon.className = 'fa fa-chevron-up ms-1';
+                                        }
+                                    } else {
+                                        content.classList.add('collapsed-description');
+                                        if (btn.childNodes[0]) btn.childNodes[0].nodeValue = 'View More ';
+                                        if (icon) {
+                                            icon.className = 'fa fa-chevron-down ms-1';
+                                        }
+                                    }
+                                };
+                            } else {
+                                content.classList.remove('collapsed-description');
+                                btn.classList.add('d-none');
+                            }
+                        }
+
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', initDescriptionToggle);
+                        } else {
+                            initDescriptionToggle();
+                        }
+                        window.addEventListener('load', initDescriptionToggle);
+                    })();
+
+                    document.addEventListener('DOMContentLoaded', function () {
+                        if (document.querySelector('.mySwiper-2') &amp;&amp; !document.body.classList.contains('editor_enable')) {
+                            var swiper = new Swiper(".mySwiper-2", {
+                                pagination: { el: ".swiper-pagination", clickable: true }
+                            });
+                        }
+                    });
+                </script>
+            </t>
+
+                <div class="oe_structure" id="oe_structure_theme_livelo_product_detail_2"/>
+            </div>
+
+        </t>
+    </template>
+
+    <template id="property_contact_thanks" name="Property Contact Thanks">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <div class="container my-5 py-5 text-center">
+                    <div class="card shadow-sm p-5 border-0 rounded-4 mx-auto" style="max-width: 600px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+                        <div class="text-success mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-check-circle-fill text-success" viewBox="0 0 16 16">
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                            </svg>
+                        </div>
+                        <h2 class="fw-bold mb-3 text-dark">Thank You!</h2>
+                        <h4 class="text-muted mb-4">Your inquiry has been received!</h4>
+                        <p class="text-muted small mb-4">We will get back to you shortly.</p>
+                        <a href="/shop" class="btn btn-primary btn-lg px-5 py-3 rounded-pill fw-bold" style="background-color: #007bff; border: none; transition: all 0.3s ease;">Back to Properties</a>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

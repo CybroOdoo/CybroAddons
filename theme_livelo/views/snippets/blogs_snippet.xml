@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="blogs_snippet" name="Blogs">
+        <section class="section-index-blog w-100 o_colored_level s_blogs_snippet" data-snippet="theme_livelo.blogs_snippet" data-name="Blogs">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="heading-section mb-5 mt-5 w-100 float-left text-center">
+                            <p class="m-0 p-0">Latest New</p>
+                            <h2 class="font-weight-bold">From Our Blog</h2>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <div class="swiper mySwiper-1">
+                            <div class="swiper-wrapper">
+                                <t t-set="blogs" t-value="request.env['blog.post'].search([('website_published', '=', True)], limit=6)"/>
+                                <t t-if="blogs">
+                                <t t-foreach="blogs" t-as="blog">
+                                    <t t-set="cover_properties" t-value="json.loads(blog.cover_properties or '{}')"/>
+                                    <t t-set="bg_img_raw" t-value="cover_properties.get('background-image', '')"/>
+                                    <t t-set="blogs_img" t-value="bg_img_raw[4:-1].strip('\'&quot;') if bg_img_raw and bg_img_raw.startswith('url(') else 'No background image found'"/>
+                                    <div class="swiper-slide">
+                                        <div class="container-blog-slide w-100">
+                                            <div class="blog-image-container">
+                                                <a t-att-href="blog.website_url" class="d-block">
+                                                    <img t-if="blogs_img != 'No background image found'"
+                                                         t-att-src="blogs_img"
+                                                         class="img-fluid w-100"
+                                                         style="height: 240px; object-fit: cover; width: 100%;"/>
+                                                    <img t-else=""
+                                                         src="/website_blog/static/src/img/blog_post_default_image.png"
+                                                         t-att-alt="blog.name"
+                                                         class="img-fluid w-100"
+                                                         style="height: 240px; object-fit: cover; width: 100%;"/>
+                                                </a>
+                                            </div>
+                                            <p class="p-bloger-name mt-3">
+                                                <t t-esc="blog.sudo().author_id.name"/>
+                                                |
+                                                <t t-esc="blog.tag_ids[0].name if blog.tag_ids else 'General'"/>
+                                            </p>
+                                            <div class="container-agent-content-blog mt-2">
+                                                <div class="agent-content-blog">
+                                                    <h3>
+                                                        <a t-att-href="blog.website_url">
+                                                            <t t-esc="blog.name"/>
+                                                        </a>
+                                                    </h3>
+                                                    <p>
+                                                        <a t-att-href="blog.website_url">
+                                                            <t t-esc="blog.subtitle or blog.teaser"/>
+                                                        </a>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                                </t>
+                                <t t-else="">
+                                    <div class="col-lg-12 text-center py-5">
+                                        <p class="text-muted">No blog posts found. Publish a blog post to see it here.</p>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="swiper-pagination"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+</odoo>
