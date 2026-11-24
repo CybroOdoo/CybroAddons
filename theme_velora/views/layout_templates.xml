@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="layout_velora_head" inherit_id="website.layout" name="Velora Head Assets">
+        <xpath expr="//head" position="inside">
+            <meta name="theme-color" content="#0b0b0c"/>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link rel="preconnect" href="https://images.unsplash.com"/>
+            <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+        </xpath>
+    </template>
+
+    <template id="layout_velora_header" inherit_id="website.layout" name="Velora Header">
+        <xpath expr="//header" position="replace">
+
+<t t-set="website_sale_cart_quantity" t-value="request.session['website_sale_cart_quantity'] if 'website_sale_cart_quantity' in request.session else website.sale_get_order().cart_quantity or 0"/>
+<t t-set="website_sale_wish_quantity" t-value="len(request.env['product.wishlist'].current())"/>
+
+<!-- Scroll Progress Indicator -->
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+<!-- Skip Link for Accessibility -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- ============ HEADER / NAVIGATION ============ -->
+<header class="site-header" id="siteHeader">
+  <nav class="navbar" aria-label="Primary navigation">
+    <div class="nav-container">
+
+      <a href="/" class="logo" aria-label="Velora Home">
+        <img src="/theme_velora/static/src/img/logo.png" alt="Velora" class="logo-img"/>
+      </a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/collections" class="nav-link">Collections</a></li>
+        <li><a href="/shop" class="nav-link">Shop</a></li>
+        <li><a href="/best-sellers" class="nav-link">Best Sellers</a></li>
+        <!-- <li><a href="#categories" class="nav-link">Fragrances</a></li> -->
+        <li><a href="/about-us" class="nav-link">Our Story</a></li>
+        <!-- <li><a href="#testimonials" class="nav-link">Reviews</a></li> -->
+        <li><a href="/contactus" class="nav-link">Contact</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="icon-btn" id="searchToggle" aria-label="Open search" aria-expanded="false">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <a href="/shop/wishlist" t-attf-class="icon-btn nav-actions-secondary o_wsale_my_wish o_wsale_my_wish_hide_empty #{'d-none' if not website_sale_wish_quantity else ''}" id="wishlistToggle" aria-label="View wishlist">
+          <i class="fa-regular fa-heart"></i>
+          <span class="badge js-wishlist-count my_wish_quantity" id="wishlistCount" t-esc="website_sale_wish_quantity"/>
+        </a>
+        <button class="icon-btn nav-actions-secondary" id="cartToggle" aria-label="View shopping cart">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="badge js-cart-count my_cart_quantity" id="cartCount" t-esc="website_sale_cart_quantity"/>
+        </button>
+        <div class="dropdown user-dropdown-wrap">
+          <button class="icon-btn" type="button" id="userMenuButton" aria-expanded="false" aria-label="My account">
+            <i class="fa-regular fa-user"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end velora-user-dropdown" aria-labelledby="userMenuButton">
+            <t t-nocache="Each user is different regardless of the page visited.">
+              <t t-set="curr_user" t-value="request.env.user"/>
+              <t t-if="not curr_user._is_public()">
+                <li class="dropdown-header">
+                  <span t-esc="curr_user.name"/>
+                </li>
+                <li>
+                  <hr class="dropdown-divider"/>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/my/home">My Account</a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider"/>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/web/session/logout?redirect=/web/login">Logout</a>
+                </li>
+              </t>
+              <t t-else="">
+                <li>
+                  <a class="dropdown-item" href="/web/login">Sign in</a>
+                </li>
+              </t>
+            </t>
+          </ul>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay">
+      <t t-call="website.website_search_box_input">
+        <t t-set="_form_classes" t-valuef="search-box o_wsale_products_searchbar_form"/>
+        <t t-set="_classes" t-valuef="search-input-group"/>
+        <t t-set="_input_classes" t-valuef="search-query"/>
+        <t t-set="_submit_classes" t-valuef="icon-btn search-submit-btn"/>
+        <t t-set="search_type" t-valuef="all"/>
+        <t t-set="action" t-valuef="/website/search"/>
+        <t t-set="limit" t-value="5"/>
+        <t t-set="display_image" t-valuef="true"/>
+        <t t-set="display_description" t-valuef="true"/>
+        <t t-set="display_extra_link" t-valuef="true"/>
+        <t t-set="display_detail" t-valuef="true"/>
+        <t t-set="placeholder" t-valuef="Search fragrances, brands, notes..."/>
+        <button type="button" class="icon-btn search-close-btn" id="searchClose" aria-label="Close search">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </t>
+    </div>
+  </nav>
+</header>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-header">
+    <span class="mobile-menu-title">Menu</span>
+    <button class="icon-btn" id="mobileMenuClose" aria-label="Close menu">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+  <ul>
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/collections" class="nav-link">Collections</a></li>
+        <li><a href="/shop" class="nav-link">Shop</a></li>
+        <li><a href="/best-sellers" class="nav-link">Best Sellers</a></li>
+        <!-- <li><a href="#categories" class="nav-link">Fragrances</a></li> -->
+        <li><a href="/about-us" class="nav-link">Our Story</a></li>
+        <!-- <li><a href="#testimonials" class="nav-link">Reviews</a></li> -->
+        <li><a href="/contactus" class="nav-link">Contact</a></li>
+  </ul>
+  <div class="mobile-menu-actions">
+    <a href="/shop/wishlist" t-attf-class="mobile-menu-action-btn o_wsale_my_wish o_wsale_my_wish_hide_empty #{'d-none' if not website_sale_wish_quantity else ''}" id="wishlistToggleMobile">
+      <i class="fa-regular fa-heart"></i>
+      <span>Wishlist</span>
+      <span class="badge js-wishlist-count my_wish_quantity" t-esc="website_sale_wish_quantity"/>
+    </a>
+    <button class="mobile-menu-action-btn" id="cartToggleMobile">
+      <i class="fa-solid fa-bag-shopping"></i>
+      <span>Cart</span>
+      <span class="badge js-cart-count my_cart_quantity" t-esc="website_sale_cart_quantity"/>
+    </button>
+  </div>
+</div>
+
+<!-- Cart Drawer -->
+<aside class="drawer" id="cartDrawer" aria-label="Shopping cart" aria-hidden="true">
+  <div class="drawer-header">
+    <h2>Your Bag</h2>
+    <button class="icon-btn" id="cartClose" aria-label="Close cart"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="drawer-body" id="cartItems">
+    <p class="empty-state">Your bag is empty. Discover a scent worth carrying.</p>
+  </div>
+  <div class="drawer-footer">
+    <div id="cartTotalWrap"/>
+    <a href="/shop/cart" class="btn btn-primary btn-full">Proceed to Checkout</a>
+  </div>
+</aside>
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+
+        </xpath>
+    </template>
+
+    <template id="layout_velora_footer" inherit_id="website.layout" name="Velora Footer">
+        <xpath expr="//div[@id='footer']" position="replace">
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-col footer-brand">
+      <a href="/" class="logo">
+        <img src="/theme_velora/static/src/img/logo.png" alt="Velora" class="logo-img footer-logo-img"/>
+      </a>
+      <p>Maison de Parfum — crafting timeless fragrances since 1998. Every bottle, a signature.</p>
+      <div class="social-links">
+        <a href="#" aria-label="Velora on Instagram"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" aria-label="Velora on Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#" aria-label="Velora on Pinterest"><i class="fa-brands fa-pinterest-p"></i></a>
+        <a href="#" aria-label="Velora on X"><i class="fa-brands fa-x-twitter"></i></a>
+      </div>
+    </div>
+
+    <nav class="footer-col" aria-label="Collections">
+      <h3>Collections</h3>
+      <ul>
+        <li><a href="/collections/mens_collection">Men's Fragrances</a></li>
+        <li><a href="/collections/womens_collection">Women's Fragrances</a></li>
+        <li><a href="/collections/unisex">Unisex</a></li>
+        <li><a href="/collections/luxury_gift_sets">Gift Sets</a></li>
+        <li><a href="/collections/limited_editions">Limited Editions</a></li>
+      </ul>
+    </nav>
+
+    <nav class="footer-col" aria-label="Customer support">
+      <h3>Customer Support</h3>
+      <ul>
+        <li><a href="#">FAQs</a></li>
+        <li><a href="/shop">Shipping &amp; Returns</a></li>
+        <li><a href="/shop">Track My Order</a></li>
+        <li><a href="/shop">Fragrance Guide</a></li>
+        <li><a href="/shop">Gift Cards</a></li>
+      </ul>
+    </nav>
+
+    <div class="footer-col">
+      <h3><a href="/contactus">Contact</a></h3>
+      <ul class="contact-list">
+        <li><i class="fa-solid fa-location-dot"></i> 12 Rue de la Paix, Paris</li>
+        <li><i class="fa-solid fa-phone"></i> +1 (800) 555-0199</li>
+        <li><i class="fa-solid fa-envelope"></i> hello@velora.com</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© <span id="year"></span> Velora Parfums. All rights reserved.</p>
+    <ul>
+      <li><a href="#">Privacy Policy</a></li>
+      <li><a href="#">Terms of Service</a></li>
+    </ul>
+  </div>
+</footer>
+
+
+        </xpath>
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
+<!-- Toast Notification -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Back to Top -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">
+  <i class="fa-solid fa-chevron-up"></i>
+</button>
+        </xpath>
+    </template>
+
+    <template id="layout_velora_no_branding" inherit_id="website.layout" name="Velora Hide Branding">
+        <xpath expr="//t[@t-call='web.brand_promotion']" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+    </template>
+
+    <template id="product_wishlist_velora" inherit_id="website_sale_wishlist.product_wishlist" name="Velora Wishlist Page">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="velora-wishlist-page" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="products_velora" inherit_id="website_sale.products" name="Velora Products Page">
+        <!-- 1. Inject Page Hero Banner at the top of wrap -->
+        <xpath expr="//div[@id='wrap']/div[hasclass('oe_structure')][1]" position="after">
+            <section class="page-banner">
+                <div class="page-banner-bg"></div>
+                <div class="page-banner-content container">
+                    <p class="hero-eyebrow reveal">
+                        <span class="hero-eyebrow-line"></span>
+                        <t t-if="category">Collection Category</t>
+                        <t t-else="">Luxury Fragrances</t>
+                        <span class="hero-eyebrow-line"></span>
+                    </p>
+                    <h1 class="page-banner-title hero-title reveal">
+                        <t t-if="category" t-esc="category.name"/>
+                        <t t-else="">Shop <em>Fragrances</em></t>
+                    </h1>
+                    <nav class="breadcrumb reveal">
+                        <a href="/">Home</a>
+                        <span>/</span>
+                        <t t-if="category">
+                            <a href="/shop">Shop</a>
+                            <span>/</span>
+                            <span t-esc="category.name"/>
+                        </t>
+                        <t t-else="">
+                            <span>Shop</span>
+                        </t>
+                    </nav>
+                </div>
+            </section>
+        </xpath>
+
+        <!-- 2. Customize/Override the shop wrapper styling -->
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="velora-shop-page" separator=" "/>
+        </xpath>
+
+        <!-- 3. Render Category Header & Default Odoo Breadcrumbs when redirecting/navigating to a Category -->
+        <xpath expr="//t[@t-call='website_sale.products_breadcrumb']" position="replace">
+            <div t-if="category" class="velora-category-header d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pt-2">
+                <div class="category-breadcrumb-wrap mt-2 mt-md-0 w-100">
+                    <t t-call="website_sale.products_breadcrumb">
+                        <t t-set="_classes" t-valuef="breadcrumb-velora m-0 p-0 small"/>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//h1[@t-if='category']" position="replace"/>
+    </template>
+
+    <template id="filmstrip_categories_velora" inherit_id="website_sale.filmstrip_categories" name="Velora Categories Filmstrip">
+        <xpath expr="//div[hasclass('o_wsale_filmstip_container')]" position="attributes">
+            <attribute name="class" add="velora-filmstrip-container" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="filter_products_price_velora" inherit_id="website_sale.filter_products_price" name="Velora Hide Empty Price Filter">
+        <xpath expr="//div[@id='o_wsale_price_range_option']" position="attributes">
+            <attribute name="t-if">not is_disabled</attribute>
+        </xpath>
+    </template>
+
+    <template id="products_item_velora" inherit_id="website_sale.products_item" name="Velora Products Item" priority="10">
+
+        <!-- Step 0: Set product_variant_id early so it's available for form inputs, wishlist button, and add-to-cart -->
+        <xpath expr="//t[@t-set='image_type']" position="after">
+            <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+        </xpath>
+
+        <!-- Step 1: Restyle the form as a vertical card -->
+
+        <xpath expr="//form" position="attributes">
+            <attribute name="class" add="flex-column product-card" separator=" "/>
+        </xpath>
+
+        <!-- Step 2: Replace product image section with Velora media block -->
+        <xpath expr="//div[hasclass('oe_product_image')]" position="replace">
+            <div class="product-media position-relative overflow-hidden">
+                <!-- Hidden form inputs required for Add to Cart -->
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()" t-nocache="The csrf token must always be up to date."/>
+                <input name="product_id" t-att-value="product_variant_id" type="hidden"/>
+                <input name="product_template_id" t-att-value="product.id" type="hidden"/>
+
+                <!-- Ribbon / Discount Badge: always render .o_ribbon so the website editor JS can find it -->
+                <t t-set="bg_color" t-value="td_product['ribbon'].bg_color if td_product.get('ribbon') else ''"/>
+                <t t-set="text_color" t-value="td_product['ribbon'].text_color if td_product.get('ribbon') else ''"/>
+                <t t-set="bg_class" t-value="td_product['ribbon']._get_position_class() if td_product.get('ribbon') else ''"/>
+                <span t-attf-class="o_ribbon o_not_editable #{bg_class} #{'discount-badge' if td_product.get('ribbon') else 'd-none'}"
+                    t-attf-style="#{text_color and ('color: %s;' % text_color)} #{bg_color and 'background-color:' + bg_color}"
+                    t-out="td_product['ribbon'].name if td_product.get('ribbon') else ''"
+                />
+
+                <!-- Wishlist Button -->
+                <t t-if="is_view_active('website_sale_wishlist.add_to_wishlist') and product_variant_id and product.type != 'combo'">
+                    <t t-set="in_wish" t-value="product in products_in_wishlist"/>
+                    <button type="button"
+                            t-attf-class="wishlist-btn o_add_wishlist #{'vc-in-wish active' if in_wish else ''}"
+                            t-att-disabled="in_wish"
+                            t-att-data-product-template-id="product.id"
+                            t-att-data-product-product-id="in_wish or product_variant_id"
+                            data-action="o_wishlist"
+                            title="Add to Wishlist"
+                            aria-label="Add to wishlist"
+                    >
+                        <i class="fa-regular fa-heart"></i>
+                    </button>
+                </t>
+
+                <a t-att-href="product_href" class="d-block w-100 h-100" itemprop="url" contenteditable="false">
+                    <t t-set="image_holder" t-value="product._get_image_holder()"/>
+                    <span t-field="image_holder.image_1920"
+                        t-options="{'widget': 'image', 'preview_image': image_type, 'itemprop': 'image', 'class': 'h-100 w-100 position-absolute object-fit-cover'}"
+                        class="oe_product_image_img_wrapper d-flex h-100 justify-content-center align-items-center position-absolute"/>
+                </a>
+            </div>
+        </xpath>
+
+        <!-- Step 3: Replace information section with Velora info block -->
+        <xpath expr="//div[hasclass('o_wsale_product_information')]" position="replace">
+            <div class="product-info d-flex flex-column gap-1 flex-grow-1">
+                <span class="product-brand">Velora Maison</span>
+
+                <h6 class="o_wsale_products_item_title product-name mb-0">
+                    <a class="text-decoration-none" itemprop="name" t-att-href="product_href" t-att-content="product.name" t-field="product.name" />
+                    <a t-if="not product.website_published" role="button" t-att-href="product_href" class="btn btn-sm btn-danger" title="This product is unpublished.">
+                        Unpublished
+                    </a>
+                </h6>
+
+                <!-- Set price vals early so inherited templates injecting into o_wsale_product_btn have access -->
+                <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
+
+                <!-- Compatibility slot for other Odoo modules (wishlist, add-to-cart, etc.) -->
+                <div class="o_wsale_product_btn d-none"/>
+
+                <!-- Description / Note -->
+                <p class="product-desc mb-0" t-if="product.description_sale" t-field="product.description_sale"/>
+                <p class="product-desc mb-0" t-else="">Amber • Floral • Sandalwood</p>
+
+                <!-- Ratings -->
+                <div class="product-rating mb-1">
+                    <span style="color:var(--color-gold-dark)">★★★★★</span>
+                    <span>5.0 (95)</span>
+                </div>
+
+                <!-- Price Row &amp; Add to Cart -->
+                <div class="product-price-row mt-auto">
+                    <div class="price-group" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                        <!-- Current Price -->
+                        <span class="price-current"
+                              t-if="template_price_vals and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)"
+                              t-out="template_price_vals['price_reduce']"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span class="price-current" t-elif="any(ptav.price_extra for ptav in product.attribute_line_ids.product_template_value_ids)">&amp;nbsp;</span>
+                        <span class="price-current" t-else="" t-field="website.prevent_zero_price_sale_text"/>
+
+                        <!-- Original Price / Discount -->
+                        <t t-if="template_price_vals and 'base_price' in template_price_vals and (template_price_vals['base_price'] &gt; template_price_vals['price_reduce']) and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)">
+                            <del class="price-original">
+                                <span t-esc="template_price_vals['base_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" />
+                            </del>
+                        </t>
+                        <span itemprop="price" style="display:none;" t-esc="template_price_vals and template_price_vals['price_reduce'] or ''"/>
+                        <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name" />
+                    </div>
+
+                    <!-- Add to Cart Button -->
+                    <t t-if="is_view_active('website_sale.products_add_to_cart') and product_variant_id and (template_price_vals and template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)">
+                        <button t-if="product._website_show_quick_add()"
+                                type="submit"
+                                class="shop-add-cart-btn btn btn-primary"
+                                aria-label="Add to cart"
+                        >
+                            ADD TO CART
+                        </button>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+
+    </template>
+
+    <template id="product_velora_details" inherit_id="website_sale.product" name="Velora Product Detail Page">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="velora-product-details-page" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="checkout_layout_velora" inherit_id="website_sale.checkout_layout" name="Velora Checkout Layout">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="velora-checkout-page" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="address_velora" inherit_id="website_sale.address" name="Velora Address Page">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="velora-checkout-page" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="list_hybrid_velora" inherit_id="website.list_hybrid" name="Velora Search Results Page">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="velora-search-results-page" separator=" "/>
+        </xpath>
+    </template>
+
+    <!-- Fix QWeb TypeError: getattr is not callable in Odoo 18 QWeb sandbox.
+         We override website_sale.total to remove the broken t-att-style injected
+         by website_sale_external_tax (which uses getattr, unavailable in QWeb). -->
+    <template id="velora_total_fix" inherit_id="website_sale.total" name="Velora Total Fix" priority="99">
+        <xpath expr="//tr[@id='order_total_taxes']" position="attributes">
+            <attribute name="t-att-style">'' if True else ''</attribute>
+        </xpath>
+        <xpath expr="//tr[@id='order_total']" position="attributes">
+            <attribute name="t-att-style">'' if True else ''</attribute>
+        </xpath>
+    </template>
+
+    <!-- Fix AttributeError: 'sale.order' object has no attribute 'is_avatax'
+         The account_avatax_sale enterprise module patches sale.report_saleorder_document
+         with t-if="not doc.is_avatax", but the is_avatax field is unavailable because
+         the module's models are not loaded in this database.
+         We override with priority=99 to replace the broken t-if with True (always show taxes). -->
+    <template id="velora_sale_report_fix" inherit_id="sale.report_saleorder_document" name="Velora Sale Report Fix" priority="99">
+        <xpath expr="//th[@name='th_taxes']" position="attributes">
+            <attribute name="t-if">True</attribute>
+        </xpath>
+        <xpath expr="//td[@name='td_taxes']" position="attributes">
+            <attribute name="t-if">True</attribute>
+        </xpath>
+    </template>
+
+    <!-- Shop link is now hard-coded directly in the nav lists above -->
+</odoo>
+
