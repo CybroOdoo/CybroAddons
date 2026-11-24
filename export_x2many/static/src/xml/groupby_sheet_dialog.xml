@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates xml:space="preserve">
+    <t t-name="export_x2many.GroupBySheetDialog">
+        <Dialog contentClass="'o_groupby_sheet_dialog'" title.translate="Apply Filters" size="'lg'">
+            <div class="p-3">
+                <t t-foreach="state.sheets" t-as="sheet" t-key="sheet.id">
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <input
+                                type="text"
+                                class="form-control w-50"
+                                t-att-value="sheet.name"
+                                t-on-input="(ev) => this.renameSheet(sheet, ev)"
+                                maxLength="31"
+                                title="Sheet name"
+                            />
+                            <button
+                                class="btn btn-outline-danger btn-sm"
+                                t-on-click="() => this.removeSheet(sheet)"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                        <DomainSelector
+                            resModel="props.root.resModel"
+                            domain="sheet.domain"
+                            readonly="false"
+                            update="(domain) => this.updateDomain(sheet, domain)"
+                        />
+                    </div>
+                </t>
+                <button class="btn btn-outline-primary" t-on-click="addSheet">
+                    Add Sheet
+                </button>
+            </div>
+            <t t-set-slot="footer">
+                <button
+                    class="btn btn-primary"
+                    t-att-disabled="state.disabled"
+                    t-on-click="confirm"
+                >
+                    Export
+                </button>
+                <button class="btn btn-secondary" t-on-click="props.close">
+                    Close
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

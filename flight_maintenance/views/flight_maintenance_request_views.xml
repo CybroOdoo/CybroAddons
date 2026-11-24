@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Extends the maintenance request form with flight-related fields. -->
+    <record id="view_maintenance_request_form_inherit_flight" model="ir.ui.view">
+        <field name="name">maintenance.request.form.inherit.flight</field>
+        <field name="model">maintenance.request</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_request_view_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='stage_id']" position="before">
+                <button name="action_recompute_aircraft_link" type="object"
+                        string="Re-link Aircraft"
+                        invisible="not equipment_id or aircraft_id"
+                        help="Use if this request was created before the Aircraft field existed, or if the link to the aircraft didn't populate automatically."/>
+            </xpath>
+
+            <xpath expr="//field[@name='equipment_id']" position="after">
+                <field name="aircraft_id"/>
+                <field name="grounding" invisible="not aircraft_id"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Extends the maintenance request list with aircraft details. -->
+    <record id="view_maintenance_request_list_inherit_flight" model="ir.ui.view">
+        <field name="name">maintenance.request.list.inherit.flight</field>
+        <field name="model">maintenance.request</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_request_view_tree"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="aircraft_id" optional="show"/>
+                <field name="grounding" optional="show" widget="boolean_toggle"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Defines the action for opening aircraft maintenance requests. -->
+    <record id="action_flight_maintenance_request" model="ir.actions.act_window">
+        <field name="name">Aircraft Maintenance Requests</field>
+        <field name="res_model">maintenance.request</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="domain" eval="['|', ('aircraft_id', '!=', False), ('equipment_id.category_id', '=', ref('flight_maintenance.equipment_category_aircraft'))]"/>
+        <field name="context">{'default_grounding': True}</field>
+    </record>
+
+    <!-- Defines the action for opening aircraft equipment. -->
+    <record id="action_flight_aircraft_equipment" model="ir.actions.act_window">
+        <field name="name">Aircraft Equipment</field>
+        <field name="res_model">maintenance.equipment</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="domain" eval="[('category_id', '=', ref('flight_maintenance.equipment_category_aircraft'))]"/>
+        <field name="context" eval="{'default_category_id': ref('flight_maintenance.equipment_category_aircraft')}"/>
+    </record>
+
+</odoo>
