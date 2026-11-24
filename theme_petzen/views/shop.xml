@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--
+        /shop — the standard website_sale shop (all products, category sidebar,
+        attribute / price filters, search, sorting, grid / list view, pagination)
+        with the Petzen banner and category tiles on top. Only additions are made
+        to website_sale.products; its look is done in css/shop.css.
+        (The "Top Picks" pet-products carousel stays on the home page.)
+    -->
+    <template id="petzen_shop" inherit_id="website_sale.products" name="Petzen Shop" priority="999">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="pz-page-shop" separator=" "/>
+        </xpath>
+        <xpath expr="//div[@id='wrap']/div[hasclass('oe_website_sale')]" position="before">
+            <div class="pz-scope pz-shop-top">
+                <!-- ══ PAGE BANNER ══ -->
+                <section class="page-banner">
+                    <div class="page-banner-inner">
+                        <div class="page-banner-eyebrow">Browse &amp; Buy</div>
+                        <h1 class="page-banner-title">Shop Our <span>Collection</span></h1>
+                        <p class="page-banner-sub">Premium food, toys, accessories and more — handpicked for every type of pet.</p>
+                    </div>
+                </section>
+
+                <!-- ══ CATEGORIES — BENTO (hidden while a search / filter is active) ══ -->
+                <section t-if="not (search or category or attrib_values)" class="section" id="categories">
+                    <div class="section-header">
+                        <div>
+                            <div class="section-eyebrow">Browse by Pet</div>
+                            <h2 class="section-title">Shop by Category</h2>
+                        </div>
+                    </div>
+                    <t t-call="theme_petzen.pz_category_bento"/>
+                </section>
+            </div>
+        </xpath>
+        <!-- section heading of the design above the product grid (Odoo prints the category name itself) -->
+        <xpath expr="//div[hasclass('products_header')]" position="before">
+            <div t-if="not category" class="pz-scope pz-shop-heading">
+                <div class="section-eyebrow" t-out="'Search results' if search else 'Our Catalogue'"/>
+                <h2 class="section-title" t-out="('“%s”' % search) if search else 'All Products'"/>
+            </div>
+        </xpath>
+        <!-- anchor for the category tiles / footer links -->
+        <xpath expr="//div[@id='wrap']/div[hasclass('oe_website_sale')]" position="attributes">
+            <attribute name="id">products</attribute>
+            <attribute name="class" add="pz-shop" separator=" "/>
+        </xpath>
+    </template>
+
+    <!--
+        Product tile of the shop grid → .product-card of the design.
+        Only additions (category tag, rating, Quick View, data for the quick view);
+        Odoo's form, add-to-cart (.a-submit) and wishlist (.o_add_wishlist) are kept.
+    -->
+    <template id="petzen_products_item" inherit_id="website_sale.products_item" name="Petzen Product Tile" priority="999">
+        <xpath expr="//form" position="attributes">
+            <attribute name="class" add="pz-tile" separator=" "/>
+            <attribute name="t-att-data-url">product.website_url</attribute>
+            <attribute name="t-att-data-pz-product-id">product.product_variant_id.id if product.product_variant_count == 1 and product._is_add_to_cart_possible() else None</attribute>
+        </xpath>
+        <xpath expr="//a[hasclass('oe_product_image_link')]" position="after">
+            <div class="product-quick">
+                <button type="button" class="pqv-btn"><iconify-icon icon="lucide:eye" style="font-size:14px"></iconify-icon> Quick View</button>
+            </div>
+        </xpath>
+        <xpath expr="//h6[hasclass('o_wsale_products_item_title')]" position="before">
+            <div class="product-tag" t-out="product.public_categ_ids[:1].name or product.categ_id.name or 'Pet Supply'"/>
+        </xpath>
+        <xpath expr="//h6[hasclass('o_wsale_products_item_title')]" position="after">
+            <t t-set="pz_rating" t-value="int(round(product.rating_avg or 0))"/>
+            <div class="product-rating-row">
+                <span class="stars"><t t-out="'★' * pz_rating"/><span t-if="pz_rating &lt; 5" class="star-dim" t-out="'★' * (5 - pz_rating)"/></span>
+                <span class="star-count">(<t t-out="product.rating_count"/>)</span>
+            </div>
+        </xpath>
+    </template>
+</odoo>

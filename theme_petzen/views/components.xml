@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- ══ CATEGORIES — BENTO ══
+         Tiles open the shop on the matching eCommerce category (see website._petzen_category_cards).
+    -->
+    <template id="pz_category_bento" name="Petzen: Category Bento">
+        <div class="categories-bento">
+            <t t-foreach="website._petzen_category_cards()" t-as="card">
+                <a t-att-href="card['url']"
+                   t-attf-class="cat-bento reveal #{'large' if card_first else ''}"
+                   t-att-data-delay="'%g' % (card_index * 0.05) if card_index else None">
+                    <img class="cat-bento-img" t-att-src="card['image']" t-att-alt="card['name']" loading="lazy"/>
+                    <span class="cat-bento-overlay"></span>
+                    <span class="cat-bento-arrow">
+                        <iconify-icon icon="lucide:arrow-up-right" style="font-size:16px;color:#fff"></iconify-icon>
+                    </span>
+                    <span class="cat-bento-content">
+                        <span class="cat-bento-emoji">
+                            <iconify-icon t-att-icon="card['icon']"></iconify-icon>
+                        </span>
+                        <span class="cat-bento-name" t-out="card['name']"/>
+                        <span class="cat-bento-count">
+                            <t t-out="'%s product%s' % (card['count'], '' if card['count'] == 1 else 's')"/>
+                        </span>
+                    </span>
+                </a>
+            </t>
+        </div>
+    </template>
+
+    <!-- ══ PRODUCT CARD ══
+         params: product (product.template), pz_prices (result of _get_sales_prices)
+    -->
+    <template id="pz_product_card" name="Petzen: Product Card">
+        <t t-set="pz_price" t-value="pz_prices.get(product.id, {})"/>
+        <t t-set="pz_price_reduce" t-value="pz_price.get('price_reduce', product.list_price)"/>
+        <t t-set="pz_base_price" t-value="pz_price.get('base_price')"/>
+        <t t-set="pz_discount"
+           t-value="int(round(100 - pz_price_reduce * 100 / pz_base_price)) if pz_base_price else 0"/>
+        <t t-set="pz_rating" t-value="int(round(product.rating_avg or 0))"/>
+        <t t-set="pz_direct_add"
+           t-value="product.product_variant_count == 1 and product._is_add_to_cart_possible()"/>
+        <article class="product-card reveal"
+                 t-att-data-cat="website._petzen_category_key(product.categ_id)"
+                 t-att-data-delay="'%g' % ((product_index % 3) * 0.06) if product_index % 3 else None"
+                 t-att-data-product-id="product.product_variant_id.id if pz_direct_add else None"
+                 t-att-data-url="product.website_url">
+            <div class="product-img-wrap">
+                <span t-if="pz_discount &gt; 0" class="product-badge">−<t t-out="pz_discount"/>%
+                </span>
+                <span t-elif="product.website_ribbon_id" class="product-badge new-badge"
+                      t-out="product.website_ribbon_id.html"/>
+                <t t-if="pz_wishlist_enabled">
+                    <t t-set="pz_in_wishlist" t-value="product.product_variant_id.id in pz_wish_product_ids"/>
+                    <button type="button" t-attf-class="pq-wish pq-btn #{'pq-on' if pz_in_wishlist else ''}"
+                            t-att-data-product-id="product.product_variant_id.id"
+                            t-att-aria-label="'Remove from wishlist' if pz_in_wishlist else 'Add to wishlist'"
+                            t-att-aria-pressed="'true' if pz_in_wishlist else 'false'">
+                        <iconify-icon t-att-icon="'ri:heart-fill' if pz_in_wishlist else 'lucide:heart'"
+                                      style="font-size:15px"></iconify-icon>
+                    </button>
+                </t>
+                <a t-att-href="product.website_url" tabindex="-1">
+                    <img class="product-img" t-attf-src="/web/image/product.template/#{product.id}/image_512"
+                         t-att-alt="product.name" loading="lazy"/>
+                </a>
+                <div class="product-quick">
+                    <button type="button" class="pqv-btn">
+                        <iconify-icon icon="lucide:eye" style="font-size:14px"></iconify-icon>
+                        Quick View
+                    </button>
+                </div>
+            </div>
+            <div class="product-body">
+                <div class="product-tag" t-out="product.public_categ_ids[:1].name or product.categ_id.name"/>
+                <h3 class="product-name">
+                    <a t-att-href="product.website_url" t-out="product.name"/>
+                </h3>
+                <div class="product-rating-row">
+                    <span class="stars">
+                        <t t-out="'★' * pz_rating"/>
+                        <span t-if="pz_rating &lt; 5" class="star-dim" t-out="'★' * (5 - pz_rating)"/>
+                    </span>
+                    <span class="star-count">(<t t-out="product.rating_count"/>)
+                    </span>
+                </div>
+                <div class="product-footer">
+                    <div class="price-wrap">
+                        <span class="product-price" t-out="pz_price_reduce"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span t-if="pz_base_price" class="product-price-old" t-out="pz_base_price"
+                              t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    </div>
+                    <button t-if="pz_direct_add" type="button" class="add-btn"><iconify-icon
+                            icon="lucide:shopping-bag" style="font-size:14px"></iconify-icon>Add
+                    </button>
+                    <a t-else="" t-att-href="product.website_url" class="add-btn"><iconify-icon
+                            icon="lucide:shopping-bag" style="font-size:14px"></iconify-icon>Add
+                    </a>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <!-- ══ PRODUCTS SECTION (tabs + carousel) ══
+         params:
+           - pz_products: product.template records
+           - pz_see_all: show the "View all products" link (home page)
+           - pz_section_eyebrow / pz_section_title: optional heading override
+    -->
+    <template id="pz_products_section" name="Petzen: Products Section">
+        <section class="products-section" id="products">
+            <div class="section-header">
+                <div>
+                    <div class="section-eyebrow" t-out="pz_section_eyebrow or 'Best Sellers'"/>
+                    <h2 class="section-title" t-out="pz_section_title or 'Top Picks This Week'"/>
+                </div>
+                <a t-if="pz_see_all" href="/shop" class="see-all-link">View all products
+                    <iconify-icon icon="lucide:arrow-right" style="font-size:16px"></iconify-icon>
+                </a>
+            </div>
+            <t t-call="theme_petzen.pz_products_dynamic"/>
+        </section>
+    </template>
+
+    <!-- ══ PRODUCTS TABS + CAROUSEL ══
+         Live part of the products section, also loaded by /petzen/home/products for the
+         home page snippet. params: pz_products (product.template records)
+    -->
+    <template id="pz_products_dynamic" name="Petzen: Products Tabs and Carousel">
+        <t t-set="pz_fiscal_pos"
+           t-value="request.env['account.fiscal.position']._get_fiscal_position(request.env.user.partner_id)"/>
+        <t t-set="pz_prices"
+           t-value="pz_products._get_sales_prices(website.pricelist_id, pz_fiscal_pos)"/>
+        <!-- wishlist hearts only when website_sale_wishlist is installed -->
+        <t t-set="pz_wishlist_enabled" t-value="'product.wishlist' in request.env"/>
+        <t t-set="pz_wish_product_ids"
+           t-value="request.env['product.wishlist'].current().product_id.ids if pz_wishlist_enabled else []"/>
+        <div class="products-tabs">
+            <button type="button" class="tab-pill active" data-f="all">All Products</button>
+            <t t-foreach="website._petzen_category_cards()" t-as="card">
+                <button type="button" class="tab-pill" t-att-data-f="card['key']" t-out="card['name']"/>
+            </t>
+        </div>
+        <div class="carousel-wrap">
+            <div class="carousel-outer">
+                <div class="products-row" id="products-row">
+                    <t t-foreach="pz_products" t-as="product">
+                        <t t-call="theme_petzen.pz_product_card"/>
+                    </t>
+                </div>
+            </div>
+            <button type="button" class="c-btn c-prev" id="c-prev" aria-label="Previous">
+                <iconify-icon icon="lucide:chevron-left" style="font-size:20px"></iconify-icon>
+            </button>
+            <button type="button" class="c-btn c-next" id="c-next" aria-label="Next">
+                <iconify-icon icon="lucide:chevron-right" style="font-size:20px"></iconify-icon>
+            </button>
+            <div class="c-dots" id="c-dots"></div>
+        </div>
+        <p t-if="not pz_products" class="search-empty">No products found.</p>
+    </template>
+</odoo>

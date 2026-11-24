@@ -1,0 +1,478 @@
+// ==========================================================================
+// Liquid Glass Theme — Kanban & Pipeline Styling
+// Comprehensive glassmorphism styling for all Odoo Kanban views, including
+// grouped pipeline stages, drag-and-drop interactions, drop zones, dragged cards,
+// placeholders, headers, and quick-create components.
+// ==========================================================================
+
+.o_kanban_view {
+    @include transparent-bg;
+
+    // --- 1. Kanban Renderer & Core Variables ---
+    .o_kanban_renderer {
+        @include transparent-bg;
+        border-top: 1px solid $glass-border !important;
+
+        // Override Odoo core's light action highlight variables to Liquid Glass cyan/teal
+        --Kanban-background: transparent !important;
+        --KanbanGroup-background: transparent !important;
+        --KanbanColumn__highlight-background: rgba(6, 190, 160, 0.12) !important;
+        --KanbanColumn__highlight-border: rgba(6, 190, 160, 0.65) !important;
+
+        // Base Kanban Card
+        .o_kanban_record {
+            @include glass-effect($glass-bg-light, $blur-medium);
+            border-radius: $radius-md;
+            margin-bottom: 10px !important;
+            --KanbanRecord-background: transparent !important;
+            --bs-card-bg: transparent !important;
+            border: 1px solid $glass-border !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+            > div:not(.o_dropdown_kanban),
+            .oe_module_vignette {
+                background-color: transparent !important;
+                border: none !important;
+            }
+
+            .o_kanban_record_title,
+            h4, h5, h6 {
+                color: $text-white !important;
+            }
+
+            .oe_module_name,
+            .oe_module_desc,
+            .text-muted {
+                color: $text-muted !important;
+                span {
+                    color: $text-muted !important;
+                }
+            }
+
+            .btn-secondary {
+                @include glass-effect($glass-bg-light, $blur-light);
+                color: $text-white !important;
+
+                &:hover {
+                    @include glass-effect($hover-bg, $blur-medium);
+                    color: $text-white !important;
+                }
+            }
+
+            // Draggable cursor hint
+            &.o_draggable {
+                cursor: grab;
+
+                &:active {
+                    cursor: grabbing;
+                }
+            }
+        }
+
+        // Column / Record Quick Create
+        .o_kanban_quick_create {
+            @include transparent-bg;
+            backdrop-filter: blur($blur-light) saturate(180%) !important;
+            border: 1px solid $glass-border !important;
+            border-radius: $radius-md !important;
+            margin-bottom: 10px !important;
+
+            .o_form_view {
+                background: transparent !important;
+            }
+        }
+    }
+
+    // --- 2. Kanban Groups / Pipeline Stages ---
+    .o_kanban_group {
+        @include transparent-bg;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transform: none !important;
+        filter: none !important;
+        border-radius: $radius-lg;
+        border: 1.5px solid transparent !important;
+        box-sizing: border-box !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+        // Column header styling
+        .o_kanban_header {
+            background: transparent !important;
+            background-color: transparent !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            padding-bottom: 8px !important;
+            margin-bottom: 10px !important;
+
+            .o_kanban_header_title,
+            .o_column_title {
+                color: $text-white !important;
+                font-weight: 600 !important;
+                font-size: 14.5px !important;
+                letter-spacing: 0.2px;
+                cursor: grab;
+
+                &:active {
+                    cursor: grabbing;
+                }
+            }
+
+            .o_kanban_counter {
+                color: rgba(255, 255, 255, 0.75) !important;
+            }
+
+            .o_kanban_config {
+                .dropdown-toggle {
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    background: transparent !important;
+
+                    &:hover {
+                        color: #ffffff !important;
+                    }
+                }
+            }
+        }
+
+        // Cards inside grouped column
+        .o_kanban_record {
+            @include glass-effect($glass-bg-light, $blur-medium);
+            border: 1px solid $glass-border !important;
+            margin-bottom: 8px !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+            &:hover {
+                @include glass-effect($glass-bg-light, $blur-heavy);
+                transform: translateY(-2px);
+                box-shadow: $shadow-medium;
+                border-color: rgba(255, 255, 255, 0.3) !important;
+            }
+        }
+
+        // Folded stage column
+        &.o_column_folded {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: $radius-md !important;
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.08) !important;
+                border-color: rgba(6, 190, 160, 0.4) !important;
+            }
+        }
+    }
+
+    // --- 3. Drag and Drop: Target Stage Hover State ---
+    // Overrides Odoo core's light background tint when dragging cards over a stage/column.
+    // Instead of turning solid white, it applies a sleek dark frosted cyan glow.
+    .o_kanban_group.o_kanban_hover,
+    .o_kanban_renderer .o_kanban_group.o_kanban_hover {
+        background-color: rgba(6, 190, 160, 0.12) !important;
+        background: rgba(6, 190, 160, 0.12) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transform: none !important;
+        filter: none !important;
+        border-color: rgba(6, 190, 160, 0.7) !important;
+        border-style: dashed !important;
+        border-radius: $radius-lg !important;
+        box-shadow: 0 0 35px rgba(6, 190, 160, 0.22), inset 0 0 25px rgba(6, 190, 160, 0.1) !important;
+        transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+
+        // Stage header inside hovered drop target
+        .o_kanban_header {
+            background: transparent !important;
+            background-color: transparent !important;
+            border-bottom-color: rgba(6, 190, 160, 0.35) !important;
+
+            .o_kanban_header_title,
+            .o_column_title,
+            span, div, b, small {
+                color: #ffffff !important;
+                text-shadow: 0 0 10px rgba(6, 190, 160, 0.6) !important;
+            }
+
+            .o_kanban_counter {
+                color: rgba(255, 255, 255, 0.9) !important;
+            }
+        }
+
+        // Maintain dark glass styling and readability on existing cards in the hovered column
+        .o_kanban_record:not(.o_dragged) {
+            background-color: rgba(24, 34, 48, 0.78) !important;
+            backdrop-filter: blur($blur-medium) saturate(180%) !important;
+            -webkit-backdrop-filter: blur($blur-medium) saturate(180%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.18) !important;
+            color: #ffffff !important;
+
+            *, div, span, p, a, strong, small {
+                color: #ffffff !important;
+            }
+
+            .text-muted, span.text-muted {
+                color: rgba(255, 255, 255, 0.72) !important;
+            }
+
+            .o_kanban_record_title, h4, h5, h6 {
+                color: #ffffff !important;
+            }
+        }
+    }
+
+    // --- 4. Drag and Drop: The Dragged Card Floating State ---
+    // Fixed positioning tracks cursor with 1:1 pixel precision: zero displacement,
+    // zero rotation/scale jump, zero transition lag, and pointer-events passed through.
+    .o_kanban_record.o_dragged,
+    .o_draggable.o_dragged,
+    .o_dragged {
+        position: fixed !important;
+        margin: 0 !important;
+        transform: none !important;
+        transition: none !important;
+        animation: none !important;
+        pointer-events: none !important;
+        box-sizing: border-box !important;
+
+        background: rgba(22, 32, 48, 0.94) !important;
+        background-color: rgba(22, 32, 48, 0.94) !important;
+        backdrop-filter: blur(35px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(35px) saturate(200%) !important;
+        border: 1.5px solid rgba(6, 190, 160, 0.85) !important;
+        border-radius: $radius-md !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(6, 190, 160, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
+        opacity: 0.98 !important;
+        cursor: grabbing !important;
+        z-index: 1050 !important;
+
+        // Content visibility inside the dragged card
+        color: #ffffff !important;
+
+        *, div, span, p, a, strong, small, label {
+            color: #ffffff !important;
+        }
+
+        .o_kanban_record_title,
+        h4, h5, h6 {
+            color: #ffffff !important;
+            text-shadow: 0 0 10px rgba(6, 190, 160, 0.5) !important;
+        }
+
+        .text-muted, span.text-muted {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        a {
+            color: #38bdf8 !important;
+        }
+
+        // Hide dropdown menu button while dragging
+        .dropdown,
+        .o_dropdown_kanban {
+            display: none !important;
+        }
+    }
+
+    // --- 5. Drag and Drop: Drop Zone Placeholder / Ghost Slot ---
+    // The placeholder inserted by sortable into the target column indicating where the card will land.
+    // Instant snap without height transitions prevents layout oscillation and card jumping.
+    .o_kanban_group {
+        > div:not(.o_kanban_record):not(.o_kanban_header):not(.o_kanban_quick_create):not(.o_column_title):not(.o_kanban_load_more):not(.dropdown):not(.o_kanban_counter):not(.o_kanban_ghost),
+        .o_kanban_placeholder,
+        .o_placeholder {
+            height: 64px !important;
+            min-height: 64px !important;
+            max-height: 64px !important;
+            margin-top: 0 !important;
+            margin-bottom: 8px !important;
+            border-radius: $radius-md !important;
+            background: rgba(6, 190, 160, 0.12) !important;
+            background-color: rgba(6, 190, 160, 0.12) !important;
+            border: 2px dashed rgba(6, 190, 160, 0.65) !important;
+            box-shadow: 0 0 25px rgba(6, 190, 160, 0.25), inset 0 0 15px rgba(6, 190, 160, 0.1) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-sizing: border-box !important;
+            transition: none !important;
+            animation: none !important;
+            pointer-events: none !important;
+        }
+    }
+
+    // --- 6. Drag and Drop: Column / Stage Resequencing Drag ---
+    // When an entire stage column is being dragged horizontally to resequence stages.
+    .o_group_draggable.o_dragged,
+    .o_kanban_group.o_dragged {
+        position: fixed !important;
+        margin: 0 !important;
+        transform: none !important;
+        transition: none !important;
+        animation: none !important;
+        pointer-events: none !important;
+        box-sizing: border-box !important;
+
+        background: rgba(20, 28, 42, 0.92) !important;
+        background-color: rgba(20, 28, 42, 0.92) !important;
+        backdrop-filter: blur(35px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+        border: 1.5px solid rgba(6, 190, 160, 0.75) !important;
+        border-radius: $radius-lg !important;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(6, 190, 160, 0.35) !important;
+        opacity: 0.96 !important;
+        cursor: grabbing !important;
+        z-index: 1040 !important;
+
+        .o_kanban_header {
+            .o_column_title {
+                color: #ffffff !important;
+                text-shadow: 0 0 10px rgba(6, 190, 160, 0.5) !important;
+            }
+        }
+    }
+
+    // --- 7. Column Quick Create (+ Stage column on the far right) ---
+    .o_column_quick_create {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+        border-radius: $radius-lg !important;
+        transition: all 0.25s ease !important;
+
+        .o_quick_create_folded {
+            background: transparent !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+
+            span, i, .o_column_title {
+                color: rgba(255, 255, 255, 0.85) !important;
+            }
+
+            &:hover {
+                color: #ffffff !important;
+                span, i, .o_column_title {
+                    color: #ffffff !important;
+                    text-shadow: 0 0 10px rgba(6, 190, 160, 0.5) !important;
+                }
+            }
+        }
+
+        &:hover {
+            background: rgba(6, 190, 160, 0.08) !important;
+            border-color: rgba(6, 190, 160, 0.5) !important;
+            box-shadow: 0 0 20px rgba(6, 190, 160, 0.15) !important;
+        }
+
+        // Expanded "+ Stage" form
+        .o_quick_create_unfolded {
+            background: transparent !important;
+
+            input {
+                background: rgba(255, 255, 255, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                color: #ffffff !important;
+                border-radius: $radius-sm !important;
+
+                &:focus {
+                    border-color: $primary-color !important;
+                    box-shadow: 0 0 10px rgba(6, 190, 160, 0.4) !important;
+                }
+            }
+        }
+    }
+
+    // --- 8. Ungrouped Kanban Views ---
+    .o_kanban_ungrouped {
+        .o_kanban_record {
+            @include glass-effect($glass-bg-light, $blur-light);
+            border: 1px solid $glass-border !important;
+
+            &:hover {
+                @include glass-effect($hover-bg, $blur-light);
+            }
+        }
+    }
+
+    // Reset ghost records (used for grid alignment in ungrouped views) to be invisible
+    .o_kanban_record.o_kanban_ghost,
+    .o_kanban_renderer .o_kanban_record.o_kanban_ghost {
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        padding: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        height: 0 !important;
+        min-height: 0 !important;
+    }
+}
+
+// --- 9. Dashboard Kanban (Sales Teams) — Bottom Progress Block Fix ---
+.o_kanban_dashboard .o_kanban_renderer {
+    .o_kanban_record {
+        // Text inside dashboard cards
+        *, div, span, a, strong, small, p, label {
+            color: $text-white !important;
+        }
+
+        // Bottom "Invoicing / progress" stripe
+        .o_kanban_primary_bottom.bottom_block {
+            background-color: rgba(15, 20, 28, 0.55) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 0 0 $radius-md $radius-md !important;
+
+            *, span, div, a, strong {
+                color: $text-white !important;
+            }
+        }
+
+        // Progress bar label text
+        .o_kanban_primary_bottom {
+            *, span, div, a, strong {
+                color: $text-white !important;
+            }
+        }
+    }
+}
+
+// ============================================================================
+// --- 10. Drag-and-Drop Stability: Freeze Hover Effects While Dragging ---
+// ============================================================================
+// When ANY record or stage is being dragged (indicated by body.pe-none,
+// body:has(.o_dragged), or .o_kanban_view:has(.o_dragged)), completely freeze
+// all translateY/hover transforms, transitions, and layout changes across all cards.
+// This prevents sibling cards from jumping or triggering recalculation loops,
+// while preserving the normal Liquid Glass hover effect when not dragging.
+body.o_web_client.pe-none,
+body.o_web_client:has(.o_dragged),
+.o_web_client:has(.o_dragged),
+.o_kanban_view:has(.o_dragged),
+.o_kanban_renderer:has(.o_dragged),
+.o_kanban_group:has(.o_dragged) {
+    .o_kanban_record:not(.o_dragged) {
+        transform: none !important;
+        transition: none !important;
+
+        &:hover {
+            transform: none !important;
+            box-shadow: none !important;
+            border-color: $glass-border !important;
+        }
+    }
+
+    .o_kanban_group {
+        // Prevent layout shift, containing block trap, or card snapback during drag
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transform: none !important;
+        filter: none !important;
+        contain: none !important;
+        transition: none !important;
+
+        &.o_kanban_hover {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            transform: none !important;
+            filter: none !important;
+            contain: none !important;
+            transition: none !important;
+        }
+    }
+}
