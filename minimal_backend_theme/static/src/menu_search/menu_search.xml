@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="minimal_backend_theme.AppIcon">
+    <t t-set="icon" t-value="this.iconOf(app)"/>
+    <span class="o_minimal_app_icon">
+      <img t-if="icon.type === 'img'" t-att-src="icon.src" alt=""/>
+      <span t-elif="icon.type === 'icon'" class="o_minimal_app_icon_glyph"
+            t-attf-style="color: {{icon.color}}; background: {{icon.background}};">
+        <i t-att-class="icon.iconClass"/>
+      </span>
+      <span t-else="" class="o_minimal_app_icon_letter" t-out="icon.letter"/>
+    </span>
+  </t>
+
+  <t t-name="minimal_backend_theme.MenuSearchDialog">
+    <Dialog header="false" footer="false" size="'md'" withBodyPadding="false" contentClass="'o_minimal_menu_search'">
+      <t t-set="view" t-value="this.view"/>
+
+      <!-- Search field -->
+      <div class="o_minimal_ms_header">
+        <div class="o_minimal_ms_input d-flex align-items-center gap-2">
+          <i t-if="this.state.recordsLoading" class="oi oi-spin o_minimal_ms_input_icon" data-icon="autorenew" aria-hidden="true"/>
+          <i t-else="" class="oi o_minimal_ms_input_icon" data-icon="search" aria-hidden="true"/>
+          <input t-ref="this.inputRef" type="text" class="form-control border-0 shadow-none px-0 bg-transparent"
+                 data-allow-hotkeys="true" autocomplete="off" spellcheck="false"
+                 placeholder="Search menus and records..."
+                 aria-label="Search menus and records"
+                 role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="o_minimal_menu_search_list"
+                 t-att-aria-activedescendant="view.items.length ? 'o_minimal_ms_item_' + this.state.activeIndex : false"
+                 t-att-value="this.state.query" t-on-input="this.onInput"/>
+          <button t-if="this.state.query" type="button" class="o_minimal_ms_clear btn btn-link p-1"
+                  title="Clear" aria-label="Clear search" t-on-click="this.clearQuery">
+            <i class="oi" data-icon="close" aria-hidden="true"/>
+          </button>
+          <kbd class="o_minimal_kbd d-none d-md-inline-flex" t-translation="off">Esc</kbd>
+          <button type="button" class="o_minimal_ms_close btn btn-link d-md-none px-1" t-on-click="() => this.props.close()">Cancel</button>
+        </div>
+
+        <!-- Scope tabs -->
+        <div t-if="this.hasQuery" class="o_minimal_ms_scopes d-flex align-items-center gap-1" role="tablist" aria-label="Search scope">
+          <button t-foreach="this.scopes" t-as="scope" t-key="scope.key" type="button" role="tab"
+                  class="o_minimal_ms_scope" t-att-data-scope="scope.key"
+                  t-att-class="{ 'active': this.state.scope === scope.key }"
+                  t-att-aria-selected="this.state.scope === scope.key ? 'true' : 'false'"
+                  t-on-click="() => this.setScope(scope.key)">
+            <span t-out="scope.label"/>
+            <span class="o_minimal_ms_scope_count" t-if="scope.key === 'records' and view.counts.recordsLoading and !view.counts.records">…</span>
+            <span class="o_minimal_ms_scope_count" t-elif="view.counts[scope.key] !== undefined">
+              <t t-out="view.counts[scope.key]"/><t t-if="scope.key !== 'menus' and (view.counts.recordsMore or view.counts.recordsLoading)">+</t>
+            </span>
+          </button>
+          <span class="ms-auto d-none d-md-inline o_minimal_ms_hint"><kbd class="o_minimal_kbd" t-translation="off">Tab</kbd> to switch</span>
+        </div>
+      </div>
+
+      <div t-ref="this.listRef" id="o_minimal_menu_search_list" class="o_minimal_menu_search_body" role="listbox">
+
+        <t t-foreach="view.sections" t-as="section" t-key="section.key">
+          <!-- Records on their way: placeholder rows -->
+          <t t-if="section.key === 'records_loading'">
+            <div class="o_minimal_section_title" data-section="records_loading" t-out="section.title"/>
+            <div t-foreach="[1, 2, 3]" t-as="row" t-key="row" class="o_minimal_ms_placeholder d-flex align-items-center gap-2" aria-hidden="true">
+              <span class="o_minimal_ms_shimmer o_minimal_ms_shimmer_icon"/>
+              <span class="o_minimal_ms_shimmer" t-attf-style="width: {{ 40 + row * 12 }}%"/>
+            </div>
+          </t>
+          <t t-else="">
+          <div class="o_minimal_section_title d-flex align-items-center gap-2" t-att-data-section="section.key">
+            <span t-out="section.title"/>
+            <span t-if="section.count" class="o_minimal_ms_count"><t t-out="section.count"/><t t-if="section.countMore">+</t></span>
+            <button t-if="section.key === 'recent'" type="button" class="btn btn-link btn-sm p-0 ms-auto o_minimal_ms_header_link" t-on-click="this.clearRecent">Clear</button>
+            <button t-elif="section.countMore" type="button" class="btn btn-link btn-sm p-0 ms-auto o_minimal_ms_header_link"
+                    t-on-click="() => this.open({ kind: 'more', group: section.group })">See all</button>
+          </div>
+          <t t-foreach="section.items" t-as="item" t-key="item.key">
+            <t t-set="isActive" t-value="item.index === this.state.activeIndex"/>
+            <a t-att-href="this.href(item)" role="option"
+               t-att-id="'o_minimal_ms_item_' + item.index"
+               t-att-data-index="item.index"
+               t-att-data-kind="item.kind"
+               t-att-aria-selected="isActive ? 'true' : 'false'"
+               class="o_minimal_result d-flex align-items-center gap-2"
+               t-att-class="{ 'active': isActive, 'o_minimal_result_more': item.kind === 'more' }"
+               t-on-mouseenter="() => this.state.activeIndex = item.index"
+               t-on-click="(ev) => this.onResultClick(ev, item)">
+
+              <!-- Menu: name, then where it lives -->
+              <t t-if="item.kind === 'menu'">
+                <t t-call="minimal_backend_theme.AppIcon" app="item.entry.app"/>
+                <span class="o_minimal_result_name text-truncate">
+                  <t t-foreach="this.highlight(item.entry.name)" t-as="chunk" t-key="chunk_index">
+                    <mark t-if="chunk.match" t-out="chunk.text"/>
+                    <t t-else="" t-out="chunk.text"/>
+                  </t>
+                </span>
+                <span t-if="item.entry.path.length" class="o_minimal_result_path text-truncate">
+                  <t t-foreach="this.highlight(item.entry.pathLabel)" t-as="chunk" t-key="chunk_index">
+                    <mark t-if="chunk.match" t-out="chunk.text"/>
+                    <t t-else="" t-out="chunk.text"/>
+                  </t>
+                </span>
+                <!-- Pin / unpin (a span: no button inside the link) -->
+                <span class="o_minimal_pin" role="button" tabindex="-1"
+                      t-att-class="{ 'o_pinned': this.isPinned(item.entry) }"
+                      t-att-title="this.pinLabel(item.entry)"
+                      t-att-aria-label="this.pinLabel(item.entry)"
+                      t-att-aria-pressed="this.isPinned(item.entry) ? 'true' : 'false'"
+                      t-on-click="(ev) => this.togglePin(ev, item.entry)">
+                  <i class="oi" data-icon="star" t-att-class="{ 'oi-filled': this.isPinned(item.entry) }" aria-hidden="true"/>
+                </span>
+              </t>
+
+              <!-- Record: its name (the type is the section) -->
+              <t t-elif="item.kind === 'record'">
+                <t t-if="item.app" t-call="minimal_backend_theme.AppIcon" app="item.app"/>
+                <span t-else="" class="o_minimal_app_icon o_minimal_record_icon"><i class="oi" data-icon="article" aria-hidden="true"/></span>
+                <span class="o_minimal_result_name text-truncate">
+                  <t t-foreach="this.highlight(item.record.display_name)" t-as="chunk" t-key="chunk_index">
+                    <mark t-if="chunk.match" t-out="chunk.text"/>
+                    <t t-else="" t-out="chunk.text"/>
+                  </t>
+                </span>
+                <!-- Recent records mix types: say which -->
+                <span t-if="item.showType" class="o_minimal_result_path text-truncate" t-out="item.group.label"/>
+              </t>
+
+              <!-- Create a record: "new lead" -->
+              <t t-elif="item.kind === 'create'">
+                <span class="o_minimal_create_icon">
+                  <t t-call="minimal_backend_theme.AppIcon" app="item.entry.app"/>
+                  <i class="oi" data-icon="add" aria-hidden="true"/>
+                </span>
+                <span class="o_minimal_result_name text-truncate" t-out="this.createLabel(item.target)"/>
+                <span class="o_minimal_result_path text-truncate" t-out="[...item.entry.path, item.entry.name].join(' / ')"/>
+              </t>
+
+              <!-- See all records of a model -->
+              <t t-else="">
+                <span class="o_minimal_app_icon o_minimal_record_icon"><i class="oi" data-icon="more_horiz" aria-hidden="true"/></span>
+                <span class="o_minimal_result_name text-truncate" t-out="this.seeAllLabel(item.group)"/>
+              </t>
+
+              <span class="o_minimal_result_action flex-shrink-0">
+                <t t-out="this.actionLabel(item)"/> <kbd class="o_minimal_kbd">↵</kbd>
+              </span>
+            </a>
+          </t>
+          </t>
+        </t>
+
+        <!-- Nothing found -->
+        <div t-if="this.hasQuery and !view.items.length and !this.state.recordsLoading" class="o_minimal_empty text-center">
+          <div class="o_minimal_ms_empty_icon mx-auto mb-3"><i class="oi" data-icon="search" aria-hidden="true"/></div>
+          <div class="fw-bold mb-1" t-out="this.noResultsLabel"/>
+          <div class="text-muted">
+            <t t-if="this.state.scope !== 'all'">
+              Try searching <a href="#" t-on-click.prevent="() => this.setScope('all')">everywhere</a>, or use fewer words.
+            </t>
+            <t t-elif="!this.canSearchRecords">Type at least 2 characters to search records too.</t>
+            <t t-else="">Check the spelling or use fewer words.</t>
+          </div>
+        </div>
+
+        <!-- Nothing typed yet: recent menus (above) and the apps -->
+        <t t-if="!this.hasQuery">
+          <div class="o_minimal_section_title">Apps</div>
+          <div class="o_minimal_app_grid">
+            <a t-foreach="this.apps" t-as="app" t-key="app.id"
+               class="o_minimal_app_tile" t-att-href="'/odoo/' + (app.actionPath || 'action-' + app.actionID)"
+               t-on-click="(ev) => this.openApp(ev, app)">
+              <t t-call="minimal_backend_theme.AppIcon" app="app"/>
+              <span class="o_minimal_app_tile_name text-truncate" t-out="app.name"/>
+            </a>
+          </div>
+        </t>
+      </div>
+
+      <div class="o_minimal_menu_search_footer d-none d-md-flex align-items-center gap-3">
+        <span><kbd class="o_minimal_kbd">↑</kbd><kbd class="o_minimal_kbd">↓</kbd> Navigate</span>
+        <span><kbd class="o_minimal_kbd">↵</kbd> Open</span>
+        <span><kbd class="o_minimal_kbd" t-translation="off"><t t-if="this.isMacOS">⌘</t><t t-else="">Ctrl</t> ↵</kbd> New tab</span>
+        <span class="ms-auto"><kbd class="o_minimal_kbd" t-out="this.shortcutLabel"/> to open from anywhere</span>
+      </div>
+    </Dialog>
+  </t>
+
+  <t t-name="minimal_backend_theme.MenuSearchSystray">
+    <div class="o_minimal_search_systray d-flex align-items-center">
+      <button type="button" class="o_minimal_search_trigger d-flex align-items-center gap-2"
+              t-att-title="this.placeholder + ' (' + this.shortcutLabel + ')'"
+              t-on-click="() => this.menuSearch.open()">
+        <i class="oi" data-icon="search" aria-hidden="true"/>
+        <span class="o_minimal_search_placeholder d-none d-lg-inline" t-out="this.placeholder"/>
+        <kbd class="o_minimal_kbd d-none d-lg-inline ms-auto" t-out="this.shortcutLabel"/>
+      </button>
+    </div>
+  </t>
+
+</templates>

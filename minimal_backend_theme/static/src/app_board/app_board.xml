@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <!-- Apps button of the top bar: opens the full-screen app board instead of
+       Odoo's apps dropdown. Same "h" hotkey. -->
+  <t t-name="web.NavBar.AppsMenu" t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension">
+    <xpath expr="//div[hasclass('o_navbar_apps_menu')]/Dropdown" position="replace">
+      <!-- Same classes as Odoo's dropdown toggle, so core's top bar styles apply. -->
+      <button type="button" class="o_minimal_apps_toggle o-dropdown dropdown-toggle" data-hotkey="h" title="Home Menu"
+              aria-label="Apps" data-available-offline=""
+              t-att-aria-expanded="this.appBoard.state.isOpen ? 'true' : 'false'"
+              t-on-click="() => this.appBoard.toggle()">
+        <i class="oi" data-icon="apps"/>
+      </button>
+    </xpath>
+  </t>
+
+  <t t-name="minimal_backend_theme.AppBoard">
+    <AppBoardPanel t-if="this.board.state.isOpen" close="() => this.board.close()"/>
+  </t>
+
+  <t t-name="minimal_backend_theme.AppBoardPanel">
+    <div t-ref="this.root" class="o_minimal_app_board" role="dialog" aria-modal="true" aria-label="Apps">
+      <button type="button" class="o_minimal_app_board_close d-flex align-items-center gap-2"
+              title="Close (Esc)" aria-label="Close" t-on-click="() => this.props.close()">
+        <kbd class="o_minimal_kbd d-none d-md-inline-flex" t-translation="off">Esc</kbd>
+        <i class="oi" data-icon="close" aria-hidden="true"/>
+      </button>
+
+      <div class="o_minimal_app_board_content">
+        <!-- Search: a large field over a thin line -->
+        <div class="o_minimal_ab_search d-flex align-items-center gap-3">
+          <i class="oi o_minimal_ab_search_icon" data-icon="search" aria-hidden="true"/>
+          <input t-ref="this.inputRef" type="text" class="o_minimal_ab_search_input flex-grow-1"
+                 placeholder="Search apps and menus..." autocomplete="off" spellcheck="false"
+                 data-allow-hotkeys="true" aria-label="Search apps and menus"
+                 t-att-value="this.state.query" t-on-input="this.onInput"/>
+          <button t-if="this.state.query" type="button" class="o_minimal_ab_clear btn btn-link p-1"
+                  title="Clear" aria-label="Clear search" t-on-click="this.clearQuery">
+            <i class="oi" data-icon="close" aria-hidden="true"/>
+          </button>
+        </div>
+        <div class="o_minimal_ab_hint d-none d-md-flex justify-content-center gap-3">
+          <span><kbd class="o_minimal_kbd" t-translation="off">↑</kbd><kbd class="o_minimal_kbd" t-translation="off">↓</kbd><kbd class="o_minimal_kbd" t-translation="off">←</kbd><kbd class="o_minimal_kbd" t-translation="off">→</kbd> Move</span>
+          <span><kbd class="o_minimal_kbd" t-translation="off">↵</kbd> Open</span>
+          <span><kbd class="o_minimal_kbd" t-translation="off">Esc</kbd> Close</span>
+        </div>
+
+        <!-- Pinned menus, as shortcuts -->
+        <t t-set="pinned" t-value="this.hasQuery ? [] : this.pinned"/>
+        <div t-if="pinned.length" class="o_minimal_ab_pinned">
+          <div class="o_minimal_ab_title">Pinned</div>
+          <div class="d-flex flex-wrap justify-content-center gap-2">
+            <a t-foreach="pinned" t-as="entry" t-key="entry.id"
+               class="o_minimal_ab_chip d-inline-flex align-items-center gap-2"
+               t-att-href="this.href(entry.menu)" t-att-title="entry.pathLabel"
+               t-on-click="(ev) => this.onItemClick(ev, entry.menu)">
+              <t t-call="minimal_backend_theme.AppIcon" app="entry.app"/>
+              <span class="text-truncate" t-out="entry.name"/>
+            </a>
+          </div>
+        </div>
+
+        <t t-set="apps" t-value="this.filteredApps"/>
+        <div t-if="apps.length" class="o_minimal_ab_section">
+          <div t-if="pinned.length or this.hasQuery" class="o_minimal_ab_title">Apps</div>
+          <div class="o_minimal_app_board_grid" role="listbox" aria-label="Apps">
+            <a t-foreach="apps" t-as="app" t-key="app.id" role="option"
+               class="o_minimal_app_tile" t-att-href="this.href(app)"
+               t-att-data-menu-xmlid="app.xmlid"
+               t-att-data-board-index="app_index"
+               t-att-class="{ 'active': app_index === this.state.activeIndex }"
+               t-att-aria-selected="app_index === this.state.activeIndex ? 'true' : 'false'"
+               t-on-mouseenter="() => this.state.activeIndex = app_index"
+               t-on-click="(ev) => this.onItemClick(ev, app)">
+              <t t-call="minimal_backend_theme.AppIcon"/>
+              <span class="o_minimal_app_tile_name text-truncate">
+                <t t-foreach="this.highlight(app.name)" t-as="chunk" t-key="chunk_index">
+                  <mark t-if="chunk.match" t-out="chunk.text"/>
+                  <t t-else="" t-out="chunk.text"/>
+                </t>
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <t t-set="menus" t-value="this.menuResults"/>
+        <div t-if="menus.length" class="o_minimal_app_board_menus" role="listbox" aria-label="Menus">
+          <div class="o_minimal_ab_title">Menus</div>
+          <t t-foreach="menus" t-as="entry" t-key="entry.id">
+            <t t-set="itemIndex" t-value="apps.length + entry_index"/>
+            <a t-att-href="this.href(entry.menu)" role="option"
+               t-att-data-board-index="itemIndex"
+               class="o_minimal_result d-flex align-items-center gap-3"
+               t-att-class="{ 'active': itemIndex === this.state.activeIndex }"
+               t-att-aria-selected="itemIndex === this.state.activeIndex ? 'true' : 'false'"
+               t-on-mouseenter="() => this.state.activeIndex = itemIndex"
+               t-on-click="(ev) => this.onItemClick(ev, entry.menu)">
+              <t t-call="minimal_backend_theme.AppIcon" app="entry.app"/>
+              <span class="text-truncate">
+                <t t-foreach="this.highlight(entry.name)" t-as="chunk" t-key="chunk_index">
+                  <mark t-if="chunk.match" t-out="chunk.text"/>
+                  <t t-else="" t-out="chunk.text"/>
+                </t>
+              </span>
+              <span t-if="entry.path.length" class="o_minimal_result_path text-truncate ms-auto" t-out="entry.pathLabel"/>
+              <i class="oi o_minimal_result_enter" data-icon="arrow_forward" aria-hidden="true"/>
+            </a>
+          </t>
+        </div>
+
+        <div t-if="!apps.length and !menus.length" class="o_minimal_empty text-center">
+          <div class="o_minimal_ms_empty_icon mx-auto mb-3"><i class="oi" data-icon="search" aria-hidden="true"/></div>
+          <div class="fw-bold mb-1" t-out="this.noResultsLabel"/>
+          <div class="text-muted">Check the spelling or use fewer words.</div>
+        </div>
+      </div>
+    </div>
+  </t>
+
+</templates>

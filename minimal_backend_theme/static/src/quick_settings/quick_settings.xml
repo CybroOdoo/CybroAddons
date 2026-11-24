@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="minimal_backend_theme.QuickSettings">
+    <Dropdown position="'bottom-end'" menuClass="'o_minimal_qs_menu'">
+      <button type="button" class="o_minimal_qs_toggle" title="Quick settings" aria-label="Quick settings">
+        <i class="oi" data-icon="tune" aria-hidden="true"/>
+      </button>
+      <t t-set-slot="content">
+        <div class="dropdown-header o_minimal_qs_header">Quick settings</div>
+
+        <div class="o_minimal_qs_note text-muted small" t-att-class="{ 'o_readonly': !this.canEdit }">
+          <i class="oi me-1" t-att-data-icon="this.canEdit ? 'public' : 'info'" aria-hidden="true"/>
+          <t t-if="this.canEdit">Applies to all users</t>
+          <t t-else="">Set by your administrator</t>
+        </div>
+
+        <div class="o_minimal_qs_layout">
+          <div class="o_minimal_qs_layout_label">Menu layout</div>
+          <div class="o_minimal_segmented d-flex" role="radiogroup" aria-label="Menu layout">
+            <button t-foreach="this.menuLayouts" t-as="layout" t-key="layout.key"
+                    type="button" role="radio"
+                    class="o_minimal_segment flex-grow-1 d-flex align-items-center justify-content-center gap-2"
+                    t-att-class="{ 'active': this.state.menuLayout === layout.key }"
+                    t-att-aria-checked="this.state.menuLayout === layout.key ? 'true' : 'false'"
+                    t-att-data-layout="layout.key"
+                    t-att-disabled="!this.canEdit or this.state.saving"
+                    t-on-click="() => this.setMenuLayout(layout.key)">
+              <i class="oi" t-att-data-icon="layout.icon" aria-hidden="true"/>
+              <span t-out="layout.label"/>
+            </button>
+          </div>
+        </div>
+
+        <DropdownItem t-foreach="this.switches" t-as="item" t-key="item.key"
+                      closingMode="'none'" onSelected="item.toggle"
+                      class="{ 'o_minimal_qs_switch': true, 'o_readonly': !this.canEdit }"
+                      attrs="{ 'aria-disabled': this.canEdit ? 'false' : 'true' }">
+          <div class="d-flex align-items-center gap-3 w-100">
+            <i class="oi o_minimal_qs_icon" t-att-data-icon="item.icon" aria-hidden="true"/>
+            <span class="d-flex flex-column flex-grow-1 lh-sm">
+              <span t-out="item.label"/>
+              <small class="text-muted" t-out="item.help"/>
+            </span>
+            <span class="form-check form-switch m-0 pe-none">
+              <input type="checkbox" class="form-check-input" role="switch" tabindex="-1"
+                     t-att-checked="item.checked" t-att-disabled="!this.canEdit"
+                     t-att-aria-label="item.label"/>
+            </span>
+          </div>
+        </DropdownItem>
+
+        <div role="separator" class="dropdown-divider"/>
+
+        <DropdownItem onSelected="() => this.menuSearch.open()" class="'o_minimal_qs_link'">
+          <div class="d-flex align-items-center gap-3 w-100">
+            <i class="oi o_minimal_qs_icon" data-icon="search" aria-hidden="true"/>
+            <span class="flex-grow-1">Search menus and records</span>
+            <kbd class="o_minimal_kbd" t-out="this.shortcutLabel"/>
+          </div>
+        </DropdownItem>
+        <DropdownItem onSelected="() => this.openPreferences()" class="'o_minimal_qs_link'">
+          <div class="d-flex align-items-center gap-3 w-100">
+            <i class="oi o_minimal_qs_icon" data-icon="person" aria-hidden="true"/>
+            <span>My preferences</span>
+          </div>
+        </DropdownItem>
+        <DropdownItem t-if="this.isSystem" onSelected="() => this.openSettings()" class="'o_minimal_qs_link'">
+          <div class="d-flex align-items-center gap-3 w-100">
+            <i class="oi o_minimal_qs_icon" data-icon="settings" aria-hidden="true"/>
+            <span>Theme settings</span>
+          </div>
+        </DropdownItem>
+      </t>
+    </Dropdown>
+  </t>
+
+</templates>

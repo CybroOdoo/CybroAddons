@@ -1,0 +1,1058 @@
+// Minimal Backend Theme - styles of the theme's own components.
+// Every color, font size and radius comes from Odoo's variables, so the
+// theme looks like stock Odoo and follows its light and dark palettes.
+
+$o-minimal-active-bg: rgba($o-action, .12);
+
+// ---------------------------------------------------------------------------
+// Shared bits
+// ---------------------------------------------------------------------------
+.o_minimal_kbd {
+    // Key combinations read left to right in every language ("Ctrl ⇧ F",
+    // not "F ⇧ Ctrl"): kept out of the right-to-left flip.
+    /*rtl:ignore*/
+    direction: ltr;
+    unicode-bidi: isolate;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 $o-border-radius * 1.5;
+    font-family: inherit;
+    font-size: $o-font-size-base-smaller;
+    line-height: 1.6;
+    color: $text-muted;
+    background: $o-webclient-background-color;
+    border: $border-width solid $border-color;
+    border-radius: $o-border-radius;
+    box-shadow: none;
+    & + & {
+        margin-left: 2px;
+    }
+}
+
+.o_minimal_app_icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: $o-border-radius-lg;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+}
+.o_minimal_app_icon_glyph,
+.o_minimal_app_icon_letter {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    font-weight: $font-weight-bold;
+}
+// App initials (apps without an image), here and in the sidebar rail.
+.o_minimal_app_icon_letter,
+.o_minimal_sidebar_app_initial {
+    color: #ffffff; // on the brand color, in both schemes
+    background: $o-brand-odoo;
+}
+
+.o_minimal_app_tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: map-get($spacers, 2);
+    padding: map-get($spacers, 3) map-get($spacers, 1);
+    border-radius: $o-border-radius-lg;
+    color: $o-main-text-color;
+    text-align: center;
+    text-decoration: none;
+    min-width: 0;
+
+    .o_minimal_app_icon {
+        width: 44px;
+        height: 44px;
+    }
+    .o_minimal_app_tile_name {
+        max-width: 100%;
+    }
+    &:hover, &:focus, &.active {
+        color: $o-main-text-color;
+        background: $o-minimal-active-bg;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Top bar
+// ---------------------------------------------------------------------------
+// Search field: a line, not a box - icon, placeholder and shortcut over a
+// thin underline (an inset shadow, so the layout never moves) that only
+// brightens on hover and keyboard focus.
+.o_minimal_search_systray {
+    margin-right: map-get($spacers, 2);
+}
+.o_minimal_search_trigger {
+    height: 30px;
+    padding: 0 2px;
+    color: $o-navbar-entry-color;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    transition: color .15s, box-shadow .15s;
+
+    @include media-breakpoint-up(lg) {
+        min-width: 240px;
+        box-shadow: inset 0 -1px 0 rgba(#ffffff, .35);
+
+        // Same thin line on hover and focus, only a little brighter.
+        &:hover, &:focus-visible {
+            box-shadow: inset 0 -1px 0 rgba(#ffffff, .7);
+        }
+    }
+    &:hover, &:focus-visible {
+        color: $o-navbar-entry-color--hover;
+        outline: none;
+    }
+    .o_minimal_search_placeholder {
+        opacity: .8;
+    }
+    &:hover .o_minimal_search_placeholder {
+        opacity: 1;
+    }
+    .o_minimal_kbd {
+        color: inherit;
+        background: transparent;
+        border-color: rgba(#ffffff, .3);
+    }
+    // Icon only (narrow screens): like the other top bar icons.
+    @include media-breakpoint-down(lg) {
+        padding: 0 map-get($spacers, 2);
+        border-radius: $o-border-radius;
+        &:hover, &:focus-visible {
+            background: $o-navbar-entry-bg--hover;
+        }
+        &:focus-visible {
+            box-shadow: inset 0 0 0 1px rgba(#ffffff, .6);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Quick settings dropdown
+// ---------------------------------------------------------------------------
+.o_minimal_qs_menu.dropdown-menu {
+    min-width: 290px;
+
+    .o_minimal_qs_icon {
+        font-size: 1.25em;
+        color: $text-muted;
+    }
+    .form-switch .form-check-input {
+        width: 2.2em;
+        height: 1.2em;
+    }
+}
+.o_minimal_qs_note {
+    padding: 0 map-get($spacers, 3) map-get($spacers, 2);
+    font-size: $o-font-size-base-smaller;
+}
+// Options shown to users who cannot change them.
+.o_minimal_qs_switch.o_readonly {
+    cursor: default;
+    &:hover, &:focus {
+        background: transparent;
+    }
+}
+.o_minimal_segment:disabled {
+    cursor: default;
+    opacity: 1;
+    &:not(.active) {
+        opacity: .6;
+    }
+}
+
+// Menu layout selector (Top bar / Sidebar).
+.o_minimal_qs_layout {
+    padding: 0 map-get($spacers, 3) map-get($spacers, 2);
+    .o_minimal_qs_layout_label {
+        margin-bottom: map-get($spacers, 1);
+        font-size: $o-font-size-base-smaller;
+        color: $text-muted;
+    }
+}
+.o_minimal_segmented {
+    gap: 2px;
+    padding: 2px;
+    background: $o-gray-200;
+    border-radius: $o-border-radius-lg;
+}
+.o_minimal_segment {
+    padding: map-get($spacers, 1) map-get($spacers, 2);
+    color: $text-muted;
+    background: transparent;
+    border: 0;
+    border-radius: $o-border-radius;
+    &:hover {
+        color: $o-main-text-color;
+    }
+    &.active {
+        color: $o-action;
+        background: $o-view-background-color;
+        box-shadow: $box-shadow-sm;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Vertical menu layout: app menus in a left sidebar
+// ---------------------------------------------------------------------------
+.o_minimal_sidebar {
+    display: none;
+}
+
+@include media-breakpoint-up(md) {
+    body.o_minimal_menu_vertical {
+        // The sidebar replaces the top bar's section menus.
+        .o_main_navbar .o_menu_sections {
+            display: none !important;
+        }
+
+        .o_minimal_sidebar {
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: $o-navbar-height;
+            bottom: 0;
+            left: 0;
+            z-index: 2;
+            width: $o-minimal-sidebar-width;
+            padding: map-get($spacers, 3) map-get($spacers, 2) map-get($spacers, 4);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            background: $o-view-background-color;
+            border-right: $border-width solid $border-color;
+            transition: width .2s ease;
+
+            // Collapsed: a slim rail with the app icon and the expand button.
+            &.o_collapsed {
+                width: $o-minimal-sidebar-collapsed-width;
+                padding-left: 0;
+                padding-right: 0;
+                overflow: hidden;
+
+                .o_minimal_sidebar_header {
+                    flex-direction: column;
+                    padding: 0;
+                }
+            }
+        }
+    }
+    // The web client root is <body> itself.
+    body.o_minimal_menu_vertical:has(> .o_minimal_sidebar) > .o_action_manager {
+        margin-left: $o-minimal-sidebar-width;
+        transition: margin-left .2s ease;
+    }
+    body.o_minimal_menu_vertical:has(> .o_minimal_sidebar.o_collapsed) > .o_action_manager {
+        margin-left: $o-minimal-sidebar-collapsed-width;
+    }
+}
+
+// Tablets (768-1199px, see DRAWER_MEDIA in sidebar.js): an expanded sidebar
+// would squeeze the page, so the page always keeps the rail's width and the
+// expanded sidebar opens over it, as a drawer above a dimmed backdrop.
+@include media-breakpoint-between(md, xl) {
+    body.o_minimal_menu_vertical:has(> .o_minimal_sidebar) > .o_action_manager {
+        margin-left: $o-minimal-sidebar-collapsed-width;
+    }
+    body.o_minimal_menu_vertical .o_minimal_sidebar.o_drawer_open {
+        z-index: $zindex-fixed;
+        box-shadow: $box-shadow-lg;
+    }
+    body.o_minimal_menu_vertical .o_minimal_sidebar_backdrop {
+        position: fixed;
+        inset: $o-navbar-height 0 0 0;
+        z-index: $zindex-fixed - 1;
+        background: rgba(#000000, .35);
+        animation: o_minimal_fade_in .2s ease-out;
+    }
+}
+.o_minimal_sidebar_backdrop {
+    display: none;
+    body.o_minimal_menu_vertical & {
+        @include media-breakpoint-between(md, xl) {
+            display: block;
+        }
+    }
+}
+@keyframes o_minimal_fade_in {
+    from {
+        opacity: 0;
+    }
+}
+
+.o_minimal_sidebar_header {
+    padding: 0 0 map-get($spacers, 3) map-get($spacers, 2);
+}
+.o_minimal_sidebar_app {
+    font-weight: $font-weight-bold;
+}
+.o_minimal_sidebar_app_icon,
+.o_minimal_sidebar_app_initial {
+    width: 24px;
+    height: 24px;
+    border-radius: $o-border-radius;
+}
+.o_minimal_sidebar_app_initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: $font-weight-bold;
+}
+// The panel icons draw the sidebar on the left: mirror them where it sits
+// on the right (right-to-left languages).
+.o_rtl .o_minimal_sidebar_toggle .oi {
+    transform: scaleX(-1);
+}
+.o_minimal_sidebar_toggle {
+    flex-shrink: 0;
+    font-size: 1.25em;
+    color: $text-muted;
+    &:hover, &:focus-visible {
+        color: $o-action;
+    }
+}
+
+.o_minimal_sidebar_item,
+.o_minimal_sidebar_group_toggle {
+    padding: map-get($spacers, 1) map-get($spacers, 2);
+    margin-bottom: 1px;
+    color: $o-main-text-color;
+    border-radius: $o-border-radius;
+    text-decoration: none;
+    &:hover {
+        color: $o-main-text-color;
+        background: $o-gray-200;
+    }
+}
+.o_minimal_sidebar_item {
+    min-width: 0;
+}
+.o_minimal_sidebar_item_icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+}
+// Pin star: on hover, kept on pinned menus; always shown on touch screens.
+.o_minimal_sidebar_pin {
+    flex-shrink: 0;
+    display: inline-flex;
+    font-size: .9em;
+    color: $text-muted;
+    visibility: hidden;
+    &:hover {
+        color: $o-main-text-color;
+    }
+    &.o_pinned {
+        color: $o-main-favorite-color;
+    }
+}
+.o_minimal_sidebar_item:hover .o_minimal_sidebar_pin,
+.o_minimal_sidebar_item:focus-visible .o_minimal_sidebar_pin,
+.o_minimal_sidebar_pinned .o_minimal_sidebar_pin {
+    visibility: visible;
+}
+@media (hover: none) {
+    .o_minimal_sidebar_pin.o_pinned {
+        visibility: visible;
+    }
+}
+.o_minimal_sidebar_pinned {
+    margin-bottom: map-get($spacers, 2);
+    padding-bottom: map-get($spacers, 2);
+    border-bottom: $border-width solid $border-color;
+}
+.o_minimal_sidebar_pinned_title {
+    padding: map-get($spacers, 1) map-get($spacers, 2);
+    font-size: $o-font-size-base-smaller;
+    font-weight: $font-weight-bold;
+    text-transform: uppercase;
+    color: $text-muted;
+}
+.o_minimal_sidebar_item.active {
+    color: $o-action;
+    background: $o-minimal-active-bg;
+    font-weight: $font-weight-bold;
+}
+.o_minimal_sidebar_group_toggle {
+    margin-top: map-get($spacers, 2);
+    background: transparent;
+    border: 0;
+    font-weight: $font-weight-bold;
+    .o_minimal_sidebar_chevron {
+        color: $text-muted;
+    }
+}
+// Nested groups (third level and deeper) are indented.
+.o_minimal_sidebar_group .o_minimal_sidebar_group .o_minimal_sidebar_group_toggle {
+    margin-top: 0;
+    font-weight: normal;
+    color: $text-muted;
+}
+.o_minimal_sidebar_group .o_minimal_sidebar_group > ul {
+    padding-left: map-get($spacers, 2);
+}
+
+// ---------------------------------------------------------------------------
+// Menu and record search dialog
+// ---------------------------------------------------------------------------
+// Anchored near the top, so the list grows downwards as results arrive.
+.modal:has(.o_minimal_menu_search) .modal-dialog {
+    max-width: 680px;
+    margin-top: 12vh;
+    align-items: flex-start;
+}
+.modal-content.o_minimal_menu_search {
+    overflow: hidden;
+    border: $border-width solid $border-color;
+    border-radius: $o-border-radius-xl;
+    box-shadow: $box-shadow-lg;
+}
+
+.o_minimal_ms_header {
+    border-bottom: $border-width solid $border-color;
+}
+.o_minimal_ms_input {
+    height: 56px;
+    padding: 0 map-get($spacers, 3);
+    font-size: $font-size-lg;
+
+    input {
+        font-size: inherit;
+    }
+    .o_minimal_ms_input_icon {
+        font-size: 1.2em;
+        color: $o-action;
+    }
+    .o_minimal_ms_clear {
+        color: $text-muted;
+        &:hover {
+            color: $o-main-text-color;
+        }
+    }
+}
+
+// Scope tabs: All / Menus / Records, with their number of matches.
+.o_minimal_ms_scopes {
+    padding: 0 map-get($spacers, 3) map-get($spacers, 2);
+}
+.o_minimal_ms_scope {
+    display: inline-flex;
+    align-items: center;
+    gap: map-get($spacers, 1);
+    padding: 2px map-get($spacers, 2);
+    color: $text-muted;
+    background: transparent;
+    border: $border-width solid $border-color;
+    border-radius: 999px;
+    font-size: $o-font-size-base-small;
+    transition: background-color .12s, color .12s, border-color .12s;
+
+    &:hover {
+        color: $o-main-text-color;
+        border-color: $o-gray-400;
+    }
+    &.active {
+        color: $o-action;
+        background: $o-minimal-active-bg;
+        border-color: rgba($o-action, .45);
+        font-weight: $font-weight-bold;
+    }
+}
+.o_minimal_ms_scope_count,
+.o_minimal_ms_count {
+    padding: 0 6px;
+    font-size: $o-font-size-base-smaller;
+    font-weight: normal;
+    line-height: 1.5;
+    color: $text-muted;
+    background: $o-gray-200;
+    border-radius: 999px;
+}
+.o_minimal_ms_hint {
+    font-size: $o-font-size-base-smaller;
+    color: $text-muted;
+}
+
+.o_minimal_menu_search_body {
+    max-height: unquote("min(56vh, 520px)");
+    overflow-y: auto;
+    padding: map-get($spacers, 1) map-get($spacers, 2) map-get($spacers, 2);
+    scrollbar-width: thin;
+}
+
+// Section titles: same look as Odoo's command palette.
+.o_minimal_section_title {
+    padding: map-get($spacers, 2) map-get($spacers, 2) map-get($spacers, 1);
+    font-size: $o-font-size-base-smaller;
+    font-weight: $font-weight-bold;
+    text-transform: uppercase;
+    color: $text-muted;
+
+    .o_minimal_ms_count {
+        text-transform: none;
+    }
+    .o_minimal_ms_header_link {
+        font-size: $o-font-size-base-smaller;
+        font-weight: normal;
+        text-transform: none;
+        text-decoration: none;
+    }
+}
+
+.o_minimal_result {
+    padding: map-get($spacers, 2);
+    border-radius: $o-border-radius-lg;
+    color: $o-main-text-color;
+    text-decoration: none;
+
+    .o_minimal_result_path {
+        font-size: $o-font-size-base-small;
+        color: $text-muted;
+    }
+    mark {
+        padding: 0;
+        color: inherit;
+        background: transparent;
+        font-weight: $font-weight-bold;
+    }
+    .o_minimal_result_enter {
+        visibility: hidden;
+        color: $o-action;
+    }
+    &:hover, &.active {
+        color: $o-main-text-color;
+        background: $o-minimal-active-bg;
+    }
+    &.active .o_minimal_result_enter {
+        visibility: visible;
+    }
+}
+
+// Dialog rows: one compact line - icon, name, where it lives, open hint.
+.o_minimal_menu_search .o_minimal_result {
+    position: relative;
+    min-height: 40px;
+    padding: map-get($spacers, 1) map-get($spacers, 2);
+
+    .o_minimal_app_icon {
+        width: 24px;
+        height: 24px;
+        border-radius: $o-border-radius;
+    }
+    .o_minimal_result_name {
+        flex: 0 1 auto;
+        min-width: 0;
+    }
+    .o_minimal_result_path {
+        flex: 0 10 auto;
+        min-width: 3em;
+        margin-left: auto;
+        padding-left: map-get($spacers, 3);
+        text-align: right;
+    }
+    .o_minimal_result_action {
+        display: none;
+        margin-left: auto;
+        font-size: $o-font-size-base-smaller;
+        color: $o-action;
+        .o_minimal_kbd {
+            color: inherit;
+            border-color: rgba($o-action, .4);
+            background: transparent;
+        }
+    }
+    // The selected row: accent bar, and the open hint replaces the path.
+    &.active {
+        box-shadow: inset 3px 0 0 $o-action;
+        .o_minimal_result_action {
+            display: inline-flex;
+            align-items: center;
+            gap: map-get($spacers, 1);
+            padding-left: map-get($spacers, 3);
+        }
+        .o_minimal_result_path + .o_minimal_result_action {
+            margin-left: 0;
+            padding-left: map-get($spacers, 2);
+        }
+    }
+}
+
+// Pin star on menu rows: shown on the selected row and on pinned menus.
+.o_minimal_menu_search .o_minimal_pin {
+    order: 10;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-left: map-get($spacers, 1);
+    border-radius: $o-border-radius;
+    color: $text-muted;
+    visibility: hidden;
+
+    &:hover {
+        color: $o-main-text-color;
+        background: rgba($o-action, .15);
+    }
+    &.o_pinned {
+        visibility: visible;
+        color: $o-main-favorite-color;
+    }
+}
+.o_minimal_menu_search .o_minimal_result:hover .o_minimal_pin,
+.o_minimal_menu_search .o_minimal_result.active .o_minimal_pin {
+    visibility: visible;
+}
+// Touch screens have no hover: always show the star.
+@media (hover: none) {
+    .o_minimal_menu_search .o_minimal_pin {
+        visibility: visible;
+    }
+}
+
+// "New ..." rows: the app icon with a small plus.
+.o_minimal_create_icon {
+    position: relative;
+    flex-shrink: 0;
+    display: inline-flex;
+
+    > .oi {
+        position: absolute;
+        right: -4px;
+        bottom: -4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        font-size: 11px;
+        color: #ffffff;
+        background: $o-action;
+        border-radius: 50%;
+        box-shadow: 0 0 0 2px $o-view-background-color;
+    }
+}
+
+// Loading placeholders for the records.
+.o_minimal_ms_placeholder {
+    min-height: 40px;
+    padding: map-get($spacers, 1) map-get($spacers, 2);
+}
+.o_minimal_ms_shimmer {
+    display: block;
+    height: 10px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, $o-gray-200 25%, $o-gray-300 50%, $o-gray-200 75%);
+    background-size: 200% 100%;
+    animation: o_minimal_ms_shimmer 1.2s linear infinite;
+}
+.o_minimal_ms_shimmer_icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: $o-border-radius;
+}
+@keyframes o_minimal_ms_shimmer {
+    from {
+        background-position: 200% 0;
+    }
+    to {
+        background-position: -200% 0;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .o_minimal_ms_shimmer {
+        animation: none;
+    }
+}
+
+// Phones: the search is a full-screen sheet, the results using all the
+// height; the path goes under the name, and keyboard hints are left out.
+@include media-breakpoint-down(md) {
+    // Odoo pads "minimal" dialogs on small screens and caps their height
+    // (.modal.o_modal_design_minimal, web/static/src/core/dialog/dialog.scss):
+    // none of it for a sheet, hence the same classes plus the theme's.
+    .modal.o_modal_design_minimal:has(.o_minimal_menu_search) .modal-dialog {
+        max-width: none;
+        height: 100dvh;
+        margin: 0;
+        padding: 0;
+    }
+    .modal.o_modal_design_minimal .modal-content.o_minimal_menu_search {
+        height: 100dvh;
+        max-height: none;
+        border: 0;
+        border-radius: 0;
+
+        > .modal-body {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .o_minimal_menu_search_body {
+            flex: 1 1 auto;
+            max-height: none;
+        }
+        .o_minimal_ms_scopes {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .o_minimal_ms_scope {
+            flex-shrink: 0;
+        }
+        .o_minimal_result {
+            flex-wrap: wrap;
+            row-gap: 0;
+            min-height: 48px; // comfortable touch target
+
+            .o_minimal_result_name {
+                flex: 1 1 0;
+            }
+            .o_minimal_result_path {
+                flex: 1 0 100%;
+                min-width: 0;
+                margin-left: 0;
+                padding-left: calc(24px + #{map-get($spacers, 2)});
+                text-align: left;
+            }
+            &.active .o_minimal_result_action {
+                display: none;
+            }
+            // Name and star on the first line, the path under them.
+            .o_minimal_app_icon, .o_minimal_create_icon {
+                order: 0;
+            }
+            .o_minimal_result_name {
+                order: 1;
+            }
+            .o_minimal_pin {
+                order: 2;
+            }
+            .o_minimal_result_path {
+                order: 3;
+            }
+        }
+    }
+}
+
+.o_minimal_ms_empty_icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    font-size: 1.5em;
+    color: $o-action;
+    background: $o-minimal-active-bg;
+    border-radius: 50%;
+}
+.o_minimal_record_icon {
+    color: $text-muted;
+    background: $o-gray-200;
+    font-size: 1.15em;
+}
+.o_minimal_result_more {
+    color: $o-action;
+    &:hover, &.active {
+        color: $o-action;
+    }
+}
+.o_minimal_empty {
+    padding: map-get($spacers, 5) map-get($spacers, 3);
+}
+.o_minimal_app_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: map-get($spacers, 1);
+}
+.o_minimal_menu_search .o_minimal_app_grid {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    padding-bottom: map-get($spacers, 1);
+    .o_minimal_app_icon {
+        width: 36px;
+        height: 36px;
+        border-radius: $o-border-radius-lg;
+    }
+}
+.o_minimal_menu_search_footer {
+    padding: map-get($spacers, 2) map-get($spacers, 3);
+    color: $text-muted;
+    font-size: $o-font-size-base-smaller;
+    border-top: $border-width solid $border-color;
+    background: $o-webclient-background-color;
+}
+
+// ---------------------------------------------------------------------------
+// Full-screen app board
+// ---------------------------------------------------------------------------
+// The page colour with a soft glow of the brand colour at the top, so the
+// board reads as its own space rather than a blank page.
+.o_minimal_app_board {
+    position: fixed;
+    inset: 0;
+    z-index: $zindex-modal;
+    overflow-y: auto;
+    background:
+        radial-gradient(1100px 480px at 50% -12%, rgba($o-brand-primary, if($o-minimal-dark, .28, .14)), transparent 70%),
+        $o-webclient-background-color;
+    animation: o_minimal_fade_in .15s ease-out;
+
+    .o_minimal_app_board_close {
+        position: absolute;
+        top: map-get($spacers, 3);
+        right: map-get($spacers, 3);
+        padding: map-get($spacers, 1) map-get($spacers, 2);
+        font-size: 1.25em;
+        color: $text-muted;
+        background: transparent;
+        border: 0;
+        border-radius: $o-border-radius-lg;
+        &:hover, &:focus-visible {
+            color: $o-main-text-color;
+            background: rgba($o-black, .06);
+        }
+        .o_minimal_kbd {
+            font-size: $o-font-size-base-smaller;
+        }
+    }
+    .o_minimal_app_board_content {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 10vh map-get($spacers, 3) map-get($spacers, 5);
+        animation: o_minimal_app_board_rise .25s ease-out;
+    }
+
+    // Search: a large field over a thin line (as the top bar search). The
+    // line turns to the action colour while typing; it never thickens.
+    .o_minimal_ab_search {
+        max-width: 620px;
+        margin: 0 auto;
+        padding: map-get($spacers, 2) map-get($spacers, 1);
+        border-bottom: $border-width solid $o-gray-400;
+        transition: border-color .15s;
+
+        &:focus-within {
+            border-bottom-color: $o-action;
+            .o_minimal_ab_search_icon {
+                color: $o-action;
+            }
+        }
+    }
+    .o_minimal_ab_search_icon {
+        font-size: 1.5em;
+        color: $text-muted;
+        transition: color .15s;
+    }
+    .o_minimal_ab_search_input {
+        min-width: 0;
+        padding: 0;
+        font-size: $h4-font-size;
+        color: $o-main-text-color;
+        background: transparent;
+        border: 0;
+        outline: none;
+        &::placeholder {
+            color: $text-muted;
+            opacity: .75;
+        }
+    }
+    .o_minimal_ab_clear {
+        color: $text-muted;
+        text-decoration: none;
+        &:hover {
+            color: $o-main-text-color;
+        }
+    }
+    .o_minimal_ab_hint {
+        margin: map-get($spacers, 2) 0 map-get($spacers, 5);
+        font-size: $o-font-size-base-smaller;
+        color: $text-muted;
+        .o_minimal_kbd {
+            margin-right: 2px;
+        }
+    }
+    @include media-breakpoint-down(md) {
+        .o_minimal_ab_search {
+            margin-bottom: map-get($spacers, 4);
+        }
+    }
+
+    .o_minimal_ab_title {
+        margin-bottom: map-get($spacers, 2);
+        font-size: $o-font-size-base-smaller;
+        font-weight: $font-weight-bold;
+        text-transform: uppercase;
+        text-align: center;
+        color: $text-muted;
+    }
+    .o_minimal_ab_section + .o_minimal_app_board_menus,
+    .o_minimal_ab_pinned + .o_minimal_ab_section {
+        margin-top: map-get($spacers, 4);
+    }
+
+    // Pinned menus, as chips.
+    .o_minimal_ab_chip {
+        max-width: 240px;
+        padding: map-get($spacers, 1) map-get($spacers, 3) map-get($spacers, 1) map-get($spacers, 1);
+        color: $o-main-text-color;
+        text-decoration: none;
+        background: rgba($o-view-background-color, .85);
+        border: $border-width solid $border-color;
+        border-radius: 999px;
+        box-shadow: $box-shadow-sm;
+        transition: border-color .15s, box-shadow .15s;
+
+        .o_minimal_app_icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+        &:hover, &:focus-visible {
+            border-color: $o-action;
+            box-shadow: $box-shadow;
+        }
+    }
+
+    // Centered rows of fixed-width tiles, whatever the number of apps.
+    .o_minimal_app_board_grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: map-get($spacers, 2);
+    }
+    .o_minimal_app_tile {
+        width: 124px;
+        padding: map-get($spacers, 3) map-get($spacers, 2);
+        border-radius: $o-border-radius-xl;
+        transition: background-color .15s, transform .15s, box-shadow .15s;
+
+        .o_minimal_app_icon {
+            width: 64px;
+            height: 64px;
+            border-radius: $o-border-radius-xl;
+            box-shadow: $box-shadow-sm;
+            transition: box-shadow .15s;
+        }
+        .o_minimal_app_icon_letter {
+            font-size: $h3-font-size;
+        }
+        mark {
+            padding: 0;
+            color: inherit;
+            background: transparent;
+            font-weight: $font-weight-bold;
+        }
+        &:hover {
+            background: rgba($o-view-background-color, .7);
+            transform: translateY(-2px);
+            .o_minimal_app_icon {
+                box-shadow: $box-shadow;
+            }
+        }
+        // Keyboard selection: a clear ring in the action colour.
+        &.active {
+            background: rgba($o-view-background-color, .85);
+            box-shadow: inset 0 0 0 2px rgba($o-action, .55);
+        }
+    }
+
+    .o_minimal_app_board_menus {
+        max-width: 640px;
+        margin: map-get($spacers, 4) auto 0;
+        .o_minimal_ab_title {
+            text-align: start;
+            padding: 0 map-get($spacers, 2);
+        }
+        .o_minimal_result {
+            min-height: 44px;
+            .o_minimal_app_icon {
+                width: 24px;
+                height: 24px;
+                border-radius: $o-border-radius;
+            }
+        }
+    }
+}
+@keyframes o_minimal_app_board_rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .o_minimal_app_board,
+    .o_minimal_app_board .o_minimal_app_board_content {
+        animation: none;
+    }
+    .o_minimal_app_board .o_minimal_app_tile:hover {
+        transform: none;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Dark scheme fix: core marks selected list rows with Bootstrap's
+// .table-info, a fixed light tint that stays unreadable on dark surfaces.
+// ---------------------------------------------------------------------------
+@if $o-minimal-dark {
+    .o_list_renderer .o_data_row.o_data_row_selected.table-info {
+        --bs-table-color: #{$o-main-text-color};
+        --bs-table-bg: #{$o-list-group-active-bg};
+        --bs-table-hover-bg: #{$o-list-group-active-bg};
+        --bs-table-active-bg: #{$o-list-group-active-bg};
+        --bs-table-striped-bg: #{$o-list-group-active-bg};
+        --bs-table-border-color: #{mix($o-action, $o-view-background-color, 35%)};
+        border-color: mix($o-action, $o-view-background-color, 35%);
+        > td {
+            color: $o-main-text-color;
+            background-color: $o-list-group-active-bg;
+            border-color: mix($o-action, $o-view-background-color, 35%);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Quick settings: compact view
+// ---------------------------------------------------------------------------
+body.o_minimal_compact {
+    .o_list_renderer .o_list_table {
+        > tbody > tr > td, > thead > tr > th, > tfoot > tr > td {
+            padding-top: 2px;
+            padding-bottom: 2px;
+        }
+    }
+    .o_form_view {
+        --formView-sheet-padding-y: #{map-get($spacers, 2)};
+        .o_inner_group > .o_wrap_field, .o_group .o_cell {
+            margin-bottom: 0;
+        }
+    }
+    .o_control_panel {
+        padding-top: map-get($spacers, 1) !important;
+        padding-bottom: map-get($spacers, 1) !important;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Quick settings: full-width forms
+// ---------------------------------------------------------------------------
+body.o_minimal_full_width .o_form_view {
+    .o_form_sheet_bg, .o_form_renderer {
+        max-width: none;
+    }
+}
