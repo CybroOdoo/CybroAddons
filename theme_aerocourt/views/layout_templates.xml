@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Layout of the AeroCourt theme: the standard header restyled as the fixed
+    bar of the design, its footer columns and wordmark, and the dialog used by
+    the booking, session and sign-in flows.
+-->
+<odoo>
+    <template id="layout" name="AeroCourt Layout" inherit_id="website.layout" priority="60">
+        <xpath expr="//div[@id='wrapwrap']" position="attributes">
+            <attribute name="t-attf-class" add="ac-wrap" separator=" "/>
+        </xpath>
+        <xpath expr="//header[@id='top']" position="before">
+            <a t-if="not no_header" class="ac-skip-link" href="#wrap">Skip to content</a>
+            <svg class="ac-visually-hidden" aria-hidden="true" focusable="false">
+                <filter id="knockout-black" color-interpolation-filters="sRGB">
+                    <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  1.4 1.4 1.4 0 -0.12"/>
+                </filter>
+                <filter id="knockout-light" color-interpolation-filters="sRGB">
+                    <feColorMatrix type="matrix" values="0.549 0 -0.479 0 0  0 0.588 -0.508 0 0  0 0 0.06 0 0  1.4 1.4 1.4 0 -0.12"/>
+                </filter>
+            </svg>
+        </xpath>
+        <xpath expr="//main" position="after">
+            <div class="ac-config d-none" aria-hidden="true"
+                 t-att-data-currency="website.company_id.currency_id.symbol"
+                 t-att-data-open-hour="website.aerocourt_open_hour"
+                 t-att-data-close-hour="website.aerocourt_close_hour"
+                 t-att-data-courts="website.aerocourt_court_count"
+                 t-att-data-court-rate="website.aerocourt_court_rate"
+                 t-att-data-rental-fee="website.aerocourt_rental_fee"
+                 t-att-data-booking-days="website.aerocourt_booking_days"/>
+            <t t-if="not no_header">
+                <dialog class="ac-modal" id="modal" aria-labelledby="modalTitle">
+                    <div class="ac-modal__panel">
+                      <div class="ac-modal__grab" aria-hidden="true"><span/></div>
+                      <button type="button" class="ac-modal__close ac-icon-btn" data-modal-close="" aria-label="Close dialog"><i class="ac-icon ac-i-ph-x-bold" role="img" aria-hidden="true"/></button>
+                      <div class="ac-modal__body" id="modalBody" data-lenis-prevent=""/>
+                    </div>
+                  </dialog>
+
+  
+            </t>
+        </xpath>
+    </template>
+
+    <!-- The default header wears the classes of the design. They are set
+         from the template itself, so another header template chosen in the
+         website builder keeps the standard look, and Default brings the
+         design back. -->
+    <template id="template_header_default" name="AeroCourt Header" inherit_id="website.template_header_default" priority="10">
+        <xpath expr="//header[@id='top']" position="attributes">
+            <attribute name="t-attf-class" add="ac-header o_header_overlay_theme" separator=" "/>
+        </xpath>
+        <xpath expr="//div[@id='o_main_nav']" position="attributes">
+            <attribute name="t-attf-class" add="ac-nav" separator=" "/>
+        </xpath>
+        <xpath expr="//div[@id='o_main_nav']/t[@t-call='website.placeholder_header_brand']" position="attributes">
+            <attribute name="_link_class.f">ac-logo ac-logo--image</attribute>
+        </xpath>
+        <xpath expr="//div[@id='o_main_nav']/t[@t-call='website.navbar_nav']" position="attributes">
+            <attribute name="_nav_class.f">ac-main-nav__list</attribute>
+        </xpath>
+        <xpath expr="//div[@id='o_main_nav']/t[@t-call='website.navbar_nav']//t[@t-call='website.submenu']" position="attributes">
+            <attribute name="link_class.f">nav-link ac-main-nav__link</attribute>
+        </xpath>
+        <xpath expr="//div[@id='o_main_nav']/ul[hasclass('navbar-nav')]" position="attributes">
+            <attribute name="class" add="ac-header-tools" separator=" "/>
+        </xpath>
+        <xpath expr="//div[@id='o_main_nav']/ul[hasclass('navbar-nav')]/t[@t-call='website.placeholder_header_search_box']" position="before">
+            <li class="ac-header-tools__toggle o_not_editable">
+                <button type="button" class="ac-theme-toggle" aria-label="Switch to light theme" title="Switch to light theme">
+                    <i class="ac-icon ac-i-ph-sun-bold ac-theme-toggle__sun" role="img" aria-hidden="true"/>
+                    <i class="ac-icon ac-i-ph-moon-bold ac-theme-toggle__moon" role="img" aria-hidden="true"/>
+                </button>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- Mobile bar: the theme toggle of the design beside the round menu
+         button. The menu itself is the standard one. -->
+    <template id="template_header_mobile" name="AeroCourt Header Mobile" inherit_id="website.template_header_mobile" priority="10">
+        <xpath expr="//ul[hasclass('o_header_mobile_buttons_wrap')]" position="inside">
+            <li class="ac-header-tools__toggle o_not_editable">
+                <button type="button" class="ac-theme-toggle" aria-label="Switch to light theme" title="Switch to light theme">
+                    <i class="ac-icon ac-i-ph-sun-bold ac-theme-toggle__sun" role="img" aria-hidden="true"/>
+                    <i class="ac-icon ac-i-ph-moon-bold ac-theme-toggle__moon" role="img" aria-hidden="true"/>
+                </button>
+            </li>
+        </xpath>
+        <xpath expr="//button[@data-bs-target='#top_menu_collapse_mobile']" position="attributes">
+            <attribute name="class" add="ac-nav-toggle" separator=" "/>
+        </xpath>
+        <xpath expr="//div[@id='top_menu_collapse_mobile']" position="attributes">
+            <attribute name="t-attf-class" add="ac-mobile-menu" separator=" "/>
+        </xpath>
+        <xpath expr="//div[@id='top_menu_collapse_mobile']//t[@t-call='website.submenu']" position="attributes">
+            <attribute name="link_class.f">nav-link p-3 text-wrap ac-main-nav__link</attribute>
+        </xpath>
+    </template>
+
+    <!-- Call to action of the header: the lime pill of the design. -->
+    <template id="header_call_to_action" name="AeroCourt Header Call to Action" inherit_id="website.header_call_to_action" priority="10">
+        <xpath expr="//a[hasclass('btn_cta')]" position="replace">
+            <a href="/booking#booking" class="oe_unremovable btn btn-primary btn_cta ac-btn ac-btn--primary ac-btn--sm">Book a Court <i class="ac-icon ac-i-ph-arrow-up-right-bold" role="img" aria-hidden="true"/></a>
+        </xpath>
+    </template>
+
+    <!-- Footer: editable columns and wordmark of the design. -->
+    <template id="footer" name="AeroCourt Footer" inherit_id="website.layout" priority="60">
+        <xpath expr="//footer[@id='bottom']" position="attributes">
+            <attribute name="t-attf-class" add="ac-site-footer" separator=" "/>
+        </xpath>
+        <xpath expr="//div[@id='footer']" position="replace">
+            <div id="footer" class="oe_structure oe_structure_solo" t-ignore="true" t-if="not no_footer">
+                <section class="ac-footer-section" data-name="Footer Columns">
+                    <div class="ac-container">
+
+                          <div class="ac-footer-main">
+                            <!-- Brand + newsletter -->
+                            <div class="ac-footer-brand">
+                              <a href="/" class="ac-logo" aria-label="AeroCourt — home">
+                                <i class="ac-icon ac-i-boxicons-shuttlecock-filled ac-logo__mark" role="img" aria-hidden="true"/>
+                                <span class="ac-logo__word">Aero<span>Court</span></span>
+                              </a>
+                              <p class="ac-footer-brand__text">Premium indoor badminton courts, expert coaching and a community built around the game.</p>
+
+                              <div class="ac-footer-news">
+                                                    <div class="js_subscribe" data-list-id="aerocourt_mailing_list" data-name="Newsletter Form">
+                                                        <div class="js_subscribe_wrap">
+                                                            <div class="ac-newsletter__field">
+                                                                <input type="email" name="email" class="js_subscribe_value form-control ac-input" placeholder="you@example.com" aria-label="Email address" autocomplete="email" required=""/>
+                                                                <button type="button" class="ac-btn ac-btn--primary ac-btn--sm js_subscribe_btn" aria-label="Subscribe"><span class="ac-btn__label">Subscribe</span> <i class="ac-icon ac-i-ph-arrow-right-bold" role="img" aria-hidden="true"/></button>
+                                                            </div>
+                                                        </div>
+                                                        <p class="js_subscribed_wrap d-none ac-newsletter__msg is-success">You are on the list. See you on court!</p>
+                                                    </div>
+                                                </div>
+                            </div>
+
+                            <!-- Link columns -->
+                            <nav class="ac-footer-col" aria-label="Play">
+                              <h3 class="ac-footer-col__heading">Play</h3>
+                              <ul>
+                                <li><a href="/booking">Book a court</a></li>
+                                <li><a href="/sessions">Coaching sessions</a></li>
+                                <li><a href="#membership">Membership</a></li>
+                              </ul>
+                            </nav>
+                            <nav class="ac-footer-col" aria-label="Club">
+                              <h3 class="ac-footer-col__heading">Club</h3>
+                              <ul>
+                                <li><a href="/about">About us</a></li>
+                                <li><a href="/blog">Journal</a></li>
+                                <li><a href="/contact">Contact</a></li>
+                              </ul>
+                            </nav>
+                            <div class="ac-footer-col ac-footer-col--visit">
+                              <h3 class="ac-footer-col__heading">Visit</h3>
+                              <address>
+                                <a href="https://www.google.com/maps/search/?api=1&amp;query=14+Rally+Lane" target="_blank" rel="noopener" class="ac-footer-contact"><i class="ac-icon ac-i-ph-map-pin-bold" role="img" aria-hidden="true"/><span>14 Rally Lane<br/>Your City, 00000</span></a>
+                                <a href="tel:+10000000000" class="ac-footer-contact"><i class="ac-icon ac-i-ph-phone-bold" role="img" aria-hidden="true"/><span>+1 (000) 000-0000</span></a>
+                                <a href="mailto:hello@aerocourt.example" class="ac-footer-contact"><i class="ac-icon ac-i-ph-envelope-simple-bold" role="img" aria-hidden="true"/><span>hello@aerocourt.example</span></a>
+                                <p class="ac-footer-contact"><i class="ac-icon ac-i-ph-clock-bold" role="img" aria-hidden="true"/><span>Every day · <t t-out="'%02d:00 – %02d:00' % (website.aerocourt_open_hour, website.aerocourt_close_hour)"/></span></p>
+                              </address>
+                            </div>
+                          </div>
+                        </div>
+                    <!-- Oversized wordmark -->
+                    <div class="ac-footer-wordmark" aria-hidden="true">AeroCourt</div>
+                </section>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('o_footer_copyright')]/div[hasclass('container')]" position="replace">
+            <div class="ac-container">
+                  <div class="ac-footer-bottom">
+                    <p class="ac-footer-bottom__copy">© <span t-out="datetime.date.today().year"/> AeroCourt. Demo website. Details are placeholders.</p>
+                    <ul class="ac-footer-bottom__legal">
+                      <li><a href="#">Privacy</a></li>
+                      <li><a href="#">Terms</a></li>
+                      <li><a href="#">Cookies</a></li>
+                    </ul>
+                    <ul class="ac-socials ac-footer-bottom__social" aria-label="Social media">
+                      <li><a href="#" aria-label="AeroCourt on Instagram (placeholder link)"><i class="ac-icon ac-i-ph-instagram-logo-bold" role="img" aria-hidden="true"/></a></li>
+                      <li><a href="#" aria-label="AeroCourt on Facebook (placeholder link)"><i class="ac-icon ac-i-ph-facebook-logo-bold" role="img" aria-hidden="true"/></a></li>
+                      <li><a href="#" aria-label="AeroCourt on YouTube (placeholder link)"><i class="ac-icon ac-i-ph-youtube-logo-bold" role="img" aria-hidden="true"/></a></li>
+                      <li><a href="#" aria-label="AeroCourt on X (placeholder link)"><i class="ac-icon ac-i-ph-x-logo-bold" role="img" aria-hidden="true"/></a></li>
+                    </ul>
+                    <button type="button" class="ac-footer-top" id="backToTop" aria-label="Back to top">
+                      <i class="ac-icon ac-i-ph-arrow-up-bold" role="img" aria-hidden="true"/>
+                    </button>
+                  </div>
+                </div>
+        </xpath>
+    </template>
+</odoo>

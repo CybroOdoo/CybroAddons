@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Nutivo layout: announcement bar inside the standard header (the header, its
+    templates and options stay those of the website builder), the bag, wishlist
+    and quick view overlays, toasts and the footer.
+-->
+<odoo>
+    <template id="layout" name="Nutivo Layout" inherit_id="website.layout" priority="60">
+        <xpath expr="//div[@id='wrapwrap']" position="attributes">
+            <attribute name="t-attf-class" add="nv-wrap" separator=" "/>
+        </xpath>
+        <xpath expr="//header[@id='top']" position="before">
+            <t t-if="not no_header">
+                <t t-set="nv_cart_qty" t-value="int((request.session['website_sale_cart_quantity'] if 'website_sale_cart_quantity' in request.session else request.cart.cart_quantity) or 0)"/>
+                <t t-set="nv_wish_qty" t-value="len(env['product.wishlist'].current())"/>
+                <t t-set="nv_public" t-value="website.is_public_user()"/>
+                <a class="nv-skip-link" href="#wrap">Skip to content</a>
+            </t>
+        </xpath>
+
+        <!-- The announcement bar is part of the header and uses its hide on
+             scroll feature, so the header does not jump when the scroll leaves
+             or comes back to the top of the page. -->
+        <xpath expr="//header[@id='top']" position="inside">
+            <t t-if="not no_header">
+            <div class="nv-s nv-announce o_header_hide_on_scroll" role="region" aria-label="Announcements">
+                <div class="nv-announce__track">
+                    <p>Complimentary shipping on orders above ₹999</p>
+                    <span aria-hidden="true">✦</span>
+                    <p>Diwali Gifting is here — personalised hampers ship in 48 hours</p>
+                    <span aria-hidden="true">✦</span>
+                    <p>Use <strong>FIRSTHANDFUL</strong> for 10% off your first order</p>
+                </div>
+            </div>
+            </t>
+        </xpath>
+
+        <!-- Overlays shared by every page -->
+        <xpath expr="//main" position="after">
+            <t t-if="not no_header">
+                <div class="nv-scrim o_not_editable" hidden=""/>
+                <aside class="nv-s nv-drawer nv-bag o_not_editable" data-lenis-prevent="" data-panel="cart" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Your Bag">
+                    <div class="nv-drawer__head nv-bag__head">
+                        <div><h2>Your Bag</h2><p class="nv-bag__count"/></div>
+                        <button type="button" class="nv-icon-btn nv-icon-btn--ring" data-close="" aria-label="Close bag"><i class="nv-i nv-ph-x-light" role="img" aria-hidden="true"/></button>
+                    </div>
+                    <div class="nv-drawer__body nv-bag__body"/>
+                </aside>
+                <aside class="nv-s nv-drawer o_not_editable" data-lenis-prevent="" data-panel="wishlist" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Wishlist">
+                    <div class="nv-drawer__head">
+                        <h2>Wishlist</h2>
+                        <button type="button" class="nv-icon-btn" data-close="" aria-label="Close wishlist"><i class="nv-i nv-ph-x-light" role="img" aria-hidden="true"/></button>
+                    </div>
+                    <div class="nv-drawer__body" data-wish-items=""/>
+                </aside>
+                <div class="nv-s nv-modal nv-quickview o_not_editable" data-panel="quickview" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Quick view">
+                    <div class="nv-modal__card nv-quickview__card">
+                        <button type="button" class="nv-icon-btn nv-modal__close" data-close="" aria-label="Close"><i class="nv-i nv-ph-x-light" role="img" aria-hidden="true"/></button>
+                        <div class="nv-quickview__body"/>
+                    </div>
+                </div>
+                <div class="nv-s nv-toast-stack o_not_editable" aria-live="polite" aria-atomic="false"/>
+                <nav class="nv-s nv-bottom-nav o_not_editable" aria-label="Quick navigation">
+                    <a href="/" t-attf-class="nv-bottom-nav__item #{'nv-is-active' if request.httprequest.path == '/' else ''}"><i class="nv-i nv-ph-house-light" role="img" aria-hidden="true"/><span>Home</span></a>
+                    <a href="/shop" t-attf-class="nv-bottom-nav__item #{'nv-is-active' if request.httprequest.path.startswith('/shop') else ''}"><i class="nv-i nv-ph-storefront-light" role="img" aria-hidden="true"/><span>Shop</span></a>
+                    <a href="/shop/wishlist" class="nv-bottom-nav__item o_wsale_my_wish" data-open="wishlist"><i class="nv-i nv-ph-heart-light" role="img" aria-hidden="true"/><span>Wishlist</span><span t-attf-class="nv-bottom-nav__badge my_wish_quantity #{'d-none' if not nv_wish_qty else ''}" t-out="nv_wish_qty"/></a>
+                    <a href="/shop/cart" class="nv-bottom-nav__item" data-open="cart"><i class="nv-i nv-ph-handbag-light" role="img" aria-hidden="true"/><span>Bag</span><sup t-attf-class="my_cart_quantity nv-bottom-nav__badge #{'d-none' if not nv_cart_qty else ''}" t-out="nv_cart_qty"/></a>
+                    <a t-att-href="'/web/login' if nv_public else '/my'" t-attf-class="nv-bottom-nav__item #{'nv-is-active' if request.httprequest.path.startswith('/my') else ''}"><i class="nv-i nv-ph-user-light" role="img" aria-hidden="true"/><span>Account</span></a>
+                </nav>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Footer: editable columns in the reference design. -->
+    <template id="footer" name="Nutivo Footer" inherit_id="website.layout" priority="60">
+        <xpath expr="//footer[@id='bottom']" position="attributes">
+            <attribute name="t-attf-class" add="nv-s nv-site-footer" separator=" "/>
+        </xpath>
+        <xpath expr="//div[@id='footer']" position="replace">
+            <div id="footer" class="oe_structure oe_structure_solo" t-ignore="true" t-if="not no_footer">
+                <section class="nv-s s_nutivo_footer" data-name="Footer Columns">
+                    <div class="nv-container">
+                        <div class="nv-footer-grid">
+                            <div class="nv-footer-brand">
+                                <a href="/" class="nv-wordmark nv-wordmark--light" aria-label="Home">
+                                    <img class="nv-wordmark__logo" src="/theme_nutivo/static/src/img/logo_light.png" alt="Nutivo"/>
+                                </a>
+                                <p class="nv-footer-tagline">Nature's Goodness.<br/>Your Everyday Indulgence.</p>
+                                <ul class="nv-socials">
+                                    <li><a href="#" aria-label="Instagram"><i class="nv-i nv-ph-instagram-logo-light" role="img" aria-hidden="true"/></a></li>
+                                    <li><a href="#" aria-label="Facebook"><i class="nv-i nv-ph-facebook-logo-light" role="img" aria-hidden="true"/></a></li>
+                                    <li><a href="#" aria-label="Pinterest"><i class="nv-i nv-ph-pinterest-logo-light" role="img" aria-hidden="true"/></a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="nv-footer-title">Shop</h3>
+                                <ul class="nv-footer-links">
+                                    <li><a href="nutivo_category_nuts">Nuts</a></li>
+                                    <li><a href="nutivo_category_dried">Dates &amp; Dried Fruits</a></li>
+                                    <li><a href="nutivo_category_mixes">Trail Mixes</a></li>
+                                    <li><a href="nutivo_category_hampers">Gift Hampers</a></li>
+                                    <li><a href="/contactus">Bulk Orders</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="nv-footer-title">Gifting</h3>
+                                <ul class="nv-footer-links">
+                                    <li><a href="/#hampers">Corporate Gifting</a></li>
+                                    <li><a href="/#festive">Festive Collections</a></li>
+                                    <li><a href="/#subscribe">Snack Club</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="nv-footer-title">Help</h3>
+                                <ul class="nv-footer-links">
+                                    <li><a href="/contactus#faq">Shipping &amp; Delivery</a></li>
+                                    <li><a href="/contactus#faq">Returns &amp; Freshness Promise</a></li>
+                                    <li><a href="/my/orders">Track Order</a></li>
+                                    <li><a href="/contactus#faq">FAQs</a></li>
+                                    <li><a href="/contactus">Contact Us</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="nv-footer-title">Visit</h3>
+                                <address class="nv-footer-address">
+                                    Nutivo Atelier<br/>MG Road, Kochi 682016<br/>
+                                    <a href="tel:+914840000000">+91 484 000 0000</a><br/>
+                                    <a href="mailto:hello@nutivo.example">hello@nutivo.example</a>
+                                </address>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('o_footer_copyright')]/div[hasclass('container')]" position="replace">
+            <div class="nv-container">
+                <div class="nv-footer-bottom">
+                    <p>© <span t-out="datetime.date.today().year"/> <span t-field="res_company.name">Nutivo Foods</span>. All rights reserved.</p>
+                    <ul class="nv-pay-list" aria-label="Accepted payments">
+                        <li class="nv-pay"><span class="nv-sr-only">UPI</span><img class="nv-pay__logo" src="/theme_nutivo/static/src/img/pay-upi.svg" alt="" loading="lazy" height="22"/></li>
+                        <li class="nv-pay"><span class="nv-sr-only">Visa</span><img class="nv-pay__logo" src="/theme_nutivo/static/src/img/pay-visa.svg" alt="" loading="lazy" height="11"/></li>
+                        <li class="nv-pay"><span class="nv-sr-only">Mastercard</span><img class="nv-pay__logo" src="/theme_nutivo/static/src/img/pay-mastercard.svg" alt="" loading="lazy" height="19"/></li>
+                        <li class="nv-pay"><span class="nv-sr-only">RuPay</span>
+                            <svg class="nv-pay__logo nv-pay__rupay" viewBox="0 0 66 18" aria-hidden="true">
+                                <text x="0" y="14.5" font-family="Arial, Helvetica, sans-serif" font-size="15.5" font-weight="700" fill="#1F3A8A">RuPay</text>
+                                <polygon points="51,2 58,9 51,16" fill="#0F9D58"/>
+                                <polygon points="57,2 64,9 57,16" fill="#F37021"/>
+                            </svg>
+                        </li>
+                        <li class="nv-pay nv-pay--cod"><i class="nv-i nv-ph-money-light nv-pay__logo" role="img" aria-hidden="true"/><span>COD</span></li>
+                    </ul>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,295 @@
+// Header: the Arqora dress applies only while the default header template of
+// the website builder is active (it carries the .aq-nav marker). Any other
+// template keeps its own Odoo look, and picking the default one again brings
+// the Arqora design back. The menu sits on the left, the logo in the centre
+// and search, wishlist, cart and account on the right. Over a hero (pages with
+// the header overlay option) it is transparent with a light logo and turns to
+// a blurred band once the page is scrolled.
+
+#wrapwrap > header#top:has(.aq-nav) {
+    --aq-fg: var(--aq-ink);
+    font-family: var(--aq-sans);
+    color: var(--aq-fg);
+    background-color: color-mix(in srgb, var(--aq-bg) 86%, transparent) !important;
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+    border-bottom: 1px solid var(--aq-line);
+    box-shadow: none;
+    transition: background-color .5s var(--aq-ease), color .5s var(--aq-ease), border-color .5s var(--aq-ease), transform .7s var(--aq-ease-out);
+    z-index: 1030;
+
+    // Back at the top of the page the header is in its place: no slide.
+    &.o_header_disappears:not(.o_header_affixed) {
+        transition: background-color .5s var(--aq-ease), color .5s var(--aq-ease), border-color .5s var(--aq-ease);
+    }
+
+    .navbar {
+        background: transparent !important;
+        padding-top: 0;
+        padding-bottom: 0;
+        min-height: var(--aq-header-h);
+        color: var(--aq-fg);
+    }
+
+    // Logo: the dark wordmark on light bands, the light one over a hero.
+    .navbar-brand {
+        margin: 0;
+        padding: 0;
+        line-height: 0;
+        img {
+            height: 38px;
+            width: auto;
+            max-height: none;
+            transition: height .5s var(--aq-ease);
+        }
+        .aq-logo-light {
+            display: none;
+        }
+    }
+
+    &.o_header_is_scrolled .navbar-brand img {
+        height: 32px;
+    }
+
+    // The header uses the width of the page blocks.
+    .container,
+    .container-fluid {
+        max-width: var(--aq-max);
+        padding-left: var(--aq-gutter);
+        padding-right: var(--aq-gutter);
+    }
+
+    // Desktop navbar, as in the design: three links, the logo in the middle,
+    // three links, then the icons. The menu items are placed on one grid by
+    // their position (Home and Materials only appear in the mobile menu).
+    @include media-breakpoint-up(lg) {
+        #o_main_nav {
+            display: grid;
+            grid-template-columns: repeat(3, auto) minmax(260px, 1fr);
+            grid-auto-columns: auto;
+            align-items: center;
+            column-gap: clamp(18px, 2.4vw, 42px);
+            width: 100%;
+            min-height: var(--aq-header-h);
+            position: relative;
+
+            // The logo takes the middle column, so it can never run into the links.
+            > .navbar-brand {
+                grid-column: 4;
+                grid-row: 1;
+                justify-self: center;
+                margin: 0 !important;
+            }
+            > #top_menu {
+                display: contents;
+                > .nav-item { grid-row: 1; margin: 0 !important; }
+                // 1 Home | 2 Collections | 3 Services | 4 Projects | 5 Materials | 6 About | 7 Resources | 8 Contact
+                > .nav-item:nth-child(1),
+                > .nav-item:nth-child(5) { display: none !important; }
+                // Menus beyond the sixth link wait in the "+" dropdown. They are
+                // hidden from the first paint, before the script moves them, and
+                // the "+" has its place reserved, so nothing jumps on page load.
+                > .nav-item:nth-child(n+9):not(.o_extra_menu_items) { display: none !important; }
+                &:has(> .nav-item:nth-child(9):not(.o_extra_menu_items))::after {
+                    content: '+';
+                    grid-row: 1;
+                    order: 50;
+                    min-width: 20px;
+                    text-align: center;
+                    font-size: 14px;
+                    line-height: 1;
+                }
+                > .nav-item:nth-child(2) { grid-column: 1; }
+                > .nav-item:nth-child(3) { grid-column: 2; }
+                > .nav-item:nth-child(4) { grid-column: 3; }
+                // About, Resources, Contact and any menu added later flow on to
+                // the right of the logo, in order, before the icons.
+            }
+            // Search, cart and account sit at the far right edge.
+            > ul.navbar-nav:not(#top_menu) {
+                grid-row: 1;
+                order: 99;
+                gap: 2px !important;
+                margin-left: 6px;
+            }
+        }
+    }
+
+    // Between lg and xl the row is tight: smaller gaps and tracking keep the
+    // links off the logo.
+    @include media-breakpoint-between(lg, xl) {
+        #o_main_nav {
+            grid-template-columns: repeat(3, auto) minmax(200px, 1fr);
+            column-gap: 16px;
+            .navbar-brand img { height: 30px; }
+        }
+        #top_menu > .nav-item > .nav-link {
+            font-size: 11px;
+            letter-spacing: .1em;
+        }
+    }
+
+    // The "+" dropdown that holds the menus beyond the six links.
+    .o_extra_menu_items {
+        > .nav-link { padding: 8px 0; min-width: 20px; text-align: center; }
+        .dropdown-menu {
+            right: 0;
+            left: auto;
+            min-width: 180px;
+            margin-top: 12px;
+            padding: 8px 0;
+            border: 1px solid var(--aq-line);
+            border-radius: 0;
+            background: var(--aq-bg);
+            box-shadow: none;
+        }
+        .dropdown-item {
+            padding: 10px 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--aq-ink);
+            &:hover,
+            &:focus {
+                background: transparent;
+                color: var(--aq-accent);
+            }
+        }
+    }
+
+    // Menu links: small caps with a line that draws on hover.
+    #top_menu > .nav-item > .nav-link {
+        position: relative;
+        padding: 8px 0;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: .18em;
+        text-transform: uppercase;
+        color: var(--aq-fg);
+        background: transparent;
+        &::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 2px;
+            height: 1px;
+            background: currentColor;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform .5s var(--aq-ease-out);
+        }
+        &:hover::after,
+        &.active::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+    }
+
+    // Icon links of the right column.
+    .navbar-nav:not(#top_menu) > li > a,
+    .navbar-nav:not(#top_menu) > li > button,
+    .o_header_mobile_buttons_wrap a {
+        color: var(--aq-fg);
+        &:hover {
+            color: var(--aq-accent);
+        }
+    }
+
+    .o_wsale_my_cart sup,
+    .o_wsale_my_wish sup,
+    .my_cart_quantity,
+    .my_wish_quantity {
+        background: var(--aq-accent) !important;
+        color: var(--aq-white) !important;
+        border-radius: 50%;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        font-size: 10px;
+        line-height: 16px;
+        font-weight: 600;
+    }
+
+    .dropdown-menu {
+        background: var(--aq-bg);
+        color: var(--aq-ink);
+        border: 1px solid var(--aq-line-strong);
+        border-radius: 0;
+        box-shadow: 0 22px 44px -22px rgba(36, 37, 33, .32);
+        .dropdown-item {
+            font-size: 14px;
+            color: var(--aq-body-text);
+            &:hover, &:focus {
+                background: var(--aq-surface);
+                color: var(--aq-ink);
+            }
+        }
+    }
+
+    // Mega menu: the standard one, on the stone surface.
+    .o_mega_menu {
+        background: var(--aq-bg);
+        border-top: 1px solid var(--aq-line);
+    }
+}
+
+// Over a hero: transparent, light text and logo.
+#wrapwrap.o_header_overlay > header#top:has(.aq-nav):not(.o_header_is_scrolled):not(:has(.show)) {
+    --aq-fg: var(--aq-bg);
+    background-color: transparent !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom-color: rgba(243, 240, 233, .2);
+    .navbar-brand {
+        img { display: none; }
+        .aq-logo-light { display: block; }
+    }
+    .navbar-toggler {
+        color: var(--aq-bg);
+    }
+}
+
+// The header leaves room for itself only when it is part of the flow.
+#wrapwrap.o_header_overlay > header#top:has(.aq-nav):not(.o_header_affixed) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+// Mobile: stone band, dark off-canvas menu in the design.
+#wrapwrap > header#top:has(.aq-nav) .o_header_mobile {
+    min-height: var(--aq-header-h);
+    .navbar-toggler {
+        border: 0;
+        color: var(--aq-fg);
+        &:focus { box-shadow: none; }
+    }
+}
+
+header#top:has(.aq-nav) .o_header_mobile .offcanvas,
+header#top:has(.aq-nav) #top_menu_collapse_mobile {
+    background: var(--aq-dark);
+    color: var(--aq-bg);
+    .nav-link,
+    .dropdown-item {
+        font-family: var(--aq-serif);
+        font-size: clamp(2rem, 8vw, 3rem);
+        line-height: 1.12;
+        color: var(--aq-bg);
+        &:hover { color: var(--aq-accent); }
+    }
+    .btn-close { filter: invert(1); }
+}
+
+// Anchor links and sticky blocks leave room for the header.
+#wrapwrap [id] {
+    scroll-margin-top: calc(var(--aq-header-h) + 10px);
+}
+
+// The light wordmark is only shown by the Arqora header over a hero.
+header#top .aq-logo-light {
+    display: none;
+}

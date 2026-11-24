@@ -1,0 +1,932 @@
+// Nutivo look of the standard eCommerce shop. Only Odoo classes are styled, so
+// every option of the website builder keeps working: sidebar and filters,
+// category strip, search and sort, grid or list layout, product cards, ribbons,
+// wishlist and add to cart. Values follow the Nutivo reference shop page.
+
+.o_wsale_products_page {
+    #o_wsale_container {
+        padding-top: clamp(28px, 4vw, 52px);
+        padding-bottom: clamp(36px, 5vw, 72px);
+    }
+
+    // ---------------------------------------------------------------- Sidebar
+    #products_grid_before {
+        max-width: 290px;
+        min-width: 250px;
+        margin-right: clamp(16px, 2.4vw, 36px);
+
+        .o_wsale_products_grid_before_rail {
+            // Height follows the filters (Odoo fixes it to the viewport); a
+            // long list scrolls inside the card.
+            height: auto;
+            min-height: 280px;
+            max-height: calc(100vh - var(--o_ws_sidebar_top_gap, 80px));
+            padding: 14px 20px 8px !important;
+            margin: 0 !important;
+            background: var(--nv-surface);
+            border: 1px solid var(--nv-line);
+            border-radius: var(--nv-radius);
+            overflow-y: auto !important;
+            scrollbar-width: none;
+        }
+        .nv-filters-title {
+            margin: 4px 0 6px;
+            font-family: var(--nv-serif);
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--nv-heading);
+        }
+        // Group titles: small gold capitals, also when the groups are not
+        // collapsible (the builder option stays available).
+        .js_attributes .nav-item > .mb-3 > b,
+        #o_wsale_price_range_option > label b,
+        #o_wsale_price_range_option .accordion-button b {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--nv-gold-2);
+        }
+        #o_wsale_price_range_option {
+            padding: 12px 0 8px;
+            border-top: 1px solid var(--nv-line);
+
+            > label {
+                margin-bottom: 8px !important;
+            }
+        }
+        .js_attributes .nav-item > .mb-3 {
+            margin-bottom: 8px !important;
+            padding-top: 12px;
+        }
+        // Number of products next to an option.
+        .nv-filter-count {
+            min-width: 26px;
+            padding: 1px 7px;
+            border-radius: 10px;
+            background: var(--nv-surface-2);
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--nv-text-muted);
+            text-align: center;
+        }
+        // "Clear all": a text link, as in the design.
+        .border-top.border-bottom {
+            border-bottom: 0 !important;
+        }
+        .border-top.border-bottom > a.btn {
+            display: inline-flex !important;
+            padding: 0 !important;
+            border: 0;
+            background: none;
+            color: var(--nv-heading);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            font-size: 14px;
+
+            small {
+                margin: 0 !important;
+                font-size: inherit;
+            }
+            b {
+                font-weight: 500;
+            }
+            .oi {
+                display: none;
+            }
+        }
+        .accordion-item {
+            background: transparent;
+            border: 0;
+            border-bottom: 1px solid var(--nv-line);
+            &:last-child {
+                border-bottom: 0;
+            }
+        }
+        .accordion-button {
+            padding: 12px 0 8px !important;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--nv-gold-2);
+
+            b {
+                font-weight: 700;
+            }
+        }
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 0;
+            margin: 0 -8px 2px !important;
+            padding: 6px 8px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: background .2s;
+
+            &:hover {
+                background: var(--nv-surface-2);
+            }
+            .form-check-input {
+                flex: none;
+                float: none;
+                width: 18px;
+                height: 18px;
+                margin: 0;
+                border: 1.5px solid var(--nv-line-strong);
+                border-radius: 5px;
+                background-color: transparent;
+                box-shadow: none;
+
+                &[type="radio"] {
+                    border-radius: 50%;
+                }
+                &:checked {
+                    background-color: var(--nv-forest);
+                    border-color: var(--nv-forest);
+                }
+                &:focus-visible {
+                    outline: 2px solid var(--nv-gold);
+                    outline-offset: 2px;
+                }
+            }
+            .form-check-label {
+                flex: 1;
+                color: var(--nv-text);
+            }
+            .form-check-input:checked + .form-check-label {
+                color: var(--nv-heading);
+                font-weight: 600;
+            }
+        }
+        .form-range {
+            accent-color: var(--nv-forest);
+        }
+        .o_wsale_ribbon_filter,
+        .badge,
+        .btn-sm {
+            border-radius: var(--nv-pill);
+        }
+    }
+
+    // ----------------------------------------------- Title, categories, search
+    #o_wsale_products_header {
+        padding-top: 0 !important;
+    }
+    .o_wsale_shop_title h1,
+    .o_wsale_shop_title h1.h4-fs {
+        font-family: var(--nv-serif);
+        font-size: 26px;
+        font-weight: 600;
+        color: var(--nv-heading);
+    }
+
+    // Category rail: round photo above its label, gold ring and underline on
+    // the active one, as in the design.
+    .o_wsale_filmstrip_container.o_wsale_filmstrip_container {
+        margin-bottom: 28px;
+        border-bottom: 1px solid var(--nv-line);
+        // No forced compositing layer: with the clipped round photos it made the
+        // rail flicker on hover.
+        transform: none;
+        // Odoo paints the hovered tile with these: the design has no tile box.
+        --o-wsale-filmstrip-item-bg: transparent;
+        --o-wsale-filmstrip-item-bg-hover: transparent;
+        --o-wsale-filmstrip-item-bg-active: transparent;
+        --o-wsale-filmstrip-item-border-color-hover: transparent;
+        --o-wsale-filmstrip-item-border-color-active: transparent;
+    }
+    // Odoo resizes the wrapper margin and the scrollbar when the pointer enters
+    // the rail: near its bottom edge that moved the rail under the pointer and
+    // made it flicker. The size is the same hovered or not, with no scrollbar.
+    .o_wsale_filmstrip_container .o_wsale_filmstrip_wrapper,
+    .o_wsale_filmstrip_container:hover .o_wsale_filmstrip_wrapper {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+        scrollbar-width: none !important;
+
+        &::-webkit-scrollbar {
+            display: none !important;
+            height: 0 !important;
+        }
+    }
+    .o_wsale_filmstrip_container .o_wsale_filmstrip_wrapper .o_wsale_filmstrip {
+        justify-content: safe center;
+        gap: clamp(22px, 4vw, 60px);
+        padding: 8px 8px 26px;
+
+        > li {
+            flex: none;
+        }
+        .o_wsale_filmstrip_link {
+            color: var(--nv-text-muted);
+        }
+        .o_wsale_filmstrip_item {
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            min-height: 0;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: none;
+            box-shadow: none;
+            font-family: var(--nv-sans);
+            font-size: 13.5px;
+            font-weight: 600;
+            letter-spacing: .02em;
+            line-height: 1.2;
+            text-align: center;
+            white-space: nowrap;
+            transform: none;
+            transition: none;
+
+            > span {
+                position: relative;
+                padding-bottom: 8px;
+                transition: color .25s;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    left: 50%;
+                    bottom: 0;
+                    width: 22px;
+                    height: 2px;
+                    margin-left: -11px;
+                    border-radius: 1px;
+                    background: var(--nv-gold);
+                    transform: scaleX(0);
+                    transition: transform .35s var(--nv-ease);
+                }
+            }
+            &:hover,
+            &.active {
+                background: none;
+                box-shadow: none;
+                transform: none;
+                color: var(--nv-heading);
+            }
+            &.active > span::after {
+                transform: scaleX(1);
+            }
+        }
+        .o_wsale_filmstrip_image {
+            flex: none;
+            width: 64px;
+            height: 64px;
+            border-radius: 50% !important;
+            background-color: var(--nv-img-bg);
+            background-size: cover;
+            box-shadow: 0 0 0 3px var(--nv-bg), 0 0 0 4px var(--nv-line-strong);
+            transition: box-shadow .3s var(--nv-ease);
+        }
+        // A category without a picture keeps its round frame.
+        .o_wsale_filmstrip_placeholder {
+            display: block !important;
+        }
+        .o_wsale_filmstrip_item:hover .o_wsale_filmstrip_image {
+            box-shadow: 0 0 0 3px var(--nv-bg), 0 0 0 4px var(--nv-gold);
+        }
+        .active .o_wsale_filmstrip_image {
+            box-shadow: 0 0 0 3px var(--nv-bg), 0 0 0 5px var(--nv-gold);
+        }
+        .o_wsale_filmstrip_link:focus-visible {
+            outline: none;
+
+            .o_wsale_filmstrip_image {
+                box-shadow: 0 0 0 3px var(--nv-bg), 0 0 0 5px var(--nv-forest);
+            }
+        }
+    }
+    @media (max-width: 760px) {
+        .o_wsale_filmstrip_container .o_wsale_filmstrip_wrapper .o_wsale_filmstrip {
+            justify-content: flex-start;
+            gap: 20px;
+            padding-bottom: 18px;
+        }
+        .o_wsale_filmstrip_image {
+            width: 56px;
+            height: 56px;
+        }
+    }
+
+    // -------------------------------------------------------------- Toolbar
+    // Order of the header, as in the design: category rail, toolbar, then the
+    // title with its item count.
+    #o_wsale_products_header {
+        > * {
+            order: 5;
+        }
+        > ol.breadcrumb {
+            order: 0;
+        }
+        > .o_wsale_filmstrip_container {
+            order: 1;
+        }
+        > .products_header {
+            order: 2;
+            margin-bottom: 14px;
+        }
+        > .o_wsale_shop_title,
+        > .o_wsale_category_title {
+            order: 3;
+        }
+    }
+    .o_wsale_shop_title h1,
+    .o_wsale_category_title {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin: 0;
+    }
+    .nv-results-num {
+        font-family: var(--nv-sans);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--nv-text-muted);
+    }
+
+    .products_header {
+        align-items: center;
+    }
+    .o_wsale_products_header_inner {
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+    // The mobile search form only serves phones; on larger screens it would
+    // keep an empty slot next to the search bar.
+    @media (min-width: 576px) {
+        .o_wsale_products_header_inner > form.o_searchbar_form {
+            display: none;
+        }
+    }
+    // Search pill.
+    .o_wsale_products_header_search_form_container {
+        flex: 1 1 260px !important;
+        max-width: none !important;
+        margin-right: 0 !important;
+    }
+    .o_search_input_group {
+        height: 44px;
+        border: 1px solid var(--nv-line-strong);
+        border-radius: var(--nv-pill);
+        background: var(--nv-bg);
+        overflow: hidden;
+        transition: border-color .25s, box-shadow .25s;
+
+        &:focus-within {
+            border-color: var(--nv-gold);
+            box-shadow: 0 0 0 3px rgba(197, 164, 109, .18);
+        }
+        .form-control,
+        .btn {
+            height: 100%;
+            border: 0;
+            background: transparent !important;
+            box-shadow: none;
+        }
+        .form-control {
+            padding-left: 18px;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 0 16px;
+            color: var(--nv-gold-2);
+        }
+    }
+    // Sort pill, grid / list switch and the Filters button.
+    .o_wsale_products_header_dropdown_wrap {
+        align-items: center;
+        gap: 10px !important;
+        margin-left: auto;
+
+        .o_sortby_dropdown {
+            order: 2;
+        }
+        .nv-view-switch {
+            order: 3;
+        }
+        > .btn {
+            order: 1;
+        }
+    }
+    .o_sortby_dropdown > .dropdown-toggle,
+    .o_wsale_products_header_dropdown_wrap > .btn {
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 18px 0 22px !important;
+        border: 1px solid var(--nv-line-strong);
+        border-radius: var(--nv-pill);
+        background: var(--nv-surface);
+        color: var(--nv-heading);
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: border-color .25s, box-shadow .25s;
+
+        span,
+        small {
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1;
+        }
+        small {
+            font-weight: 500;
+            opacity: 1 !important;
+            color: var(--nv-text-muted);
+        }
+        &:hover {
+            border-color: var(--nv-heading);
+        }
+        &.show {
+            border-color: var(--nv-gold);
+            box-shadow: 0 0 0 3px rgba(197, 164, 109, .18);
+        }
+        &::after {
+            width: 7px;
+            height: 7px;
+            margin: -3px 0 0 6px;
+            border: 0;
+            border-right: 1.5px solid var(--nv-gold-2);
+            border-bottom: 1.5px solid var(--nv-gold-2);
+            transform: rotate(45deg);
+            transition: transform .35s var(--nv-ease);
+        }
+        &.show::after {
+            transform: rotate(-135deg);
+            margin-top: 3px;
+        }
+    }
+    .o_sortby_dropdown .dropdown-menu {
+        min-width: 210px;
+        padding: 6px;
+        margin-top: 8px !important;
+        border: 1px solid var(--nv-line);
+        border-radius: 14px;
+        background: var(--nv-surface);
+        box-shadow: 0 24px 50px -24px rgba(36, 59, 47, .45), 0 4px 12px -6px rgba(0, 0, 0, .12);
+
+        .dropdown-item {
+            padding: 10px 12px;
+            border-radius: 9px;
+            font-size: 13.5px;
+            color: var(--nv-text);
+
+            &:hover {
+                background: var(--nv-surface-2);
+                color: var(--nv-heading);
+            }
+            &.active,
+            &:active {
+                background: transparent;
+                color: var(--nv-forest);
+                font-weight: 700;
+            }
+        }
+    }
+    .nv-view-switch {
+        align-items: center;
+        padding: 3px;
+        border: 1px solid var(--nv-line-strong);
+        border-radius: var(--nv-pill);
+
+        .nv-view-switch__btn {
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 30px;
+            padding: 0;
+            border: 0;
+            border-radius: var(--nv-pill);
+            background: transparent;
+            color: var(--nv-text-muted);
+            transition: background .25s, color .25s;
+
+            .nv-i {
+                width: 18px;
+                height: 18px;
+                font-size: 18px;
+            }
+            &[aria-pressed="true"] {
+                background: var(--nv-forest);
+                color: var(--nv-ivory);
+            }
+        }
+    }
+
+    // ---------------------------------------------------------- Product cards
+    // Grid card of the design: image-led, no box, pill badge and heart on the
+    // image, quick view on hover, pack sizes, price and a slim Add button.
+    .oe_product_cart {
+        position: relative;
+
+        .oe_product_image {
+            background: var(--nv-img-bg);
+            transition: box-shadow .45s var(--nv-ease);
+        }
+        &:hover .oe_product_image {
+            box-shadow: 0 26px 44px -30px rgba(36, 59, 47, .6);
+        }
+
+        // Badge: the ribbon of the product as a pill (colors stay the ones
+        // of the ribbon, editable in the builder).
+        .o_wsale_ribbon {
+            top: 12px;
+            left: 12px;
+            right: auto;
+            padding: 5px 11px;
+            border-radius: var(--nv-pill);
+            transform: none;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: .12em;
+            line-height: 1.3;
+            text-transform: uppercase;
+        }
+        .o_wsale_ribbon.o_right {
+            left: auto;
+            right: 12px;
+            top: 104px;
+        }
+
+        // Heart: round, on the image, always visible.
+        .o_wsale_product_btn .o_add_wishlist {
+            top: 10px;
+            right: 10px;
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border-radius: 50%;
+            // `display` is the one of the builder option (wishlist on/off).
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 253, 249, .92);
+            color: var(--nv-forest);
+            opacity: 1;
+            transition: transform .3s var(--nv-ease), background .3s;
+            z-index: 2;
+
+            &:hover {
+                transform: scale(1.08);
+                background: rgba(255, 253, 249, .92);
+            }
+            .o_label {
+                display: none;
+            }
+            .nv-wish-icons {
+                display: grid;
+                place-items: center;
+            }
+            .nv-i {
+                width: 18px;
+                height: 18px;
+                font-size: 18px;
+                grid-area: 1 / 1;
+            }
+            .nv-ph-heart-fill {
+                display: none;
+            }
+            &.o_in_wishlist,
+            &[disabled] {
+                color: #B4533A;
+                opacity: 1;
+                .nv-ph-heart-light {
+                    display: none;
+                }
+                .nv-ph-heart-fill {
+                    display: block;
+                }
+            }
+        }
+
+        // Quick view: round button under the heart, same look, always visible.
+        // The label stays for screen readers (font-size 0 hides the text).
+        .nv-tile-quick {
+            position: absolute;
+            top: 56px;
+            right: 10px;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255, 253, 249, .92);
+            color: var(--nv-forest);
+            font-size: 0;
+            transition: transform .3s var(--nv-ease), background .3s;
+
+            .nv-i {
+                width: 18px;
+                height: 18px;
+                font-size: 18px;
+            }
+            &:hover {
+                transform: scale(1.08);
+                background: rgba(255, 253, 249, .92);
+            }
+        }
+
+        // Same height for every card: the price row is pinned to the bottom,
+        // with or without pack sizes.
+        .o_wsale_product_information {
+            display: flex;
+            flex-direction: column;
+            padding-top: 16px;
+        }
+        .o_wsale_product_sub {
+            flex: 0 0 auto;
+            margin-top: auto;
+        }
+        .nv-tile-origin {
+            margin: 0 0 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--nv-gold-2);
+        }
+        .o_wsale_products_item_title,
+        .o_wsale_products_item_title a {
+            font-family: var(--nv-serif);
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 1.2;
+            color: var(--nv-heading);
+        }
+        .o_wsale_products_item_title {
+            margin-bottom: 4px;
+        }
+        // The notes show when the description option of the builder is on.
+        .oe_subdescription_wrapper {
+            display: var(--o-wsale-card-info-description-display, none);
+        }
+        .oe_subdescription {
+            font-size: 13px;
+            color: var(--nv-text-muted) !important;
+        }
+        .o_wsale_product_rating_wrapper {
+            margin-bottom: 14px;
+            font-size: 12px;
+        }
+        .o_wsale_product_rating_wrapper .nv-rating {
+            margin-bottom: 0;
+        }
+
+        // Pack size: one compact segmented control.
+        .nv-sizes {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            align-self: flex-start;
+            padding: 3px;
+            margin-bottom: 16px;
+            border: 1px solid var(--nv-line-strong);
+            border-radius: var(--nv-pill);
+            max-width: 100%;
+        }
+        .nv-size {
+            height: 28px;
+            min-width: 0;
+            padding: 0 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 15ch;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            border: 0;
+            border-radius: var(--nv-pill);
+            background: none;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--nv-text-muted);
+            transition: background .2s, color .2s;
+
+            &:hover {
+                color: var(--nv-heading);
+            }
+            &[aria-checked="true"] {
+                background: var(--nv-forest);
+                color: var(--nv-ivory);
+            }
+            &.nv-size--more {
+                flex: none;
+                max-width: none;
+                color: var(--nv-gold-2);
+            }
+        }
+        // The native variant preview repeats the chips of the theme.
+        .o_wsale_product_info_attributes_wrapper:has(+ * .nv-sizes),
+        .nv-sizes ~ .o_wsale_product_info_attributes_wrapper {
+            display: none;
+        }
+        // Same for the variant thumbnails over the image.
+        &:has(.nv-sizes) .o_product_variant_preview {
+            display: none;
+        }
+
+        // Price and Add on one row.
+        .o_wsale_product_sub {
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: center !important;
+            justify-content: space-between;
+        }
+        .o_wsale_product_sub > .o_wsale_product_btn {
+            flex: 0 0 auto;
+            width: auto;
+            margin: 0;
+        }
+        .o_wsale_product_sub > .product_price {
+            flex: 1 1 auto;
+            width: auto;
+            min-width: 0;
+        }
+        .product_price {
+            font-family: var(--nv-serif);
+            font-size: 25px;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--nv-heading);
+
+            .fw-bold {
+                font-weight: 700 !important;
+            }
+        }
+        // Slim outline Add, fills on hover.
+        .nv-add-btn {
+            // Shown when the add to cart option of the builder is on.
+            display: var(--o-wsale-card-btn-submit-display, none);
+            height: 32px;
+            padding: 0 14px;
+            gap: 5px;
+            border: 0;
+            font-size: 11px;
+            background: transparent;
+            color: var(--nv-forest);
+            box-shadow: inset 0 0 0 1px var(--nv-forest);
+            transition: background .25s, color .25s, box-shadow .25s;
+
+            .nv-i {
+                width: 13px;
+                height: 13px;
+                font-size: 13px;
+            }
+            &:hover {
+                background: var(--nv-forest);
+                color: var(--nv-ivory);
+            }
+            &.nv-is-added {
+                background: var(--nv-sage);
+                color: var(--nv-forest-2);
+                box-shadow: inset 0 0 0 1px var(--nv-sage);
+            }
+        }
+        // Without sizes (a product that cannot be added from the tile) the
+        // standard button keeps its place, in the same slim outline.
+        .o_wsale_product_btn_primary.btn {
+            height: 32px;
+            padding: 0 14px;
+            border-radius: var(--nv-pill);
+            background: transparent;
+            border: 0;
+            box-shadow: inset 0 0 0 1px var(--nv-forest);
+            color: var(--nv-forest);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            transition: background .25s, color .25s;
+
+            &:hover {
+                background: var(--nv-forest);
+                color: var(--nv-ivory);
+            }
+        }
+    }
+
+    // Phone: pack sizes and Add span the card, as in the design.
+    @media (max-width: 760px) {
+        .oe_product_cart {
+            .o_wsale_products_item_title,
+            .o_wsale_products_item_title a {
+                font-size: 18px;
+            }
+            .nv-sizes {
+                display: flex;
+                width: 100%;
+            }
+            .nv-size {
+                flex: 1;
+                padding: 0 4px;
+                height: 30px;
+                font-size: 11px;
+            }
+            .product_price {
+                font-size: 21px;
+            }
+            .o_wsale_product_sub {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px;
+            }
+            .o_wsale_product_sub > .o_wsale_product_btn {
+                width: 100%;
+            }
+            .nv-add-btn,
+            .o_wsale_product_btn_primary.btn {
+                width: 100%;
+                height: 36px;
+                justify-content: center;
+            }
+        }
+        .o_wsale_products_opt_layout_list .oe_product_cart {
+            .oe_product_image {
+                flex-basis: 120px;
+            }
+            .o_wsale_product_information {
+                padding: 8px 8px 8px 12px;
+            }
+            .oe_subdescription_wrapper {
+                display: none;
+            }
+        }
+    }
+
+    // List layout of the design: a boxed row, image on the left.
+    .o_wsale_products_opt_layout_list .oe_product_cart {
+        padding: 10px;
+        background: var(--nv-surface);
+        border: 1px solid var(--nv-line);
+        border-radius: var(--nv-radius);
+
+        .oe_product_image {
+            flex: 0 0 260px;
+            align-self: flex-start;
+            aspect-ratio: 1;
+        }
+        .o_wsale_product_information {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 12px 18px 12px 16px;
+        }
+        .o_wsale_products_item_title,
+        .o_wsale_products_item_title a {
+            font-size: 28px;
+        }
+        .oe_subdescription_wrapper {
+            max-width: 520px;
+            margin-bottom: 8px;
+        }
+        .o_wsale_product_sub {
+            margin-top: auto;
+            align-self: stretch;
+            width: 100%;
+            justify-content: flex-start !important;
+            gap: 24px !important;
+
+            > .product_price {
+                flex: 0 0 auto;
+                margin-inline: 0;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ Pager
+    #o_wsale_pager .pagination {
+        gap: 6px;
+
+        .page-link {
+            min-width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--nv-line-strong);
+            border-radius: var(--nv-pill) !important;
+            background: transparent;
+            color: var(--nv-heading);
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .page-item.active .page-link,
+        .page-link:hover {
+            background: var(--nv-heading);
+            border-color: var(--nv-heading);
+            color: var(--nv-bg);
+        }
+    }
+}

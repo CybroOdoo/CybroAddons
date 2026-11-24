@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Shop page: the standard eCommerce shop, products, filters, categories and
+    layout options included, all handled by the website builder. The theme only
+    adds its page hero, perks strip and call to action, each group in its own
+    editable zone (an `oe_structure` of this view, so the builder can drop
+    blocks around them).
+-->
+<odoo>
+    <template id="shop_page" name="Nutivo Shop Page" inherit_id="website_sale.products" priority="90">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="before">
+            <div class="oe_structure" id="oe_structure_nutivo_shop_top">
+            <section class="nv-s s_nutivo_page_hero nv-hero nv-hero--page nv-hero--compact" data-name="Shop Hero" data-snippet="s_nutivo_page_hero">
+                <div class="nv-hero__media" aria-hidden="true">
+                    <img src="/theme_nutivo/static/src/img/content/trail-mix.jpg" alt=""/>
+                </div>
+                <div class="nv-hero__frame" aria-hidden="true"/>
+                <div class="nv-container nv-hero__inner">
+                    <div class="nv-hero__copy">
+                        <nav class="nv-breadcrumb nv-breadcrumb--light nv-reveal" aria-label="Breadcrumb">
+                            <ol><li><a href="/">Home</a></li><li aria-current="page">Shop</li></ol>
+                        </nav>
+                        <p class="nv-eyebrow nv-eyebrow--gold nv-reveal">The Nutivo Collection</p>
+                        <h1 class="nv-hero__title nv-reveal">Shop the <em>Collection</em></h1>
+                        <p class="nv-hero__lede nv-reveal">Single-origin nuts, sun-dried fruits and slow-roasted blends, hand-sorted and packed within days of harvest.</p>
+                    </div>
+                </div>
+            </section>
+            <section class="nv-s s_nutivo_perks nv-perks" aria-label="Why shop with Nutivo" data-name="Perks Strip">
+                <div class="nv-container nv-perks__row">
+                    <p><i class="nv-i nv-ph-truck-light" role="img" aria-hidden="true"/> Free shipping over ₹999</p>
+                    <p><i class="nv-i nv-ph-leaf-light" role="img" aria-hidden="true"/> Packed within 72 hrs of roasting</p>
+                    <p><i class="nv-i nv-ph-shield-check-light" role="img" aria-hidden="true"/> Freshness promise or full refund</p>
+                    <p><i class="nv-i nv-ph-gift-light" role="img" aria-hidden="true"/> Complimentary gift notes</p>
+                </div>
+            </section>
+            </div>
+        </xpath>
+        <xpath expr="//div[@id='oe_structure_website_sale_products_2']" position="after">
+            <div class="oe_structure" id="oe_structure_nutivo_shop_bottom">
+            <section class="nv-s s_nutivo_cta nv-container" data-name="Call to Action" data-snippet="s_nutivo_cta">
+                <div class="nv-about-cta nv-reveal">
+                    <div class="nv-about-cta__copy">
+                        <p class="nv-eyebrow nv-eyebrow--gold">Gifting, Simplified</p>
+                        <h2 class="nv-about-cta__title">Can't decide? Gift a hamper</h2>
+                        <p>Hand-packed keepsake boxes of our bestsellers, finished with linen ribbon and a handwritten note.</p>
+                    </div>
+                    <div class="nv-about-cta__actions">
+                        <a class="nv-btn nv-btn--gold" href="nutivo_category_hampers">Shop Gift Hampers <i class="nv-i nv-ph-arrow-right-light" role="img" aria-hidden="true"/></a>
+                        <a href="/contactus" class="nv-btn nv-btn--ghost-light">Corporate Enquiries</a>
+                    </div>
+                </div>
+            </section>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Category of the product above its name on every product tile. -->
+    <template id="product_title_and_details" name="Nutivo Tile Origin" inherit_id="website_sale.product_title_and_details">
+        <xpath expr="//h6[hasclass('o_wsale_products_item_title')]" position="before">
+            <p t-if="product.public_categ_ids" class="nv-tile-origin" t-out="product.public_categ_ids[:1].name"/>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wsale_product_rating_wrapper')]/t[@t-call='portal_rating.rating_widget_stars_static']" position="replace">
+            <t t-if="nv_card" t-call="theme_nutivo.card_rating"/>
+            <t t-else="" t-call="portal_rating.rating_widget_stars_static"
+               rating_avg="product.sudo().rating_avg" rating_count="product.rating_count"/>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wsale_product_information_text')]" position="inside">
+            <t t-if="nv_card" t-call="theme_nutivo.card_sizes"/>
+        </xpath>
+    </template>
+
+    <!--
+        Product tile of the design: the standard tile (and so its builder
+        options: layout, rating, add to cart, wishlist, description), with the
+        pack sizes of the product, its rating and price figures, and the Add
+        button of the theme cards. The theme script takes care of the sizes,
+        the Add button and the quick view, as on the other cards.
+    -->
+    <template id="products_item" name="Nutivo Tile" inherit_id="website_sale.products_item">
+        <xpath expr="//article" position="before">
+            <t t-set="values" t-value="product._nutivo_card_values()"/>
+            <t t-set="nv_card" t-value="bool(values['sizes'])"/>
+        </xpath>
+        <xpath expr="//article" position="attributes">
+            <attribute name="t-att-data-product">product.id if nv_card else None</attribute>
+            <attribute name="t-att-data-product-id">values['sizes'][0]['product_id'] if nv_card else None</attribute>
+        </xpath>
+        <xpath expr='//span[@t-out="template_price_vals[&apos;price_reduce&apos;]"]' position="before">
+            <span t-if="nv_card" class="mb-0 fw-bold" aria-label="Sale price" data-price=""
+                  t-out="values['sizes'][0]['price_str']"/>
+        </xpath>
+        <xpath expr='//span[@t-out="template_price_vals[&apos;price_reduce&apos;]"]' position="attributes">
+            <attribute name="t-if">not nv_card</attribute>
+        </xpath>
+    </template>
+
+    <template id="product_image_and_ribbon" name="Nutivo Tile Quick View" inherit_id="website_sale.product_image_and_ribbon">
+        <xpath expr="//div[hasclass('oe_product_image')]" position="inside">
+            <button t-if="nv_card" type="button" class="nv-tile-quick" t-att-data-quick="product.id"
+                    t-att-aria-label="'Quick view %s' % product.name">
+                <i class="nv-i nv-ph-eye-light" role="img" aria-hidden="true"/> Quick view
+            </button>
+        </xpath>
+    </template>
+
+    <template id="shop_product_buttons" name="Nutivo Tile Add Button" inherit_id="website_sale.shop_product_buttons">
+        <xpath expr="//button[@name='add_to_cart']" position="attributes">
+            <attribute name="t-if">not nv_card</attribute>
+        </xpath>
+        <xpath expr="//button[@name='add_to_cart']" position="after">
+            <t t-if="nv_card" t-call="theme_nutivo.add_button"/>
+        </xpath>
+    </template>
+
+    <!-- Outline heart of the design, filled once the product is in the wishlist. -->
+    <template id="wishlist_button" name="Nutivo Tile Wishlist Heart" inherit_id="website_sale.wishlist_button">
+        <xpath expr="//span[@data-icon='favorite']" position="replace">
+            <span class="nv-wish-icons" role="presentation">
+                <i class="nv-i nv-ph-heart-light" role="img" aria-hidden="true"/>
+                <i class="nv-i nv-ph-heart-fill" role="img" aria-hidden="true"/>
+            </span>
+        </xpath>
+    </template>
+
+    <!-- Sidebar of the design: "Filters" title, counts next to the options, "Clear all". -->
+    <template id="products_sidebar" name="Nutivo Shop Sidebar" inherit_id="website_sale.products">
+        <xpath expr="//div[hasclass('o_wsale_products_grid_before_rail')]/t[@t-set='is_sidebar_collapsible']" position="before">
+            <h3 class="nv-filters-title">Filters</h3>
+        </xpath>
+        <xpath expr="//div[@t-if='has_active_filters']//small/b" position="replace">
+            <b>Clear all</b>
+        </xpath>
+    </template>
+
+    <template id="filter_radio_and_multi_attributes" name="Nutivo Filter Counts" inherit_id="website_sale.filter_radio_and_multi_attributes">
+        <xpath expr="(//label[@t-field='v.name'])[1]" position="after">
+            <span class="nv-filter-count" t-out="website._nutivo_attribute_value_count(v)"/>
+        </xpath>
+        <xpath expr="(//label[@t-field='v.name'])[2]" position="after">
+            <span class="nv-filter-count" t-out="website._nutivo_attribute_value_count(v)"/>
+        </xpath>
+    </template>
+
+    <!-- "All Products" first tile of the category rail, as in the design. -->
+    <template id="filmstrip_categories" name="Nutivo Category Rail" inherit_id="website_sale.filmstrip_categories">
+        <xpath expr="//li[@t-foreach='entries']" position="before">
+            <li role="presentation">
+                <a class="o_wsale_filmstrip_link d-block w-100 h-100 text-decoration-none" draggable="false"
+                   role="menuitem" t-att-href="keep('/shop', **reset_filters)" aria-label="All Products">
+                    <div t-att-class="'o_wsale_filmstrip_item position-relative d-flex w-100 h-100' + ('' if category else ' active')">
+                        <div class="o_wsale_filmstrip_image oe_img_bg o_bg_img_center rounded" role="img" aria-label="All Products"
+                             style="background-image: url('/theme_nutivo/static/src/img/content/hero.jpg')"/>
+                        <span>All Products</span>
+                    </div>
+                </a>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- Item count next to the title, and the grid / list switch next to the sort menu, as in the design. -->
+    <template id="products_toolbar" name="Nutivo Shop Toolbar" inherit_id="website_sale.products">
+        <xpath expr="//div[hasclass('o_wsale_shop_title')]/h1" position="inside">
+            <span class="nv-results-num"><t t-out="search_count"/> <t t-out="'item' if search_count == 1 else 'items'"/></span>
+        </xpath>
+        <xpath expr="//h1[contains(@t-attf-class, 'o_wsale_category_title')]" position="inside">
+            <span t-if="not search" class="nv-results-num"><t t-out="search_count"/> <t t-out="'item' if search_count == 1 else 'items'"/></span>
+        </xpath>
+        <xpath expr="//div[contains(@t-attf-class, 'o_wsale_products_header_dropdown_wrap')]" position="inside">
+            <div class="nv-view-switch d-none d-md-inline-flex o_not_editable" role="group" aria-label="Layout">
+                <button type="button" class="nv-view-switch__btn" data-nv-view="catalog" aria-pressed="true" aria-label="Grid view">
+                    <i class="nv-i nv-ph-squares-four-light" role="img" aria-hidden="true"/>
+                </button>
+                <button type="button" class="nv-view-switch__btn" data-nv-view="list" aria-pressed="false" aria-label="List view">
+                    <i class="nv-i nv-ph-rows-light" role="img" aria-hidden="true"/>
+                </button>
+            </div>
+        </xpath>
+    </template>
+</odoo>

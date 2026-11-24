@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Order confirmation: the standard eCommerce confirmation page (payment
+    status, downloads, editable zones) dressed as the Nutivo design: animated
+    check, thank-you headline, delivery / address / payment cards and the
+    items of the order.
+-->
+<odoo>
+    <template id="confirmation" name="Nutivo Order Confirmation" inherit_id="website_sale.confirmation">
+        <xpath expr="//h3[text()='Thank you for your order.']" position="replace">
+            <span/>
+        </xpath>
+        <xpath expr="//div[@id='order_name']" position="replace">
+            <div id="order_name" class="nv-s nv-ck-done__hero">
+                <span class="nv-ck-done__check" aria-hidden="true"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg></span>
+                <p class="nv-eyebrow">Order <span t-field="order.name"/></p>
+                <h2>Thank you<t t-if="order.partner_id.name">, <t t-out="order.partner_id.name.split()[0]"/></t>! Your order is <t t-if="order._is_paid()">paid and </t>confirmed.</h2>
+                <p>We've sent the details to <strong t-out="order.partner_id.email or 'your inbox'"/>. Your treats will be roasted, packed and on their way soon.</p>
+            </div>
+        </xpath>
+        <xpath expr="//t[@t-call='website_sale.address_on_checkout']/.." position="replace">
+            <div class="nv-s nv-ck-done">
+                <div class="nv-ck-done__grid">
+                    <div class="nv-ck-done__card">
+                        <span class="nv-ck-done__label"><i class="nv-i nv-ph-truck-light" role="img" aria-hidden="true"/> Delivery</span>
+                        <strong t-out="order.carrier_id.name or 'Standard delivery'"/>
+                        <span t-if="order.commitment_date" t-out="order.commitment_date" t-options="{'widget': 'date'}"/>
+                    </div>
+                    <div class="nv-ck-done__card">
+                        <span class="nv-ck-done__label"><i class="nv-i nv-ph-user-light" role="img" aria-hidden="true"/> Delivering to</span>
+                        <strong t-out="order.partner_shipping_id.name"/>
+                        <span t-out="', '.join(x for x in [order.partner_shipping_id.street, order.partner_shipping_id.street2, order.partner_shipping_id.city, order.partner_shipping_id.zip] if x)"/>
+                    </div>
+                    <div class="nv-ck-done__card">
+                        <span class="nv-ck-done__label"><i class="nv-i nv-ph-shield-check-light" role="img" aria-hidden="true"/> Payment</span>
+                        <strong t-out="order.amount_total" t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                        <span t-out="tx_sudo.payment_method_id.name or tx_sudo.provider_id.name or 'Pay on delivery'"/>
+                    </div>
+                </div>
+                <div class="nv-ck-done__items">
+                    <h3>Items in this order</h3>
+                    <ul>
+                        <li t-foreach="order.order_line.filtered(lambda l: l.product_id and not l.is_delivery and not l.display_type)" t-as="line">
+                            <img t-att-src="'/web/image/product.product/%s/image_128' % line.product_id.id" alt="" loading="lazy"/>
+                            <span>
+                                <strong t-out="line.product_id.product_tmpl_id.name"/>
+                                <small><t t-out="line.product_id.product_template_attribute_value_ids.mapped('name') and ', '.join(line.product_id.product_template_attribute_value_ids.mapped('name')) or ''"/> × <t t-out="int(line.product_uom_qty)"/></small>
+                            </span>
+                            <span t-out="line.price_total" t-options="{'widget': 'monetary', 'display_currency': order.currency_id}"/>
+                        </li>
+                    </ul>
+                </div>
+                <div class="nv-ck-actions nv-ck-actions--center">
+                    <a href="/shop" class="nv-btn nv-btn--primary">Continue shopping <i class="nv-i nv-ph-arrow-right-light" role="img" aria-hidden="true"/></a>
+                    <a t-att-href="order.get_portal_url()" class="nv-btn nv-btn--outline">Track your order</a>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//t[@t-call='website_sale.cart_summary_content']/.." position="replace"/>
+    </template>
+</odoo>

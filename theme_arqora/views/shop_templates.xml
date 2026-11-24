@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Shop page: the standard eCommerce shop, products, filters, categories and
+    layout options included, all handled by the website builder. The theme only
+    adds its page hero and a call to action, each in its own editable zone (an
+    `oe_structure` of this view, so the builder can drop blocks around them).
+-->
+<odoo>
+    <template id="shop_page" name="Arqora Shop Page" inherit_id="website_sale.products" priority="90">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="before">
+            <div class="oe_structure" id="oe_structure_arqora_shop_top">
+                <header class="aq-s aq-page-hero aq-page-hero--compact" data-name="Shop Hero">
+                    <div class="aq-container aq-page-hero__grid">
+                        <div class="aq-page-hero__title">
+                            <nav class="aq-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>Collections</span></nav>
+                            <span class="aq-eyebrow aq-eyebrow--line">The Catalogue</span>
+                            <h1 class="aq-h1" style="margin-top:28px">The <em>complete</em> collection</h1>
+                        </div>
+                        <p class="aq-page-hero__aside">Sculptural fixtures and architectural systems, designed in Milan and crafted in brass, bronze, glass and stone.</p>
+                    </div>
+                </header>
+            </div>
+        </xpath>
+        <xpath expr="//div[@id='oe_structure_website_sale_products_2']" position="after">
+            <div class="oe_structure" id="oe_structure_arqora_shop_bottom">
+                <section class="aq-s aq-sec aq-sec--surface" data-name="Call to Action">
+                    <div class="aq-container aq-split">
+                        <div class="aq-split__text aq-split__text--wide">
+                            <span class="aq-eyebrow aq-eyebrow--line">Designer support</span>
+                            <h2 class="aq-h2">Need a hand<br/>with <em>specifying?</em></h2>
+                        </div>
+                        <div class="aq-split__text aq-split__text--side">
+                            <p class="aq-body-lg">Lighting calculations, finish samples and bespoke fixtures: our project team supports architects and interior designers from concept to commissioning.</p>
+                            <a class="aq-btn" href="/contactus">Talk to the Studio</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+    </template>
+
+    <!--
+        Request a Quote. Products marked "Request a Quote" are held back from
+        the cart by the standard "Hide Add To Cart" rule of the website, which
+        shows a Contact Us button. The button becomes a quotation request that
+        opens the enquiry form with the product filled in.
+    -->
+    <template id="cta_wrapper_quote" inherit_id="website_sale.cta_wrapper" name="Arqora Request a Quote Button">
+        <xpath expr="//div[@id='contact_us_wrapper']/a" position="replace">
+            <t t-set="aq_documents" t-value="product._get_product_page_documents(variant=product_variant)"/>
+            <a
+                id="quote-btn"
+                t-att-href="website._arqora_quote_url(product)"
+                class="btn btn-primary flex-grow-1"
+            >
+                <i class="oi me-2" data-icon="mail"/>
+                Request a Quotation
+            </a>
+            <!-- The first document of the product, as its sheet to download. -->
+            <a
+                t-if="aq_documents"
+                class="btn btn-outline-primary flex-grow-1 text-truncate"
+                t-att-href="'/shop/%s/document/%s' % (slug(product), aq_documents[0].id)"
+                t-att-title="aq_documents[0].ir_attachment_id.name"
+            >
+                <i class="oi me-2" data-icon="download"/>
+                Download
+            </a>
+        </xpath>
+    </template>
+
+    <!--
+        Product page of a quote-only product, as in the Arqora design: the
+        family above the name, "From" before the price and the documents of
+        the product (Sales > Products > Documents) listed in an accordion. Every
+        other product keeps the standard Odoo product page.
+    -->
+    <template id="product_quote_page" inherit_id="website_sale.product" name="Arqora Quote Product Page">
+        <xpath expr="//section[@id='product_detail']" position="attributes">
+            <attribute name="t-attf-class" add="#{'aq-pdp-quote' if product.quote_only else ''}" separator=" "/>
+        </xpath>
+        <xpath expr="//article/t[@t-call='website_sale.product_title']" position="before">
+            <div t-if="product.quote_only and product.public_categ_ids" class="aq-pdp__eyebrow">
+                <t t-out="', '.join(product.public_categ_ids.mapped('name'))"/>
+            </div>
+        </xpath>
+        <xpath expr="//div[@id='o_wsale_product_cta_section']" position="after">
+            <t t-set="aq_documents" t-value="product._get_product_page_documents(variant=product_variant)"/>
+            <div t-if="product.quote_only and aq_documents" class="aq-accordion aq-pdp__accordion">
+                <div class="aq-accordion__item aq-is-open">
+                    <button type="button" class="aq-accordion__btn" aria-expanded="true">Downloads<i/></button>
+                    <div class="aq-accordion__panel"><div><div class="aq-accordion__content">
+                        <div class="aq-downloads">
+                            <a
+                                t-foreach="aq_documents"
+                                t-as="document_sudo"
+                                class="aq-download"
+                                t-att-href="'/shop/%s/document/%s' % (slug(product), document_sudo.id)"
+                                t-att-target="document_sudo.ir_attachment_id.type == 'url' and '_blank' or '_self'"
+                            >
+                                <span class="aq-download__icon" t-out="document_sudo.ir_attachment_id.type == 'url' and 'LINK' or ((document_sudo.ir_attachment_id.name or '').rsplit('.', 1)[-1][:4].upper() if '.' in (document_sudo.ir_attachment_id.name or '') else 'FILE')"/>
+                                <span>
+                                    <span class="aq-download__title" t-out="document_sudo.ir_attachment_id.name"/>
+                                    <br/>
+                                    <span class="aq-download__meta" t-out="document_sudo.ir_attachment_id.mimetype"/>
+                                </span>
+                            </a>
+                        </div>
+                    </div></div></div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- The documents of a quote-only product are listed in its accordion. -->
+    <template id="documents_quote" inherit_id="website_sale.documents" name="Arqora Documents of Quote Products">
+        <xpath expr="//div[@id='product_documents']" position="attributes">
+            <attribute name="t-if">product_documents and not product.quote_only</attribute>
+        </xpath>
+    </template>
+
+    <template id="shop_product_buttons_quote" inherit_id="website_sale.shop_product_buttons" name="Arqora Request a Quote on Cards">
+        <xpath expr="//div[hasclass('o_wsale_product_action_row')]/t[@t-elif]/a" position="replace">
+            <a
+                title="Request a quote"
+                aria-label="Request a quote"
+                t-att-href="website._arqora_quote_url(product)"
+                class="o_wsale_product_btn_primary btn btn-outline-primary"
+            >
+                <i class="oi oi-fw oi-filled o_not-animable" data-icon="mail" role="presentation"/>
+                <span class="o_label small ms-1">Request a Quote</span>
+            </a>
+        </xpath>
+    </template>
+
+    <template id="wishlist_button_quote" inherit_id="website_sale.wishlist_button" name="Arqora No Wishlist for Quotes">
+        <xpath expr="//button[@t-att-disabled='in_wish']" position="attributes">
+            <attribute name="t-if">not website._arqora_is_quote_only(product)</attribute>
+        </xpath>
+    </template>
+
+    <template id="product_add_to_wishlist_quote" inherit_id="website_sale.product_add_to_wishlist" name="Arqora No Wishlist on Quote Product Page">
+        <xpath expr="//button[@t-att-disabled='product_variant._is_in_wishlist()']" position="attributes">
+            <attribute name="t-if">product_variant and not website._arqora_is_quote_only(product)</attribute>
+        </xpath>
+    </template>
+</odoo>

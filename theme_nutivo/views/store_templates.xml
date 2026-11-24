@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Dynamic parts of the Nutivo storefront, rendered by the theme controller:
+    product and hamper cards, category chips, bag and wishlist drawers,
+    search results and the product quick view.
+-->
+<odoo>
+    <!-- Heart button of a card. -->
+    <template id="wish_button" name="Nutivo Wishlist Button">
+        <t t-set="wish_on" t-value="product in wished"/>
+        <button type="button" class="nv-wish-btn"
+                t-att-data-wish="values['sizes'][0]['product_id']"
+                t-att-aria-pressed="'true' if wish_on else 'false'"
+                t-att-aria-label="('Remove %s from wishlist' if wish_on else 'Add %s to wishlist') % product.name">
+            <i t-attf-class="nv-i #{'nv-ph-heart-fill' if wish_on else 'nv-ph-heart-light'}" role="img" aria-hidden="true"/>
+        </button>
+    </template>
+
+    <!-- Pack sizes of a card: the variants of the product. The first ones show
+         as chips, the others sit behind a "+N" chip that opens a small popover.
+         Products that need their options chosen on their own page (the button
+         says Options) show no chips. -->
+    <template id="card_sizes" name="Nutivo Card Sizes">
+        <!-- Three short labels fit a card, two long ones do. -->
+        <t t-set="nv_max" t-value="len(values['sizes']) if nv_all else (3 if max(len(x['label']) for x in values['sizes']) &lt;= 6 else 2)"/>
+        <div t-if="len(values['sizes']) &gt; 1 and (nv_all or not values['configurable'])" class="nv-sizes" role="radiogroup"
+             t-att-aria-label="'Pack size for %s' % product.name">
+            <t t-foreach="values['sizes']" t-as="size">
+                <t t-if="size_index &lt; nv_max" t-call="theme_nutivo.card_size_button"/>
+            </t>
+            <span t-if="len(values['sizes']) &gt; nv_max" class="nv-size-more">
+                <button type="button" class="nv-size nv-size--more" aria-haspopup="true"
+                        t-att-aria-label="'%s more options' % (len(values['sizes']) - nv_max)"
+                        t-out="'+%s' % (len(values['sizes']) - nv_max)"/>
+                <span class="nv-size-pop">
+                    <t t-foreach="values['sizes']" t-as="size">
+                        <t t-if="size_index &gt;= nv_max" t-call="theme_nutivo.card_size_button"/>
+                    </t>
+                </span>
+            </span>
+        </div>
+    </template>
+
+    <template id="card_size_button" name="Nutivo Card Size Button">
+        <button type="button" class="nv-size" role="radio"
+                t-att-aria-checked="'true' if size_first else 'false'"
+                t-att-tabindex="0 if size_first else -1"
+                t-att-data-size="str(size_index)"
+                t-att-data-product-id="size['product_id']"
+                t-att-data-size-price="size['price_str']"
+                t-att-data-custom="' '.join(str(i) for i in size['custom_ptav_ids']) or None"
+                t-att-disabled="None if size['available'] else 'disabled'"
+                t-att-title="None if size['available'] else 'Sold out'"
+                t-out="size['label']"/>
+    </template>
+
+    <template id="card_rating" name="Nutivo Card Rating">
+        <div t-if="values['reviews']" class="nv-rating">
+            <span class="nv-stars-meter" t-attf-style="--nv-r: #{values['rating_pct']}%" aria-hidden="true">★★★★★</span>
+            <span><strong t-out="'%.1f' % values['rating']"/> (<t t-out="values['reviews']"/>)</span>
+            <span class="nv-sr-only">Rated <t t-out="values['rating']"/> out of 5 from <t t-out="values['reviews']"/> reviews</span>
+        </div>
+    </template>
+
+    <!-- Add to bag button of a card; products to configure open their page. -->
+    <template id="add_button" name="Nutivo Add Button">
+        <t t-set="first_size" t-value="values['sizes'][0]"/>
+        <a t-if="values['configurable']" class="nv-add-btn" t-att-href="product.website_url"
+           t-att-aria-label="'Choose options for %s' % product.name">
+            <i class="nv-i nv-ph-sliders-horizontal-light" role="img" aria-hidden="true"/> Options
+        </a>
+        <button t-elif="not first_size['available']" type="button" class="nv-add-btn" disabled="disabled"
+                t-att-aria-label="'%s is unavailable' % product.name">Sold out</button>
+        <button t-else="" type="button" class="nv-add-btn" data-add=""
+                t-att-aria-label="'Add %s to bag' % product.name">
+            <i class="nv-i nv-ph-plus-light" role="img" aria-hidden="true"/> Add
+        </button>
+    </template>
+
+    <template id="product_card" name="Nutivo Product Card">
+        <t t-set="first_size" t-value="values['sizes'][0]"/>
+        <article class="nv-pcard" t-att-data-product="product.id"
+                 t-att-data-product-id="first_size['product_id']"
+                 t-attf-style="animation-delay: #{min(card_index, 8) * 60}ms">
+            <div class="nv-pcard__media">
+                <a t-att-href="product.website_url" tabindex="-1" aria-hidden="true">
+                    <img t-att-src="'/web/image/product.template/%s/image_1024' % product.id"
+                         t-att-alt="product.name" loading="lazy" width="600" height="600"/>
+                </a>
+                <span t-if="values['badge']" t-attf-class="nv-pcard__badge #{'nv-pcard__badge--gold' if values['badge_gold'] else ''}" t-out="values['badge']"/>
+                <t t-call="theme_nutivo.wish_button"/>
+                <button t-if="with_quick_view" type="button" class="nv-pcard__quick"
+                        t-att-data-quick="product.id"
+                        t-att-aria-label="'Quick view %s' % product.name">
+                    <i class="nv-i nv-ph-eye-light" role="img" aria-hidden="true"/> Quick view
+                </button>
+            </div>
+            <div class="nv-pcard__body">
+                <p class="nv-pcard__origin" t-out="values['origin']"/>
+                <h3 class="nv-pcard__name" t-att-title="product.name">
+                    <a t-att-href="product.website_url" t-out="product.name"/>
+                </h3>
+                <p class="nv-pcard__notes" t-att-title="values['notes']" t-out="values['notes']"/>
+                <t t-call="theme_nutivo.card_rating"/>
+                <t t-call="theme_nutivo.card_sizes"/>
+                <div class="nv-pcard__foot">
+                    <span class="nv-price" data-price="" t-out="first_size['price_str']"/>
+                    <t t-call="theme_nutivo.add_button"/>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <template id="hamper_card" name="Nutivo Hamper Card">
+        <t t-set="first_size" t-value="values['sizes'][0]"/>
+        <article class="nv-hamper nv-reveal" t-att-data-product="product.id"
+                 t-att-data-product-id="first_size['product_id']">
+            <div class="nv-hamper__media">
+                <a t-att-href="product.website_url" tabindex="-1" aria-hidden="true">
+                    <img t-att-src="'/web/image/product.template/%s/image_1024' % product.id"
+                         t-att-alt="product.name" loading="lazy"/>
+                </a>
+                <t t-call="theme_nutivo.wish_button"/>
+                <span class="nv-hamper__price-tag">
+                    <small t-if="values['reviews']"><t t-out="values['reviews']"/> reviews · <t t-out="values['rating']"/>★</small>
+                    <span data-price="" t-out="first_size['price_str']"/>
+                </span>
+            </div>
+            <div class="nv-hamper__body">
+                <h3 class="nv-hamper__name"><a t-att-href="product.website_url" t-out="product.name"/></h3>
+                <p class="nv-hamper__desc" t-out="values['notes']"/>
+                <div class="nv-hamper__row">
+                    <t t-call="theme_nutivo.card_sizes"/>
+                    <t t-call="theme_nutivo.add_button"/>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <template id="product_cards" name="Nutivo Product Cards">
+        <t t-foreach="cards" t-as="card">
+            <t t-set="product" t-value="card['product']"/>
+            <t t-set="values" t-value="card['values']"/>
+            <t t-if="card_design == 'hamper'" t-call="theme_nutivo.hamper_card"/>
+            <t t-else="" t-call="theme_nutivo.product_card"/>
+        </t>
+        <p t-if="not cards" class="nv-search-empty">No products to show yet.</p>
+    </template>
+
+    <template id="category_chips" name="Nutivo Category Chips">
+        <button type="button" class="nv-chip nv-is-active" role="tab" aria-selected="true" data-cat="all">All</button>
+        <t t-foreach="categories" t-as="category">
+            <button type="button" class="nv-chip" role="tab" aria-selected="false"
+                    t-att-data-cat="category.id" t-out="category.name"/>
+        </t>
+    </template>
+
+    <!-- Bag drawer -->
+    <template id="bag_content" name="Nutivo Bag Content">
+        <div class="nv-drawer__head nv-bag__head">
+            <div>
+                <h2>Your Bag</h2>
+                <p class="nv-bag__count">
+                    <t t-if="count"><t t-out="int(count)"/> <t t-out="'item' if count == 1 else 'items'"/></t>
+                    <t t-else="">Nothing here yet</t>
+                </p>
+            </div>
+            <button type="button" class="nv-icon-btn nv-icon-btn--ring" data-close="" aria-label="Close bag">
+                <i class="nv-i nv-ph-x-light" role="img" aria-hidden="true"/>
+            </button>
+        </div>
+        <div class="nv-drawer__body nv-bag__body">
+            <div class="nv-bag__items">
+                <div t-if="not lines" class="nv-bag-empty">
+                    <span class="nv-bag-empty__icon"><i class="nv-i nv-ph-handbag-light" role="img" aria-hidden="true"/></span>
+                    <h3>Your bag is empty</h3>
+                    <p>Fill it with something good, from crunchy almonds to Medjool dates.</p>
+                    <a href="/shop" class="nv-btn nv-btn--primary nv-btn--sm">Start Shopping <i class="nv-i nv-ph-arrow-right-light" role="img" aria-hidden="true"/></a>
+                </div>
+                <t t-foreach="lines" t-as="line">
+                    <t t-set="qty" t-value="line._get_displayed_quantity()"/>
+                    <t t-set="variant" t-value="', '.join(line.product_id.product_template_attribute_value_ids.mapped('name'))"/>
+                    <div class="nv-bag-item" t-att-data-line-id="line.id" t-att-data-line-qty="int(qty)">
+                        <div class="nv-bag-item__img">
+                            <img t-att-src="image_data_uri(line.product_id.image_128) if line.product_id.image_128 else '/web/static/img/placeholder.png'" alt="" loading="lazy"/>
+                        </div>
+                        <div class="nv-bag-item__info">
+                            <p class="nv-bag-item__name" t-out="line.product_id.product_tmpl_id.name if variant else line.name_short"/>
+                            <p class="nv-bag-item__meta">
+                                <span t-if="variant" class="nv-bag-item__variant" t-att-title="variant" t-out="variant"/>
+                                <span t-if="qty &gt; 1" class="nv-bag-item__each"><t t-out="website._nutivo_price(line._get_displayed_unit_price(), currency)"/> each</span>
+                            </p>
+                            <div t-if="line.price_unit &gt;= 0 and not line.is_delivery" class="nv-bag-item__actions">
+                                <div class="nv-qty nv-qty--sm" role="group" t-att-aria-label="'Quantity for %s' % line.name_short">
+                                    <button type="button" class="nv-qty__btn" data-qty="-1" aria-label="Decrease quantity"><i class="nv-i nv-ph-minus-light" role="img" aria-hidden="true"/></button>
+                                    <span class="nv-qty__val" aria-live="polite" t-out="int(qty)"/>
+                                    <button type="button" class="nv-qty__btn" data-qty="1" aria-label="Increase quantity"><i class="nv-i nv-ph-plus-light" role="img" aria-hidden="true"/></button>
+                                </div>
+                                <button type="button" class="nv-bag-item__remove" data-remove="" t-att-aria-label="'Remove %s' % line.name_short">Remove</button>
+                            </div>
+                        </div>
+                        <span class="nv-bag-item__price" t-out="website._nutivo_price(line._get_cart_display_price(), currency)"/>
+                    </div>
+                </t>
+            </div>
+            <div t-if="suggestions" class="nv-bag-upsell">
+                <p class="nv-bag-upsell__title" t-out="'You may also like' if lines else 'Bestsellers to begin with'"/>
+                <div class="nv-bag-upsell__row">
+                    <t t-foreach="suggestions" t-as="suggestion">
+                        <t t-set="info" t-value="suggestion._get_combination_info_variant()"/>
+                        <t t-set="label" t-value="', '.join(suggestion.product_template_attribute_value_ids.mapped('name'))"/>
+                        <div class="nv-mini" t-att-data-product="suggestion.product_tmpl_id.id" t-att-data-product-id="suggestion.id">
+                            <img t-att-src="'/web/image/product.product/%s/image_256' % suggestion.id" alt="" loading="lazy"/>
+                            <div class="nv-mini__info">
+                                <p class="nv-mini__name" t-out="suggestion.product_tmpl_id.name"/>
+                                <p class="nv-mini__price"><t t-out="website._nutivo_price(info['price'], info['currency'])"/> <span t-if="label">· <t t-out="label"/></span></p>
+                            </div>
+                            <button type="button" class="nv-mini__add" data-add=""
+                                    t-att-aria-label="'Add %s to bag' % suggestion.product_tmpl_id.name">
+                                <i class="nv-i nv-ph-plus-light" role="img" aria-hidden="true"/>
+                            </button>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+        <div t-if="lines" class="nv-drawer__foot nv-bag__foot">
+            <div class="nv-promo">
+                <button type="button" class="nv-promo__toggle" data-promo-open="">
+                    <i class="nv-i nv-ph-gift-light" role="img" aria-hidden="true"/> Have a promo code?
+                </button>
+                <form class="nv-promo__form" action="/shop/pricelist" method="post" hidden="">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="r" t-att-value="redirect"/>
+                    <label class="nv-sr-only" for="nv_promo_input">Promo code</label>
+                    <input id="nv_promo_input" type="text" name="promo" placeholder="Enter promo code"
+                           autocomplete="off" spellcheck="false"/>
+                    <button type="submit" class="nv-promo__apply">Apply</button>
+                </form>
+            </div>
+            <dl class="nv-bag-totals">
+                <div><dt>Subtotal</dt><dd t-out="website._nutivo_price(subtotal, currency)"/></div>
+                <div t-if="discount"><dt>Discount</dt><dd>−<t t-out="website._nutivo_price(discount, currency)"/></dd></div>
+                <div>
+                    <dt>Shipping</dt>
+                    <dd>
+                        <t t-if="has_shipping" t-out="website._nutivo_price(shipping, currency) if shipping else 'Free'"/>
+                        <t t-elif="free_at and not remaining">Free</t>
+                        <t t-else="">At checkout</t>
+                    </dd>
+                </div>
+                <div t-if="taxes"><dt>Taxes</dt><dd t-out="website._nutivo_price(taxes, currency)"/></div>
+                <div class="nv-bag-totals__grand"><dt>Total <small t-if="not taxes">incl. taxes</small></dt><dd t-out="website._nutivo_price(total, currency)"/></div>
+            </dl>
+            <a t-att-href="checkout_href" class="nv-btn nv-btn--primary nv-btn--block nv-bag__checkout">
+                <i class="nv-i nv-ph-lock-simple-light" role="img" aria-hidden="true"/>
+                Checkout <span class="nv-bag__checkout-sep" aria-hidden="true">·</span> <span t-out="website._nutivo_price(total, currency)"/>
+            </a>
+            <a class="nv-bag__continue" href="/shop/cart">View cart</a>
+            <button type="button" class="nv-bag__continue" data-close="">Continue shopping</button>
+            <p class="nv-bag__secure"><i class="nv-i nv-ph-shield-check-light" role="img" aria-hidden="true"/> Secure checkout · Freshness promise on every order</p>
+        </div>
+    </template>
+
+    <!-- Wishlist drawer -->
+    <template id="wishlist_content" name="Nutivo Wishlist Content">
+        <div t-if="not wishes" class="nv-empty-drawer">
+            <i class="nv-i nv-ph-heart-light" role="img" aria-hidden="true"/>
+            <h3>No favourites yet</h3>
+            <p>Tap the heart on any product to save it for later.</p>
+            <a href="/shop" class="nv-btn nv-btn--outline nv-btn--sm">Explore the Collection</a>
+        </div>
+        <t t-else="">
+            <button type="button" class="nv-btn nv-btn--primary nv-btn--block nv-btn--sm nv-wish__all" data-move-all="">
+                <i class="nv-i nv-ph-handbag-light" role="img" aria-hidden="true"/>
+                Move all <t t-out="len(wishes)"/> to bag
+            </button>
+            <a class="nv-link-arrow" href="/shop/wishlist">View full wishlist <i class="nv-i nv-ph-arrow-right-light" role="img" aria-hidden="true"/></a>
+            <t t-foreach="wishes" t-as="wish">
+                <t t-set="product" t-value="wish.product_id"/>
+                <t t-set="values" t-value="cards.get(product.product_tmpl_id.id)"/>
+                <t t-set="info" t-value="product._get_combination_info_variant()"/>
+                <t t-set="label" t-value="', '.join(product.product_template_attribute_value_ids.mapped('name'))"/>
+                <div class="nv-line-item" t-att-data-product="product.product_tmpl_id.id" t-att-data-product-id="product.id">
+                    <div class="nv-line-item__img">
+                        <img t-att-src="'/web/image/product.product/%s/image_256' % product.id" alt="" loading="lazy"/>
+                    </div>
+                    <div>
+                        <div class="nv-line-item__top">
+                            <p class="nv-line-item__name"><a t-att-href="product.website_url" t-out="product.product_tmpl_id.name"/></p>
+                            <button type="button" class="nv-line-item__remove" t-att-data-wish="product.id"
+                                    t-att-aria-label="'Remove %s from wishlist' % product.product_tmpl_id.name">
+                                <i class="nv-i nv-ph-x-light" role="img" aria-hidden="true"/>
+                            </button>
+                        </div>
+                        <p class="nv-line-item__variant">
+                            <t t-out="' · '.join(filter(None, [label, values and values['reviews'] and ('%s★' % values['rating']), values and values['origin']]))"/>
+                        </p>
+                        <div class="nv-line-item__bottom">
+                            <span class="nv-line-item__price" t-out="website._nutivo_price(info['price'], info['currency'])"/>
+                            <button type="button" class="nv-add-btn" t-att-data-move-to-bag="product.id">
+                                <i class="nv-i nv-ph-handbag-light" role="img" aria-hidden="true"/> Move to bag
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Quick view modal -->
+    <template id="quick_view_content" name="Nutivo Quick View Content">
+        <t t-set="product" t-value="card['product']"/>
+        <t t-set="values" t-value="card['values']"/>
+        <t t-set="first_size" t-value="values['sizes'][0]"/>
+        <div class="nv-quickview__grid" t-att-data-product="product.id" t-att-data-product-id="first_size['product_id']">
+            <div class="nv-quickview__media">
+                <img t-att-src="'/web/image/product.template/%s/image_1024' % product.id" t-att-alt="product.name"/>
+                <span t-if="values['badge']" t-attf-class="nv-pcard__badge #{'nv-pcard__badge--gold' if values['badge_gold'] else ''}" t-out="values['badge']"/>
+                <t t-call="theme_nutivo.wish_button"/>
+            </div>
+            <div class="nv-quickview__info">
+                <p class="nv-pcard__origin" t-out="values['origin']"/>
+                <h2 class="nv-quickview__name" t-out="product.name"/>
+                <t t-call="theme_nutivo.card_rating"/>
+                <p class="nv-quickview__desc" t-out="values['notes']"/>
+                <t t-if="len(values['sizes']) &gt; 1">
+                    <p class="nv-quickview__label">Options</p>
+                    <t t-set="nv_all" t-value="True"/>
+                    <t t-call="theme_nutivo.card_sizes"/>
+                </t>
+                <t t-foreach="values['extra_options']" t-as="extra">
+                    <p class="nv-quickview__label" t-out="extra['name']"/>
+                    <div class="nv-sizes nv-sizes--extra" role="radiogroup" t-att-aria-label="extra['name']">
+                        <t t-foreach="extra['values']" t-as="option">
+                            <button type="button" class="nv-size" role="radio"
+                                    t-att-aria-checked="'true' if option_first else 'false'"
+                                    t-att-data-extra="option['id']"
+                                    t-att-data-custom="str(option['id']) if option['is_custom'] else None">
+                                <t t-out="option['name']"/>
+                                <small t-if="option['price_extra']" t-out="'+' + option['price_extra']"/>
+                            </button>
+                        </t>
+                    </div>
+                </t>
+                <t t-if="values['addons']">
+                    <p class="nv-quickview__label">Goes well with</p>
+                    <div class="nv-addons">
+                        <t t-foreach="values['addons']" t-as="addon">
+                            <t t-set="aval" t-value="addon['values']"/>
+                            <div class="nv-addon" t-att-data-addon="addon['product'].id"
+                                 t-att-data-addon-product-id="aval['sizes'][0]['product_id']">
+                                <label class="nv-addon__head">
+                                    <input type="checkbox" data-addon-check="" t-att-disabled="None if aval['sizes'][0]['available'] else 'disabled'"/>
+                                    <span class="nv-addon__name" t-out="addon['product'].name"/>
+                                    <span class="nv-addon__price" data-addon-price="" t-out="aval['sizes'][0]['price_str']"/>
+                                </label>
+                                <div class="nv-addon__opts" hidden="hidden">
+                                    <div t-if="len(aval['sizes']) &gt; 1" class="nv-sizes" role="radiogroup" t-att-aria-label="'Options of %s' % addon['product'].name">
+                                        <t t-foreach="aval['sizes']" t-as="asize">
+                                            <button type="button" class="nv-size" role="radio"
+                                                    t-att-aria-checked="'true' if asize_first else 'false'"
+                                                    t-att-data-addon-size="asize['product_id']"
+                                                    t-att-data-size-price="asize['price_str']"
+                                                    t-att-disabled="None if asize['available'] else 'disabled'"
+                                                    t-out="asize['label']"/>
+                                        </t>
+                                    </div>
+                                    <t t-foreach="aval['extra_options']" t-as="aextra">
+                                        <div class="nv-sizes" role="radiogroup" t-att-aria-label="aextra['name']">
+                                            <t t-foreach="aextra['values']" t-as="aoption">
+                                                <button type="button" class="nv-size" role="radio"
+                                                        t-att-aria-checked="'true' if aoption_first else 'false'"
+                                                        t-att-data-addon-extra="aoption['id']">
+                                                    <t t-out="aextra['name']"/>: <t t-out="aoption['name']"/>
+                                                    <small t-if="aoption['price_extra']" t-out="'+' + aoption['price_extra']"/>
+                                                </button>
+                                            </t>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+                <div class="nv-quickview__custom" hidden="hidden">
+                    <label class="nv-quickview__label" for="nv-qv-custom">Your custom text</label>
+                    <input id="nv-qv-custom" type="text" class="nv-input" maxlength="200" data-qv-custom=""/>
+                </div>
+                <div class="nv-quickview__buy">
+                    <span class="nv-price nv-quickview__price" data-price="" t-out="first_size['price_str']"/>
+                    <div class="nv-qty nv-qty--lg" role="group" aria-label="Quantity">
+                        <button type="button" class="nv-qty__btn" data-qv-step="-1" aria-label="Decrease quantity" disabled="disabled"><i class="nv-i nv-ph-minus-light" role="img" aria-hidden="true"/></button>
+                        <span class="nv-qty__val" data-qv-qty="" aria-live="polite">1</span>
+                        <button type="button" class="nv-qty__btn" data-qv-step="1" aria-label="Increase quantity"><i class="nv-i nv-ph-plus-light" role="img" aria-hidden="true"/></button>
+                    </div>
+                </div>
+                <a t-if="values['needs_page']" class="nv-btn nv-btn--primary nv-btn--block" t-att-href="product.website_url">
+                    <i class="nv-i nv-ph-sliders-horizontal-light" role="img" aria-hidden="true"/> Choose options
+                </a>
+                <button t-elif="not first_size['available']" type="button" class="nv-btn nv-btn--primary nv-btn--block" disabled="disabled">Sold out</button>
+                <button t-else="" type="button" class="nv-btn nv-btn--primary nv-btn--block" data-add="" data-qv-add="">
+                    <i class="nv-i nv-ph-handbag-light" role="img" aria-hidden="true"/> Add to bag
+                </button>
+                <a t-att-href="product.website_url" class="nv-link-arrow nv-quickview__more">View full details <i class="nv-i nv-ph-arrow-right-light" role="img" aria-hidden="true"/></a>
+                <ul class="nv-quickview__perks">
+                    <li t-if="free_shipping"><i class="nv-i nv-ph-truck-light" role="img" aria-hidden="true"/> Free shipping over <t t-out="website._nutivo_price(free_shipping, currency)"/></li>
+                    <li><i class="nv-i nv-ph-leaf-light" role="img" aria-hidden="true"/> Packed within 72 hours of roasting</li>
+                </ul>
+            </div>
+        </div>
+    </template>
+</odoo>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Header: the standard website header, so every header template and option of
+    the website builder keeps working, dressed in the Nutivo design. The cart
+    and wishlist links open the bag and wishlist drawers (they still lead to the
+    cart and wishlist pages without JavaScript), and the user dropdown gets the
+    account card, the latest order, orders and wishlist entries.
+-->
+<odoo>
+    <!-- The menu sits on the right in the default header, as in the design. It
+         is applied before the builder's alignment options (lower priority),
+         so Center and Right still work, and it holds when the header template
+         is switched in the editor and set back to Default. -->
+    <template id="header_default_align" name="Nutivo Header Default Alignment" inherit_id="website.template_header_default" priority="10">
+        <xpath expr="//t[@t-call='website.navbar_nav']" position="attributes">
+            <attribute name="_nav_class.f">ms-auto</attribute>
+        </xpath>
+    </template>
+
+    <template id="header_cart_link" name="Nutivo Header Cart" inherit_id="website_sale.header_cart_link">
+        <xpath expr="//a[@href='/shop/cart']" position="attributes">
+            <attribute name="data-open">cart</attribute>
+        </xpath>
+        <xpath expr="//i[@data-icon='shopping_cart']" position="replace">
+            <i t-if="_icon" class="nv-i nv-ph-handbag-light" role="img" aria-hidden="true"/>
+        </xpath>
+    </template>
+
+    <template id="header_wishlist_link" name="Nutivo Header Wishlist" inherit_id="website_sale.header_wishlist_link">
+        <xpath expr="//a[@href='/shop/wishlist']" position="attributes">
+            <attribute name="data-open">wishlist</attribute>
+        </xpath>
+        <xpath expr="//i[@data-icon='favorite']" position="replace">
+            <i t-if="_icon" class="nv-i nv-ph-heart-light" role="img" aria-hidden="true"/>
+        </xpath>
+    </template>
+
+    <!-- Search icon of the search boxes (header and shop). -->
+    <template id="website_search_box" name="Nutivo Search Box Icon" inherit_id="website.website_search_box">
+        <xpath expr="//i[@data-icon='search']" position="replace">
+            <i t-attf-class="{{'d-none' if search else ''}} nv-i nv-ph-magnifying-glass-light" role="img" aria-hidden="true"/>
+        </xpath>
+    </template>
+
+    <template id="website_search_box_input" name="Nutivo Search Button Icon" inherit_id="website.website_search_box_input">
+        <xpath expr="//i[@data-icon='search']" position="replace">
+            <i class="nv-i nv-ph-magnifying-glass-light" role="img" aria-hidden="true"/>
+        </xpath>
+    </template>
+
+    <template id="user_dropdown" name="Nutivo User Dropdown" inherit_id="portal.user_dropdown">
+        <xpath expr="//a[@data-bs-toggle='dropdown']" position="attributes">
+            <attribute name="t-attf-class" add="nv-acct-toggle" separator=" "/>
+            <attribute name="aria-label">My account</attribute>
+        </xpath>
+        <xpath expr="//a[@data-bs-toggle='dropdown']" position="inside">
+            <t t-set="nv_toggle_acct" t-value="website._nutivo_account_menu() if website else {}"/>
+            <span t-if="website" class="nv-acct-avatar nv-acct-avatar--sm nv-avatar-mini" aria-hidden="true">
+                <t t-if="nv_toggle_acct['initials']" t-out="nv_toggle_acct['initials']"/>
+                <i t-else="" class="nv-i nv-ph-user-light" role="img"/>
+            </span>
+        </xpath>
+        <xpath expr="//div[contains(@t-attf-class, 'js_usermenu')]" position="attributes">
+            <attribute name="t-attf-class" add="nv-acct-menu" separator=" "/>
+        </xpath>
+        <xpath expr="//a[@id='o_backend_user_dropdown_link']" position="before">
+            <t t-set="nv_acct" t-value="website._nutivo_account_menu() if website else {}"/>
+            <t t-if="website">
+                <div class="nv-acct-menu__head">
+                    <span class="nv-acct-avatar nv-acct-avatar--sm" aria-hidden="true">
+                        <t t-if="nv_acct['initials']" t-out="nv_acct['initials']"/>
+                        <i t-else="" class="nv-i nv-ph-user-light" role="img"/>
+                    </span>
+                    <div>
+                        <strong>Hello<t t-if="nv_acct['first_name']">, <t t-out="nv_acct['first_name']"/></t></strong>
+                        <small t-out="nv_acct['email']"/>
+                    </div>
+                </div>
+                <a t-if="nv_acct['latest']" class="nv-acct-menu__order" role="menuitem" t-att-href="nv_acct['latest']['url']">
+                    <span class="nv-acct-menu__order-top">
+                        <span>Latest · <strong t-out="nv_acct['latest']['name']"/></span>
+                        <span t-attf-class="nv-status nv-status--#{nv_acct['latest']['tone']}" t-out="nv_acct['latest']['label']"/>
+                    </span>
+                    <span t-if="nv_acct['latest']['tone'] != 'cancelled'" class="nv-mini-track" aria-hidden="true">
+                        <span t-attf-style="width: #{nv_acct['latest']['pct']}%"/>
+                    </span>
+                </a>
+                <a href="/my/orders" role="menuitem" class="dropdown-item nv-acct-menu__item">
+                    <i class="nv-i nv-ph-package-light" role="img" aria-hidden="true"/> My orders
+                    <span t-if="nv_acct['active']" class="nv-acct-menu__badge"><t t-out="nv_acct['active']"/> active</span>
+                </a>
+                <a href="/shop/wishlist" role="menuitem" class="dropdown-item nv-acct-menu__item" data-open="wishlist">
+                    <i class="nv-i nv-ph-heart-light" role="img" aria-hidden="true"/> Wishlist
+                    <span t-if="len(env['product.wishlist'].current())" class="nv-acct-menu__badge my_wish_quantity" t-out="len(env['product.wishlist'].current())"/>
+                </a>
+                <div class="nv-acct-menu__sep" role="separator"/>
+            </t>
+        </xpath>
+    </template>
+</odoo>
