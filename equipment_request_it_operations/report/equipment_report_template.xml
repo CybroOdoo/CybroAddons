@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Report Template -->
+    <template id="report_equipment_request_details">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="data">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        <style>
+                            .equipment-report table,
+                            .equipment-report th,
+                            .equipment-report td {
+                                border: 1px solid black;
+                                border-collapse: collapse;
+                                padding: 5px;
+                            }
+                        </style>
+                        <div class="equipment-report">
+                            <div class="text-center">
+                                <h1>
+                                    <u>Equipment Report</u>
+                                </h1>
+                            </div>
+                            <h3 class="mt-4">Equipment Assignment</h3>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Created By:</strong></td>
+                                    <td><t t-out="data.created_user_id.name"/></td>
+                                    <td><strong>Created Date:</strong></td>
+                                    <td><t t-out="data.request_create_date"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Department Manager:</strong></td>
+                                    <td><t t-out="data.validate_user_id.name"/></td>
+                                    <td><strong>Department Approved Date:</strong></td>
+                                    <td><t t-out="data.validate_date"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>HR Manager:</strong></td>
+                                    <td><t t-out="data.hr_user_id.name"/></td>
+                                    <td><strong>HR Approved Date:</strong></td>
+                                    <td><t t-out="data.hr_date"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Stock Manager:</strong></td>
+                                    <td><t t-out="data.stock_user_id.name"/></td>
+                                    <td><strong>Stock Approved Date:</strong></td>
+                                    <td><t t-out="data.stock_date"/></td>
+                                </tr>
+                            </table>
+                            <h3 class="mt-4">Requested Equipment</h3>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Sl.No</th>
+                                        <th>Product</th>
+                                        <th>Description</th>
+                                        <th>Quantity</th>
+                                        <th>Unit of Measure</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="data.equipment_request_ids" t-as="request">
+                                        <th scope="row"><t t-out="request_index + 1"/></th>
+                                        <td><t t-out="request.product_id.name"/></td>
+                                        <td><t t-out="request.description"/></td>
+                                        <td><t t-out="request.quantity"/></td>
+                                        <td><t t-out="request.product_uom_id.name"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <t t-if="data.equipment_damage_ids">
+                                <h3 class="mt-4">Damage Details</h3>
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Sl.No</th>
+                                            <th>Product</th>
+                                            <th>Quantity</th>
+                                            <th>Unit Price</th>
+                                            <th>Subtotal</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="data.equipment_damage_ids" t-as="damage">
+                                            <th scope="row"><t t-out="damage_index + 1"/></th>
+                                            <td><t t-out="damage.product_id.name"/></td>
+                                            <td><t t-out="damage.quantity"/></td>
+                                            <td><t t-out="damage.unit_price"/></td>
+                                            <td><t t-out="damage.subtotal"/></td>
+                                            <td><t t-out="damage.expense_note"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h3 class="mt-4">Expense List</h3>
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Sl.No</th>
+                                            <th>Expense Date</th>
+                                            <th>Description</th>
+                                            <th>Employee</th>
+                                            <th>Category</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="data.equipment_expense_ids" t-as="expense">
+                                            <th scope="row"><t t-out="expense_index + 1"/></th>
+                                            <td><t t-out="expense.date" t-options="{'widget': 'date'}"/></td>
+                                            <td><t t-out="expense.name"/></td>
+                                            <td><t t-out="expense.employee_id.name"/></td>
+                                            <td><t t-out="expense.product_id.name"/></td>
+                                            <td>
+                                                <t t-out="expense.total_amount"
+                                                   t-options="{'widget': 'monetary', 'display_currency': expense.company_currency_id}"/>
+                                            </td>
+                                            <td><t t-out="dict(expense._fields['state']._description_selection(expense.env)).get(expense.state)"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
