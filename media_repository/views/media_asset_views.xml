@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+    <!-- ACTION -->
+    <record id="media_asset_action" model="ir.actions.act_window">
+        <field name="name">Media Assets</field>
+        <field name="res_model">media.asset</field>
+        <field name="context">{'search_default_admin_records':1}</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Upload your first media asset!
+            </p>
+            <p>
+                Store images, videos, documents, audio files and external URLs
+                in one centralised repository.
+            </p>
+        </field>
+    </record>
+
+    <!-- FORM VIEW -->
+    <record id="media_asset_view_form" model="ir.ui.view">
+        <field name="name">media.asset.form</field>
+        <field name="model">media.asset</field>
+        <field name="arch" type="xml">
+            <form string="Media Asset">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button type="object" name="action_confirm" string="Confirm" class="btn btn-primary" invisible="state == 'confirmed'"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Media Name…" readonly="state == 'confirmed'"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="General Information">
+                            <field name="media_type" readonly="state == 'confirmed'"/>
+                            <field name="category_id" readonly="state == 'confirmed'"/>
+                            <field name="source_type" readonly="state == 'confirmed'"/>
+                        </group>
+                         <group string="Upload Info">
+                            <field name="create_uid" string="Uploaded By" readonly="state == 'confirmed'"/>
+                            <field name="create_date" string="Upload Date" readonly="state == 'confirmed'"/>
+                            <field name="favorite" readonly="state == 'confirmed'"/>
+                            <field name="media_tag_ids" widget="many2many_tags" readonly="state == 'confirmed'"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Upload">
+                        <field name="file" filename="file_name" widget="media_large_file" invisible="source_type =='url' or not source_type" readonly="state == 'confirmed'"/>
+                        <field name="source_url" widget="url" placeholder="https://…" invisible="source_type =='file' or not source_type" readonly="state == 'confirmed'"/>
+                        <field name="file_name" invisible="source_type =='url' or not source_type" readonly="state == 'confirmed'"/>
+                        <field name="file_size" invisible="source_type =='url' or not source_type" readonly="state == 'confirmed'"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Enter a description…" readonly="state == 'confirmed'"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+
+
+      <!-- KANBAN VIEW -->
+    <record id="media_asset_view_kanban" model="ir.ui.view">
+        <field name="name">media.asset.kanban</field>
+        <field name="model">media.asset</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="media_type"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click d-flex flex-row w-100">
+                            <aside class="o_kanban_image m-1">
+                                <div style="padding-left:10px;" class="o_kanban_image_wrapper d-flex align-items-center justify-content-center">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" t-if="record.media_type.raw_value == 'image'"
+                                         style="width: 60px; height: 60px; background-color: #eff6ff;">
+                                        <i class="fa fa-picture-o text-primary" style="font-size: 24px;" title="Image Icon"/>
+                                    </div>
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" t-if="record.media_type.raw_value == 'video'"
+                                         style="width: 60px; height: 60px; background-color: #fff1f2;">
+                                        <i class="fa fa-video-camera" style="font-size: 24px; color: #f43f5e;" title="Video Icon"/>
+                                    </div>
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" t-if="record.media_type.raw_value == 'document'"
+                                         style="width: 60px; height: 60px; background-color: #ecfdf5;">
+                                        <i class="fa fa-file-text" style="font-size: 24px; color: #10b981;" title="Document Icon"/>
+                                    </div>
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" t-if="record.media_type.raw_value == 'audio'"
+                                         style="width: 60px; height: 60px; background-color: #f5f3ff;">
+                                        <i class="fa fa-music" style="font-size: 24px; color: #8b5cf6;" title="Audio Icon"/>
+                                    </div>
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" t-if="record.media_type.raw_value == 'url'"
+                                         style="width: 60px; height: 60px; background-color: #fffbeb;">
+                                        <i class="fa fa-link" style="font-size: 24px; color: #f59e0b;" title="URL Link Icon"/>
+                                    </div>
+                                </div>
+                            </aside>
+                            <main class="ms-1 w-100">
+                                <div class="o_kanban_details_wrapper d-flex flex-column h-100">
+                                    <field name="name" class="text-truncate fw-bold fs-5"/>
+                                    <div class="d-flex align-items-center mt-2">
+                                        <field name="media_type"/>
+                                        <field name="create_uid" class="ms-auto" widget="many2one_avatar_user"/>
+                                    </div>
+                                </div>
+                            </main>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- LIST VIEW-->
+    <record id="media_asset_view_list" model="ir.ui.view">
+        <field name="name">media.asset.list</field>
+        <field name="model">media.asset</field>
+        <field name="arch" type="xml">
+            <tree string="Media Assets">
+                <field name="name"/>
+                <field name="media_type"/>
+                <field name="category_id"/>
+                <field name="create_uid" string="Uploaded By"/>
+                <field name="create_date" string="Upload Date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW-->
+     <record id="media_asset_view_search" model="ir.ui.view">
+        <field name="name">media.asset.search</field>
+        <field name="model">media.asset</field>
+        <field name="arch" type="xml">
+            <search string="Search Media Assets">
+                <field name="name"/>
+                <field name="category_id"/>
+
+                <filter name="filter_image"
+                        string="Images"
+                        domain="[('media_type', '=', 'image')]"/>
+                <filter name="filter_video"
+                        string="Videos"
+                        domain="[('media_type', '=', 'video')]"/>
+                <filter name="filter_url"
+                        string="URL"
+                        domain="[('media_type', '=', 'url')]"/>
+                <filter name="filter_document"
+                        string="Documents"
+                        domain="[('media_type', '=', 'document')]"/>
+                <filter name="filter_favourite"
+                        string="Favourites"
+                        domain="[('favorite', '=', True)]"/>
+                <filter name="admin_records"
+                        string="My Records"
+                        domain="[('create_uid', '=', uid)]"
+                        groups="media_repository.media_repository_group_manager"/>
+
+                <filter name="media_type"
+                        string="Media Type"
+                        context="{'group_by': 'media_type'}"/>
+                <filter name="group_by_category"
+                        string="Category"
+                        context="{'group_by': 'category_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!--MENU ITEMS-->
+    <menuitem id="media_repository_root_menu"
+              name="Media Repository"
+              groups="media_repository.media_repository_group_user"
+              web_icon="media_repository,static/description/icon.png"
+              sequence="11"/>
+
+    <menuitem id="menu_media_repository_configuration"
+              name="Configuration"
+              groups="media_repository.media_repository_group_manager"
+              parent="media_repository_root_menu"
+              sequence="20"/>
+
+    <menuitem id="menu_media_assets"
+              name="Media Assets"
+              groups="media_repository.media_repository_group_user"
+              parent="media_repository_root_menu"
+              action="media_asset_action"
+              sequence="11"/>
+</odoo>
