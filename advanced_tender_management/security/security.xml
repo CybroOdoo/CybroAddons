@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Groups the tender management access levels in the user settings -->
+    <record id="res_groups_privilege_tender_management" model="res.groups.privilege">
+        <field name="name">Tender Management</field>
+        <field name="sequence">10</field>
+        <field name="category_id" ref="base.module_category_supply_chain"/>
+    </record>
+    <!-- Users who can view tenders and bids -->
+    <record id="group_bidding_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_tender_management"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <!-- Managers who create tenders, evaluate bids and confirm purchases -->
+    <record id="group_bidding_manager" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_tender_management"/>
+        <field name="implied_ids" eval="[(4, ref('group_bidding_user'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

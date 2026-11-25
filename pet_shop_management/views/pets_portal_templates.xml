@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Breadcrumbs for pets -->
+    <template id="portal_my_home_menu_pets"
+              name="Portal layout : Pets menu entries"
+              inherit_id="portal.portal_breadcrumbs" priority="25">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'pets' or pet"
+                t-attf-class="breadcrumb-item #{'active ' if not pet else ''}">
+                <a t-if="pet"
+                   t-attf-href="/my/pets?{{ keep_query() }}">Pets
+                </a>
+                <t t-else="">Pets</t>
+            </li>
+            <li t-if="pet" class="breadcrumb-item active">
+                <t t-out="pet.name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- Template for portal view for pets information -->
+    <template id="portal_my_pets" name="My Pets">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar" breadcrumbs_searchbar="True"/>
+            <div t-if="not pets" class="alert alert-info" role="alert">
+                There are no pets registered for your account.
+            </div>
+            <t t-if="pets" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th style="width: 50px;"></th>
+                        <th>Reference</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Sex</th>
+                        <th>Birth Date</th>
+                        <th>Age</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="pets" t-as="p">
+                        <tr class="align-middle">
+                            <td class="text-center py-2">
+                                <span t-if="p.image_1920" t-field="p.image_1920"
+                                      t-options="{'widget': 'image', 'class': 'rounded-circle shadow-sm', 'style': 'width: 40px; height: 40px; object-fit: cover;'}"/>
+                                <div t-else="" class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto"
+                                     style="width: 40px; height: 40px;">
+                                    <i class="oi text-muted" data-icon="pets" style="font-size: 18px;"/>
+                                </div>
+                            </td>
+                            <td>
+                                <a t-attf-href="/my/pets/#{p.id}?{{ keep_query() }}" class="fw-bold text-decoration-none">
+                                    <t t-out="p.pet_seq"/>
+                                </a>
+                            </td>
+                            <td>
+                                <span class="fw-semibold" t-out="p.name"/>
+                            </td>
+                            <td>
+                                <span t-if="p.pet_type_id" class="badge rounded-pill bg-light text-dark border" t-out="p.pet_type_id.name"/>
+                                <span t-else="" class="text-muted">-</span>
+                            </td>
+                            <td>
+                                <span t-if="p.sex == 'male'" class="badge bg-primary-subtle text-primary border border-primary-subtle">Male</span>
+                                <span t-elif="p.sex == 'female'" class="badge bg-danger-subtle text-danger border border-danger-subtle">Female</span>
+                                <span t-elif="p.sex" class="badge bg-secondary-subtle text-secondary" t-out="p.sex"/>
+                                <span t-else="" class="text-muted">-</span>
+                            </td>
+                            <td>
+                                <span t-if="p.dob" t-field="p.dob"/>
+                                <span t-else="" class="text-muted">-</span>
+                            </td>
+                            <td>
+                                <t t-if="p.age &gt; 0">
+                                    <span t-out="int(p.age)"/> yr<t t-if="int(p.age) &gt; 1">s</t>
+                                </t>
+                                <t t-elif="p.month &gt; 0">
+                                    <span t-out="p.month"/> mo<t t-if="p.month &gt; 1">s</t>
+                                </t>
+                                <t t-else="">
+                                    <span class="text-muted">-</span>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_pets_page" name="Pets Portal Template"
+              inherit_id="portal.portal_sidebar" primary="True">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <div class="row mt-3 o_portal_pet_sidebar g-4">
+                <!-- Sidebar -->
+                <div class="col-12 col-lg-4 col-xl-3">
+                    <div class="card shadow-sm border-0 mb-3 sticky-top" style="top: 80px; z-index: 10;">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <span t-if="pets.image_1920" t-field="pets.image_1920"
+                                      t-options="{'widget': 'image', 'class': 'img-fluid rounded shadow-sm', 'style': 'max-height: 220px; width: 100%; object-fit: cover;'}"/>
+                                <div t-else="" class="bg-light rounded p-4 text-muted d-flex flex-column align-items-center justify-content-center"
+                                     style="min-height: 160px;">
+                                    <i class="oi text-muted mb-2" data-icon="pets" style="font-size: 36px;"/>
+                                    <small>No image uploaded</small>
+                                </div>
+                            </div>
+                            <h4 class="card-title fw-bold mb-1" t-out="pets.name"/>
+                            <div class="mb-3">
+                                <span class="badge bg-secondary text-white" t-out="pets.pet_seq"/>
+                                <span t-if="pets.pet_type_id" class="badge bg-primary text-white ms-1" t-out="pets.pet_type_id.name"/>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a class="btn btn-primary" t-attf-href="/my/pets/#{pets.id}?report_type=pdf&amp;download=true" target="_blank">
+                                    <i class="oi me-1" data-icon="download"/> Download PDF Report
+                                </a>
+                                <a class="btn btn-outline-secondary" href="/my/pets">
+                                    <i class="oi me-1" data-icon="chevron_left"/> Back to Pets
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Quick Details in Sidebar -->
+                        <ul class="list-group list-group-flush border-top small">
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                                <span class="text-muted">Sex</span>
+                                <span class="fw-semibold text-capitalize" t-out="pets.sex or '-'"/>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                                <span class="text-muted">Birth Date</span>
+                                <span class="fw-semibold" t-out="pets.dob or '-'"/>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                                <span class="text-muted">Age</span>
+                                <span class="fw-semibold">
+                                    <t t-if="pets.age &gt;= 1">
+                                        <t t-out="int(pets.age)"/> Yr<t t-if="int(pets.age) &gt; 1">s</t>
+                                        <t t-if="pets.month &gt; 0"> (<t t-out="pets.month"/> Mo)</t>
+                                    </t>
+                                    <t t-elif="pets.month &gt; 0">
+                                        <t t-out="pets.month"/> Month<t t-if="pets.month &gt; 1">s</t>
+                                    </t>
+                                    <t t-elif="pets.dob">
+                                        &lt; 1 Month
+                                    </t>
+                                    <t t-else="">-</t>
+                                </span>
+                            </li>
+                            <li t-if="pets.veterinarian_id" class="list-group-item py-2 px-3">
+                                <span class="text-muted d-block mb-1">Veterinarian</span>
+                                <span class="fw-semibold" t-out="pets.veterinarian_id.name"/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div id="pets_content" class="col-12 col-lg-8 col-xl-9">
+                    <div class="card shadow-sm border-0" id="portal_pet_content">
+                        <t t-call="pet_shop_management.pets_portal_content"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="pets_portal_content" name="Pet Portal Content">
+        <div class="card-body p-4">
+            <!-- Section 1: General Information -->
+            <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-4">
+                <div>
+                    <h3 class="fw-bold mb-1" t-out="pets.name"/>
+                    <span class="text-muted small">Reference: <strong t-out="pets.pet_seq"/></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <span t-if="pets.sex == 'male'" class="badge bg-primary fs-6 px-3 py-2">Male</span>
+                    <span t-elif="pets.sex == 'female'" class="badge bg-danger fs-6 px-3 py-2">Female</span>
+                    <span t-elif="pets.sex" class="badge bg-secondary fs-6 px-3 py-2" t-out="pets.sex"/>
+                    <span t-if="pets.pet_type_id" class="badge bg-dark fs-6 px-3 py-2" t-out="pets.pet_type_id.name"/>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-md-4">
+                    <div class="p-3 bg-light rounded h-100">
+                        <small class="text-muted text-uppercase d-block fw-semibold mb-1">Birth Date</small>
+                        <span class="fs-6 fw-bold" t-out="pets.dob or '-'"/>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="p-3 bg-light rounded h-100">
+                        <small class="text-muted text-uppercase d-block fw-semibold mb-1">Age</small>
+                        <span class="fs-6 fw-bold">
+                            <t t-if="pets.age &gt;= 1">
+                                <t t-out="int(pets.age)"/> Year<t t-if="int(pets.age) &gt; 1">s</t>
+                                <t t-if="pets.month &gt; 0"> (<t t-out="pets.month"/> Months)</t>
+                            </t>
+                            <t t-elif="pets.month &gt; 0">
+                                <t t-out="pets.month"/> Month<t t-if="pets.month &gt; 1">s</t>
+                            </t>
+                            <t t-elif="pets.dob">
+                                &lt; 1 Month
+                            </t>
+                            <t t-else="">-</t>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="p-3 bg-light rounded h-100">
+                        <small class="text-muted text-uppercase d-block fw-semibold mb-1">Color</small>
+                        <span class="fs-6 fw-bold" t-out="pets.color or '-'"/>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="p-3 bg-light rounded h-100">
+                        <small class="text-muted text-uppercase d-block fw-semibold mb-1">Stay</small>
+                        <span class="fs-6 fw-bold" t-out="pets.stay or '-'"/>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="p-3 bg-light rounded h-100">
+                        <small class="text-muted text-uppercase d-block fw-semibold mb-1">Where Pet Came From</small>
+                        <span class="fs-6 fw-bold" t-out="pets.pet_place or '-'"/>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="p-3 bg-light rounded h-100">
+                        <small class="text-muted text-uppercase d-block fw-semibold mb-1">Veterinarian</small>
+                        <span class="fs-6 fw-bold" t-out="pets.veterinarian_id.name or '-'"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photos Gallery if extra photos exist -->
+            <div t-if="pets.photo_one or pets.photo_two or pets.photo_three" class="mb-4">
+                <h5 class="fw-bold border-bottom pb-2 mb-3">Photo Gallery</h5>
+                <div class="row g-3">
+                    <div t-if="pets.photo_one" class="col-4">
+                        <span t-field="pets.photo_one" t-options="{'widget': 'image', 'class': 'img-thumbnail rounded w-100', 'style': 'height: 140px; object-fit: cover;'}"/>
+                    </div>
+                    <div t-if="pets.photo_two" class="col-4">
+                        <span t-field="pets.photo_two" t-options="{'widget': 'image', 'class': 'img-thumbnail rounded w-100', 'style': 'height: 140px; object-fit: cover;'}"/>
+                    </div>
+                    <div t-if="pets.photo_three" class="col-4">
+                        <span t-field="pets.photo_three" t-options="{'widget': 'image', 'class': 'img-thumbnail rounded w-100', 'style': 'height: 140px; object-fit: cover;'}"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Medical History -->
+            <div class="mb-4">
+                <h5 class="fw-bold border-bottom pb-2 mb-3">Medical History</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-white h-100 shadow-sm">
+                            <span class="small text-muted d-block mb-2">Allergic to Medicine?</span>
+                            <span t-if="pets.is_allergy" class="badge bg-danger fs-6">
+                                <i class="oi me-1" data-icon="warning"/> Yes
+                            </span>
+                            <span t-else="" class="badge bg-success fs-6">
+                                <i class="oi me-1" data-icon="check"/> No
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-white h-100 shadow-sm">
+                            <span class="small text-muted d-block mb-2">Reaction to Vaccine?</span>
+                            <span t-if="pets.is_reaction" class="badge bg-danger fs-6">
+                                <i class="oi me-1" data-icon="warning"/> Yes
+                            </span>
+                            <span t-else="" class="badge bg-success fs-6">
+                                <i class="oi me-1" data-icon="check"/> No
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-white h-100 shadow-sm">
+                            <span class="small text-muted d-block mb-2">Contact Owner on Distress?</span>
+                            <span t-if="pets.is_contact" class="badge bg-info text-dark fs-6">
+                                <i class="oi me-1" data-icon="phone"/> Yes
+                            </span>
+                            <span t-else="" class="badge bg-secondary fs-6">
+                                <i class="oi me-1" data-icon="close"/> No
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-12" t-if="pets.previous_reactions">
+                        <div class="p-3 border border-warning-subtle bg-warning-subtle rounded">
+                            <span class="fw-semibold text-dark d-block mb-1">Previous Medical or Surgical Problems:</span>
+                            <p class="mb-0 text-dark" t-out="pets.previous_reactions"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Pet Vaccines -->
+            <div class="mb-4">
+                <h5 class="fw-bold border-bottom pb-2 mb-3">Vaccination Records</h5>
+                <div t-if="not pets.pet_vaccines_ids" class="alert alert-light border text-muted py-3" role="alert">
+                    No vaccination records available for this pet.
+                </div>
+                <div t-if="pets.pet_vaccines_ids" class="table-responsive border rounded">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="py-2 px-3">Vaccine Name</th>
+                                <th class="py-2 px-3">Administered Date</th>
+                                <th class="py-2 px-3">Expiration Date</th>
+                                <th class="py-2 px-3">Veterinarian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="pets.pet_vaccines_ids" t-as="vaccine">
+                                <td class="px-3 fw-semibold">
+                                    <t t-out="vaccine.vaccine_name"/>
+                                </td>
+                                <td class="px-3">
+                                    <t t-out="vaccine.date or '-'"/>
+                                </td>
+                                <td class="px-3">
+                                    <span t-if="vaccine.date_exp" class="badge bg-light text-dark border" t-out="vaccine.date_exp"/>
+                                    <span t-else="" class="text-muted">-</span>
+                                </td>
+                                <td class="px-3">
+                                    <span t-if="vaccine.veterinarian_id" t-out="vaccine.veterinarian_id.name"/>
+                                    <span t-else="" class="text-muted">-</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Section 4: Diet and Notes -->
+            <div t-if="pets.pet_food or pets.notes" class="mb-2">
+                <h5 class="fw-bold border-bottom pb-2 mb-3">Diet &amp; Additional Notes</h5>
+                <div class="row g-3">
+                    <div t-if="pets.pet_food" class="col-md-6">
+                        <div class="p-3 bg-light rounded h-100">
+                            <span class="small text-muted d-block mb-1 fw-semibold">Pet Food &amp; Diet</span>
+                            <span class="text-dark" t-out="pets.pet_food"/>
+                        </div>
+                    </div>
+                    <div t-if="pets.notes" class="col-md-6">
+                        <div class="p-3 bg-light rounded h-100">
+                            <span class="small text-muted d-block mb-1 fw-semibold">General Notes</span>
+                            <span class="text-dark" t-out="pets.notes"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>

@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t t-name="AccountDashboard">
+        <div class="accounts-dashboard-wrap">
+            <div class="dashboard-scrollable">
+                <!-- Tiles -->
+                <div class="dashboard-tiles-wrapper mb-3">
+                    <div class="shadow-sm border text-center dashboard-tile tile-open-invoice">
+                        <div class="h1 fw-bold text-dark tile-count">
+                            <t t-out="this.state.data.open_invoice"/>
+                        </div>
+                        <div class="tile-title text-dark">Open Invoice</div>
+                    </div>
+                    <div class="shadow-sm border text-center dashboard-tile tile-paid-invoice">
+                        <div class="h1 fw-bold text-dark tile-count">
+                            <t t-out="this.state.data.paid_invoice"/>
+                        </div>
+                        <div class="tile-title text-dark">Paid Invoice</div>
+                    </div>
+                    <div class="shadow-sm border text-center dashboard-tile tile-income">
+                        <div class="h1 fw-bold text-dark tile-count">
+                            <t t-out="this.state.data.currency_symbol"/>
+                            <t t-out="this.state.data.income"/>
+                        </div>
+                        <div class="tile-title text-dark">Total Income</div>
+                    </div>
+                    <div class="shadow-sm border text-center dashboard-tile tile-unreconciled">
+                        <div class="h1 fw-bold text-dark tile-count">
+                            <t t-out="this.state.data.unreconcile_items"/>
+                        </div>
+                        <div class="tile-title text-dark">Unreconciled Items</div>
+                    </div>
+                </div>
+
+                <!-- Main Content Row -->
+                <div class="container-fluid px-3">
+                    <div class="row g-3">
+                        <!-- Income / Expense / Profit Chart -->
+                        <div class="col-12 col-md-4">
+                            <div class="card dashboard-card shadow-sm border">
+                                <div class="card-header dashboard-card-header">
+                                    <div class="card-title">
+                                        <h3 class="dashboard-card-title fw-bold" t-if="this.state.IncomeExpense == 'income'">INCOME CHART</h3>
+                                        <h3 class="dashboard-card-title fw-bold" t-if="this.state.IncomeExpense == 'expense'">EXPENSE CHART</h3>
+                                        <h3 class="dashboard-card-title fw-bold" t-if="this.state.IncomeExpense == 'profit'">PROFIT CHART</h3>
+                                        <h3 class="dashboard-card-title fw-bold" t-if="this.state.IncomeExpense == 'all'">ALL IN ONE</h3>
+                                    </div>
+                                    <div class="card-tools">
+                                        <select class="form-select form-select-sm"
+                                                t-att-value="this.state.IncomeExpense"
+                                                t-on-change="this.onIncomeExpenseChange">
+                                            <option value="income">Income</option>
+                                            <option value="expense">Expense</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="all">All In One</option>
+                                        </select>
+                                        <select class="form-select form-select-sm"
+                                                t-att-value="this.state.income"
+                                                t-on-change="this.onIncomePeriodChange">
+                                            <option value="income_this_month">This Month</option>
+                                            <option value="income_this_year">This Year</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="card-body dashboard-card-body">
+                                    <div class="chart-container">
+                                        <canvas id="canvas" t-ref="this.All" width="300" height="200"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment List -->
+                        <div class="col-12 col-md-4">
+                            <div class="card dashboard-card shadow-sm border">
+                                <div class="card-header dashboard-card-header">
+                                    <div class="card-title">
+                                        <h3 class="dashboard-card-title fw-bold" t-if="this.state.payment_list_filter == 'customer_payment'">CUSTOMER PAYMENT LIST</h3>
+                                        <h3 class="dashboard-card-title fw-bold" t-if="this.state.payment_list_filter == 'vendor_payment'">VENDOR PAYMENT LIST</h3>
+                                    </div>
+                                    <div class="card-tools">
+                                        <select class="form-select form-select-sm"
+                                                t-att-value="this.state.payment_list_filter"
+                                                t-on-change="this.onPaymentListFilterChange">
+                                            <option value="customer_payment">Customer List</option>
+                                            <option value="vendor_payment">Vendor List</option>
+                                        </select>
+                                        <select class="form-select form-select-sm"
+                                                t-att-value="this.state.payment_data_filter"
+                                                t-on-change="this.onPaymentDataFilterChange">
+                                            <option value="this_month">This Month</option>
+                                            <option value="this_year">This Year</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="card-body dashboard-card-body">
+                                    <table class="table table-striped table-hover align-middle mb-0"
+                                           t-if="this.state.payment_data &amp;&amp; this.state.payment_data.length != 0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Name</th>
+                                                <th class="text-end">Amount</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="this.state.payment_data"
+                                                t-as="payment"
+                                                t-key="payment.id">
+                                                <td><t t-out="payment.partner"/></td>
+                                                <td class="text-end"><t t-out="payment.amount"/></td>
+                                                <td><t t-out="payment.date"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div t-else="" class="no-data-placeholder">
+                                        <h6>NO DATA AVAILABLE</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Sale Revenue Customer -->
+                        <div class="col-12 col-md-4">
+                            <div class="card dashboard-card shadow-sm border">
+                                <div class="card-header dashboard-card-header">
+                                    <div class="card-title">
+                                        <h3 class="dashboard-card-title fw-bold">TOP SALE REVENUE CUSTOMER</h3>
+                                    </div>
+                                    <div class="card-tools">
+                                        <select class="form-select form-select-sm"
+                                                t-att-value="this.state.top_sale_cust_filter"
+                                                t-on-change="this.onTopSaleCustFilterChange">
+                                            <option value="this_month">This Month</option>
+                                            <option value="this_year">This Year</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="card-body dashboard-card-body">
+                                    <table class="table table-striped table-hover align-middle mb-0"
+                                           t-if="this.state.top_sale_cust &amp;&amp; this.state.top_sale_cust.length != 0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Name</th>
+                                                <th class="text-end">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="this.state.top_sale_cust"
+                                                t-as="revenue"
+                                                t-key="revenue.customer_id">
+                                                <td><t t-out="revenue.customer"/></td>
+                                                <td class="text-end"><t t-out="revenue.total_amount"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div t-else="" class="no-data-placeholder">
+                                        <h6>NO DATA AVAILABLE</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank and Cash Balance -->
+                        <div class="col-12 col-md-4">
+                            <div class="card dashboard-card card-tall shadow-sm border">
+                                <div class="card-header dashboard-card-header">
+                                    <div class="card-title">
+                                        <h3 class="dashboard-card-title fw-bold">BANK AND CASH BALANCE</h3>
+                                    </div>
+                                </div>
+                                <div class="card-body dashboard-card-body-full">
+                                    <table class="table table-striped table-hover align-middle mb-0"
+                                           t-if="this.state.balance &amp;&amp; this.state.balance.length != 0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Name</th>
+                                                <th class="text-end">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="this.state.balance"
+                                                t-as="balance"
+                                                t-key="balance.id">
+                                                <td><t t-out="balance.name"/></td>
+                                                <td class="text-end"><t t-out="balance.balance"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div t-else="" class="no-data-placeholder">
+                                        <h6>NO DATA AVAILABLE</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Aged Receivable / Payable -->
+                        <div class="col-12 col-md-4">
+                            <div class="card dashboard-card shadow-sm border">
+                                <div class="card-header dashboard-card-header">
+                                    <div class="card-title">
+                                        <h3 class="dashboard-card-title fw-bold" t-if="this.state.aged_filter == 'aged_receive'">AGED RECEIVABLE</h3>
+                                        <h3 class="dashboard-card-title fw-bold" t-if="this.state.aged_filter == 'aged_payable'">AGED PAYABLE</h3>
+                                    </div>
+                                    <div class="card-tools">
+                                        <select class="form-select form-select-sm"
+                                                t-att-value="this.state.aged_filter"
+                                                t-on-change="this.onAgedFilterChange">
+                                            <option value="aged_receive">Aged Receivable</option>
+                                            <option value="aged_payable">Aged Payable</option>
+                                        </select>
+                                        <select class="form-select form-select-sm"
+                                                t-att-value="this.state.aged_payable_filter"
+                                                t-on-change="this.onAgedPayableFilterChange">
+                                            <option value="this_month">This Month</option>
+                                            <option value="this_year">This Year</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="card-body dashboard-card-body">
+                                    <div class="chart-container">
+                                        <canvas t-ref="this.AgedRecords" width="400" height="303"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Customers / Vendors -->
+                        <div class="col-12 col-md-4 dashboard-bottom-spacer">
+                            <div class="card dashboard-card card-tall shadow-sm border">
+                                <div class="card-header dashboard-card-header">
+                                    <div class="card-title">
+                                        <h3 class="dashboard-card-title fw-bold">TOP CUSTOMERS/VENDORS</h3>
+                                    </div>
+                                    <div class="card-tools">
+                                        <select class="form-select form-select-sm"
+                                                t-att-value="this.state.top_filter"
+                                                t-on-change="this.onTopFilterChange">
+                                            <option id="top_10_customer_this_month" value="this_month">This Month</option>
+                                            <option value="this_year">This Year</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="card-body dashboard-card-body-full">
+                                    <h6 class="fw-bold text-dark mt-2 mb-2">Customers</h6>
+                                    <table class="table table-striped table-hover align-middle mb-3"
+                                           t-if="this.state.top &amp;&amp; this.state.top.top_customers &amp;&amp; this.state.top.top_customers.length != 0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Name</th>
+                                                <th class="text-end">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="this.state.top.top_customers"
+                                                t-as="customer"
+                                                t-key="customer.id">
+                                                <td><t t-out="customer.name"/></td>
+                                                <td class="text-end"><t t-out="customer.amount"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div t-else="" class="no-data-placeholder mb-3">
+                                        <h6>NO DATA AVAILABLE</h6>
+                                    </div>
+
+                                    <h6 class="fw-bold text-dark mt-3 mb-2">Vendors</h6>
+                                    <table class="table table-striped table-hover align-middle mb-3"
+                                           t-if="this.state.top &amp;&amp; this.state.top.top_vendors &amp;&amp; this.state.top.top_vendors.length != 0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Name</th>
+                                                <th class="text-end">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="this.state.top.top_vendors"
+                                                t-as="vendor"
+                                                t-key="vendor.id">
+                                                <td><t t-out="vendor.name"/></td>
+                                                <td class="text-end"><t t-out="vendor.amount"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div t-else="" class="no-data-placeholder">
+                                        <h6>NO DATA AVAILABLE</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

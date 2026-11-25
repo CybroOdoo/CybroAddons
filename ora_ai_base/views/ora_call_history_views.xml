@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ora_call_history_view_list" model="ir.ui.view">
+        <field name="name">ora.call.history.view.list</field>
+        <field name="model">ora.call.history</field>
+        <field name="arch" type="xml">
+            <list string="Call History" create="0" edit="0">
+                <field name="currency_id" column_invisible="True"/>
+                <field name="name"/>
+                <field name="assistant_id"/>
+                <field name="partner_id"/>
+                <field name="user_id"/>
+                <field name="call_type"/>
+                <field name="duration" widget="integer"/>
+                <field name="status" widget="badge" decoration-success="status == 'completed'" decoration-warning="status == 'started'" decoration-danger="status == 'failed'"/>
+                <field name="order_id" optional="show"/>
+                <field name="invoice_id" optional="show"/>
+                <field name="created_partner_id" optional="show"/>
+                <field name="product_tmpl_id" optional="show"/>
+                <field name="cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="create_date" string="Date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ora_call_history_view_form" model="ir.ui.view">
+        <field name="name">ora.call.history.view.form</field>
+        <field name="model">ora.call.history</field>
+        <field name="arch" type="xml">
+            <form string="Call Details" create="0">
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="started,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_sale_order" type="object" class="oe_stat_button" icon="shopping_cart" invisible="not order_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Sale Order</span>
+                                <span class="o_stat_value"><field name="order_id" readonly="1"/></span>
+                            </div>
+                        </button>
+                        <button name="action_view_invoice" type="object" class="oe_stat_button" icon="edit_square" invisible="not invoice_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Invoice</span>
+                                <span class="o_stat_value"><field name="invoice_id" readonly="1"/></span>
+                            </div>
+                        </button>
+                        <button name="action_view_created_partner" type="object" class="oe_stat_button" icon="person_add" invisible="not created_partner_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Customer</span>
+                                <span class="o_stat_value"><field name="created_partner_id" readonly="1"/></span>
+                            </div>
+                        </button>
+                        <button name="action_view_product" type="object" class="oe_stat_button" icon="inventory_2" invisible="not product_tmpl_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Product</span>
+                                <span class="o_stat_value"><field name="product_tmpl_id" readonly="1"/></span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Call Information">
+                            <field name="assistant_id" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="user_id" readonly="1"/>
+                            <field name="call_type" readonly="1"/>
+                        </group>
+                        <group string="Session Metrics">
+                            <field name="vapi_call_id" readonly="1"/>
+                            <field name="duration" readonly="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="cost" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="1"/>
+                            <field name="recording_url" widget="url" readonly="1" invisible="not recording_url"/>
+                        </group>
+                    </group>
+                    <group string="Created Records" invisible="not order_id and not invoice_id and not created_partner_id and not product_tmpl_id">
+                        <group>
+                            <field name="order_id" readonly="1" invisible="not order_id"/>
+                            <field name="invoice_id" readonly="1" invisible="not invoice_id"/>
+                        </group>
+                        <group>
+                            <field name="created_partner_id" readonly="1" invisible="not created_partner_id"/>
+                            <field name="product_tmpl_id" readonly="1" invisible="not product_tmpl_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Conversation Transcript" name="transcript">
+                            <field name="transcript" readonly="1" placeholder="Transcript will appear here..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="ora_call_history_view_search" model="ir.ui.view">
+        <field name="name">ora.call.history.view.search</field>
+        <field name="model">ora.call.history</field>
+        <field name="arch" type="xml">
+            <search string="Search Calls">
+                <field name="name"/>
+                <field name="vapi_call_id"/>
+                <field name="assistant_id"/>
+                <field name="partner_id"/>
+                <field name="order_id"/>
+                <field name="invoice_id"/>
+                <field name="created_partner_id"/>
+                <field name="product_tmpl_id"/>
+                <filter string="Completed Calls" name="completed" domain="[('status', '=', 'completed')]"/>
+                <separator/>
+                <filter string="With Sale Order" name="has_order" domain="[('order_id', '!=', False)]"/>
+                <filter string="With Invoice" name="has_invoice" domain="[('invoice_id', '!=', False)]"/>
+                <filter string="With Created Customer" name="has_customer" domain="[('created_partner_id', '!=', False)]"/>
+                <filter string="With Created Product" name="has_product" domain="[('product_tmpl_id', '!=', False)]"/>
+                <filter string="With Any Created Record" name="has_any_record" domain="['|', '|', '|', ('order_id', '!=', False), ('invoice_id', '!=', False), ('created_partner_id', '!=', False), ('product_tmpl_id', '!=', False)]"/>
+                <separator/>
+                <group>
+                    <filter string="Assistant" name="group_assistant" context="{'group_by': 'assistant_id'}"/>
+                    <filter string="Customer" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Call Type" name="group_type" context="{'group_by': 'call_type'}"/>
+                    <filter string="Status" name="group_status" context="{'group_by': 'status'}"/>
+                    <filter string="Created Customer" name="group_created_partner" context="{'group_by': 'created_partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="ora_call_history_action" model="ir.actions.act_window">
+        <field name="name">Call History</field>
+        <field name="res_model">ora.call.history</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="ora_call_history_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No voice call logs yet!
+            </p>
+            <p>
+                As users interact with your AI Voice Assistants via WebRTC or phone calls, call transcripts, duration, and generated records (orders, invoices, customers, products) will be logged here.
+            </p>
+        </field>
+    </record>
+</odoo>

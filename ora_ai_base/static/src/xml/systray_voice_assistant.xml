@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="ora_ai_base.VoiceAssistantSystray" owl="1">
+        <Dropdown position="'bottom-end'" beforeOpen.bind="this.onBeforeOpen" menuClass="'o_voice_assistant_dropdown'">
+            <button class="o_nav_entry"
+                    type="button"
+                    title="Voice Assistant"
+                    aria-label="Voice Assistant">
+                <i class="oi" data-icon="mic" role="img"/>
+            </button>
+            <t t-set-slot="content">
+                <div class="px-3 py-2 border-bottom fw-bold text-muted small text-uppercase d-flex align-items-center justify-content-between">
+                    <span>Voice Assistants</span>
+                    <i class="oi" data-icon="smart_toy"/>
+                </div>
+
+                <t t-if="this.state.loading">
+                    <div class="p-3 text-center text-muted">
+                        <i class="oi oi-spin me-2" data-icon="autorenew"/> Loading...
+                    </div>
+                </t>
+                <t t-elif="this.state.assistants.length === 0">
+                    <div class="p-3 text-center text-muted">
+                        <i class="oi d-block mb-1 fs-4" data-icon="voice_chat"/>
+                        <span class="small">No active voice assistant found.</span>
+                    </div>
+                </t>
+                <t t-else="">
+                    <t t-foreach="this.state.assistants" t-as="ast" t-key="ast.id">
+                        <DropdownItem class="'d-flex align-items-center gap-2 py-2 px-3'" onSelected="() => this.openAssistant(ast)">
+                            <div class="rounded-circle bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                <i class="oi" data-icon="mic"/>
+                            </div>
+                            <div class="flex-grow-1 min-w-0 text-start">
+                                <div class="fw-semibold text-truncate" t-out="ast.name"/>
+                                <div class="text-muted small text-truncate">
+                                    <t t-if="ast.language" t-out="ast.language"/>
+                                    <t t-if="ast.language and ast.provider"> • </t>
+                                    <t t-if="ast.provider" t-out="ast.provider"/>
+                                </div>
+                            </div>
+                            <i class="oi text-muted ms-auto" data-icon="chevron_right"/>
+                        </DropdownItem>
+                    </t>
+                </t>
+
+                <div class="border-top mt-1 pt-1">
+                    <DropdownItem class="'text-primary small py-2 px-3 d-flex align-items-center gap-2'" onSelected="() => this.manageAssistants()">
+                        <i class="oi" data-icon="settings"/>
+                        <span>Manage Assistants</span>
+                    </DropdownItem>
+                </div>
+            </t>
+        </Dropdown>
+    </t>
+</templates>

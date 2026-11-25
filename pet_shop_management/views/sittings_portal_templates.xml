@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template for pet sittings -->
+    <template id="portal_my_home_menu_sittings"
+              name="Portal layout : sittings menu entries"
+              inherit_id="portal.portal_breadcrumbs" priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'sittings'" class="breadcrumb-item active">
+                Pet Sitting Schedules
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_sittings" name="Pet Sitting Schedules">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar" breadcrumbs_searchbar="True"/>
+            <div t-if="not sittings" class="alert alert-info py-3" role="alert">
+                There are currently no pet sittings scheduled.
+            </div>
+            <t t-if="sittings" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Sale Order</th>
+                        <th>Pets</th>
+                        <th class='d-none d-md-table-cell'>Service</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="sittings" t-as="sit">
+                        <tr class="align-middle">
+                            <td class="fw-semibold">
+                                <a t-if="sit.number_id" t-att-href="sit.number_id.get_portal_url()">
+                                    <span t-out="sit.number_id.name"/>
+                                </a>
+                                <span t-else="" class="text-muted">-</span>
+                            </td>
+                            <td>
+                                <t t-foreach="sit.pet_info_ids" t-as="p">
+                                    <a t-if="p.num" t-attf-href="/my/pets/#{p.num.id}" class="text-decoration-none">
+                                        <span class="badge bg-primary text-white me-1" t-out="p.pet_num"/>
+                                        <span t-if="p.name" class="me-2 text-dark fw-medium" t-out="p.name"/>
+                                    </a>
+                                    <t t-else="">
+                                        <span class="badge bg-secondary text-white me-1" t-out="p.pet_num"/>
+                                        <span t-if="p.name" class="me-2 text-dark" t-out="p.name"/>
+                                    </t>
+                                </t>
+                                <span t-if="not sit.pet_info_ids" class="text-muted">-</span>
+                            </td>
+                            <td class='d-none d-md-table-cell'>
+                                <t t-foreach="sit.service_ids" t-as="s">
+                                    <span class="badge bg-light text-dark border me-1" t-out="s.name.name"/>
+                                </t>
+                                <span t-if="not sit.service_ids" class="text-muted">-</span>
+                            </td>
+                            <td><span t-field="sit.date_start"/></td>
+                            <td><span t-field="sit.end_date"/></td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+</odoo>

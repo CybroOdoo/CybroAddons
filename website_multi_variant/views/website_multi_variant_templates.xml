@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Product Template is inherited to add the table that lets users choose multiple variants -->
+    <template id="product_inherit_website_multi_variant" inherit_id="website_sale.product">
+        <xpath expr="//div[@id='o_wsale_product_cta_section']" position="after">
+            <div class="multi_variant_list mb-4"
+                 t-if="len(product.product_variant_ids) &gt; 1">
+                <form method="post" action="/shop/cart/multi">
+                    <input type="hidden" name="csrf_token"
+                           t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="product_tmpl_id"
+                           t-att-value="product.id"/>
+                    <table class="table table-striped table-sm"
+                           id="product_variants">
+                        <thead>
+                            <tr>
+                                <th class="w-50">Attributes</th>
+                                <th class="w-25">Price</th>
+                                <th class="w-25">Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="product.product_variant_ids"
+                                t-as="variant">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img class="variant_image rounded object-fit-cover"
+                                             width="48"
+                                             height="48"
+                                             t-att-src="'/web/image/product.product/%s/image_128' % variant.id"
+                                             alt="Variant image"/>
+                                        <div>
+                                            <div t-foreach="variant.product_template_attribute_value_ids"
+                                                 t-as="attribute">
+                                                <div>
+                                                    <span t-field="attribute.attribute_id.name"/>:
+                                                    <span t-esc="attribute.name"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td id="td-price" name="product_price" class="align-middle">
+                                    <t t-set="combination_info" t-value="variant._get_combination_info_variant()"/>
+                                    <span t-out="combination_info['price']"
+                                          class="text-nowrap"
+                                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                    <t t-if="combination_info['has_discounted_price']">
+                                        <del class="text-danger small ms-1 text-nowrap"
+                                             t-out="combination_info['list_price']"
+                                             t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="align-middle">
+                                    <div class="css_quantity input-group d-inline-flex flex-nowrap align-middle border rounded"
+                                         contenteditable="false">
+                                        <button type="button"
+                                                class="btn btn-link js_add_cart_json text-dark px-2 text-decoration-none"
+                                                aria-label="Remove one"
+                                                name="minus_button"
+                                                title="Remove one">
+                                            <i class="oi" data-icon="remove"/>
+                                        </button>
+                                        <input type="text"
+                                               class="form-control quantity text-center border-0 px-1"
+                                               data-min="0"
+                                               t-att-name="'quantity-%s' % variant.id"
+                                               value="0"
+                                               name="add_qty"
+                                               aria-label="Quantity"/>
+                                        <button type="button"
+                                                class="btn btn-link js_add_cart_json text-dark px-2 text-decoration-none"
+                                                aria-label="Add one"
+                                                name="plus_button"
+                                                title="Add one">
+                                            <i class="oi" data-icon="add"/>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="d-flex align-items-center gap-2 mt-3 mb-2">
+                        <button type="submit"
+                                id="m_add_to_cart"
+                                class="btn btn-primary btn-lg js_check_product add-to-cart-btn">
+                            <i class="fa fa-shopping-cart me-2"/>
+                            <span>Add to Cart</span>
+                        </button>
+                        <t t-if="is_view_active('website_sale.product_buy_now')">
+                            <button type="submit"
+                                    name="buy_now"
+                                    value="1"
+                                    class="btn btn-outline-primary btn-lg buy_now_variant">
+                                <i class="fa fa-bolt me-2"/>
+                                <span>Buy Now</span>
+                            </button>
+                        </t>
+                    </div>
+                </form>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wsale_product_details_content_section_price')]" position="attributes">
+            <attribute name="t-if">not is_view_active('website_sale.cta_wrapper_boxed') and len(product.product_variant_ids) &lt;= 1</attribute>
+        </xpath>
+        <xpath expr="//t[@name='variant_info']" position="attributes">
+            <attribute name="t-if">len(product.product_variant_ids) &lt;= 1</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wsale_product_details_content_section_cta')]" position="attributes">
+            <attribute name="t-if">len(product.product_variant_ids) &lt;= 1</attribute>
+        </xpath>
+    </template>
+
+    <!-- Hides the add to cart quantity box from the screen if product has multiple variants -->
+    <template id="product_quantity_inherit_website_multi_variant" inherit_id="website_sale.product_quantity">
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="attributes">
+            <attribute name="t-if">len(product.product_variant_ids) &lt;= 1</attribute>
+        </xpath>
+    </template>
+</odoo>

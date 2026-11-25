@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.module.category" id="module_category_voice_assistant">
+        <field name="name">Voice Assistant</field>
+        <field name="description">Manage AI Voice Assistants, Knowledge Base, and Call History.</field>
+        <field name="sequence">25</field>
+    </record>
+
+    <!-- Odoo 20 3-tier Security: Privilege connects Category to Groups -->
+    <record id="privilege_voice_assistant" model="res.groups.privilege">
+        <field name="name">Voice Assistant</field>
+        <field name="category_id" ref="module_category_voice_assistant"/>
+        <field name="sequence">25</field>
+    </record>
+
+    <record id="group_voice_assistant_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="privilege_id" ref="privilege_voice_assistant"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_voice_assistant_manager" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="privilege_id" ref="privilege_voice_assistant"/>
+        <field name="implied_ids" eval="[(4, ref('group_voice_assistant_user'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

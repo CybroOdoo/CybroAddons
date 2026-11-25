@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Rearranged the Composer and Composer.actionButtons templates-->
+<templates id="template" xml:space="preserve">
+    <t t-name="whatsapp_chat_layout.ComposerAdvanced"
+       t-inherit="mail.Composer"
+       t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o-mail-Composer-coreMain')]"
+               position="replace">
+            <div class="o-mail-Composer-coreMain d-flex flex-nowrap align-items-start flex-grow-1"
+                 t-att-class="{ 'flex-column' : this.extended }">
+                <div class="d-flex bg-view flex-grow-1"
+                     t-att-class="{
+                        'border-top border-bottom': this.compact and !this.props.composer.message,
+                        'border': this.props.composer.message,
+                        'border rounded-3' : this.normal,
+                        'border rounded-3 align-self-stretch flex-column' : this.extended,
+                    }">
+                    <div class="o-mail-Composer-actions d-flex bg-view"
+                         t-att-class="{
+                                'ms-1': this.compact and this.ui.isSmall,
+                                'mx-1 me-2': this.compact and !this.ui.isSmall,
+                                'ms-3': this.normal,
+                                'mx-3 border-top p-1': this.extended,
+                            }">
+
+                            <div class="d-flex flex-grow-1 align-items-center"
+                                 t-ref="this.quickActionsRef">
+                                <button class="btn border-0 rounded-pill"
+                                        aria-label="Emojis"
+                                        t-on-click="this.onClickAddEmoji"
+                                        t-ref="this._emojiButtonRef"><i class="oi oi-fw" data-icon="add_reaction"/></button>
+                                <FileUploader t-if="this.allowUpload"
+                                              multiUpload="true"
+                                              onUploaded="(data) => { this.attachmentUploader.uploadData(data) }">
+                                    <t t-set-slot="toggler">
+                                        <button t-att-disabled="!this.state.active"
+                                                class="o-mail-Composer-attachFiles btn border-0 rounded-pill"
+                                                title="Attach files"
+                                                aria-label="Attach files"
+                                                type="button"
+                                                t-on-click="this.onClickAddAttachment"><i class="oi oi-fw" data-icon="attach_file"/></button>
+                                    </t>
+                                </FileUploader>
+                            </div>
+                        <button t-if="this.props.showFullComposer and this.thread and this.thread.type === 'chatter'"
+                                class="o-mail-Composer-fullComposer btn m-1 border-0 rounded-pill"
+                                title="Full composer" aria-label="Full composer"
+                                type="button" t-on-click="this.onClickFullComposer"><i class="oi oi-fw" data-icon="expand_content"/></button>
+                    </div>
+                    <div class="position-relative flex-grow-1">
+                        <textarea
+                                class="o-mail-Composer-input form-control bg-view px-3 border-0 rounded-3 shadow-none overflow-auto"
+                                t-ref="this.ref"
+                                style="height:40px;"
+                                t-on-keydown="this.onKeydown"
+                                t-on-focusin="this.onFocusin"
+                                t-on-focusout="this.onFocusout"
+                                t-on-click="(ev) => this.markEventHandled(ev, 'composer.onClickTextarea')"
+                                t-on-paste="this.onPaste"
+                                t-on-input="(ev) => this.onInput(ev)"
+                                t-model.proxy="this.props.composer.composerText"
+                                t-att-placeholder="this.placeholder"
+                                t-att-readOnly="!this.state.active"
+                        />
+                        <!--
+                             This is an invisible textarea used to compute the composer
+                             height based on the text content. We need it to downsize
+                             the textarea properly without flicker.
+                        -->
+                        <textarea
+                                class="o-mail-Composer-fake position-absolute"
+                                t-att-value="this.props.composer.composerText"
+                                t-ref="this.fakeTextarea"
+                                disabled="1"
+                        />
+                    </div>
+                    <t t-if="!this.extended" t-call="mail.Composer.sendButton"/>
+                </div>
+                <div t-if="this.extended and !this.props.composer.message"
+                     class="d-flex align-items-center mt-2 gap-2">
+                    <t t-call="mail.Composer.sendButton"/>
+                    <span t-if="!this.isSendButtonDisabled and !this.props.composer.message"
+                          t-out="this.OR_PRESS_SEND_KEYBIND"/>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>

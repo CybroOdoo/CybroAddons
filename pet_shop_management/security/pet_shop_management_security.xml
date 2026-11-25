@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Multi-company Rules -->
+    <record id="rule_sitting_schedule_company" model="ir.access">
+        <field name="name">sitting.schedule multi-company</field>
+        <field name="model_id" ref="model_sitting_schedule"/>
+        <field name="operation">crud</field>
+        <field name="domain">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_working_time_company" model="ir.access">
+        <field name="name">working.time multi-company</field>
+        <field name="model_id" ref="model_working_time"/>
+        <field name="operation">crud</field>
+        <field name="domain">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!-- Portal Record Rules -->
+    <record id="rule_sitting_schedule_portal" model="ir.access">
+        <field name="name">sitting.schedule portal owner</field>
+        <field name="model_id" ref="model_sitting_schedule"/>
+        <field name="group_id" ref="base.group_portal"/>
+        <field name="operation">r</field>
+        <field name="domain">['|', ('number_id.partner_id', '=', user.partner_id.id), ('pet_info_ids.customer', '=', user.partner_id.id)]</field>
+    </record>
+
+    <record id="rule_product_product_portal" model="ir.access">
+        <field name="name">product.product pet and pet service portal</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="group_id" ref="base.group_portal"/>
+        <field name="operation">r</field>
+        <field name="domain">['|', '&amp;', ('is_pet', '=', True), '|', ('customer_id', '=', user.partner_id.id), ('partner_id', '=', user.partner_id.id), ('is_pet_service', '=', True)]</field>
+    </record>
+
+    <record id="rule_product_template_portal" model="ir.access">
+        <field name="name">product.template pet and pet service portal</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="group_id" ref="base.group_portal"/>
+        <field name="operation">r</field>
+        <field name="domain">['|', ('product_variant_ids.is_pet', '=', True), ('product_variant_ids.is_pet_service', '=', True)]</field>
+    </record>
+</odoo>

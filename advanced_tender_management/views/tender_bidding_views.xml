@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <!-- Action to open Tender Bidding records with default grouping by tender -->
+    <record id="tender_bidding_action" model="ir.actions.act_window">
+        <field name="name">Tender Bidding</field>
+        <field name="res_model">tender.bidding</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{"search_default_filter_group_by_tender": 1}</field>
+    </record>
+        <!-- List view to display bidding records with status-based decorations -->
+    <record id="tender_bidding_view_list" model="ir.ui.view">
+        <field name="name">tender.bidding.view.list</field>
+        <field name="model">tender.bidding</field>
+        <field name="arch" type="xml">
+            <list default_order="total_bidding_amount asc" decoration-warning="bidding_state == 'bid'"
+                  decoration-success="bidding_state == 'bid_close'">
+                <field name="name"/>
+                <field name="vendor_id"/>
+                <field name="total_bidding_amount"/>
+                <field name="bidding_state" invisible="1" optional="hide"/>
+            </list>
+        </field>
+    </record>
+        <!-- Form view for managing tender bidding details -->
+    <record id="tender_bidding_view_form" model="ir.ui.view">
+        <field name="name">tender.bidding.view.form</field>
+        <field name="model">tender.bidding</field>
+        <field name="arch" type="xml">
+            <form string="Tender Bidding Form">
+                <header>
+                    <field name="bidding_state" widget="statusbar"
+                           statusbar_visible="pre_qualification,bid,bid_close,won,lost"/>
+                    <field name="tender_state" invisible="1"/>
+                    <button name="action_submit_bid" type="object" string="Submit Bid"
+                            class="oe_highlight"
+                            groups="advanced_tender_management.group_bidding_manager"
+                            invisible="bidding_state != 'pre_qualification' or tender_state != 'bid_submission'"
+                            confirm="Submit this bid for the vendor? It can then only change through an edit request."/>
+                    <button name="action_qualify" type="object" class="oe_highlight qualified-btn"
+                            invisible="qualification_stage == 'qualified' or tender_state not in ('bid_evaluation', 'bid_selection') or bidding_state in ('won', 'lost')">
+                        Qualify Bid
+                    </button>
+                    <button name="action_disqualify" type="object" class="oe_highlight disqualified-btn"
+                            invisible="qualification_stage == 'disqualified' or tender_state not in ('bid_evaluation', 'bid_selection') or bidding_state in ('won', 'lost')">
+                        Disqualify Bid
+                    </button>
+                    <button name="action_approve_edit_request" type="object" class="oe_highlight edit-request-btn"
+                            invisible="not edit_request or tender_state != 'bid_submission' or bidding_state != 'bid_close'">
+                        Approve Edit Request
+                    </button>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Pending" bg_color="text-bg-danger"
+                            invisible="not bidding_state=='bid'"/>
+                    <widget name="web_ribbon" title="Confirmed" bg_color="text-bg-success"
+                            invisible="not bidding_state=='bid_close'"/>
+                    <widget name="web_ribbon" title="Won" bg_color="text-bg-success"
+                            invisible="bidding_state != 'won'"/>
+                    <widget name="web_ribbon" title="Lost" bg_color="text-bg-secondary"
+                            invisible="bidding_state != 'lost'"/>
+                    <div class="oe_title mb24">
+                        <h1>
+                            <field options="{'line_breaks': True}" class="text-break" name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="bidding_date" readonly="bidding_state != 'pre_qualification'"/>
+                            <field name="vendor_id" readonly="bidding_state != 'pre_qualification'"/>
+                        </group>
+                        <group>
+                            <field name="tender_id" readonly="bidding_state != 'pre_qualification'"/>
+                            <field name="edit_request" invisible="1"/>
+                            <field name="qualification_stage" readonly="1"/>
+                        </group>
+                        <notebook>
+                            <page string="Bidding">
+                                <field name="tender_bid_products_ids" widget="section_and_note_one2many"
+                                       readonly="bidding_state != 'pre_qualification'">
+                                    <list editable="bottom" create="0" delete="0">
+                                        <field name="sequence" column_invisible="True"/>
+                                        <field name="display_type" column_invisible="True"/>
+                                        <field name="tender_line_id" column_invisible="True"/>
+                                        <column name="product_and_description">
+                                            <field name="product_id" readonly="1" force_save="1"
+                                                   invisible="display_type"/>
+                                            <field name="name" readonly="1" force_save="1"/>
+                                        </column>
+                                        <field name="tender_id"/>
+                                        <field name="product_code"/>
+                                        <field name="product_qty" readonly="1" force_save="1"/>
+                                        <field name="product_uom_id"/>
+                                        <field name="product_price"/>
+                                        <field name="product_total"/>
+                                    </list>
+                                </field>
+                                <group>
+                                    <field name="total_bidding_amount"/>
+                                </group>
+                            </page>
+                            <page string="Documents">
+                                <field name="vendor_attachments_ids"
+                                       readonly="bidding_state != 'pre_qualification'"/>
+                            </page>
+                        </notebook>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+        <!-- Form view for managing tender bidding details -->
+    <record id="tender_bidding_view_search" model="ir.ui.view">
+        <field name="name">tender.bidding.view.search</field>
+        <field name="model">tender.bidding</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="vendor_id"/>
+                <field name="tender_id"/>
+                <filter string="Qualified" name="qualified" domain="[('qualification_stage', '=', 'qualified')]"/>
+                <filter string="Edit Requested" name="edit_requested" domain="[('edit_request', '=', True)]"/>
+                <group>
+                    <filter string="Tender" name="filter_group_by_tender"
+                            context="{'group_by':'tender_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

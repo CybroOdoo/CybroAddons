@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- PivotConditions template -->
+    <t t-name="pivot_conditional_formatting.PivotConditions"
+       t-inherit="web.PivotRenderer" t-inherit-mode="extension">
+        <xpath expr="//table" position="before">
+            <!-- Conditional formatting container -->
+            <div class="conditional_container" t-if="this.condState.showContainer">
+                <div class="sub_container1">
+                    <!-- Dropdown for selecting condition -->
+                    <select class="condition_select"
+                            t-model.proxy="this.condState.condition"
+                            t-on-change="this.display_field">
+                        <option value="greater than">Greater Than</option>
+                        <option value="in between">In Between</option>
+                        <option value="null">Is Empty</option>
+                        <option value="less than">Less Than</option>
+                    </select>
+                    <div class="input_container">
+                        <div class="sub_input_container"
+                             id="sub_input_container1"
+                             t-if="this.condState.condition !== 'null'">
+                            <label for="condition_val" id="value_label1">Value :</label>
+                            <input type="number" class="condition_val"
+                                   id="condition_val"
+                                   t-model.proxy="this.condState.value"/>
+                        </div>
+                        <div class="sub_input_container"
+                             id="sub_input_container2"
+                             t-if="this.condState.condition === 'in between'">
+                            <label for="secondcondition_val" id="value_label">Second Value :</label>
+                            <input type="number" class="condition_val"
+                                   id="secondcondition_val"
+                                   t-model.proxy="this.condState.secondValue"/>
+                        </div>
+                    </div>
+                    <span class="validation-error" t-if="this.condState.hasError">
+                        First input should be less than Second
+                    </span>
+                    <div class="color_container">
+                        <div class="sub_color_container">
+                            <label for="colorpicker">Color :</label>
+                            <input type="color" class="colorpicker color-input"
+                                   id="colorpicker"
+                                   t-model.proxy="this.condState.color"/>
+                        </div>
+                        <div class="sub_color_container">
+                            <label for="text_color">Text-Color :</label>
+                            <input type="color" class="text_color color-input"
+                                   id="text_color"
+                                   t-model.proxy="this.condState.textColor"/>
+                        </div>
+                    </div>
+                    <!-- Button to save the conditional formatting rule -->
+                    <button type="button" class="condition_button"
+                            t-on-click="this.set_rule">save</button>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//table" position="attributes">
+            <attribute name="t-on-mousedown">this.conditional_format_cell</attribute>
+            <attribute name="t-on-mouseover">this.mouse_over_function</attribute>
+        </xpath>
+    </t>
+
+    <!-- PivotConditionButton template -->
+    <t t-name="pivot_conditional_formatting.PivotConditionButton"
+       t-inherit="web.PivotView.Buttons" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('btn-group')][last()]" position="after">
+            <!-- Conditional formatting button -->
+            <div class="btn-group conditional_button" role="toolbar">
+                <button class="btn btn-primary"
+                        t-on-click="this.conditional_format_tab">Conditional Formatting</button>
+            </div>
+        </xpath>
+    </t>
+</templates>

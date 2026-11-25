@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Defines a tree/list view for the ora files. -->
+    <record id="ora_file_tree_view" model="ir.ui.view">
+        <field name="name">ora.file.tree.view</field>
+        <field name="model">ora.file</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="filename" column_invisible="1"/>
+                <field name="file" filename="filename"/>
+                <field name="id_file" readonly="1"/>
+                <field name="state" widget="badge" decoration-success="state == 'uploaded'" decoration-danger="state == 'error'" decoration-info="state == 'draft'"/>
+                <field name="error_message" optional="show" readonly="1"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <button name="action_upload_to_vapi" type="object" string="Retry Upload" class="btn-secondary" invisible="state == 'uploaded'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Defines a form view for the ora files. -->
+    <record id="ora_file_form_view" model="ir.ui.view">
+        <field name="name">ora.file.form.view</field>
+        <field name="model">ora.file</field>
+        <field name="arch" type="xml">
+            <form string="Voice Assistant File">
+                <header>
+                    <button name="action_upload_to_vapi" type="object" string="Retry Upload" class="btn-primary" invisible="state == 'uploaded'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,uploaded"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Product Knowledge Base"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="filename" invisible="1"/>
+                            <field name="file" filename="filename"/>
+                            <field name="id_file" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Status &amp; Errors" invisible="not error_message">
+                            <field name="error_message" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for the model. -->
+    <record id="ora_file_action" model="ir.actions.act_window">
+        <field name="name">Files</field>
+        <field name="res_model">ora.file</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
