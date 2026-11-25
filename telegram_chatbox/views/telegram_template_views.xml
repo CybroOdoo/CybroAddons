@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Views for creating and managing Telegram Message Templates.
+    Allows composing dynamic messages with field placeholders for various Odoo models.
+-->
+<odoo>
+    <!-- Telegram Template List View -->
+    <record id="telegram_template_view_list" model="ir.ui.view">
+        <field name="name">telegram.template.view.list</field>
+        <field name="model">telegram.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="model_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Telegram Template Form View -->
+    <record id="telegram_template_view_form" model="ir.ui.view">
+        <field name="name">telegram.template.view.form</field>
+        <field name="model">telegram.template</field>
+        <field name="arch" type="xml">
+            <form string="Telegram Template">
+                <sheet>
+                     <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" required="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="model_id" required="1"/>
+                            <field name="header_attachment_ids" widget="many2many_binary"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page id="message" name="Message">
+                            <field name="message"
+                                placeholder="Your Telegram message, use {{customer_name}}, {{customer_order}} as placeholders for dynamic variables"/>
+                        </page>
+                        <page id="dynamic_variable" name="Dynamic Variables">
+                            <field name="dynamic_variable_ids">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="name" readonly="1" force_save="1" placeholder="E.g. customer_name"/>
+                                    <field name="model_id"/>
+                                    <field name="field_id" domain="[('model_id', '=', model_id)]"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

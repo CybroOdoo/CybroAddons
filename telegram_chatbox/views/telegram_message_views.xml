@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Views for Telegram message logging and tracking.
+    Provides list view, detail form view with attachments kanban, and search filters.
+-->
+<odoo>
+    <!-- Telegram Message List View -->
+    <record id="telegram_message_view_list" model="ir.ui.view">
+        <field name="name">telegram.message.view.list</field>
+        <field name="model">telegram.message</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="direction"/>
+                <field name="partner_id"/>
+                <field name="bot_id"/>
+                <field name="date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Telegram Message Form View -->
+    <record id="telegram_message_view_form" model="ir.ui.view">
+        <field name="name">telegram.message.view.form</field>
+        <field name="model">telegram.message</field>
+        <field name="arch" type="xml">
+            <form string="Telegram Message" class="o_form_readonly" create="0">
+                <header>
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="received,error"
+                           invisible="direction != 'incoming'"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="new,sent,error"
+                           invisible="direction != 'outgoing'"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Message Details" colspan="2">
+                            <field name="direction"/>
+                            <field name="date"/>
+                        </group>
+                        <group string="Sender &amp; Chat Info" colspan="2">
+                            <field name="bot_id"/>
+                            <field name="partner_id"/>
+                            <field name="chat_id"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Message Body">
+                            <field name="message_text"
+                                   placeholder="Telegram message text..."/>
+                        </page>
+                        <page string="Attachments">
+                            <field name="attachment_ids">
+                                <kanban>
+                                    <field name="id"/>
+                                    <field name="name"/>
+                                    <field name="mimetype"/>
+                                    <field name="file_size"/>
+                                    <templates>
+                                        <t t-name="card">
+                                            <div class="oe_kanban_global_click">
+                                                <div class="o_kanban_image">
+                                                    <t t-if="record.mimetype.raw_value and record.mimetype.raw_value.indexOf('image') !== -1">
+                                                        <img t-att-src="'/web/image/' + record.id.raw_value + '/raw'"
+                                                             style="max-width: 100%; max-height: 150px;"
+                                                             alt="Preview"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <div style="text-align: center; padding: 20px;">
+                                                            <i class="fa fa-file-o fa-3x" title="File"/>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                                <div class="oe_kanban_details">
+                                                    <strong><field name="name"/></strong>
+                                                    <div>
+                                                        <t t-if="record.file_size.raw_value">
+                                                            <t t-out="(record.file_size.raw_value / 1024).toFixed(2)"/> KB
+                                                        </t>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Telegram Message Search View -->
+    <record id="telegram_message_view_search" model="ir.ui.view">
+        <field name="name">telegram.message.view.search</field>
+        <field name="model">telegram.message</field>
+        <field name="arch" type="xml">
+            <search string="Telegram Messages">
+                <field name="partner_id"/>
+                <field name="bot_id"/>
+                <field name="direction"/>
+                <field name="state"/>
+                <field name="date"/>
+                <filter string="Incoming" name="filter_incoming" domain="[('direction', '=', 'incoming')]"/>
+                <filter string="Outgoing" name="filter_outgoing" domain="[('direction', '=', 'outgoing')]"/>
+                <separator/>
+                <filter string="Sent" name="filter_sent" domain="[('state', '=', 'sent')]"/>
+                <filter string="Received" name="filter_received" domain="[('state', '=', 'received')]"/>
+                <filter string="Failed" name="filter_error" domain="[('state', '=', 'error')]"/>
+                <group>
+                    <filter string="Partner" name="group_by_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Bot" name="group_by_bot" context="{'group_by': 'bot_id'}"/>
+                    <filter string="Direction" name="group_by_direction" context="{'group_by': 'direction'}"/>
+                    <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Date" name="group_by_date" context="{'group_by': 'date:day'}"/>
+                </group>
+                <searchpanel>
+                    <field name="state" string="State" enable_counters="1"/>
+                    <field name="direction" string="Direction" enable_counters="1"/>
+                    <field name="bot_id" string="Bot" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+</odoo>
