@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Biometric Template List View:
+        Displays imported biometric data such as fingerprints, faces,
+        and cards. Invalid templates are visually muted.
+    -->
+
+    <record id="zkteco_biometric_template_view_list" model="ir.ui.view">
+        <field name="name">zkteco.biometric.template.view.list</field>
+        <field name="model">zkteco.biometric.template</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not valid">
+                <field name="device_id"/>
+                <field name="user_pin"/>
+                <field name="device_user_id"/>
+                <field name="employee_id"/>
+                <field name="template_type"/>
+                <field name="display_label" string="Detail"/>
+                <field name="card_number" optional="hide"/>
+                <field name="size" optional="hide"/>
+                <field name="valid" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <!--
+        Biometric Template Form View:
+        Displays detailed biometric information for a device user.
+        Finger index and card number are shown only for their
+        corresponding biometric types. Raw template data is restricted
+        to technical users.
+    -->
+
+    <record id="zkteco_biometric_template_view_form" model="ir.ui.view">
+        <field name="name">zkteco.biometric.template.view.form</field>
+        <field name="model">zkteco.biometric.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="display_label" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="device_id"/>
+                            <field name="device_user_id"/>
+                            <field name="employee_id"/>
+                            <field name="template_type"/>
+                        </group>
+                        <group>
+                            <field name="finger_index"
+                                   invisible="template_type != 'finger'"/>
+                            <field name="card_number"
+                                   invisible="template_type != 'card'"/>
+                            <field name="size"/>
+                            <field name="valid"/>
+                        </group>
+                    </group>
+                    <group string="Raw Template" groups="base.group_no_one"
+                           invisible="template_type == 'card'">
+                        <field name="template_data" nolabel="1"
+                               placeholder="Base64 of the vendor blob"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--
+        Biometric Template Search View:
+        Provides filters for fingerprints, faces, cards, and biometric
+        records that are not linked to an employee. Records can also
+        be grouped by device, biometric type, or employee.
+    -->
+
+    <record id="zkteco_biometric_template_view_search" model="ir.ui.view">
+        <field name="name">zkteco.biometric.template.view.search</field>
+        <field name="model">zkteco.biometric.template</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="user_pin"/>
+                <field name="employee_id"/>
+                <field name="device_id"/>
+                <filter name="fingerprints" string="Fingerprints"
+                        domain="[('template_type', '=', 'finger')]"/>
+                <filter name="faces" string="Faces"
+                        domain="[('template_type', '=', 'face')]"/>
+                <filter name="cards" string="Cards"
+                        domain="[('template_type', '=', 'card')]"/>
+                <separator/>
+                <filter name="unmapped" string="Not Linked to an Employee"
+                        domain="[('employee_id', '=', False)]"/>
+                <group>
+                    <filter name="group_device" string="Device"
+                            context="{'group_by': 'device_id'}"/>
+                    <filter name="group_type" string="Type"
+                            context="{'group_by': 'template_type'}"/>
+                    <filter name="group_employee" string="Employee"
+                            context="{'group_by': 'employee_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!--
+        Biometric Data Action:
+        Opens the biometric template records in list and form views.
+        The help message explains how biometric data is fetched and
+        how it can be used when replacing a device.
+    -->
+
+    <record id="zkteco_biometric_template_action" model="ir.actions.act_window">
+        <field name="name">Biometric Data</field>
+        <field name="res_model">zkteco.biometric.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No biometric data imported yet
+            </p>
+            <p>
+                Use "Fetch Biometric Data" on a Direct IP device to read its
+                enrolled fingerprints, faces and cards. Keeping them here lets
+                you reseed a replacement terminal instead of re-enrolling
+                everyone at the door.
+            </p>
+        </field>
+    </record>
+
+</odoo>

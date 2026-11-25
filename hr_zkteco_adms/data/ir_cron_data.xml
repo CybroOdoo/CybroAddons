@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Cron: Process Pending ZKTeco Attendance Logs
+        Processes pending attendance punch logs and updates the corresponding
+        attendance records. This cron runs every 10 minutes.-->
+
+    <record id="ir_cron_process_zkteco_logs" model="ir.cron">
+        <field name="name">ZKTeco: Process pending punch logs</field>
+        <field name="model_id" ref="model_zkteco_attendance_log"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_process_pending()</field>
+        <field name="interval_number">10</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="True"/>
+    </record>
+    <!--Cron: Pull Punches from Direct IP Devices
+        Retrieves attendance punch logs from ZKTeco devices connected
+        through the Direct IP/TCP method. This cron runs every 15 minutes
+        and is disabled by default.-->
+
+    <record id="ir_cron_zkteco_pull_devices" model="ir.cron">
+        <field name="name">ZKTeco: Pull punches from Direct IP devices</field>
+        <field name="model_id" ref="model_zkteco_device"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_pull_tcp_devices()</field>
+        <field name="interval_number">15</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="False"/>
+    </record>
+    <!--Cron: Notify Offline Devices
+        Checks the connection status of configured ZKTeco devices and
+        performs the required offline-device notification handling.
+        This cron runs every hour and is disabled by default.-->
+
+    <record id="ir_cron_zkteco_offline_devices" model="ir.cron">
+        <field name="name">ZKTeco: Notify offline devices</field>
+        <field name="model_id" ref="model_zkteco_device"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_check_offline()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="active" eval="False"/>
+    </record>
+
+</odoo>

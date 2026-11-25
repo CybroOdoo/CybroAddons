@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Fetch logs wizard form view -->
+    <record id="zkteco_fetch_logs_wizard_view_form" model="ir.ui.view">
+        <field name="name">zkteco.fetch.logs.wizard.view.form</field>
+        <field name="model">zkteco.fetch.logs.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Fetch Missing Punch Logs">
+                <div class="alert alert-info" role="alert">
+                    Ask the selected terminals for punches they already hold.
+                    Direct IP devices answer immediately; ADMS devices are sent
+                    a request and deliver on their next poll. Punches already
+                    in Odoo are discarded, so a repeated fetch is harmless.
+                </div>
+                <group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="device_ids" widget="many2many_tags" nolabel="1"/>
+                </group>
+                <footer>
+                    <button name="action_fetch" string="Fetch" type="object"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" special="cancel"
+                            class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- Fetch logs wizard action -->
+
+    <record id="zkteco_fetch_logs_wizard_action" model="ir.actions.act_window">
+        <field name="name">Fetch Missing Logs</field>
+        <field name="res_model">zkteco.fetch.logs.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <!-- Export employees wizard form view -->
+
+    <record id="zkteco_export_employees_wizard_view_form" model="ir.ui.view">
+        <field name="name">zkteco.export.employees.wizard.view.form</field>
+        <field name="model">zkteco.export.employees.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Employees to Device">
+                <div class="alert alert-info" role="alert">
+                    Creates the device users and sends their PIN, name and card
+                    number to the terminal. Fingerprints and faces still have to
+                    be enrolled on the device itself.
+                </div>
+                <group>
+                    <group>
+                        <field name="device_id"/>
+                        <field name="overwrite"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="employee_ids" widget="many2many_tags" nolabel="1"/>
+                </group>
+                <footer>
+                    <button name="action_export" string="Export" type="object"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" special="cancel"
+                            class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- Export employees wizard action -->
+
+    <record id="zkteco_export_employees_wizard_action" model="ir.actions.act_window">
+        <field name="name">Export Employees to Device</field>
+        <field name="res_model">zkteco.export.employees.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <!-- Export employees server action -->
+
+    <record id="zkteco_export_employees_server_action" model="ir.actions.server">
+        <field name="name">Export to Biometric Device</field>
+        <field name="model_id" ref="hr.model_hr_employee"/>
+        <field name="binding_model_id" ref="hr.model_hr_employee"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="group_ids" eval="[(4, ref('hr_attendance.group_hr_attendance_officer'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_zkteco_export_to_device()</field>
+    </record>
+
+</odoo>

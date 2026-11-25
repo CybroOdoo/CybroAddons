@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Device User List View:
+        Displays users registered on ZKTeco devices and allows quick
+        employee mapping. Unmapped users are highlighted for attention.
+        Users can also be pushed back to the device directly from the list.
+    -->
+
+    <record id="zkteco_device_user_view_list" model="ir.ui.view">
+        <field name="name">zkteco.device.user.view.list</field>
+        <field name="model">zkteco.device.user</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" decoration-warning="not employee_id">
+                <field name="device_id"/>
+                <field name="user_pin"/>
+                <field name="name"/>
+                <field name="card" optional="hide"/>
+                <field name="employee_id"/>
+                <field name="punch_count" optional="show"/>
+                <field name="last_punch" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <button name="action_push_to_device" type="object" icon="fa-upload"
+                        string="Push to Device" title="Push to Device"/>
+            </list>
+        </field>
+    </record>
+    <!--
+        Device User Form View:
+        Provides detailed information about a device user, including
+        device credentials, employee mapping, punch history, and
+        device synchronization actions.
+    -->
+
+    <record id="zkteco_device_user_view_form" model="ir.ui.view">
+        <field name="name">zkteco.device.user.view.form</field>
+        <field name="model">zkteco.device.user</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_auto_map" string="Auto-Map Employee"
+                            type="object" invisible="employee_id"/>
+                    <button name="action_push_to_device" string="Push to Device"
+                            type="object" class="oe_highlight"/>
+                    <button name="action_delete_from_device" string="Delete from Device"
+                            type="object"
+                            confirm="This queues a command that removes the user, and its enrolled fingerprints or face, from the terminal. Continue?"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_punches" type="object"
+                                class="oe_stat_button" icon="fa-hand-o-up">
+                            <field name="punch_count" widget="statinfo" string="Punches"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="display_label" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="device_id"/>
+                            <field name="user_pin"/>
+                            <field name="name"/>
+                            <field name="card"/>
+                            <field name="privilege"/>
+                        </group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="last_punch"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--
+        Device User Search View:
+        Provides filters for mapped and unmapped device users and allows
+        users to search by PIN, name, or employee and group records by device.
+    -->
+
+    <record id="zkteco_device_user_view_search" model="ir.ui.view">
+        <field name="name">zkteco.device.user.view.search</field>
+        <field name="model">zkteco.device.user</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="user_pin"/>
+                <field name="name"/>
+                <field name="employee_id"/>
+                <filter name="unmapped" string="Unmapped"
+                        domain="[('employee_id', '=', False)]"/>
+                <filter name="mapped" string="Mapped"
+                        domain="[('employee_id', '!=', False)]"/>
+                <group>
+                    <filter name="group_device" string="Device"
+                            context="{'group_by': 'device_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!--
+        Device Users Action:
+        Opens ZKTeco device users in list and form views.
+        The help message explains how users are fetched, mapped to
+        employees, and how mapping processes pending attendance punches.
+    -->
+
+    <record id="zkteco_device_user_action" model="ir.actions.act_window">
+        <field name="name">Device Users</field>
+        <field name="res_model">zkteco.device.user</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No device users yet
+            </p>
+            <p>
+                Use "Fetch Users" on a device to pull its user list, then map
+                each device user to an employee. Mapping a user automatically
+                processes their pending punches.
+            </p>
+        </field>
+    </record>
+
+</odoo>

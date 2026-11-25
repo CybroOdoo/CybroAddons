@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_employee_form_zkteco" model="ir.ui.view">
+        <field name="name">hr.employee.view.form.zkteco</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <!-- The barcode field sits inside an o_row div next to its
+                 Generate/Print buttons; append to the group instead so the
+                 ZKTeco id gets its own labelled row. -->
+            <xpath expr="//group[@name='identification_group']" position="inside">
+                <field name="zkteco_user_id"/>
+            </xpath>
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_zkteco_view_punches" type="object"
+                        class="oe_stat_button" icon="fa-hand-o-up"
+                        groups="hr_attendance.group_hr_attendance_officer"
+                        invisible="not zkteco_device_count">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Biometric</span>
+                        <span class="o_stat_text">Punches</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Biometric Devices" name="zkteco"
+                      groups="hr_attendance.group_hr_attendance_officer">
+                    <group>
+                        <group>
+                            <field name="zkteco_device_count"/>
+                            <field name="zkteco_template_count"/>
+                        </group>
+                        <group>
+                            <button name="action_zkteco_export_to_device"
+                                    type="object" string="Export to a Device"
+                                    class="btn-link" icon="fa-upload"/>
+                        </group>
+                    </group>
+                    <separator string="Registered on These Devices"/>
+                    <field name="zkteco_device_user_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="device_id"/>
+                            <field name="user_pin"/>
+                            <field name="name"/>
+                            <field name="card" optional="hide"/>
+                            <field name="punch_count"/>
+                            <field name="last_punch"/>
+                        </list>
+                    </field>
+                    <separator string="Enrolled Biometric Data"/>
+                    <field name="zkteco_template_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="device_id"/>
+                            <field name="template_type"/>
+                            <field name="display_label" string="Detail"/>
+                            <field name="card_number" optional="hide"/>
+                            <field name="valid"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_employee_tree_zkteco" model="ir.ui.view">
+        <field name="name">hr.employee.view.list.zkteco</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="zkteco_user_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_employee_filter_zkteco" model="ir.ui.view">
+        <field name="name">hr.employee.view.search.zkteco</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <field name="job_id" position="after">
+                <field name="zkteco_user_id" groups="hr.group_hr_user"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

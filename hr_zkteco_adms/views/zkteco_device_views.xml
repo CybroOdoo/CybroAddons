@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        ZKTeco Device Kanban View:
+        Displays biometric devices as cards with their online/offline status,
+        approval status, last-seen time, today's punch count, total users,
+        and unmapped user count.
+    -->
+
+    <record id="zkteco_device_view_kanban" model="ir.ui.view">
+        <field name="name">zkteco.device.view.kanban</field>
+        <field name="model">zkteco.device</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" sample="1">
+                <field name="is_online"/>
+                <field name="active"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <field name="name" class="fs-5 fw-bold"/>
+                            <span t-if="!record.active.raw_value"
+                                  class="badge text-bg-warning">Pending Approval</span>
+                            <span t-elif="record.is_online.raw_value"
+                                  class="badge text-bg-success">Online</span>
+                            <span t-else="" class="badge text-bg-danger">Offline</span>
+                        </div>
+                        <div class="text-muted mb-1">
+                            <i class="fa fa-barcode me-1" title="Serial Number"/>
+                            <field name="serial_number"/>
+                        </div>
+                        <div class="text-muted mb-2">
+                            <i class="fa fa-clock-o me-1" title="Last Seen"/>
+                            <field name="last_seen"/>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <span>
+                                <i class="fa fa-hand-o-up me-1" title="Punches Today"/>
+                                <field name="punch_count_today"/> today
+                            </span>
+                            <span>
+                                <i class="fa fa-users me-1" title="Users"/>
+                                <field name="user_count"/>
+                            </span>
+                            <span t-if="record.unmapped_user_count.raw_value"
+                                  class="text-danger">
+                                <i class="fa fa-question-circle me-1" title="Unmapped Users"/>
+                                <field name="unmapped_user_count"/> unmapped
+                            </span>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <!--
+        ZKTeco Device List View:
+        Provides a compact list of devices with their serial number,
+        model, timezone, last-seen time, online status, punch count,
+        and unmapped user count.
+    -->
+
+    <record id="zkteco_device_view_list" model="ir.ui.view">
+        <field name="name">zkteco.device.view.list</field>
+        <field name="model">zkteco.device</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="not is_online">
+                <field name="name"/>
+                <field name="serial_number"/>
+                <field name="model_name" optional="show"/>
+                <field name="device_tz" optional="hide"/>
+                <field name="last_seen"/>
+                <field name="is_online" string="Online" widget="boolean"/>
+                <field name="punch_count_today"/>
+                <field name="unmapped_user_count"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <!--
+        ZKTeco Device Form View:
+        Provides complete device configuration and management actions.
+        The available buttons depend on whether the device uses ADMS
+        push mode or Direct IP/TCP mode.
+    -->
+
+    <record id="zkteco_device_view_form" model="ir.ui.view">
+        <field name="name">zkteco.device.view.form</field>
+        <field name="model">zkteco.device</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_approve" string="Approve Device"
+                            type="object" class="oe_highlight"
+                            invisible="active or connection_mode != 'adms'"/>
+
+                    <!-- ADMS push: everything is queued for the next poll. -->
+                    <button name="action_check_adms_setup" string="Check Connection"
+                            type="object"
+                            invisible="connection_mode != 'adms'"/>
+                    <button name="action_cmd_fetch_logs" string="Fetch Attendance Logs"
+                            type="object" class="oe_highlight"
+                            invisible="not active or connection_mode != 'adms'"/>
+                    <button name="action_cmd_fetch_users" string="Fetch Users"
+                            type="object"
+                            invisible="not active or connection_mode != 'adms'"/>
+                    <button name="action_cmd_device_info" string="Request Device Info"
+                            type="object"
+                            invisible="not active or connection_mode != 'adms'"/>
+                    <button name="action_cmd_sync_time" string="Sync Clock"
+                            type="object"
+                            invisible="not active or connection_mode != 'adms'"/>
+                    <button name="action_reset_stamps" string="Reset Sync Stamps"
+                            type="object" groups="base.group_no_one"
+                            invisible="not active or connection_mode != 'adms'"
+                            confirm="The device will re-upload every record it still stores on its next transfer. Duplicates are discarded. Continue?"/>
+                    <button name="action_cmd_clear_attlog" string="Clear Device Logs"
+                            type="object"
+                            invisible="not active or connection_mode != 'adms'"
+                            confirm="This queues a CLEAR LOG command: all attendance records stored on the device will be erased. Records already pushed to Odoo are kept. Continue?"/>
+                    <button name="action_cmd_reboot" string="Reboot Device"
+                            type="object"
+                            invisible="not active or connection_mode != 'adms'"
+                            confirm="Queue a REBOOT command for this device?"/>
+
+                    <!-- Direct IP: Odoo dials out, so these act immediately. -->
+                    <button name="action_test_connection" string="Test Connection"
+                            type="object" class="oe_highlight"
+                            invisible="connection_mode != 'tcp'"/>
+                    <button name="action_sync_now" string="Synchronise Now"
+                            type="object" class="oe_highlight"
+                            invisible="connection_mode != 'tcp'"/>
+                    <button name="action_pull_users" string="Download Users"
+                            type="object" invisible="connection_mode != 'tcp'"/>
+                    <button name="action_pull_attendance" string="Download Punches"
+                            type="object" invisible="connection_mode != 'tcp'"/>
+                    <button name="action_pull_biometrics" string="Fetch Biometric Data"
+                            type="object" invisible="connection_mode != 'tcp'"/>
+                    <button name="action_tcp_sync_time" string="Sync Clock"
+                            type="object" invisible="connection_mode != 'tcp'"/>
+                    <button name="action_tcp_clear_attendance" string="Clear Device Logs"
+                            type="object" invisible="connection_mode != 'tcp'"
+                            confirm="All attendance records stored on the terminal will be erased. Records already imported into Odoo are kept. Continue?"/>
+                    <button name="action_tcp_reboot" string="Reboot Device"
+                            type="object" invisible="connection_mode != 'tcp'"
+                            confirm="Restart this device now?"/>
+
+                    <button name="%(zkteco_fetch_logs_wizard_action)d" string="Fetch Missing Logs"
+                            type="action" context="{'default_device_ids': [(6, 0, [id])]}"/>
+                    <button name="%(zkteco_export_employees_wizard_action)d" string="Export Employees"
+                            type="action" context="{'default_device_id': id}"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Pending Approval" bg_color="text-bg-warning"
+                            invisible="active"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_logs" type="object"
+                                class="oe_stat_button" icon="fa-hand-o-up">
+                            <field name="log_count" widget="statinfo" string="Punches"/>
+                        </button>
+                        <button name="action_view_users" type="object"
+                                class="oe_stat_button" icon="fa-users">
+                            <field name="user_count" widget="statinfo" string="Users"/>
+                        </button>
+                        <button name="action_view_commands" type="object"
+                                class="oe_stat_button" icon="fa-terminal"
+                                invisible="connection_mode != 'adms'">
+                            <field name="pending_command_count" widget="statinfo" string="Pending Cmds"/>
+                        </button>
+                        <button name="action_view_templates" type="object"
+                                class="oe_stat_button" icon="fa-hand-paper-o">
+                            <field name="template_count" widget="statinfo" string="Biometrics"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Main Gate uFace800"/></h1>
+                    </div>
+                    <group>
+                        <group string="Connection">
+                            <field name="connection_mode" widget="radio"/>
+                            <field name="serial_number"
+                                   required="connection_mode == 'adms'"
+                                   readonly="connection_mode == 'tcp' and serial_number"/>
+                            <field name="ip_address" invisible="connection_mode != 'tcp'"
+                                   required="connection_mode == 'tcp'"/>
+                            <field name="port" invisible="connection_mode != 'tcp'"/>
+                            <field name="comm_password" password="True"
+                                   invisible="connection_mode != 'tcp'"/>
+                            <field name="tcp_timeout" invisible="connection_mode != 'tcp'"/>
+                            <field name="force_udp" invisible="connection_mode != 'tcp'"/>
+                            <field name="ommit_ping" invisible="connection_mode != 'tcp'"/>
+                            <field name="auto_pull" invisible="connection_mode != 'tcp'"/>
+                        </group>
+                        <group string="Device">
+                            <field name="model_name"/>
+                            <field name="firmware_version"/>
+                            <field name="device_tz"/>
+                            <field name="check_option"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Status">
+                            <field name="is_online"/>
+                            <field name="last_seen"/>
+                            <field name="device_ip" invisible="connection_mode != 'adms'"/>
+                            <field name="attlog_stamp" groups="base.group_no_one"
+                                   invisible="connection_mode != 'adms'"/>
+                            <field name="operlog_stamp" groups="base.group_no_one"
+                                   invisible="connection_mode != 'adms'"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Reported by the Device" invisible="not device_user_count and not device_log_count">
+                            <field name="device_user_count"/>
+                            <field name="device_fp_count"/>
+                            <field name="device_face_count"/>
+                            <field name="device_log_count"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <!--
+        Device Search View:
+        Allows users to search devices by name or serial number and
+        quickly filter online, offline, or inactive devices.
+    -->
+
+    <record id="zkteco_device_view_search" model="ir.ui.view">
+        <field name="name">zkteco.device.view.search</field>
+        <field name="model">zkteco.device</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="serial_number"/>
+                <filter name="online" string="Online" domain="[('is_online', '=', True)]"/>
+                <filter name="offline" string="Offline" domain="[('is_online', '=', False)]"/>
+                <separator/>
+                <filter name="inactive" string="Pending Approval / Archived"
+                        domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_company" string="Company"
+                            context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!--
+        Main Biometric Devices Action:
+        Opens devices in Kanban, List, and Form views.
+    -->
+
+    <record id="zkteco_device_action" model="ir.actions.act_window">
+        <field name="name">Biometric Devices</field>
+        <field name="res_model">zkteco.device</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No biometric device yet
+            </p>
+            <p>
+                Point your ZKTeco device to this server (Comm. Settings →
+                Cloud Server Setting: this host and port) and it will register
+                itself here automatically, pending your approval.
+            </p>
+        </field>
+    </record>
+    <!--
+        Pending Device Action:
+        Displays devices that have not yet been approved.
+        This is mainly used to review newly registered devices before
+        allowing them to communicate with the system.
+    -->
+
+    <record id="zkteco_device_pending_action" model="ir.actions.act_window">
+        <field name="name">Devices Pending Approval</field>
+        <field name="res_model">zkteco.device</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('active', '=', False)]</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Nothing waiting for approval
+            </p>
+            <p>
+                A device that contacts this server with an unknown serial
+                number lands here. Approve it to start accepting its punches.
+            </p>
+        </field>
+    </record>
+
+</odoo>

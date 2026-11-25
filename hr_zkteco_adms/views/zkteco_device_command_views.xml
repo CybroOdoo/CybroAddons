@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Device Command List View:
+        Displays queued commands sent to ZKTeco devices, including their
+        creation time, device, command, response status, and return code.
+        Failed or completed commands are visually highlighted, and
+        eligible commands can be retried directly from the list.
+    -->
+
+    <record id="zkteco_device_command_view_list" model="ir.ui.view">
+        <field name="name">zkteco.device.command.view.list</field>
+        <field name="model">zkteco.device.command</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'error'" decoration-muted="state == 'done'">
+                <field name="create_date" string="Queued On"/>
+                <field name="device_id"/>
+                <field name="command"/>
+                <field name="sent_at"/>
+                <field name="return_code" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'sent'"
+                       decoration-danger="state == 'error'"/>
+                <button name="action_retry" string="Retry" type="object" icon="fa-refresh"
+                        invisible="state not in ('sent', 'error')"/>
+            </list>
+        </field>
+    </record>
+    <!--
+        Device Command Form View:
+        Provides detailed information about an individual device command
+        and allows sent or failed commands to be retried.
+    -->
+
+    <record id="zkteco_device_command_view_form" model="ir.ui.view">
+        <field name="name">zkteco.device.command.view.form</field>
+        <field name="model">zkteco.device.command</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_retry" string="Retry" type="object"
+                            invisible="state not in ('sent', 'error')"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="device_id"/>
+                        <field name="command"/>
+                        <field name="sent_at"/>
+                        <field name="return_code"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--
+        Device Commands Action:
+        Opens the queued ZKTeco device commands in list and form views.
+    -->
+
+    <record id="zkteco_device_command_action" model="ir.actions.act_window">
+        <field name="name">Device Commands</field>
+        <field name="res_model">zkteco.device.command</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

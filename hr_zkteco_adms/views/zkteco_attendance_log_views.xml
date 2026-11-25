@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+     <!--
+        Attendance Log List View:
+        Displays ZKTeco punch logs with visual decorations based on
+        processing state and provides access to device, user, employee,
+        status, and company information.
+    -->
+
+    <record id="zkteco_attendance_log_view_list" model="ir.ui.view">
+        <field name="name">zkteco.attendance.log.view.list</field>
+        <field name="model">zkteco.attendance.log</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'error'"
+                  decoration-warning="state == 'unmapped'"
+                  decoration-muted="state == 'pending'">
+                <field name="punch_time"/>
+                <field name="device_id"/>
+                <field name="device_user_id"/>
+                <field name="employee_id"/>
+                <field name="status" optional="show"/>
+                <field name="verify_mode_label" optional="hide"/>
+                <field name="attendance_id" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-warning="state == 'unmapped'"
+                       decoration-danger="state == 'error'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <!--
+        Attendance Log Form View:
+        Provides detailed information about a punch log and allows
+        pending or failed logs to be processed manually.
+    -->
+
+    <record id="zkteco_attendance_log_view_form" model="ir.ui.view">
+        <field name="name">zkteco.attendance.log.view.form</field>
+        <field name="model">zkteco.attendance.log</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_process" string="Process" type="object"
+                            class="oe_highlight" invisible="state == 'done'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="device_id"/>
+                            <field name="device_user_id"/>
+                            <field name="punch_time"/>
+                            <field name="status"/>
+                            <field name="verify_mode"/>
+                            <field name="verify_mode_label"/>
+                        </group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="attendance_id"/>
+                            <field name="error_message"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--
+        Attendance Log Search View:
+        Provides filters for today's punches and processing states,
+        along with grouping options by device, employee, status, and day.
+    -->
+
+    <record id="zkteco_attendance_log_view_search" model="ir.ui.view">
+        <field name="name">zkteco.attendance.log.view.search</field>
+        <field name="model">zkteco.attendance.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="device_user_id"/>
+                <field name="employee_id"/>
+                <field name="device_id"/>
+                <filter name="today" string="Today"
+                        domain="[('punch_time', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0, 0, 0)))]"/>
+                <separator/>
+                <filter name="pending" string="Pending" domain="[('state', '=', 'pending')]"/>
+                <filter name="unmapped" string="Unmapped" domain="[('state', '=', 'unmapped')]"/>
+                <filter name="error" string="Error" domain="[('state', '=', 'error')]"/>
+                <filter name="done" string="Processed" domain="[('state', '=', 'done')]"/>
+                <group>
+                    <filter name="group_device" string="Device"
+                            context="{'group_by': 'device_id'}"/>
+                    <filter name="group_employee" string="Employee"
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_day" string="Punch Day"
+                            context="{'group_by': 'punch_time:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!--
+        Attendance Log Graph View:
+        Displays the number of punch logs over time, grouped by day.
+    -->
+
+    <record id="zkteco_attendance_log_view_graph" model="ir.ui.view">
+        <field name="name">zkteco.attendance.log.view.graph</field>
+        <field name="model">zkteco.attendance.log</field>
+        <field name="arch" type="xml">
+            <graph string="Punches" type="line" sample="1">
+                <field name="punch_time" interval="day" type="row"/>
+            </graph>
+        </field>
+    </record>
+    <!--
+        Attendance Log Pivot View:
+        Provides punch analysis by employee and month.
+    -->
+
+    <record id="zkteco_attendance_log_view_pivot" model="ir.ui.view">
+        <field name="name">zkteco.attendance.log.view.pivot</field>
+        <field name="model">zkteco.attendance.log</field>
+        <field name="arch" type="xml">
+            <pivot string="Punches" sample="1">
+                <field name="employee_id" type="row"/>
+                <field name="punch_time" type="col" interval="month"/>
+            </pivot>
+        </field>
+    </record>
+    <!--
+        Punch Logs Action:
+        Opens attendance logs in list, form, graph, and pivot views.
+        The help text explains how ZKTeco punch data is processed.
+    -->
+
+    <record id="zkteco_attendance_log_action" model="ir.actions.act_window">
+        <field name="name">Punch Logs</field>
+        <field name="res_model">zkteco.attendance.log</field>
+        <field name="view_mode">list,form,graph,pivot</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No punches received yet
+            </p>
+            <p>
+                Punches pushed by your ZKTeco devices land here and are
+                converted into attendance records automatically.
+            </p>
+        </field>
+    </record>
+    <!--
+        Punch Analysis Action:
+        Opens the attendance log analysis views with processed punches
+        selected by default.
+    -->
+
+    <record id="zkteco_attendance_log_report_action" model="ir.actions.act_window">
+        <field name="name">Punch Analysis</field>
+        <field name="res_model">zkteco.attendance.log</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="context">{'search_default_done': 1}</field>
+    </record>
+
+</odoo>
