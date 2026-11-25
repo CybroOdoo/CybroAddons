@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--
+        /shop — the standard website_sale shop (all products, category sidebar,
+        attribute / price filters, search, sorting, grid / list view, pagination)
+        with the Petzen banner and category tiles on top. Only additions are made
+        to website_sale.products; its look is done in css/shop.css.
+        (The "Top Picks" pet-products carousel stays on the home page.)
+    -->
+    <template id="petzen_shop" inherit_id="website_sale.products" name="Petzen Shop" priority="999">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="pz-page-shop" separator=" "/>
+        </xpath>
+        <xpath expr="//div[@id='wrap']/div[@id='o_wsale_container']" position="before">
+            <!--
+                Keep shop additions in editor structures just like the homepage.
+                Each removable/editable block is a direct child of an
+                .oe_structure, which gives it the website editor's move,
+                duplicate and delete controls.
+            -->
+            <div class="pz-scope pz-shop-top">
+                <!-- ══ PAGE BANNER ══ -->
+                <div class="oe_structure" id="oe_structure_petzen_shop_banner">
+                    <section class="page-banner" data-name="Shop Banner">
+                        <div class="page-banner-inner">
+                            <div class="page-banner-eyebrow">Browse &amp; Buy</div>
+                            <h1 class="page-banner-title">Shop Our <span>Collection</span></h1>
+                            <p class="page-banner-sub">Premium food, toys, accessories and more — handpicked for every type of pet.</p>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ══ CATEGORIES — hidden while a search / filter is active ══ -->
+                <div t-if="not (search or category or attrib_values)"
+                     class="oe_structure" id="oe_structure_petzen_shop_categories">
+                    <!-- Use the reusable homepage snippet so a deleted block can
+                         also be added back from the Petzen snippet panel. -->
+                    <section class="pz-scope section s_petzen_categories" id="categories"
+                             data-snippet="s_petzen_categories" data-name="Petzen Categories" data-limit="5">
+                        <div class="section-header">
+                            <div>
+                                <div class="section-eyebrow">Browse by Pet</div>
+                                <h2 class="section-title">Shop by Category</h2>
+                            </div>
+                            <a href="/shop" class="see-all-link">View all <iconify-icon icon="lucide:arrow-right" style="font-size:16px"/></a>
+                        </div>
+                        <div class="categories-bento o_not_editable"/>
+                        <p class="search-empty pz-categories-empty d-none o_not_editable">No categories found.</p>
+                    </section>
+                </div>
+            </div>
+        </xpath>
+        <!-- section heading of the design above the product grid (Odoo prints the category name itself) -->
+        <xpath expr="//div[hasclass('products_header')]" position="before">
+            <div t-if="not category" class="pz-scope pz-shop-heading">
+                <div class="section-eyebrow" t-out="'Search results' if search else 'Our Catalogue'"/>
+                <h2 class="section-title" t-out="('“%s”' % search) if search else 'All Products'"/>
+            </div>
+        </xpath>
+
+        <!-- Keep Odoo 19's container id: website_sale styles and editor hooks depend on it. -->
+        <xpath expr="//div[@id='wrap']/div[@id='o_wsale_container']" position="attributes">
+            <attribute name="t-attf-class" add="pz-shop" separator=" "/>
+        </xpath>
+        <xpath expr="//section[@id='o_wsale_products_grid']" position="before">
+            <div class="pz-shop-layout-controls" role="group" aria-label="Product layout">
+                <span class="pz-shop-layout-label">View</span>
+                <button type="button" class="pz-shop-layout-btn active" data-pz-layout="grid" aria-label="Grid view" aria-pressed="true">
+                    <i class="fa fa-th-large" aria-hidden="true"/><span>Grid</span>
+                </button>
+                <button type="button" class="pz-shop-layout-btn" data-pz-layout="list" aria-label="List view" aria-pressed="false">
+                    <i class="fa fa-list" aria-hidden="true"/><span>List</span>
+                </button>
+            </div>
+        </xpath>
+    </template>
+
+    <!--
+        Product tile of the shop grid → .product-card of the design.
+        Only additions (category tag, rating, Quick View, data for the quick view);
+        Odoo's form, add-to-cart (.a-submit) and wishlist (.o_add_wishlist) are kept.
+    -->
+    <template id="petzen_products_item" inherit_id="website_sale.products_item" name="Petzen Product Tile" priority="999">
+        <xpath expr="//form" position="attributes">
+            <attribute name="t-attf-class" add="pz-tile" separator=" "/>
+            <attribute name="t-att-data-url">product.website_url</attribute>
+            <attribute name="t-att-data-pz-product-id">product.product_variant_id.id if product.product_variant_count == 1 and product._is_add_to_cart_possible() else None</attribute>
+            <attribute name="t-att-data-template-id">product.id if product.product_variant_count == 1 and product._is_add_to_cart_possible() else None</attribute>
+        </xpath>
+        <xpath expr="//a[contains(@t-attf-class, 'oe_product_image_link')]" position="after">
+            <div class="product-quick">
+                <button type="button" class="pqv-btn"><iconify-icon icon="lucide:eye" style="font-size:14px"/> Quick View</button>
+            </div>
+        </xpath>
+        <xpath expr="//h2[hasclass('o_wsale_products_item_title')]" position="before">
+            <div class="product-tag" t-out="product.public_categ_ids[:1].name or product.categ_id.name or 'Pet Supply'"/>
+        </xpath>
+        <!-- rating stars of the design, driven by Odoo's "Ratings" option of the
+             Products Design panel (o_wsale_products_opt_has_rating): same visibility
+             logic as Odoo's own rating element, which css/shop.css hides in the tile -->
+        <xpath expr="//h2[hasclass('o_wsale_products_item_title')]" position="after">
+            <t t-call="website_sale.product_tile_element_visibility">
+                <t t-set="visible_element_class" t-value="'o_wsale_products_opt_has_rating'"/>
+                <t t-set="pz_rating" t-value="int(round(product.sudo().rating_avg or 0))"/>
+                <div class="product-rating-row">
+                    <span class="stars"><t t-out="'★' * pz_rating"/><span t-if="pz_rating &lt; 5" class="star-dim" t-out="'★' * (5 - pz_rating)"/></span>
+                    <span class="star-count">(<t t-out="product.rating_count"/>)</span>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

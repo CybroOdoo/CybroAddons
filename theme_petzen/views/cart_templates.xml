@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--
+        Petzen cart & checkout.
+        Only small additions are made to the website_sale templates: every element and
+        class used by the website_sale JS (o_cart_product, js_quantity,
+        js_delete_product, js_cart_lines, #cart_total, navigation buttons, payment form…)
+        is kept, so the standard cart → address → delivery → payment flow is unchanged.
+        The look of the design (cart.html / checkout.html) is done in css/odoo.css.
+    -->
+
+    <!-- Layout shared by /shop/cart, /shop/checkout, /shop/address, /shop/payment… -->
+    <template id="petzen_checkout_layout" inherit_id="website_sale.checkout_layout" name="Petzen Checkout Layout">
+        <!-- minimal "co-nav" header on the checkout steps (not on the cart, like the design) -->
+        <xpath expr="//t[@t-call='website.layout']/t[1]" position="before">
+            <!-- only on the real checkout steps (not on the cart nor on /shop/confirmation,
+                 which also use this layout): those pages get the normal menu nav -->
+            <t t-set="pz_checkout_nav" t-value="not show_shorter_cart_summary and xmlid != 'website_sale.cart' and any(xmlid in step[0] for step in website._get_checkout_steps())"/>
+        </xpath>
+        <!-- NB: never set t-attf-class here: QWeb would drop the static classes
+             (oe_website_sale…) that the website_sale JS is bound to. -->
+        <xpath expr="//div[hasclass('oe_website_sale')]" position="attributes">
+            <attribute name="class" add="pz-checkout" separator=" "/>
+            <attribute name="t-att-data-pz-step">'cart' if show_shorter_cart_summary else 'steps'</attribute>
+            <attribute name="t-att-data-pz-empty">'0' if website_sale_order and website_sale_order.website_order_line else '1'</attribute>
+        </xpath>
+        <!-- cart.html heading, above both columns -->
+        <xpath expr="//div[@t-if='show_wizard_checkout']" position="after">
+            <div t-if="show_shorter_cart_summary" class="col-12">
+                <h1 class="cart-heading">Your <span>Cart</span></h1>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- The cart summary is a separate called template in Odoo 19. -->
+    <template id="petzen_shorter_cart_summary" inherit_id="website_sale.shorter_cart_summary" name="Petzen Cart Summary">
+        <xpath expr="//div[@name='o_cart_total_card_body']//t[@t-call='website_sale.total']" position="before">
+            <div class="cs-title">Order Summary</div>
+        </xpath>
+    </template>
+
+    <!-- /shop/address uses checkout_layout without the standard checkout wizard. -->
+    <template id="petzen_address" inherit_id="website_sale.address" name="Petzen Address">
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']/div[hasclass('o_customer_address_fill')]" position="before">
+            <t t-set="pz_checkout_nav" t-value="True"/>
+        </xpath>
+        <xpath expr="//div[hasclass('o_customer_address_fill')]" position="attributes">
+            <attribute name="class" add="pz-checkout" separator=" "/>
+            <attribute name="data-pz-step">steps</attribute>
+        </xpath>
+    </template>
+
+    <template id="petzen_cart" inherit_id="website_sale.cart" name="Petzen Cart" priority="999">
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']/t[1]" position="before">
+            <t t-set="show_wizard_checkout" t-value="False"/>
+        </xpath>
+        <xpath expr="//t[@t-set='show_footer']" position="attributes">
+            <attribute name="t-value">False</attribute>
+        </xpath>
+        <!-- heading is rendered full width by petzen_checkout_layout: only Odoo's
+             "Order summary" title goes. The row itself is kept, it holds the
+             "Quick reorder" button + sidebar that the website_sale JS updates after
+             every quantity change (website_sale_utils.updateQuickReorderSidebar);
+             removing it made + / − / remove crash. -->
+        <xpath expr="//div[@id='shop_cart']/div[hasclass('d-flex')][hasclass('align-items-center')]" position="attributes">
+            <attribute name="class">pz-cart-tools d-flex align-items-center justify-content-end</attribute>
+        </xpath>
+        <xpath expr="//div[@id='shop_cart']/div[hasclass('d-flex')][hasclass('align-items-center')]/h4" position="replace"/>
+        <xpath expr="//div[@id='shop_cart']/div[hasclass('d-flex')][hasclass('align-items-center')]/div[t[@t-call='website_sale.quick_reorder_button']]" position="attributes">
+            <attribute name="class">pz-quick-reorder</attribute>
+        </xpath>
+    </template>
+
+    <template id="petzen_cart_lines" inherit_id="website_sale.cart_lines" name="Petzen Cart Lines" priority="999">
+        <!-- empty state of cart.html -->
+        <xpath expr="//div[@t-if='not website_sale_order or not website_sale_order.website_order_line']" position="replace">
+            <div t-if="not website_sale_order or not website_sale_order.website_order_line" class="js_cart_lines cart-empty">
+                <div class="cart-empty-icon"><iconify-icon icon="lucide:shopping-bag"/></div>
+                <h2>Your cart is empty</h2>
+                <p>Looks like you haven't added anything yet.</p>
+                <a href="/shop" class="btn btn-primary">Start Shopping</a>
+            </div>
+        </xpath>
+        <!-- "$39.99 each" under the product name (not the image link, which is the
+             first cart_line_product_link of the line) -->
+        <xpath expr="//div[@id='cart_products']//t[@t-call='website_sale.cart_line_product_link'][h6]" position="after">
+            <div t-if="line._is_sellable()" class="ci-price">
+                <span t-out="line._get_displayed_unit_price()" t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/> each
+            </div>
+        </xpath>
+        <!-- one round trash button (design) instead of the "Remove" link + mobile button
+             (website_sale_wishlist's "Save for later" buttons also have js_delete_product) -->
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container']/a[hasclass('js_delete_product')][not(hasclass('o_add_wishlist'))]" position="attributes">
+            <attribute name="class">js_delete_product ci-remove</attribute>
+            <attribute name="title">Remove from cart</attribute>
+            <attribute name="aria-label">Remove from cart</attribute>
+        </xpath>
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container']/a[hasclass('js_delete_product')][not(hasclass('o_add_wishlist'))]" position="replace" mode="inner">
+            <iconify-icon icon="lucide:trash-2" style="font-size:15px"/>
+        </xpath>
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container_mobile']/button[hasclass('js_delete_product')][not(hasclass('o_add_wishlist'))]" position="attributes">
+            <attribute name="class">js_delete_product ci-remove</attribute>
+            <attribute name="type">button</attribute>
+            <attribute name="aria-label">Remove from cart</attribute>
+        </xpath>
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container_mobile']/button[hasclass('js_delete_product')][not(hasclass('o_add_wishlist'))]/i" position="replace">
+            <iconify-icon icon="lucide:trash-2" style="font-size:15px"/>
+        </xpath>
+    </template>
+</odoo>
