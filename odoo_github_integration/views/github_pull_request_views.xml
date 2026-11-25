@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pull Request List View: Displays synchronized pull requests with status and review states. -->
+    <record id="view_github_pull_request_list" model="ir.ui.view">
+        <field name="name">github.pull.request.list</field>
+        <field name="model">github.pull.request</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'open'"
+                  decoration-info="state == 'merged'"
+                  decoration-muted="state == 'closed'">
+                <field name="number"/>
+                <field name="title"/>
+                <field name="repository_id"/>
+                <field name="head_branch"/>
+                <field name="base_branch"/>
+                <field name="author"/>
+                <field name="state" widget="badge" decoration-success="state == 'open'" decoration-info="state == 'merged'" decoration-muted="state == 'closed'"/>
+                <field name="review_state" widget="badge" decoration-success="review_state == 'approved'" decoration-warning="review_state == 'pending'" decoration-danger="review_state == 'changes_requested'"/>
+                <field name="created_at"/>
+                <button name="action_create_task" string="Create Task" type="object" icon="fa-tasks"/>
+                <button name="action_view_github_pr" string="GitHub" type="object" icon="fa-external-link"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Pull Request Form View: Detailed view for managing a GitHub PR, reviewing, and creating tasks. -->
+    <record id="view_github_pull_request_form" model="ir.ui.view">
+        <field name="name">github.pull.request.form</field>
+        <field name="model">github.pull.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_create_task" type="object" string="Create Task" class="btn-primary"/>
+                    <button name="action_view_github_pr" type="object" string="Open in GitHub" class="btn-secondary" invisible="not github_url"/>
+                    <field name="state" widget="statusbar" statusbar_visible="open,merged,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h2><field name="number" readonly="1" invisible="not number"/></h2>
+                        <label for="title"/>
+                        <h1>
+                              <field name="title" placeholder="PR Title"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Branches &amp; Repository">
+                            <field name="repository_id"/>
+                            <field name="head_branch"/>
+                            <field name="base_branch"/>
+                            <field name="author"/>
+                            <field name="assignee"/>
+                        </group>
+                        <group string="Status &amp; Timeline">
+                            <field name="review_state"/>
+                            <field name="mergeable"/>
+                            <field name="merged"/>
+                            <field name="created_at"/>
+                            <field name="merged_at" invisible="not merged_at"/>
+                            <field name="closed_at" invisible="state != 'closed'"/>
+                            <field name="github_url" widget="url" invisible="not github_url"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="body" widget="html"/>
+                        </page>
+                        <page string="Linked Tasks" name="tasks">
+                            <field name="task_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="project_id"/>
+                                    <field name="user_ids" widget="many2many_tags"/>
+                                    <field name="stage_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Pull Request Search View -->
+    <record id="view_github_pull_request_search" model="ir.ui.view">
+        <field name="name">github.pull.request.search</field>
+        <field name="model">github.pull.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="title"/>
+                <field name="number"/>
+                <field name="author"/>
+                <field name="repository_id"/>
+                <field name="head_branch"/>
+                <field name="base_branch"/>
+                <filter string="Open" name="filter_open" domain="[('state', '=', 'open')]"/>
+                <filter string="Merged" name="filter_merged" domain="[('state', '=', 'merged')]"/>
+                <filter string="Closed" name="filter_closed" domain="[('state', '=', 'closed')]"/>
+                <separator/>
+                <filter string="Approved" name="filter_approved" domain="[('review_state', '=', 'approved')]"/>
+                <filter string="Pending Review" name="filter_pending" domain="[('review_state', '=', 'pending')]"/>
+                <filter string="Changes Requested" name="filter_changes" domain="[('review_state', '=', 'changes_requested')]"/>
+                <group>
+                    <filter string="Repository" name="group_by_repository" context="{'group_by': 'repository_id'}"/>
+                    <filter string="State" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Review State" name="group_by_review" context="{'group_by': 'review_state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Pull Request Action -->
+    <record id="action_github_pull_request" model="ir.actions.act_window">
+        <field name="name">Pull Requests</field>
+        <field name="res_model">github.pull.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_github_pull_request_search"/>
+        <field name="context">{'search_default_filter_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No pull requests found!
+            </p>
+            <p>
+                Sync your repositories to track and manage pull requests in Odoo.
+            </p>
+        </field>
+    </record>
+</odoo>
