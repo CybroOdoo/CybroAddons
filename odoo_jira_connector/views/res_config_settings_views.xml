@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Jira Connector block in the Project settings -->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.odoo.jira.connector</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="20"/>
+        <field name="inherit_id" ref="project.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='tasks_management']" position="before">
+                <block title="Jira Connector" id="jira_connector" groups="project.group_project_manager">
+                    <setting id="jira_account" string="Jira Account"
+                             help="Use the email address of your Atlassian account and an API token created in it.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="url" class="col-lg-3 o_light_label"/>
+                                <field name="url" placeholder="https://yourname.atlassian.net/"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="user_id_jira" class="col-lg-3 o_light_label"/>
+                                <field name="user_id_jira" placeholder="yourmail@example.com"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="api_token" class="col-lg-3 o_light_label"/>
+                                <field name="api_token" password="True"/>
+                            </div>
+                            <field name="connection" invisible="1"/>
+                            <div class="mt8">
+                                <button name="action_test_connection" string="Test Connection"
+                                        type="object" class="btn-primary"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="jira_sync" string="Import and Export" invisible="not connection"
+                             help="Sync projects, tasks, comments, attachments and users between Odoo and Jira.">
+                        <div class="content-group d-flex flex-wrap gap-2 mt8">
+                            <button name="action_export_to_jira" string="Export/Sync Projects and Tasks"
+                                    type="object" class="btn-primary"/>
+                            <button name="action_import_from_jira" string="Import/Sync Projects and Tasks"
+                                    type="object" class="btn-primary"/>
+                            <button name="action_export_users" string="Export Users"
+                                    type="object" class="btn-primary"/>
+                            <button name="action_import_users" string="Import Users"
+                                    type="object" class="btn-primary"/>
+                        </div>
+                    </setting>
+                    <setting id="jira_automatic" invisible="not connection"
+                             help="Push new Odoo records to Jira, and apply Jira changes received at your Odoo address followed by /jira_webhook.">
+                        <field name="automatic"/>
+                        <div class="content-group" invisible="not automatic">
+                            <div class="row mt8">
+                                <label for="webhook_secret" class="col-lg-3 o_light_label"/>
+                                <field name="webhook_secret" password="True" required="automatic"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
