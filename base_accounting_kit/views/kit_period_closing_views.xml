@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Month-end Closing (P2.3-d) -->
+    <record id="view_kit_period_closing_list" model="ir.ui.view">
+        <field name="name">kit.period.closing.list</field>
+        <field name="model">kit.period.closing</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'closed'" create="0">
+                <header>
+                    <button name="action_create_next_month" type="object" string="Start Next Month"
+                            class="btn-primary" display="always" groups="base_accounting_kit.group_account_chief"/>
+                </header>
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="progress" widget="progressbar"/>
+                <field name="activity_ids" widget="list_activity" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'open'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_kit_period_closing_form" model="ir.ui.view">
+        <field name="name">kit.period.closing.form</field>
+        <field name="model">kit.period.closing</field>
+        <field name="arch" type="xml">
+            <form string="Month-end Closing" create="0">
+                <field name="has_blocking" invisible="1"/>
+                <field name="has_warnings" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <header>
+                    <button name="action_close" type="object" string="Close Month" class="btn-primary"
+                            invisible="state != 'open'" groups="base_accounting_kit.group_account_chief"/>
+                    <button name="action_reopen" type="object" string="Reopen"
+                            invisible="state != 'closed'" groups="base_accounting_kit.group_account_chief"
+                            confirm="Reopen this month? The previous Global Lock Date comes back."/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <span class="text-muted"><field name="date_from" class="oe_inline"/> – <field name="date_to" class="oe_inline"/></span>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="progress" widget="progressbar"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="lock_month" readonly="state != 'open'" groups="base_accounting_kit.group_account_chief"/>
+                            <field name="close_anyway" invisible="state != 'open' or has_blocking or not has_warnings"
+                                   groups="base_accounting_kit.group_account_chief"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tasks" name="tasks">
+                            <field name="task_ids" readonly="state != 'open'">
+                                <list editable="bottom" decoration-muted="done">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="user_id" widget="many2one_avatar_user" width="210px"/>
+                                    <field name="date_deadline" width="70px"/>
+                                    <field name="note" optional="hide"/>
+                                    <field name="done" column_invisible="1"/>
+                                    <field name="done_uid" widget="many2one_avatar_user" optional="show" width="210px"/>
+                                    <field name="done_date" optional="show" width="130px"/>
+                                    <button name="action_done" type="object" string="Done" icon="check"
+                                            class="btn-link text-success" invisible="done"/>
+                                    <button name="action_undo" type="object" string="Undo" icon="undo"
+                                            class="btn-link" invisible="not done"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Checks" name="checks" invisible="state != 'open'">
+                            <table class="table table-sm mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td><span invisible="unreconciled_count" class="text-success">✔</span>
+                                            <span invisible="not unreconciled_count" class="text-danger">✖</span>
+                                            Bank transactions reconciled up to the end of the month</td>
+                                        <td class="text-end"><field name="unreconciled_count" invisible="not unreconciled_count"/></td>
+                                        <td class="text-end"><button name="action_open_check" type="object" string="Open" class="btn-link p-0"
+                                                                     context="{'check': 'unreconciled'}" invisible="not unreconciled_count"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span invisible="draft_count" class="text-success">✔</span>
+                                            <span invisible="not draft_count" class="text-warning">!</span>
+                                            No draft entries in the month</td>
+                                        <td class="text-end"><field name="draft_count" invisible="not draft_count"/></td>
+                                        <td class="text-end"><button name="action_open_check" type="object" string="Open" class="btn-link p-0"
+                                                                     context="{'check': 'draft'}" invisible="not draft_count"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span invisible="transit_count" class="text-success">✔</span>
+                                            <span invisible="not transit_count" class="text-warning">!</span>
+                                            No payments in transit (outstanding receipts / payments, internal transfers)
+                                            <field name="transit_amount" invisible="not transit_count" class="oe_inline text-muted ms-1"/></td>
+                                        <td class="text-end"><field name="transit_count" invisible="not transit_count"/></td>
+                                        <td class="text-end"><button name="action_open_check" type="object" string="Open" class="btn-link p-0"
+                                                                     context="{'check': 'transit'}" invisible="not transit_count"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span invisible="negative_bank_count" class="text-success">✔</span>
+                                            <span invisible="not negative_bank_count" class="text-warning">!</span>
+                                            No bank or cash journal below zero at the end of the month</td>
+                                        <td class="text-end"><field name="negative_bank_count" invisible="not negative_bank_count"/></td>
+                                        <td class="text-end"><button name="action_open_check" type="object" string="Open" class="btn-link p-0"
+                                                                     context="{'check': 'negative_bank'}" invisible="not negative_bank_count"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span invisible="duplicate_bill_count" class="text-success">✔</span>
+                                            <span invisible="not duplicate_bill_count" class="text-warning">!</span>
+                                            No vendor bills that look like duplicates</td>
+                                        <td class="text-end"><field name="duplicate_bill_count" invisible="not duplicate_bill_count"/></td>
+                                        <td class="text-end"><button name="action_open_check" type="object" string="Open" class="btn-link p-0"
+                                                                     context="{'check': 'duplicate_bill'}" invisible="not duplicate_bill_count"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span invisible="depreciation_count" class="text-success">✔</span>
+                                            <span invisible="not depreciation_count" class="text-warning">!</span>
+                                            Depreciation of the month posted</td>
+                                        <td class="text-end"><field name="depreciation_count" invisible="not depreciation_count"/></td>
+                                        <td class="text-end"><button name="action_open_check" type="object" string="Open" class="btn-link p-0"
+                                                                     context="{'check': 'depreciation'}" invisible="not depreciation_count"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_kit_period_closing_search" model="ir.ui.view">
+        <field name="name">kit.period.closing.search</field>
+        <field name="model">kit.period.closing</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter name="open" string="Open" domain="[('state', '=', 'open')]"/>
+                <filter name="closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                <filter name="my_tasks" string="My Tasks"
+                        domain="[('task_ids', 'any', [('user_id', '=', uid), ('done', '=', False)])]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_kit_period_closing" model="ir.actions.act_window">
+        <field name="name">Month-end Closing</field>
+        <field name="res_model">kit.period.closing</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_kit_period_closing_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Start your first month-end closing</p>
+            <p>Each month gets automatic checks and the tasks of Closing Tasks, with a responsible person.</p>
+        </field>
+    </record>
+
+    <!-- Closing task templates -->
+    <record id="view_kit_closing_task_template_list" model="ir.ui.view">
+        <field name="name">kit.closing.task.template.list</field>
+        <field name="model">kit.closing.task.template</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="due_day"/>
+                <field name="note" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_kit_closing_task_template" model="ir.actions.act_window">
+        <field name="name">Closing Tasks</field>
+        <field name="res_model">kit.closing.task.template</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add the tasks of every month-end</p>
+            <p>E.g. "Accrue salaries" (responsible: payroll accountant, due day 3). They are copied into each new month.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_kit_period_closing" action="action_kit_period_closing"
+              parent="account.account_closing_menu" sequence="7" groups="account.group_account_readonly"/>
+    <menuitem id="menu_kit_closing_task_template" action="action_kit_closing_task_template"
+              parent="account.account_closing_menu" sequence="8" groups="base_accounting_kit.group_account_chief"/>
+</odoo>

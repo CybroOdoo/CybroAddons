@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Year-end Closing (P2.3-c), opened by Close Year on a fiscal year -->
+    <record id="view_kit_year_closing_form" model="ir.ui.view">
+        <field name="name">kit.year.closing.form</field>
+        <field name="model">kit.year.closing</field>
+        <field name="arch" type="xml">
+            <form string="Year-end Closing">
+                <field name="fiscal_year_id" invisible="1"/>
+                <field name="company_id" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="has_blocking" invisible="1"/>
+                <field name="has_warnings" invisible="1"/>
+                <p class="text-muted">
+                    <field name="date_from" class="oe_inline" readonly="1"/> –
+                    <field name="date_to" class="oe_inline" readonly="1"/>.
+                    Closing posts the result of the year to Retained Earnings and sets the Global Lock Date
+                    to the end of the year. Reopen reverses both.
+                </p>
+                <group string="Checks">
+                    <div colspan="2" class="o_kit_year_checks">
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td><i class="fa fa-fw" invisible="open_year_count" title="OK">✔</i>
+                                        <i class="fa fa-fw text-danger" invisible="not open_year_count" title="Blocking">✖</i>
+                                        Earlier fiscal years closed</td>
+                                    <td class="text-end"><field name="open_year_count" invisible="not open_year_count"/></td>
+                                    <td class="text-end"><button name="action_open_check" type="object" string="Open" class="btn-link p-0"
+                                                                 context="{'check': 'open_year'}" invisible="not open_year_count"/></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fa fa-fw" invisible="unreconciled_count" title="OK">✔</i>
+                                        <i class="fa fa-fw text-danger" invisible="not unreconciled_count" title="Blocking">✖</i>
+                                        Bank transactions reconciled up to the end of the year</td>
+                                    <td class="text-end"><field name="unreconciled_count" invisible="not unreconciled_count"/></td>
+                                    <td class="text-end"><button name="action_open_check" type="object" string="Open" class="btn-link p-0"
+                                                                 context="{'check': 'unreconciled'}" invisible="not unreconciled_count"/></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fa fa-fw" invisible="draft_count" title="OK">✔</i>
+                                        <i class="fa fa-fw text-warning" invisible="not draft_count" title="Warning">!</i>
+                                        No draft entries in the year</td>
+                                    <td class="text-end"><field name="draft_count" invisible="not draft_count"/></td>
+                                    <td class="text-end"><button name="action_open_check" type="object" string="Open" class="btn-link p-0"
+                                                                 context="{'check': 'draft'}" invisible="not draft_count"/></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fa fa-fw" invisible="depreciation_count" title="OK">✔</i>
+                                        <i class="fa fa-fw text-warning" invisible="not depreciation_count" title="Warning">!</i>
+                                        Depreciation of the year posted</td>
+                                    <td class="text-end"><field name="depreciation_count" invisible="not depreciation_count"/></td>
+                                    <td class="text-end"><button name="action_open_check" type="object" string="Open" class="btn-link p-0"
+                                                                 context="{'check': 'depreciation'}" invisible="not depreciation_count"/></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fa fa-fw" invisible="recurring_count" title="OK">✔</i>
+                                        <i class="fa fa-fw text-warning" invisible="not recurring_count" title="Warning">!</i>
+                                        Recurring invoices of the year generated</td>
+                                    <td class="text-end"><field name="recurring_count" invisible="not recurring_count"/></td>
+                                    <td class="text-end"><button name="action_open_check" type="object" string="Open" class="btn-link p-0"
+                                                                 context="{'check': 'recurring'}" invisible="not recurring_count"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <field name="close_anyway" invisible="has_blocking or not has_warnings"/>
+                </group>
+                <group>
+                    <group string="Result of the year">
+                        <field name="income"/>
+                        <field name="expense"/>
+                        <field name="result" class="fw-bold"/>
+                    </group>
+                    <group string="Closing entry">
+                        <field name="post_entry"/>
+                        <field name="earnings_account_id" invisible="not post_entry"/>
+                        <field name="retained_account_id" invisible="not post_entry"
+                               required="post_entry and result" options="{'no_create': True}"/>
+                        <field name="journal_id" invisible="not post_entry"
+                               required="post_entry and result" options="{'no_create': True}"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_close" type="object" string="Close Year" class="btn-primary"
+                            invisible="has_blocking or (has_warnings and not close_anyway)"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

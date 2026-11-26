@@ -19,9 +19,10 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
+from markupsafe import Markup
+
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
-from odoo.tools import float_compare
 
 
 class AccountAssetDepreciationLine(models.Model):
@@ -62,10 +63,24 @@ class AccountAssetDepreciationLine(models.Model):
         for line in self:
             line.move_posted_check = True if line.move_id and line.move_id.state == 'posted' else False
 
+    @api.model
+    def _analytic_distribution(self, record, side):
+        """Analytic distribution of a depreciation move line.
+
+        The analytic account of the asset (or category) goes on the expense
+        line of an asset and on the revenue line of a deferred revenue.
+
+        :param record: the asset or the asset category
+        :param side: ``'purchase'`` for the expense line, ``'sale'`` for the
+            revenue line
+        """
+        if record.account_analytic_id and record.type == side:
+            return {str(record.account_analytic_id.id): 100}
+        return False
+
     def create_move(self, post_move=True):
-        """Create accounting moves for asset depreciation lines."""
+        """Create and post the entries of depreciation lines that are due."""
         created_moves = self.env['account.move']
-        prec = self.env['decimal.precision'].precision_get('Account')
         if self.mapped('move_id'):
             raise UserError(_(
                 'This depreciation is already linked to a journal entry! Please post or delete it.'))
@@ -81,30 +96,29 @@ class AccountAssetDepreciationLine(models.Model):
                                       depreciation_date)
             asset_name = line.asset_id.name + ' (%s/%s)' % (line.sequence, len(line.asset_id.depreciation_line_ids))
             partner = self.env['res.partner']._find_accounting_partner(line.asset_id.partner_id)
-            move_line_1 = {
-                'name': asset_name,
-                'account_id': asset_id.account_depreciation_id.id,
-                'debit': 0.0 if float_compare(amount, 0.0,
-                                              precision_digits=prec) > 0 else -amount,
-                'credit': amount if float_compare(amount, 0.0,
-                                                  precision_digits=prec) > 0 else 0.0,
-                'journal_id': asset_id.journal_id.id,
-                'partner_id': partner.id,
-                'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
-                'amount_currency': company_currency != current_currency and - 1.0 * line.amount or 0.0,
-            }
-            move_line_2 = {
-                'name': asset_name,
-                'account_id': asset_id.account_depreciation_expense_id.id,
-                'credit': 0.0 if float_compare(amount, 0.0,
-                                               precision_digits=prec) > 0 else -amount,
-                'debit': amount if float_compare(amount, 0.0,
-                                                 precision_digits=prec) > 0 else 0.0,
-                'journal_id': asset_id.journal_id.id,
-                'partner_id': partner.id,
-                'currency_id': company_currency != current_currency and current_currency.id or company_currency.id,
-                'amount_currency': company_currency != current_currency and line.amount or 0.0,
-            }
+            # As in core, the amount goes in ``balance``; ``currency_id`` and
+            # ``amount_currency`` only for a foreign currency (with the
+            # company currency, core sets ``balance`` from
+            # ``amount_currency``, so passing 0 there zeroed the entry).
+            foreign = company_currency != current_currency
+
+            def _line(account, balance, amount_currency, side):
+                vals = {
+                    'name': asset_name,
+                    'account_id': account.id,
+                    'balance': balance,
+                    'partner_id': partner.id,
+                    'analytic_distribution': self._analytic_distribution(
+                        asset_id, side),
+                }
+                if foreign:
+                    vals.update(currency_id=current_currency.id,
+                                amount_currency=amount_currency)
+                return vals
+            move_line_1 = _line(asset_id.account_depreciation_id, -amount,
+                                -line.amount, 'sale')
+            move_line_2 = _line(asset_id.account_depreciation_expense_id,
+                                amount, line.amount, 'purchase')
             # Build a balanced two-line entry directly (no create-then-rewrite
             # and no "Automatic Balancing Line" removal — that hack is a no-op
             # for a tax-less JE in v19 and breaks under translation).
@@ -118,9 +132,7 @@ class AccountAssetDepreciationLine(models.Model):
             created_moves |= move
 
         if post_move and created_moves:
-            created_moves.filtered(lambda m: any(
-                m.asset_depreciation_ids.mapped(
-                    'asset_id.open_asset'))).action_post()
+            created_moves.action_post()
         return [x.id for x in created_moves]
 
     def create_grouped_move(self, post_move=True):
@@ -148,7 +160,8 @@ class AccountAssetDepreciationLine(models.Model):
             'debit': 0.0,
             'credit': amount,
             'journal_id': category_id.journal_id.id,
-            'analytic_account_id': category_id.account_analytic_id.id if category_id.type == 'sale' else False,
+            'analytic_distribution': self._analytic_distribution(
+                category_id, 'sale'),
         }
         move_line_2 = {
             'name': name,
@@ -156,7 +169,8 @@ class AccountAssetDepreciationLine(models.Model):
             'credit': 0.0,
             'debit': amount,
             'journal_id': category_id.journal_id.id,
-            'analytic_account_id': category_id.account_analytic_id.id if category_id.type == 'purchase' else False,
+            'analytic_distribution': self._analytic_distribution(
+                category_id, 'purchase'),
         }
         move_vals = {
             'ref': category_id.name,
@@ -169,7 +183,6 @@ class AccountAssetDepreciationLine(models.Model):
         created_moves |= move
 
         if post_move and created_moves:
-            self.post_lines_and_close_asset()
             created_moves.action_post()
         return [x.id for x in created_moves]
 
@@ -191,12 +204,13 @@ class AccountAssetDepreciationLine(models.Model):
     def log_message_when_posted(self):
         """Format and post messages for asset depreciation lines that are posted."""
         def _format_message(message_description, tracked_values):
-            message = ''
+            # Markup so the tags render in the chatter; the values are
+            # escaped by the ``%`` operator (P1.15).
+            message = Markup()
             if message_description:
-                message = '<span>%s</span>' % message_description
+                message = Markup('<span>%s</span>') % message_description
             for name, values in tracked_values.items():
-                message += '<div> &nbsp; &nbsp; &bull; <b>%s</b>: ' % name
-                message += '%s</div>' % values
+                message += Markup('<div> &nbsp; &nbsp; &bull; <b>%s</b>: %s</div>') % (name, values)
             return message
 
         # `message_post` invalidates the (whole) cache
@@ -204,7 +218,7 @@ class AccountAssetDepreciationLine(models.Model):
         # and then post in batch will prevent the re-fetch of the same data over and over.
         assets_to_post = {}
         for line in self:
-            if line.move_id and line.move_id.state == 'draft':
+            if line.move_id:
                 partner_name = line.asset_id.partner_id.name
                 currency_name = line.asset_id.currency_id.name
                 msg_values = {_('Currency'): currency_name,

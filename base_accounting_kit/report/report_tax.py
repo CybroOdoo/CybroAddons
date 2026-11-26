@@ -19,29 +19,24 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from _datetime import datetime
-from odoo import api, models, _
-from odoo.exceptions import UserError
+from datetime import datetime
+
+from odoo import api, models
+
+from ..models.report_company import get_report_branches, get_report_company
 
 
 class ReportTax(models.AbstractModel):
     _name = 'report.base_accounting_kit.report_tax'
     _description = 'Tax Report'
 
-    @api.model
-    def _get_report_values(self, docids, data=None):
-        if not data.get('form'):
-            raise UserError(
-                _("Form content is missing, this report cannot be printed."))
-        return {
-            'data': data['form'],
-            'lines': self.get_lines(data.get('form')),
-        }
-
     def _sql_from_amls_one(self):
-        sql = """SELECT "account_move_line".tax_line_id, COALESCE(SUM("account_move_line".debit-"account_move_line".credit), 0)
+        # tax lines per tax and per originating group of taxes (core
+        # ``group_tax_id``), so a child tax shared by two groups is split
+        sql = """SELECT "account_move_line".tax_line_id, "account_move_line".group_tax_id,
+                        COALESCE(SUM("account_move_line".debit-"account_move_line".credit), 0)
                     FROM %s
-                    WHERE %s  GROUP BY "account_move_line".tax_line_id"""
+                    WHERE %s  GROUP BY "account_move_line".tax_line_id, "account_move_line".group_tax_id"""
         return sql
 
     def _sql_from_amls_two(self):
@@ -53,62 +48,95 @@ class ReportTax(models.AbstractModel):
         return sql
 
     def _compute_from_amls(self, options, taxes):
-        # compute the tax amount
+        """Fill the tax and net amounts (debit - credit) of ``taxes`` using
+        the filters of the context (dates, journals, state, company)."""
+        # compute the tax amount (cancelled entries are always excluded by
+        # ``_query_get``)
         sql = self._sql_from_amls_one()
-        tables, where_clause, where_params = self.env[
-            'account.move.line']._query_get()
+        # Taxes based on payment count when paid (core cash basis entries),
+        # not on the invoice: core's exigible domain (P2.4-a).
+        Line = self.env['account.move.line']
+        tables, where_clause, where_params = Line._query_get(
+            list(Line._get_tax_exigible_domain()))
 
         query = sql % (tables, where_clause)
         self.env.cr.execute(query, where_params)
-        results = self.env.cr.fetchall()
-        for result in results:
-            if result[0] in taxes:
-                taxes[result[0]]['tax'] = abs(result[1])
+        for tax_id, group_id, amount in self.env.cr.fetchall():
+            key = '%s-%s' % (group_id, tax_id) if group_id else str(tax_id)
+            if key in taxes:
+                taxes[key]['tax'] += amount
 
         # compute the net amount
         sql2 = self._sql_from_amls_two()
         query = sql2 % (tables, where_clause)
         self.env.cr.execute(query, where_params)
-        results = self.env.cr.fetchall()
-        for result in results:
-            if result[0] in taxes:
-                taxes[result[0]]['net'] = abs(result[1])
+        for tax_id, amount in self.env.cr.fetchall():
+            if str(tax_id) in taxes:
+                taxes[str(tax_id)]['net'] = amount
 
     @api.model
     def get_lines(self, options):
-        taxes = {}
-        for tax in self.env['account.tax'].search(
-                [('type_tax_use', '!=', 'none')]):
-            if tax.children_tax_ids:
-                for child in tax.children_tax_ids:
-                    if child.type_tax_use != 'none':
-                        continue
-                    taxes[child.id] = {'tax': 0, 'net': 0, 'name': child.name,
-                                       'type': tax.type_tax_use}
-            else:
-                taxes[tax.id] = {'tax': 0, 'net': 0, 'name': tax.name,
-                                 'type': tax.type_tax_use}
-        if options['date_from'] and not options['date_to']:
-            self.with_context(date_from=options['date_from'],
-                              strict_range=True)._compute_from_amls(options,
-                                                                    taxes)
-        elif options['date_to'] and not options['date_from']:
-            self.with_context(date_to=options['date_to'],
-                              strict_range=True)._compute_from_amls(options,
-                                                                    taxes)
-        elif options['date_from'] and options['date_to']:
-            self.with_context(date_from=options['date_from'],
-                              date_to=options['date_to'],
-                              strict_range=True)._compute_from_amls(options,
-                                                                    taxes)
-        else:
-            date_to = str(datetime.today().date())
-            self.with_context(date_to=date_to,
-                              strict_range=True)._compute_from_amls(options,
-                                                                    taxes)
+        """Return the tax lines grouped by tax type, with a total per group.
 
-        groups = dict((tp, []) for tp in ['sale', 'purchase'])
+        Customer documents are booked on the credit side, so sales amounts
+        are shown as -(debit - credit) and purchases as (debit - credit):
+        refunds reduce the totals and can make them negative.
+
+        Withholding taxes (core ``l10n_account_withholding_tax``, when
+        installed) get their own ``withholding`` group.
+        """
+        used_context = dict(options.get('used_context') or {})
+        company = get_report_company(self.env, options)
+        used_context['company_id'] = company.id
+        used_context['strict_range'] = True
+        if not used_context.get('date_to'):
+            used_context['date_to'] = str(datetime.today().date())
+
+        # One entry per tax; a group of taxes (e.g. CGST + SGST) is listed
+        # with its children under it: base lines carry the group, tax lines
+        # the child taxes.
+        taxes = {}
+        withholding = 'is_withholding_tax' in self.env['account.tax']._fields
+        for tax in self.env['account.tax'].with_context(
+                active_test=False).search([
+                    ('type_tax_use', '!=', 'none'),
+                    *self.env['account.tax']._check_company_domain(
+                        get_report_branches(company))]):
+            taxes[str(tax.id)] = {'id': tax.id, 'key': str(tax.id), 'tax': 0, 'net': 0, 'name': tax.name,
+                                  'type': tax.type_tax_use, 'level': 1, 'children': [],
+                                  'section': 'withholding' if withholding and tax.is_withholding_tax
+                                  else tax.type_tax_use}
+            if tax.amount_type == 'group':
+                for child in tax.children_tax_ids.filtered(lambda t: t.type_tax_use == 'none'):
+                    key = '%s-%s' % (tax.id, child.id)
+                    taxes[key] = {'id': child.id, 'key': key, 'group_id': tax.id, 'tax': 0, 'net': 0,
+                                  'name': child.name, 'type': tax.type_tax_use, 'level': 2,
+                                  'section': taxes[str(tax.id)]['section']}
+                    taxes[str(tax.id)]['children'].append(key)
+        self.with_context(**used_context)._compute_from_amls(options, taxes)
+        for group in [t for t in taxes.values() if t.get('children')]:
+            group['tax'] = sum(taxes[key]['tax'] for key in group['children'])
+            for key in group['children']:
+                taxes[key]['net'] = group['net']
+
+        currency = company.currency_id
+        groups = dict((tp, []) for tp in ['sale', 'purchase', 'withholding'])
+        totals = dict((tp, {'net': 0.0, 'tax': 0.0}) for tp in groups)
         for tax in taxes.values():
-            if tax['tax']:
-                groups[tax['type']].append(tax)
+            sign = -1 if tax['type'] == 'sale' else 1
+            tax['net'] = sign * tax['net']
+            tax['tax'] = sign * tax['tax']
+        for tax in taxes.values():
+            if tax['level'] == 2:
+                continue  # listed under its group
+            if currency.is_zero(tax['tax']) and currency.is_zero(tax['net']):
+                continue
+            section = tax['section']
+            groups[section].append(tax)
+            groups[section] += [taxes[key] for key in tax.get('children', [])]
+            # each base counted once: on the group, not on its children
+            totals[section]['net'] += tax['net']
+            totals[section]['tax'] += tax['tax']
+        groups['totals'] = totals
+        groups['has_withholding'] = withholding
         return groups

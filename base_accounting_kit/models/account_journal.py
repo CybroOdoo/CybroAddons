@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import api, fields, models, _
+from odoo import Command, api, fields, models, _
 
 
 class AccountJournal(models.Model):
@@ -79,67 +79,51 @@ class AccountJournal(models.Model):
     def action_open_reconcile(self):
         """Open the reconciliation view based on the type of the account journal."""
         self.ensure_one()
-        if self.type in ('bank', 'cash'):
-            views = [
-                (self.env.ref(
-                    'base_accounting_kit.account_bank_statement_line_view_kanban').id,
-                 'kanban'),
-                (self.env.ref(
-                    'base_accounting_kit.account_bank_statement_line_view_tree').id,
-                 'list'),  # Include tree view
-            ]
-            context = {
-                'default_journal_id': self.id,
-                'search_default_journal_id': self.id,
-            }
-            kanban_first = True
-            name = None
-            extra_domain = None
-            return {
-                'name': name or _("Bank Reconciliation"),
-                'type': 'ir.actions.act_window',
-                'res_model': 'account.bank.statement.line',
-                'context': context,
-                'search_view_id': [
-                    self.env.ref(
-                        'base_accounting_kit.account_bank_statement_line_view_search').id,
-                    'search'],
-                'view_mode': 'kanban,list' if kanban_first else 'list,kanban',
-                'views': views if kanban_first else views[::-1],
-                'domain': [('state', '!=', 'cancel')] + (extra_domain or []),
-                'help': _("""
-                            <p class="o_view_nocontent_smiling_face">
-                                Nothing to do here!
-                            </p>
-                            <p>
-                                No transactions matching your filters were found.
-                            </p>
-                        """),
-            }
-        else:
-            # Open the customer/supplier open items for manual reconciliation.
-            # (The enterprise 'manual_reconciliation_view' client action is not
-            # available in Community, so we open the reconcilable journal items.)
-            account_type = ('asset_receivable' if self.type == 'sale'
-                            else 'liability_payable')
-            return {
-                'name': _("Reconciliation"),
-                'type': 'ir.actions.act_window',
-                'res_model': 'account.move.line',
-                'view_mode': 'list,form',
-                'domain': [
-                    ('account_id.account_type', '=', account_type),
-                    ('parent_state', '=', 'posted'),
-                    ('reconciled', '=', False),
-                    ('company_id', 'in', self.mapped('company_id').ids),
-                ],
-                'context': {'search_default_group_by_partner': 1},
-            }
+        if self.type in ('bank', 'cash', 'credit'):
+            # The kit's reconciliation screen (client action), on this journal.
+            action = self.env['ir.actions.actions']._for_xml_id(
+                'base_accounting_kit.action_kit_bank_reconciliation')
+            action['params'] = {'journal_id': self.id}
+            return action
+        # Sale / purchase journals: the Open Items mode on their account type.
+        action = self.env['ir.actions.actions']._for_xml_id('base_accounting_kit.action_kit_open_items')
+        action['params'] = {'mode': 'open', 'account_type': 'receivable' if self.type == 'sale' else 'payable'}
+        return action
 
-    def action_import_wizard(self):
-        """Function to open wizard"""
+    kit_import_map_ids = fields.One2many(
+        'kit.statement.import.map', 'journal_id', string="Import Formats",
+        help="Saved CSV / XLSX formats of this journal's bank files.")
+
+    def _get_bank_statements_available_sources(self):
+        """Statements imported from bank files (CAMT, MT940, CSV, XLSX, OFX,
+        QIF) with the kit's import."""
+        return super()._get_bank_statements_available_sources() + [
+            ('kit_file_import', _("File Import"))]
+
+    def _import_bank_statement(self, attachments):
+        """Import statement files into this journal. Core calls it for files
+        sent by email to the journal's alias (``message_new``); returns an
+        action whose domain gives the new statement lines."""
+        self.ensure_one()
+        wizard = self.env['import.bank.statement'].create({
+            'journal_id': self.id,
+            'attachment_ids': [Command.set(attachments.ids)],
+        })
+        statements, _summary, _skipped = wizard._import_files()
         return {
             'type': 'ir.actions.act_window',
+            'name': _("Imported Transactions"),
+            'res_model': 'account.bank.statement.line',
+            'domain': [('statement_id', 'in', statements.ids)],
+            'views': [(False, 'list'), (False, 'form')],
+        }
+
+    def action_import_wizard(self):
+        """Open the statement import for this journal."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Import Statement'),
             'view_mode': 'form',
             'res_model': 'import.bank.statement',
             'target': 'new',

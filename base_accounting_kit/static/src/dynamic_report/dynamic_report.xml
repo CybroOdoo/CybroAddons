@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="base_accounting_kit.DynamicReport">
+        <div class="o_action o_kit_dynamic_report">
+            <ControlPanel>
+                <t t-set-slot="control-panel-buttons">
+                    <Dropdown>
+                        <button type="button" class="btn o_kit_dr_export">
+                            <i class="oi me-1" data-icon="download"/>Export
+                            <i class="oi o_kit_dr_chip_caret" data-icon="arrow_drop_down"/>
+                        </button>
+                        <t t-set-slot="content">
+                            <DropdownItem onSelected="() => this.exportPdf()">
+                                <i class="oi oi-fw me-2" data-icon="picture_as_pdf"/>PDF
+                            </DropdownItem>
+                            <DropdownItem onSelected="() => this.exportXlsx()">
+                                <i class="oi oi-fw me-2" data-icon="table_chart"/>Excel (XLSX)
+                            </DropdownItem>
+                            <DropdownItem onSelected="() => this.exportCsv()">
+                                <i class="oi oi-fw me-2" data-icon="article"/>CSV
+                            </DropdownItem>
+                            <DropdownItem onSelected="() => this.printReport()">
+                                <i class="oi oi-fw me-2" data-icon="print"/>Print
+                            </DropdownItem>
+                        </t>
+                    </Dropdown>
+                </t>
+                <t t-set-slot="control-panel-actions">
+                    <div t-if="this.report" class="o_kit_dr_filters d-flex flex-wrap align-items-center gap-2">
+                        <t t-call="base_accounting_kit.DynamicReport.Filters"/>
+                    </div>
+                </t>
+            </ControlPanel>
+            <div class="o_content" t-if="this.report">
+                <div class="o_kit_dr_sheet">
+                    <!-- statement heading (RI 1.5, report name and period): on screen unless hidden in
+                         Options, always on paper (Export > Print / Ctrl+P) -->
+                    <div class="o_kit_dr_heading"
+                         t-att-class="{'o_kit_dr_heading_hidden': !this.options.show_heading}">
+                        <div class="o_kit_dr_heading_title" t-out="this.report.title"/>
+                        <div class="o_kit_dr_heading_sub">
+                            <t t-out="this.report.heading.period"/>
+                            <span t-if="this.hasAmounts() and !this.options.currency_symbol"
+                                  class="o_kit_dr_heading_unit"> · Amounts in <t t-out="this.report.currency_name"/></span>
+                        </div>
+                    </div>
+                    <div t-if="this.report.notice" class="alert alert-info" role="alert"
+                         t-out="this.report.notice"/>
+                    <table class="table table-sm table-hover mb-0 o_kit_dr_table">
+                        <thead>
+                            <tr>
+                                <th class="o_kit_dr_unit text-muted fw-normal">
+                                    <!-- in the heading; here only when the heading is hidden -->
+                                    <t t-if="this.hasAmounts() and !this.options.currency_symbol and !this.options.show_heading">Amounts in <t t-out="this.report.currency_name"/></t>
+                                </th>
+                                <th t-foreach="this.report.columns" t-as="col" t-key="col_index"
+                                    class="text-end text-nowrap" t-out="col.name"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="this.report.lines" t-as="line" t-key="line.id"
+                                t-att-class="this.lineClass(line)"
+                                t-on-click="(ev) => this.onKitLineClick(line, ev)">
+                                <td t-attf-style="padding-left: {{ line.level * 24 + 8 }}px;">
+                                    <span t-if="line.unfoldable" class="o_kit_dr_caret me-1">
+                                        <i class="oi" t-att-data-icon="line.unfolded ? 'arrow_drop_down' : 'arrow_right'"/>
+                                    </span>
+                                    <a t-if="this.isClickable(line)" href="#"
+                                       t-on-click.prevent.stop="() => this.openLine(line)" t-out="line.name"/>
+                                    <span t-else="" t-out="line.name"/>
+                                </td>
+                                <td t-foreach="line.columns" t-as="value" t-key="value_index"
+                                    class="text-end text-nowrap"
+                                    t-att-class="{'text-danger': typeof value === 'number' and value &lt; 0}"
+                                    t-out="this.formatValue(value, this.report.columns[value_index])"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="base_accounting_kit.DynamicReport.Filters">
+        <!-- Date Range -->
+        <Dropdown t-if="this.hasFilter('date')">
+            <button class="btn o_kit_dr_chip">
+                <i class="oi" data-icon="calendar_today"/>
+                <span class="o_kit_dr_chip_label">Period:</span>
+                <span class="o_kit_dr_chip_value" t-out="this.dateLabel"/>
+                <i class="oi o_kit_dr_chip_caret" data-icon="arrow_drop_down"/>
+            </button>
+            <t t-set-slot="content">
+                <DropdownItem t-foreach="this.presets" t-as="preset" t-key="preset[0]"
+                              onSelected="() => this.reload({date_preset: preset[0]})">
+                    <i class="oi oi-fw me-1" t-att-data-icon="this.options.date_preset === preset[0] ? 'check' : ''"/>
+                    <t t-out="preset[1]"/>
+                </DropdownItem>
+                <div class="px-3 py-2 border-top">
+                    <div class="d-flex gap-2 align-items-center">
+                        <input t-if="this.report.date_mode !== 'single'" type="date" class="form-control form-control-sm"
+                               t-att-value="this.options.date_from"
+                               t-on-change="(ev) => this.state.customFrom = ev.target.value"/>
+                        <input type="date" class="form-control form-control-sm" t-att-value="this.options.date_to"
+                               t-on-change="(ev) => this.state.customTo = ev.target.value"/>
+                    </div>
+                    <button class="btn btn-sm btn-primary mt-2" t-on-click="this.applyCustomDates">Apply</button>
+                </div>
+            </t>
+        </Dropdown>
+        <!-- Comparison -->
+        <Dropdown t-if="this.hasFilter('comparison') and this.report.comparison">
+            <button class="btn o_kit_dr_chip">
+                <i class="oi" data-icon="swap_horiz"/>
+                <span class="o_kit_dr_chip_label">Compare:</span>
+                <span class="o_kit_dr_chip_value" t-out="this.comparisonLabel()"/>
+                <i class="oi o_kit_dr_chip_caret" data-icon="arrow_drop_down"/>
+            </button>
+            <t t-set-slot="content">
+                <DropdownItem onSelected="() => this.setComparison(0)">
+                    <i class="oi oi-fw me-1" t-att-data-icon="!this.options.comparison.periods and !this.options.columns_by ? 'check' : ''"/>No comparison
+                </DropdownItem>
+                <div class="px-3 py-2 border-top">
+                    <label class="form-label small mb-1">Number of periods</label>
+                    <input type="number" min="1" max="12" class="form-control form-control-sm"
+                           t-att-value="this.options.comparison.periods || 1"
+                           t-on-change="(ev) => this.state.periods = ev.target.valueAsNumber || 1"/>
+                    <div class="d-flex gap-2 mt-2">
+                        <button class="btn btn-sm btn-primary"
+                                t-on-click="() => this.setComparison(this.state.periods, 'previous')">Previous periods</button>
+                        <button class="btn btn-sm btn-secondary"
+                                t-on-click="() => this.setComparison(this.state.periods, 'last_year')">Same period last year</button>
+                    </div>
+                </div>
+                <t t-if="this.report.columns_by_allowed">
+                    <div class="dropdown-divider"/>
+                    <h6 class="dropdown-header">Columns</h6>
+                    <DropdownItem onSelected="() => this.setColumnsBy('quarter')">
+                        <i class="oi oi-fw me-1" t-att-data-icon="this.options.columns_by === 'quarter' ? 'check' : ''"/>By quarter
+                    </DropdownItem>
+                    <DropdownItem onSelected="() => this.setColumnsBy('month')">
+                        <i class="oi oi-fw me-1" t-att-data-icon="this.options.columns_by === 'month' ? 'check' : ''"/>By month
+                    </DropdownItem>
+                </t>
+            </t>
+        </Dropdown>
+        <!-- Journals -->
+        <Dropdown t-if="this.hasFilter('journals')">
+            <button class="btn o_kit_dr_chip">
+                <i class="oi" data-icon="book"/>
+                <span class="o_kit_dr_chip_label">Journals:</span>
+                <span class="o_kit_dr_chip_value" t-out="this.journalsLabel()"/>
+                <i class="oi o_kit_dr_chip_caret" data-icon="arrow_drop_down"/>
+            </button>
+            <t t-set-slot="content">
+                <DropdownItem onSelected="() => this.reload({journal_ids: []})">
+                    <i class="oi oi-fw me-1" t-att-data-icon="!this.options.journal_ids.length ? 'check' : ''"/>All journals
+                </DropdownItem>
+                <DropdownItem t-foreach="this.report.journals" t-as="journal" t-key="journal.id"
+                              closingMode="'none'" onSelected="() => this.toggleJournal(journal.id)">
+                    <i class="oi oi-fw me-1" t-att-data-icon="this.options.journal_ids.includes(journal.id) ? 'check' : ''"/>
+                    <t t-out="journal.code"/> - <t t-out="journal.name"/>
+                </DropdownItem>
+            </t>
+        </Dropdown>
+        <!-- Partners, analytic accounts, accounts: a chip opening the selector -->
+        <Dropdown t-foreach="this.recordFilters()" t-as="flt" t-key="flt.key">
+            <button class="btn o_kit_dr_chip">
+                <i class="oi" t-att-data-icon="flt.icon"/>
+                <span class="o_kit_dr_chip_label" t-out="flt.label + ':'"/>
+                <span class="o_kit_dr_chip_value" t-out="this.countLabel(this.options[flt.key])"/>
+                <i class="oi o_kit_dr_chip_caret" data-icon="arrow_drop_down"/>
+            </button>
+            <t t-set-slot="content">
+                <div class="px-3 py-2 o_kit_dr_selector">
+                    <MultiRecordSelector resModel="flt.model" resIds="this.options[flt.key]"
+                                         domain="flt.domain" placeholder="flt.label"
+                                         update="(ids) => this.reload({[flt.key]: ids})"/>
+                </div>
+            </t>
+        </Dropdown>
+        <!-- Options -->
+        <Dropdown>
+            <button class="btn o_kit_dr_chip" title="Options">
+                <i class="oi" data-icon="tune"/>
+                <span class="o_kit_dr_chip_label">Options</span>
+                <i class="oi o_kit_dr_chip_caret" data-icon="arrow_drop_down"/>
+            </button>
+            <t t-set-slot="content">
+                <t t-if="this.hasFilter('target_move')">
+                    <DropdownItem onSelected="() => this.reload({target_move: 'posted'})">
+                        <i class="oi oi-fw me-1" t-att-data-icon="this.options.target_move === 'posted' ? 'check' : ''"/>Posted entries only
+                    </DropdownItem>
+                    <DropdownItem onSelected="() => this.reload({target_move: 'all'})">
+                        <i class="oi oi-fw me-1" t-att-data-icon="this.options.target_move === 'all' ? 'check' : ''"/>Include draft entries
+                    </DropdownItem>
+                </t>
+                <div class="dropdown-divider"/>
+                <DropdownItem onSelected="() => this.reload({show_heading: !this.options.show_heading})">
+                    <i class="oi oi-fw me-1" t-att-data-icon="this.options.show_heading ? 'check' : ''"/>Show heading
+                </DropdownItem>
+                <t t-if="this.hasAmounts()">
+                    <DropdownItem onSelected="() => this.reload({currency_symbol: !this.options.currency_symbol})">
+                        <i class="oi oi-fw me-1" t-att-data-icon="this.options.currency_symbol ? 'check' : ''"/>Currency symbol in amounts
+                    </DropdownItem>
+                </t>
+                <t t-foreach="this.report.option_defs" t-as="definition" t-key="definition.key">
+                    <div class="dropdown-divider"/>
+                    <h6 class="dropdown-header" t-out="definition.label"/>
+                    <t t-if="definition.type === 'select'">
+                        <DropdownItem t-foreach="definition.values" t-as="item" t-key="item[0]"
+                                      onSelected="() => this.setOption(definition, item[0])">
+                            <i class="oi oi-fw me-1" t-att-data-icon="this.options[definition.key] === item[0] ? 'check' : ''"/>
+                            <t t-out="item[1]"/>
+                        </DropdownItem>
+                    </t>
+                    <DropdownItem t-elif="definition.type === 'bool'"
+                                  onSelected="() => this.setOption(definition, !this.options[definition.key])">
+                        <i class="oi oi-fw me-1" t-att-data-icon="this.options[definition.key] ? 'check' : ''"/>
+                        <t t-out="definition.label"/>
+                    </DropdownItem>
+                    <div t-else="" class="px-3 pb-2">
+                        <input type="number" class="form-control form-control-sm"
+                               t-att-min="definition.min" t-att-max="definition.max"
+                               t-att-value="this.options[definition.key]"
+                               t-on-change="(ev) => this.setOption(definition, ev.target.value)"/>
+                    </div>
+                </t>
+            </t>
+        </Dropdown>
+        <!-- Amount unit: as is, without decimals, in thousands, in millions -->
+        <Dropdown t-if="this.hasAmounts()">
+            <button class="btn o_kit_dr_chip o_kit_dr_amount_unit" title="Amounts">
+                <span class="o_kit_dr_chip_value" t-out="this.amountUnitLabel(this.options.amount_unit)"/>
+                <i class="oi o_kit_dr_chip_caret" data-icon="arrow_drop_down"/>
+            </button>
+            <t t-set-slot="content">
+                <DropdownItem t-foreach="['full', 'int', 'k', 'm']" t-as="unit" t-key="unit"
+                              onSelected="() => this.reload({amount_unit: unit})">
+                    <i class="oi oi-fw me-1" t-att-data-icon="this.options.amount_unit === unit ? 'check' : ''"/>
+                    <t t-out="this.amountUnitLabel(unit)"/>
+                </DropdownItem>
+            </t>
+        </Dropdown>
+        <!-- Saved filters -->
+        <Dropdown>
+            <button class="btn o_kit_dr_chip" title="Favorites">
+                <i class="oi" data-icon="star"/>
+                <span class="o_kit_dr_chip_label">Favorites</span>
+                <i class="oi o_kit_dr_chip_caret" data-icon="arrow_drop_down"/>
+            </button>
+            <t t-set-slot="content">
+                <DropdownItem t-foreach="this.state.savedFilters" t-as="saved" t-key="saved.id"
+                              onSelected="() => this.applyFilter(saved)">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="flex-grow-1" t-out="saved.name"/>
+                        <small t-if="saved.is_default" class="text-muted">Default</small>
+                        <i class="oi text-danger" data-icon="delete" role="button" title="Delete"
+                           t-on-click.stop="() => this.deleteFilter(saved)"/>
+                    </div>
+                </DropdownItem>
+                <div class="px-3 py-2" t-att-class="{'border-top': this.state.savedFilters.length}">
+                    <input type="text" class="form-control form-control-sm" placeholder="Filter name"
+                           t-att-value="this.state.filterName"
+                           t-on-input="(ev) => this.state.filterName = ev.target.value"/>
+                    <div class="form-check mt-2">
+                        <input type="checkbox" class="form-check-input" id="o_kit_dr_filter_default"
+                               t-att-checked="this.state.filterDefault"
+                               t-on-change="(ev) => this.state.filterDefault = ev.target.checked"/>
+                        <label class="form-check-label" for="o_kit_dr_filter_default">Open with this filter</label>
+                    </div>
+                    <button class="btn btn-sm btn-primary mt-2" t-att-disabled="!this.state.filterName.trim()"
+                            t-on-click="this.saveFilter">Save current filters</button>
+                </div>
+            </t>
+        </Dropdown>
+        <!-- Unfold / fold all, search -->
+        <button type="button" class="btn o_kit_dr_chip" t-on-click="() => this.unfoldAll(!this.isUnfolded())">
+            <i class="oi" data-icon="expand_content"/>
+            <span class="o_kit_dr_chip_value" t-out="this.isUnfolded() ? this.labels.fold : this.labels.unfold"/>
+        </button>
+        <div class="o_kit_dr_search">
+            <i class="oi" data-icon="search"/>
+            <input type="search" class="form-control form-control-sm" placeholder="Find a line"
+                   t-att-value="this.options.search" t-on-keydown="this.onSearch"/>
+        </div>
+    </t>
+</templates>

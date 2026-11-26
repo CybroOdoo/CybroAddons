@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Accounting > Closing > Fiscal Years (P2.3-b) -->
+    <record id="view_kit_fiscal_year_list" model="ir.ui.view">
+        <field name="name">kit.fiscal.year.list</field>
+        <field name="model">kit.fiscal.year</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'closed'">
+                <header>
+                    <button name="action_create_next_year" type="object" string="Create Next Year"
+                            class="btn-primary" display="always" groups="base_accounting_kit.group_account_chief"/>
+                </header>
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="state" widget="badge" decoration-success="state == 'open'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_kit_fiscal_year_form" model="ir.ui.view">
+        <field name="name">kit.fiscal.year.form</field>
+        <field name="model">kit.fiscal.year</field>
+        <field name="arch" type="xml">
+            <form string="Fiscal Year">
+                <header>
+                    <button name="action_close" type="object" string="Close Year" class="btn-primary"
+                            invisible="not id or state != 'open'" groups="base_accounting_kit.group_account_chief"/>
+                    <button name="action_reopen" type="object" string="Reopen"
+                            invisible="state != 'closed'" groups="base_accounting_kit.group_account_chief"
+                            confirm="Reopen this fiscal year? Its closing entry is reversed and the previous Global Lock Date comes back."/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_closing_move" type="object" class="oe_stat_button"
+                                icon="receipt_long" string="Year-end Entry" invisible="not closing_move_id"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. FY 2026-27"/></h1>
+                    </div>
+                    <group name="year">
+                        <group string="Period">
+                            <label for="date_from" string="From"/>
+                            <div class="d-flex gap-2 align-items-center">
+                                <field name="date_from" readonly="state == 'closed'" class="w-auto"/>
+                                <span>to</span>
+                                <field name="date_to" readonly="state == 'closed'" class="w-auto"/>
+                            </div>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state == 'closed'"/>
+                        </group>
+                        <group string="Closing" invisible="state != 'closed'">
+                            <field name="closing_move_id"/>
+                            <field name="lock_date_before"/>
+                        </group>
+                    </group>
+                    <p class="text-muted">
+                        Reports ("This Financial Year", opening balances) and the yearly numbering of entries follow this
+                        year. Dates outside every fiscal year follow Settings › Accounting › Fiscal Year Last Day.
+                        Close Year checks the year, posts its result to Retained Earnings and sets the Global Lock Date to its
+                        end date; Reopen reverses the closing entry and gives back the previous lock date.
+                    </p>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_kit_fiscal_year_search" model="ir.ui.view">
+        <field name="name">kit.fiscal.year.search</field>
+        <field name="model">kit.fiscal.year</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter name="open" string="Open" domain="[('state', '=', 'open')]"/>
+                <filter name="closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_kit_fiscal_year" model="ir.actions.act_window">
+        <field name="name">Fiscal Years</field>
+        <field name="res_model">kit.fiscal.year</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_kit_fiscal_year_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first fiscal year</p>
+            <p>Without fiscal years, the company setting Fiscal Year Last Day is used.
+               Add a year to use other dates, e.g. a first year of 15 months.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_kit_fiscal_year"
+              action="action_kit_fiscal_year"
+              parent="account.account_closing_menu"
+              sequence="5"
+              groups="account.group_account_readonly"/>
+</odoo>

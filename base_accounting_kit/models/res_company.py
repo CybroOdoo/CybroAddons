@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from datetime import datetime
+from datetime import datetime, timedelta
 import calendar
 import logging
 from odoo import fields, models, api
@@ -32,6 +32,15 @@ class ResCompany(models.Model):
     """Model for inheriting res_company."""
     _inherit = "res.company"
 
+    kit_auto_reconcile_import = fields.Boolean(
+        string='Reconcile Imported Statements Automatically',
+        help="After a bank statement import, reconcile the new transactions "
+             "that have a single sure match (partner and amount, or the "
+             "entry number in the label, or an automatic reconcile model).")
+    kit_retained_earnings_account_id = fields.Many2one(
+        'account.account', string='Retained Earnings Account',
+        help="Equity account receiving the result of a closed fiscal year "
+             "(last one used in Year-end Closing).")
     fx_reval_journal_id = fields.Many2one(
         'account.journal', string='FX Revaluation Journal',
         domain="[('type', '=', 'general'), ('company_id', '=', id)]",
@@ -80,20 +89,32 @@ class ResCompany(models.Model):
 
         return super().write(vals)
 
+    def compute_fiscalyear_dates(self, current_date):
+        """Fiscal year of a date: the kit Fiscal Year record covering it
+        (P2.3-b), else the company setting, trimmed so it does not overlap
+        a record."""
+        res = super().compute_fiscalyear_dates(current_date)
+        current = fields.Date.to_date(current_date)
+        if not current:
+            return res
+        years = self.env['kit.fiscal.year'].sudo().search([
+            ('company_id', '=', self.root_id.id),
+            ('date_from', '<=', res['date_to']),
+            ('date_to', '>=', res['date_from'])])
+        date_from, date_to = res['date_from'], res['date_to']
+        for year in years:
+            if year.date_from <= current <= year.date_to:
+                return {'date_from': year.date_from, 'date_to': year.date_to}
+            if year.date_to < current:
+                date_from = max(date_from, year.date_to + timedelta(days=1))
+            else:
+                date_to = min(date_to, year.date_from - timedelta(days=1))
+        return {'date_from': date_from, 'date_to': date_to}
+
     def _get_unreconciled_statement_lines_redirect_action(self, unreconciled_statement_lines):
-        """Ensure 'views' is explicitly populated to avoid web client TypeError
-        and redirect to the custom bank reconciliation widget."""
-        action = super()._get_unreconciled_statement_lines_redirect_action(unreconciled_statement_lines)
-        kanban_view = self.env.ref(
-            'base_accounting_kit.account_bank_statement_line_view_kanban',
-            raise_if_not_found=False
-        )
-        kanban_id = kanban_view.id if kanban_view else False
-
-        if len(unreconciled_statement_lines) == 1:
-            action['views'] = [(False, 'form')]
-        else:
-            action['view_mode'] = 'kanban,list,form'
-            action['views'] = [(kanban_id, 'kanban'), (False, 'list'), (False, 'form')]
-
+        """Open the kit's reconciliation screen on the journal of the
+        transactions still to reconcile (e.g. when setting a lock date)."""
+        action = self.env['ir.actions.actions']._for_xml_id(
+            'base_accounting_kit.action_kit_bank_reconciliation')
+        action['params'] = {'journal_id': unreconciled_statement_lines[:1].journal_id.id}
         return action

@@ -31,12 +31,14 @@ class ResConfigSettings(models.TransientModel):
 
     use_anglo_saxon_accounting = fields.Boolean(string="Use Anglo-Saxon accounting", readonly=False,
                                                 related='company_id.anglo_saxon_accounting')
-    fiscalyear_last_day = fields.Integer(
-        related='company_id.fiscalyear_last_day', readonly=False
-    )
-    fiscalyear_last_month = fields.Selection(
-        related='company_id.fiscalyear_last_month', readonly=False
-    )
+    # Fiscal year end of the company (core company fields), shown in the
+    # "Fiscal Year" setting; Fiscal Years records take precedence.
+    fiscalyear_last_day = fields.Integer(string="Fiscal Year End Day", readonly=False,
+                                         related='company_id.fiscalyear_last_day')
+    fiscalyear_last_month = fields.Selection(string="Fiscal Year End Month", readonly=False,
+                                             related='company_id.fiscalyear_last_month')
+    kit_auto_reconcile_import = fields.Boolean(
+        related='company_id.kit_auto_reconcile_import', readonly=False)
     fx_reval_journal_id = fields.Many2one(
         related='company_id.fx_reval_journal_id', readonly=False)
     fx_reval_gain_account_id = fields.Many2one(
@@ -61,10 +63,3 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_bool(
             "customer_credit_limit",
             self.customer_credit_limit)
-
-    @api.model
-    def get_view_id(self):
-        """Retrieve the ID of the view for bank reconciliation widget form."""
-        view_id = self.env['ir.model.data']._xmlid_to_res_id(
-            'base_accounting_kit.view_bank_reconcile_widget_form')
-        return view_id

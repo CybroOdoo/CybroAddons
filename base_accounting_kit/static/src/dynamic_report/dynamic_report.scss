@@ -1,0 +1,315 @@
+// Dynamic report screen of the kit (all rules scoped). The header chips
+// and the search box are shared with the reconciliation screen.
+.o_kit_dynamic_report,
+.o_kit_bank_rec {
+    // Header: filters as soft chips "Label: value", an Unfold/Fold chip and
+    // the search box with its icon after them; PDF and XLSX on the left.
+    // Report name (core breadcrumb) in bold, on the report screen only.
+    .o_last_breadcrumb_item {
+        font-weight: bold;
+    }
+
+    // Export: the one accented control, outlined in the Community colour
+    // (even border, rounded, faint fill); stronger tint on hover and open.
+    .o_kit_dr_export {
+        display: inline-flex;
+        align-items: center;
+        gap: map-get($spacers, 1);
+        border: 2.5px solid $o-community-color;
+        border-radius: 0.6rem;
+        // 1px less padding keeps the height of the chips with the thick border
+        padding-top: calc(#{$btn-padding-y} - 1px);
+        padding-bottom: calc(#{$btn-padding-y} - 1px);
+        color: $o-community-color;
+        font-weight: 600;
+        // a faint wash of the Community colour
+        background-color: rgba($o-community-color, 0.06);
+        box-shadow: 0 1px 3px rgba($black, 0.12);
+        transition: background-color 0.08s ease, box-shadow 0.08s ease;
+
+        .o_kit_dr_chip_caret {
+            color: inherit;
+            opacity: 0.85;
+        }
+
+        &:hover,
+        &:focus-visible {
+            color: $o-community-color;
+            border-color: $o-community-color;
+            background-color: rgba($o-community-color, 0.14);
+            box-shadow: 0 2px 5px rgba($black, 0.15);
+        }
+
+        &:active,
+        &.show {
+            color: $o-community-color;
+            border-color: $o-community-color;
+            background-color: rgba($o-community-color, 0.14);
+            box-shadow: inset 0 1px 2px rgba($black, 0.12);
+        }
+    }
+
+    .o_kit_dr_chip {
+        display: inline-flex;
+        align-items: center;
+        gap: map-get($spacers, 1);
+        padding: 0.3rem 0.65rem;
+        border: 0;
+        border-radius: $border-radius-lg;
+        background-color: $o-gray-200;
+        color: $text-muted;
+        font-weight: normal;
+        white-space: nowrap;
+        // raised (3D) like the Export button, in grey; pressed / open it sinks
+        box-shadow: 0 2px 0 $o-gray-400,
+                    0 3px 5px rgba($black, 0.10),
+                    inset 0 1px 0 rgba($white, 0.7);
+        transition: transform 0.08s ease, box-shadow 0.08s ease;
+
+        &:hover {
+            background-color: $o-gray-300;
+            box-shadow: 0 2px 0 shade-color($o-gray-400, 8%),
+                        0 5px 8px rgba($black, 0.13),
+                        inset 0 1px 0 rgba($white, 0.7);
+        }
+
+        &:active,
+        &.show {
+            background-color: $o-gray-300;
+            transform: translateY(2px);
+            box-shadow: 0 0 0 $o-gray-400,
+                        0 1px 2px rgba($black, 0.10),
+                        inset 0 1px 2px rgba($black, 0.12);
+        }
+    }
+
+    .o_kit_dr_chip_value {
+        font-weight: bold;
+        color: $o-action;
+    }
+
+    .o_kit_dr_chip_caret {
+        color: $text-muted;
+    }
+
+    .o_kit_dr_search {
+        position: relative;
+        width: 150px;
+
+        > .oi {
+            position: absolute;
+            top: 50%;
+            left: 0.6rem;
+            transform: translateY(-50%);
+            color: $text-muted;
+            pointer-events: none;
+        }
+
+        // a sunken (carved in) field next to the raised chips; white with
+        // a soft Community-colour ring while typing
+        > input {
+            padding-left: 2rem;
+            border: 1px solid $o-gray-400;
+            border-radius: $border-radius-lg;
+            background-color: $o-gray-100;
+            box-shadow: inset 0 2px 3px rgba($black, 0.14),
+                        inset 0 -1px 0 rgba($white, 0.8),
+                        0 1px 0 rgba($white, 0.9);
+            transition: box-shadow 0.12s ease, border-color 0.12s ease;
+
+            &:focus {
+                background-color: $white;
+                border-color: $o-community-color;
+                box-shadow: inset 0 2px 3px rgba($black, 0.10),
+                            0 0 0 3px rgba($o-community-color, 0.18);
+                outline: 0;
+            }
+        }
+    }
+
+}
+
+.o_kit_dynamic_report {
+    .o_kit_dr_selector {
+        min-width: 260px;
+    }
+
+    // White sheet on the web client background, as core form views; it
+    // grows with wide tables (up to the screen width).
+    .o_content {
+        background-color: $o-webclient-background-color;
+        padding: map-get($spacers, 3);
+    }
+
+    .o_kit_dr_sheet {
+        width: max-content;
+        // 85% of the screen (up to 1600px), wider when the columns need it
+        min-width: unquote("min(85%, 1600px)");
+        max-width: 100%;
+        margin: 0 auto;
+        padding: map-get($spacers, 3) map-get($spacers, 4);
+        overflow-x: auto;
+        background-color: $o-view-background-color;
+        border: $border-width solid $border-color;
+        border-radius: $border-radius-lg;
+        box-shadow: $box-shadow-sm;
+
+        @include media-breakpoint-down(md) {
+            min-width: 100%;
+            padding: map-get($spacers, 2);
+        }
+    }
+
+    .o_kit_dr_table {
+        font-variant-numeric: tabular-nums;
+
+        // Line names keep a readable width when many columns are shown.
+        td:first-child {
+            min-width: 16rem;
+        }
+
+        th {
+            border-bottom: 2px solid $border-color;
+        }
+
+        .o_kit_dr_child {
+            color: $text-muted;
+            font-size: 0.95em;
+        }
+
+        // Sub-sections and sub-totals bold; main sections and the grand
+        // total bold on a faint grey band (low opacity).
+        .o_kit_dr_section td,
+        .o_kit_dr_main td,
+        .o_kit_dr_total td {
+            font-weight: bold;
+        }
+
+        .o_kit_dr_main td,
+        .o_kit_dr_total td {
+            background-color: rgba($o-gray-700, 0.06);
+        }
+
+        // "Financial Report Style" of a report line overrides the font.
+        .o_kit_dr_style_1 td {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .o_kit_dr_style_2 td {
+            font-weight: bold;
+        }
+
+        .o_kit_dr_style_3 td {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .o_kit_dr_style_4 td {
+            font-weight: normal;
+        }
+
+        .o_kit_dr_style_5 td {
+            font-weight: normal;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+
+        .o_kit_dr_style_6 td {
+            font-weight: normal;
+            font-size: 0.85em;
+        }
+
+        .o_kit_dr_total td {
+            border-top: 2px solid $border-color;
+        }
+
+        .o_kit_dr_caret {
+            display: inline-block;
+            width: 1em;
+        }
+
+        // unfoldable / drillable rows react to a click anywhere on the row
+        .o_kit_dr_clickable {
+            cursor: pointer;
+        }
+    }
+}
+
+// Report screen on paper (Export > Print or Ctrl+P): only the heading and
+// the table, the header row on every page, no row cut across pages.
+// Heading: report name, then one grey line with the period and the amount
+// currency, left-aligned with the table.
+.o_kit_dr_heading {
+    margin-bottom: map-get($spacers, 3);
+
+    .o_kit_dr_heading_title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1.25;
+        color: $o-gray-900;
+    }
+
+    .o_kit_dr_heading_sub {
+        margin-top: 0.15rem;
+        font-size: 0.95rem;
+        color: $o-gray-600;
+    }
+
+    &.o_kit_dr_heading_hidden {
+        display: none;
+    }
+}
+
+@media print {
+    // only while a kit report is on screen (other Odoo pages print as usual)
+    body:has(.o_kit_dynamic_report) .o_main_navbar,
+    .o_kit_dynamic_report .o_control_panel {
+        display: none !important;
+    }
+
+    .o_kit_dynamic_report {
+        .o_content {
+            overflow: visible !important;
+        }
+
+        .o_kit_dr_sheet {
+            width: 100%;
+            min-width: 0;
+            overflow: visible;
+            max-width: none;
+            margin: 0;
+            border: 0;
+            box-shadow: none;
+            padding: 0;
+        }
+
+        // the heading is always printed (also when hidden on screen)
+        .o_kit_dr_heading.o_kit_dr_heading_hidden {
+            display: block;
+        }
+
+        .o_kit_dr_table {
+            width: 100%;
+
+            thead {
+                display: table-header-group;
+            }
+
+            tr {
+                break-inside: avoid;
+            }
+
+            tr:hover td {
+                background-color: inherit;
+            }
+        }
+
+        // keep the red negatives and the shaded rows on paper
+        * {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+}
+

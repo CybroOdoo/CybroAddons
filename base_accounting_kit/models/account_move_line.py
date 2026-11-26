@@ -26,6 +26,8 @@ from odoo.exceptions import UserError
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 from dateutil.relativedelta import relativedelta
 
+from .report_company import get_report_branches, get_report_company
+
 
 class AccountInvoiceLine(models.Model):
     """Define a model for account invoice lines with fields related to assets and their management."""
@@ -156,7 +158,10 @@ class AccountInvoiceLine(models.Model):
             domain += [('parent_state', '=', state)]
 
         if context.get('company_id'):
-            domain += [('company_id', '=', context['company_id'])]
+            # The report company and its selected branches, as core sums a
+            # parent company's figures with ``child_of`` (account.account).
+            company = get_report_company(self.env, context)
+            domain += [('company_id', 'in', get_report_branches(company).ids)]
         elif context.get('allowed_company_ids'):
             domain += [('company_id', 'in', self.env.companies.ids)]
         else:
@@ -175,6 +180,11 @@ class AccountInvoiceLine(models.Model):
 
         if context.get('partner_ids'):
             domain += [('partner_id', 'in', context['partner_ids'].ids)]
+
+        if context.get('analytic_account_ids'):
+            # core search (analytic_mixin._search_analytic_distribution)
+            domain += [('analytic_distribution', 'in',
+                        list(context['analytic_account_ids']))]
 
         if context.get('partner_categories'):
             domain += [('partner_id.category_id', 'in', context['partner_categories'].ids)]

@@ -32,7 +32,9 @@ class ReportInvoiceMultiple(models.AbstractModel):
         rslt = super()._get_report_values(docids, data)
 
         inv = rslt['docs']
-        layout = inv.journal_id.company_id.external_report_layout_id.key
+        # As core (web.external_layout): the layout view is read with sudo,
+        # ir.ui.view is readable by administrators only.
+        layout = inv.journal_id.company_id.external_report_layout_id.sudo().key
 
         if layout == 'web.external_layout_boxed':
             new_layout = 'base_accounting_kit.boxed'

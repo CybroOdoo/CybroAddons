@@ -20,8 +20,12 @@
 #
 #############################################################################
 import calendar
+import html
+import re
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
+from markupsafe import Markup
+
 from odoo import api, fields, models, _
 from odoo.fields import Date
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF, float_is_zero
@@ -280,15 +284,18 @@ class AccountAssetAsset(models.Model):
         commands = [(2, line_id.id, False) for line_id in
                     unposted_depreciation_line_ids]
 
-        if self.value_residual != 0.0:
-            amount_to_depr = residual_amount = self.value_residual
+        # Spread what no entry covers yet (a line linked to a draft entry
+        # keeps its amount).
+        to_spread = self.value - self.salvage_value - sum(
+            posted_depreciation_line_ids.mapped('amount'))
+        if not self.currency_id.is_zero(to_spread):
+            amount_to_depr = residual_amount = to_spread
             if self.prorata:
                 # if we already have some previous validated entries, starting date is last entry + method perio
                 if posted_depreciation_line_ids and \
                         posted_depreciation_line_ids[-1].depreciation_date:
-                    last_depreciation_date = datetime.strptime(
-                        posted_depreciation_line_ids[-1].depreciation_date,
-                        DF).date()
+                    last_depreciation_date = \
+                        posted_depreciation_line_ids[-1].depreciation_date
                     depreciation_date = last_depreciation_date + relativedelta(
                         months=+self.method_period)
                 else:
@@ -365,70 +372,48 @@ class AccountAssetAsset(models.Model):
                 month = depreciation_date.month
                 year = depreciation_date.year
 
+        # Only the schedule: each entry is created and posted when its line
+        # comes due (validate, the daily cron or the Generate Entries wizard).
         self.write({'depreciation_line_ids': commands})
-        last_depr_date = None
-        if self.depreciation_line_ids:
-            last_depr_date = max(self.depreciation_line_ids.mapped('depreciation_date'))
-        if last_depr_date:
-            self._compute_entries(date=last_depr_date)
         return True
 
     def validate(self):
-        """Update the state to 'open' and post the depreciation moves due."""
+        """Run the asset: build its board if needed, then create and post
+        the entries already due. Later entries are created by the daily
+        cron when their date comes."""
         self.write({'state': 'open'})
-        if not self.depreciation_line_ids:
-            self.compute_depreciation_board()
+        today = fields.Date.context_today(self)
         for asset in self:
+            if not asset.depreciation_line_ids:
+                asset.compute_depreciation_board()
             asset.message_post(body=_('Asset created'))
-
-            today_date = fields.Date.context_today(self)
-
-            # Split lines based on depreciation_date
-            draft_lines = asset.depreciation_line_ids.filtered(lambda l: l.move_id and l.move_id.state == 'draft')
-
-            #Post only entries before today
-            lines_to_post_now = draft_lines.filtered(lambda l: l.depreciation_date < today_date)
-            moves_to_post_now = lines_to_post_now.mapped('move_id')
-            if moves_to_post_now:
-                moves_to_post_now._post()
-
-            #Set auto_post='at_date' for entries today or later
-            future_lines = draft_lines.filtered(lambda l: l.depreciation_date >= today_date)
-            future_moves = future_lines.mapped('move_id')
-            if future_moves:
-                future_moves.write({'auto_post': 'at_date'})
-
+            asset._compute_entries(
+                today, group_entries=asset.category_id.group_entries)
         return True
 
 
     def pause(self):
-        """Temporarily stop the depreciation of a running asset by freezing
-        the auto-posting of its remaining (draft) depreciation entries."""
+        """Temporarily stop the depreciation of a running asset: the cron
+        only creates entries for running assets."""
         for asset in self:
             if asset.state == 'open':
-                draft_moves = asset.depreciation_line_ids.mapped(
-                    'move_id').filtered(lambda m: m.state == 'draft')
-                draft_moves.write({'auto_post': 'no'})
                 asset.write({'state': 'paused',
                              'pause_date': fields.Date.context_today(asset)})
                 asset.message_post(body=_("Asset depreciation paused."))
         return True
 
     def resume(self):
-        """Resume a paused asset: shift the remaining (draft) depreciation
-        entries forward by the paused duration and re-arm their auto-posting."""
+        """Resume a paused asset: move the remaining board lines forward by
+        the paused duration."""
         today = fields.Date.context_today(self)
         for asset in self:
             if asset.state != 'paused':
                 continue
             gap = (today - asset.pause_date).days if asset.pause_date else 0
-            for line in asset.depreciation_line_ids.filtered(
-                    lambda l: l.move_id and l.move_id.state == 'draft'):
-                if gap > 0 and line.depreciation_date:
-                    new_date = line.depreciation_date + relativedelta(days=gap)
-                    line.depreciation_date = new_date
-                    line.move_id.write({'date': new_date})
-                line.move_id.write({'auto_post': 'at_date'})
+            if gap > 0:
+                for line in asset.depreciation_line_ids.filtered(
+                        lambda l: not l.move_check and l.depreciation_date):
+                    line.depreciation_date += relativedelta(days=gap)
             asset.write({'state': 'open', 'pause_date': False})
             asset.message_post(body=_("Asset depreciation resumed."))
         return True
@@ -437,7 +422,7 @@ class AccountAssetAsset(models.Model):
         """Sum of the posted depreciation for this asset."""
         self.ensure_one()
         return sum(self.depreciation_line_ids.filtered(
-            lambda l: l.move_check).mapped('amount'))
+            lambda l: l.move_posted_check).mapped('amount'))
 
     def set_to_close(self):
         """Open the sell/dispose wizard for this asset."""
@@ -474,7 +459,12 @@ class AccountAssetAsset(models.Model):
             raise UserError(_(
                 "Set a Gain/Loss account on the asset (or its category) "
                 "before disposing of it."))
-        # Drop the remaining unposted depreciation lines.
+        # Post the depreciation due up to the disposal date, then drop the
+        # rest of the board: no entry is left to be created later.
+        if self.state == 'open':
+            self._compute_entries(
+                disposal_date,
+                group_entries=self.category_id.group_entries)
         unposted = self.depreciation_line_ids.filtered(lambda l: not l.move_check)
         if unposted:
             self.write({'depreciation_line_ids': [(2, l.id, False)
@@ -551,18 +541,46 @@ class AccountAssetAsset(models.Model):
             amount, move.name))
         return move
 
+    @api.model
+    def _kit_fix_posted_messages(self):
+        """Rebuild the asset messages posted as escaped HTML before P1.15
+        ("Depreciation line posted" shown as ``<span>...</span><div>...``):
+        description and values are read from the old text and written back
+        with ``Markup``, values escaped. Returns the number of messages."""
+        messages = self.env['mail.message'].sudo().search([
+            ('model', '=', self._name),
+            ('body', 'like', '&lt;span&gt;%&lt;/span&gt;'),
+        ])
+        fixed = 0
+        for message in messages:
+            text = html.unescape(re.sub(r'</?p>', '', str(message.body)))
+            head = re.match(r'\s*<span>(.*?)</span>', text, re.S)
+            if not head:
+                continue
+            body = Markup('<span>%s</span>') % html.unescape(head.group(1))
+            for name, value in re.findall(
+                    r'<div>.*?<b>(.*?)</b>:\s*(.*?)</div>', text, re.S):
+                body += Markup(
+                    '<div> &nbsp; &nbsp; &bull; <b>%s</b>: %s</div>') % (
+                    html.unescape(name), html.unescape(value))
+            message.body = body
+            fixed += 1
+        return fixed
+
     def set_to_draft(self):
         """Set the asset's state to 'draft'."""
         self.write({'state': 'draft'})
 
-    @api.depends('value', 'salvage_value', 'depreciation_line_ids.move_check',
+    @api.depends('value', 'salvage_value',
+                 'depreciation_line_ids.move_posted_check',
                  'depreciation_line_ids.amount')
     def _amount_residual(self):
-        """Compute the residual value of the asset based on the total depreciation amount."""
+        """Residual value: gross value minus the posted depreciation and the
+        salvage value."""
         for record in self:
             total_amount = 0.0
             for line in record.depreciation_line_ids:
-                if line.move_check:
+                if line.move_posted_check:
                     total_amount += line.amount
             record.value_residual = record.value - total_amount - record.salvage_value
 
@@ -643,7 +661,8 @@ class AccountAssetAsset(models.Model):
             ('asset_id', 'in', self.ids), ('depreciation_date', '<=', date),
             ('move_check', '=', False)])
         if group_entries:
-            return depreciation_ids.create_grouped_move()
+            return depreciation_ids.with_context(
+                depreciation_date=date).create_grouped_move()
         return depreciation_ids.create_move()
 
     def open_entries(self):

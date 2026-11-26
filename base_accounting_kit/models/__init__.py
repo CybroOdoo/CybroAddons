@@ -20,7 +20,14 @@
 #
 #############################################################################
 from . import report_xlsx_mixin
-from . import account_common_report
+from . import dynamic_report
+from . import dynamic_report_trial_balance
+from . import dynamic_report_general_ledger
+from . import dynamic_report_partner_ledger
+from . import dynamic_report_aged
+from . import dynamic_report_financial
+from . import dynamic_report_books
+from . import dynamic_report_bank_reconciliation
 from . import account_account
 from . import account_asset_asset
 from . import account_asset_category
@@ -29,8 +36,10 @@ from . import account_bank_statement_line
 from . import account_bulk_payment
 from . import account_followup
 from . import account_journal
+from . import kit_statement_import_map
 from . import account_move
 from . import account_move_line
+from . import account_move_line_matching
 from . import account_payment
 from . import account_payment_method
 from . import account_recurring_entries_line
@@ -44,3 +53,6 @@ from . import res_company
 from . import res_config_settings
 from . import res_partner
 from . import sale_order
+from . import account_lock_exception
+from . import kit_fiscal_year
+from . import kit_period_closing

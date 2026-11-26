@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Journal Entry PDF: the journal items of an entry on the company
+         letterhead, with a tax summary and a signature block. Offered in
+         the Print menu of journal entries only (domain). -->
+    <record id="action_report_journal_entry" model="ir.actions.report">
+        <field name="name">Journal Entry</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">base_accounting_kit.report_journal_entry</field>
+        <field name="print_report_name">object.name if object.name and object.name != '/' else 'Draft Entry'</field>
+        <field name="domain">[('move_type', '=', 'entry')]</field>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+        <field name="group_ids" eval="[(4, ref('account.group_account_user')), (4, ref('account.group_account_readonly'))]"/>
+    </record>
+
+    <template id="report_journal_entry_document">
+        <t t-call="web.external_layout">
+            <t t-set="lines" t-value="o.line_ids.sorted(lambda l: (l.display_type == 'tax', -l.debit, l.id))"/>
+            <t t-set="show_partner" t-value="any(lines.mapped('partner_id'))"/>
+            <t t-set="show_analytic" t-value="any(lines.mapped('distribution_analytic_account_ids'))"/>
+            <t t-set="show_taxes" t-value="any(lines.mapped('tax_ids'))"/>
+            <t t-set="show_currency" t-value="any(l.currency_id != o.company_currency_id for l in lines)"/>
+            <t t-set="state_style" t-value="{
+                'draft': 'background-color: #e9ecef; color: #495057;',
+                'posted': 'background-color: #d1e7dd; color: #0f5132;',
+                'cancel': 'background-color: #f8d7da; color: #842029;'}"/>
+            <div class="page">
+                <table class="table-borderless" style="width: 100%;">
+                    <tr>
+                        <td style="padding: 0; vertical-align: middle;">
+                            <h2 class="mb-0">
+                                <span t-if="o.name and o.name != '/'" t-field="o.name"/>
+                                <span t-else="">Draft Entry</span>
+                            </h2>
+                        </td>
+                        <td style="padding: 0; text-align: right; vertical-align: middle; white-space: nowrap;">
+                            <span t-att-style="state_style.get(o.state, '') + ' padding: 3px 10px; border-radius: 10px; font-weight: bold; font-size: 85%;'"
+                                  t-field="o.state"/>
+                            <span t-if="o.review_state in ('todo', 'anomaly')"
+                                  style="background-color: #fff3cd; color: #664d03; padding: 3px 10px; border-radius: 10px; font-weight: bold; font-size: 85%; margin-left: 4px;">To review</span>
+                        </td>
+                    </tr>
+                </table>
+                <table class="table-borderless small mt-2 mb-3" style="width: auto;">
+                    <tr>
+                        <td class="text-muted ps-0 pe-2">Date</td><td class="pe-5"><span t-field="o.date"/></td>
+                        <td class="text-muted pe-2">Journal</td><td class="pe-5"><span t-field="o.journal_id"/></td>
+                    </tr>
+                    <tr t-if="o.ref or o.partner_id">
+                        <t t-if="o.ref">
+                            <td class="text-muted ps-0 pe-2">Reference</td><td class="pe-5"><span t-field="o.ref"/></td>
+                        </t>
+                        <t t-if="o.partner_id">
+                            <td t-att-class="'text-muted pe-2' if o.ref else 'text-muted ps-0 pe-2'">Partner</td>
+                            <td class="pe-5"><span t-field="o.partner_id"/></td>
+                        </t>
+                    </tr>
+                </table>
+
+                <style>
+                    .o_kit_je_items { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+                    .o_kit_je_items th { border-bottom: 2px solid #adb5bd; padding: 4px 6px; text-align: left; }
+                    .o_kit_je_items td { border-bottom: 1px solid #eceff1; padding: 4px 6px; vertical-align: top; }
+                    .o_kit_je_items .o_kit_je_amt { text-align: right; white-space: nowrap; }
+                    .o_kit_je_items tr.o_kit_je_total td { font-weight: bold; border-top: 2px solid #adb5bd; border-bottom: none; }
+                </style>
+                <t t-set="extra_cols" t-value="show_partner + show_analytic + show_taxes + show_currency"/>
+                <table class="o_kit_je_items">
+                    <thead>
+                        <tr>
+                            <th>Account</th>
+                            <th>Label</th>
+                            <th t-if="show_partner">Partner</th>
+                            <th t-if="show_analytic">Analytic</th>
+                            <th t-if="show_taxes">Taxes</th>
+                            <th t-if="show_currency" class="o_kit_je_amt">Foreign amount</th>
+                            <th class="o_kit_je_amt">Debit</th>
+                            <th class="o_kit_je_amt">Credit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="lines" t-as="item">
+                            <tr>
+                                <td t-out="item.account_id.display_name"/>
+                                <td t-out="item.name or ''"/>
+                                <td t-if="show_partner" t-out="item.partner_id.display_name or ''"/>
+                                <td t-if="show_analytic" t-out="', '.join(item.distribution_analytic_account_ids.mapped('display_name'))"/>
+                                <td t-if="show_taxes" t-out="', '.join(item.tax_ids.mapped('name'))"/>
+                                <td t-if="show_currency" class="o_kit_je_amt">
+                                    <t t-if="item.currency_id != o.company_currency_id"
+                                       t-out="item.amount_currency" t-options="{'widget': 'monetary', 'display_currency': item.currency_id}"/>
+                                </td>
+                                <td class="o_kit_je_amt"><t t-if="item.debit" t-out="item.debit" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/></td>
+                                <td class="o_kit_je_amt"><t t-if="item.credit" t-out="item.credit" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/></td>
+                            </tr>
+                        </t>
+                        <tr class="o_kit_je_total">
+                            <td t-att-colspan="2 + extra_cols" class="o_kit_je_amt">Total</td>
+                            <td class="o_kit_je_amt" t-out="sum(lines.mapped('debit'))" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
+                            <td class="o_kit_je_amt" t-out="sum(lines.mapped('credit'))" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <t t-set="tax_lines" t-value="lines.filtered('tax_line_id')"/>
+                <div t-if="tax_lines" class="mt-3" style="page-break-inside: avoid;">
+                    <h6 class="mb-1">Tax summary</h6>
+                    <table class="table table-sm" style="width: auto; font-variant-numeric: tabular-nums;">
+                        <thead>
+                            <tr><th>Tax</th><th class="text-end ps-5">Base</th><th class="text-end ps-5">Tax</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="tax_lines.mapped('tax_line_id')" t-as="tax">
+                                <t t-set="tax_group" t-value="tax_lines.filtered(lambda l: l.tax_line_id == tax)"/>
+                                <td t-out="tax.name"/>
+                                <td class="text-end text-nowrap ps-5"><span t-out="abs(sum(tax_group.mapped('tax_base_amount')))" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/></td>
+                                <td class="text-end text-nowrap ps-5"><span t-out="abs(sum(tax_group.mapped('balance')))" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div t-if="not is_html_empty(o.narration)" class="mt-3">
+                    <h6 class="mb-1">Notes</h6>
+                    <div t-field="o.narration"/>
+                </div>
+
+                <!-- Signature block -->
+                <table class="table-borderless" style="width: 100%; margin-top: 60px; page-break-inside: avoid;">
+                    <tr>
+                        <td style="width: 33%; padding: 0 16px 0 0; vertical-align: bottom;">
+                            <div style="border-top: 1px solid #495057; padding-top: 4px;">Prepared by</div>
+                            <div class="small text-muted" t-out="o.create_uid.name"/>
+                        </td>
+                        <td style="width: 33%; padding: 0 16px; vertical-align: bottom;">
+                            <div style="border-top: 1px solid #495057; padding-top: 4px;">Checked by</div>
+                            <div class="small text-muted">&#160;</div>
+                        </td>
+                        <td style="width: 33%; padding: 0 0 0 16px; vertical-align: bottom;">
+                            <div style="border-top: 1px solid #495057; padding-top: 4px;">Approved by</div>
+                            <div class="small text-muted">&#160;</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_journal_entry">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="base_accounting_kit.report_journal_entry_document" t-lang="o.env.user.lang"/>
+            </t>
+        </t>
+    </template>
+</odoo>

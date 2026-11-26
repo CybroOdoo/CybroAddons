@@ -20,168 +20,20 @@
 #
 #############################################################################
 import re
-from odoo import api, models, fields, _
-from odoo.exceptions import ValidationError
+
+from odoo import models
 
 
-class FinancialReport(models.TransientModel):
-    _name = "financial.report"
-    _inherit = "account.common.report"
-    _description = "Financial Reports"
-
-    name = fields.Char(string="Financial Report", default="Financial Report", required=True, translate=True)
-
-    view_format = fields.Selection([
-        ('vertical', 'Vertical'),
-        ('horizontal', 'Horizontal')],
-        default='vertical',
-        string="Format")
-
-
-    def _build_contexts(self, data):
-        result = {}
-        result['journal_ids'] = 'journal_ids' in data['form'] and data['form'][
-            'journal_ids'] or False
-        result['state'] = 'target_move' in data['form'] and data['form'][
-            'target_move'] or ''
-        result['date_from'] = data['form']['date_from'] or False
-        result['date_to'] = data['form']['date_to'] or False
-        result['strict_range'] = True if result['date_from'] else False
-        return result
-
-    @api.model
-    def _get_account_report(self):
-        reports = []
-        if self.env.context.get('active_id'):
-            menu = self.env['ir.ui.menu'].browse(
-                self.env.context.get('active_id')).name
-            reports = self.env['account.financial.report'].search([
-                ('name', 'ilike', menu)])
-        return reports and reports[0] or False
-
-    enable_filter = fields.Boolean(
-        string='Enable Comparison',
-        default=False)
-    account_report_id = fields.Many2one(
-        'account.financial.report',
-        string='Account Reports',
-        required=True)
-
-    debit_credit = fields.Boolean(
-        string='Display Debit/Credit Columns',
-        default=True,
-        help="This option allows you to"
-             " get more details about the "
-             "way your balances are computed."
-             " Because it is space consuming,"
-             " we do not allow to use it "
-             "while doing a comparison.")
-
-    def view_report_pdf(self):
-        """This function will be executed when we click the view button
-        from the wizard. Based on the values provided in the wizard, this
-        function will print pdf report"""
-        self.ensure_one()
-        if self.date_from and self.date_to and self.date_from > self.date_to:
-            raise ValidationError(_("Start Date cannot be later than End Date."))
-        data = dict()
-        data['ids'] = self.env.context.get('active_ids', [])
-        data['model'] = self.env.context.get('active_model', 'ir.ui.menu')
-        data['form'] = self.read(
-            ['date_from', 'enable_filter', 'debit_credit', 'date_to',
-             'account_report_id', 'target_move', 'view_format',
-             'company_id'])[0]
-        used_context = self._build_contexts(data)
-        data['form']['used_context'] = dict(
-            used_context,
-            lang=self.env.context.get('lang') or 'en_US')
-
-        report_lines = self.get_account_lines(data['form'])
-        # find the journal items of these accounts
-        journal_items = self.find_journal_items(report_lines, data['form'])
-
-        def set_report_level(rec):
-            """This function is used to set the level of each item.
-            This level will be used to set the alignment in the dynamic reports."""
-            level = 1
-            if not rec['parent']:
-                return level
-            else:
-                for line in report_lines:
-                    key = 'a_id' if line['type'] == 'account' else 'id'
-                    if line[key] == rec['parent']:
-                        return level + set_report_level(line)
-
-        # finding the root
-        for item in report_lines:
-            item['balance'] = round(item['balance'], 2)
-            if not item['parent']:
-                item['level'] = 1
-                parent = item
-                report_name = item['name']
-                id = item['id']
-                report_id = item['r_id']
-            else:
-                item['level'] = set_report_level(item)
-        currency = self._get_currency()
-        data['currency'] = currency
-        data['journal_items'] = journal_items
-        data['report_lines'] = report_lines
-        # checking view type
-        return self.env.ref(
-            'base_accounting_kit.financial_report_pdf').report_action(self,
-                                                                      data)
-
-    def _financial_report_data(self):
-        """Build the ``data`` dict used by both the PDF and xlsx exports."""
-        data = dict()
-        data['ids'] = self.env.context.get('active_ids', [])
-        data['model'] = self.env.context.get('active_model', 'ir.ui.menu')
-        data['form'] = self.read(
-            ['date_from', 'enable_filter', 'debit_credit', 'date_to',
-             'account_report_id', 'target_move', 'view_format',
-             'company_id'])[0]
-        used_context = self._build_contexts(data)
-        data['form']['used_context'] = dict(
-            used_context,
-            lang=self.env.context.get('lang') or 'en_US')
-        return data
-
-    def action_print_xlsx(self):
-        """Export the financial report (P&L / Balance Sheet) to xlsx."""
-        self.ensure_one()
-        data = self._financial_report_data()
-        report_lines = self.get_account_lines(data['form'])
-        columns = [{'label': 'Name', 'width': 45}]
-        if self.debit_credit:
-            columns += [{'label': 'Debit', 'width': 18, 'num': True},
-                        {'label': 'Credit', 'width': 18, 'num': True}]
-        columns.append({'label': 'Balance', 'width': 18, 'num': True})
-        if self.enable_filter:
-            columns.append(
-                {'label': 'Comparison', 'width': 18, 'num': True})
-        rows = []
-        for line in report_lines:
-            is_report = line.get('type') == 'report'
-            cells = [line.get('name')]
-            if self.debit_credit:
-                cells += [line.get('debit', 0.0), line.get('credit', 0.0)]
-            cells.append(line.get('balance', 0.0))
-            if self.enable_filter:
-                cells.append(line.get('balance_cmp', 0.0))
-            rows.append({
-                'cells': cells,
-                'bold': is_report,
-                'indent': 0 if is_report else 1,
-            })
-        table = {
-            'title': self.account_report_id.name or 'Financial Report',
-            'meta': self._xlsx_meta(data['form']),
-            'columns': columns,
-            'rows': rows,
-        }
-        return self._xlsx_action(
-            self.account_report_id.name or 'Financial Report', table)
+class ReportFinancial(models.AbstractModel):
+    """Computation of the financial statements (Profit and Loss, Balance
+    Sheet and the other reports of the ``account.financial.report`` tree),
+    used by the dynamic financial report. The figures follow the context of
+    ``account.move.line._query_get`` (dates, journals, target moves, report
+    company); without ``strict_range``, accounts with
+    ``include_initial_balance`` (balance sheet) cumulate up to the end
+    date."""
+    _name = 'report.base_accounting_kit.report_financial'
+    _description = 'Financial Report'
 
     def _compute_account_balance(self, accounts):
         """ compute the balance, debit
@@ -199,6 +51,18 @@ class FinancialReport(models.TransientModel):
         for account in accounts:
             res[account.id] = dict((fn, 0.0)
                                    for fn in mapping.keys())
+        # Current Year Earnings (core ``equity_unaffected``) is not a
+        # balance sheet account in core (no initial balance), but it holds
+        # the year-end closing entries: on the balance sheet it cumulates
+        # up to the end date, as "Profit (Loss) to report" does, so the
+        # result of closed years is not counted twice (P1.14).
+        unaffected = accounts.filtered(
+            lambda a: a.account_type == 'equity_unaffected')
+        if unaffected and self.env.context.get('date_from') \
+                and not self.env.context.get('strict_range'):
+            res.update(self.with_context(date_from=False)
+                       ._compute_account_balance(unaffected))
+            accounts -= unaffected
         if accounts:
             tables, where_clause, where_params = (
                 self.env['account.move.line']._query_get())
@@ -251,19 +115,6 @@ class FinancialReport(models.TransientModel):
                 accounts = self.env['account.account'].search([
                     ('account_type', '=', report.account_type_ids)
                 ])
-                if report.name == "Expenses":
-                    accounts = self.env['account.account'].search([
-                        ('account_type', 'in', ["expense","expense_depreciation","expense_direct_cost"])
-                    ])
-                if report.name == "Liability":
-                    accounts = self.env['account.account'].search([
-                        ('account_type', 'in', ["liability_payable","equity","liability_current","liability_non_current"])
-                    ])
-                if report.name == "Assets":
-                    accounts = self.env['account.account'].search([
-                        ('account_type', 'in', ["asset_receivable","asset_cash","asset_current","asset_non_current","asset_prepayments","asset_fixed"])
-                    ])
-
                 res[report.id]['account'] = self._compute_account_balance(
                     accounts)
 
@@ -271,8 +122,12 @@ class FinancialReport(models.TransientModel):
                     for field in fields:
                         res[report.id][field] += value.get(field)
             elif report.type == 'account_report' and report.account_report_id:
-                # it's the amount of the linked report
-                res2 = self._compute_report_balance(report.account_report_id)
+                # it's the amount of the linked report, cumulated from the
+                # beginning up to the end date (e.g. the profit to report on
+                # the balance sheet includes the earnings of earlier periods)
+                res2 = self.with_context(
+                    date_from=False)._compute_report_balance(
+                    report.account_report_id)
                 for key, value in res2.items():
                     for field in fields:
                         res[report.id][field] += value[field]
@@ -293,7 +148,12 @@ class FinancialReport(models.TransientModel):
         res = self.with_context(
             data.get('used_context'))._compute_report_balance(child_reports)
         if data['enable_filter']:
-            comparison_res = self._compute_report_balance(child_reports)
+            comparison_context = dict(
+                data.get('used_context'),
+                date_from=data.get('date_from_cmp') or False,
+                date_to=data.get('date_to_cmp') or False)
+            comparison_res = self.with_context(
+                comparison_context)._compute_report_balance(child_reports)
             for report_id, value in comparison_res.items():
                 res[report_id]['comp_bal'] = value['balance']
                 report_acc = res[report_id].get('account')
@@ -393,79 +253,3 @@ class FinancialReport(models.TransientModel):
                 lines += sorted(sub_lines,
                                 key=lambda sub_line: sub_line['name'])
         return lines
-
-    def find_journal_items(self, report_lines, form):
-        cr = self.env.cr
-        journal_items = []
-        for i in report_lines:
-            if i['type'] == 'account':
-                account = i['account']
-                if form['target_move'] == 'posted':
-                    search_query = ("select aml.id, am.id as j_id, "
-                                    "aml.account_id, aml.date, aml.name as "
-                                    "label, am.name, (aml.debit-aml.credit) as "
-                                    "balance, aml.debit, aml.credit, "
-                                    "aml.partner_id  from "
-                                    "account_move_line aml "
-                                    "join account_move am on (aml.move_id=am.id"
-                                    " and am.state=%s) where aml.account_id=%s")
-                    vals = [form['target_move']]
-                else:
-                    search_query = ("select aml.id, am.id as j_id, "
-                                    "aml.account_id, aml.date, aml.name as "
-                                    "label, am.name, (aml.debit-aml.credit) as "
-                                    "balance, aml.debit, aml.credit, "
-                                    "aml.partner_id from account_move_line aml"
-                                    " join account_move am on "
-                                    "(aml.move_id=am.id) where "
-                                    "aml.account_id=%s")
-                    vals = []
-                if form['date_from'] and form['date_to']:
-                    search_query += " and aml.date>=%s and aml.date<=%s"
-                    vals += [account, form['date_from'], form['date_to']]
-                elif form['date_from']:
-                    search_query += " and aml.date>=%s"
-                    vals += [account, form['date_from']]
-                elif form['date_to']:
-                    search_query += " and aml.date<=%s"
-                    vals += [account, form['date_to']]
-                else:
-                    vals += [account]
-                cr.execute(search_query, tuple(vals))
-                items = cr.dictfetchall()
-
-                for j in items:
-                    temp = j['id']
-                    j['id'] = re.sub('[^0-9a-zA-Z]+', '', i['name']) + str(
-                        temp)
-                    j['p_id'] = str(i['a_id'])
-                    j['type'] = 'journal_item'
-                    journal_items.append(j)
-        return journal_items
-
-    @api.model
-    def _get_currency(self):
-        journal = self.env['account.journal'].browse(
-            self.env.context.get('default_journal_id', False))
-        if journal.currency_id:
-            return journal.currency_id.id
-        return self.env.company.currency_id.symbol
-
-
-class ProfitLossPdf(models.AbstractModel):
-    """ Abstract model for generating PDF report value and send to template """
-
-    _name = 'report.base_accounting_kit.report_financial'
-    _description = 'Financial Report'
-
-    @api.model
-    def _get_report_values(self, docids, data=None):
-        """ Provide report values to template """
-        ctx = {
-            'data': data,
-            'journal_items': data['journal_items'],
-            'report_lines': data['report_lines'],
-            'account_report': data['form']['account_report_id'][1],
-            'currency': data['currency'],
-        }
-        return ctx

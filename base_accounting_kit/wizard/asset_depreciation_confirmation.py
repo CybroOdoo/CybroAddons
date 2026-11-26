@@ -35,9 +35,6 @@ class AssetDepreciationConfirmationWizard(models.TransientModel):
         self.ensure_one()
         context = self.env.context
         created_move_ids = self.env['account.asset.asset'].sudo().compute_generated_entries(self.date, asset_type=context.get('asset_type'))
-        moves = self.env['account.move'].browse(created_move_ids)
-        auto_post_draft_moves = moves.filtered(lambda move: move.state == 'draft' and move.auto_post)
-        auto_post_draft_moves.write({'auto_post': 'at_date'})
         return {
             'name': _('Created Asset Moves') if context.get('asset_type') == 'purchase' else _('Created Revenue Moves'),
             'view_mode': 'list,form',

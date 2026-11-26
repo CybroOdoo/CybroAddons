@@ -5,7 +5,7 @@
         <field name="name">res.partner.followup.view.form</field>
         <field name="model">res.partner</field>
         <field name="arch" type="xml">
-            <form string="report" create="false" edit="false">
+            <form string="Customer Follow-up" create="false" edit="false">
                 <header>
                     <button name="action_send_followup" type="object"
                             string="Send Follow-up" class="btn-primary"
@@ -16,45 +16,39 @@
                 </header>
                 <sheet>
                     <div class="oe_title">
-                        <h1>
-                            <field name="name" readonly="1"/>
-                        </h1>
+                        <h1><field name="name" readonly="1"/></h1>
                     </div>
                     <group>
-                        <field name="followup_level_id"/>
-                        <field name="latest_followup_date"/>
-                    </group>
-                    <br/>
-                    <div class="alert alert-warning o_account_reports_followup-no-action"
-                         invisible="invoice_list != []"
-                         id='no-action' role="alert">
-                        <p>
-                            <strong>
-                                <field name="name"/>
-                            </strong>
-                            has no due amount.
-                        </p>
-                    </div>
-
-                    <div invisible="invoice_list != []">
-                        <group>
-                            <field name="next_reminder_date"/>
+                        <group string="Status">
+                            <field name="followup_level_id" string="Last Step Sent"/>
+                            <field name="latest_followup_date" string="Last Sent On"/>
+                            <field name="next_reminder_date" string="Next Step On" invisible="not invoice_list"/>
                         </group>
-                        <notebook colspan="4">
-                            <page string="Invoice Details">
-                                <field name="invoice_list"/>
-                            </page>
-
-                        </notebook>
-                    </div>
-                    <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
-                        <field name="total_due" class="oe_subtotal_footer_separator" widget="monetary"/>
-                        <div class="oe_subtotal_footer_separator oe_inline o_td_label">
-                            <label for="total_overdue"/>
-                        </div>
-                        <field name="total_overdue" nolabel="1" class="oe_subtotal_footer_separator"
-                               widget="monetary"/>
+                        <group string="Amounts">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="total_due" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_overdue" widget="monetary" options="{'currency_field': 'currency_id'}"
+                                   decoration-danger="total_overdue > 0"/>
+                        </group>
                     </group>
+                    <div class="alert alert-info" role="status" invisible="invoice_list">
+                        Nothing is open for this customer: no reminder to send.
+                    </div>
+                    <div invisible="not invoice_list">
+                        <separator string="Open Invoices"/>
+                        <field name="invoice_list" nolabel="1">
+                            <list decoration-danger="invoice_date_due and invoice_date_due &lt; context_today().strftime('%Y-%m-%d')">
+                                <field name="currency_id" column_invisible="1"/>
+                                <field name="company_currency_id" column_invisible="1"/>
+                                <field name="invoice_date_due" string="Due"/>
+                                <field name="name" string="Invoice"/>
+                                <field name="invoice_date" string="Invoiced" optional="show"/>
+                                <field name="amount_residual_signed" string="Still to Pay" sum="Total"/>
+                                <field name="amount_total_signed" string="Invoice Total" optional="show"/>
+                                <field name="payment_state" widget="badge" optional="hide"/>
+                            </list>
+                        </field>
+                    </div>
                 </sheet>
                 <chatter/>
             </form>
@@ -65,7 +59,7 @@
         <field name="name">res.partner.statements.view.tree</field>
         <field name="model">res.partner</field>
         <field name="arch" type="xml">
-            <list string="Follow-up Reports Tree View" create="false" import="false" delete="false">
+            <list string="Customer Follow-ups" create="false" import="false" delete="false">
                 <field name="currency_id" invisible="1"/>
                 <field name="name"/>
                 <field name="total_due" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Total"/>
@@ -83,14 +77,17 @@
         <field name="arch" type="xml">
             <filter name="supplier" position="after">
                 <separator/>
-                <filter string="Overdue Invoices"
+                <filter string="Overdue, waiting"
                         name="filter_with_overdue_invoices"
+                        groups="account.group_account_user"
                         domain="[('followup_status', '=', 'with_overdue_invoices')]"/>
-                <filter string="In need of action"
+                <filter string="Reminder due"
                         name="filter_in_need_of_action"
+                        groups="account.group_account_user"
                         domain="[('followup_status', '=', 'in_need_of_action')]"/>
-                <filter string="No action needed"
+                <filter string="Up to date"
                         name="filter_no_action_needed"
+                        groups="account.group_account_user"
                         domain="[('followup_status', '=', 'no_action_needed')]"/>
                 <separator/>
             </filter>
@@ -107,8 +104,9 @@
         <field name="context">{'search_default_filter_in_need_of_action':1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                No follow-up to send!
+                Every customer is up to date
             </p>
+            <p>Customers appear here once one of their invoices reaches a step of the reminder plan.</p>
         </field>
     </record>
 <!--Follow-up Reports MenuItem-->

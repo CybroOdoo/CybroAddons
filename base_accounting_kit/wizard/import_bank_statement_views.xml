@@ -5,37 +5,100 @@
         <field name="name">import.bank.statement.view.form</field>
         <field name="model">import.bank.statement</field>
         <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <p>
-                        <center>
-                            <i>Upload csv or xlsx or ofx or qif file format</i>
-                        </center>
+            <form string="Import Statement">
+                <field name="state" invisible="1"/>
+                <div class="alert alert-info" role="alert" invisible="state != 'upload'">
+                    <p class="mb-1">
+                        Upload one or more files from your bank: <b>CAMT.052 / .053 /
+                        .054</b> (XML), <b>MT940</b>, <b>CSV</b>, <b>XLSX</b>, <b>OFX</b>
+                        or <b>QIF</b>. Each statement in a file becomes its own bank
+                        statement, with the file attached; transactions already imported
+                        are skipped.
+                    </p>
+                    <p class="mb-0">
+                        CAMT, MT940 and OFX files carry the account number: leave the
+                        journal empty to find it, or the file is refused if it belongs to
+                        another account. CSV / XLSX files use the journal's saved format,
+                        else the column titles <b>date</b>, <b>amount</b> (or <b>debit</b>
+                        and <b>credit</b>), <b>label</b>, <b>partner</b>, <b>reference</b>,
+                        <b>balance</b>; use <b>Set Columns</b> for other files.
+                        <a href="/base_accounting_kit/static/src/sample/bank_statement_sample.csv"
+                           download="bank_statement_sample.csv">Download a sample CSV</a>
+                    </p>
+                </div>
+                <group invisible="state != 'upload'">
+                    <group>
+                        <field name="journal_id" options="{'no_create': True}"
+                               placeholder="Found from the file's account number"/>
+                        <field name="attachment_ids" widget="many2many_binary" string="Files"/>
+                        <field name="map_id" invisible="not map_id" readonly="1"/>
+                    </group>
+                </group>
+                <div invisible="state != 'columns'">
+                    <p class="text-muted">
+                        Say what each column of the file holds. A date and an amount
+                        (or money in / money out) are needed.
                     </p>
                     <group>
-                        <group>
-                            <field name="attachment" filename="file_name"/>
-                            <field name="file_name" invisible="1"/>
-                            <field name="journal_id" invisible="1"/>
+                        <group string="File">
+                            <field name="journal_id" readonly="1"/>
+                            <field name="encoding"/>
+                            <field name="delimiter"/>
+                            <field name="decimal_separator"/>
+                            <field name="date_format"/>
+                            <field name="skip_rows"/>
+                            <field name="reverse_sign"/>
+                        </group>
+                        <group string="Save">
+                            <field name="save_map"/>
+                            <field name="map_name" invisible="not save_map" required="state == 'columns' and save_map"/>
                         </group>
                     </group>
-                    <footer>
-                        <button name="action_statement_import" class="oe_highlight"
-                                string="IMPORT" type="object"
-                                help="Import bank statement in CSV or XLSX format"/>
-                    </footer>
-                </sheet>
+                    <field name="column_ids" nolabel="1">
+                        <list editable="bottom" create="0" delete="0">
+                            <field name="name"/>
+                            <field name="sample"/>
+                            <field name="field" placeholder="Not imported"/>
+                        </list>
+                    </field>
+                </div>
+                <footer>
+                    <button name="action_statement_import" class="btn-primary"
+                            string="Import" type="object" data-hotkey="q"/>
+                    <button name="action_set_columns" string="Set Columns" type="object"
+                            class="btn-secondary" invisible="state != 'upload'"
+                            help="Say which column of a CSV or XLSX file holds what"/>
+                    <button name="action_back" string="Back" type="object"
+                            class="btn-secondary" invisible="state != 'columns'"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel" data-hotkey="x"/>
+                </footer>
             </form>
         </field>
     </record>
     <!-- Wizard action record -->
     <record id="import_bank_statement_view_action"
             model="ir.actions.act_window">
-        <field name="name">import.bank.statement.view.action</field>
-        <field name="type">ir.actions.act_window</field>
+        <field name="name">Import Statement</field>
         <field name="res_model">import.bank.statement</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">form</field>
         <field name="view_id" ref="base_accounting_kit.import_bank_statement_view_form"/>
         <field name="target">new</field>
+    </record>
+    <!-- Import button on the Bank Statements list -->
+    <record id="view_bank_statement_tree_import" model="ir.ui.view">
+        <field name="name">account.bank.statement.list.inherit.kit.import</field>
+        <field name="model">account.bank.statement</field>
+        <field name="inherit_id" ref="account.view_bank_statement_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <header>
+                    <button name="%(base_accounting_kit.import_bank_statement_view_action)d"
+                            type="action" string="Import Statement"
+                            class="btn-primary" display="always"
+                            groups="account.group_account_basic"/>
+                </header>
+            </xpath>
+        </field>
     </record>
 </odoo>

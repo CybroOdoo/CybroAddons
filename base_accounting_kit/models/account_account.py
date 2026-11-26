@@ -50,21 +50,3 @@ class CashFlow(models.Model):
             for rec in self._origin.cash_flow_type:
                 # remove old record
                 rec.write({'account_ids': [(3, self._origin.id)]})
-
-
-class AccountCommonJournalReport(models.TransientModel):
-    """Model used for creating the common journal report"""
-    _name = 'account.common.journal.report'
-    _description = 'Common Journal Report'
-    _inherit = "account.common.report"
-
-    amount_currency = fields.Boolean(
-        'With Currency',
-        help="Print Report with the currency column if the currency differs "
-             "from the company currency.")
-
-    def pre_print_report(self, data):
-        """Pre-print the given data and that updates the amount
-        amount_currency value"""
-        data['form'].update({'amount_currency': self.amount_currency})
-        return data

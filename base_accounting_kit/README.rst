@@ -2,15 +2,15 @@
     :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 
-.. |odoo| image:: https://img.shields.io/badge/Odoo-19.0-875A7B.svg
+.. |odoo| image:: https://img.shields.io/badge/Odoo-20.0-875A7B.svg
     :target: https://www.odoo.com
-    :alt: Odoo 19.0
+    :alt: Odoo 20.0
 
 .. |edition| image:: https://img.shields.io/badge/Edition-Community-1ABC9C.svg
     :alt: Community Edition
 
-.. |python| image:: https://img.shields.io/badge/Python-3.11-3776AB.svg
-    :alt: Python 3.11
+.. |python| image:: https://img.shields.io/badge/Python-3.12-3776AB.svg
+    :alt: Python 3.12
 
 .. |maintainer| image:: https://img.shields.io/badge/maintainer-Cybrosys-875A7B.svg
     :target: https://cybrosys.com
@@ -18,10 +18,10 @@
 
 |license| |odoo| |edition| |python| |maintainer|
 
-Odoo 19 Accounting for Community
+Odoo 20 Accounting for Community
 ================================
 
-Odoo 19 Full Accounting Kit brings full accounting features to Odoo 19
+Odoo 20 Full Accounting Kit brings full accounting features to Odoo 20
 Community Edition. It adds advanced financial reports, complete asset
 management, payment follow-ups, bank tools and much more — without any
 Enterprise licence or per-user fees.
@@ -29,15 +29,19 @@ Enterprise licence or per-user fees.
 Key Features
 ------------
 
-**Financial Reports (PDF & Excel)**
+**Interactive Financial Reports (screen, PDF & Excel)**
 
-* Profit & Loss and Balance Sheet
-* General Ledger and Trial Balance — with period-comparison columns
+* Profit & Loss and Balance Sheet (configurable structure)
+* General Ledger and Trial Balance
 * Partner Ledger, Aged Receivable and Aged Payable
 * Tax Report and Cash Flow Statement
 * Bank Book, Cash Book and Day Book
 * Journals Audit
-* Every report is printable to PDF and exportable to Excel (XLSX)
+* Each report opens as a screen: date presets, comparison with several
+  periods and variance, journal / partner / analytic / account filters,
+  unfold lines, search, drill-down to the journal entry
+* Saved filters per user, optionally opened by default
+* PDF and Excel (XLSX) exports match the screen
 
 **Asset Management**
 
@@ -65,15 +69,19 @@ Key Features
 
 **Bank & Reconciliation**
 
-* Bank statement import (OFX / QIF / CSV / XLSX)
-* Bank reconciliation widget
+* Bank statement import: CAMT.052 / .053 / .054, MT940, OFX, QIF, CSV and XLSX with saved column formats per journal
+* Bank reconciliation screen: grouped by confidence, suggestions, partial matching, entry preview, early payment discount
 * Automatic bank matching (partner + amount, rule-based write-offs)
+* Open items matching: invoices against payments and credit notes, with write-offs
 * Foreign-currency (FX) revaluation of open balances
 
 **Other Tools**
 
 * Multiple-invoice printing with custom layouts
-* Accounting lock dates
+* Closing menu: all five lock dates and lock date exceptions (reason, user, end, revoke)
+* Fiscal years (e.g. a 15-month first year) followed by reports and numbering; close / reopen a year
+* Year-end closing: checks, result moved to Retained Earnings, lock; reopen reverses it
+* Month-end closing: automatic checks and closing tasks with responsible people, close and lock the month
 * Account groups
 * Multi-language translations
 
@@ -94,6 +102,16 @@ service and refresh the browser — the **Accounting** menu then appears in the
 top navigation bar. Configure follow-up levels, asset categories and the
 foreign-currency revaluation accounts from the Accounting settings.
 
+
+Tests
+-----
+The module ships automated tests (``tests/``). Run them on an empty
+database::
+
+    odoo-bin -c <config> -d <new_db> -i base_accounting_kit --test-enable --test-tags /base_accounting_kit --stop-after-init
+
+The browser tests need Google Chrome; skip them with
+``--test-tags /base_accounting_kit,-kit_ui``.
 
 Company
 -------

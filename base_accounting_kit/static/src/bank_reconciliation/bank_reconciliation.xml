@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="base_accounting_kit.BankReconciliation">
+        <div class="o_action o_kit_bank_rec">
+            <ControlPanel>
+                <t t-set-slot="control-panel-buttons">
+                    <button t-if="this.state.data and this.rowsOf('sure').length" type="button"
+                            class="btn btn-primary o_kit_rec_accept_all" t-on-click="this.acceptSure">
+                        Accept all sure (<t t-out="this.rowsOf('sure').length"/>)
+                    </button>
+                    <button t-if="this.state.data and !this.isOpen() and this.state.data.journal.id" type="button" class="btn btn-secondary"
+                            t-on-click="this.newTransaction">New transaction</button>
+                    <button t-if="this.state.data and this.isOpen()" type="button" class="btn btn-secondary"
+                            title="All open journal items (Odoo list view)" t-on-click="this.openItemsList">All open items</button>
+                    <button t-if="this.state.data and !this.isOpen() and this.state.data.journal.id" type="button" class="btn btn-secondary"
+                            title="All transactions of the journal (Odoo list view)" t-on-click="this.openList">All transactions</button>
+                </t>
+                <t t-set-slot="control-panel-actions">
+                    <div t-if="this.state.data" class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="btn-group o_kit_rec_mode_switch" role="group">
+                            <button type="button" class="btn btn-sm" t-att-class="this.isOpen() ? 'btn-light' : 'btn-primary'"
+                                    t-on-click="() => this.setMode('bank')">Bank transactions</button>
+                            <button type="button" class="btn btn-sm" t-att-class="this.isOpen() ? 'btn-primary' : 'btn-light'"
+                                    t-on-click="() => this.setMode('open')">Open items</button>
+                        </div>
+                        <Dropdown t-if="this.isOpen()">
+                            <button class="btn o_kit_dr_chip">
+                                <span class="o_kit_dr_chip_label">Account:</span>
+                                <span class="o_kit_dr_chip_value" t-out="this.accountTypeLabel()"/>
+                                <i class="oi o_kit_dr_chip_caret" data-icon="arrow_drop_down"/>
+                            </button>
+                            <t t-set-slot="content">
+                                <DropdownItem t-foreach="this.accountTypes" t-as="type" t-key="type[0]"
+                                              onSelected="() => this.reload({account_type: type[0]})">
+                                    <i class="oi oi-fw me-1"
+                                       t-att-data-icon="this.state.data.filters.account_type === type[0] ? 'check' : ''"/>
+                                    <t t-out="type[1]"/>
+                                </DropdownItem>
+                            </t>
+                        </Dropdown>
+                        <Dropdown t-if="!this.isOpen()">
+                            <button class="btn o_kit_dr_chip">
+                                <i class="oi" data-icon="account_balance"/>
+                                <span class="o_kit_dr_chip_label">Journal:</span>
+                                <span class="o_kit_dr_chip_value" t-out="this.state.data.journal.name"/>
+                                <i class="oi o_kit_dr_chip_caret" data-icon="arrow_drop_down"/>
+                            </button>
+                            <t t-set-slot="content">
+                                <DropdownItem t-foreach="this.state.data.journals" t-as="journal" t-key="journal.id"
+                                              onSelected="() => this.reload({journal_id: journal.id})">
+                                    <t t-out="journal.name"/>
+                                </DropdownItem>
+                            </t>
+                        </Dropdown>
+                        <Dropdown t-if="!this.isOpen()">
+                            <button class="btn o_kit_dr_chip">
+                                <span class="o_kit_dr_chip_label">Show:</span>
+                                <span class="o_kit_dr_chip_value" t-out="this.statusLabel()"/>
+                                <i class="oi o_kit_dr_chip_caret" data-icon="arrow_drop_down"/>
+                            </button>
+                            <t t-set-slot="content">
+                                <DropdownItem t-foreach="this.statuses" t-as="status" t-key="status[0]"
+                                              onSelected="() => this.reload({status: status[0]})">
+                                    <i class="oi oi-fw me-1"
+                                       t-att-data-icon="this.state.data.filters.status === status[0] ? 'check' : ''"/>
+                                    <t t-out="status[1]"/>
+                                </DropdownItem>
+                            </t>
+                        </Dropdown>
+                        <div class="o_kit_dr_search o_kit_rec_search">
+                            <i class="oi" data-icon="search"/>
+                            <input type="text" class="form-control form-control-sm" placeholder="Label, partner, amount…"
+                                   t-att-value="this.state.search" t-on-keydown="this.onSearchKeydown"/>
+                        </div>
+                        <div t-if="!this.ui.isSmall" class="btn-group o_kit_rec_view_switch" role="group">
+                            <button type="button" class="btn btn-sm" title="Cards" t-att-class="this.state.view === 'cards' ? 'btn-primary' : 'btn-light'"
+                                    t-on-click="() => this.setView('cards')"><i class="oi" data-icon="grid_view"/> Cards</button>
+                            <button type="button" class="btn btn-sm" title="List" t-att-class="this.state.view === 'list' ? 'btn-primary' : 'btn-light'"
+                                    t-on-click="() => this.setView('list')"><i class="oi" data-icon="list"/> List</button>
+                        </div>
+                    </div>
+                </t>
+            </ControlPanel>
+            <div class="o_kit_rec_body" t-if="this.state.data">
+                <div class="o_content o_kit_rec_list"
+                     t-att-class="{'o_kit_rec_cards_mode': this.showCards(), 'o_kit_rec_with_drawer': !!this.state.line}">
+                    <div t-if="!this.state.data.rows.length" class="o_kit_rec_empty text-center text-muted">
+                        <i class="oi fs-1" data-icon="check_circle"/>
+                        <p class="mt-2">Nothing to reconcile here.</p>
+                    </div>
+                    <t t-elif="this.showCards()" t-call="base_accounting_kit.BankReconciliation.Cards"/>
+                    <table t-else="" class="table table-sm table-hover mb-0 o_kit_rec_table">
+                        <thead>
+                            <tr>
+                                <th>Date</th><th>Label</th><th>Partner</th><th>Proposal</th><th>Status</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody t-foreach="this.visibleGroups()" t-as="group" t-key="group.key">
+                            <tr class="o_kit_rec_group" t-on-click="() => this.toggleGroup(group.key)">
+                                <td colspan="6">
+                                    <i class="oi" t-att-data-icon="this.state.folded[group.key] ? 'arrow_right' : 'arrow_drop_down'"/>
+                                    <span t-attf-class="o_kit_rec_dot bg-{{ group.badge }}"/>
+                                    <span class="fw-bold" t-out="group.label"/>
+                                    <span class="badge rounded-pill text-bg-light ms-1" t-out="this.rowsOf(group.key).length"/>
+                                    <span class="text-muted small ms-2" t-out="group.hint"/>
+                                </td>
+                            </tr>
+                            <t t-if="!this.state.folded[group.key]">
+                                <tr t-foreach="this.rowsOf(group.key)" t-as="row" t-key="row.id"
+                                    class="o_kit_rec_row" t-att-class="{'o_kit_rec_selected': this.state.line?.row.id === row.id}"
+                                    t-on-click="() => this.openLine(row)">
+                                    <td class="text-muted text-nowrap" t-out="this.date(row.date)"/>
+                                    <td class="fw-bold" t-out="row.label"/>
+                                    <td>
+                                        <span t-if="row.subtitle" class="text-muted small" t-out="row.subtitle"/>
+                                        <t t-elif="row.partner" t-out="row.partner"/>
+                                        <t t-elif="row.partner_found">
+                                            <t t-out="row.partner_found"/>
+                                            <span class="badge rounded-pill text-bg-info ms-1">found</span>
+                                        </t>
+                                        <span t-else="" class="text-muted">—</span>
+                                    </td>
+                                    <td class="o_kit_rec_proposal">
+                                        <div t-out="row.proposal"/>
+                                        <div class="text-muted small" t-out="row.reasons.join(' · ')"/>
+                                    </td>
+                                    <td>
+                                        <span t-attf-class="badge rounded-pill text-bg-{{ group.badge }}" t-out="group.status"/>
+                                    </td>
+                                    <td class="text-end text-nowrap fw-bold" t-att-class="{'text-danger': row.amount &lt; 0}"
+                                        t-out="this.money(row.amount, row.currency_id)"/>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <div t-if="this.state.data.more" class="text-muted small p-2">
+                        Only the latest 200 transactions are shown: narrow the search.
+                    </div>
+                </div>
+                <t t-if="this.state.line and this.state.line.mode === 'open'" t-call="base_accounting_kit.BankReconciliation.OpenDrawer"/>
+                <t t-elif="this.state.line" t-call="base_accounting_kit.BankReconciliation.Drawer"/>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="base_accounting_kit.BankReconciliation.Cards">
+        <div t-foreach="this.visibleGroups()" t-as="group" t-key="group.key" class="o_kit_rec_card_group">
+            <div class="o_kit_rec_group_head" t-on-click="() => this.toggleGroup(group.key)">
+                <i class="oi" t-att-data-icon="this.state.folded[group.key] ? 'arrow_right' : 'arrow_drop_down'"/>
+                <span t-attf-class="o_kit_rec_dot bg-{{ group.badge }}"/>
+                <span class="fw-bold" t-out="group.label"/>
+                <span class="badge rounded-pill text-bg-light ms-1" t-out="this.rowsOf(group.key).length"/>
+                <span class="text-muted small ms-2" t-out="group.hint"/>
+            </div>
+            <div t-if="!this.state.folded[group.key]" class="o_kit_rec_cards">
+                <div t-foreach="this.rowsOf(group.key)" t-as="row" t-key="row.id"
+                     class="o_kit_rec_card o_kit_rec_row" t-att-class="{'o_kit_rec_selected': this.state.line?.row.id === row.id}"
+                     t-on-click="() => this.openLine(row)">
+                    <div class="d-flex justify-content-between gap-2 fw-bold">
+                        <span class="text-truncate" t-att-title="row.label" t-out="row.label"/>
+                        <span class="text-nowrap" t-att-class="{'text-danger': row.amount &lt; 0}"
+                              t-out="this.money(row.amount, row.currency_id)"/>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center gap-2 small mt-1">
+                        <span class="text-muted text-truncate">
+                            <t t-if="row.subtitle" t-out="row.subtitle"/>
+                            <t t-else=""><t t-out="this.date(row.date)"/> ·</t>
+                            <t t-if="row.subtitle"/>
+                            <t t-elif="row.partner" t-out="row.partner"/>
+                            <t t-elif="row.partner_found"><t t-out="row.partner_found"/> <span class="badge rounded-pill text-bg-info">found</span></t>
+                            <t t-else="">no partner</t>
+                        </span>
+                        <span t-attf-class="badge rounded-pill text-bg-{{ group.badge }}" t-out="group.status"/>
+                    </div>
+                    <div class="small text-truncate mt-1" t-att-class="{'text-muted': !row.proposal}"
+                         t-att-title="this.proposalTitle(row)">
+                        <t t-if="row.proposal" t-out="this.proposalText(row)"/>
+                        <t t-else="">No proposal</t>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="base_accounting_kit.BankReconciliation.OpenDrawer">
+        <t t-set="line" t-value="this.state.line"/>
+        <div class="o_kit_rec_drawer o_kit_rec_open_drawer">
+            <div class="o_kit_rec_drawer_head">
+                <span class="fs-5 fw-bold text-truncate" t-out="line.partner.name"/>
+                <span class="badge rounded-pill text-bg-light" t-out="line.account.name"/>
+                <span class="fs-5 fw-bold text-nowrap" t-att-class="line.row.amount &lt; 0 ? 'text-danger' : 'text-success'"
+                      t-out="this.money(line.row.amount, line.currency_id)"/>
+                <span class="text-muted small">open balance</span>
+                <span class="ms-auto small text-muted text-nowrap d-none d-lg-inline">J / K next · Enter validate · Esc close</span>
+                <button type="button" class="btn btn-link text-muted" title="Close (Esc)" t-on-click="this.closeLine">
+                    <i class="oi" data-icon="close"/>
+                </button>
+            </div>
+            <div class="o_kit_rec_drawer_body">
+                <div class="o_kit_rec_pane">
+                    <div t-if="line.suggestions.length" class="d-flex flex-wrap gap-2 mb-2">
+                        <button t-foreach="line.suggestions" t-as="suggestion" t-key="suggestion_index"
+                                class="btn btn-sm o_kit_rec_combination"
+                                t-att-class="suggestion.sure ? 'btn-outline-success' : 'btn-outline-primary'"
+                                t-on-click="() => this.selectSuggestion(suggestion)">
+                            <t t-out="suggestion.label"/>
+                            <span class="text-muted small"> · <t t-out="suggestion.reasons.join(' · ')"/></span>
+                        </button>
+                    </div>
+                    <div class="o_kit_rec_open_columns">
+                        <div>
+                            <div class="o_kit_rec_open_title d-flex align-items-center gap-2">Debits <span class="text-muted small">invoices, refunds paid out…</span><a href="#" class="ms-auto small fw-normal o_kit_rec_select_all" t-on-click.prevent="() => this.selectAll(line.debits)">Select all</a></div>
+                            <t t-foreach="line.debits" t-as="item" t-key="item.id">
+                                <t t-call="base_accounting_kit.BankReconciliation.OpenItem"/>
+                            </t>
+                        </div>
+                        <div>
+                            <div class="o_kit_rec_open_title d-flex align-items-center gap-2">Credits <span class="text-muted small">payments, credit notes…</span><a href="#" class="ms-auto small fw-normal o_kit_rec_select_all" t-on-click.prevent="() => this.selectAll(line.credits)">Select all</a></div>
+                            <t t-foreach="line.credits" t-as="item" t-key="item.id">
+                                <t t-call="base_accounting_kit.BankReconciliation.OpenItem"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                <div class="o_kit_rec_side">
+                    <table class="table table-sm mb-2 o_kit_rec_totals">
+                        <tr><td>Selected debits</td><td class="text-end" t-out="this.money(this.openSideTotal(1), line.currency_id)"/></tr>
+                        <tr><td>Selected credits</td><td class="text-end" t-out="this.money(this.openSideTotal(-1), line.currency_id)"/></tr>
+                        <tr t-if="this.state.gap === 'writeoff' and this.state.writeoffs.length"><td>Write-off lines</td>
+                            <td class="text-end" t-out="this.money(this.writeoffTotal(), line.currency_id)"/></tr>
+                        <tr class="fw-bold">
+                            <td>Difference</td>
+                            <td class="text-end o_kit_rec_difference" t-att-class="this.hasDifference() ? 'text-warning' : 'text-success'"
+                                t-out="this.money(this.difference(), line.currency_id)"/>
+                        </tr>
+                    </table>
+                    <div t-if="this.hasOpenDifference() and this.hasSelection()" class="o_kit_rec_gap mb-2">
+                        <div class="small text-muted mb-1">What to do with the difference:</div>
+                        <label class="d-block">
+                            <input type="radio" class="form-check-input me-1" name="opengap"
+                                   t-att-checked="this.state.gap === 'open'" t-on-change="() => this.setGap('open')"/>
+                            Keep it open (partial matching)
+                        </label>
+                        <label t-if="this.canDiscount()" class="d-block">
+                            <input type="radio" class="form-check-input me-1" name="opengap"
+                                   t-att-checked="this.state.gap === 'discount'" t-on-change="() => this.setGap('discount')"/>
+                            Book it as early payment discount
+                        </label>
+                        <label class="d-block">
+                            <input type="radio" class="form-check-input me-1" name="opengap"
+                                   t-att-checked="this.state.gap === 'writeoff'" t-on-change="() => this.setGap('writeoff')"/>
+                            Write it off to accounts
+                        </label>
+                        <label class="d-block">
+                            <input type="radio" class="form-check-input me-1" name="opengap"
+                                   t-att-checked="this.state.gap === 'model'" t-on-change="() => this.setGap('model')"/>
+                            Write it off with a model:
+                            <Dropdown>
+                                <button class="btn btn-sm btn-link p-0" t-out="this.modelName()"/>
+                                <t t-set-slot="content">
+                                    <DropdownItem t-foreach="line.models" t-as="model" t-key="model.id"
+                                                  onSelected="() => this.chooseModel(model.id)">
+                                        <t t-out="model.name"/>
+                                    </DropdownItem>
+                                </t>
+                            </Dropdown>
+                        </label>
+                        <div t-if="this.state.gap !== 'open'" class="d-flex flex-wrap gap-2 align-items-center mt-2 small">
+                            <span class="text-muted">Write-off entry in</span>
+                            <select class="form-select form-select-sm w-auto o_kit_rec_journal"
+                                    t-on-change="(ev) => this.setJournal(ev)">
+                                <t t-foreach="line.journals" t-as="wo_journal" t-key="wo_journal.id">
+                                    <option t-att-value="wo_journal.id" t-out="wo_journal.name"
+                                            t-att-selected="this.state.journalId === wo_journal.id ? 'selected' : undefined"/>
+                                </t>
+                            </select>
+                            <span class="text-muted">on</span>
+                            <input type="date" class="form-control form-control-sm w-auto" t-att-value="this.state.date"
+                                   t-on-change="(ev) => this.setDate(ev)"/>
+                        </div>
+                        <div t-if="this.state.gap === 'writeoff'" class="mt-2">
+                            <t t-call="base_accounting_kit.BankReconciliation.Account"/>
+                        </div>
+                    </div>
+                    <t t-if="this.state.preview">
+                        <div t-if="this.state.preview.error and this.hasSelection()" class="small text-muted mb-2" t-out="this.state.preview.error"/>
+                        <t t-elif="this.state.preview.lines.length">
+                            <div class="small fw-bold text-muted mb-1">Write-off entry preview</div>
+                            <table class="table table-sm o_kit_rec_preview">
+                                <thead>
+                                    <tr><th>Account</th><th>Label</th><th class="text-end">Debit</th><th class="text-end">Credit</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="this.state.preview.lines" t-as="entry" t-key="entry_index">
+                                        <td t-out="entry.account"/>
+                                        <td class="text-muted" t-out="entry.label"/>
+                                        <td class="text-end text-nowrap"><t t-if="entry.debit" t-out="this.money(entry.debit, this.state.preview.currency_id)"/></td>
+                                        <td class="text-end text-nowrap"><t t-if="entry.credit" t-out="this.money(entry.credit, this.state.preview.currency_id)"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </t>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-primary o_kit_rec_validate" t-att-disabled="this.state.busy or !this.canValidate()"
+                                t-att-title="this.canValidate() ? '' : this.labels.chooseFirst"
+                                t-on-click="() => this.validate()">Reconcile</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="base_accounting_kit.BankReconciliation.OpenItem">
+        <div class="o_kit_rec_item" t-att-class="{'o_kit_rec_item_on': this.isSelected(item)}"
+             t-on-click="() => this.toggleItem(item)">
+            <input type="checkbox" class="form-check-input" t-att-checked="this.isSelected(item)"/>
+            <div class="flex-grow-1 text-truncate">
+                <span class="fw-bold" t-out="item.name"/>
+                <span class="text-muted small ms-2" t-out="this.date(item.date)"/>
+                <div t-if="item.ref" class="text-muted small text-truncate" t-out="item.ref"/>
+                <div t-if="item.discounted !== null and item.discounted !== undefined" class="text-muted small">
+                    With early payment discount: <t t-out="this.money(item.discounted, line.currency_id)"/>
+                </div>
+            </div>
+            <span class="text-end text-nowrap" t-att-class="{'text-danger': item.residual &lt; 0}"
+                  t-out="this.money(item.residual, line.currency_id)"/>
+        </div>
+    </t>
+
+    <t t-name="base_accounting_kit.BankReconciliation.Drawer">
+        <t t-set="line" t-value="this.state.line"/>
+        <div class="o_kit_rec_drawer">
+            <div class="o_kit_rec_drawer_head">
+                <span class="fs-5 fw-bold text-truncate" t-out="line.row.label"/>
+                <span class="fs-5 fw-bold text-nowrap" t-att-class="line.amount &lt; 0 ? 'text-danger' : 'text-success'"
+                      t-out="this.money(line.amount, line.currency_id)"/>
+                <span class="badge rounded-pill text-bg-light" t-out="this.date(line.row.date)"/>
+                <div t-if="!line.row.reconciled and !line.row.to_check" class="o_kit_rec_partner">
+                    <RecordSelector resModel="'res.partner'" resId="this.state.partnerId"
+                                    update="(id) => this.changePartner(id)" placeholder.translate="Partner"/>
+                </div>
+                <span t-elif="line.partner.name" class="badge rounded-pill text-bg-light" t-out="line.partner.name"/>
+                <span t-if="line.partner.id and !line.row.partner and !line.row.reconciled"
+                      class="badge rounded-pill text-bg-info">found</span>
+                <a href="#" class="small text-nowrap" t-on-click.prevent="() => this.openEntry(line.row)">Open entry</a>
+                <span class="ms-auto small text-muted text-nowrap d-none d-lg-inline">J / K next · Enter validate · Esc close</span>
+                <button type="button" class="btn btn-link text-muted" title="Close (Esc)" t-on-click="this.closeLine">
+                    <i class="oi" data-icon="close"/>
+                </button>
+            </div>
+            <div t-if="line.row.reconciled or line.row.to_check" class="o_kit_rec_drawer_done">
+                <p>
+                    <t t-if="line.row.to_check">Waiting for a review: </t>
+                    <t t-else="">Reconciled with </t>
+                    <b t-out="line.row.proposal"/>
+                </p>
+                <div class="d-flex gap-2">
+                    <button t-if="line.row.to_check" class="btn btn-primary" t-on-click="() => this.setToCheck(line.row, false)">Set as checked</button>
+                    <button t-if="line.row.reconciled" class="btn btn-secondary o_kit_rec_undo" t-on-click="() => this.undo(line.row)">Undo</button>
+                </div>
+            </div>
+            <div t-else="" class="o_kit_rec_drawer_body">
+                <div class="o_kit_rec_pane">
+                    <Notebook defaultPage="'suggestions'" className="'o_kit_rec_notebook'">
+                        <t t-set-slot="suggestions" title.translate="Suggestions" isVisible="true">
+                            <t t-call="base_accounting_kit.BankReconciliation.Suggestions"/>
+                        </t>
+                        <t t-set-slot="search" title.translate="Search entries" isVisible="true">
+                            <t t-call="base_accounting_kit.BankReconciliation.Search"/>
+                        </t>
+                        <t t-set-slot="account" title.translate="Book to account" isVisible="true">
+                            <t t-call="base_accounting_kit.BankReconciliation.Account"/>
+                        </t>
+                        <t t-set-slot="models" title.translate="Models" isVisible="true">
+                            <div t-if="!line.models.length" class="text-muted p-2">
+                                No reconciliation model with an account. Create one in Configuration › Reconciliation Models.
+                            </div>
+                            <div t-foreach="line.models" t-as="model" t-key="model.id"
+                                 class="o_kit_rec_item o_kit_rec_model" t-on-click="() => this.chooseModel(model.id)">
+                                <input type="radio" class="form-check-input"
+                                       t-att-checked="this.state.gap === 'model' and this.state.modelId === model.id"/>
+                                <span class="fw-bold" t-out="model.name"/>
+                                <span t-if="model.matched" class="badge rounded-pill text-bg-success">conditions match</span>
+                            </div>
+                        </t>
+                    </Notebook>
+                </div>
+                <div class="o_kit_rec_side">
+                    <t t-call="base_accounting_kit.BankReconciliation.Preview"/>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="base_accounting_kit.BankReconciliation.ItemRow">
+        <div class="o_kit_rec_item" t-att-class="{'o_kit_rec_item_on': this.isSelected(item)}">
+            <input type="checkbox" class="form-check-input" t-att-checked="this.isSelected(item)"
+                   t-on-change="() => this.toggleItem(item)"/>
+            <div class="flex-grow-1" t-on-click="() => this.toggleItem(item)">
+                <div>
+                    <span class="fw-bold" t-out="item.name"/>
+                    <span class="text-muted small ms-2" t-out="this.date(item.date)"/>
+                    <span t-if="item.partner" class="text-muted small ms-2" t-out="item.partner"/>
+                    <span t-if="item.ref and item.ref !== item.name" class="text-muted small ms-2" t-out="item.ref"/>
+                    <span t-if="item.sure" class="badge rounded-pill text-bg-success ms-2">sure</span>
+                </div>
+                <div t-if="item.reasons" class="text-muted small" t-out="item.reasons.join(' · ')"/>
+                <div t-if="item.discounted !== null and item.discounted !== undefined" class="text-muted small">
+                    With early payment discount: <t t-out="this.money(item.discounted, line.currency_id)"/>
+                </div>
+            </div>
+            <span class="text-end text-nowrap" t-att-class="{'text-danger': item.residual &lt; 0}"
+                  t-out="this.money(item.residual, line.currency_id)"/>
+            <input t-if="this.isSelected(item)" type="number" step="any" min="0"
+                   class="form-control form-control-sm o_kit_rec_amount" title="Amount to match"
+                   t-att-value="this.amountInput(this.state.selected[item.id])"
+                   t-on-change="(ev) => this.setItemAmount(item, ev)"/>
+            <span t-else="" class="o_kit_rec_amount"/>
+        </div>
+    </t>
+
+    <t t-name="base_accounting_kit.BankReconciliation.Suggestions">
+        <div t-if="line.combinations.length" class="d-flex flex-wrap gap-2 mb-2">
+            <button t-foreach="line.combinations" t-as="combination" t-key="combination_index"
+                    class="btn btn-sm btn-outline-primary o_kit_rec_combination"
+                    t-on-click="() => this.selectCombination(combination)">
+                <t t-out="combination.label"/>
+                <span class="text-muted small"> · <t t-out="combination.reasons.join(' · ')"/></span>
+            </button>
+        </div>
+        <div t-if="!line.suggestions.length and !line.combinations.length" class="text-muted p-2">
+            No open item matches this transaction. Search entries, book it to an account or use a model.
+        </div>
+        <t t-foreach="line.suggestions" t-as="item" t-key="item.id">
+            <t t-call="base_accounting_kit.BankReconciliation.ItemRow"/>
+        </t>
+    </t>
+
+    <t t-name="base_accounting_kit.BankReconciliation.Search">
+        <div class="o_kit_dr_search o_kit_rec_entry_search mb-2">
+            <i class="oi" data-icon="search"/>
+            <input type="text" class="form-control form-control-sm" placeholder="Number, reference, partner, amount… (Enter)"
+                   t-att-value="this.state.searchText" t-on-input="(ev) => this.state.searchText = ev.target.value"
+                   t-on-keydown="(ev) => this.searchEntries(ev)"/>
+        </div>
+        <div t-if="!this.state.searchResult" class="text-muted small p-2">
+            Type and press Enter to search any open invoice, bill, payment or journal item.
+        </div>
+        <t t-else="">
+            <div t-if="!this.state.searchResult.items.length" class="text-muted p-2">No open item found.</div>
+            <t t-foreach="this.state.searchResult.items" t-as="item" t-key="item.id">
+                <t t-call="base_accounting_kit.BankReconciliation.ItemRow"/>
+            </t>
+            <div t-if="this.state.searchResult.more" class="text-muted small p-2">More items: refine the search.</div>
+        </t>
+    </t>
+
+    <t t-name="base_accounting_kit.BankReconciliation.Account">
+        <div class="o_kit_rec_account_form">
+            <Record t-props="this.writeoffRecordProps" t-key="this.state.writeoffKey" t-slot-scope="data">
+                <div class="o_kit_rec_account_grid">
+                    <label>Account</label>
+                    <Field name="'account_id'" record="data.record"/>
+                    <label>Taxes</label>
+                    <Field name="'tax_ids'" record="data.record" type="'many2many_tags'"/>
+                    <label>Analytic</label>
+                    <Field name="'analytic_distribution'" record="data.record" type="'analytic_distribution'"/>
+                    <label>Label</label>
+                    <Field name="'label'" record="data.record"/>
+                    <label>Amount</label>
+                    <div class="d-flex gap-2 align-items-center">
+                        <Field name="'amount'" record="data.record"/>
+                        <span class="text-muted small text-nowrap">empty = the rest</span>
+                    </div>
+                </div>
+            </Record>
+            <button class="btn btn-secondary btn-sm mt-2 o_kit_rec_add_writeoff" t-on-click="this.addWriteoff">Add line</button>
+        </div>
+        <table t-if="this.state.writeoffs.length" class="table table-sm mt-3 o_kit_rec_writeoffs">
+            <tr t-foreach="this.state.writeoffs" t-as="writeoff" t-key="writeoff_index">
+                <td t-out="writeoff.account_name"/>
+                <td class="text-muted small" t-out="writeoff.tax_names"/>
+                <td t-out="writeoff.label"/>
+                <td class="text-end" t-out="this.money(writeoff.amount, line.currency_id)"/>
+                <td class="text-end">
+                    <button class="btn btn-link btn-sm text-danger p-0" title="Remove" t-on-click="() => this.removeWriteoff(writeoff_index)">
+                        <i class="oi" data-icon="delete"/>
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </t>
+
+    <t t-name="base_accounting_kit.BankReconciliation.Preview">
+        <table class="table table-sm mb-2 o_kit_rec_totals">
+            <tr><td>Transaction</td><td class="text-end" t-out="this.money(line.amount, line.currency_id)"/></tr>
+            <tr><td>Selected items</td><td class="text-end" t-out="this.money(this.selectedTotal(), line.currency_id)"/></tr>
+            <tr t-if="this.state.writeoffs.length"><td>Accounts</td><td class="text-end" t-out="this.money(this.writeoffTotal(), line.currency_id)"/></tr>
+            <tr class="fw-bold">
+                <td>Difference</td>
+                <td class="text-end o_kit_rec_difference" t-att-class="this.hasDifference() ? 'text-warning' : 'text-success'"
+                    t-out="this.money(this.difference(), line.currency_id)"/>
+            </tr>
+        </table>
+        <div t-if="this.hasDifference()" class="o_kit_rec_gap mb-2">
+            <div class="small text-muted mb-1">What to do with the difference:</div>
+            <label t-if="this.canDiscount()" class="d-block">
+                <input type="radio" class="form-check-input me-1" name="gap"
+                       t-att-checked="this.state.gap === 'discount'" t-on-change="() => this.setGap('discount')"/>
+                Book it as early payment discount
+            </label>
+            <label class="d-block" t-if="this.hasSelection()">
+                <input type="radio" class="form-check-input me-1" name="gap"
+                       t-att-checked="this.state.gap === 'open'" t-on-change="() => this.setGap('open')"/>
+                Keep it open on the last item
+            </label>
+            <label class="d-block">
+                <input type="radio" class="form-check-input me-1" name="gap"
+                       t-att-checked="this.state.gap === 'model'" t-on-change="() => this.setGap('model')"/>
+                Book it with a model:
+                <Dropdown>
+                    <button class="btn btn-sm btn-link p-0" t-out="this.modelName()"/>
+                    <t t-set-slot="content">
+                        <DropdownItem t-foreach="line.models" t-as="model" t-key="model.id"
+                                      onSelected="() => this.chooseModel(model.id)">
+                            <t t-out="model.name"/>
+                        </DropdownItem>
+                    </t>
+                </Dropdown>
+            </label>
+        </div>
+        <div class="small fw-bold text-muted mb-1">Entry preview</div>
+        <table t-if="this.state.preview" class="table table-sm o_kit_rec_preview">
+            <thead>
+                <tr><th>Account</th><th>Label</th><th class="text-end">Debit</th><th class="text-end">Credit</th></tr>
+            </thead>
+            <tbody>
+                <tr t-foreach="this.state.preview.lines" t-as="entry" t-key="entry_index">
+                    <td t-out="entry.account"/>
+                    <td class="text-muted" t-out="entry.label"/>
+                    <td class="text-end text-nowrap"><t t-if="entry.debit" t-out="this.money(entry.debit, this.state.preview.currency_id)"/></td>
+                    <td class="text-end text-nowrap"><t t-if="entry.credit" t-out="this.money(entry.credit, this.state.preview.currency_id)"/></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-primary o_kit_rec_validate" t-att-disabled="this.state.busy or !this.canValidate()"
+                    t-att-title="this.canValidate() ? '' : this.labels.chooseFirst"
+                    t-on-click="() => this.validate()">Validate</button>
+            <button t-if="this.hasDifference() and (this.hasSelection() or this.state.writeoffs.length)"
+                    class="btn btn-secondary o_kit_rec_partial" t-att-disabled="this.state.busy"
+                    t-on-click="() => this.validate({partial: true})">Validate part, rest to suspense</button>
+            <button class="btn btn-link" t-on-click="() => this.setToCheck(line.row, true)">To check</button>
+        </div>
+    </t>
+</templates>

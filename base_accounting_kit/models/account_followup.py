@@ -23,13 +23,13 @@ from odoo import fields, models
 
 
 class Followup(models.Model):
-    """Model for managing account follow-ups."""
+    """Reminder plan of a company: its follow-up steps."""
     _name = 'account.followup'
-    _description = 'Account Follow-up'
+    _description = 'Reminder Plan'
     _rec_name = 'name'
 
     followup_line_ids = fields.One2many('followup.line', 'followup_id',
-                                        'Follow-up', copy=True)
-    company_id = fields.Many2one('res.company', 'Company',
+                                        string="Steps", copy=True)
+    company_id = fields.Many2one('res.company', string="Company",
                                  default=lambda self: self.env.company)
     name = fields.Char(related='company_id.name', readonly=True)

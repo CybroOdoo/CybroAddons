@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- PDF of any dynamic report: the lines shown on the screen,
+         recomputed on the server from the report options. -->
+    <!-- A4 as core's, with a small top margin: the internal layout has a
+         one-line header and no letterhead. -->
+    <record id="paperformat_accounting_report" model="report.paperformat">
+        <field name="name">A4 - Accounting Report</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">26</field>
+        <field name="margin_bottom">18</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">22</field>
+        <field name="dpi">90</field>
+        <field name="css_margins" eval="True"/>
+    </record>
+
+    <record id="action_report_kit_statement" model="ir.actions.report">
+        <field name="name">Accounting Report (PDF)</field>
+        <field name="model">account.move.line</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">base_accounting_kit.dynamic_report_pdf</field>
+        <field name="paperformat_id" ref="paperformat_accounting_report"/>
+    </record>
+
+    <!-- Page header of the report PDF, on every page: logo, company name
+         and address on one line, a light rule under it; the footer has the
+         print date and the page number. Tables, as the PDF engine handles
+         flex columns poorly; table-borderless as core does, PDF tables
+         otherwise get borders. -->
+    <template id="report_page_layout">
+        <div class="header">
+            <table class="table-borderless" style="width: 100%; border-bottom: 1px solid #e5e7eb;">
+                <tr>
+                    <td t-if="company.logo" style="width: 1%; padding: 0 12px 6px 0; vertical-align: middle;">
+                        <img t-att-src="image_data_uri(company.logo)" alt="Logo"
+                             style="max-height: 36px; max-width: 110px;"/>
+                    </td>
+                    <td style="padding: 0 0 6px 0; vertical-align: middle;">
+                        <div style="font-weight: bold;" t-out="company.name"/>
+                        <div t-if="company_address" style="color: #6c757d; font-size: 80%;"
+                             t-out="company_address"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="article">
+            <t t-out="0"/>
+        </div>
+        <div class="footer">
+            <table class="table-borderless o_kit_pdf_footer"
+                   style="width: 100%; border-top: 1px solid #e5e7eb; color: #868e96; font-size: 80%;">
+                <tr>
+                    <td style="padding: 6px 0 0 0;">Printed <t t-out="kit_print_stamp"/></td>
+                    <td style="padding: 6px 0 0 0; text-align: right; white-space: nowrap;">
+                        Page <span class="page"/> / <span class="topage"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </template>
+
+    <template id="dynamic_report_pdf">
+        <!-- Landscape when the table is wide (core's data_report_landscape). -->
+        <t t-set="data_report_landscape"
+           t-value="len([col for col in table['columns'] if col.get('num')]) &gt; 4"/>
+        <!-- Fonts of the "Financial Report Style" of report lines. -->
+        <t t-set="line_styles" t-value="{
+            '1': 'text-decoration: underline;',
+            '3': 'font-size: 90%;',
+            '5': 'font-style: italic; font-size: 90%;',
+            '6': 'font-size: 85%;'}"/>
+        <!-- Statement lines: a light rule under every row (no grid); main
+             sections on a grey band; a rule over the amounts of a subtotal;
+             rule over and double rule under the final total. Separate
+             borders, so the rule over a subtotal is not hidden by the light
+             rule of the row above. -->
+        <t t-set="row_rule" t-value="'border: none; border-bottom: 1px solid #eceff1;'"/>
+        <t t-set="amount_rules" t-value="{
+            'subtotal': 'border-top: 1px solid #495057;',
+            'grand': 'border-top: 1px solid #212529; border-bottom: 3px double #212529;'}"/>
+        <t t-call="web.html_container">
+            <t t-call="base_accounting_kit.report_page_layout">
+                <div class="page">
+                    <!-- heading on a soft light-grey panel -->
+                    <div class="o_kit_pdf_heading_panel"
+                         style="background-color: #f8f9fa; border: 1px solid #eceff1; border-radius: 6px;
+                                padding: 12px 14px; margin-top: 10px;">
+                        <div class="o_kit_pdf_title"
+                             style="font-size: 26px; font-weight: 600; color: #1f2937; line-height: 1.2;"
+                             t-out="table['title']"/>
+                        <div class="o_kit_pdf_heading_line" style="color: #212529; margin-top: 3px;" t-out="heading_line"/>
+                        <div t-if="filters_line" class="o_kit_pdf_filters_line"
+                             style="color: #868e96; font-size: 85%; margin-top: 2px;" t-out="filters_line"/>
+                    </div>
+                    <table class="table table-sm"
+                           style="margin-top: 16px; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums;">
+                        <thead>
+                            <tr>
+                                <th t-foreach="table['columns']" t-as="col"
+                                    t-att-class="'text-end' if col.get('num') else ''"
+                                    t-attf-style="border: none; border-bottom: 2px solid #adb5bd; font-weight: bold;{{ ' width: 130px; white-space: nowrap;' if col.get('num') else '' }}"
+                                    t-out="col['label']"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="table['rows']" t-as="row"
+                                t-att-style="('font-weight: bold;' if row.get('bold') else '')
+                                             + ('background-color: #f3f4f6;' if row.get('kind') == 'main' else '')
+                                             + line_styles.get(row.get('style') or '', '') or None">
+                                <t t-foreach="table['columns']" t-as="col">
+                                    <t t-set="value" t-value="row['cells'][col_index] if col_index &lt; len(row['cells']) else ''"/>
+                                    <t t-set="is_amount" t-value="isinstance(value, (int, float)) and not isinstance(value, bool)"/>
+                                    <!-- a rounding rest (-0.00) is a zero -->
+                                    <t t-if="is_amount and report_currency.is_zero(value)" t-set="value" t-value="0.0"/>
+                                    <td t-if="col.get('num')" class="text-end"
+                                        t-att-style="row_rule
+                                                     + (amount_rules.get(row.get('kind')) or '')
+                                                     + (' color: #dc3545;' if is_amount and value &lt; 0
+                                                        else ' color: #adb5bd;' if is_amount and not value else '')
+                                                     + ' white-space: nowrap;'">
+                                        <span t-if="is_amount" t-out="format_amount(value)"/>
+                                    </td>
+                                    <td t-else=""
+                                        t-attf-style="{{ row_rule }} padding-left: {{ (row.get('indent') or 0) * 16 + 4 }}px;"
+                                        t-out="value"/>
+                                </t>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

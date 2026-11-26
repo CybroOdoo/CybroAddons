@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Reconciliation screen of the bank, cash and credit card journals
+         (P2.1-c): grouped list of transactions and a drawer to match them.
+         Opened from the bank dashboard and Review > To Review; the journal
+         is passed in params (journal_id). -->
+    <record id="action_kit_bank_reconciliation" model="ir.actions.client">
+        <field name="name">Bank Transactions</field>
+        <field name="tag">kit_bank_reconciliation</field>
+        <field name="path">kit-bank-reconciliation</field>
+    </record>
+
+    <!-- Open Items mode of the same screen (P2.1-d): match invoices, bills,
+         payments and credit notes of a partner without a bank line. -->
+    <record id="action_kit_open_items" model="ir.actions.client">
+        <field name="name">Open Items</field>
+        <field name="tag">kit_bank_reconciliation</field>
+        <field name="path">kit-open-items</field>
+        <field name="params" eval="{'mode': 'open'}"/>
+    </record>
+
+    <!-- Journal items list: Reconcile the selected items (or open them in
+         the Open Items screen when they do not net to zero). -->
+    <record id="action_server_kit_reconcile" model="ir.actions.server">
+        <field name="name">Reconcile</field>
+        <field name="model_id" ref="account.model_account_move_line"/>
+        <field name="binding_model_id" ref="account.model_account_move_line"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[Command.link(ref('account.group_account_user'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_kit_reconcile()</field>
+    </record>
+</odoo>

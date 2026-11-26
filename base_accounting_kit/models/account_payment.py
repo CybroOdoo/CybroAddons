@@ -94,27 +94,16 @@ class AccountPayment(models.Model):
         }
 
     def open_payment_matching_screen(self):
-        """Open the partner's open reconcilable journal items for manual
-        matching. (The enterprise 'manual_reconciliation_view' client action is
-        not available in Community, so we open the reconcilable move lines.)"""
+        """Open the partner's open items in the Open Items screen."""
         self.ensure_one()
         if not self.partner_id:
             raise UserError(_("Payments without a customer can't be matched"))
-        partner = self.partner_id.commercial_partner_id
-        return {
-            'name': _("Matching"),
-            'type': 'ir.actions.act_window',
-            'res_model': 'account.move.line',
-            'view_mode': 'list,form',
-            'domain': [
-                ('partner_id', '=', partner.id),
-                ('account_id.reconcile', '=', True),
-                ('parent_state', '=', 'posted'),
-                ('reconciled', '=', False),
-                ('company_id', '=', self.company_id.id),
-            ],
-            'context': {'search_default_partner_id': partner.id},
+        action = self.env['ir.actions.actions']._for_xml_id('base_accounting_kit.action_kit_open_items')
+        action['params'] = {
+            'mode': 'open', 'partner_id': self.partner_id.commercial_partner_id.id,
+            'account_type': 'receivable' if self.partner_type == 'customer' else 'payable',
         }
+        return action
 
     def print_checks(self):
         """ Check that the recordset is valid, post any draft payments and

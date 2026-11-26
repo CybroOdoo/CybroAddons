@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Core lock date exceptions (account.lock_exception): list, search and
+         a form to create one; core's Revoke / Audit buttons. -->
+    <record id="view_kit_lock_exception_list" model="ir.ui.view">
+        <field name="name">account.lock_exception.list.kit</field>
+        <field name="model">account.lock_exception</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state != 'active'">
+                <field name="create_date" string="Created on"/>
+                <field name="lock_date_field" string="Lock Date"/>
+                <field name="company_lock_date" string="From"/>
+                <field name="lock_date" string="To"/>
+                <field name="user_id" string="Valid for" placeholder="Everyone"/>
+                <field name="end_datetime" string="Until"/>
+                <field name="reason"/>
+                <field name="create_uid" string="Created by"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="state" widget="badge" decoration-success="state == 'active'"
+                       decoration-danger="state == 'revoked'"/>
+                <button name="action_revoke" type="object" string="Revoke" icon="block"
+                        invisible="state != 'active'" groups="account.group_account_manager"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_kit_lock_exception_form" model="ir.ui.view">
+        <field name="name">account.lock_exception.form.kit</field>
+        <field name="model">account.lock_exception</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <form string="Lock Exception">
+                <header>
+                    <field name="active" invisible="1"/>
+                    <button string="Create Exception" name="action_kit_create" type="object" class="btn-primary"
+                            invisible="id"/>
+                    <button string="Revoke" name="action_revoke" type="object" class="btn-secondary"
+                            invisible="not id or state != 'active'" groups="account.group_account_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="active,expired" invisible="not id"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" name="action_show_audit_trail_during_exception"
+                                type="object" icon="format_list_bulleted" invisible="not id">
+                            <div class="o_stat_info"><span class="o_stat_text">Audit</span></div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Revoked" bg_color="text-bg-danger" invisible="active"/>
+                    <p class="text-muted" invisible="id">
+                        Lowers one lock date for one user (or everyone) for a limited time, e.g. to correct a
+                        posted entry in a locked month. Every entry changed meanwhile is listed under Audit.
+                    </p>
+                    <group>
+                        <group string="Lock date">
+                            <field name="company_id" invisible="1"/>
+                            <field name="lock_date_field" string="Lock Date" required="1" readonly="id"/>
+                            <field name="kit_company_lock_date" invisible="not lock_date_field"/>
+                            <field name="lock_date" string="Temporary Lock Date" readonly="id"
+                                   help="Entries after this date can be changed while the exception is active. Leave it empty to lift the lock completely."/>
+                        </group>
+                        <group string="Valid">
+                            <field name="user_id" string="For" readonly="id" placeholder="Everyone"
+                                   options="{'no_create': True}"/>
+                            <field name="end_datetime" string="Until" readonly="id" placeholder="Until revoked"/>
+                            <field name="reason" required="1" readonly="id"/>
+                            <field name="create_uid" string="Created by" invisible="not id" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_kit_lock_exception_search" model="ir.ui.view">
+        <field name="name">account.lock_exception.search.kit</field>
+        <field name="model">account.lock_exception</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="reason"/>
+                <field name="user_id"/>
+                <filter name="active_exceptions" string="Active" domain="[('state', 'in', ['active'])]"/>
+                <filter name="expired" string="Expired" domain="[('state', 'in', ['expired'])]"/>
+                <filter name="revoked" string="Revoked" domain="[('state', 'in', ['revoked'])]"/>
+                <group>
+                    <filter name="group_lock" string="Lock Date" context="{'group_by': 'lock_date_field'}"/>
+                    <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_kit_lock_exceptions" model="ir.actions.act_window">
+        <field name="name">Lock Exceptions</field>
+        <field name="res_model">account.lock_exception</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_kit_lock_exception_search"/>
+        <field name="domain">['|', ('active', '=', True), ('active', '=', False)]</field>
+        <field name="context">{'search_default_active_exceptions': 1}</field>
+        <field name="view_ids" eval="[Command.clear(),
+            Command.create({'view_mode': 'list', 'view_id': ref('view_kit_lock_exception_list')}),
+            Command.create({'view_mode': 'form', 'view_id': ref('view_kit_lock_exception_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No lock exception</p>
+            <p>An exception lowers a lock date for one user or everyone for a limited time, with a reason.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_kit_lock_exceptions"
+              action="action_kit_lock_exceptions"
+              parent="account.account_closing_menu"
+              sequence="20"
+              groups="account.group_account_readonly"/>
+</odoo>

@@ -19,12 +19,12 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-import time
-from odoo import api, models, _
-from odoo.exceptions import UserError
+from odoo import models
+
+from ..models.report_company import get_report_company
 
 
-class ReportFinancial(models.AbstractModel):
+class ReportCashFlow(models.AbstractModel):
     _name = 'report.base_accounting_kit.report_cash_flow'
     _description = 'Cash Flow Report'
 
@@ -132,8 +132,14 @@ class ReportFinancial(models.AbstractModel):
                             'account').items():
                         report_acc[account_id]['comp_bal'] = val['balance']
 
+        # Currency of the company the report is filtered on (account.account
+        # has no company_id in Odoo 20), used to hide zero account lines.
+        company = get_report_company(self.env, data)
+        currency = company.currency_id
+
         for report in child_reports:
             vals = {
+                'r_id': report.id,
                 'name': report.name,
                 'balance': res[report.id]['balance'] * int(report.sign),
                 'type': 'report',
@@ -165,6 +171,7 @@ class ReportFinancial(models.AbstractModel):
                     flag = False
                     account = self.env['account.account'].browse(account_id)
                     vals = {
+                        'account': account.id,
                         'name': ((account.code + ' ') if account.code else '') + account.name,
                         'balance': value['balance'] * int(report.sign) or 0.0,
                         'type': 'account',
@@ -174,18 +181,18 @@ class ReportFinancial(models.AbstractModel):
                     if data['debit_credit']:
                         vals['debit'] = value['debit']
                         vals['credit'] = value['credit']
-                        if not account.company_id.currency_id.is_zero(
+                        if not currency.is_zero(
                                 vals[
-                                    'debit']) or not account.company_id.currency_id.is_zero(
+                                    'debit']) or not currency.is_zero(
                             vals['credit']):
                             flag = True
-                    if not account.company_id.currency_id.is_zero(
+                    if not currency.is_zero(
                             vals['balance']):
                         flag = True
                     if data['enable_filter']:
                         vals['balance_cmp'] = value['comp_bal'] * int(
                             report.sign)
-                        if not account.company_id.currency_id.is_zero(
+                        if not currency.is_zero(
                                 vals['balance_cmp']):
                             flag = True
                     if flag:
@@ -193,22 +200,3 @@ class ReportFinancial(models.AbstractModel):
                 lines += sorted(sub_lines,
                                 key=lambda sub_line: sub_line['name'])
         return lines
-
-    @api.model
-    def _get_report_values(self, docids, data=None):
-        if not data.get('form') or not self.env.context.get(
-                'active_model') or not self.env.context.get('active_id'):
-            raise UserError(
-                _("Form content is missing, this report cannot be printed."))
-
-        model = self.env.context.get('active_model')
-        docs = self.env[model].browse(self.env.context.get('active_id'))
-        report_lines = self.get_account_lines(data.get('form'))
-        return {
-            'doc_ids': self.ids,
-            'doc_model': model,
-            'data': data['form'],
-            'docs': docs,
-            'time': time,
-            'get_account_lines': report_lines,
-        }

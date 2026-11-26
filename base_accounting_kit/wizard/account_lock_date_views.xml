@@ -1,22 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-<!--Account Lock Date Form View-->
+<!--Account Lock Date Form View: the five core lock dates-->
     <record model="ir.ui.view" id="account_lock_date_view_form">
         <field name="name">account.lock.date.view.form</field>
         <field name="model">account.lock.date</field>
         <field name="arch" type="xml">
             <form>
+                <field name="company_id" invisible="1"/>
+                <p class="text-muted">
+                    Entries up to and including a lock date can no longer be created or changed.
+                    The first four dates can be moved back later or lifted for one user with a lock exception;
+                    the Hard Lock Date is final and only moves forward.
+                </p>
                 <group>
-                    <field name="company_id" invisible="1"/>
-                    <label for="sale_lock_date"/>
-                    <div class="d-flex">
-                        <field name="sale_lock_date" class="oe_inline"/><span class="text-muted"><i>to lock invoices</i></span>
-                    </div>
-                    <label for="purchase_lock_date"/>
-                    <div class="d-flex">
-                        <field name="purchase_lock_date" class="oe_inline"/><span class="text-muted"><i>to lock bills</i></span>
-                    </div>
-                    <field name="hard_lock_date" class="oe_inline"/>
+                    <group string="Lock entries">
+                        <label for="fiscalyear_lock_date"/>
+                        <div class="d-flex">
+                            <field name="fiscalyear_lock_date" class="oe_inline"/><span class="text-muted ms-2"><i>all entries</i></span>
+                        </div>
+                        <label for="tax_lock_date"/>
+                        <div class="d-flex">
+                            <field name="tax_lock_date" class="oe_inline"/><span class="text-muted ms-2"><i>entries with taxes</i></span>
+                        </div>
+                        <label for="sale_lock_date"/>
+                        <div class="d-flex">
+                            <field name="sale_lock_date" class="oe_inline"/><span class="text-muted ms-2"><i>invoices</i></span>
+                        </div>
+                        <label for="purchase_lock_date"/>
+                        <div class="d-flex">
+                            <field name="purchase_lock_date" class="oe_inline"/><span class="text-muted ms-2"><i>bills</i></span>
+                        </div>
+                    </group>
+                    <group string="Final lock">
+                        <label for="hard_lock_date"/>
+                        <div class="d-flex">
+                            <field name="hard_lock_date" class="oe_inline"/><span class="text-muted ms-2"><i>everyone, no exceptions</i></span>
+                        </div>
+                    </group>
                 </group>
                 <footer>
                     <button string="Update" name="execute" type="object" class="btn-primary"/>
@@ -27,20 +47,16 @@
     </record>
 <!--Action Account Lock Date-->
     <record model="ir.actions.act_window" id="account_update_lock_date_act_window">
-        <field name="name">Lock your Fiscal Period</field>
+        <field name="name">Lock Dates</field>
         <field name="res_model">account.lock.date</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
-<!--Menu Lock Dates-->
-    <menuitem id="actions_menu"
-              name="Actions"
-              sequence="500"
-              parent="account.menu_finance_entries"
-              groups="base_accounting_kit.group_account_chief"/>
+<!--Menu Accounting > Closing > Lock Dates (core Closing folder)-->
     <menuitem id="menu_lock_dates"
               name="Lock Dates"
               action="account_update_lock_date_act_window"
-              parent="base_accounting_kit.actions_menu"
+              parent="account.account_closing_menu"
+              sequence="10"
               groups="base_accounting_kit.group_account_chief"/>
 </odoo>

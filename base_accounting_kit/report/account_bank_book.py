@@ -19,14 +19,23 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from datetime import time
-from odoo import api, models, _
-from odoo.exceptions import UserError
+from odoo import models
+
+from ..models.report_company import get_report_company, get_report_journal_domain
 
 
 class ReportBankBook(models.AbstractModel):
     _name = 'report.base_accounting_kit.report_bank_book'
     _description = 'Bank Book Report'
+
+    def _get_journal_accounts(self):
+        """Default accounts of the bank journals of the report company;
+        empty when the company has none (other accounts are never printed
+        instead: the report then asks to choose the accounts)."""
+        company = get_report_company(self.env)
+        return self.env['account.journal'].search(
+            get_report_journal_domain(company, [('type', '=', 'bank')]),
+        ).mapped('default_account_id')
 
     def _get_account_move_entry(self, accounts, init_balance, sortby,
                                 display_account):
@@ -112,17 +121,21 @@ class ReportBankBook(models.AbstractModel):
 
         # Calculate the debit, credit and balance for Accounts
         account_res = []
+        account_company = get_report_company(self.env)
         for account in accounts:
-            account_company = self.env.company
             currency = account.currency_id and \
                        account.currency_id or account_company.currency_id
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
+            res['id'] = account.id
             res['code'] = account.code
             res['name'] = account.name
             res['move_lines'] = move_lines[account.id]
+            # Debit / credit of the period only, as the General Ledger and the
+            # Trial Balance; the Initial Balance line (lid 0) is in the balance.
             for line in res.get('move_lines'):
-                res['debit'] += line['debit']
-                res['credit'] += line['credit']
+                if line.get('lid'):
+                    res['debit'] += line['debit']
+                    res['credit'] += line['credit']
                 res['balance'] = line['balance']
             if display_account == 'all':
                 account_res.append(res)
@@ -132,44 +145,3 @@ class ReportBankBook(models.AbstractModel):
                     res['balance']):
                 account_res.append(res)
         return account_res
-
-    @api.model
-    def _get_report_values(self, docids, data=None):
-        if not data.get('form') or not self.env.context.get('active_model'):
-            raise UserError(
-                _("Form content is missing, this report cannot be printed."))
-
-        model = self.env.context.get('active_model')
-        docs = self.env[model].browse(self.env.context.get('active_ids', []))
-        init_balance = data['form'].get('initial_balance', True)
-        sortby = data['form'].get('sortby', 'sort_date')
-        display_account = 'movement'
-        codes = []
-        if data['form'].get('journal_ids', False):
-            codes = [journal.code for journal in
-                     self.env['account.journal'].search(
-                         [('id', 'in', data['form']['journal_ids'])])]
-        account_ids = data['form']['account_ids']
-        accounts = self.env['account.account'].search(
-            [('id', 'in', account_ids)])
-        if not accounts:
-            journals = self.env['account.journal'].search([('type', '=', 'bank')])
-            accounts = []
-            for journal in journals:
-                accounts.append(journal.default_account_id.id)
-            accounts = self.env['account.account'].search([('id', 'in', accounts)])
-
-        accounts_res = self.with_context(data['form'].get('used_context', {}))._get_account_move_entry(
-            accounts,
-            init_balance,
-            sortby,
-            display_account)
-        return {
-            'doc_ids': docids,
-            'doc_model': model,
-            'data': data['form'],
-            'docs': docs,
-            'time': time,
-            'Accounts': accounts_res,
-            'print_journal': codes,
-        }

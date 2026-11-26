@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from datetime import date, timedelta
+from collections import defaultdict
+from datetime import timedelta
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 import base64
@@ -29,29 +30,39 @@ import xlsxwriter
 from odoo.exceptions import ValidationError, UserError
 from odoo.tools.json import json_default
 
+from .report_company import get_report_branches
+
 
 class ResPartner(models.Model):
     """Inheriting res.partner"""
     _inherit = "res.partner"
 
-    invoice_list = fields.One2many('account.move', 'partner_id',
-                                   string="Invoice Details",
-                                   readonly=True,
-                                   domain=(
-                                   [('payment_state', '=', 'not_paid'),
-                                    ('move_type', '=', 'out_invoice')]))
-    total_due = fields.Monetary(compute='_compute_for_followup', store=False,
-                                readonly=True)
-    next_reminder_date = fields.Date(compute='_compute_for_followup',
-                                     store=False, readonly=True)
-    total_overdue = fields.Monetary(compute='_compute_for_followup',
-                                    store=False, readonly=True)
+    # Allow the /xlsx_report controller to stream the statement workbook.
+    _xlsx_report_allowed = True
+
+    # Follow-up works per customer (commercial partner): its posted customer
+    # invoices that are not (fully) paid, in the current company and its
+    # selected branches. Computed, not stored: always up to date.
+    invoice_list = fields.Many2many(
+        'account.move', string="Open Invoices",
+        compute='_compute_for_followup')
+    overdue_invoice_ids = fields.Many2many(
+        'account.move', string="Overdue Invoices",
+        compute='_compute_for_followup',
+        help="Open invoices past their due date: the ones listed in the "
+             "reminder letter and email.")
+    total_due = fields.Monetary(compute='_compute_for_followup')
+    next_reminder_date = fields.Date(compute='_compute_for_followup')
+    total_overdue = fields.Monetary(compute='_compute_for_followup')
     followup_status = fields.Selection(
-        [('in_need_of_action', 'In need of action'),
-         ('with_overdue_invoices', 'With overdue invoices'),
-         ('no_action_needed', 'No action needed')],
-        string='Followup status',
-        )
+        selection=[('in_need_of_action', 'Reminder due'),
+                   ('with_overdue_invoices', 'Overdue, waiting'),
+                   ('no_action_needed', 'Up to date')],
+        string='Follow-up Status', compute='_compute_for_followup',
+        search='_search_followup_status',
+        help="Reminder due: a step is reached and nothing was sent yet. "
+             "Overdue, waiting: unpaid invoices, next step not reached yet. "
+             "Up to date: nothing overdue.")
     followup_level_id = fields.Many2one(
         'followup.line', string='Follow-up Level', copy=False,
         help="Last follow-up level applied to this customer.")
@@ -76,75 +87,124 @@ class ResPartner(models.Model):
     enable_credit_limit = fields.Boolean(string="Credit Limit Enabled",
                                          compute="_compute_enable_credit_limit")
 
+    # ------------------------------------------------------------------
+    # Follow-up: open invoices, status, levels
+    # ------------------------------------------------------------------
+    @api.model
+    def _followup_invoice_domain(self):
+        """Open customer invoices, as core's dashboard counts them
+        (``account_journal_dashboard._get_open_sale_purchase_query``):
+        posted, not paid or partially paid, in the current company and its
+        selected branches."""
+        return [
+            ('move_type', '=', 'out_invoice'),
+            ('state', '=', 'posted'),
+            ('payment_state', 'in', ('not_paid', 'partial')),
+            ('company_id', 'in',
+             get_report_branches(self.env.company).ids),
+        ]
+
+    @api.model
+    def _followup_open_invoices(self, partners):
+        """Open invoices of the given commercial partners, in one search.
+
+        :return: ``{commercial_partner_id: account.move recordset}``,
+            sorted by due date
+        """
+        moves = self.env['account.move'].search(
+            self._followup_invoice_domain()
+            + [('commercial_partner_id', 'in', partners.ids)],
+            order='invoice_date_due, id')
+        ids = defaultdict(list)
+        for move in moves:
+            ids[move.commercial_partner_id.id].append(move.id)
+        return {pid: moves.browse(mids) for pid, mids in ids.items()}
+
+    def _followup_next_line(self, days, lines=None):
+        """Next follow-up level for a customer whose oldest open invoice is
+        ``days`` days past due (negative: not due yet).
+
+        The level already sent is ignored (follow-up restarts at the first
+        level) when the oldest open invoice is now younger than that level:
+        the invoices that reached it have been paid.
+
+        :param lines: the company's follow-up levels, when already loaded
+        """
+        self.ensure_one()
+        level = self.followup_level_id
+        if level and days < level.delay:
+            level = self.env['followup.line']
+        if lines is None:
+            lines = self._get_followup_lines()
+        if level:
+            lines = lines.filtered(lambda l: l.delay > level.delay)
+        return lines[:1]
+
     def _compute_for_followup(self):
-        """
-        Compute the fields 'total_due', 'total_overdue' , 'next_reminder_date' and 'followup_status'
-        """
-        for record in self:
-            total_due = 0
-            total_overdue = 0
-            today = fields.Date.today()
-            for am in record.invoice_list:
-                if am.company_id == self.env.company:
-                    amount = am.amount_residual
-                    total_due += amount
-
-                    is_overdue = today > am.invoice_date_due if am.invoice_date_due else today > am.date
-                    if is_overdue:
-                        total_overdue += amount or 0
-            min_date = record.get_min_date()
-            action = record.action_after() or 0
-            if min_date:
-                date_reminder = min_date + timedelta(days=action)
-                if date_reminder:
-                    record.next_reminder_date = date_reminder
+        """Open invoices, totals (company currency), next reminder date and
+        status. One invoice search for all the records."""
+        today = fields.Date.context_today(self)
+        commercial = self.filtered(
+            lambda p: p.id and p == p.commercial_partner_id)
+        open_invoices = self._followup_open_invoices(commercial)
+        lines = self._get_followup_lines()
+        no_move = self.env['account.move']
+        for partner in self:
+            invoices = open_invoices.get(partner.id, no_move) \
+                if partner in commercial else no_move
+            total_due = total_overdue = 0.0
+            oldest_due = False
+            overdue = no_move
+            for move in invoices:
+                due = move.invoice_date_due or move.invoice_date
+                total_due += move.amount_residual_signed
+                if due and due < today:
+                    total_overdue += move.amount_residual_signed
+                    overdue |= move
+                if due and (not oldest_due or due < oldest_due):
+                    oldest_due = due
+            next_line = self.env['followup.line']
+            reminder = False
+            if oldest_due:
+                next_line = partner._followup_next_line(
+                    (today - oldest_due).days, lines)
+                if next_line:
+                    reminder = oldest_due + timedelta(days=next_line.delay)
+            if not invoices:
+                status = 'no_action_needed'
+            elif reminder and reminder <= today:
+                status = 'in_need_of_action'
+            elif total_overdue:
+                status = 'with_overdue_invoices'
             else:
-                date_reminder = today
-                record.next_reminder_date = date_reminder
-            if total_overdue > 0 and date_reminder > today:
-                followup_status = "with_overdue_invoices"
-            elif total_due > 0 and date_reminder <= today:
-                followup_status = "in_need_of_action"
-            else:
-                followup_status = "no_action_needed"
-            record.total_due = total_due
-            record.total_overdue = total_overdue
-            record.followup_status = followup_status
+                status = 'no_action_needed'
+            partner.invoice_list = invoices
+            partner.overdue_invoice_ids = overdue
+            partner.total_due = total_due
+            partner.total_overdue = total_overdue
+            partner.next_reminder_date = reminder
+            partner.followup_status = status
 
-    def get_min_date(self):
-        """Get the minimum invoice due date from the partner's invoice list."""
-        today = date.today()
-        for this in self:
-            if this.invoice_list:
-                min_list = this.invoice_list.mapped('invoice_date_due')
-                while False in min_list:
-                    min_list.remove(False)
-                return min(min_list)
-            else:
-                return today
-
-    def get_delay(self):
-        """Retrieve the delay information for follow-up lines associated with the company."""
-        delay = """SELECT fl.id, fl.delay
-                    FROM followup_line fl
-                    JOIN account_followup af ON fl.followup_id = af.id
-                    WHERE af.company_id = %s
-                    ORDER BY fl.delay;
-
-                    """
-        self.env.cr.execute(delay, [self.env.company.id])
-        record = self.env.cr.dictfetchall()
-
-        return record
-
-    def action_after(self):
-        """Retrieve the delay information for follow-up lines associated with the company and return the delay value if found."""
-        lines = self.env['followup.line'].search([(
-            'followup_id.company_id', '=', self.env.company.id)])
-        if lines:
-            record = self.get_delay()
-            for i in record:
-                return i['delay']
+    def _search_followup_status(self, operator, value):
+        """Search on the computed status: only customers with open invoices
+        can need action or have overdue invoices, so only those are
+        computed (one invoice search)."""
+        if operator not in ('=', '!=', 'in', 'not in'):
+            raise UserError(_("Unsupported search on the follow-up status."))
+        values = {value} if isinstance(value, str) else set(value or [])
+        if operator in ('!=', 'not in'):
+            values = {key for key, _label in self._fields[
+                'followup_status'].selection} - values
+        moves = self.env['account.move'].search(
+            self._followup_invoice_domain())
+        customers = moves.commercial_partner_id
+        acting = customers.filtered(
+            lambda p: p.followup_status != 'no_action_needed')
+        matching = acting.filtered(lambda p: p.followup_status in values)
+        if 'no_action_needed' in values:
+            return ['|', ('id', 'in', matching.ids),
+                    ('id', 'not in', acting.ids)]
+        return [('id', 'in', matching.ids)]
 
     # ------------------------------------------------------------------
     # Follow-up escalation & sending
@@ -155,31 +215,38 @@ class ResPartner(models.Model):
             [('followup_id.company_id', '=', self.env.company.id)])
 
     def _max_overdue_days(self):
-        """Largest number of days any of the partner's open invoices is overdue."""
+        """Days the customer's oldest open invoice is past due (negative
+        when nothing is due yet, 0 without open invoices)."""
         self.ensure_one()
         today = fields.Date.context_today(self)
-        overdue = []
-        for am in self.invoice_list:
-            due = am.invoice_date_due or am.date
-            if due and due < today:
-                overdue.append((today - due).days)
-        return max(overdue) if overdue else 0
+        dues = [move.invoice_date_due or move.invoice_date
+                for move in self.invoice_list]
+        dues = [due for due in dues if due]
+        return (today - min(dues)).days if dues else 0
 
     def _get_next_followup_line(self):
-        """Return the next escalation level due for this partner, or empty.
-
-        Picks levels whose ``delay`` has been reached by the partner's overdue
-        days, and returns the first one *beyond* the level already sent."""
+        """Return the next escalation level due for this customer, or empty:
+        the next level (see ``_followup_next_line``) once its delay is
+        reached."""
         self.ensure_one()
-        days = self._max_overdue_days()
-        reached = self._get_followup_lines().filtered(lambda l: l.delay <= days)
-        if not reached:
+        if not self.invoice_list:
             return self.env['followup.line']
-        if not self.followup_level_id:
-            return reached[0]
-        remaining = reached.filtered(
-            lambda l: l.delay > self.followup_level_id.delay)
-        return remaining[0] if remaining else self.env['followup.line']
+        days = self._max_overdue_days()
+        line = self._followup_next_line(days)
+        return line if line and line.delay <= days else \
+            self.env['followup.line']
+
+    def _reset_followup_level(self):
+        """Clear the follow-up level of the customers without open invoices,
+        so the next overdue invoice starts again at the first level."""
+        with_level = self.filtered('followup_level_id')
+        # Search now rather than read ``invoice_list``: it may still hold the
+        # value computed before a payment in the same transaction.
+        open_invoices = self._followup_open_invoices(with_level)
+        paid_up = with_level.filtered(lambda p: p.id not in open_invoices)
+        if paid_up:
+            paid_up.write({'followup_level_id': False})
+        return paid_up
 
     def _followup_letter_report(self):
         return self.env.ref(
@@ -232,17 +299,13 @@ class ResPartner(models.Model):
 
     @api.model
     def _cron_send_followups(self):
-        """Scheduled action: email the due follow-up to every customer whose
-        next escalation level has been reached."""
-        today = fields.Date.context_today(self)
-        overdue_moves = self.env['account.move'].search([
-            ('move_type', '=', 'out_invoice'),
-            ('payment_state', '=', 'not_paid'),
-            ('state', '=', 'posted'),
-            ('invoice_date_due', '<', today),
-        ])
-        partners = overdue_moves.mapped('partner_id')
-        for partner in partners:
+        """Scheduled action: reset the level of customers who paid up, then
+        email the due follow-up to every customer whose next level has been
+        reached."""
+        self.search([('followup_level_id', '!=', False)])._reset_followup_level()
+        moves = self.env['account.move'].search(
+            self._followup_invoice_domain())
+        for partner in moves.commercial_partner_id:
             if partner._get_next_followup_line():
                 partner._send_followup()
 
@@ -288,24 +351,24 @@ class ResPartner(models.Model):
         help="currency related to Customer or Vendor")
 
     def _compute_customer_report_ids(self):
-        """ For computing 'invoices' of partner """
+        """ For computing 'invoices' of partner (none for a contact not
+        saved yet) """
         for rec in self:
-            inv_ids = self.env['account.move'].search(
-                [('partner_id', '=', rec.id),
+            rec.customer_report_ids = self.env['account.move'].search(
+                [('partner_id', '=', rec._origin.id),
                  ('move_type', '=', 'out_invoice'),
                  ('payment_state', '!=', 'paid'),
-                 ('state', '=', 'posted')])
-            rec.customer_report_ids = inv_ids
+                 ('state', '=', 'posted')]) if rec._origin.id else False
 
     def _compute_vendor_statement_ids(self):
-        """ For computing 'bills' of partner """
+        """ For computing 'bills' of partner (none for a contact not saved
+        yet) """
         for rec in self:
-            bills = self.env['account.move'].search(
-                [('partner_id', '=', rec.id),
+            rec.vendor_statement_ids = self.env['account.move'].search(
+                [('partner_id', '=', rec._origin.id),
                  ('move_type', '=', 'in_invoice'),
                  ('payment_state', '!=', 'paid'),
-                 ('state', '=', 'posted')])
-            rec.vendor_statement_ids = bills
+                 ('state', '=', 'posted')]) if rec._origin.id else False
 
     def main_query(self):
         """ Return select query (parameters: partner id, company id) """

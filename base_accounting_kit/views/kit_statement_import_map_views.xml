@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Saved CSV / XLSX statement formats (P2.2) -->
+    <record id="kit_statement_import_map_view_list" model="ir.ui.view">
+        <field name="name">kit.statement.import.map.list</field>
+        <field name="model">kit.statement.import.map</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="journal_id"/>
+                <field name="delimiter"/>
+                <field name="decimal_separator"/>
+                <field name="date_format"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="kit_statement_import_map_view_form" model="ir.ui.view">
+        <field name="name">kit.statement.import.map.form</field>
+        <field name="model">kit.statement.import.map</field>
+        <field name="arch" type="xml">
+            <form string="Statement Import Format">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Bank CSV export"/></h1>
+                    </div>
+                    <group>
+                        <group string="File">
+                            <field name="journal_id" options="{'no_create': True}"/>
+                            <field name="encoding"/>
+                            <field name="delimiter"/>
+                            <field name="decimal_separator"/>
+                            <field name="date_format"/>
+                            <field name="skip_rows"/>
+                            <field name="reverse_sign"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Column titles">
+                            <field name="date_column"/>
+                            <field name="amount_column"/>
+                            <field name="credit_column"/>
+                            <field name="debit_column"/>
+                            <field name="label_column"/>
+                            <field name="partner_column"/>
+                            <field name="partner_account_column"/>
+                            <field name="reference_column"/>
+                            <field name="unique_id_column"/>
+                            <field name="balance_column"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="kit_statement_import_map_view_search" model="ir.ui.view">
+        <field name="name">kit.statement.import.map.search</field>
+        <field name="model">kit.statement.import.map</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="journal_id"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_journal" string="Journal" context="{'group_by': 'journal_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_kit_statement_import_map" model="ir.actions.act_window">
+        <field name="name">Statement Import Formats</field>
+        <field name="res_model">kit.statement.import.map</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No saved statement format yet</p>
+            <p>A format tells how to read a bank's CSV or XLSX file: separators,
+               date format and which column holds what. It is saved from the
+               Import Statement window (Set Columns) or created here.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_kit_statement_import_map" action="action_kit_statement_import_map"
+              parent="account.account_account_menu" sequence="3"
+              groups="account.group_account_manager"/>
+
+    <!-- Journal form: the journal's formats -->
+    <record id="view_account_journal_form_kit_import" model="ir.ui.view">
+        <field name="name">account.journal.form.kit.import</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='page_outgoing_payments']" position="after">
+                <page name="kit_statement_import" string="Statement Import"
+                      invisible="type not in ['cash', 'bank', 'credit']"
+                      groups="account.group_account_manager">
+                    <p class="text-muted">
+                        CAMT, MT940 and OFX files are read as they are, and their
+                        account number must be this journal's bank account. CSV and
+                        XLSX files use the first format below, else their column titles.
+                    </p>
+                    <field name="kit_import_map_ids" context="{'default_journal_id': id}">
+                        <list>
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="delimiter"/>
+                            <field name="decimal_separator"/>
+                            <field name="date_format"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

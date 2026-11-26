@@ -46,18 +46,55 @@ class AccountMove(models.Model):
                                    "checked again.",
                               )
 
-    def button_cancel(self):
-        """Button action to cancel the transfer"""
-        for move in self:
-            for line in move.asset_depreciation_ids:
-                line.move_posted_check = False
-        return super().button_cancel()
+    def _post(self, soft=True):
+        """After posting: mark the depreciation lines as posted, close the
+        fully depreciated assets and create the assets of the bill lines.
 
-    def action_cancel(self):
-        """Action perform to cancel the asset record"""
-        res = super().action_cancel()
-        self.env['account.asset.asset'].sudo().search(
-            [('invoice_id', 'in', self.ids)]).write({'active': False})
+        ``_post`` is also what core's auto-post cron calls, so this runs for
+        every posted move, not only from the Post button."""
+        posted = super()._post(soft=soft)
+        posted.asset_depreciation_ids.post_lines_and_close_asset()
+        for move in posted.filtered(lambda m: m.is_invoice()):
+            # The default type in the context is the invoice type, not the
+            # asset type: remove it before creating the assets.
+            context = dict(self.env.context)
+            context.pop('default_type', None)
+            move.invoice_line_ids.with_context(context).sudo().asset_create()
+        return posted
+
+    def button_draft(self):
+        """Resetting a bill to draft removes the assets it created, so posting
+        it again does not create them twice. Assets that already have
+        depreciation entries must be cancelled first."""
+        assets = self.env['account.asset.asset'].sudo().with_context(
+            active_test=False).search([('invoice_id', 'in', self.ids),
+                                       ('state', '!=', 'cancelled')])
+        with_entries = assets.filtered(
+            lambda a: a.depreciation_line_ids.filtered('move_check'))
+        if with_entries:
+            raise UserError(_(
+                "This document has assets with depreciation entries: %s. "
+                "Cancel these assets first.",
+                ', '.join(with_entries.mapped('name'))))
+        res = super().button_draft()
+        assets.write({'state': 'draft'})
+        assets.unlink()
+        return res
+
+    def _invoice_paid_hook(self):
+        """When an invoice is paid, clear the customer's follow-up level if
+        nothing is left open, so the next overdue invoice starts again at the
+        first level."""
+        res = super()._invoice_paid_hook()
+        self.filtered(lambda m: m.move_type == 'out_invoice') \
+            .commercial_partner_id._reset_followup_level()
+        return res
+
+    def button_cancel(self):
+        """A cancelled depreciation entry frees its board line, so the entry
+        is created again when it is due."""
+        res = super().button_cancel()
+        self.asset_depreciation_ids.write({'move_id': False})
         return res
 
     def action_post(self):
@@ -73,20 +110,8 @@ class AccountMove(models.Model):
                                         rec.partner_id.name, rec.due_amount,
                                         rec.currency_id.symbol))
 
-        result = super().action_post()
-        # Post the linked asset depreciation lines and close fully
-        # depreciated assets (previously handled by the dead ``post`` override).
-        self.mapped('asset_depreciation_ids').post_lines_and_close_asset()
-        for inv in self:
-            context = dict(self.env.context)
-            # Within the context of an invoice,
-            # this default value is for the type of the invoice, not the type
-            # of the asset. This has to be cleaned from the context before
-            # creating the asset,otherwise it tries to create the asset with
-            # the type of the invoice.
-            context.pop('default_type', None)
-            inv.invoice_line_ids.with_context(context).asset_create()
-        return result
+        # Assets and depreciation lines are handled in ``_post``.
+        return super().action_post()
 
     @api.onchange('partner_id')
     def check_due(self):

@@ -93,6 +93,7 @@ class AccountFinancialReport(models.Model):
             ("income", "Income"),
             ("income_other", "Other Income"),
             ("expense", "Expenses"),
+            ("expense_other", "Other Expenses"),
             ("expense_depreciation", "Depreciation"),
             ("expense_direct_cost", "Cost of Revenue"),
             ("off_balance", "Off-Balance Sheet"),

@@ -65,30 +65,56 @@ class AccountFxRevaluation(models.TransientModel):
         return res
 
     def _get_revaluation_lines(self):
-        """Return the per-account unrealized adjustment (company currency)."""
+        """Unrealized adjustment (company currency) per account, partner and
+        currency, as of the revaluation date.
+
+        - Reconcilable accounts (receivable, payable): the open items,
+          revalued from their residual in foreign currency.
+        - Other accounts (bank, cash ...): the foreign-currency balance,
+          revalued: ``convert(sum(amount_currency)) - sum(balance)``. Core
+          keeps no residual on non-reconcilable accounts.
+
+        :return: ``{(account, partner, currency): adjustment}``
+        """
         self.ensure_one()
         company = self.env.company
         comp_currency = company.currency_id
         result = {}
+        base_domain = [
+            ('parent_state', '=', 'posted'),
+            ('company_id', '=', company.id),
+            ('date', '<=', self.date),
+            ('currency_id', '!=', comp_currency.id),
+            ('currency_id', '!=', False),
+        ]
+        AML = self.env['account.move.line']
         for account in self.account_ids:
-            move_lines = self.env['account.move.line'].search([
-                ('account_id', '=', account.id),
-                ('parent_state', '=', 'posted'),
-                ('reconciled', '=', False),
-                ('company_id', '=', company.id),
-                ('currency_id', '!=', comp_currency.id),
-                ('currency_id', '!=', False),
-            ])
-            adjustment = 0.0
-            for line in move_lines:
-                if not line.amount_residual_currency:
+            groups = {}
+            if account.reconcile:
+                lines = AML.search(base_domain + [
+                    ('account_id', '=', account.id),
+                    ('reconciled', '=', False)])
+                for line in lines:
+                    key = (account, line.partner_id, line.currency_id)
+                    total = groups.setdefault(key, [0.0, 0.0])
+                    total[0] += line.amount_residual_currency
+                    total[1] += line.amount_residual
+            else:
+                lines = AML.search(base_domain + [
+                    ('account_id', '=', account.id)])
+                for line in lines:
+                    key = (account, self.env['res.partner'], line.currency_id)
+                    total = groups.setdefault(key, [0.0, 0.0])
+                    total[0] += line.amount_currency
+                    total[1] += line.balance
+            for key, (foreign, booked) in groups.items():
+                if key[2].is_zero(foreign) and comp_currency.is_zero(booked):
                     continue
-                revalued = line.currency_id._convert(
-                    line.amount_residual_currency, comp_currency, company,
-                    self.date)
-                adjustment += revalued - line.amount_residual
-            if not comp_currency.is_zero(adjustment):
-                result[account] = adjustment
+                revalued = key[2]._convert(foreign, comp_currency, company,
+                                           self.date)
+                adjustment = comp_currency.round(revalued - booked)
+                if not comp_currency.is_zero(adjustment):
+                    result[key] = adjustment
         return result
 
     def action_revaluate(self):
@@ -98,27 +124,33 @@ class AccountFxRevaluation(models.TransientModel):
             raise UserError(_(
                 "No open foreign-currency balances to revalue on %s.")
                 % self.date)
+        # As core's exchange difference entries: the line keeps the partner
+        # and the foreign currency, with only the company amount changed
+        # (amount_currency = 0).
         line_cmds = []
-        for account, adjustment in adjustments.items():
-            if adjustment > 0:
-                # Account balance increases on the debit side -> gain.
-                line_cmds.append((0, 0, {
-                    'name': _('FX revaluation'),
-                    'account_id': account.id,
-                    'debit': adjustment, 'credit': 0.0}))
-                line_cmds.append((0, 0, {
-                    'name': _('Unrealized FX gain'),
-                    'account_id': self.gain_account_id.id,
-                    'debit': 0.0, 'credit': adjustment}))
-            else:
-                line_cmds.append((0, 0, {
-                    'name': _('FX revaluation'),
-                    'account_id': account.id,
-                    'debit': 0.0, 'credit': -adjustment}))
-                line_cmds.append((0, 0, {
-                    'name': _('Unrealized FX loss'),
-                    'account_id': self.loss_account_id.id,
-                    'debit': -adjustment, 'credit': 0.0}))
+        gains = {}
+        for (account, partner, currency), adjustment in adjustments.items():
+            line_cmds.append((0, 0, {
+                'name': _('FX revaluation'),
+                'account_id': account.id,
+                'partner_id': partner.id,
+                'currency_id': currency.id,
+                'amount_currency': 0.0,
+                'balance': adjustment,
+            }))
+            gains[currency] = gains.get(currency, 0.0) + adjustment
+        for currency, amount in gains.items():
+            if self.env.company.currency_id.is_zero(amount):
+                continue
+            line_cmds.append((0, 0, {
+                'name': _('Unrealized FX gain') if amount > 0
+                else _('Unrealized FX loss'),
+                'account_id': (self.gain_account_id if amount > 0
+                               else self.loss_account_id).id,
+                'currency_id': currency.id,
+                'amount_currency': 0.0,
+                'balance': -amount,
+            }))
         move = self.env['account.move'].create({
             'journal_id': self.journal_id.id,
             'date': self.date,

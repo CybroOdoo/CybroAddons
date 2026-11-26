@@ -19,9 +19,9 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-import time
-from odoo import api, models, _
-from odoo.exceptions import UserError
+from odoo import models, _
+
+from ..models.report_company import get_report_company
 
 
 class ReportTrialBalance(models.AbstractModel):
@@ -64,49 +64,46 @@ class ReportTrialBalance(models.AbstractModel):
         for row in self.env.cr.dictfetchall():
             account_result[row.pop('id')] = row
 
+        # Opening balances at the start date (same rules as the general
+        # ledger: profit and loss accounts restart at the fiscal year, the
+        # earlier years' result is brought forward to current year earnings)
+        initial, rbf = self.env[
+            'report.base_accounting_kit.report_general_ledger'].with_context(
+            self.env.context)._get_initial_balances(accounts)
+        initial = {key: vals['balance'] for key, vals in initial.items()}
+        if rbf and rbf['account_id'] in accounts.ids:
+            initial[rbf['account_id']] = initial.get(
+                rbf['account_id'], 0.0) + rbf['balance']
+
         account_res = []
+        account_company = get_report_company(self.env)
         for account in accounts:
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
-            account_company = self.env.company
             currency = (account.currency_id and account.currency_id or
                         account_company.currency_id)
+            res['id'] = account.id
             res['code'] = account.code
             res['name'] = account.name
             if account.id in account_result:
                 res['debit'] = account_result[account.id].get('debit')
                 res['credit'] = account_result[account.id].get('credit')
                 res['balance'] = account_result[account.id].get('balance')
+            res['init_balance'] = initial.get(account.id, 0.0)
+            res['end_balance'] = res['init_balance'] + res['balance']
             if display_account == 'all':
                 account_res.append(res)
             if display_account == 'not_zero' and not currency.is_zero(
-                    res['balance']):
+                    res['end_balance']):
                 account_res.append(res)
             if display_account == 'movement' and (
                     not currency.is_zero(res['debit']) or not currency.is_zero(
                     res['credit'])):
                 account_res.append(res)
+        if rbf and rbf['account_id'] not in accounts.ids:
+            # No current year earnings account: show it on its own row.
+            account_res.append({
+                'code': '', 'name': _('Result Brought Forward'),
+                'debit': 0.0, 'credit': 0.0, 'balance': 0.0,
+                'init_balance': rbf['balance'], 'end_balance': rbf['balance'],
+            })
         return account_res
-
-    @api.model
-    def _get_report_values(self, docids, data=None):
-        if not data.get('form') or not self.env.context.get('active_model'):
-            raise UserError(
-                _("Form content is missing, this report cannot be printed."))
-
-        model = self.env.context.get('active_model')
-        docs = self.env[model].browse(
-            self.env.context.get('active_ids', []))
-        display_account = data['form'].get('display_account')
-        accounts = docs if model == 'account.account' else self.env[
-            'account.account'].search([])
-        account_res = self.with_context(
-            data['form'].get('used_context'))._get_accounts(accounts,
-                                                            display_account)
-        return {
-            'doc_ids': self.ids,
-            'doc_model': model,
-            'data': data['form'],
-            'docs': docs,
-            'time': time,
-            'Accounts': account_res,
-        }
