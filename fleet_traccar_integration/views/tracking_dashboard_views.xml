@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ─── Position list/form views ──────────────────────────────────────── -->
+    <record id="view_fleet_traccar_position_list" model="ir.ui.view">
+        <field name="name">fleet.traccar.position.list</field>
+        <field name="model">fleet.traccar.position</field>
+        <field name="arch" type="xml">
+            <tree string="GPS Positions" create="false">
+                <field name="fix_time"/>
+                <field name="vehicle_id"/>
+                <field name="latitude"/>
+                <field name="longitude"/>
+                <field name="speed"/>
+                <field name="altitude"/>
+                <field name="accuracy"/>
+                <field name="battery_level"/>
+                <field name="motion"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_fleet_traccar_positions" model="ir.actions.act_window">
+        <field name="name">GPS Positions</field>
+        <field name="res_model">fleet.traccar.position</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <!-- ─── Live Tracking Dashboard ──────────────────────────────────────── -->
+    <!--
+        This is a list view of active Traccar vehicles with key status fields,
+        acting as the "dashboard". A full OWL map dashboard can be added as an
+        extension once the base module is working.
+    -->
+    <record id="view_fleet_traccar_dashboard_list" model="ir.ui.view">
+        <field name="name">fleet.traccar.dashboard.list</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="arch" type="xml">
+            <tree string="Live Tracking Dashboard"
+                  create="false" delete="false" edit="false"
+                  decoration-success="current_status == 'running'"
+                  decoration-warning="current_status == 'idle'"
+                  decoration-muted="current_status == 'offline'">
+                <field name="name" string="Vehicle"/>
+                <field name="license_plate"/>
+                <field name="driver_id"/>
+                <field name="current_status" widget="badge"
+                       decoration-success="current_status == 'running'"
+                       decoration-warning="current_status == 'idle'"
+                       decoration-danger="current_status == 'offline'"/>
+                <field name="last_speed" string="Speed (km/h)"/>
+                <field name="last_battery" string="Battery (%)"/>
+                <field name="last_latitude"/>
+                <field name="last_longitude"/>
+                <field name="last_update"/>
+                <button name="action_view_current_location"
+                        string="📍 Map"
+                        type="object"
+                        class="btn-sm btn-outline-primary"/>
+                <button name="action_refresh_location"
+                        string="🔄 Refresh"
+                        type="object"
+                        class="btn-sm btn-outline-secondary"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_fleet_traccar_dashboard" model="ir.actions.act_window">
+        <field name="name">Live Tracking Dashboard</field>
+        <field name="res_model">fleet.vehicle</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('activate_traccar', '=', True)]</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_fleet_traccar_dashboard_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('fleet.fleet_vehicle_view_form')}),
+        ]"/>
+        <field name="context">{}</field>
+    </record>
+
+</odoo>
