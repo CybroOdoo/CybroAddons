@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_partnerledger_balances"
+              inherit_id="base_accounting_kit.report_partnerledger">
+        <xpath expr="//tbody/tr[1]" position="before">
+            <t t-set="opening" t-value="data.get('initial_balances', {}).get(o.id, {'debit': 0.0, 'credit': 0.0, 'balance': 0.0})"/>
+        </xpath>
+        <xpath expr="//tr[@t-foreach='lines(data, o)']" position="before">
+            <tr t-if="data['form'].get('initial_balance')" class="ledger-opening">
+                <td colspan="4">Opening Balance</td>
+                <td class="text-end"><span t-esc="opening['debit']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                <td class="text-end"><span t-esc="opening['credit']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                <td class="text-end"><span t-esc="opening['balance']" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                <td t-if="data['form']['amount_currency']"/>
+            </tr>
+        </xpath>
+        <xpath expr="//span[@t-esc=&quot;line['progress']&quot;]" position="attributes">
+            <attribute name="t-esc">line['progress'] + opening['balance']</attribute>
+        </xpath>
+        <xpath expr="//tr[@t-foreach='lines(data, o)']" position="after">
+            <tr t-if="data['form'].get('initial_balance')" class="ledger-closing">
+                <td colspan="4">Closing Balance</td>
+                <td class="text-end"><span t-esc="opening['debit'] + sum_partner(data, o, 'debit')" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                <td class="text-end"><span t-esc="opening['credit'] + sum_partner(data, o, 'credit')" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                <td class="text-end"><span t-esc="opening['balance'] + sum_partner(data, o, 'debit - credit')" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                <td t-if="data['form']['amount_currency']"/>
+            </tr>
+        </xpath>
+    </template>
+</odoo>
