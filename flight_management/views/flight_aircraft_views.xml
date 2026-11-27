@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Defines the list view for managing aircraft records. -->
+    <record id="view_flight_aircraft_list" model="ir.ui.view">
+        <field name="name">flight.aircraft.list</field>
+        <field name="model">flight.aircraft</field>
+        <field name="arch" type="xml">
+            <list string="Aircraft">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="make_id"/>
+                <field name="model_id"/>
+                <field name="class_id"/>
+                <field name="capacity"/>
+                <field name="home_base_id"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'active'"
+                       decoration-warning="status == 'maintenance'"
+                       decoration-danger="status == 'grounded'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Defines the form view for managing aircraft details. -->
+    <record id="view_flight_aircraft_form" model="ir.ui.view">
+        <field name="name">flight.aircraft.form</field>
+        <field name="model">flight.aircraft</field>
+        <field name="arch" type="xml">
+            <form string="Aircraft">
+                <sheet>
+                    <widget name="web_ribbon" title="Grounded" bg_color="text-bg-danger"
+                            invisible="status != 'grounded'"/>
+                    <widget name="web_ribbon" title="In Maintenance" bg_color="text-bg-warning"
+                            invisible="status != 'maintenance'"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. N12345"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="model_id"/>
+                            <field name="make_id" readonly="1"/>
+                            <field name="class_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="capacity"/>
+                            <field name="home_base_id"/>
+                            <field name="status"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Defines the search view for filtering aircraft records. -->
+    <record id="view_flight_aircraft_search" model="ir.ui.view">
+        <field name="name">flight.aircraft.search</field>
+        <field name="model">flight.aircraft</field>
+        <field name="arch" type="xml">
+            <search string="Aircraft">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="model_id"/>
+                <field name="make_id"/>
+                <filter string="Active" name="active" domain="[('status', '=', 'active')]"/>
+                <filter string="In Maintenance" name="maintenance" domain="[('status', '=', 'maintenance')]"/>
+                <filter string="Grounded" name="grounded" domain="[('status', '=', 'grounded')]"/>
+                <filter string="Status" name="group_status" context="{'group_by': 'status'}"/>
+                <filter string="Manufacturer" name="group_make" context="{'group_by': 'make_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Defines the window action for accessing aircraft records. -->
+    <record id="action_flight_aircraft" model="ir.actions.act_window">
+        <field name="name">Aircraft</field>
+        <field name="res_model">flight.aircraft</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_flight_aircraft_search"/>
+    </record>
+
+    <!-- Defines the list view for managing aircraft manufacturers. -->
+    <record id="view_flight_aircraft_make_list" model="ir.ui.view">
+        <field name="name">flight.aircraft.make.list</field>
+        <field name="model">flight.aircraft.make</field>
+        <field name="arch" type="xml">
+            <list string="Aircraft Manufacturers" editable="bottom">
+                <field name="name"/>
+                <field name="code"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Defines the window action for accessing aircraft manufacturers. -->
+    <record id="action_flight_aircraft_make" model="ir.actions.act_window">
+        <field name="name">Manufacturers</field>
+        <field name="res_model">flight.aircraft.make</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Defines the list view for managing aircraft models. -->
+    <record id="view_flight_aircraft_model_list" model="ir.ui.view">
+        <field name="name">flight.aircraft.model.list</field>
+        <field name="model">flight.aircraft.model</field>
+        <field name="arch" type="xml">
+            <list string="Aircraft Models" editable="bottom">
+                <field name="make_id"/>
+                <field name="name"/>
+                <field name="class_id"/>
+                <field name="default_capacity"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Defines the window action for accessing aircraft models. -->
+    <record id="action_flight_aircraft_model" model="ir.actions.act_window">
+        <field name="name">Aircraft Models</field>
+        <field name="res_model">flight.aircraft.model</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Defines the list view for managing aircraft classes. -->
+    <record id="view_flight_aircraft_class_list" model="ir.ui.view">
+        <field name="name">flight.aircraft.class.list</field>
+        <field name="model">flight.aircraft.class</field>
+        <field name="arch" type="xml">
+            <list string="Aircraft Classes" editable="bottom">
+                <field name="name"/>
+                <field name="code"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Defines the window action for accessing aircraft classes. -->
+    <record id="action_flight_aircraft_class" model="ir.actions.act_window">
+        <field name="name">Aircraft Classes</field>
+        <field name="res_model">flight.aircraft.class</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

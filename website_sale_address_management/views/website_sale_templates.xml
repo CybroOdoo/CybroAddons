@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Show, hide and mark the address fields according to the module
+         settings. The core address form is kept and only extended. -->
+    <template id="address_form_fields_inherit_website_sale_address_management"
+              inherit_id="website_sale.address_form_fields">
+        <xpath expr="//div[@id='div_name']" position="before">
+            <t t-set="addr_cfg"
+               t-value="request.env['res.config.settings'].sudo().get_address_field_config(address_type)"/>
+        </xpath>
+        <xpath expr="//div[@id='div_phone']" position="attributes">
+            <attribute name="t-if">addr_cfg['phone']['visible']</attribute>
+        </xpath>
+        <xpath expr="//div[@id='div_street']" position="attributes">
+            <attribute name="t-if">addr_cfg['street']['visible']</attribute>
+        </xpath>
+        <xpath expr="//div[@id='div_street2']" position="attributes">
+            <attribute name="t-if">addr_cfg['street2']['visible']</attribute>
+        </xpath>
+        <xpath expr="//div[@id='div_city']" position="attributes">
+            <attribute name="t-if">addr_cfg['city']['visible']</attribute>
+        </xpath>
+        <xpath expr="//t[@t-if='zip_before_city']/div[@id='div_zip']"
+               position="attributes">
+            <attribute name="t-if">addr_cfg['zip']['visible']</attribute>
+        </xpath>
+        <xpath expr="//t[@t-if='not zip_before_city']/div[@id='div_zip']"
+               position="attributes">
+            <attribute name="t-if">addr_cfg['zip']['visible']</attribute>
+        </xpath>
+    </template>
+
+    <!-- Add Discard and Save address buttons to the eCommerce address form -->
+    <template id="address_inherit_website_sale_address_management"
+              inherit_id="website_sale.address">
+        <xpath expr="//form[@name='address_form']//div[hasclass('row')]" position="after">
+            <div class="d-flex flex-column flex-md-row align-items-center justify-content-between mt-4 mb-4">
+                <a
+                    role="button"
+                    t-att-href="discard_url or '/shop/checkout'"
+                    class="btn btn-outline-secondary w-100 w-md-auto order-md-1 order-3"
+                >
+                    <i class="fw-light oi me-2" data-icon="keyboard_arrow_left"/>Discard
+                </a>
+                <div class="position-relative w-100 d-flex d-md-none justify-content-center align-items-center order-2 my-2 opacity-75">
+                    <hr class="w-100"/>
+                    <span class="px-3">or</span>
+                    <hr class="w-100"/>
+                </div>
+                <button id="save_address" class="btn btn-primary w-100 w-md-auto order-1 order-md-3" type="button">
+                    Save address
+                    <i class="fw-light oi ms-2" data-icon="keyboard_arrow_right"/>
+                </button>
+            </div>
+        </xpath>
+    </template>
+</odoo>

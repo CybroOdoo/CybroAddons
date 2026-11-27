@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="advanced_discuss_management.DiscussKanbanBoard">
+        <div class="o-adm-KanbanBoard d-flex flex-column flex-grow-1 w-100 h-100 overflow-hidden">
+            <div class="o-adm-KanbanBoard-header d-flex align-items-center gap-2 px-3 py-2 flex-shrink-0">
+                <i t-attf-class="oi {{ this.tab.iconClass or '' }} fs-4" t-att-data-icon="this.tab.icon"/>
+                <h4 class="mb-0 text-truncate" t-out="this.tab.label"/>
+                <span class="o-adm-KanbanBoard-count text-muted" t-out="'(' + this.channels.length + ')'"/>
+                <button t-if="this.canStartMeeting"
+                        class="o-adm-KanbanBoard-meetingBtn btn btn-primary btn-sm d-flex align-items-center gap-1 ms-auto me-2"
+                        title="Start a meeting now"
+                        t-on-click="() => this.onClickMeeting()">
+                    <i class="oi oi-filled" data-icon="video_call"/>
+                    <span>Meeting</span>
+                </button>
+            </div>
+            <div class="o-adm-KanbanBoard-grid flex-grow-1 overflow-auto o-scrollbar-thin px-3 pb-3">
+                <div t-foreach="this.channels" t-as="channel" t-key="channel.localId"
+                     class="o-adm-KanbanCard card rounded-4 border cursor-pointer"
+                     t-att-class="{ 'o-adm-unread': channel.isUnread }"
+                     t-att-data-channel-id="channel.id"
+                     t-on-click="() => this.onClickCard(channel)">
+                    <div class="card-body d-flex gap-2 p-2 align-items-start">
+                        <div class="flex-shrink-0">
+                            <DiscussAvatar record="channel" size="44"/>
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex align-items-center gap-1">
+                                <span class="o-adm-KanbanCard-name fw-bold text-truncate flex-grow-1" t-out="channel.displayName"/>
+                                <t t-set="count" t-value="this.counter(channel)"/>
+                                <span t-if="count" class="badge rounded-pill o-discuss-badge" t-out="count"/>
+                            </div>
+                            <div t-if="channel.parent_channel_id" class="small text-muted text-truncate">
+                                <i class="oi o-xsmaller" data-icon="subdirectory_arrow_right"/>
+                                <t t-out="channel.parent_channel_id.displayName"/>
+                            </div>
+                            <div class="o-adm-KanbanCard-preview small text-muted text-truncate" t-out="this.previewText(channel)"/>
+                        </div>
+                    </div>
+                </div>
+                <div t-if="!this.channels.length" class="o-adm-KanbanBoard-empty d-flex flex-column align-items-center justify-content-center text-muted py-5">
+                    <h5 class="mb-1" t-out="this.emptyText"/>
+                    <span t-if="!this.sidebarState.searchTerm and this.tab.emptyState?.subtitle" class="small" t-out="this.tab.emptyState.subtitle"/>
+                </div>
+            </div>
+            <div t-if="this.channels.length and this.tab.getLoadStatus(this.sidebarState.selectedFilter, this.sidebarState.activePluginFilters) !== 'loaded'"
+                 class="text-center pb-2 flex-shrink-0">
+                <button class="btn btn-link btn-sm" t-on-click="() => this.onClickLoadMore()">Load more</button>
+            </div>
+        </div>
+    </t>
+
+    <!-- Show the kanban board instead of "No conversation selected." for channel tabs -->
+    <t t-inherit="mail.DiscussContent" t-inherit-mode="extension">
+        <xpath expr="//t[@name='core-content']/div[contains(@t-elif, 'hasRestoredThread')]" position="before">
+            <DiscussKanbanBoard t-elif="!this.ui.isSmall and this.store.discuss.hasRestoredThread and this.store.discuss.sidebarState.activeTab?.recordType === 'discuss.channel'"/>
+        </xpath>
+    </t>
+
+</templates>

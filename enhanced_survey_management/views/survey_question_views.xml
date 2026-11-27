@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="survey_question_form" model="ir.ui.view">
+        <field name="name">
+            survey.question.view.form.inherit.enhanced.survey.management
+        </field>
+        <field name="model">survey.question</field>
+        <field name="inherit_id" ref="survey.survey_question_form"/>
+        <field name="arch" type="xml">
+            <!-- Hide Answers tab for question types that do not require answer options/configuration -->
+            <xpath expr="//page[@name='answers']" position="attributes">
+                <attribute name="invisible">is_page or question_type in ['text_box', 'time', 'month', 'week', 'color', 'url', 'email', 'password', 'name', 'address', 'file'] or scoring_type == 'no_scoring' and question_type in ['numerical_box', 'date', 'datetime']</attribute>
+            </xpath>
+            <!-- Hide empty Answers group in Options tab when question type has no answer options -->
+            <xpath expr="//page[@name='options']/group[1]/group[1]" position="attributes">
+                <attribute name="invisible">question_type not in ['text_box', 'char_box', 'numerical_box', 'date', 'datetime', 'simple_choice', 'multiple_choice', 'matrix']</attribute>
+            </xpath>
+            <!-- Adding necessary field related to custom question types -->
+            <xpath expr="//page[@name='answers']/group" position="inside">
+                <group invisible="question_type not in ['many2one', 'many2many']">
+                    <field name="model_id"
+                           required="question_type in ['many2one', 'many2many']"/>
+                </group>
+                <group>
+                    <field name="selection_ids"
+                           invisible="question_type != 'selection'">
+                    <list editable="bottom">
+                            <field name="name"/>
+                        </list>
+                    </field>
+                </group>
+                <group invisible="question_type != 'range'">
+                    <field name="range_min"/>
+                    <field name="range_max"/>
+                </group>
+                <group invisible="question_type != 'qr'">
+                    <field name="qrcode"/>
+                </group>
+                <group invisible="question_type != 'barcode'">
+                    <field name="barcode"/>
+                </group>
+            </xpath>
+            <!-- Adding matrix field related to matrix question types -->
+            <xpath expr="//field[@name='suggested_answer_ids']/list/field[@name='value']"
+                   position="after">
+                <field name="answer_type"
+                       column_invisible="parent.matrix_subtype != 'custom'"/>
+                <field name="model_id"
+                       column_invisible="parent.matrix_subtype != 'custom'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

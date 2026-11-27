@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Tabs without an iconClass (e.g. Channels) would otherwise get a literal "undefined" class -->
+    <t t-inherit="mail.MessagingMenu-navigation" t-inherit-mode="extension">
+        <xpath expr="//i[contains(@t-attf-class, 'o-mail-MessagingMenu-tabIcon')]" position="attributes">
+            <attribute name="t-attf-class">oi o-mail-MessagingMenu-tabIcon {{ tab.iconClass or '' }} rounded-pill mx-auto p-2 fs-5</attribute>
+        </xpath>
+    </t>
+
+    <!-- Tell each channel row whether it is a thread shown under its parent channel -->
+    <t t-inherit="mail.MessagingMenu" t-inherit-mode="extension">
+        <xpath expr="//MessagingMenuItem[@t-foreach='this.channels()']" position="attributes">
+            <attribute name="admNested">this.admNestedThreadIds().has(channel.localId)</attribute>
+        </xpath>
+    </t>
+
+    <!-- A nested thread only needs its own name: the parent channel is the row above it -->
+    <t t-inherit="mail.MessagingMenuItem" t-inherit-mode="extension">
+        <xpath expr="//div[@t-if='this.channel?.parent_channel_id']" position="attributes">
+            <attribute name="t-if">this.channel?.parent_channel_id and !this.props.admNested</attribute>
+        </xpath>
+    </t>
+
+    <!-- "+ Channel" opens the channel kanban: name the group of channels without a category -->
+    <t t-inherit="mail.DiscussCategoryKanbanRenderer" t-inherit-mode="extension">
+        <xpath expr="//t[@t-if='group.value === false']" position="replace">
+            <t t-if="group.value === false">Uncategorized (<t t-out="group.count"/>)</t>
+        </xpath>
+    </t>
+
+</templates>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Survey portal Breadcrumbs -->
+    <template id="portal_my_home_menu_survey" name="Portal layout : Survey menu"
+              inherit_id="portal.portal_breadcrumbs"
+              priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'survey'"
+                t-attf-class="breadcrumb-item #{'active ' if not survey_boolean else ''}">
+                <a t-if="survey_boolean" t-attf-href="/my/survey/ans">Surveys</a>
+                <t t-else="">Surveys</t>
+            </li>
+            <li t-if="survey_boolean" class="breadcrumb-item active">
+                <t t-out="survey"/>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- Survey portal Views: Surveys -->
+    <template id="portal_survey_result" name="Survey">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar" breadcrumbs_searchbar="True">
+                <t t-set="title">Survey</t>
+            </t>
+            <table class="table rounded mb-0 bg-white o_portal_my_doc_table">
+                <thead>
+                    <tr class="active">
+                        <th class="text-end">Survey</th>
+                        <th class="text-end">Partner</th>
+                        <th class="text-end">Email</th>
+                        <th class="text-end">Status</th>
+                        <th class="text-end"/>
+                    </tr>
+                </thead>
+                <t t-foreach="survey_list" t-as="survey">
+                    <tr>
+                        <td class="text-end">
+                            <a t-attf-href="/my/survey/{{survey['id']}}">
+                                <span t-out="survey['survey']"/>
+                            </a>
+                        </td>
+                        <td class="text-end">
+                            <span t-out="survey['user_id']"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-out="survey['email']"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-out="survey['status']"/>
+                        </td>
+                    </tr>
+                </t>
+            </table>
+        </t>
+    </template>
+
+    <!-- Survey portal views results -->
+    <template id="portal_survey_result_view" name="Survey Result">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar" breadcrumbs_searchbar="True">
+                <t t-set="title">Survey Results</t>
+            </t>
+            <table class="table">
+                <tr>
+                    <td class="text-end">
+                        <strong>Survey:</strong>
+                        <span t-out="survey"/>
+                    </td>
+                    <td>
+                        <strong>Created on:</strong>
+                        <span t-out="survey_date"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>Partner:</strong>
+                        <span t-out="name"/>
+                    </td>
+                    <td>
+                        <strong>Email:</strong>
+                        <span t-out="email"/>
+                    </td>
+                </tr>
+            </table>
+            <table class="table rounded mb-0 bg-white o_portal_my_doc_table">
+                <thead>
+                    <tr class="active">
+                        <th class="text-end">Questions</th>
+                        <th class="text-end">Created Date</th>
+                        <th class="text-end">Question Type</th>
+                        <th class="text-end">Answer</th>
+                        <th class="text-end">Score</th>
+                    </tr>
+                </thead>
+                <t t-foreach="survey_questions" t-as="qst">
+                    <tr>
+                        <td class="text-end">
+                            <span t-out="qst['questions']"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-out="qst['create_date']"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-out="qst['question_type']"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-out="qst['answer']" class="text-wrap"/>
+                        </td>
+                        <td class="text-end">
+                            <span t-out="qst['score']"/>
+                        </td>
+                    </tr>
+                </t>
+            </table>
+        </t>
+    </template>
+</odoo>
