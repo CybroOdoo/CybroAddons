@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Lot/Serial Number Expiry report template-->
+    <template id="product_batch_report_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h3 class="text-center">Lot/Serial Number Expiry Report</h3>
+                    <div class="row mt-4 mb-3">
+                        <div class="col-3">
+                            <span>From:</span>
+                            <strong t-if="date_from" t-out="date_from"/>
+                            <strong t-else="">No limit</strong>
+                        </div>
+                        <div class="col-9">
+                            <span>To:</span>
+                            <strong t-if="date_to" t-out="date_to"/>
+                            <strong t-else="">No limit</strong>
+                        </div>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th t-if="view_type == 'product_wise'">Product</th>
+                                <th>Lot/Serial Number</th>
+                                <th>Expiry Date</th>
+                                <th t-if="expiry_type == 'expire'">Expires In</th>
+                                <th t-else="">Expired Since</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="view_type == 'product_wise'">
+                                <t t-foreach="heading" t-as="product">
+                                    <tr>
+                                        <td colspan="4">
+                                            <strong t-out="product"/>
+                                        </td>
+                                    </tr>
+                                    <tr t-foreach="values" t-as="line">
+                                        <t t-if="line['product'] == product">
+                                            <td/>
+                                            <td class="text-center"><span t-out="line['lot_name']"/></td>
+                                            <td class="text-center"><span t-out="line['expiry_date']"/></td>
+                                            <td class="text-center"><span t-out="line['expiry_days']"/></td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <tr t-foreach="values" t-as="line">
+                                    <td class="text-center"><span t-out="line['lot_name']"/></td>
+                                    <td class="text-center"><span t-out="line['expiry_date']"/></td>
+                                    <td class="text-center"><span t-out="line['expiry_days']"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
